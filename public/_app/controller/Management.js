@@ -1,7 +1,7 @@
 Ext.define('PumaMng.controller.Management',{
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['PumaMng.view.form.Attribute','PumaMng.view.form.Theme','PumaMng.view.form.AttributeSet','PumaMng.view.form.SymbologyLayer','PumaMng.view.form.FeatureLayerTemplate','PumaMng.view.form.LayerTemplate','PumaMng.view.form.Location','PumaMng.view.form.Scope','PumaMng.view.form.Symbology','PumaMng.view.form.Tree','PumaMng.view.form.Year'],
+    requires: ['PumaMng.view.form.Attribute','PumaMng.view.form.Theme','PumaMng.view.form.AttributeSet','PumaMng.view.form.SymbologyLayer','PumaMng.view.form.FeatureLayerTemplate','PumaMng.view.form.LayerTemplate','PumaMng.view.form.Location','PumaMng.view.form.Scope','PumaMng.view.form.Symbology','PumaMng.view.form.Dataset','PumaMng.view.form.Topic','PumaMng.view.form.Year'],
   
     init: function() {
         this.control({

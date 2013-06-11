@@ -7,12 +7,11 @@ Ext.define('PumaMng.controller.Store',{
         'Puma.model.AreaTemplate',
         'Puma.model.Year',
         'Puma.model.Attribute',
-        
-        'Puma.model.SymbologyLayer',
+        'Puma.model.Dataset',
+        'Puma.model.Topic',
         'Puma.model.Analysis',
         'Puma.model.PerformedAnalysis',
         'Puma.model.AttributeLocal',
-        'Puma.model.Tree',
         'Puma.model.Symbology',
         'Puma.model.LayerRef',
         'Puma.model.LayerMap',
@@ -23,7 +22,6 @@ Ext.define('PumaMng.controller.Store',{
         'Puma.model.Scope',
         'Puma.model.Column',
         'Puma.model.ColumnMap',
-        'Puma.model.SymbologyTemplate',
         'Puma.model.MappedAttribute',
         'Ext.data.Store',
         'Gisatlib.data.SlaveStore',
@@ -137,8 +135,11 @@ Ext.define('PumaMng.controller.Store',{
                 name: 'Feature layer template',
                 type: 'featurelayertemplate'
             },{
-                name: 'Tree',
-                type: 'tree'
+                name: 'Dataset',
+                type: 'dataset'
+            },{
+                name: 'Topic',
+                type: 'topic'
             },{
                 name: 'Attribute',
                 type: 'attribute'
@@ -277,11 +278,6 @@ Ext.define('PumaMng.controller.Store',{
         })
     
         Ext.create('Ext.data.Store',{
-            storeId: 'symbologylayer',
-            autoLoad: true,
-            model: 'Puma.model.SymbologyLayer'
-        })
-        Ext.create('Ext.data.Store',{
             storeId: 'theme',
             autoLoad: true,
             model: 'Puma.model.Theme'
@@ -318,18 +314,22 @@ Ext.define('PumaMng.controller.Store',{
         })
         
     
-        Ext.create('Ext.data.Store',{
-            storeId: 'tree',
-            autoLoad: true,
-            model: 'Puma.model.Tree'
-        })
     
         Ext.create('Ext.data.Store',{
             storeId: 'symbology',
             autoLoad: true,
             model: 'Puma.model.Symbology'
         })
-    
+        Ext.create('Ext.data.Store',{
+            storeId: 'topic',
+            autoLoad: true,
+            model: 'Puma.model.Topic'
+        })
+        Ext.create('Ext.data.Store',{
+            storeId: 'dataset',
+            autoLoad: true,
+            model: 'Puma.model.Dataset'
+        })
     
         Ext.create('Ext.data.Store',{
             storeId: 'layerref',
@@ -412,13 +412,6 @@ Ext.define('PumaMng.controller.Store',{
             }],
             model: 'Puma.model.AreaTemplate'
         })
-        
-        Ext.create('Gisatlib.data.SlaveStore',{
-            slave: true,
-            storeId: 'treemng',
-            model: 'Puma.model.Tree'
-        })
-    
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'attributemng',
@@ -437,11 +430,6 @@ Ext.define('PumaMng.controller.Store',{
             model: 'Puma.model.Symbology'
         })
         
-        Ext.create('Gisatlib.data.SlaveStore',{
-            slave: true,
-            storeId: 'symbologymng',
-            model: 'Puma.model.Symbology'
-        })
     
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
@@ -460,8 +448,109 @@ Ext.define('PumaMng.controller.Store',{
             model: 'Puma.model.Analysis'
         })
         
-        // forms internal
+        // active
         
+         Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activeattribute',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Attribute'
+        })
+    
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activeattributeset',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.AttributeSet'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activefeaturelayer',
+            filters: [function(rec) {
+                    return rec.get('active') && !rec.get('justVisualization');
+                }],
+            model: 'Puma.model.AreaTemplate'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activelocation',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Location'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activescope',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Scope'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activesymbology',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Symbology'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activetheme',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Theme'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activeyear',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Year'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activedataset',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Dataset'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activetopic',
+            filters: [function(rec) {
+                    return rec.get('active');
+                }],
+            model: 'Puma.model.Topic'
+        })
+        // forms internal
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'attributeset4theme',
+            sorters: [{
+                property: 'code',
+                direction: 'ASC'
+            }],
+            model: 'Puma.model.Attribute'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'featurelayer4theme',
+            sorters: [{
+                property: 'code',
+                direction: 'ASC'
+            }],
+            model: 'Puma.model.AreaTemplate'
+        })
+    
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'attribute4attributeset',
