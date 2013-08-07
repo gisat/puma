@@ -2,7 +2,7 @@ Ext.define('Puma.model.Analysis', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','type','areaTemplate','attributeSet','attributeMap','attributeSets','groupAttributeSet','groupAttribute'
+    '_id','name','type','areaTemplate','attributeSet','attributeMap','attributeSets','groupAttributeSet','groupAttribute','topics'
     ],
     idProperty: '_id',
     proxy: {

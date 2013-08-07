@@ -6,7 +6,16 @@ Ext.define('PumaMng.view.form.Scope', {
     initComponent: function() {
         
         
-        this.items = [];
+        this.items = [{
+            xtype: 'itemselector',
+            store: Ext.StoreMgr.lookup('activedataset'),
+            displayField: 'name',
+            valueField: '_id',
+            height: 160,
+            fieldLabel: 'Datasets',
+            name: 'datasets',
+            itemId: 'datasets'
+        }];
 
         this.callParent();
     }

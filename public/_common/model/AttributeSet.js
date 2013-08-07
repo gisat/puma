@@ -3,7 +3,7 @@ Ext.define('Puma.model.AttributeSet', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','attributes','active','description','topic','featureLayer'
+    '_id','name','attributes','active','description','topic','featureLayers'
     ],
     idProperty: '_id',
     proxy: {

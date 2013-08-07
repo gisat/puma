@@ -31,14 +31,17 @@ Ext.define('PumaMain.controller.Select', {
         
     onToggleHover: function(btn,value) {
         var selectInMap = Ext.ComponentQuery.query('initialbar #selectinmapbtn')[0];
-        var infoControls = this.getController('Map').infoControls;
+        var infoControls1 = this.getController('Map').map1.infoControls;
+        var infoControls2 = this.getController('Map').map2.infoControls;
         this.getController('Area').hovering = value;
         this.getController('Chart').hovering = value;
         if (selectInMap.pressed && value) {
-            infoControls.hover.activate();
+            infoControls1.hover.activate();
+            infoControls2.hover.activate();
         }
         else {
-            infoControls.hover.deactivate();
+            infoControls1.hover.deactivate();
+            infoControls2.hover.deactivate();
         }
         if (this.hoverMap.length) {
             this.hoverMap = [];
@@ -49,14 +52,19 @@ Ext.define('PumaMain.controller.Select', {
         
     onToggleSelectInMap: function(btn,value) {
         var hoverBtn = Ext.ComponentQuery.query('initialbar #hoverbtn')[0];
-        var infoControls = this.getController('Map').infoControls;
-        var fn = value ? infoControls.click.activate : infoControls.click.deactivate;
-        fn.call(infoControls.click);
+        var infoControls1 = this.getController('Map').map1.infoControls;
+        var infoControls2 = this.getController('Map').map2.infoControls;
+        var fn1 = value ? infoControls1.click.activate : infoControls1.click.deactivate;
+        fn1.call(infoControls1.click);
+        var fn2 = value ? infoControls2.click.activate : infoControls2.click.deactivate;
+        fn2.call(infoControls2.click);
         if (hoverBtn.pressed && value) {
-            infoControls.hover.activate();
+            infoControls1.hover.activate();
+            infoControls2.hover.activate();
         }
         else {
-            infoControls.hover.deactivate();
+            infoControls1.hover.deactivate();
+            infoControls2.hover.deactivate();
         }
     },
     
@@ -82,7 +90,7 @@ Ext.define('PumaMain.controller.Select', {
             areas = areas.concat([]);
             for (var i=0;i<areas.length;i++) {
                 areas[i].equals = function(b) {
-                    return this.gid === b.gid && this.at === b.at
+                    return this.gid === b.gid && this.at === b.at && this.loc === b.loc
                 }
             }
             newSel = areas;
@@ -90,7 +98,7 @@ Ext.define('PumaMain.controller.Select', {
         else {
             for (var i=0;i<areas.length;i++) {
                 areas[i].equals = function(b) {
-                    return this.gid === b.gid && this.at === b.at
+                    return this.gid === b.gid && this.at === b.at && this.loc === b.loc
                 }
             }
             var diff = this.arrDifference(sel,areas);
@@ -126,6 +134,10 @@ Ext.define('PumaMain.controller.Select', {
         for (i = 0, lnB = arrayB.length; i < lnB; i++) {
             for (j = 0; j < ln; j++) {
                 //if (clone[j] === arrayB[i]) {
+                clone[j].equals = clone[j].equals || function(b) {
+                    return this.gid === b.gid && this.at === b.at && this.loc === b.loc
+                }
+                    
                 if (clone[j].equals(arrayB[i])) {
                     Ext.Array.erase(clone, j, 1);
                     j--;
@@ -150,21 +162,43 @@ Ext.define('PumaMain.controller.Select', {
         this.callControllers();
     },
     
-    
+    refreshSelection: function() {
+        var allMap = this.getController('Area').allMap;
+        var changed = false;
+        for (var color in this.selMap) {
+            var selsToRemove = []
+            for (var i=0;i<this.selMap[color].length;i++) {
+                var sel = this.selMap[color][i];
+                if (allMap[sel.loc] && allMap[sel.loc][sel.at] && Ext.Array.contains (allMap[sel.loc][sel.at],sel.gid)) {}
+                else {
+                    selsToRemove.push(sel);
+                    changed = true;
+                }
+            }
+            this.selMap[color] = Ext.Array.difference(this.selMap[color],selsToRemove);
+        }
+        if (changed) {
+            this.colorMap = this.prepareColorMap();
+//            this.getController('Area').colourTree(this.colorMap);
+//            this.getController('Layers').colourMap(this.colorMap); 
+        }
+    },
     prepareColorMap: function() {
         var resultMap = {};
         for (var color in this.selMap) {
             var actual = this.selMap[color];
             for (var i=0;i<actual.length;i++) {
                 var area = actual[i];
-                resultMap[area.at] = resultMap[area.at] || {};
-                resultMap[area.at][area.gid] = color;               
+                resultMap[area.loc] = resultMap[area.loc] || {};
+                resultMap[area.loc][area.at] = resultMap[area.loc][area.at] || {};
+                resultMap[area.loc][area.at][area.gid] = color;               
             }
         }
         for (var i=0;i<this.hoverMap.length;i++) {
             var area = this.hoverMap[i];
-            resultMap[area.at] = resultMap[area.at] || {};
-            resultMap[area.at][area.gid] = this.actualColor;
+            resultMap[area.loc] = resultMap[area.loc] || {};
+            resultMap[area.loc][area.at] = resultMap[area.loc][area.at] || {};
+            resultMap[area.loc][area.at][area.gid] = this.actualColor;
         }
         return resultMap;
     }

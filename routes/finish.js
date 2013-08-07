@@ -1,12 +1,15 @@
 
 var errMap = require('../common/errors').errMap;
-
+var fs = require('fs')
 
 module.exports = function(app) {
     
     app.all('/rest/*',standardResponse);
     
     app.all('/api/*',standardResponse);
+    
+    app.all('/print/*',standardResponse);
+    app.all('/image/*',standardResponse);
     
     app.use(function(err,req,res,next) {
         console.log(err.stack)
@@ -31,10 +34,11 @@ var standardResponse = function(req,res,next) {
         total: res.total,
         success: true
     };
-    
     var status = res.stat || 200;
     if (res.downFile) {
-        res.download(res.downFile[0],res.downFile[1]);
+        res.download(res.downFile[0],res.downFile[1],function(err) {
+            //fs.unlink(res.downFile[0])
+        });
     }
     else if (res.contType) {
         res.set('Content-Type', res.contType);

@@ -34,7 +34,6 @@ Ext.define('Puma.view.CommonForm', {
         form.loadRecord = function(record) {
             this._record = record;
             var values = this.setValues(record.data);  
-            
             this.getFields().each(function(field) {
                 if (field.disableUpdate) {
                     field.disable();
@@ -43,7 +42,7 @@ Ext.define('Puma.view.CommonForm', {
             me.fireEvent('loadrecord',me,record);
             return values;
         }
-    
+        
         form.unbindRecord = function() {
             this._record = null;
             this.getFields().each(function(field) {
@@ -51,9 +50,11 @@ Ext.define('Puma.view.CommonForm', {
                     field.enable();
                 }
             })
+            if (!this.copying && !this.unselecting) {
             this.getFields().each(function(field) {
                 field.fireEvent('change',field,field.getValue(),field.getValue())
             })
+            }
             //var values = this.getValues();
             //this.setValues(values);
         }

@@ -6,6 +6,14 @@ Ext.define('PumaMain.controller.Map', {
         this.control({
             '#map': {
                 afterrender: this.afterRender,
+                resize: this.onResize,
+            },
+            '#map2': {
+                afterrender: this.afterRender,
+                resize: this.onResize
+            },
+            'component[type=extentoutline]': {
+                afterrender: this.afterExtentOutlineRender,
                 resize: this.onResize
             },
             'initialbar #zoomselectedbtn': {
@@ -20,19 +28,113 @@ Ext.define('PumaMain.controller.Map', {
             'initialbar #measurepolygonbtn': {
                 toggle: this.onMeasureActivated
             },
+            'initialbar #multiplemapsbtn': {
+                toggle: this.onMultipleYearsToggle
+            },
+            'layermenu #url': {
+                click: this.onExportMapUrl
+            },
+            'layermenu #exportpng': {
+                click: this.onExportMapUrl
+            }
         })
     },
-    onFeatureInfoActivated: function(btn,val) {
-        if (val) {
-            this.featureInfoControl.activate();
+        
+    onExportMapUrl: function(btn) {
+        var map = btn.up('layermenu').map;
+        var layerStore = Ext.StoreMgr.lookup('selectedlayers');
+        var useFirst = layerStore.getAt(0).get('layer1').map == map;
+        var mapCfg = {};
+        var layers = [];
+        var me = this;
+        layerStore.each(function(rec) {
+            
+            var layer = rec.get(useFirst ? 'layer1' : 'layer2');
+            
+            var sldId = layer.params ? layer.params['SLD_ID'] : null;
+            var layersParam = layer.params ? layer.params['LAYERS'] : null;
+            var obj = {
+                type: rec.get('type'),
+                opacity: layer.opacity || 1
+            }
+            var at = rec.get('at');
+            var attrSet = rec.get('attributeSet');
+            var attr = rec.get('attribute');
+            var bindChart = rec.get('bindChart');
+            if (attrSet) {
+                obj.as = attrSet;
+                obj.attr = attr;
+                var cfg = me.getController('Chart').gatherChartCfg(bindChart);
+                obj.bindChart = JSON.stringify(cfg)
+            }
+            if (at) {
+                obj.at = at;
+            }
+            if (sldId) {
+                obj.sldId = sldId;
+            }
+            if (layersParam) {
+                obj.layers = layersParam;
+            }
+            layers.push(obj);
+        })
+        mapCfg = {
+            layers: layers,
+            type: 'map',
+            year: map.year,
+            center: map.center,
+            size: map.size,
+            zoom: map.zoom
+        }
+        Ext.Ajax.request({
+            url: Cnst.url + '/api/urlview/saveChart',
+            params: {
+                cfg: JSON.stringify(mapCfg)
+            },
+            scope: this,
+            method: 'POST',
+            success: function(response) {
+                var id = JSON.parse(response.responseText).data;
+                this.getController('Chart').onUrlCallback(id,btn.itemId=='url')
+            }
+        })
+    },
+    
+    onMultipleYearsToggle: function(btn,pressed) {
+        this.switchMap(pressed);
+    },
+    
+    switchMap: function(both,second) {
+        var map1 = Ext.ComponentQuery.query('#map')[0];
+        var map2 = Ext.ComponentQuery.query('#map2')[0];
+        if (both) {
+            map1.show();
+            map2.show();
+        }
+        else if (second) {
+            
+            map1.hide();
+            map2.show();
         }
         else {
-            this.featureInfoControl.deactivate();
+            map2.hide();
+            map1.show();
+        }
+    },
+    onFeatureInfoActivated: function(btn,val) {
+        // tady na to pozor layer uy nevisi na controlleru
+        if (val) {
+            this.map1.featureInfoControl.activate();
+        }
+        else {
+            this.map1.featureInfoControl.deactivate();
         }
     },
         
     onMeasureActivated: function(btn,val) {
-        var control = btn.itemId == 'measurelinebtn' ? this.measureLineControl : this.measurePolyControl;
+        // tady na to pozor layer uy nevisi na controlleru
+        var control1 = btn.itemId == 'measurelinebtn' ? this.map1.measureLineControl : this.map1.measurePolyControl;
+        var control2 = btn.itemId == 'measurelinebtn' ? this.map2.measureLineControl : this.map2.measurePolyControl;
         
         var window = Ext.WindowManager.get('measureWindow');
         if (val) {
@@ -50,13 +152,15 @@ Ext.define('PumaMain.controller.Map', {
             }
             window.show();
             window.body.dom.innerHTML = (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":",
-            control.activate();
+            control1.activate();
+            control2.activate();
         }
         else {
             if (window) {
                 window.close();
             }
-            control.deactivate();
+            control1.deactivate();
+            control2.deactivate();
         }
     },
         
@@ -69,7 +173,7 @@ Ext.define('PumaMain.controller.Map', {
         var format = new OpenLayers.Format.WKT();
         var overallExtent = null;
         for (var i=0;i<sel.length;i++) {
-            var area = areaController.getArea(sel[i].at,sel[i].gid);
+            var area = areaController.getArea(sel[i]);
             var extent = format.read(area.get('extent')).geometry.getBounds();
             extent = extent.transform(new OpenLayers.Projection("EPSG:4326"),new OpenLayers.Projection("EPSG:900913"))
             if (!overallExtent) {
@@ -84,7 +188,164 @@ Ext.define('PumaMain.controller.Map', {
         
     },
     
-    afterRender: function(cmp) {
+    createBaseNodes: function() {
+        var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
+        var hybridNode = Ext.create('Puma.model.MapLayer',{
+            name: 'Google hybrid',
+            checked: true,
+            allowDrag: false,
+            initialized: true,
+            
+            sortIndex: 10000,
+            type: 'hybrid'
+        });
+        var streetNode = Ext.create('Puma.model.MapLayer',{
+            name: 'Google street',
+            initialized: true,
+            allowDrag: false,
+            checked: false,
+            
+            sortIndex: 10000,
+            type: 'roadmap'
+        });
+        var terrainNode = Ext.create('Puma.model.MapLayer',{
+            name: 'Google terain',
+            initialized: true,
+            allowDrag: false,
+            checked: false,
+            
+            sortIndex: 10000,
+            type: 'terrain'
+        });
+        baseNode.appendChild([hybridNode,streetNode,terrainNode]);
+        
+    },
+    
+    onMapMove: function(mapId) {
+        //return;
+        var mapMoved = mapId=='map' ? this.map1 : this.map2;
+        var mapAlt = mapId=='map' ? this.map2 : this.map1;
+        if (!mapMoved || !mapAlt) return;
+        if (mapMoved.artifZoom) {
+            mapMoved.artifZoom = false;
+            return;
+        }
+        mapAlt.artifZoom = true;
+        mapAlt.setCenter(mapMoved.getCenter(),mapMoved.getZoom());
+        mapAlt.artifZoom = false;
+    },
+    
+    afterExtentOutlineRender: function(cmp) {
+        var options = this.getOptions(cmp);
+        options.controls = [];
+        //options.maxExtent=  new OpenLayers.Bounds(-2037508, -2037508, 2037508, 2037508.34)
+        var map = new OpenLayers.Map(options);
+        
+        cmp.map = map;
+        var hybridLayer = new OpenLayers.Layer.Google(
+                'Google',
+                {
+                    type: 'hybrid',
+                    initialized: true,
+                    animationEnabled: true
+                }
+        );
+        var layerDefaults = this.getController('Layers').getWmsLayerDefaults();
+        map.layer1 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        map.layer2 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+
+        map.addLayers([hybridLayer, map.layer1, map.layer2]);
+        var counterObj = {cnt:0, desired: 3}
+        var me = this;
+        google.maps.event.addListener(hybridLayer.mapObject, 'tilesloaded', function() {
+            counterObj.cnt++;
+            if (counterObj.cnt == counterObj.desired) {
+                me.onExtentOutlineComplete(cmp)
+            }
+        })
+        for (var i=0;i<2;i++) {
+            var layer = map['layer'+(i+1)];
+            layer.events.register('loadend', null, function(a, b) {
+                    counterObj.cnt++;
+                    if (counterObj.cnt == counterObj.desired) {
+                        me.onExtentOutlineComplete(cmp)
+                    }
+                });
+        }
+        
+        
+        
+        var layerRefs = cmp.layerRefs;
+        var rows = cmp.rows;
+        var format = new OpenLayers.Format.WKT();
+        var filters = [];
+        var overallExtent = null;
+        for (var j = 0; j < rows.length; j++) {
+            var row = rows[j];
+            var filter = new OpenLayers.Filter.Comparison({type: '==', property: 'gid', value: row.gid});
+            filters.push(filter);
+            var extent = format.read(row.extent).geometry.getBounds();
+            extent = extent.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"))
+            if (!overallExtent) {
+                overallExtent = extent;
+            }
+            else {
+                overallExtent.extend(extent)
+            }
+        }
+        var filter = filters.length < 2 ? filters[0] : new OpenLayers.Filter.Logical({type: '||', filters: filters});
+        var style = new OpenLayers.Style();
+        var layerName = 'puma:layer_' + layerRefs.areaRef._id;
+
+        var rule = new OpenLayers.Rule({
+            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#ff0000'})},
+            filter: filter
+        });
+        style.addRules([rule]);
+        var namedLayers = [{
+                name: layerName,
+                userStyles: [style]
+            }];
+        var sldObject = {
+            name: 'style',
+            title: 'Style',
+            namedLayers: namedLayers
+        }
+        var format = new OpenLayers.Format.SLD.Geoserver23();
+        var sldNode = format.write(sldObject);
+        var xmlFormat = new OpenLayers.Format.XML();
+        var sldText = xmlFormat.write(sldNode);
+        map.layer1.mergeNewParams({
+            layers: layerRefs.layerRef.layer
+        })
+        map.layer2.mergeNewParams({
+            "USE_SECOND": true,
+            "SLD_BODY": sldText
+        })
+        map.updateSize();
+        
+        map.layer1.setVisibility(true);
+        map.layer2.setVisibility(true);
+        map.zoomToExtent(overallExtent);
+        map.outlineExtent = overallExtent;
+    },
+        
+    onExtentOutlineComplete: function(cmp) {
+        cmp.mapLoaded = true;
+        var loaded = true;
+        cmp.ownerCt.items.each(function(mapCmp) {
+            if (!mapCmp.mapLoaded) {
+                loaded = false;
+                return false;
+            }
+        })
+        debugger;
+        if (loaded) {
+            console.log('loadingdone');
+        }
+    },
+        
+    getOptions: function(cmp) {
         var options = {
             projection: new OpenLayers.Projection("EPSG:900913"),
             displayProjection: new OpenLayers.Projection("EPSG:4326"),
@@ -93,38 +354,88 @@ Ext.define('PumaMain.controller.Map', {
             maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
             featureEvents: true,
             allOverlays: true,
-            div: 'map'
+            div: cmp.id
         };
+        return options;
+    },
+    
+    afterRender: function(cmp) {
+        var options = this.getOptions(cmp);
         var map = new OpenLayers.Map(options);
         cmp.map = map;
-        var layer = new OpenLayers.Layer.Google(
+        var el = Ext.get(cmp.id);
+        el.on('contextmenu',function(e) {
+            
+            
+            e.stopEvent();
+            var layerMenu = Ext.widget('layermenu', {
+                map: map
+            })
+        
+            layerMenu.showAt(e.getXY());
+        })
+        if (cmp.id=='map') {
+            this.createBaseNodes();
+            this.map1 = map;
+            
+        }
+        else {
+            this.map2 = map;
+        }
+        
+        var hybridLayer = new OpenLayers.Layer.Google(
                 'Google',
                 {
                     type: 'hybrid',
+                    initialized: true,
                     animationEnabled: true
                 }
         );
         map.defaultLayer = layer;
-        
-        var params = {
-            transparent: true,
-            format: 'image/png',
-            layers: 'puma:layer_349',
-            styles: 'Polygon'
+        var streetLayer = new OpenLayers.Layer.Google(
+                'Google',
+                {
+                    type: 'roadmap',
+                    animationEnabled: true,
+                    initialized: true,
+                    visibility: false
+                }
+        );
+        var terrainLayer = new OpenLayers.Layer.Google(
+                'Google',
+                {
+                    type: 'terrain',
+                    animationEnabled: true,
+                    initialized: true,
+                    visibility: false
+                }
+                    
+        );
+        var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
+        var nodes = [];
+        for (var i=0;i<baseNode.childNodes.length;i++) {
+            var node = baseNode.childNodes[i];
+            var layer = null;
+            var type = node.get('type');
+            switch(type) {
+                case 'hybrid': layer = hybridLayer; break;
+                case 'roadmap': layer = streetLayer; break;
+                case 'terrain': layer = terrainLayer; break;
+            }
+            var nodeProp = cmp.id=='map' ? 'layer1':'layer2';
+            node.set(nodeProp,layer);
+            nodes.push(node);
         }
-        var layerParams = {
-            singleTile: true,
-            visibility: true,
-            ratio: 1.2,
-            transitionEffect: 'resize',
-            removeBackBufferDelay: 100
-        }
-        
-        //var layer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, layerParams)
-        //var layer9 = new OpenLayers.Layer.WMS('WMS', 'http://192.168.2.9:8080/geoserver/puma/wms', params, layerParams)
         
         
-        this.drawnLayer = new OpenLayers.Layer.Vector('',{
+        
+        
+        
+        
+       
+        
+        
+        map.drawnLayer = new OpenLayers.Layer.Vector('',{
             style: {
                 fillOpacity: 0,
                 strokeWidth: 3,
@@ -134,7 +445,17 @@ Ext.define('PumaMain.controller.Map', {
             }
         })
         //bbox: 112.337169,-7.954641,112.977462,-7.029791
-        map.addLayers([layer,this.drawnLayer]);
+        //debugger;
+        map.size = map.getCurrentSize();
+        map.addLayers([terrainLayer,streetLayer,hybridLayer]);
+        
+        if (cmp.id=='map') {
+            Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
+        }
+        
+        map.events.register('moveend',this,function(a) {
+            this.onMapMove(a.object.div.id);
+        })
         
         map.updateSize();
         map.zoomToExtent(new OpenLayers.Bounds(-675736.2753,9187051.894,704022.2164,9204621.9448))
@@ -147,15 +468,15 @@ Ext.define('PumaMain.controller.Map', {
         //params.layers = 'puma:layer_260,puma:layer_266'
         
 
-        this.selectInMapLayer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, {
+        map.selectInMapLayer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, {
             visibility: true
         });
-        this.selectInMapLayer.projection = map.projection;
+        map.selectInMapLayer.projection = map.projection;
         
-        this.getFeatureInfoLayer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, {
+        map.getFeatureInfoLayer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, {
             visibility: true
         });
-        this.getFeatureInfoLayer.projection = map.projection;
+        map.getFeatureInfoLayer.projection = map.projection;
         
         var infoControls = {
             click: new OpenLayers.Control.WMSGetFeatureInfo({
@@ -163,7 +484,7 @@ Ext.define('PumaMain.controller.Map', {
                 vendorParams: {
                     propertyName: 'gid'
                 },
-                layers: [this.selectInMapLayer]
+                layers: [map.selectInMapLayer]
             }), 
             hover: new OpenLayers.Control.WMSGetFeatureInfo({
                 url: Cnst.url+'/api/proxy/wms', 
@@ -171,37 +492,37 @@ Ext.define('PumaMain.controller.Map', {
                     propertyName: 'gid',
                     buffer: 1
                 },
-                layers: [this.selectInMapLayer],
+                layers: [map.selectInMapLayer],
                 hover: true
             })
         };
-        this.featureInfoControl = new OpenLayers.Control.WMSGetFeatureInfo({
+        map.featureInfoControl = new OpenLayers.Control.WMSGetFeatureInfo({
                 url: Cnst.url+'/api/proxy/wms', 
                 vendorParams: {
                     propertyName: 'gid',
                     buffer: 1,
                     completeLayer: true
                 },
-                layers: [this.getFeatureInfoLayer]
+                layers: [map.getFeatureInfoLayer]
             })
-        this.drawPolygonControl = new OpenLayers.Control.DrawFeature(
-            this.drawnLayer,
+        map.drawPolygonControl = new OpenLayers.Control.DrawFeature(
+            map.drawnLayer,
             OpenLayers.Handler.Polygon
         )
-        this.drawPointControl = new OpenLayers.Control.DrawFeature(
-            this.drawnLayer,
+        map.drawPointControl = new OpenLayers.Control.DrawFeature(
+            map.drawnLayer,
             OpenLayers.Handler.Point
         )
-        this.selectControl = new OpenLayers.Control.SelectFeature(
-            this.drawnLayer,
+        map.selectControl = new OpenLayers.Control.SelectFeature(
+            map.drawnLayer,
             {
                 highlightOnly: true
             }
             
         )
-        this.dragControl = new OpenLayers.Control.DragFeature(
-            this.drawnLayer,{
-            geometryTypes:['OpenLayers.Geometry.Point']
+        map.dragControl = new OpenLayers.Control.DragFeature(
+            map.drawnLayer,{
+                geometryTypes:['OpenLayers.Geometry.Point']
             }
             )
             
@@ -212,15 +533,15 @@ Ext.define('PumaMain.controller.Map', {
                 me.handleMeasureModify(point,feature,this);
             }
         }
-        this.measurePolyControl =  new OpenLayers.Control.Measure(
+        map.measurePolyControl =  new OpenLayers.Control.Measure(
             OpenLayers.Handler.Polygon,
             {
-                geodesic:true,
+                geodesic: true,
                 persist: true,
                 callbacks: measureCallbacks
             }
             );
-        this.measureLineControl =  new OpenLayers.Control.Measure(
+        map.measureLineControl =  new OpenLayers.Control.Measure(
             OpenLayers.Handler.Path,
             {
                 geodesic:true,
@@ -230,9 +551,9 @@ Ext.define('PumaMain.controller.Map', {
             );
         
         
-        map.addControls([this.drawPolygonControl,this.drawPointControl,this.selectControl,this.dragControl,this.featureInfoControl,this.measurePolyControl,this.measureLineControl]);
-        this.dragControl.activate();
-        this.dragControl.onComplete = function(feature) {
+        map.addControls([map.drawPolygonControl,map.drawPointControl,map.selectControl,map.dragControl,map.featureInfoControl,map.measurePolyControl,map.measureLineControl]);
+        map.dragControl.activate();
+        map.dragControl.onComplete = function(feature) {
             me.getController('UserPolygon').onFeatureDragged(feature);
         }
         //this.drawPolygonControl.activate();
@@ -240,23 +561,24 @@ Ext.define('PumaMain.controller.Map', {
             infoControls[i].events.register("getfeatureinfo", this, this.onFeatureSelected);
             map.addControl(infoControls[i]); 
         }
-        this.featureInfoControl.events.register('beforegetfeatureinfo',this,function() {
+        
+        map.featureInfoControl.events.register('beforegetfeatureinfo',this,function() {
             return this.updateFeatureInfoControl()
-        })
-        this.featureInfoControl.events.register("getfeatureinfo", this, function(response) {
+        });
+        map.featureInfoControl.events.register("getfeatureinfo", this, function(response) {
             return this.onFeatureInfo(response);
         });
-        this.measureLineControl.events.register('measurepartial',this,function(obj) {
+        map.measureLineControl.events.register('measurepartial',this,function(obj) {
             return this.onMeasurePartial(obj);
         });
-        this.measurePolyControl.events.register('measurepartial',this,function(obj) {
+        map.measurePolyControl.events.register('measurepartial',this,function(obj) {
             return this.onMeasurePartial(obj);
         });
         
         
         //infoControls.hover.activate();
         //infoControls.click.activate();
-        this.infoControls = infoControls
+        map.infoControls = infoControls
     },
         
     onMeasurePartial: function(evt) {
@@ -319,9 +641,11 @@ Ext.define('PumaMain.controller.Map', {
     
     updateFeatureInfoControl: function() {
         var store = Ext.StoreMgr.lookup('layers');
+        
         var root = store.getRootNode();
         var layerRefMap = this.getController('Area').areaTemplateMap;
         var layers = [];
+        return;
         root.cascadeBy(function(node) {
             if (!node.get('checked')) return;
             var at = node.get('bindAt');
@@ -339,35 +663,66 @@ Ext.define('PumaMain.controller.Map', {
         if (!layers.length) {
             return false;
         }
-        layers = layers.join(',');
-        this.getFeatureInfoLayer.params['LAYERS'] = layers;
+//        for (var loc in layerRefMap) {
+//            for (var )
+//        }
+//        layers = layers.join(',');
+        // tady na to pozor layer uy nevisi na controlleru
+        this.map1.getFeatureInfoLayer.params['LAYERS'] = layers;
+        this.map2.getFeatureInfoLayer.params['LAYERS'] = layers;
     },
     
     updateGetFeatureControl: function() {
-        var layers = [];
+        
+        
+        var layers1 = [];
+        var layers2 = [];
         var controller = this.getController('Area');
         var areaTemplates = controller.areaTemplates;
         var areaTemplateMap = controller.areaTemplateMap;
+        
+        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
+        var years = Ext.Array.pluck(yearBtns,'objId');
+        if (!years.length) {
+            return;
+        }
+        
+        var locations = this.getController('Area').getTreeLocations();
+        var lrMap = {};
         for (var i=0;i<areaTemplates.length;i++) {
-            if (areaTemplates[i]==-1) {
+            var at = areaTemplates[i]
+            if (at==-1) {
                 var location = Ext.ComponentQuery.query('initialbar #locationcontainer button[pressed=true]')[0].objId;
                 var year = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')[0].objId;
                 var layer = 'puma:#userpolygon#layer_user_#userid#_loc_'+location+'_y_'+year;
             }
-            else {
-                var lr = areaTemplateMap[areaTemplates[i]];
-                if (!lr) continue;
-                var layer = 'puma:layer_'+lr.id;
+            var atMap = areaTemplateMap[at] || {};
+            for (var j=0;j<locations.length;j++) {
+                var loc = locations[j];
+                var locMap = areaTemplateMap[loc] || {};
+                var atMap = locMap[at] || {};
+                var lr1 = atMap[years[0]];
+                var lr2 = years.length>1 ? atMap[years[1]] : null;
+                if (lr1) {
+                    lrMap[lr1._id] = {at:at,loc:loc};
+                    var layer = 'puma:layer_'+lr1._id;
+                    layers1.push(layer)
+                }
+                if (lr2) {
+                    lrMap[lr2._id] = {at:at,loc:loc};
+                    var layer = 'puma:layer_'+lr2._id;
+                    layers2.push(layer)
+                }
+                
             }
-            layers.push(layer)
         }
-        layers = layers.join(',');
-        this.selectInMapLayer.params['LAYERS'] = layers;
+        this.lrMap = lrMap;
+        this.map1.selectInMapLayer.params['LAYERS'] = layers1.join(',');
+        this.map2.selectInMapLayer.params['LAYERS'] = layers2.join(',');
     },
         
     onFeatureSelected: function(evt) {
         var features = JSON.parse(evt.text).features;
-        debugger;
         if (features && features.length) {
              var controller = this.getController('Area')
              var areaTemplates = controller.areaTemplates;
@@ -377,6 +732,7 @@ Ext.define('PumaMain.controller.Map', {
              var root = Ext.StoreMgr.lookup('area').getRootNode();
              var gid = null;
              var at = null;
+             var loc = null;
              for (var i=0;i<features.length;i++) {
                  var feature = features[i];
                  gid = feature.properties.gid;
@@ -389,12 +745,15 @@ Ext.define('PumaMain.controller.Map', {
                  else {       
                     lr = parseInt(layerName.split('_')[1]);
                  }
+                 var featureAt = this.lrMap[lr].at;
+                 var featureLoc = this.lrMap[lr].loc;
                  var found = false;
                  root.cascadeBy(function(node) {
                     if (!node.isVisible()) return;
-                    if (node.get('lr')==lr && node.get('gid')==gid) {
+                    if (node.get('at')==featureAt && node.get('gid')==gid && node.get('loc')==featureLoc) {
                         found = true;
                         at = node.get('at');
+                        loc = node.get('loc')
                         return false;
                     }
                  })
@@ -404,8 +763,8 @@ Ext.define('PumaMain.controller.Map', {
              }
              
              var selected = [];
-             if (at) {
-                 selected.push({at:at,gid:gid})
+             if (at && loc && gid) {
+                 selected.push({at:at,gid:gid,loc:loc})
              }
              var add = evt.object.handler.evt.ctrlKey;
              var hover = evt.object.hover;
@@ -422,7 +781,9 @@ Ext.define('PumaMain.controller.Map', {
         if (cmp.map) {
             cmp.map.updateSize();
             if (!cmp.initialZoom) {
-                cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
+                console.log('resized')
+                //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
+                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(12490000, -900000, 12530000, -800000));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))
                 cmp.initialZoom = true;
             }

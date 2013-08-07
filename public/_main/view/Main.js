@@ -2,7 +2,7 @@ Ext.define('PumaMain.view.Main', {
     extend: 'Ext.container.Viewport',
     alias: 'widget.mainviewport',
     layout: 'border',
-    requires: ['Ext.tree.plugin.TreeViewDragDrop','Puma.view.LoginHeader', 'Ext.tip.QuickTipManager', 'Puma.view.form.DefaultComboBox','PumaMain.view.ChartBar','PumaMain.view.InitialBar'],
+    requires: ['Ext.grid.plugin.DragDrop', 'Puma.view.LoginHeader', 'Ext.tip.QuickTipManager', 'Puma.view.form.DefaultComboBox', 'PumaMain.view.ChartBar', 'PumaMain.view.InitialBar'],
     //minWidth: 1520,
     //minHeight: 670,
     autoScroll: true,
@@ -51,24 +51,60 @@ Ext.define('PumaMain.view.Main', {
                             //backgroundColor: '#ffffee'
                         }
                     }, {
-                        xtype: 'treepanel',
-                        itemId: 'layerpanel',
-                        viewConfig: {
-                            plugins: {ptype: 'treeviewdragdrop'}
-                        },
-                        store: Ext.StoreMgr.lookup('layers'),
-                        //frame: true,
+                        xtype: 'tabpanel',
                         flex: 1,
                         title: 'Layers',
-                        displayField: 'name',
-                        rootVisible: false,
-                        border: true,
-                        style: {
-                            borderRadius: '0px',
-                            //overflow: 'hidden'
-                            //backgroundColor: '#ffffee'
-                        }
-                    }],
+                        items: [
+                            {
+                                xtype: 'treepanel',
+                                itemId: 'layerpanel',
+//                                viewConfig: {
+//                                    plugins: {ptype: 'treeviewdragdrop'}
+//                                },
+                                store: Ext.StoreMgr.lookup('layers'),
+                                //frame: true,
+                                title: 'Layers available',
+                                displayField: 'name',
+                                rootVisible: false,
+                                border: true,
+                                style: {
+                                    borderRadius: '0px',
+                                    //overflow: 'hidden'
+                                    //backgroundColor: '#ffffee'
+                                }
+                            }, {
+                                xtype: 'grid',
+                                itemId: 'layerselectedpanel',
+                                store: Ext.StoreMgr.lookup('selectedlayers'),
+                                viewConfig: {
+                                    plugins: {ptype: 'gridviewdragdrop'}
+                                },
+                                title: 'Layers selected',
+                                displayField: 'name',
+                                border: true,
+                                columns: [{
+                                        dataIndex: 'name',
+                                        flex: 1,
+                                        header: 'Name'
+                                    }],
+                                style: {
+                                    borderRadius: '0px',
+                                    //overflow: 'hidden'
+                                    //backgroundColor: '#ffffee'
+                                }
+                            }, {
+                                xtype: 'dataview',
+                                itemId: 'legendpanel',
+                                title: 'Legend',
+                                autoScroll: true,
+                                itemSelector: 'div.legenditem',
+                                tpl:  ['<tpl for=".">','<tpl if="src">','<div class="legenditem">','<img src="{src}">','</div>','</tpl>','</tpl>'],
+                                //tpl:  ['<div class="legenditem">','<tpl for=".">','<img src="http://dummyimage.com/318x100&text={name}">','</tpl>','</div>'],
+                                store: Ext.StoreMgr.lookup('selectedlayers')
+                            }
+                        ]
+                    },
+                ],
                 width: 320
             }, {
                 xtype: 'chartbar',
@@ -77,8 +113,7 @@ Ext.define('PumaMain.view.Main', {
                 split: false,
                 itemId: 'chartcontainer',
                 split: true,
-                
-                autoScroll: true
+                        autoScroll: true
             }, {
                 xtype: 'container',
                 region: 'center',
@@ -88,16 +123,32 @@ Ext.define('PumaMain.view.Main', {
                 },
                 items: [
                     {xtype: 'initialbar',
-                        height: 205}, {
-                        xtype: 'component',
+                        height: 198}, {
+                        layout: {
+                            type: 'hbox',
+                            align: 'stretch'
+                        },
                         flex: 1,
-                        
-                        id: 'map'
+                        xtype: 'container',
+                        items: [{
+                                xtype: 'component',
+                                flex: 1,
+                                //width: 1,
+                                //height: 1,
+                                //hidden: true,
+                                id: 'map'
+                            }, {xtype: 'component',
+                                flex: 1,
+                                //width: 1,
+                                //height: 1,
+                                //html: 'Ahoj',
+                                hidden: true,
+                                id: 'map2'}]
                     }
                 ]
 
             }]
-            this.callParent();
+        this.callParent();
     }
 });
 

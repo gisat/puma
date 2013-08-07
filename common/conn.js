@@ -10,7 +10,7 @@ var collections = require('../rest/models').collections
 var mongodb = null;
 var pgdb = null;
 var objectId = null;
-
+var io = null;
 
 function request(options,dataToWrite,callback) {
     var reqs = http.request(options, function(resl)
@@ -47,7 +47,7 @@ function getConnString() {
     return "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode";
 }
 
-function init(callback) {
+function init(app,callback) {
    
     var conString = "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode";
     pgdb = new pg.Client(conString);
@@ -82,6 +82,14 @@ function init(callback) {
             callback();
         })
     });
+
+    var server = require('http').createServer(app)
+    io = require('socket.io').listen(server,{log:false})
+    server.listen(3100)
+}
+
+function getIo() {
+    return io;
 }
 
 function getNextId() {
@@ -102,6 +110,7 @@ function getPgDb() {
 
 module.exports = {
     init: init,
+    getIo: getIo,
     request: request,
     getMongoDb: getMongoDb,
     getPgDb: getPgDb,

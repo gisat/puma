@@ -7,9 +7,6 @@ Ext.define('PumaMng.controller.LayerLink', {
             'layerlinktab #submitbtn': {
                 click: this.onSubmit
             },
-            'layerlinktab #refType': {
-                change: this.onRefTypeChange
-            },
             'layerrefform #layer': {
                 change: this.onLayerChange
             },
@@ -24,7 +21,14 @@ Ext.define('PumaMng.controller.LayerLink', {
             },
             'layerlinktab #copybtn': {
                 click: this.onCopy
+            },
+            'layerlinktab #dataset': {
+                change: this.onDatasetChange
+            },
+            'layerlinktab #theme': {
+                change: this.onThemeChange
             }
+            
         })
         var me = this;
         $('a.noref,a.ref,a.cannotref').live('click',function() {
@@ -33,15 +37,66 @@ Ext.define('PumaMng.controller.LayerLink', {
             return false;
         })
     },
+    onDatasetChange: function(combo,val) {
+        var themeCombo = Ext.ComponentQuery.query('layerlinktab #theme')[0];
+        var locationCombo = Ext.ComponentQuery.query('layerlinktab #location')[0];
+        if (!val) {
+            themeCombo.disable();
+            locationCombo.disable();
+            return;
+        }
+        var themeStore = Ext.StoreMgr.lookup('theme4layerref');
+        var locationStore = Ext.StoreMgr.lookup('location4layerref');
         
+        themeStore.clearFilter(true);
+        locationStore.clearFilter(true);
+        themeStore.filter([function(rec) {
+            return rec.get('dataset')==val;
+        }])
+        locationStore.filter([function(rec) {
+            return rec.get('dataset')==val;
+        }])
+        themeCombo.enable();
+        locationCombo.enable();
+    },
+    onThemeChange: function(combo,val) {
+        var yearCombo = Ext.ComponentQuery.query('layerlinktab #year')[0]
+        if (!val) {
+            yearCombo.disable();
+            return
+        }
+        var theme = Ext.StoreMgr.lookup('theme').getById(val);
+        var store = Ext.StoreMgr.lookup('year4layerref');
+        store.clearFilter(true);
+        store.filter([function(rec) {
+            return Ext.Array.contains(theme.get('years'),rec.get('_id'))
+        }]) 
+        yearCombo.enable();
+        
+    },
+            
+            
     onDelete: function(btn) {
         var layerRefId = $('.editedref').attr('layerref');
         
         if (!layerRefId || $('.editedref').hasClass('refanalysis')) return;
         var layerRef = Ext.StoreMgr.lookup('layerref').getById(parseInt(layerRefId));
         var me = this;
+        Puma.util.Msg.msg('Record start deleting','');
         layerRef.destroy({
                 callback: function(records,op) {
+                     if (!op.success) {
+                        if (!op.error.response.responseText) {
+                            Ext.Msg.alert('Error','Undefined');
+                            return;
+                        }
+                        var message = JSON.parse(op.error.response.responseText).message
+                        message = message.replace(new RegExp('\n','g'),'<br/>');
+                        Ext.Msg.alert('Error',message);
+                    }
+                    else {
+                        Puma.util.Msg.msg('Record deleted','');
+                    }
                     me.onSubmit();
                 }
             });
@@ -50,7 +105,7 @@ Ext.define('PumaMng.controller.LayerLink', {
     onActivate: function(btn) {
         var layerRefId = $('.editedref').attr('layerref');
         if (!layerRefId) return;
-        var params = this.getParams().params;
+        var params = this.getParams();
         params['id'] = layerRefId;
         Ext.Ajax.request({
             url: Cnst.url+'/api/layers/activateLayerRef',
@@ -59,6 +114,8 @@ Ext.define('PumaMng.controller.LayerLink', {
                 var data = JSON.parse(response.responseText).data;
                 var grid = Ext.ComponentQuery.query('layerlinktab #layerrefgrid')[0]
                 grid.store.loadData(data);
+                var form = Ext.ComponentQuery.query('layerlinktab layerrefform')[0];
+                form.disable();
             }
         })
         
@@ -111,10 +168,13 @@ Ext.define('PumaMng.controller.LayerLink', {
     
     onLayersDetailsReceived: function(response) {
         var data = null;
+        
         try {
             data = JSON.parse(response.responseText).data;
         }
         catch (e) {}
+        var format = new OpenLayers.Format.WFSDescribeFeatureType();
+        data = format.read(data);
         
         if (!data || !data.featureTypes) {
             Ext.StoreMgr.lookup('columnnumber').loadData([]);
@@ -153,10 +213,24 @@ Ext.define('PumaMng.controller.LayerLink', {
         var id = $(elem).attr('objid');
         var layerRefId = $(elem).attr('layerref');
         var form = Ext.ComponentQuery.query('layerlinktab layerrefform')[0];
+        
+        var location = rec.get('location') 
+        var areaTemplate = rec.get('areaTemplate') 
+        var year = rec.get('year') 
+        var attributeSet = id ? parseInt(id) : null;
+        var isData = attributeSet ? true : false;
+        var isFeatureLayer = Ext.Array.contains(Ext.StoreMgr.lookup('featurelayertemplatemng').data.keys,areaTemplate)
+        
+        
+        var refType = isData ? 'table' : null;    
+        refType = refType || (isFeatureLayer ? 'featurelayer' : 'layer')
+        
+        this.onRefTypeChange(refType);
         if (layerRefId) {
             var layerRef = Ext.StoreMgr.lookup('layerref').getById(parseInt(layerRefId));          
             if ($(elem).hasClass('refanalysis')) {
-                form.disable()
+                form.disable();
+                return;
             }
             else {         
                 form.enable();
@@ -164,24 +238,14 @@ Ext.define('PumaMng.controller.LayerLink', {
             form.getForm().loadRecord(layerRef);         
             return;
         }     
-        var location = rec.get('location') ? parseInt(rec.get('location')) : parseInt(id);
-        var areaTemplate = rec.get('areaTemplate') ?  parseInt(rec.get('areaTemplate')) : parseInt(id);
-        var year = rec.get('year') ? parseInt(rec.get('year')) : parseInt(id);
-        var attributeSet = rec.get('attributeSet') || parseInt(id);
-        if (attributeSet=='blank') {
-            attributeSet = null;
-        }   
-        else {
-            attributeSet = parseInt(attributeSet);
-        }
         
-        var isData = attributeSet ? true : false;
+        
         form.getComponent('location').setValue(location);
         form.getComponent('year').setValue(year);
         form.getComponent('attributeSet').setValue(attributeSet);
         form.getComponent('areaTemplate').setValue(areaTemplate);
         form.getComponent('isData').setValue(isData);
-        
+        var refType = null;
         if (isData) {
             var columnStore = Ext.StoreMgr.lookup('columnmapstore');
             var recs = columnStore.getRange();
@@ -208,15 +272,13 @@ Ext.define('PumaMng.controller.LayerLink', {
             columnStore.remove(recsToRemove);
             columnStore.add(recsToAdd);
         }
-        
         form.enable();
         form.getForm().unbindRecord();
         this.refreshColumnGrid();
         
     },
         
-    onRefTypeChange: function(group,val) {
-        var refType = val['refType'];
+    onRefTypeChange: function(refType) {
         var fidColumn = Ext.ComponentQuery.query('layerrefform #fidColumn')[0];
         var nameColumn = Ext.ComponentQuery.query('layerrefform #nameColumn')[0];
         var parentColumn = Ext.ComponentQuery.query('layerrefform #parentColumn')[0];
@@ -245,100 +307,33 @@ Ext.define('PumaMng.controller.LayerLink', {
         if (refType!='table') {     
             columnGrid.store.loadData([]);
         }
-            
-        var areaTemplateStore = Ext.StoreMgr.lookup('areatemplate4layerref');
-        areaTemplateStore.clearFilter(true);
-        if (refType=='layer') {
-            areaTemplateStore.filter([function(rec) {
-                return rec.get('justVisualization')
-            }])
-        }
-        else {
-            areaTemplateStore.filter([function(rec) {
-                return !rec.get('justVisualization')
-            }])
-        }
-        var attrSetGrid = Ext.ComponentQuery.query('layerlinktab #attributesetgrid')[0]
-        attrSetGrid.setDisabled(refType!='table');
-        var form = Ext.ComponentQuery.query('layerlinktab layerrefform')[0];
-        form.disable();
-        var grid = Ext.ComponentQuery.query('layerlinktab #layerrefgrid')[0];
-        grid.store.loadData([]);
+        
     },
     getParams: function() {
         var vals = {
-            location: Ext.ComponentQuery.query('layerlinktab #locationgrid')[0].getSelectionModel().getSelection(),
-            attributeSet: Ext.ComponentQuery.query('layerlinktab #attributesetgrid')[0].getSelectionModel().getSelection(),
-            year: Ext.ComponentQuery.query('layerlinktab #yeargrid')[0].getSelectionModel().getSelection(),
-            areaTemplate: Ext.ComponentQuery.query('layerlinktab #areatemplategrid')[0].getSelectionModel().getSelection()
+            location: Ext.ComponentQuery.query('layerlinktab #location')[0].getValue(),
+            year: Ext.ComponentQuery.query('layerlinktab #year')[0].getValue(),
+            theme: Ext.ComponentQuery.query('layerlinktab #theme')[0].getValue(),
         }
-        var rowsFor = Ext.ComponentQuery.query('layerlinktab #rowsFor')[0].lastValue.rowsFor;
-        var attrSets = Ext.Array.pluck(Ext.Array.pluck(vals.attributeSet,'data'),'_id');
-        var refType = Ext.ComponentQuery.query('layerlinktab #refType')[0].getValue()['refType']
         
-        var params = {
-            locations: JSON.stringify(Ext.Array.pluck(Ext.Array.pluck(vals.location,'data'),'_id')),
-            attributeSets: refType=='table' ? JSON.stringify(attrSets) : null,
-            years: JSON.stringify(Ext.Array.pluck(Ext.Array.pluck(vals.year,'data'),'_id')),
-            layerTemplates: JSON.stringify(Ext.Array.pluck(Ext.Array.pluck(vals.areaTemplate,'data'),'_id')),
-            toRows: rowsFor
-        }
-        return {
-            params: params,
-            vals: vals
-        }
+        return vals;
     },
     
     onSubmit: function() {
-        var rowsFor = Ext.ComponentQuery.query('layerlinktab #rowsFor')[0].lastValue.rowsFor;
-        var refType = Ext.ComponentQuery.query('layerlinktab #refType')[0].getValue()['refType']
-        var res = this.getParams()
-        var params = res.params;
-        var vals = res.vals;
-        var objsNeeded = ['location','attributeSet','year','areaTemplate'];
-        objsNeeded = Ext.Array.difference(objsNeeded,[rowsFor]);
-        var objsToRemove = [];
-        for (var i=0;i<objsNeeded.length;i++) {
-            var obj = objsNeeded[i];
-            if (vals[obj].length<2) {
-                objsToRemove.push(obj);
-            }
-        }
-        objsNeeded = Ext.Array.difference(objsNeeded,objsToRemove);
-        if (refType!='table') {
-            objsNeeded = Ext.Array.difference(objsNeeded,['attributeSet']);
+        var vals = this.getParams();
+        if (!vals.location || !vals.year || !vals.theme) {
+            return;
         }
         var form = Ext.ComponentQuery.query('layerlinktab layerrefform')[0];
         form.disable();
         Ext.StoreMgr.lookup('layerref').load();
         Ext.Ajax.request({
             url: Cnst.url+'/api/layers/getLayerRefTable',
-            params: params,
+            params: vals,
             success: function(response) {
                 
-                
-                var store = Ext.create('Ext.data.Store',{
-                    fields: ['location','attributeSet','year','areaTemplate','value'],
-                    data: JSON.parse(response.responseText).data
-                })
-                var columns = []
-                for (var i=0;i<objsNeeded.length;i++) {
-                    var obj = objsNeeded[i]
-                    columns.push({
-                        dataIndex: obj,
-                        width: obj=='year' ? 60 : 140,
-                        renderer: function(val,metadata,rec,rowIndex,colIndex) {
-                            var objStore = Ext.StoreMgr.lookup(objsNeeded[colIndex].toLowerCase())
-                            return objStore.getById(val).get('name')
-                        }
-                    })
-                }
-                columns.push({
-                    dataIndex: 'value',
-                    flex: 1
-                })
                 var grid = Ext.ComponentQuery.query('layerlinktab #layerrefgrid')[0]
-                grid.reconfigure(store,columns)
+                grid.store.loadData(JSON.parse(response.responseText).data)
             }
         })
     

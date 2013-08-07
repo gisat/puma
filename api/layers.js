@@ -10,6 +10,12 @@ var OpenLayers = require('openlayers').OpenLayers;
 var us = require('underscore')
 
 
+var filter = {
+    281: [
+        {as: 321, attr: 297, normType: 'area', min: 4, max: 5}
+    ]
+}
+
 
 function gatherLayerData(featureInfo, callback) {
     var confs = [];
@@ -191,7 +197,13 @@ function activateLayerRef(params, req, res, callback) {
                 if (err)
                     return callback(err);
                 var layerRef = results[0]
-                layerRef.active = true;
+                if (!layerRef.fidColumn) {
+                    layerRef.active = !layerRef.active;
+                }
+                else {
+                    layerRef.active = true;
+                }
+                   
                 var id = layerRef._id;
                 crud.update('layerref', layerRef, {userId: req.userId}, function(err) {
                     if (err)
@@ -215,13 +227,14 @@ function activateLayerRef(params, req, res, callback) {
                 crud.read('layerref', filter, function(err, resls) {
                     if (err)
                         return callback(err);
-                    asyncCallback(null, resls)
+                    asyncCallback(null, resls);
                 })
             }],
         'finish': ['identicalLayerRef', 'layerRef', function(asyncCallback, results) {
                 var activated = false;
                 async.forEachSeries(results.identicalLayerRef, function(item, eachCallback) {
-                    if (item._id == results.layerRef._id) {
+                    // nemenit puvodni layerref a taktez nemenit layerrefs jen pro vizualizaci
+                    if (item._id == results.layerRef._id || !item.fidColumn) {
                         return eachCallback(null)
                     }
                     if (params.activateAnother && !activated) {
@@ -271,268 +284,236 @@ function getLayerDetails(params, req, res, callback) {
     conn.request(options, null, function(err, output, resl) {
         if (err)
             return callback(err);
-        dom.execInDom(function() {
-            var format = new OpenLayers.Format.WFSDescribeFeatureType();
-            var data = format.read(output);
-            if (!data.featureTypes) {
-                return callback(new Error('nofeaturetype'))
-            }
-            res.data = data;
-            return callback();
-        })
+        res.data = output;
+        return callback();
+//        dom.execInDom(function() {
+//            var format = new OpenLayers.Format.WFSDescribeFeatureType();
+//            var data = format.read(output);
+//            if (!data.featureTypes) {
+//                return callback(new Error('nofeaturetype'))
+//            }
+//            res.data = data;
+//            return callback();
+//        })
 
     })
 }
 
-function getLayerRefTable(params, req, res, callback) {
-    var toRows = params['toRows'];
-    var filter = {
-        attributeSet: params['attributeSets'] ? JSON.parse(params['attributeSets']) : null,
-        location: JSON.parse(params['locations']),
-        areaTemplate: JSON.parse(params['layerTemplates']),
-        year: JSON.parse(params['years'])
-    }
-
-    var asFilter = filter.attributeSet ? {$in: filter.attributeSet} : {isData: false};
-    var query = {
-        $and: [
-            {$or: [{attributeSet: asFilter}, {isData: false}]},
-            {location: {$in: filter.location}},
-            {areaTemplate: {$in: filter.areaTemplate}},
-            {year: {$in: filter.year}}
-        ]
-    }
-
-    if (!filter.attributeSet) {
-        filter.attributeSet = ['blank']
-    }
 
 
-    var opts = {
-        layerRefs: function(asyncCallback) {
-            crud.read('layerref', query, function(err, results) {
-                if (err)
-                    return callback(err);
-                var layerRefMap = {};
-                for (var i = 0; i < results.length; i++) {
-                    var result = results[i];
-                    var loc = result.location;
-                    var as = result.attributeSet || 'blank';
-                    var at = result.areaTemplate;
-                    var year = result.year;
-                    layerRefMap[loc] = layerRefMap[loc] || {}
-                    layerRefMap[loc][year] = layerRefMap[loc][year] || {}
-                    layerRefMap[loc][year][at] = layerRefMap[loc][year][at] || {};
-                    layerRefMap[loc][year][at][as] = layerRefMap[loc][year][at][as] || [];
-                    layerRefMap[loc][year][at][as].push(result)
-                }
-                asyncCallback(null, layerRefMap);
-            });
-        },
-        baseLayerRefs: function(asyncCallback) {
-            if (!params['attributeSet']) {
-                return asyncCallback(null, null);
-            }
 
-        },
-        rowNameMap: function(asyncCallback) {
-            crud.read(toRows.toLowerCase(), {_id: {$in: filter[toRows]}}, function(err, results) {
-                if (err)
-                    return callback(err);
-                var nameMap = {};
-                for (var i = 0; i < results.length; i++) {
-                    var result = results[i]
-                    nameMap[result['_id']] = result['name'];
-                }
-                asyncCallback(null, nameMap);
-            });
-        },
-        result: ['layerRefs', 'rowNameMap', function(asyncCallback, results) {
-                var layerRefMap = results.layerRefs;
-                var rowNameMap = results.rowNameMap;
-                var objs = ['location', 'areaTemplate', 'year', 'attributeSet'];
-                var objIndex = objs.indexOf(toRows);
-                objs.splice(objIndex, 1);
-                objs.push(toRows);
-                var objMap = {};
-                var rows = [];
-                for (var i0 = 0; i0 < filter[objs[0]].length; i0++) {
-                    objMap[objs[0]] = filter[objs[0]][i0];
-                    for (var i1 = 0; i1 < filter[objs[1]].length; i1++) {
-                        objMap[objs[1]] = filter[objs[1]][i1];
-                        for (var i2 = 0; i2 < filter[objs[2]].length; i2++) {
-                            objMap[objs[2]] = filter[objs[2]][i2];
-                            var value = ''
-                            for (var i3 = 0; i3 < filter[objs[3]].length; i3++) {
-                                objMap[objs[3]] = filter[objs[3]][i3];
-                                var id = filter[objs[3]][i3];
-                                var layerRefs = [];
-                                try {
-                                    layerRefs = layerRefMap[objMap.location][objMap.year][objMap.areaTemplate][objMap.attributeSet]
-                                }
-                                catch (e) {
-
-                                }
-                                if (!layerRefs) {
-                                    layerRefs = [];
-                                }
-                                for (var i = 0; i < layerRefs.length; i++) {
-                                    var layerRef = layerRefs[i];
-                                    cls = 'ref';
-                                    if (layerRef.analysis) {
-                                        cls += ' refanalysis';
-                                    }
-                                    if (layerRef.active === false) {
-                                        cls += ' refnoactive';
-                                    }
-                                    if (layerRef.available === false) {
-                                        cls += ' refnoavailable';
-                                    }
-                                    value += '<a href="blank" layerref="' + layerRefs[i]['_id'] + '" objid="' + id + '" class="' + cls + '">' + rowNameMap[id] + '</a> '
-                                }
-                                if (!layerRefs.length) {
-
-                                    var cls = 'noref';
-                                    if (objMap.attributeSet != 'blank') {
-                                        try {
-                                            layerRefs = layerRefMap[objMap.location][objMap.year][objMap.areaTemplate]['blank']
-                                        }
-                                        catch (e) {
-                                        }
-                                        if (!layerRefs || !layerRefs.length) {
-                                            cls = 'cannotref'
-                                        }
-                                    }
-                                    value += '<a href="blank" objid="' + id + '" class="' + cls + '">' + rowNameMap[id] + '</a> '
-                                }
-                            }
-                            var row = {
-                                attributeSet: objMap['attributeSet'],
-                                location: objMap['location'],
-                                year: objMap['year'],
-                                areaTemplate: objMap['areaTemplate'],
-                                value: value
-
-                            }
-                            row[toRows] = null;
-                            rows.push(row)
-                        }
-                    }
-                }
-                res.data = rows;
-                callback(null);
-            }]
-    }
-
-
-    async.auto(opts);
-
-}
-
-
-function getAreas(params, req, res, callback) {
-    if (!params['tree'] && !params['areaTemplate']) {
-        res.data = [];
-        return callback(null);
-    }
-
-    var year = parseInt(params['year'])
+function getLayerRefTable(params,req,res,callback) {
     var location = parseInt(params['location']);
-    async.auto({
-        tree: function(asyncCallback) {
-            if (!params['tree'])
-                return asyncCallback(null, null);
-            crud.read('tree', {_id: parseInt(params['tree'])}, function(err, results) {
-                if (err)
-                    return asyncCallback(err);
-                asyncCallback(null, results[0]);
-            });
-
+    var year = parseInt(params['year']);
+    var theme = parseInt(params['theme']);
+    var opts = {
+        theme: function(asyncCallback) {
+            crud.read('theme',{_id:theme},{},function(err,resl) {
+                if (err) return callback(err);
+                return asyncCallback(null,resl[0]);
+            })
         },
-//        theme: function(asyncCallback) {
-//            crud.read('theme', {_id: parseInt(params['theme'])}, function(err, results) {
-//                    if (err)
-//                        return asyncCallback(err);
-//                    asyncCallback(null, results[0]);
-//                });
-//            
-//        },
-        layerRef: ['tree', function(asyncCallback, results) {
-                var areaTemplate = params['areaTemplate'] ? parseInt(params['areaTemplate']) : null;
-                var queriedAreaTemplate = null;
-                var nextAreaTemplate = null;
-                if (areaTemplate == -1) {
-                    return asyncCallback(null);
-                }
-                if (results.tree) {
-                    var treeAreaTemplates = results.tree.featureLayerTemplates
-                    var atIndex = 0;
-                    if (areaTemplate) {
-                        atIndex = treeAreaTemplates.indexOf(areaTemplate);
-                        atIndex++;
-                        queriedAreaTemplate = treeAreaTemplates[atIndex]
+        dataset: ['theme',function(asyncCallback,results) {
+            crud.read('dataset',{_id:results.theme.dataset},{},function(err,resl) {
+                if (err) return callback(err);
+                return asyncCallback(null,resl[0]);
+            })
+        }],
+        attributeSets: ['dataset','theme',function(asyncCallback,results) {
+            crud.read('attributeset',{topic:{$in:results.theme.topics}},{},function(err,resl) {
+                if (err) return callback(err);
+                console.log(resl)
+                var attrSetMap = {};
+                var flMap = {'-1':[]};
+                for (var i=0;i<resl.length;i++) {
+                    var attrSet = resl[i];
+                    attrSetMap[attrSet._id] = attrSet;
+                    var featureLayers = attrSet.featureLayers;
+                    if (featureLayers && featureLayers.length) {
+                        for (var j=0;j<featureLayers.length;j++) {
+                            var featureLayer = featureLayers[j];
+                            flMap[featureLayer] = flMap[featureLayer] || [];
+                            flMap[featureLayer].push(attrSet._id)
+                        }     
                     }
                     else {
-                        queriedAreaTemplate = treeAreaTemplates[0]
+                        flMap[-1].push(attrSet._id);
                     }
-
-                    nextAreaTemplate = treeAreaTemplates[atIndex + 1];
                 }
-                else {
-                    queriedAreaTemplate = areaTemplate;
-
-                }
-                var areaTemplates = nextAreaTemplate ? [queriedAreaTemplate, nextAreaTemplate] : [queriedAreaTemplate];
-                crud.read('layerref', {areaTemplate: {$in: areaTemplates}, location: location, year: year, isData: false}, function(err, results) {
-                    if (err)
-                        return asyncCallback(err);
-                    var hasNext = false;
-                    var layerRef = null;
-                    for (var i = 0; i < results.length; i++) {
-                        var result = results[i];
-                        if (!result.fidColumn) {
-                            continue;
-                        }
-                        if (result.areaTemplate == queriedAreaTemplate) {
-                            layerRef = result;
-                        }
-                        if (result.areaTemplate == nextAreaTemplate) {
-                            hasNext = true;
-                        }
+                return asyncCallback(null,{attrSetMap:attrSetMap,flMap:flMap});
+            })
+        }],
+        featureLayerTemplates: ['dataset','theme',function(asyncCallback,results) {
+            crud.read('areatemplate',{$or:[{_id:{$in:results.dataset.featureLayers}},{topic:{$in:results.theme.topics}}]},{},function(err,resl) {
+                if (err) return callback(err);
+                var flMap = {};
+                var featureLayers = [];
+                var layers = [];
+               
+                for (var i=0;i<resl.length;i++) {
+                    var featureLayer = resl[i];
+                    flMap[featureLayer._id] = featureLayer;
+                    if (featureLayer.justVisualization) {
+                        layers.push(featureLayer._id)
                     }
-                    layerRef.hasNext = hasNext;
-
-                    asyncCallback(null, layerRef);
-                });
-
-
-            }],
-        areas: ['layerRef', function(asyncCallback, results) {
-                var layerRef = results.layerRef;
-                var leaf = (layerRef && layerRef.hasNext) ? 'FALSE' : 'TRUE';
-                var sql = 'SELECT gid, ' + leaf + ' AS leaf,' + (layerRef ? layerRef.areaTemplate : -1) + ' AS at,' + (layerRef ? layerRef._id : -1) + ' AS lr, name, ST_AsText(extent) as extent';
-
-                var layerId = layerRef ? layerRef['_id'] : 'user_' + req.userId + '_loc_' + location + '_y_' + year;
-
-                sql += ' FROM views.layer_' + layerId;
-                if (layerRef && layerRef.parentColumn && params['gid']) {
-                    sql += ' WHERE parentgid=$1';
-                }
-                sql += ' ORDER BY name';
-
-                var queryParams = (layerRef && layerRef.parentColumn && params['gid']) ? [parseInt(params['gid'])] : []
-                var client = conn.getPgDb();
-                client.query(sql, queryParams, function(err, results) {
-
-                    if (err)
-                        return callback(err);
-                    res.data = results.rows;
-                    return callback(null);
+                    else if (featureLayer.topic) {
+                        featureLayers.push(featureLayer._id)
+                    }
+                }                  
+                return asyncCallback(null,{flMap:flMap,featureLayers:featureLayers,layers:layers});
+            })
+        }],
+        res: ['featureLayerTemplates','attributeSets','dataset',function(asyncCallback,results) {
+            
+            var analyticalUnits = results.dataset.featureLayers;
+            var featureLayers = results.featureLayerTemplates.featureLayers;
+            var layers = results.featureLayerTemplates.layers;
+            var allFeatureLayers = us.union(analyticalUnits,featureLayers,layers)
+            var rows = [{value: 'Analytical units'}]
+            async.map(allFeatureLayers,function(item,mapCallback) {
+                crud.read('layerref',{location:location,year:year,isData:false,areaTemplate:item},{},function(err,resls) {
+                    if (err) return callback(err);
+                    if (resls.length) {
+                        if (analyticalUnits.indexOf(item)>-1) {
+                            var attrSets = results.attributeSets.flMap[-1];
+                        }
+                        else if (featureLayers.indexOf(item)>-1) {
+                            var attrSets = results.attributeSets.flMap[item];
+                        }
+                        else {
+                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}})
+                        }
+                        if (!attrSets || !attrSets.length) {
+                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}})
+                        }
+                        
+                        crud.read('layerref',{location:location,year:year,isData:true,areaTemplate:item,attributeSet:{$in:attrSets}},{},function(err2,resls2) {
+                            
+                            if (err2) return callback(err2);
+                            
+                            var attrSetMap = {};
+                            for (var i=0;i<resls2.length;i++) {
+                                var layerRef = resls2[i];
+                                var id = layerRef.attributeSet;
+                                attrSetMap[id] = attrSetMap[id] || [];
+                                attrSetMap[id].push(layerRef)
+                            }
+                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:attrSetMap})
+                        })
+                    }
+                    else {
+                        return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}})
+                    }
                 })
+            },
+            function(err,result) {
+                
+                for (var i=0;i<allFeatureLayers.length;i++) {
+                    var value = '';
+                    var au = allFeatureLayers[i];
+                    var layerRefs = result[i].geometriesLayerRefs;
+                    var name = results.featureLayerTemplates.flMap[au].name;
+                    var hasRef = true
+                    for (var j = 0; j < layerRefs.length; j++) {
+                        var layerRef = layerRefs[j];
+                        var cls = getCls(layerRef)
+                        value += '<a href="blank" layerref="' + layerRef['_id'] + '" class="' + cls + '">' + name + '</a> '
+                    }
+                    if (!layerRefs.length) {
+                        hasRef = false;
+                        value += '<a href="blank" class="noref">' + name + '</a> '
+                    }
+                    var attrSetLayerRefs = result[i].attrSetLayerRefs;
+                    
+                    if (i==analyticalUnits.length) {
+                        rows.push({
+                            value: 'Vector layers'
+                        })
+                    }
+                    if (i==analyticalUnits.length+featureLayers.length) {
+                        rows.push({
+                            value: 'Layers'
+                        })
+                    }
+                    
+                    
+                    if (hasRef && i<analyticalUnits.length) {
+                        var attrSets = results.attributeSets.flMap[-1];
+                    }
+                    else if (hasRef && i>=analyticalUnits.length && i<analyticalUnits.length+featureLayers.length) {
+                        var attrSets = results.attributeSets.flMap[au];
+                    }
+                    else {
+                        rows.push({
+                            value: value,
+                            areaTemplate: au,
+                            location: location,
+                            year: year
+                        })
+                        continue;
+                    }
+                    if (!attrSets) {
+                        attrSets = [];
+                    }
+                    var value2 = '';
+                    for (var j = 0; j < attrSets.length; j++) {
+                        var attrSet = attrSets[j];
+                        var name = results.attributeSets.attrSetMap[attrSet].name;
+                        var layerRefs = attrSetLayerRefs[attrSet]
+                        if (layerRefs) {
+                            for (var k = 0; k < layerRefs.length; k++) {
+                                var layerRef = layerRefs[k];
+                                var cls = getCls(layerRef)
+                                value2 += '<a href="blank" objid="'+attrSet+'" layerref="' + layerRef['_id'] + '" class="' + cls + '">' + name + '</a> '
+                            }
+                        }
+                        else {
+                            value2 += '<a href="blank" objid="'+attrSet+'" class="noref">' + name + '</a> '
+                        }
 
-            }]
-    })
+                    }
+                    
+                    rows.push({
+                        value: value,
+                        value2: value2,
+                        areaTemplate: au,
+                        location: location,
+                        year: year
+                    })
+                }
+                res.data = rows
+                return callback(null);
+            })
+        }]
+        
+    }
+    async.auto(opts)
+    
+    
+    
+    
 }
+
+var getCls = function(layerRef) {
+    var cls = 'ref'
+    if (layerRef.analysis) {
+        cls += ' refanalysis';
+    }
+    if (layerRef.active === false) {
+        cls += ' refnoactive';
+    }
+    if (layerRef.available === false) {
+        cls += ' refnoavailable';
+    }
+    return cls;
+}
+
+
+
+
+
+
+
 
 
 function getSymbologiesFromServer(params, req, res, callback) {
@@ -583,6 +564,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
                 async.forEach(symbToCreate, function(symb, eachCallback) {
                     var obj = {
                         name: symb,
+                        active: true,
                         symbologyName: symb
                     }
                     crud.create('symbology', obj, {userId: req.userId}, function(err) {
@@ -625,7 +607,6 @@ function getSymbologiesFromServer(params, req, res, callback) {
 
 module.exports = {
     getLayers: getLayers,
-    getAreas: getAreas,
     getLayerRefTable: getLayerRefTable,
     getLayerDetails: getLayerDetails,
     getSymbologiesFromServer: getSymbologiesFromServer,

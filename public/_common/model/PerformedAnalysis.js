@@ -2,9 +2,8 @@ Ext.define('Puma.model.PerformedAnalysis', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','location','year','analysis','finished',
+    '_id','location','year','analysis','finished','dataset',
     'featureLayerTemplates', // spatialagg
-    'tree','featurerLayerTemplate' //fidagg
     ],
     idProperty: '_id',
     proxy: {

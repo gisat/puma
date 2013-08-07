@@ -29,18 +29,39 @@ Ext.define('PumaMng.view.analysis.FidAggregation', {
             },
             {
                 xtype: 'itemselector',
+                name: 'topics',
+                itemId: 'topics',
+                displayField: 'name',
+                valueField: '_id',
+                height: 170,
+                store: Ext.StoreMgr.lookup('activetopic'),
+                allowBlank: false,
+                fieldLabel: 'Topics'
+            },
+            {
+                xtype: 'itemselector',
                 height: 170,
                 displayField: 'name',
                 valueField: '_id',
                 name: 'attributeSets',
                 itemId: 'attributeSets',
-                store: Ext.StoreMgr.lookup('attributeset'),
+                store: Ext.StoreMgr.lookup('attributeset4fidagg'),
                 allowBlank: false,
                 fieldLabel: 'Attribute sets'
             },
             {
                 xtype: 'storefield',
                 validator: function(val) {
+                    for (var i=0;i<val.length;i++) {
+                        var rec = val[i];
+                        var type = rec.type;
+                        if (!type) {
+                            return false;
+                        }
+                        if (type=='avgattr' && !rec.normAttribute) {
+                            return false;
+                        }
+                    }
                     return true;
                 },
                 itemId: 'attributeMap',
@@ -51,13 +72,14 @@ Ext.define('PumaMng.view.analysis.FidAggregation', {
                 plugins: [editing],
                 padding: 10,
                 frame: true,
-                maxHeight: 500,
+                maxHeight: 350,
                 buttons : [{
                     text: 'Fill',
                     itemId: 'fillbtn'
                 }],
                 
                 //width: 600,
+                height: 300,
                 itemId: 'attributegrid',
                 title: 'Attribute grid',
                 columns: [{
@@ -102,7 +124,7 @@ Ext.define('PumaMng.view.analysis.FidAggregation', {
                         header: 'Attribute set',
                         field: {
                             xtype: 'pumacombo',
-                            store: Ext.StoreMgr.lookup('attributeset'),
+                            store: Ext.StoreMgr.lookup('attributeset4fidagg'),
                             itemId: 'normAttributeSet'
                         },
                         renderer: function(value) {
@@ -134,6 +156,7 @@ Ext.define('PumaMng.view.analysis.FidAggregation', {
         ]
 
         this.callParent();
+        
     },
     getEditor: function(rec,form,column) {
         var attrSetFieldName = (column && column.dataIndex == 'calcAttribute') ? 'calcAttributeSet' : 'normAttributeSet'

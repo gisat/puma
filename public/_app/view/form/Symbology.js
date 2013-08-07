@@ -15,6 +15,7 @@ Ext.define('PumaMng.view.form.Symbology', {
                     xtype: 'pumacombo',
                     store: Ext.StoreMgr.lookup('activetopic'),
                     fieldLabel: 'Topic',
+                    allowBlank: false,
                     name: 'topic',
                     itemId: 'topic'
                 }];

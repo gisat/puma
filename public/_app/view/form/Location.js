@@ -11,11 +11,6 @@ Ext.define('PumaMng.view.form.Location', {
                     name: 'bbox',
                     allowBlank: false,
                     fieldLabel: 'BBOX'
-                }, {
-                    xtype: 'textfield',
-                    name: 'center',
-                    allowBlank: false,
-                    fieldLabel: 'Center'
                 },  {
                     xtype: 'pumacombo',
                     name: 'dataset',

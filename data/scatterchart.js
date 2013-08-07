@@ -16,7 +16,7 @@ function getChart(params, callback) {
     var xAttrName = 'as_'+xAttr.as+'_attr_'+xAttr.attr;
     var yAttrName = 'as_'+yAttr.as+'_attr_'+yAttr.attr;
     var zAttrName = zAttr ? ('as_'+zAttr.as+'_attr_'+zAttr.attr):null;
-    
+    var invisibleYears = params['invisibleYears'] ? JSON.parse(params['invisibleYears']) : []
     var opts = {
         data: function(asyncCallback) {
             dataMod.getData(params,function(err, dataObj) {
@@ -97,6 +97,8 @@ function getChart(params, callback) {
                     conf.series.push({
                         color: colors[i] || null,
                         data: series[i],
+                        year: years[i],
+                        visible: invisibleYears.indexOf(years[i])>=0 ? false : true,
                         name: results.years[years[i]]
                     })
                 }

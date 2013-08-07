@@ -1,12 +1,14 @@
 
 var analysis = {
     spatialagg: require('../analysis/spatialagg'),
-    fidagg: require('../analysis/fidagg')
+    fidagg: require('../analysis/fidagg'),
+    math: require('../analysis/math')
 }
 var async = require('async');
 var conn = require('../common/conn')
 var crud = require('../rest/crud');
 var pg = require('pg')
+
 
 function remove(params,req,res,callback) {
     
@@ -76,6 +78,8 @@ function create(params,req,res,callback) {
         },
         layerRef: ['analysis',function(asyncCallback,results) {
             var analysisObj = results.analysis;
+            
+            
             var type = analysisObj.type;
             analysis[type].check(analysisObj,performedAnalysisObj,function(err,resls) {
                 //console.log(resls)
@@ -92,7 +96,13 @@ function create(params,req,res,callback) {
                 
                 callback(null);
                 analysis[type].perform(analysisObj,result,results.layerRef,req,function(err) {
-                    console.log(err.message);
+                    if (err) {
+                        conn.getIo().sockets.emit('analysis','Analysis '+analysisObj.name+' error');
+                    }
+                    else {
+                        conn.getIo().sockets.emit('analysis','Analysis '+analysisObj.name+' finished');
+                    }
+                    
                 });
                 
                 

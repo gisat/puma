@@ -4,7 +4,9 @@ var charts = {
     data: require('../data/data'),
     columnchart: require('../data/columnchart'),
     piechart: require('../data/piechart'),
-    featurecount: require('../data/featurecount')
+    featurecount: require('../data/featurecount'),
+    extentoutline: require('../data/extentoutline'),
+    filter: require('../data/filter')
 }
 var cp = require('child_process');
 var async = require('async');
@@ -17,6 +19,12 @@ function shutdown(params,req,res,callback) {
     setTimeout(function() {
         var y = x + 5;
     },1);
+}
+
+function exporter(params, req, res, callback) {
+    cp.execFile('phantomjs.exe', ['rasterize.js', 'http://192.168.2.196:3000/public/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+        return callback(err)
+    })
 }
 
 function getChart(params, req, res, callback) {
@@ -165,6 +173,7 @@ module.exports = {
     getChart: getChart,
     drawChart: drawChart,
     getGridData: getGridData,
+    exporter: exporter,
     shutdown: shutdown,
     getGridDataCsv: getGridDataCsv
 }

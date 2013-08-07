@@ -11,6 +11,7 @@ Ext.define('PumaMain.view.InitialBar', {
         }
         this.items = [{
                 xtype: 'container',
+                hidden: true,
                 height: 24,
                 itemId: 'focuscontainer',
                 margin: '0 0 5 0',
@@ -43,7 +44,7 @@ Ext.define('PumaMain.view.InitialBar', {
             },{
                 xtype: 'container',
                 height: 24,
-                itemId: 'locationcontainer',
+                itemId: 'datasetcontainer',
                 margin: '0 0 5 0',
                 defaultType: 'button',
                 layout: {
@@ -53,15 +54,25 @@ Ext.define('PumaMain.view.InitialBar', {
                 items: [{
                     xtype: 'displayfield',
                     width: 80,
-                    value: 'Location: '
-                }],
+                    value: 'Dataset: '
+                }
+//                ,{
+//                    text: 'Global',
+//                    itemId: 'global',
+//                    allowDepress: false
+//                },{
+//                    text: 'Regional',
+//                    allowDepress: false,
+//                    itemId: 'regional'
+//                }
+            ],
                 defaults: {
-                    cls: 'locationbutton',
-                    toggleGroup: 'location',
+                    cls: 'datasetbutton',
+                    toggleGroup: 'dataset',
                     margin: '0 3',
                     height: 24
                 }
-            }, {
+            },{
                 xtype: 'container',
                 itemId: 'themecontainer',
                 height: 24,
@@ -94,7 +105,8 @@ Ext.define('PumaMain.view.InitialBar', {
                 },
                 defaults: {
                     cls: 'yearbutton',
-                    toggleGroup: 'year',
+                    enableToggle: true,
+                    //toggleGroup: 'year',
                     margin: '0 3',
                     height: 24
                 },
@@ -102,27 +114,6 @@ Ext.define('PumaMain.view.InitialBar', {
                     xtype: 'displayfield',
                     width: 80,
                     value: 'Year: '
-                }]
-            },{
-                xtype: 'container',
-                itemId: 'treecontainer',
-                margin: '0 0 5 0',
-                height: 24,
-                defaultType: 'button',
-                layout: {
-                    type: 'hbox',
-                    pack: 'left'
-                },
-                defaults: {
-                    cls: 'treebutton',
-                    toggleGroup: 'tree',
-                    margin: '0 3',
-                    height: 24
-                },
-                items: [{
-                    xtype: 'displayfield',
-                    width: 80,
-                    value: 'Analysis level: '
                 }]
             },{
                 xtype: 'container',
@@ -152,6 +143,13 @@ Ext.define('PumaMain.view.InitialBar', {
 //                    pack: 'center'
 //                },
                 items: [{
+                    xtype: 'colorpicker',
+                    itemId: 'selectcolorpicker',
+                    height: 20,
+                    width: 120,
+                    value: 'ff0000',
+                    colors: ['ff0000','00ff00','0000ff','ffff00','00ffff','ff00ff']
+                },{
                         xtype: 'button',
                         itemId: 'selectinmapbtn',
                         enableToggle: true,
@@ -163,21 +161,31 @@ Ext.define('PumaMain.view.InitialBar', {
                         enableToggle: true,
                         text: 'Hover'
                 },{
-                    xtype: 'colorpicker',
-                    itemId: 'selectcolorpicker',
-                    height: 20,
-                    width: 120,
-                    value: 'ff0000',
-                    colors: ['ff0000','00ff00','0000ff','ffff00','00ffff','ff00ff']
-                },{
                 xtype: 'button',
                 itemId: 'zoomselectedbtn',
                 text: 'Zoom selected'
             },{
                 xtype: 'button',
-                itemId: 'chartbtn',
-                text: 'Add chart'
-            }, 
+                itemId: 'measurelinebtn',
+                enableToggle: true,
+                toggleGroup: 'mapmodal',
+                text: 'Measure line'
+            },{
+                xtype: 'button',
+                itemId: 'measurepolygonbtn',
+                enableToggle: true,
+                toggleGroup: 'mapmodal',
+                text: 'Measure polygon'
+            },{
+                xtype: 'button',
+                itemId: 'multiplemapsbtn',
+                enableToggle: true,
+                disabled: true,
+                text: 'Multiple maps'
+            }]},{
+                xtype: 'toolbar',
+                items: [
+            
 //            {
 //                xtype: 'pumacombo',
 //                store: Ext.StoreMgr.lookup('visualization'),
@@ -195,47 +203,85 @@ Ext.define('PumaMain.view.InitialBar', {
                 xtype: 'button',
                 itemId: 'visualizationsbtn',
                 text: 'Visualizations'
+            },
+//            {
+//                xtype: 'button',
+//                itemId: 'viewsbtn',
+//                text: 'Views'
+//            },
+//            {
+//                xtype: 'button',
+//                itemId: 'aggregatesbtn',
+//                text: 'Aggregates'
+//            },
+//            {
+//                xtype: 'button',
+//                itemId: 'useaggregatebtn',
+//                enableToggle: true,
+//                text: 'Use aggregate'
+//            },
+            {
+                xtype: 'button',
+                itemId: 'chartbtn',
+                text: 'Add chart'
             },{
                 xtype: 'button',
                 itemId: 'savevisbtn',
                 text: 'Save'
-            },{
+            }]},{
+                xtype: 'toolbar',
+                items: [
+//            {
+//                xtype: 'button',
+//                enableToggle: true,
+//                itemId: 'addpolygonbtn',
+//                toggleGroup: 'mapmodal',
+//                hidden: true,
+//                text: 'P'
+//            },{
+//                xtype: 'button',
+//                itemId: 'addpointbtn',
+//                enableToggle: true,
+//                toggleGroup: 'mapmodal',
+//                hidden: true,
+//                text: 'C'
+//            },{
+//                xtype: 'button',
+//                itemId: 'deleteareabtn',
+//                enableToggle: true,
+//                toggleGroup: 'mapmodal',
+//                hidden: true,
+//                text: 'D'
+//            },
+//            {
+//                xtype: 'button',
+//                itemId: 'featureinfobtn',
+//                enableToggle: true,
+//                toggleGroup: 'mapmodal',
+//                text: '?'
+//            },
+//            {
+//                xtype: 'button',
+//                itemId: 'exportallpdfbtn',
+//                text: 'Export PDF'
+//            },
+            {
                 xtype: 'button',
-                enableToggle: true,
-                itemId: 'addpolygonbtn',
-                toggleGroup: 'mapmodal',
-                text: 'P'
-            },{
+                itemId: 'exportallzipbtn',
+                text: 'Export ZIP'
+            },
+            {
                 xtype: 'button',
-                itemId: 'addpointbtn',
-                enableToggle: true,
-                toggleGroup: 'mapmodal',
-                text: 'C'
-            },{
+                itemId: 'urlbtn',
+                text: 'URL'
+            },
+            {
                 xtype: 'button',
-                itemId: 'deleteareabtn',
+                itemId: 'helpbtn',
                 enableToggle: true,
-                toggleGroup: 'mapmodal',
-                text: 'D'
-            },{
-                xtype: 'button',
-                itemId: 'featureinfobtn',
-                enableToggle: true,
-                toggleGroup: 'mapmodal',
-                text: '?'
-            },{
-                xtype: 'button',
-                itemId: 'measurelinebtn',
-                enableToggle: true,
-                toggleGroup: 'mapmodal',
-                text: 'M-LINE'
-            },{
-                xtype: 'button',
-                itemId: 'measurepolygonbtn',
-                enableToggle: true,
-                toggleGroup: 'mapmodal',
-                text: 'M-POLY'
-            }
+                text: 'Help'
+            },
+            
             ]
         }]
             

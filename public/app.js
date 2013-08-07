@@ -16,15 +16,20 @@ Ext.application({
 
     appFolder: '_app',
     
-    controllers: ['Analysis','LayerLink','Store','Filter','Management','AttributeSet','Tree','Theme'],
+    controllers: ['Analysis','LayerLink','Store','Management','Theme','Login','Socket'],
     views: ['MainTabPanel'],
     enableQuickTips: false,
-    requires: ['Puma.patch.Main','Ext.container.Viewport','Ext.container.Container','Ext.tip.QuickTipManager','Ext.data.*','Puma.controller.Form','Puma.controller.Login','Puma.view.LoginHeader'],
+    requires: ['Puma.patch.Main','Puma.util.Msg','Ext.container.Viewport','Ext.container.Container','Ext.tip.QuickTipManager','Ext.data.*','Puma.controller.Form','Puma.controller.Login','Puma.view.LoginHeader'],
 
     launch: function() {
         //Ext.tip.QuickTipManager.init();
+        
+        
+        
+        
         this.getController('Puma.controller.Form');
         this.getController('Puma.controller.Login');
+        Puma.util.Msg.init();
         Ext.create('Ext.container.Viewport', {
             layout: 'border',
             minWidth: 1260,

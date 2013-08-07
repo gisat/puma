@@ -60,7 +60,7 @@ Ext.define('PumaMng.view.analysis.PerformedGrid', {
         }]
         this.buttons = [{
             text: 'Reload',
-            itemId: 'reloadbtn'
+            itemId: 'reloadgridbtn'
         }]
         this.store = Ext.StoreMgr.lookup('performedanalysis');
         this.callParent();

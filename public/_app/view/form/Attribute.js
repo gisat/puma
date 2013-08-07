@@ -13,10 +13,12 @@ Ext.define('PumaMng.view.form.Attribute', {
                 }, {
                     xtype: 'textfield',
                     name: 'color',
+                    allowBlank: false,
                     fieldLabel: 'Color'
                 },{
                     xtype: 'textfield',
                     name: 'units',
+                    allowBlank: false,
                     fieldLabel: 'Units'
                 }, {
                     xtype: 'pumacombo',

@@ -7,6 +7,12 @@ function getChart(params, callback) {
 
     var years = JSON.parse(params['years']);
     var attrs = JSON.parse(params['attrs']);
+    var filters = params['activeFilters'] ? JSON.parse(params['activeFilters']) : [];
+    var filterMap = {};
+    for (var i=0;i<filters.length;i++) {
+        filterMap[filters[i].dataIndex] = filters[i].value
+    }
+    
     var moreYears = years.length > 1;
     dataMod.getAttrConf(params, function(err, attrMap) {
         if (err)
@@ -22,6 +28,7 @@ function getChart(params, callback) {
                 }
             }];
         var fields = ['gid', 'name', 'at', 'loc'];
+        
         for (var i = 0; i < attrs.length; i++) {
             var attr = attrs[i];
             var attrConf = attrMap[attr.as][attr.attr];
@@ -30,15 +37,20 @@ function getChart(params, callback) {
                 var year = years[j];
                 var dataIndex = 'as_' + attr.as + '_attr_' + attr.attr;
                 dataIndex += moreYears ? ('_y_' + year) : '';
+                var filter = {
+                    type: 'numeric'
+                }
+                if (filterMap[dataIndex]) {
+                    filter.active = true;
+                    filter.value = filterMap[dataIndex]
+                }
                 columns.push({
                     dataIndex: dataIndex,
                     xtype: 'numbercolumn',
                     format: '0.00',
                     text: attrName,
                     minWidth: 100,
-                    filter: {
-                        type: 'numeric'
-                    }
+                    filter: filter
                 })
                 fields.push(dataIndex);
 

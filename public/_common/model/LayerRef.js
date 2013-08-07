@@ -2,7 +2,7 @@ Ext.define('Puma.model.LayerRef', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','implicit','columnMap','location','layer','fidColumn','isData','nameColumn','parentColumn','areaTemplate','attributeSet','year','wmsAddress','wmsLayers'
+    '_id','name','columnMap','location','layer','fidColumn','isData','nameColumn','parentColumn','areaTemplate','attributeSet','year','wmsAddress','wmsLayers','active'
     ],
     idProperty: '_id',
     proxy: {

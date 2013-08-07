@@ -7,10 +7,13 @@ var api = {
     chart: require('../api/chart'),
     proxy: require('../api/proxy'),
     analysis: require('../api/analysis'),
-    userpolygon: require('../api/userpolygon')
+    userpolygon: require('../api/userpolygon'),
+    urlview: require('../api/urlview'),
+    print: require('../api/print')
 }
 
 module.exports = function(app) {
+    
     
     
     app.post('/rest/:objType', crud.ensureCollection);
@@ -63,6 +66,24 @@ module.exports = function(app) {
         })
     })
     
+    
+    app.all('/print/*',function(req,res,next) {
+        try {
+            api.print.exporter({download:true},req,res,next);
+        }
+        catch (err) {
+            next(err);
+        }
+    })
+    app.get('/image/*',function(req,res,next) {
+        try {
+            api.print.exporter({},req,res,next);
+        }
+        catch (err) {
+            next(err);
+        }
+    })
+    
     app.get('/api/:module/:method',function(req,res,next) {
         var mod = api[req.params.module];
         var fn = mod[req.params.method];
@@ -100,10 +121,6 @@ module.exports = function(app) {
           
     })
     
-    app.all('/ows/*',function(req,res,next) {
-        req.data = {};
-        next();
-    })
     
     
     

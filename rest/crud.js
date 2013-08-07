@@ -23,20 +23,28 @@ function ensureCollection(req,res,next) {
 
 function create(collName,obj,params,callback) {
     if (typeof(params) === 'function') callback = params;
-    
+    console.log(obj)
     var opts = {
         checkRefs: function(asyncCallback) {
-            checkRefs(obj,collName,asyncCallback);
+            checkRefs(obj,collName,function(err) {
+                if (err) return callback(err);
+                asyncCallback(null);
+            });
         },
-        create: ['checkRefs',function(asyncCallback) {
+        preCreate: ['checkRefs',function(asyncCallback) {
             obj['_id'] = conn.getNextId();
             ensureIds(obj,collName);
-            
             var date = new Date();
             obj['created'] = date;
             obj['createdBy'] = params.userId;
             obj['changed'] = date;
             obj['changedBy'] = params.userId;
+            doHooks("precreate",collName,obj,params,function(err,result) {
+                if (err) return callback(err);
+                return asyncCallback(null);
+            });
+        }],
+        create: ['preCreate',function(asyncCallback) {
             var collection = db.collection(collName);
             collection.insert(obj,function(err,result) {
                 if (err) return callback(err)
@@ -47,6 +55,7 @@ function create(collName,obj,params,callback) {
             console.log('hook')
             doHooks("create",collName,results.create,params,function(err,result) {
                 if (err) return callback(err);
+                
                 return callback(null,results.create)
             });
         }]
@@ -58,6 +67,7 @@ function create(collName,obj,params,callback) {
 
 function read(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
+    
     var collection = db.collection(collName);
     collection.find(filter).toArray(function(err,items) {
         callback(err,items)
@@ -74,19 +84,26 @@ function update(collName, obj, params, callback,bypassHooks) {
     var filter = {
         "_id": obj['_id']
     }
-
     var opts = {
         checkRefs: function(asyncCallback) {
-            checkRefs(obj,collName,asyncCallback);
+            console.log(obj);
+            checkRefs(obj,collName,function(err) {
+                if (err) return callback(err);
+                asyncCallback(null);
+            });
         },
         update: ['checkRefs',function(asyncCallback) {
             delete obj['_id']
             obj['changed'] = new Date();
             obj['changedBy'] = params.userId;
+            
+            console.log('updating')
             collection.update(filter, {'$set': obj}, {}, function(err) {
+                console.log('updated')
                 if (err)
                     return callback(err);
                 collection.findOne(filter, function(err, result) {
+                    console.log('one found')
                     if (err)
                         return callback(err);
                     asyncCallback(null, result)
@@ -198,11 +215,12 @@ var checkRefs = function(obj,collName,callback) {
     async.every(keys,function(key,asyncCallback) {
         var fields = key.split('.');
         var objs = Array.isArray(obj) ? obj : [obj];
+        
         for (var i=0;i<fields.length;i++) {
             var newObjs = extract(objs,fields[i]);
             objs = newObjs;
         }
-        if (!objs.length) {
+        if (!objs.length || !objs[0]) {
             return asyncCallback(true);
         }
         var noDuplicates = [];
@@ -217,9 +235,10 @@ var checkRefs = function(obj,collName,callback) {
         var dependantCollName = map[key].coll;
         var collection = db.collection(dependantCollName);
         var filter = {_id: {$in: objs}}
+        var length = objs.length;
         collection.count(filter,function(err,result) {
-            if (err) throw err;
-            if (result == objs.length) {
+            if (err) return asyncCallback(false);
+            if (result == length) {
                 return asyncCallback(true);
             }
             else {
@@ -227,7 +246,7 @@ var checkRefs = function(obj,collName,callback) {
             }
         });
     },function(result) {
-        if (!result) callback(new Error('referror'))
+        if (!result) return callback(new Error('referror'))
         else return callback(null);
     })
 

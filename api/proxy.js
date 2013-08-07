@@ -5,6 +5,7 @@ var conn = require('../common/conn');
 var data = require('../data/data');
 var fs = require('fs');
 var sldMap = {};
+var sldMapTemp = {};
 var densityMap = {};
 var chartConfMap = {};
 var async = require('async')
@@ -26,14 +27,15 @@ function wms(params, req, res, callback) {
         }
         if (params['REQUEST'] == 'GetMap') {
             params['STYLES'] = 'polygon';
-        }
-            
+        }      
     }
     if (params['USE_SECOND']) {
         useFirst = false;
     }
     if (sldId) {
-        params['SLD_BODY'] = sldMap[sldId]
+        var sld = sldMap[sldId] || sldMapTemp[sldId];
+        params['SLD_BODY'] = params['REQUEST'] == 'GetMap' ? sld.sld : sld.legendSld
+        
         useFirst = false;
         delete params['STYLES'];
         delete params['LAYERS'];
@@ -63,6 +65,9 @@ function wms(params, req, res, callback) {
         params['INFO_FORMAT'] = 'application/json'
         params['EXCEPTIONS'] = 'application/json'
     }
+    if (params['LAYERS']) {
+        params['LAYER'] = params['LAYERS'].split(',')[0]
+    }
     var username = useFirst ? 'gnode' : 'tomasl84';
     var password = useFirst ? 'geonode' : 'lou840102';
     
@@ -87,15 +92,20 @@ function wms(params, req, res, callback) {
     }
 
     var data = querystring.stringify(params)
-    if (params['REQUEST'] == 'GetMap') {
+    if (params['REQUEST'] == 'GetMap' || params['REQUEST']=='GetLegendGraphic') {
         options.resEncoding = 'binary';
     }
-
+    if (params['REQUEST'] == 'GetLegendGraphic') {
+        console.log(data)
+        console.log('a')
+        console.log(params['SLD_BODY'])
+        console.log('b')
+    }
     conn.request(options, data, function(err, output, resl) {
         if (err)
             return callback(err);
-        res.data = output;
         
+        res.data = output;
         if (params['REQUEST'] == 'GetFeatureInfo') {
             if (params['COMPLETELAYER']) {
                 layers.gatherLayerData(output,function(err,layerData) {
@@ -121,6 +131,7 @@ function saveSld(params, req, res, callback) {
     var id = generateId();
     var oldId = params['oldId'];
     var sld = params['sldBody'];
+    var legendSld = params['legendSld'] || '';
     params['userId'] = req.userId;
     var userLocation = 'user_'+req.userId+'_loc_'+params['location'];
     sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
@@ -141,7 +152,6 @@ function saveSld(params, req, res, callback) {
             normAttrName = 'as_'+normObj.as+'_attr_'+normObj.attr;
         }
     }
-    
     var opts = {
         
         data: function(asyncCallback) {
@@ -163,20 +173,34 @@ function saveSld(params, req, res, callback) {
                             comparison: 'gt'
                         }])
                 }
+                dataParams['normalization'] = dataParams['normalization']=='year' ? 'none' : dataParams['normalization']
+                
             }
             else {
                 dataParams['normalization'] = 'none';
                 dataParams['attrs'] = JSON.stringify(normAttr);
                 
             }
+            dataParams['normalizationYear'] = null;
             data.getData(dataParams, function(err, dataObj) {
                 if (err)
                     return callback(err);
-                return asyncCallback(null, dataObj);
+                if (params['altYears']) {
+                    dataParams['years'] = params['altYears'];
+                    data.getData(dataParams, function(err, dataObj2) {
+                        if (err)
+                            return callback(err);
+                        dataObj.altAggregate = dataObj2.aggregate;
+                        return asyncCallback(null, dataObj);
+                    })
+                }
+                else {
+                    return asyncCallback(null, dataObj);
+                }
             })
         },
         layerRef: function(asyncCallback) {
-            if (!params['showChoropleth'] && !params['showMapChart']) {
+            if (!params['showMapChart']) {
                 return asyncCallback(null);
             }
             var loc = null;
@@ -226,15 +250,15 @@ function saveSld(params, req, res, callback) {
             })
         }],
         result: ['data', 'layerRef','density',function(asyncCallback, results) {
-            if (results.layerRef) {
-                sld = sld.replace(new RegExp('#layerref#','g'),results.layerRef);
-            }
+            
+            console.log('have')
             
             var topTreeNorm = params['normalization'] == 'toptree';
             if (params['showMapChart']) {
                 var urlParams = '${gid}/' + id;
-                var min = results.data.aggregate['min_'+normAttrName];
-                var max = results.data.aggregate['max_'+normAttrName];
+                
+                var min = results.data.altAggregate ? Math.min(results.data.aggregate['min_'+normAttrName],results.data.altAggregate['min_'+normAttrName]) : results.data.aggregate['min_'+normAttrName];
+                var max = results.data.altAggregate ? Math.max(results.data.aggregate['max_'+normAttrName],results.data.altAggregate['max_'+normAttrName]) : results.data.aggregate['max_'+normAttrName];
                 if (min==max) {
                     max = min+1;
                 }
@@ -247,12 +271,14 @@ function saveSld(params, req, res, callback) {
                 sld = sld.replace(new RegExp('#toptree#','g'),results.data.aggData.length ? results.data.aggData[0][attrName] : 1);
                 sld = sld.replace(new RegExp('#attr#','g'),attrName);
                 sld = sld.replace(new RegExp('#attrid#','g'),attrs[attrIndex].attr);
-                var min = results.data.aggregate['min_'+attrName];
-                var max = results.data.aggregate['max_'+attrName];
+                var min = results.data.altAggregate ? Math.min(results.data.aggregate['min_'+attrName],results.data.altAggregate['min_'+attrName]) : results.data.aggregate['min_'+attrName];
+                var max = results.data.altAggregate ? Math.max(results.data.aggregate['max_'+attrName],results.data.altAggregate['max_'+attrName]) : results.data.aggregate['max_'+attrName];
+                
                 if (params['classType']=='continuous') {
                     for (var i=0;i<numCat;i++) {
                         var val = min + (max-min)*i/(numCat-1);
                         sld = sld.replace(new RegExp('#minmax_'+(i+1)+'#','g'),val);
+                        legendSld = legendSld.replace(new RegExp('#minmax_'+(i+1)+'#','g'),val);
                     }
                 }
                 
@@ -276,10 +302,12 @@ function saveSld(params, req, res, callback) {
                             if (prev!=null && dataLength!=1) {
                                 val = prev+(current-prev)/2;
                                 sld = sld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
+                                legendSld = legendSld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
                             }
                         }
                     }
                     sld = sld.replace(new RegExp('#val_[0-9]+#','g'),val);
+                    legendSld = legendSld.replace(new RegExp('#val_[0-9]+#','g'),val);
                     if (dataLength==1) {
                         //console.log(sld);
                     }
@@ -288,11 +316,15 @@ function saveSld(params, req, res, callback) {
                     for (var i=1;i<numCat;i++) {
                         var val = min + (max-min)*i/numCat;
                         sld = sld.replace(new RegExp('#val_'+i+'#','g'),val);
+                        legendSld = legendSld.replace(new RegExp('#val_'+i+'#','g'),val);
                     }
                 }
             }
-            sldMap[id] = sld;
-            //console.log(sld);
+            console.log(legendSld)
+            sldMap[id] = {
+                sld: sld,
+                legendSld: legendSld
+            }
             if (params['areas']) {
                 delete params['sldBody'];
                 chartConfMap[id] = params;
@@ -309,7 +341,7 @@ function saveSld(params, req, res, callback) {
                 delete densityMap[oldId];
             }
             
-
+            //console.log(sld);
 
             res.data = id;
             return callback(null);
@@ -323,6 +355,15 @@ function saveSld(params, req, res, callback) {
 function getSld(params, req, res, callback) {
     res.data = sldMap[params['id']];
     return callback(null);
+}
+
+function getSldSync(id) {
+    return sldMap[id]
+}
+function setSldTemp(sld) {
+    var id = generateId();
+    sldMapTemp[id] = sld;
+    return id;
 }
 
 
@@ -339,6 +380,8 @@ module.exports = {
     wms: wms,
     saveSld: saveSld,
     getSld: getSld,
+    getSldSync: getSldSync,
+    setSldTemp: setSldTemp,
     chartConfMap: chartConfMap
 }
 

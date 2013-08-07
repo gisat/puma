@@ -2,7 +2,7 @@ Ext.define('Puma.model.Topic', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','active'
+    '_id','name','active','requiresFullRef'
     ],
     idProperty: '_id',
     proxy: {

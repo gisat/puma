@@ -12,7 +12,7 @@ Ext.Loader.setPath('Puma', '_common');
 Ext.application({
     name: 'PumaMain',
     appFolder: '_main',
-    controllers: ['Map', 'Store', 'Chart','Area','LocationTheme','Settings','Layers','Select','UserPolygon'],
+    controllers: ['Map', 'Store', 'Chart','Area','LocationTheme','Settings','Layers','Select','UserPolygon','Filter'],
     enableQuickTips: false,
     requires: ['Puma.controller.Form','Puma.controller.Login','Puma.patch.Main','Ext.tip.QuickTipManager', 'Ext.data.*','PumaMain.view.Main','PumaMain.view.MainAlt'],
     launch: function() {

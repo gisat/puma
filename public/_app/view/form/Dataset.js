@@ -11,6 +11,7 @@ Ext.define('PumaMng.view.form.Dataset', {
                     store: Ext.StoreMgr.lookup('activefeaturelayer'),
                     fieldLabel: 'Feature layers',
                     name: 'featureLayers',
+                    allowBlank: false,
                     itemId: 'featureLayers',
                     valueField: '_id',
                     displayField: 'name'

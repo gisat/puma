@@ -3,12 +3,25 @@ var geoserverLayers = require('../geoserver/layers');
 
 
 
+function precreateLayerRef(result, callback, params) {
+    if (!result.fidColumn) return callback(null)
+    geoserverLayers.checkUniqueId(result, function(err) {
+        if (err)
+        {
+            return callback(err)
+        }
+        callback(null);
+    })
+
+}
 
 function createLayerRef(result, callback, params) {
     var apiLayers = require('../api/layers')
     
     var async = require('async')
     async.waterfall([
+        
+        
         function(asyncCallback) {
             apiLayers.activateLayerRef({obj: result,justPerform: true}, {userId: params.userId}, null, function(err) {
                 if (err) return callback(err);
@@ -90,6 +103,7 @@ function removeLayerRef(result, callback, params) {
 
 module.exports = {
     createLayerRef: createLayerRef,
+    precreateLayerRef: precreateLayerRef,
     updateLayerRef: updateLayerRef,
     removeLayerRef: removeLayerRef
             

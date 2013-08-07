@@ -1,7 +1,7 @@
 Ext.define('PumaMng.controller.Management',{
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['PumaMng.view.form.Attribute','PumaMng.view.form.Theme','PumaMng.view.form.AttributeSet','PumaMng.view.form.SymbologyLayer','PumaMng.view.form.FeatureLayerTemplate','PumaMng.view.form.LayerTemplate','PumaMng.view.form.Location','PumaMng.view.form.Scope','PumaMng.view.form.Symbology','PumaMng.view.form.Dataset','PumaMng.view.form.Topic','PumaMng.view.form.Year'],
+    requires: ['PumaMng.view.form.Attribute','PumaMng.view.form.Theme','PumaMng.view.form.AttributeSet','PumaMng.view.form.FeatureLayerTemplate','PumaMng.view.form.LayerTemplate','PumaMng.view.form.Location','PumaMng.view.form.Scope','PumaMng.view.form.Symbology','PumaMng.view.form.Dataset','PumaMng.view.form.Topic','PumaMng.view.form.Year'],
   
     init: function() {
         this.control({
@@ -16,32 +16,10 @@ Ext.define('PumaMng.controller.Management',{
             },
             'managementtab themeform #removelayerbtn': {
                 click: this.onRemoveLayer
-            },
-            'managementtab themeform': {
-                beforesave: this.onBeforeThemeSave
             }
         })
     },
-       
-    onBeforeThemeSave: function(formCmp,rec) {
-        var treeStore = Ext.StoreMgr.lookup('tree');
-        var areaTemplateStore = Ext.StoreMgr.lookup('areatemplate');
-        var treesOrAreaTemplates = rec.get('treesAndAreas');
-        var trees = [];
-        var areaTemplates = [];
-        for (var i=0;i<treesOrAreaTemplates.length;i++) {
-            var treeOrArea = treesOrAreaTemplates[i];
-            if (treeStore.getById(treeOrArea)) {
-                trees.push(treeOrArea);
-            }
-            if (areaTemplateStore.getById(treeOrArea)) {
-                areaTemplates.push(treeOrArea);
-            }
-        }
-        rec.set('trees',trees);
-        rec.set('areaTemplates',areaTemplates)
-        
-    },
+   
     onAddLayer: function(btn) {
         var grid = btn.up('grid');
         var sel = grid.getSelectionModel().getSelection();

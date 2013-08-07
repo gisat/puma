@@ -36,20 +36,6 @@ Ext.define('PumaMain.view.VisualizationForm', {
                     allowBlank: false,
                     fieldLabel: 'Name'
                 },{
-                    xtype: 'itemselector',
-                    store: Ext.StoreMgr.lookup('areas4visualization'),
-                    valueField: '_id',
-                    fieldLabel: 'Areas',
-                    name: 'areas',
-                    itemId: 'areas',
-                    displayField: 'name',
-                    height: 170
-                },{
-                    xtype: 'numberfield',
-                    fieldLabel: 'Sort index',
-                    name: 'sortIndex',
-                    itemId: 'sortIndex'
-                },{
                     xtype: 'hiddenfield',
                     name: 'theme',
                     value: this.theme

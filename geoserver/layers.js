@@ -59,24 +59,46 @@ var removeLayerDbInternal = function(areaLayerRef,callback) {
     })
 }
 
+function checkUniqueId(layerRef,callback) {
+    // overeni jedinecnosti ID
+    var from = layerRef.layer.split(':')[0] == 'geonode' ? layerRef.layer.split(':')[1] : (layerRef.layer.split(':')[0]+'.'+layerRef.layer.split(':')[1])
+    var fromWithoutSchema = layerRef.layer.split(':')[1]
+    
+    var sql = 'ALTER TABLE '+from+' DROP CONSTRAINT IF EXISTS '+fromWithoutSchema+'_unique;'
+    sql += 'ALTER TABLE '+from+' ADD CONSTRAINT '+fromWithoutSchema+'_unique UNIQUE("'+layerRef.fidColumn+'");'
+    var client = conn.getPgDb();
+    console.log(sql)
+    client.query(sql,function(err) {
+        if (err) return callback(new Error('IDs not unique'));
+        
+        callback(null);
+    })
+}
+
 var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdate,callback) {
     var layerName =' views.layer_'+areaLayerRef['_id'];
+    var from = areaLayerRef.layer.split(':')[0] == 'geonode' ? areaLayerRef.layer.split(':')[1] : (areaLayerRef.layer.split(':')[0]+'.'+areaLayerRef.layer.split(':')[1])
+    
+    
+    
     // priprava view
     var sql = 'BEGIN; DROP VIEW IF EXISTS '+layerName+'; ';
     if (isBase && !isUpdate) {
-        sql += 'CREATE TABLE views.base_'+areaLayerRef['_id']+' AS (SELECT ';
+        var viewName = 'base_'+areaLayerRef['_id'];
+        sql += 'CREATE TABLE views.'+viewName+' AS (SELECT ';
         sql += '"'+areaLayerRef.fidColumn+'" AS gid,';
         sql += 'ST_Centroid(ST_Transform(the_geom,4326)) as centroid,';
         sql += 'ST_Area(ST_Transform(the_geom,4326)::geography) as area,';
         sql += 'ST_Length(ST_Transform(the_geom,4326)::geography) as length,';
         sql += 'ST_Box2D(ST_Transform(the_geom,4326)) as extent FROM '+areaLayerRef.layer.split(':')[1]+');';
+        sql += 'ALTER TABLE views.'+viewName+' ADD CONSTRAINT '+viewName+'_unique UNIQUE(gid);'
     }
     
     sql += 'CREATE VIEW '+layerName+' AS SELECT ';
     // select z uzemni vrstvy
     sql += 'a."'+areaLayerRef.fidColumn+'" AS gid,';
     sql += 'a."'+(areaLayerRef.nameColumn || areaLayerRef.fidColumn) + (areaLayerRef.nameColumn ? '"' : '"::VARCHAR') +' AS name,';
-    sql += areaLayerRef.parentColumn ? 'a."'+areaLayerRef.parentColumn+'" AS parentgid,' : '';
+    sql += areaLayerRef.parentColumn ? ('a."'+areaLayerRef.parentColumn+'" AS parentgid,') : 'NULL::integer AS parentgid,';
     sql += 'a.the_geom,';
     sql += 'b.area,';
     sql += 'b.length,';
@@ -107,12 +129,12 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
     }
     sql += attrSql ? ',' : '';
     sql += attrSql;
-    var from = areaLayerRef.layer.split(':')[0] == 'geonode' ? areaLayerRef.layer.split(':')[1] : (areaLayerRef.layer.split(':')[0]+'.'+areaLayerRef.layer.split(':')[1])
+    
     sql += ' FROM '+from+' a';
-    sql += ' JOIN views.base_'+areaLayerRef['_id']+' b ON a."'+areaLayerRef.fidColumn+'"=b."gid"';
+    sql += ' LEFT JOIN views.base_'+areaLayerRef['_id']+' b ON a."'+areaLayerRef.fidColumn+'"=b."gid"';
     // join pripojenych vrstev
     for (var key in layerMap) {
-        sql += ' JOIN '+layerMap[key].name+' '+key+' ON ';
+        sql += ' LEFT JOIN '+layerMap[key].name+' '+key+' ON ';
         sql += 'a."' + areaLayerRef.fidColumn+'"='+key+'."'+layerMap[key].fid+'"::bigint';
     }
 
@@ -176,5 +198,6 @@ function changeLayerGeoserver(layerId, method, callback) {
 
 module.exports = {
     recreateLayerDb: recreateLayerDb,
+    checkUniqueId: checkUniqueId,
     changeLayerGeoserver: changeLayerGeoserver
 }

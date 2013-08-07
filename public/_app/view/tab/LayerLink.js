@@ -11,10 +11,17 @@ Ext.define('PumaMng.view.tab.LayerLink' ,{
             xtype: 'grid',
             itemId: 'layerrefgrid',
             flex: 1,
-            store: Ext.StoreMgr.lookup('blank'),
+            store: Ext.create('Ext.data.Store',{
+                    fields: ['location','year','areaTemplate','value','value2']
+                }),
             columns: [{
-                dataIndex: 'name',
-                header: ''
+                dataIndex: 'value',
+                width: 250,
+                header: 'Layer'
+            },{
+                dataIndex: 'value2',
+                flex: 1,
+                header: 'Attribute set'
             }],
             buttons: [{
                 text: 'Delete',
@@ -67,23 +74,54 @@ Ext.define('PumaMng.view.tab.LayerLink' ,{
                 align: 'stretch'
             },
             items: [ {
-                xtype: 'radiogroup',
-                itemId: 'refType',
-                columns: 3,
-                width: 390,
-                items: [{
-                    boxLabel: 'Layer visualization', name: 'refType',inputValue: 'layer', checked: true
-                },{
-                    boxLabel: 'Layer analysis', name: 'refType', inputValue:'featurelayer'
-                },{
-                    boxLabel: 'Tables', name: 'refType', inputValue:'table'
-                }]
+                xtype: 'displayfield',
+                value: 'Dataset:',
+                margin: '0 5 0 0'
+            },{
+                xtype: 'pumacombo',
+                itemId: 'dataset',
+                margin: '0 10 0 0',
+                store: Ext.StoreMgr.lookup('activedataset')
+            },{
+                xtype: 'displayfield',
+                value: 'Location:',
+                margin: '0 5 0 0'
+            },{
+                xtype: 'pumacombo',
+                itemId: 'location',
+                disabled: true,
+                margin: '0 10 0 0',
+                store: Ext.StoreMgr.lookup('location4layerref')
+            },{
+                xtype: 'displayfield',
+                value: 'Theme:',
+                margin: '0 5 0 0'
+            },{
+                xtype: 'pumacombo',
+                itemId: 'theme',
+                disabled: true,
+                margin: '0 10 0 0',
+                store: Ext.StoreMgr.lookup('theme4layerref')
+            },{
+                xtype: 'displayfield',
+                value: 'Year:',
+                margin: '0 5 0 0'
+            },{
+                xtype: 'pumacombo',
+                itemId: 'year',
+                disabled: true,
+                margin: '0 10 0 0',
+                store: Ext.StoreMgr.lookup('year4layerref')
+            },{
+                xtype: 'button',
+                itemId: 'submitbtn',
+                text: 'Submit'
             }]
         }
         
         var gridForms = {
             xtype: 'container',
-            flex: 1
+            margin: '0 0 30 0'
         }
         this.layout = {
             type: 'vbox',
@@ -94,76 +132,24 @@ Ext.define('PumaMng.view.tab.LayerLink' ,{
         gridForms.layout = {
             type: 'hbox',
             align: 'stretch',
-            pack: 'start'
+            pack: 'center'
         }
         gridForms.defaults = {
-           flex: 1,
+           //flex: 1,
            //height: 350,
-           margin: '0 30 0 0',
+           //margin: '0 30 0 0',
            padding: 5,
            frame: true
         }
         gridForms.items = [{
-            xtype: 'grid',
-            store: Ext.StoreMgr.lookup('location4layerref'),
-            itemId: 'locationgrid',
-            frame: true,
-            columns: [{
-                    dataIndex: 'name',
-                    flex: 1,
-                    header: 'Location'
-            }],
-            selModel: {
-                mode: 'MULTI'
-            }
-        },{
-            xtype: 'grid',
-            store: Ext.StoreMgr.lookup('year4layerref'),
-            itemId: 'yeargrid',
-            frame: true,
-            columns: [{
-                    dataIndex: 'name',
-                    flex: 1,
-                    header: 'Year'
-            }],
-            selModel: {
-                mode: 'MULTI'
-            },
-        },{
-            xtype: 'grid',
-            store: Ext.StoreMgr.lookup('areatemplate4layerref'),
-            itemId: 'areatemplategrid',
-            frame: true,
-            columns: [{
-                    dataIndex: 'name',
-                    flex: 1,
-                    header: 'Layer template'
-            }],
-            selModel: {
-                mode: 'MULTI'
-            },
-        },{
-            xtype: 'grid',
-            store: Ext.StoreMgr.lookup('attributeset4layerref'),
-            itemId: 'attributesetgrid',
-            disabled: true,
-            frame: true,
-            columns: [{
-                    dataIndex: 'name',
-                    flex: 1,
-                    header: 'Attribute set'
-            }],
-            selModel: {
-                mode: 'MULTI'
-            }
-        },{
             xtype: 'layerrefform',
             disabled: true,
+            width: 550,
             autoScroll: true,
-            margin: 0,
-            flex: 2
+            margin: 0
         }]
-        this.items = [selects, gridForms,submit,grid]
+        this.items = [selects, gridForms,grid];
+        
         this.callParent();
     }
 })

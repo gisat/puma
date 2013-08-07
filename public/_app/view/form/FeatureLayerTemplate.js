@@ -2,10 +2,11 @@ Ext.define('PumaMng.view.form.FeatureLayerTemplate', {
     extend: 'PumaMng.view.form.Common',
     alias: 'widget.featurelayertemplateform',
     requires: [],
+    
     model: 'AreaTemplate',
     initComponent: function() {
         
-        
+        this.width = 600;
         this.items = [{
                     xtype: 'checkbox',
                     hidden: true,
@@ -25,6 +26,8 @@ Ext.define('PumaMng.view.form.FeatureLayerTemplate', {
                     fieldLabel: 'Symbologies',
                     name: 'symbologies',
                     itemId: 'symbologies',
+                    height: 170,
+                    autoScroll: false,
                     valueField: '_id',
                     displayField: 'name'
                 }];

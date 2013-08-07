@@ -48,6 +48,7 @@ Ext.define('Puma.controller.Login', {
         Ext.Ajax.request({
             url: Cnst.url+'/api/login/logout',
             success: function(response) {
+                Cnst.auth = null;
                 me.onChangeLoginState(false);
             }
         })

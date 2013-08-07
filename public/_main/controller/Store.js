@@ -6,9 +6,10 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.AttributeSet',
         'Puma.model.Attribute',
         'Puma.model.AreaTemplate',
+        'Puma.model.Dataset',
+        'Puma.model.Topic',
         //'Puma.model.LayerTemplate',
         //'Puma.model.LayerTemplateExt',
-        'Puma.model.Tree',
         'Puma.model.Symbology',
         'Puma.model.LayerRef',
         'Puma.model.LayerServer',
@@ -34,12 +35,7 @@ Ext.define('PumaMain.controller.Store', {
     },
         
     initAggregatedStores: function() {
-        Ext.create('Gisatlib.data.AggregatedStore',{
-            stores: [Ext.StoreMgr.lookup('tree'),Ext.StoreMgr.lookup('areatemplate')],
-            autoLoad: true,
-            storeId: 'areas4visualization',
-            model: 'Puma.model.Aggregated'
-        })
+        
     
     },
     initStores: function() {
@@ -84,11 +80,6 @@ Ext.define('PumaMain.controller.Store', {
       
     
         Ext.create('Ext.data.Store',{
-            storeId: 'tree',
-            autoLoad: true,
-            model: 'Puma.model.Tree'
-        })
-        Ext.create('Ext.data.Store',{
             storeId: 'scope',
             autoLoad: true,
             model: 'Puma.model.Scope'
@@ -111,8 +102,22 @@ Ext.define('PumaMain.controller.Store', {
                 expanded: false,
                 children: [{text: "Child 1", leaf: true}]
             },
+            sorters: [{
+                property: 'name',
+                direction: 'ASC'
+            }],
             storeId: 'area'
-        })   
+        })
+        Ext.create('Ext.data.Store',{
+            storeId: 'dataset',
+            autoLoad: true,
+            model: 'Puma.model.Dataset'
+        })
+        Ext.create('Ext.data.Store',{
+            storeId: 'topic',
+            autoLoad: true,
+            model: 'Puma.model.Topic'
+        })
     },
         
     initEvents: function() {
@@ -120,15 +125,15 @@ Ext.define('PumaMain.controller.Store', {
         var areaStore = Ext.StoreMgr.lookup('area');
         areaStore.on('beforeload',function(store,options) {
             me.getController('Area').onBeforeLoad(store,options);
-        },this)
+        },this);
         areaStore.on('load',function(store,node,records) {
             me.getController('Area').onLoad(store,node,records);
         },this);
-        Ext.StoreMgr.lookup('activescope').on('load',function(store) {
-            me.getController('Settings').onScopeLoad();
+        Ext.StoreMgr.lookup('activedataset').on('load',function(store) {
+            me.getController('Settings').onDatasetLoad();
         })
-        Ext.StoreMgr.lookup('theme').on('load',function(store) {
-            me.getController('Settings').onThemeLoad();
+        Ext.StoreMgr.lookup('selectedlayers').on('datachanged',function(store) {
+            me.getController('Layers').onLayerDrop();
         })
     },
         
@@ -151,11 +156,27 @@ Ext.define('PumaMain.controller.Store', {
         })
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
+            storeId: 'activedataset',
+            filters: [function(rec) {
+                    return rec.get('active');
+            }],
+            model: 'Puma.model.Dataset'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
             storeId: 'activelocation',
             filters: [function(rec) {
                     return rec.get('active');
             }],
             model: 'Puma.model.Location'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'activeattributeset',
+            filters: [function(rec) {
+                    return rec.get('active');
+            }],
+            model: 'Puma.model.AttributeSet'
         })
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
@@ -166,7 +187,15 @@ Ext.define('PumaMain.controller.Store', {
             slave: true,
             storeId: 'featurelayertemplate',
             filters: [function(rec) {
-                return !rec.get('justVisualization');
+                return !rec.get('justVisualization') && rec.get('active');
+            }],
+            model: 'Puma.model.AreaTemplate'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'layertemplate',
+            filters: [function(rec) {
+                return rec.get('justVisualization') && rec.get('active');
             }],
             model: 'Puma.model.AreaTemplate'
         })
@@ -174,6 +203,18 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'attribute4chart',
+            sorters: [{
+                property: 'code',
+                direction: 'ASC'
+            }],
+            filters: [function(rec) {
+                    return false;
+            }],
+            model: 'Puma.model.Attribute'
+        })
+         Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'normattribute4chart',
             sorters: [{
                 property: 'code',
                 direction: 'ASC'
@@ -199,19 +240,41 @@ Ext.define('PumaMain.controller.Store', {
     },
         
     initLocalStores: function() {
-        Ext.create('Ext.data.Store',{
-            fields: ['name','_id'],
-            data: [{name: 'Prvni',_id:1},{name:'Druhy',_id:2}],
-            storeId: 'test'
-        })
-    
-    
+     
+     
+     
+        
+        
+        
         Ext.create('Ext.data.TreeStore', {
             fields: ['text'],
             model: 'Puma.model.MapLayer',
-            storeId: 'layers'
+            storeId: 'layers',
+            root: {
+                expanded: true,
+                children: [{
+                    name: 'System',
+                    type: 'systemgroup',
+                    checked: null
+                },{
+                    name: 'Base',
+                    type: 'basegroup',
+                    checked: null
+                }]
+            }
         })
     
+        Ext.create('Ext.data.Store', {
+            fields: ['text'],
+            model: 'Puma.model.MapLayer',
+            filters: [function(rec) {
+                return rec.get('checked');
+            }],
+            storeId: 'selectedlayers'
+        })
+        
+        
+        
         Ext.create('Ext.data.Store', {
             fields: ['name','type'],
             storeId: 'classificationtype',
@@ -245,9 +308,21 @@ Ext.define('PumaMain.controller.Store', {
             },{
                 name: 'Pie',
                 type: 'piechart'
+            }
+//            ,
+//            {
+//                name: 'Feature count',
+//                type: 'featurecount'
+//            }
+            ,{
+                name: 'Extent outline',
+                type: 'extentoutline'
             },{
-                name: 'Feature count',
-                type: 'featurecount'
+                name: 'Just map',
+                type: 'justmap'
+            },{
+                name: 'Filter',
+                type: 'filter'
             }]
         })
     
@@ -274,18 +349,26 @@ Ext.define('PumaMain.controller.Store', {
             data: [{
                 name: 'None',
                 type: 'none'
-            },{
-                name: 'Min',
-                type: 'min'
-            },{
-                name: 'Max',
-                type: 'max'
-            },{
+            },
+//            {
+//                name: 'Min',
+//                type: 'min'
+//            },{
+//                name: 'Max',
+//                type: 'max'
+//            },
+            {
                 name: 'Average',
                 type: 'avg'
             },{
                 name: 'Tree top',
                 type: 'toptree'
+            },{
+                name: 'All',
+                type: 'topall'
+            },{
+                name: 'Select',
+                type: 'select'
             }]
         })
     
@@ -293,7 +376,7 @@ Ext.define('PumaMain.controller.Store', {
             storeId: 'areas4chart',
             fields: ['name','type'],
             data: [{
-                name: 'Select',
+                name: 'Just Select',
                 type: 'select'
             },{
                 name: 'Tree all',
@@ -301,10 +384,12 @@ Ext.define('PumaMain.controller.Store', {
             },{
                 name: 'Tree lowest level',
                 type: 'treelowest'
-            },{
-                name: 'Level',
-                type: 'areatemplate'
-            }]
+            }
+//            ,{
+//                name: 'Tree highest level',
+//                type: 'treehighest'
+//            }
+        ]
         })
     
         Ext.create('Ext.data.Store',{
@@ -325,6 +410,16 @@ Ext.define('PumaMain.controller.Store', {
             },{
                 name: 'Tree',
                 type: 'toptree'
+            },{
+                name: 'All',
+                type: 'topall'
+            },{
+                name: 'Select',
+                type: 'select'
+            },
+            {
+                name: 'Year',
+                type: 'year'
             }]
         })
     

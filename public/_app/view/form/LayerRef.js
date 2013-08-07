@@ -1,6 +1,8 @@
 Ext.define('PumaMng.view.form.LayerRef', {
     extend: 'Puma.view.CommonForm',
     alias: 'widget.layerrefform',
+    showPrecreateMsg: true,
+    height: 300,
     requires: ['Gisatlib.grid.plugin.CustomEditorPlugin','Gisatlib.form.HiddenStoreField'],
     initComponent: function() {
         var attrStore = Ext.StoreMgr.lookup('attribute');
@@ -123,6 +125,7 @@ Ext.define('PumaMng.view.form.LayerRef', {
                 plugins: [editing],
                 hidden: true,
                 padding: 10,
+                maxHeight: 200,
                 frame: true,
                 itemId: 'columngrid',
                 title: 'Column grid',
@@ -150,7 +153,9 @@ Ext.define('PumaMng.view.form.LayerRef', {
                 store: columnMapStore
             }
         ]
-
+        this.modelDef = {
+            active: true
+        }
         this.callParent();
     },
 

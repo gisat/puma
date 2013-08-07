@@ -8,6 +8,7 @@ var hooks = {
     },
     'layerref': {
         create: 'createLayerRef',
+        precreate: 'precreateLayerRef',
         update: 'updateLayerRef',
         remove: 'removeLayerRef',
     }
@@ -18,30 +19,66 @@ var hooks = {
 
 var refs = {
     'attributeset':{
-        'attributes': {coll: 'attribute', canUpdate: true}
+        'attributes': {coll: 'attribute', canUpdate: true},
+        'topic': {coll:'topic', canUpdate: true},
+        'featureLayers': {coll:'areatemplate', canUpdate: true}
     },
-    //attribute
-    //year
-    //areatemplate
-    'tree': {
-        'levels.fromLayerTemplate': {coll: 'areatemplate', canUpdate: true},
-        'levels.toLayerTemplate': {coll: 'areatemplate', canUpdate: true}
+    'areatemplate':{
+        'symbologies': {coll:'symbology', canUpdate: true},
+        'topic': {coll:'topic', canUpdate: true},
     },
-    
+    'symbology':{
+        'topic': {coll:'topic', canUpdate: true},
+    },
+    'scope':{
+        'datasets': {coll:'dataset', canUpdate: true}
+    },
+    'dataset':{
+        'featureLayers': {coll:'areatemplate', canUpdate: true}
+    },
+    'location':{
+        'dataset': {coll:'dataset', canUpdate: true}
+    },
     'layerref': {
         'location': {coll: 'location', canUpdate: true},
+        'year': {coll: 'year', canUpdate: true},
+        'attributeSet': {coll: 'attributeset', canUpdate: true},
+        'areaTemplate': {coll: 'areatemplate', canUpdate: true},
         'columnMap.attribute': {coll: 'attribute', canUpdate: true}
     },
-            
+    'analysis': {
+        'topics': {coll:'topic',canUpdate:true},
+        'areaTemplate': {coll:'areatemplate',canUpdate:true},
+        'attributeSet': {coll:'attributeset',canUpdate:true},
+        'attributeSets': {coll:'attributeset',canUpdate:true},
+        'groupAttributeSet': {coll:'attributeset',canUpdate:true},
+        'groupAttribute': {coll:'attribute',canUpdate:true},
+        'attributeMap.attribute': {coll:'attribute',canUpdate:true},
+        'attributeMap.calcAttributeSet': {coll:'attributeset',canUpdate:true},
+        'attributeMap.calcAttribute': {coll:'attribute',canUpdate:true},
+        'attributeMap.normAttributeSet': {coll:'attributeset',canUpdate:true},
+        'attributeMap.normAttribute': {coll:'attribute',canUpdate:true},
+    },   
+    'performedanalysis': {
+        'location': {coll:'location',canUpdate:true},
+        'year': {coll:'year',canUpdate:true},
+        'dataset': {coll:'dataset',canUpdate:true},
+        'analysis': {coll:'analysis',canUpdate:true},
+    },
     
     'theme': {
-        'trees': {coll:'tree', canUpdate: true}
+        'years': {coll:'year', canUpdate: true},
+        'dataset': {coll:'dataset', canUpdate: true},
+        'topics': {coll:'topic', canUpdate: true},
+        'analysis': {coll:'analysis', canUpdate: true},
+        'visualizations': {coll:'visualization', canUpdate: true},
+        'minFeatureLayer': {coll:'areatemplate', canUpdate: true},
+        'minAttributeSets': {coll:'attributeset', canUpdate: true},
+        
     }
-    // pri pridavani atributu overit, ze na zadny k layertemplate neni nic referencovano
-    // pri odebirani atributu overit, zdali na nej neni vazana condition v symbologii
 }
 
-var collections = ['userpolygon','symbologylayer','scope','analysis','performedanalysis','visualization','location','attributeset','attribute','layertemplate','layertemplateext','tree','symbology','layerref','theme','areatemplate','year','symbologytemplate'];
+var collections = ['chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
 
 module.exports = {
     ensureIds: ensureIds,

@@ -5,11 +5,12 @@ Ext.define('PumaMng.view.form.LayerTemplate', {
     model: 'AreaTemplate',
     initComponent: function() {
         
-        
+        this.width = 600;
         this.items = [{
                     xtype: 'checkbox',
                     hidden: true,
                     name: 'justVisualization',
+                    checked: true,
                     value: true,
                     allowBlank: false
                 },{
@@ -17,6 +18,7 @@ Ext.define('PumaMng.view.form.LayerTemplate', {
                     store: Ext.StoreMgr.lookup('activetopic'),
                     fieldLabel: 'Topic',
                     name: 'topic',
+                    allowBlank: false,
                     itemId: 'topic'
                 },{
                     xtype: 'itemselector',
@@ -24,6 +26,7 @@ Ext.define('PumaMng.view.form.LayerTemplate', {
                     fieldLabel: 'Symbologies',
                     name: 'symbologies',
                     itemId: 'symbologies',
+                    height: 170,
                     valueField: '_id',
                     displayField: 'name'
                 }];

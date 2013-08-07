@@ -18,7 +18,13 @@ function getChart(params, callback) {
             break;
         }
     }
-
+    var invisibleAttrs = params['invisibleAttrs'] ? JSON.parse(params['invisibleAttrs']) : [];
+    var invisibleAttrsMap = {};
+    for (var i=0;i<invisibleAttrs.length;i++) {
+        var attr = invisibleAttrs[i];
+        var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
+        invisibleAttrsMap[dataIndex] = true;
+    }
     var opts = {
         
         data: function(asyncCallback, results) {
@@ -68,17 +74,29 @@ function getChart(params, callback) {
                             attr.series[k] = attr.series[k] || [];
 
                             var yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
-                            if (params['aggregate'] == 'toptree' && aggData && aggData[0] && aggData[0].at == row.at && aggData[0].loc == row.loc) {
-                                attr.plotValues.push(aggData[0][yearAttrName])
-                                attr.plotNames.push(aggData[0]['name'])
+                            if (params['aggregate'] == 'toptree' && row.loc!=-1 && !attr.topTreeAlready) {
+                                var aggRow = results.data.aggDataMap[row.loc];
+                                attr.topTreeAlready = true;
+                                attr.plotValues.push(aggRow[yearAttrName])
+                                attr.plotNames.push(aggRow['name'])
                             }
+                            if (params['aggregate'] == 'topall' && i==0) {
+                                var aggRow = results.data.aggDataMap[-1];
+                                attr.plotValues.push(aggRow[yearAttrName])
+                                attr.plotNames.push(aggRow['name'])
+                            }
+                            if (params['aggregate'] == 'select' && i==0) {
+                                var aggRow = results.data.aggDataMap['select'];
+                                attr.plotValues.push(aggRow[yearAttrName])
+                                attr.plotNames.push(aggRow['name'])
+                            }
+                            
+                            
                             if (aggregate && aggregate in {min: true, avg: true, max: true}) {
                                 attr.plotValues.push(results.data.aggregate[aggregate + '_' + yearAttrName]);
                                 attr.plotNames.push(aggregate);
                             }
-                            if (!areas[row.loc][row.at]) {
-                                continue;
-                            }
+                            
                             if (params['stacking'] != 'double' || j < (attrs.length / 2)) {
                                 attr.series[k].push({y: row[yearAttrName], loc: row.loc, at: row.at, gid: row.gid});
                             }
@@ -88,9 +106,6 @@ function getChart(params, callback) {
                         }
 
 
-                    }
-                    if (!areas[row.loc][row.at]) {
-                        continue;
                     }
                     categories.push(row['name']);
                 }
@@ -129,8 +144,13 @@ function getChart(params, callback) {
                                 }
                             })
                         }
+                        var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
+                        var visible = invisibleAttrsMap[dataIndex] ? false : true;
                         if (params['stacking'] != 'double') {
-                            var serieData = {data: attr.series[j], name: obj.name, color: color, stack: 'y' + j}
+                            var serieData = {data: attr.series[j], name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible}
+                            if (!params['stacking'] || params['stacking']=='none') {
+                                delete serieData.stack
+                            }
                             if (j==0) {
                                 serieData.id = 'a'+i;
                             }
@@ -144,7 +164,8 @@ function getChart(params, callback) {
                             //var name = obj.name + (inFirst ? ' +' : ' -');
                             var name = obj.name
                             if (inFirst) {
-                                var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + i+'y'+j}
+                                var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible}
+                                
                                 if (j==0) {
                                     serieData.id = 'a'+i;
                                 }
@@ -156,7 +177,8 @@ function getChart(params, callback) {
                             else {
                                 var newIndex = i - offset;
                                 var insertIndex = newIndex * 2 * years.length + j * 2 + 1;
-                                series.splice(insertIndex, 0, {data: attr.series[j], name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex})
+                                var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
+                                series.splice(insertIndex, 0, serieData)
                             }
                         }
 
@@ -171,6 +193,8 @@ function getChart(params, callback) {
                 var columnNum = (!stacking || stacking == 'none' || stacking == 'double') ? areasNum * attrs.length * years.length : areasNum * years.length;
                 columnNum = stacking == 'double' ? columnNum / 2 : columnNum;
                 stacking = stacking == 'double' ? 'normal' : stacking;
+                stacking = (!stacking || stacking=='none') ? null : stacking;
+                console.log(stacking)
                 var optimalWidth = Math.max(areasNum * 30, columnNum * 10, width);
                 var staggerLines = Math.ceil(100 / (optimalWidth / areasNum));
                 conf.chart.width = optimalWidth;
@@ -279,7 +303,7 @@ var cfg = function() {
         },
         plotOptions: {
             column: {
-                stacking: 'normal'
+                
             },
             series: {
                 pointPadding: 0.2,

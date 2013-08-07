@@ -7,7 +7,13 @@ function getChart(params, callback) {
     var width = params['width'] || 535;
     var height = params['height'] || 320;
     var years = JSON.parse(params['years']);
-
+    var invisibleAttrs = params['invisibleAttrs'] ? JSON.parse(params['invisibleAttrs']) : [];
+    var invisibleAttrsMap = {};
+    for (var i=0;i<invisibleAttrs.length;i++) {
+        var attr = invisibleAttrs[i];
+        var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
+        invisibleAttrsMap[dataIndex] = true;
+    }
     var opts = {
         data: function(asyncCallback) {
             params['limit'] = 150;
@@ -61,13 +67,16 @@ function getChart(params, callback) {
                     for (var j = 0; j < attrs.length; j++) {
                         var attr = attrs[j];
                         var columnName = 'as_' + attr.as + '_attr_' + attr.attr;
+                        var visible = invisibleAttrsMap[columnName] ? false : true;
                         if (year) {
                             columnName += '_y_'+year;
                         }
                         var attrRec = attrConf[attr.as][attr.attr];
+                        
                         var obj = {
                             name: attrRec.name,
                             as: attr.as,
+                            visible: visible,
                             attr: attr.attr,
                             y: row[columnName],
                             color: attrRec.color
@@ -83,6 +92,7 @@ function getChart(params, callback) {
                     var serie = {
                         data: serieData,
                         name: serieName,
+                        loc: row.loc,
                         at: row.at,
                         gid: row.gid,
                         type: 'pie',

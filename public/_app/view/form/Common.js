@@ -15,7 +15,7 @@ Ext.define('PumaMng.view.form.Common', {
             fieldLabel: 'Active',
             xtype: 'checkbox',
             name: 'active',
-            value: true,
+            checked: true,
             defaultValue: true,
             itemId: 'active'
         });

@@ -28,8 +28,20 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                 xtype: 'textfield'
             },
             {
+                xtype: 'itemselector',
+                name: 'topics',
+                itemId: 'topics',
+                displayField: 'name',
+                valueField: '_id',
+                height: 170,
+                store: Ext.StoreMgr.lookup('activetopic'),
+                allowBlank: false,
+                fieldLabel: 'Topics'
+            },
+            {
                 xtype: 'pumacombo',
                 name: 'areaTemplate',
+                itemId: 'areaTemplate',
                 store: Ext.StoreMgr.lookup('areatemplate4spatialagg'),
                 allowBlank: false,
                 fieldLabel: 'Feature layer template'
@@ -38,7 +50,7 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                 xtype: 'pumacombo',
                 name: 'attributeSet',
                 itemId: 'attributeSet',
-                store: Ext.StoreMgr.lookup('attributeset'),
+                store: Ext.StoreMgr.lookup('resultattributeset4spatialagg'),
                 allowBlank: false,
                 fieldLabel: 'Result attribute set'
             },
@@ -46,7 +58,7 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                 xtype: 'pumacombo',
                 name: 'groupAttributeSet',
                 itemId: 'groupAttributeSet',
-                store: Ext.StoreMgr.lookup('attributeset'),
+                store: Ext.StoreMgr.lookup('groupattributeset4spatialagg'),
                 fieldLabel: 'Group attribute set'
             },
             {
@@ -54,11 +66,32 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                 name: 'groupAttribute',
                 itemId: 'groupAttribute',
                 store: Ext.StoreMgr.lookup('attribute4spatialagg'),
-                fieldLabel: 'Group attribute set'
+                fieldLabel: 'Group attribute'
             },
             {
                 xtype: 'storefield',
                 validator: function(val) {
+                    var ownerForm = this.up('form');
+                    if (!ownerForm) {
+                        return false;
+                    }
+                    var groupAttr = ownerForm.getComponent('groupAttribute').getValue();
+                    for (var i=0;i<val.length;i++) {
+                        var rec = val[i];
+                        var type = rec.type;
+                        if (!type) {
+                            return false;
+                        }
+                        if (type.search('attr')>-1 && !rec.calcAttribute) {
+                            return false;
+                        }
+                        if (type=='avgattrattr' && !rec.normAttribute) {
+                            return false;
+                        }
+                        if (groupAttr && !rec.groupVal) {
+                            return false;
+                        }
+                    }
                     return true;
                 },
                 itemId: 'attributeMap',
@@ -69,6 +102,7 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                 plugins: [editing],
                 padding: 10,
                 frame: true,
+                height: 350,
                 //width: 600,
                 itemId: 'attributegrid',
                 title: 'Attribute grid',
@@ -104,7 +138,7 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                         header: 'Attribute set',
                         field: {
                             xtype: 'pumacombo',
-                            store: Ext.StoreMgr.lookup('attributeset'),
+                            store: Ext.StoreMgr.lookup('groupattributeset4spatialagg'),
                             itemId: 'calcAttributeSet'
                         },
                         renderer: function(value) {
@@ -132,7 +166,7 @@ Ext.define('PumaMng.view.analysis.SpatialAggregation', {
                         header: 'Attribute set',
                         field: {
                             xtype: 'pumacombo',
-                            store: Ext.StoreMgr.lookup('attributeset'),
+                            store: Ext.StoreMgr.lookup('groupattributeset4spatialagg'),
                             itemId: 'normAttributeSet'
                         },
                         renderer: function(value) {

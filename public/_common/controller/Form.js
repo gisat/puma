@@ -41,7 +41,12 @@ Ext.define('Puma.controller.Form',{
         if (!grid && !formCmp.store) return;
         var store = grid ? grid.store : formCmp.store;
         var ret = true;
+        var creating = false;
+        if (formCmp.alwaysCreate) {
+            rec = null;
+        }
         if (!rec) {
+            creating = true;
             rec = Ext.create('Puma.model.'+formCmp.model,formCmp.modelDef || {});
             form.updateRecord(rec);
             ret = formCmp.fireEvent('beforesave',formCmp,rec)
@@ -58,10 +63,37 @@ Ext.define('Puma.controller.Form',{
             form.updateRecord(rec);
             ret = formCmp.fireEvent('beforesave',formCmp,rec)
         }
-        if (ret) {       
+        if (ret) {  
+            if (formCmp.showPrecreateMsg) {
+                Puma.util.Msg.msg('Record '+rec.get('name')+' '+(creating?'start creating':'start updating'),'');
+            }
             rec.save({
-                callback: function(record,operation) {
-                    formCmp.fireEvent('aftersave',formCmp,record,operation)
+                callback: function(record,op) {
+                    if (!op.success) {
+                        if (creating) {
+                            rec.destroy();
+                        }
+                        if (!op.error.response.responseText) {
+                            Ext.Msg.alert('Error','Undefined');
+                            return;
+                        }
+                        var message = JSON.parse(op.error.response.responseText).message
+                        message = message.replace(new RegExp('\n','g'),'<br/>');
+                        Ext.Msg.alert('Error',message);
+                        return;
+                    }
+                    
+                    formCmp.fireEvent('aftersave',formCmp,record,op);
+                    if (rec.modelName == 'Puma.model.PerformedAnalysis') {
+                        var analysis = Ext.StoreMgr.lookup('analysis').getById(rec.get('analysis'));
+                        Puma.util.Msg.msg('Analysis '+analysis.get('name')+' started','');
+                    }
+                    else {
+                        Puma.util.Msg.msg('Record '+rec.get('name')+' '+(creating?'created':'updated'),'');
+                    }
+                    
+                    
+                    //Ext.Msg.alert('Message','Record '+(creating?'created':'updated'));
                 }
             });
         }
@@ -86,8 +118,9 @@ Ext.define('Puma.controller.Form',{
         var container = btn.up('commongrid');
         var selected = container.getSelectionModel().getSelection();
         if (selected.length) {
+            
             selected[0].destroy({
-                callback: function(records,op) {
+                callback: function(record,op) {
                     if (!op.success) {
                         if (!op.error.response.responseText) {
                             Ext.Msg.alert('Error','Undefined');
@@ -96,6 +129,16 @@ Ext.define('Puma.controller.Form',{
                         var message = JSON.parse(op.error.response.responseText).message
                         message = message.replace(new RegExp('\n','g'),'<br/>');
                         Ext.Msg.alert('Error',message);
+                    }
+                    else {
+                        if (record.modelName == 'Puma.model.PerformedAnalysis') {
+                            var analysis = Ext.StoreMgr.lookup('analysis').getById(record.get('analysis'));
+                            Puma.util.Msg.msg('Analysis '+analysis.get('name')+' deleted','');
+                        }
+                        else {
+                            Puma.util.Msg.msg('Record '+record.get('name')+' deleted','');
+                            
+                        }
                     }
                 }
             });
@@ -109,8 +152,9 @@ Ext.define('Puma.controller.Form',{
         form = form.getForm();
         form.copying = true;
         grid.getSelectionModel().deselectAll();
+        //form.unbindRecord();
         form.copying = false;
-        form.unbindRecord();
+        
         
     },
 
@@ -138,7 +182,9 @@ Ext.define('Puma.controller.Form',{
         else {
             if (form) {
                 form = form.getForm();
+                form.unselecting = true;
                 form.unbindRecord();
+                form.unselecting = false;
                 if (!form.copying) {
                     form.reset();
                 }

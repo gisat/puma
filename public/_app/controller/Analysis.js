@@ -1,22 +1,37 @@
 Ext.define('PumaMng.controller.Analysis',{
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['PumaMng.view.analysis.SpatialAggregation','PumaMng.view.analysis.FidAggregation'],
+    requires: ['PumaMng.view.analysis.SpatialAggregation','PumaMng.view.analysis.FidAggregation','PumaMng.view.analysis.Math'],
   
     init: function() {
         this.control({
             'analysistab #analysistypegrid': {
                 selectionchange: this.onAnalysisTypeSelected
             },
-            'performedanalysistab #reloadbtn': {
+            'performedanalysistab #reloadgridbtn': {
                 click: this.onPerformedAnalysisReload
+            },
+            'performedanalysisform #dataset': {
+                change: this.onPerformedDatasetChanged
+            },
+            'spatialaggform #topics': {
+                change: this.onSpatialTopicsChanged
             },
             'spatialaggform #attributeSet': {
                 change: this.onAttrSetChanged
             },
+            'spatialaggform #areaTemplate': {
+                change: this.onAreaTemplateChanged
+            },
             'spatialaggform #groupAttributeSet': {
                 change: this.onGroupAttrSetChanged
             },
+            'fidaggform #topics': {
+                change: this.onFidTopicsChanged
+            }, 
+            'mathform #topics': {
+                change: this.onFidTopicsChanged
+            }, 
             'fidaggform #attributeSets': {
                 change: this.onAttrSetsChanged
             }, 
@@ -25,6 +40,74 @@ Ext.define('PumaMng.controller.Analysis',{
             } 
         })
     },
+        
+    onPerformedDatasetChanged: function(combo,val) {
+        if (!val) return;
+        var locationStore = Ext.StoreMgr.lookup('location4performedanalysis');
+        var flStore = Ext.StoreMgr.lookup('featurelayer4performedanalysis');
+        locationStore.clearFilter(true);
+        flStore.clearFilter(true);
+        var dataset = Ext.StoreMgr.lookup('dataset').getById(val);
+        locationStore.filter([function(rec) {
+            return rec.get('dataset')==val;
+        }])
+        var featureLayers = dataset.get('featureLayers')
+        flStore.filter([function(rec) {
+            return Ext.Array.contains(featureLayers,rec.get('_id'));
+        }])
+        flStore.sort({
+                sorterFn: function(rec1,rec2) {
+                    var idx1 = Ext.Array.indexOf(featureLayers,rec1.get('_id'));
+                    var idx2 = Ext.Array.indexOf(featureLayers,rec2.get('_id'));
+                    return idx2<idx1
+                            
+                }
+        })
+        var locCmp = Ext.ComponentQuery.query('performedanalysisform #location')[0];
+        locCmp.setValue(locCmp.getValue());
+        var flCmp = Ext.ComponentQuery.query('performedanalysisform #featureLayerTemplates')[0];
+        flCmp.setValue(flCmp.getValue());
+        var yearCmp = Ext.ComponentQuery.query('performedanalysisform #year')[0];
+        yearCmp.setValue(yearCmp.getValue());
+    },
+    onAreaTemplateChanged: function(combo,val) {
+        var store = Ext.StoreMgr.lookup('groupattributeset4spatialagg');
+        store.clearFilter(true);
+        store.filter([function(rec) {
+            return Ext.Array.contains(rec.get('featureLayers') || [],val);
+        }])
+    },  
+     
+    onSpatialTopicsChanged: function(combo,val) {
+        if (!val) return;
+        var attrSetStore = Ext.StoreMgr.lookup('resultattributeset4spatialagg');
+        var featureLayerStore = Ext.StoreMgr.lookup('areatemplate4spatialagg');
+        attrSetStore.clearFilter(true);
+        featureLayerStore.clearFilter(true);
+        attrSetStore.filter([function(rec) {
+            var fl = rec.get('featureLayers') || [];
+            return Ext.Array.contains(val,rec.get('topic')) && fl.length==0;
+        }])
+        featureLayerStore.filter([function(rec) {
+            return Ext.Array.contains(val,rec.get('topic')) && !rec.get('justVisualization')
+        }])
+        var flComponent = Ext.ComponentQuery.query('spatialaggform #areaTemplate')[0];
+        flComponent.setValue(flComponent.getValue())
+        var attrSetComponent = Ext.ComponentQuery.query('spatialaggform #attributeSet')[0];
+        attrSetComponent.setValue(attrSetComponent.getValue())
+    },
+        
+    onFidTopicsChanged: function(combo,val) {
+        if (!val) return;
+        var storeName = combo.ownerCt.xtype=='fidaggform' ? 'attributeset4fidagg' : 'attributeset4math'
+        var store = Ext.StoreMgr.lookup(storeName);
+        store.clearFilter(true);
+        store.filter([function(rec) {
+            var fl = rec.get('featureLayers') || [];
+            return Ext.Array.contains(val,rec.get('topic')) && fl.length==0;
+        }])
+    },
+        
         
     onFill: function(btn) {
        var store = btn.up('grid').store;
@@ -43,6 +126,7 @@ Ext.define('PumaMng.controller.Analysis',{
     },
     
     onAttrSetChanged: function(combo,val) {
+        
         var attributeSet = Ext.StoreMgr.lookup('attributeset').getById(val);
         if (!attributeSet) return;
         var attributes = attributeSet.get('attributes');

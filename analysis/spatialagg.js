@@ -122,7 +122,6 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                             }
                         }
                         if (corrAttr) {
-                            
                             outerText = outerText.replace(new RegExp('&INNERATTR&', 'g'), 'as_' + analysisObj.attributeSet + '_attr_' + corrAttr.attribute);
                         }
                         else {
@@ -228,13 +227,13 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                         })
                     })
                 }, function(err, resls) {
-                    console.log('finishing')
                     client.end();
                     if (performedAnalysisObj.ghost) {
                         return callback(null);
                     }
                     performedAnalysisObj.finished = new Date();
-                    crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId}, function() {
+                    crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId}, function(err) {
+                        return callback(err);
                     });
                 })
             }]

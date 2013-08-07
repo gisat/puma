@@ -6,16 +6,30 @@ Ext.define('Puma.patch.form.ItemSelector', {
     },
         
     onDataChanged: function() {
-        var value = this.getValue() || [];
         if (!this.store) return;
-        var storeValues = this.store.collect(this.valueField);
-        var newValue = Ext.Array.intersect(value,storeValues);
+        
+        
         var me = this;
         window.setTimeout(function() {
+            var value = me.value || [];
+            var storeValues = me.store.collect(me.valueField);
+            var newValue = Ext.Array.intersect(value,storeValues);
             me.bindStore(me.store);
             me.setValue(newValue);  
         },1)
-    }
+    },
+        
+    onBindStore: function(store, initial) {
+        var me = this;
+
+        if (me.fromField) {
+            me.fromField.store.removeAll()
+            me.toField.store.removeAll();
+
+            me.populateFromStore(store);
+            
+        }
+    },
 })
 
 

@@ -15,15 +15,16 @@ function check(analysisObj, performedAnalysisObj, callback) {
     var layerRefMap = {};
 
     var opts = {
-        'tree': function(asyncCallback) {
-            crud.read('tree', {_id: performedAnalysisObj.tree}, function(err, resls) {
+        'dataset': function(asyncCallback) {
+            
+            crud.read('dataset', {_id: performedAnalysisObj.dataset}, function(err, resls) {
                 if (err)
                     return callback(err);
                 return asyncCallback(null, resls[0])
             })
         },
-        'layerRefFl': ['tree',function(asyncCallback, results) {
-            var flTemplates = results.tree.featureLayerTemplates;
+        'layerRefFl': ['dataset',function(asyncCallback, results) {
+            var flTemplates = results.dataset.featureLayers;
             var flIndex = flTemplates.indexOf(featureLayerTemplate);
             flTemplates = flTemplates.slice(0, flIndex + 1);
             async.map(flTemplates, function(flTemplate, mapCallback) {
@@ -31,6 +32,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
                     if (err)
                         return callback(err);
                     if (!resls.length) {
+                        
                         return callback(new Error('missinglayerref'))
                     }
                     if (flTemplates.indexOf(flTemplate)!=0 && !resls[0].parentColumn) {
@@ -74,27 +76,23 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
     var location = performedAnalysisObj.location;
     var year = performedAnalysisObj.year;
     var featureLayerTemplate = performedAnalysisObj.featureLayerTemplates[0];
-
     var opts = {
-        'tree': function(asyncCallback) {
-            crud.read('tree', {_id: performedAnalysisObj.tree}, function(err, resls) {
+        'dataset': function(asyncCallback) {
+            crud.read('dataset', {_id: performedAnalysisObj.dataset}, function(err, resls) {
                 if (err)
                     return callback(err);
                 return asyncCallback(null, resls[0])
             })
         },
-        perform: ['tree', function(asyncCallback, results) {
-                var flTemplates = results.tree.featureLayerTemplates;
-                console.log(results.tree)
+        perform: ['dataset', function(asyncCallback, results) {
+                var flTemplates = results.dataset.featureLayers;
                 var flIndex = flTemplates.indexOf(featureLayerTemplate);
-                console.log(flTemplates);
-                console.log(flIndex)
                 flTemplates = flTemplates.slice(0, flIndex+1);
                 var columnMap = {};
                 var addedAttrs = [];
 
                 var select = 'SELECT a.parentgid as gid';
-
+                
                 for (var i = 0; i < analysisObj.attributeMap.length; i++) {
                     var obj = analysisObj.attributeMap[i];
                     var text = '';
@@ -132,19 +130,20 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                 sql += ')';
                 flTemplates.reverse();
                 var flTemplatesIterate = flTemplates.slice(0,flTemplates.length-1);
-                console.log(flTemplatesIterate)
+                console.log(flTemplatesIterate);
+                console.log(sql)
                 async.forEachSeries(flTemplatesIterate, function(item, asyncCallback) {
                     var layerRef = layerRefMap[item]['_id']
                     var i = flTemplatesIterate.indexOf(item);
                     var nextFl = flTemplates[i+1];
                     var currentSql = sql.replace('$INDEX$', nextFl);
                     currentSql = currentSql.replace('$LAYERREF$', layerRef);
-                    console.log(item)
+                    console.log('FL '+item)
                     client.query(currentSql, function(err, results) {
                         if (err)
                             return callback(err);
                         async.forEach(analysisObj.attributeSets, function(attrSet, eachCallback) {
-                            console.log(attrSet)
+                            console.log('AS '+attrSet)
                             crud.create('layerref', {
                                 location: location,
                                 year: year,
@@ -170,10 +169,14 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                         })
                     })
                 }, function(err, resls) {
-                    console.log('finishing')
+                    
                     client.end();
+                    if (performedAnalysisObj.ghost) {
+                        return callback(null);
+                    }
                     performedAnalysisObj.finished = new Date();
-                    crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId}, function() {
+                    crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId}, function(err) {
+                        return callback(err);
                     });
                 })
             }]

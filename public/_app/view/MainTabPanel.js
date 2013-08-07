@@ -10,15 +10,19 @@ Ext.define('PumaMng.view.MainTabPanel' ,{
             title: 'Welcome'
         }, {
             xtype: 'managementtab',
+            disabled: true,
             title: 'Objects management'
         }, {
             xtype: 'layerlinktab',
+            disabled: true,
             title: 'Layer linking'
         }, {
             xtype: 'analysistab',
+            disabled: true,
             title: 'Analysis'
         }, {
             xtype: 'performedanalysistab',
+            disabled: true,
             title: 'Performed Analysis'
         }
 //        ,
