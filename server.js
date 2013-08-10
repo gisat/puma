@@ -23,9 +23,9 @@ function initServer() {
 }
 
 async.series([
-    function(callback) {
-        require('./common/conn').init(callback);
-    },
+//    function(callback) {
+//        require('./common/conn').init(callback);
+//    },
 //    function(callback) {
 //        require('./common/init').initDom(callback);
 //    },

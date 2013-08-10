@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Data Exploration</title>
+	<meta charset="utf-8">
+	
+	<link rel="stylesheet" type="text/css" href="css/reset.css">
+	<link rel="stylesheet" type="text/css" href="css/layout.css">
+	<!--
+	<link rel="stylesheet" type="text/css" href="css/ux/ItemSelector.css">
+	<link rel="stylesheet" type="text/css" href="css/app.css">
+	<link rel="stylesheet" type="text/css" href="extjs-4.1.3/resources/css/ext-all-gray.css">
+	<link rel="stylesheet" type="text/css" href="css/ux/colorpicker.css">
+	<link rel="stylesheet" type="text/css" href="extjs-4.1.3/examples/ux/css/CheckHeader.css">
+	-->
+	
+	<!--
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+	<script src="cnst.js"></script>
+	<script src="extjs-4.1.3/ext-debug.js"></script>
+	<script src="devlib/OpenLayers.js"></script>
+	<script src="http://192.168.2.196:3100/socket.io/socket.io.js"></script>
+	
+	<script src="app.js"></script>
+	-->
+	
+	<!-- FOR DEMO PURPOSES ONLY. REMOVE AFTER REPLACING WIDGETS WITH EXT.JS COMPONENTS -->
+	<style>
+		.widget {
+			background       : red;
+		}
+		#content-intro .widget {
+			width            : 300px;
+		}
+		#content-application .scope .widget,
+		#content-application .theme .widget {
+			width            : 120px;
+		}
+		#content-application .year .widget {
+			width            : 130px;
+		}
+		#content-application .level .widget {
+			width            : 160px;
+		}
+		#content-application .visualization .widget {
+			width            : 210px;
+		}
+		#content-application #toolbar .share .widget {
+			width            : 150px;
+			height           : 30px;
+		}
+		#content-application #app-tools-actions {
+			height           : 30px;
+			width            : 250px;
+			background       : red;
+		}
+		#content-application #app-tools-accordeon {
+			min-height       : 200px;
+			width            : 250px;
+			background       : blue;
+		}
+		#content-application #app-reports-accordeon {
+			min-height       : 400px;
+			width            : 580px;
+			background       : red;
+		}
+	</style>
+</head>
+<body class="application">
+	<div id="main">
+		<div id="header">
+			<a href="#" class="home">PUMA</a>
+			<ul class="menu">
+				<li><a href="#" class="active">Data exploration</a></li>
+				<li><a href="#">Projects</a></li>
+				<li><a href="#">Publications</a></li>
+				<li><a href="#">Downloads</a></li>
+				<li><a href="#">News</a></li>
+				<li><a href="#">About</a></li>
+			</ul>
+			<div class="user">
+				<a href="#">Sign in</a>
+				<span></span>
+				<a href="#">Sign up</a>
+			</div>
+		</div>
+		<div id="content">
+			<div id="app-map">
+				<!-- Odstranit <img>. Ted je to tu jen na ukazku -->
+				<img src="test-map.jpg">
+			</div>
+			<div id="content-intro">
+				<div class="label">Data Exploration</div>
+				<div class="field scope">
+					<div class="label">Scope</div>
+					<div id="app-intro-scope" class="widget"></div>
+				</div>
+				<div class="field theme">
+					<div class="label">Theme</div>
+					<div id="app-intro-theme" class="widget"></div>
+				</div>
+			</div>
+			<div id="content-application">
+				<div id="toolbar">
+					<div class="label">Data Exploration</div>
+					<div class="group first">
+						<div class="field scope">
+							<div class="label">Scope</div>
+							<div id="app-toolbar-scope" class="widget"></div>
+						</div>
+						<div class="field theme">
+							<div class="label">Theme</div>
+							<div id="app-toolbar-theme" class="widget"></div>
+						</div>
+					</div>
+					<div class="group">
+						<div class="field year">
+							<div class="label">Year</div>
+							<div id="app-toolbar-year" class="widget"></div>
+						</div>
+						<div class="field level">
+							<div class="label">Analysis level</div>
+							<div id="app-toolbar-level" class="widget"></div>
+						</div>
+					</div>
+					<div class="group">
+						<div class="field help">
+							<a href="#">Help</a>
+						</div>
+						<div class="field visualization">
+							<div class="label">Visualization</div>
+							<div id="app-toolbar-visualization" class="widget"></div>
+						</div>
+					</div>
+					<div class="group share">
+						<div id="app-toolbar-share" class="widget"></div>
+						<div id="app-toolbar-save-view" class="widget"></div>
+					</div>
+				</div>
+				<div id="sidebar-tools">
+					<div id="app-tools-actions"></div>
+					<div id="app-tools-accordeon"></div>
+				</div>
+				<div id="sidebar-reports">
+					<div id="app-reports-accordeon"></div>
+				</div>
+			</div>
+		</div>
+		<div id="footer">
+			<span class="label">Contact us</span>
+			<span class="contact-person">HARRY DOE (Project coordinator)</span>
+			<a href="mailto:harry.doe@worldbank.org" class="contact-email">harry.doe@worldbank.org</a>
+			<span class="copyright">&copy; 2013 The World Bank Group, All Rights Reserved.</span>
+		</div>
+	</div>
+</body>
+</html>

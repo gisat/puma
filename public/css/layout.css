@@ -1,0 +1,232 @@
+/* BASICS */
+body {
+	background-color     : #434254;
+	color                : #c6bdc5;
+	font-family          : Arial, sans-serif;
+	font-size            : 13px;
+}
+a {
+	text-decoration      : none;
+	color                : #c6bdc5;
+}
+a:hover, a:focus {
+	text-decoration      : underline;
+}
+
+/* HEADER */
+#header {
+	background-color     : #371733;
+	height               : 40px;
+	line-height          : 40px;
+	position             : relative;
+	text-align           : center;
+	font-weight          : bold;
+}
+#header a {
+	padding              : 0 10px;
+}
+#header a:hover, #header a:focus {
+	text-decoration      : none;
+}
+	#header .home {
+		display          : inline-block;
+		background-color : #482a43;
+		font-weight      : bold;
+		font-size        : 18px;
+		text-transform   : uppercase;
+		position         : absolute;
+		left             : 0;
+		top              : 0;
+	}
+	#header .menu {
+		display          : inline-block;
+	}
+	#header .menu li {
+		display          : inline-block;
+		font-size        : 14px;
+		margin-right     : 20px;
+	}
+	#header .menu li a {
+		display          : block;
+	}
+	#header .menu li a:hover, #header .menu li a:focus {
+		background-color : #482a43;
+	}
+	#header .menu li a.active {
+		color            : #fff;
+	}
+	#header .user {
+		position         : absolute;
+		right            : 0;
+		top              : 0;
+		background-color : #482a43;
+		text-transform   : uppercase;
+	}
+	#header .user a, #header .user span {
+		float            : left;
+	}
+	#header .user span {
+		width            : 1px;
+		background-color : #c6bdc5;
+		height           : 1em;
+		margin-top       : 13px;
+	}
+	#header .user a:hover, #header .user a:focus {
+		text-decoration  : underline;
+	}
+
+/* CONTENTS */
+#content {
+	position             : relative;
+}
+#content-intro, #content-application {
+	display              : none;
+}
+body.intro #content-intro,
+body.application #content-application {
+	display              : block;
+}
+	.field {
+		margin-top       : 20px;
+		height           : 30px;
+		line-height      : 30px;
+	}
+	.field .label {
+		float            : left;
+		width            : 40px;
+		margin-right     : 10px;
+		font-weight      : bold;
+		color            : #c6bdc5;
+	}
+	.field .widget {
+		height           : 30px;
+		float            : left;
+	}
+	
+	/* Intro */
+	#content-intro {
+		position         : absolute;
+		width            : 645px;
+		height           : 110px;
+		top              : 85px;
+		left             : 0;
+		background-color : #434254;
+		background-color : rgba(67, 66, 84, .9);
+		color            : #fff;
+		font-weight      : bold;
+	}
+	#content-intro > .label {
+		text-transform   : uppercase;
+		font-size        : 30px;
+		display          : block;
+		margin-top       : 20px;
+		margin-left      : 20px;
+		float            : left;
+		width            : 260px;
+		line-height      : 1.2em;
+	}
+	#content-intro .theme {
+		margin-top       : 10px;
+	}
+	
+	/* Application */
+	#content-application #toolbar {
+		position         : absolute;
+		top              : 0;
+		width            : 100%;
+		height           : 100px;
+		background-color : #434254;
+		color            : #fff;
+	}
+	#content-application #toolbar > .label {
+		text-transform   : uppercase;
+		font-size        : 30px;
+		display          : block;
+		margin-top       : 10px;
+		margin-left      : 20px;
+		float            : left;
+		width            : 260px;
+		line-height      : 1.2em;
+	}
+	#content-application #toolbar .group {
+		height           : 70px;
+		background       : url("../images/toolbar-group-border.png") repeat-y 0 0;
+		float            : left;
+		padding          : 0 20px;
+		margin-top       : 10px;
+	}
+	#content-application #toolbar .group.first {
+		padding-left     : 0;
+		background       : none;
+	}
+	#content-application #toolbar .group .field {
+		margin-top       : 0;
+		margin-bottom    : 10px;
+	}
+	#content-application #toolbar .group .label {
+		width            : auto;
+	}
+	#content-application #toolbar .scope .label,
+	#content-application #toolbar .theme .label {
+		width            : 40px;
+	}
+	#content-application #toolbar .help {
+		text-align       : right;
+		font-weight      : bold;
+	}
+	#content-application #toolbar .share {
+		float            : right;
+		width            : 150px;
+		height           : 70px;
+		background       : none;
+	}
+	#content-application #toolbar .share .widget {
+		margin-bottom    : 10px;
+	}
+	#content-application #sidebar-tools {
+		position         : absolute;
+		top              : 100px;
+		left             : 0;
+		width            : 250px;
+	}
+	#content-application #sidebar-reports {
+		position         : absolute;
+		top              : 100px;
+		right            : 0;
+		width            : 580px;
+	}
+
+/* FOOTER */
+#footer {
+	height               : 40px;
+	line-height          : 40px;
+	background-color     : #371733;
+	position             : fixed;
+	bottom               : 0;
+	width                : 100%;
+	padding              : 0 10px;
+	-webkit-box-sizing   : border-box;
+	-moz-box-sizing      : border-box;
+	box-sizing           : border-box;
+	font-size            : 12px;
+}
+#footer .label {
+	font-weight          : bold;
+	font-size            : 20px;
+	display              : inline-block;
+	margin-right         : 50px;
+}
+#footer .contact-person {
+	display              : inline-block;
+	margin-right         : 50px;
+}
+#footer .contact-email {
+	text-decoration      : underline;
+}
+#footer .contact-email:hover, #footer .contact-email:focus {
+	text-decoration      : none;
+}
+#footer .copyright {
+	position             : absolute;
+	right                : 10px;
+}
