@@ -222,7 +222,7 @@ Ext.define('PumaMain.controller.Map', {
     },
     
     onMapMove: function(mapId) {
-        //return;
+        return;
         var mapMoved = mapId=='map' ? this.map1 : this.map2;
         var mapAlt = mapId=='map' ? this.map2 : this.map1;
         if (!mapMoved || !mapAlt) return;
@@ -367,14 +367,14 @@ Ext.define('PumaMain.controller.Map', {
         el.on('contextmenu',function(e) {
             
             
-            e.stopEvent();
-            var layerMenu = Ext.widget('layermenu', {
-                map: map
-            })
-        
-            layerMenu.showAt(e.getXY());
+//            e.stopEvent();
+//            var layerMenu = Ext.widget('layermenu', {
+//                map: map
+//            })
+//        
+//            layerMenu.showAt(e.getXY());
         })
-        if (cmp.id=='map') {
+        if (cmp.itemId=='map') {
             this.createBaseNodes();
             this.map1 = map;
             

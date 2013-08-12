@@ -7,7 +7,7 @@ Ext.define('Puma.patch.picker.Color', {
                 value = me.value,
                 el;
 
-        color = color.replace('#', '');
+        color = color.replace('#', '').toLowerCase();
         if (!me.rendered) {
             me.value = color;
             return;

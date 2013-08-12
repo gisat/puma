@@ -4,37 +4,22 @@ Ext.define('PumaMain.view.ChartBar', {
     requires: [],
     initComponent: function() {
 
-//        this.layout = {
-//            type: 'table',
-//            // The total column count must be specified here
-//            columns: 2
-//        }
+        this.layout = {
+            type: 'accordion',
+            multi: true,
+            fill: false,
+        }
         this.items = [
-//            {
-//                xtype: 'component',
-//                colspan: 2,
-//                margin: 5,
-//                id: 'chart1',
-//                autoScroll: true,
-//                width: 575,
-//                height: 400
-//            }, {
-//                xtype: 'component',
-//                colspan: 2,
-//                margin: 5,
-//                id: 'chart2',
-//                autoScroll: true,
-//                width: 575,
-//                height: 400
-//            }, {
-//                xtype: 'component',
-//                colspan: 2,
-//                id: 'chart3',
-//                margin: 5,
-//                width: 575,
-//                autoScroll: true,
-//                height: 400
-//            }
+            {
+                xtype: 'panel',
+                height: 50,
+                title: 'Screenshots'
+            },
+            {
+                xtype: 'panel',
+                collapsed: true,
+                title: 'Add chart'
+            }
         ]
         this.callParent();
     }

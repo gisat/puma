@@ -135,6 +135,7 @@ Ext.define('PumaMain.controller.Store', {
         Ext.StoreMgr.lookup('selectedlayers').on('datachanged',function(store) {
             me.getController('Layers').onLayerDrop();
         })
+        
     },
         
     initSlaveStores: function() {

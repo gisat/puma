@@ -110,12 +110,17 @@ Ext.define('PumaMain.controller.Area', {
         if (this.areaFilter) {
             options.params['filter'] = JSON.stringify(this.areaFilter);
         }
-        options.params['location'] = node.get('loc');
-        options.params['dataset'] = datasetBtn.objId;
-        options.params['areaTemplate'] = node.get('at');
-        options.params['years'] = JSON.stringify(years);
+        
         var gid = node.get('gid');
-        options.params['gid'] = gid!='root' ? gid : '';
+        var loc = node.get('loc');
+        var at = node.get('at')
+        var parentGids = {};
+        parentGids[loc] = {};
+        parentGids[loc][at] = [gid];
+        options.params['refreshAreas'] = true;
+        options.params['dataset'] = datasetBtn.objId;
+        options.params['years'] = JSON.stringify(years);
+        options.params['parentgids'] = JSON.stringify(parentGids)
     },
     onLoad: function(store,node,records) {
         for (var i=0;i<records.length;i++) {
