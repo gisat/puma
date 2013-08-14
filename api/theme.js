@@ -266,23 +266,25 @@ function getThemeYearConf(params, req, res, callback) {
                 var atMap = {};
                 var layerRefsToCheck = [];
                 var areas = results.sql.areas || results.sql.add;
-                console.log(areas)
-                var fidsToIter = fids || {};
+                var fidsToIter = params['fids'] ? JSON.parse(params['fids']) : {};
+                //console.log(fidsToIter)
                 for (var loc in fidsToIter) {
                     for (var at in fidsToIter[loc]) {
                         atMap[loc] = atMap[loc] || {};
                         atMap[loc][at] = atMap[loc][at] || [];
+                        
                         for (var i = 0; i < fidsToIter[loc][at].length; i++) {
                             atMap[loc][at].push(fidsToIter[loc][at][i]);
                         }
                     }
                 }
+                console.log(atMap)
                 for (var i = 0; i < areas.length; i++) {
                     var area = areas[i];
                     atMap[area.loc] = atMap[area.loc] || {};
                     atMap[area.loc][area.at] = atMap[area.loc][area.at] || [];
                     atMap[area.loc][area.at].push(area);
-                    console.log(area==results.sql.areas[i])
+                    
                 }
                 for (var loc in atMap) {
                     for (var at in atMap[loc]) {
@@ -301,26 +303,31 @@ function getThemeYearConf(params, req, res, callback) {
                         }
                         catch (e) {
                         }
+                        var areasOrGids = atMap[loc][at];
+                        areas = us.difference(areas,areasOrGids);
                         layerRefsToCheck.push({
                             loc: loc,
                             at: at,
                             nextAt: nextAt,
                             layerRef: layerRef,
                             nextLayerRef: nextLayerRef,
-                            areasOrGids: atMap[loc][at]
+                            areasOrGids: areasOrGids
                         })
                     }
                 }
                 
                 var leafMap = {};
+                var newAreas = [];
                 async.forEach(layerRefsToCheck, function(item, eachCallback) {
                     if (!item.nextLayerRef || !item.layerRef) {
                         for (var i = 0; i < item.areasOrGids.length; i++) {
                             var area = item.areasOrGids[i];
                             if (area.gid) {
                                 area.leaf = true;
+                                newAreas.push(area);
                             }
                             else {
+                                console.log(leafMap)
                                 leafMap[item.loc] = leafMap[item.loc];
                                 leafMap[item.loc][item.at] = leafMap[item.loc][item.at];
                                 leafMap[item.loc][item.at][area] = true;
@@ -334,7 +341,7 @@ function getThemeYearConf(params, req, res, callback) {
                     if (filter && filter.areaTemplates[item.nextAt]) {
                         sql += getFilterSql(filter.filters, 'b.');
                     }
-                    sql += ' GROUP BY (a.gid)'
+                    sql += ' GROUP BY (a.gid)';
                     var client = conn.getPgDb();
                     client.query(sql, {}, function(err, resls) {
                         
@@ -353,14 +360,15 @@ function getThemeYearConf(params, req, res, callback) {
                         //console.log(partLeafMap)
                         for (var i=0;i<item.areasOrGids.length;i++) {
                             var area = item.areasOrGids[i];
-                            console.log(results.sql.areas[0]==area)
                             if (area.gid && partLeafMap[area.gid]) {
-                                console.log(area.gid)
                                 area.leaf = true;
                             }
+                            if (area.gid) {
+                                newAreas.push(area);
+                            }
                             if (!area.gid && partLeafMap[area]) {
-                                leafMap[item.loc] = leafMap[item.loc];
-                                leafMap[item.loc][item.at] = leafMap[item.loc][item.at];
+                                leafMap[item.loc] = leafMap[item.loc] || {};
+                                leafMap[item.loc][item.at] = leafMap[item.loc][item.at] || {};
                                 leafMap[item.loc][item.at][area] = true;
                             }
                         }
@@ -371,7 +379,19 @@ function getThemeYearConf(params, req, res, callback) {
                         
                     });
                 },function(err) {
-                    return asyncCallback(null,leafMap);
+                    areas = us.union(areas,newAreas);
+                    console.log(areas)
+                    areas = us.sortBy(areas,'idx');
+                    var obj = {
+                        leafMap: leafMap
+                    }
+                    if (results.sql.areas) {
+                        obj['areas'] = areas;
+                    }
+                    if (results.sql.add) {
+                        obj['add'] = areas;
+                    }
+                    return asyncCallback(null,obj);
                 })
 
 
@@ -474,11 +494,13 @@ function getThemeYearConf(params, req, res, callback) {
 
             }],
         finish: ['layers', 'leafs', function(asyncCallback, results) {
-                res.data = params['parentgids'] ? results.sql.areas : {
-                    add: results.sql.add,
+                
+                res.data = params['parentgids'] ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
+                    add: results.leafs ? results.leafs.add : results.sql.add,
+                    leafMap: results.leafs ? results.leafs.leafMap : null,
                     auRefMap: results.layerRefs,
                     remove: results.sql.remove,
-                    areas: results.sql.areas,
+                    areas: results.leafs ? results.leafs.areas : results.sql.areas,
                     layerRefMap: results.layers ? results.layers.layerRefMap : null,
                     layerNodes: results.layers ? results.layers.layerNodes : null
                 }
@@ -488,112 +510,6 @@ function getThemeYearConf(params, req, res, callback) {
     async.auto(opts)
 }
 
-
-function getAreas(params, req, res, callback) {
-    if (!params['location'] || !params['areaTemplate'] || !params['dataset'] || !params['years']) {
-        res.data = [];
-        return callback(null);
-    }
-    var filter = params['filter'] ? JSON.parse(params['filter']) : null;
-    var years = JSON.parse(params['years']);
-    var location = parseInt(params['location']);
-    async.auto({
-        dataset: function(asyncCallback) {
-            crud.read('dataset', {_id: parseInt(params['dataset'])}, function(err, resls) {
-                if (err)
-                    return asyncCallback(err);
-                return asyncCallback(null, resls[0])
-            })
-
-        },
-        layerRef: ['dataset', function(asyncCallback, results) {
-                var areaTemplate = params['areaTemplate'] ? parseInt(params['areaTemplate']) : null;
-                var queriedAreaTemplate = null;
-                var nextAreaTemplate = null;
-
-                var featureLayers = results.dataset.featureLayers;
-                for (var i = 0; i < featureLayers.length; i++) {
-                    var fl = featureLayers[i];
-                    if (fl == areaTemplate) {
-                        queriedAreaTemplate = featureLayers[i + 1];
-                        if (i < featureLayers.length - 2) {
-                            nextAreaTemplate = featureLayers[i + 2];
-                        }
-                    }
-                }
-
-                var areaTemplates = nextAreaTemplate ? [queriedAreaTemplate, nextAreaTemplate] : [queriedAreaTemplate];
-                crud.read('layerref', {areaTemplate: {$in: areaTemplates}, location: location, year: {$in: years}, isData: false}, function(err, resls) {
-                    if (err)
-                        return asyncCallback(err);
-                    var hasNextMap = {};
-                    var layerRefs = [];
-                    console.log(resls);
-
-                    for (var i = 0; i < resls.length; i++) {
-                        var result = resls[i];
-                        if (!result.fidColumn) {
-                            continue;
-                        }
-                        if (result.areaTemplate == queriedAreaTemplate) {
-                            layerRefs.push(result);
-                        }
-                        if (result.areaTemplate == nextAreaTemplate) {
-                            hasNextMap[result.year] = true;
-                        }
-                    }
-                    layerRefs.hasNext = true;
-                    for (var i = 0; i < layerRefs.length; i++) {
-                        var layerRef = layerRefs[i];
-                        var layerRefHasNext = hasNextMap[layerRef.year];
-                        if (!layerRefHasNext) {
-                            layerRefs.hasNext = false;
-                            break;
-                        }
-                    }
-
-                    asyncCallback(null, layerRefs);
-                });
-
-
-            }],
-        areas: ['layerRef', function(asyncCallback, results) {
-                var layerRefs = results.layerRef;
-                var leaf = (layerRefs.length && layerRefs.hasNext) ? 'FALSE' : 'TRUE';
-                var layerRef = layerRefs[0];
-                var at = (layerRef ? layerRef.areaTemplate : -1)
-                var sql = 'SELECT a.gid, ' + location + ' AS loc,' + leaf + ' AS leaf,' + at + ' AS at,' + (layerRef ? layerRef._id : -1) + ' AS lr, a.name, ST_AsText(a.extent) as extent';
-                // pro UP nutno upravit
-                var layerId = layerRef ? layerRef['_id'] : 'user_' + req.userId + '_loc_' + location + '_y_' + years;
-
-                sql += ' FROM views.layer_' + layerId + ' a';
-                for (var k = 1; k < layerRefs.length; k++) {
-                    var altLayerRef = layerRefs[k];
-                    sql += ' INNER JOIN views.layer_' + altLayerRef._id + ' l' + altLayerRef._id + ' ON a.gid=l' + altLayerRef._id + '.gid'
-                }
-                sql += ' WHERE 1=1'
-                if (layerRef && layerRef.parentColumn && params['gid']) {
-                    sql += ' AND a.parentgid=$1';
-                }
-                if (filter && filter.areaTemplates[at]) {
-                    sql += getFilterSql(filter.filters, 'a.');
-                }
-                sql += ' ORDER BY name';
-                console.log(sql)
-                var queryParams = (layerRef && layerRef.parentColumn && params['gid']) ? [parseInt(params['gid'])] : []
-                var client = conn.getPgDb();
-                console.log(sql);
-                client.query(sql, queryParams, function(err, results) {
-
-                    if (err)
-                        return callback(err);
-                    res.data = results.rows;
-                    return callback(null);
-                })
-
-            }]
-    })
-}
 
 var getFilterSql = function(atFilter, prefix) {
     var sql = '';
@@ -620,6 +536,5 @@ var getFilterSql = function(atFilter, prefix) {
 
 
 module.exports = {
-    getAreas: getAreas,
     getThemeYearConf: getThemeYearConf
 }

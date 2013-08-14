@@ -2,6 +2,8 @@ Ext.define('PumaMain.view.ChartBar', {
     extend: 'Ext.container.Container',
     alias: 'widget.chartbar',
     requires: [],
+    autoScroll: true,
+    maxHeight: 780,
     initComponent: function() {
 
         this.layout = {
@@ -12,12 +14,15 @@ Ext.define('PumaMain.view.ChartBar', {
         this.items = [
             {
                 xtype: 'panel',
-                height: 50,
+                collapsed: true,
+                cfgType: 'screenshots',
+                //height: 50,               
                 title: 'Screenshots'
             },
             {
                 xtype: 'panel',
                 collapsed: true,
+                cfgType: 'add',
                 title: 'Add chart'
             }
         ]

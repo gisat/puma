@@ -71,7 +71,6 @@ function init(app,callback) {
             }
         },2000)
     },Math.round(1000*60*60*5.9))
-    
     MongoClient.connect("mongodb://192.168.2.13:27017/test", function(err, dbs) {
         if (err) callback(err)
         mongodb=dbs;

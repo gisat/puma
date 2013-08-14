@@ -1,7 +1,9 @@
 Ext.define('PumaMain.view.Tools', {
     extend: 'Ext.container.Container',
     alias: 'widget.toolspanel',
-    requires: ['PumaMain.view.LayerPanel'],
+    // to be removed
+    width: 380,
+    requires: ['PumaMain.view.LayerPanel','PumaMain.view.MapTools'],
     initComponent: function() {
         this.layout = {
             type: 'accordion',
@@ -33,16 +35,15 @@ Ext.define('PumaMain.view.Tools', {
             },
             rootVisible: false,
             displayField: 'name',
-            maxHeight: 300
+            height: 600
         }, {
             xtype: 'layerpanel',
             collapsed: true,
-            height: 300,
+            height: 600,
             title: 'Layers'
         },{
-            xtype: 'panel',
+            xtype: 'maptools',
             collapsed: false,
-            height: 150,
             title: 'Map tools'
         },{
             xtype: 'panel',

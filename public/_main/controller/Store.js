@@ -8,8 +8,6 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.AreaTemplate',
         'Puma.model.Dataset',
         'Puma.model.Topic',
-        //'Puma.model.LayerTemplate',
-        //'Puma.model.LayerTemplateExt',
         'Puma.model.Symbology',
         'Puma.model.LayerRef',
         'Puma.model.LayerServer',
@@ -129,18 +127,18 @@ Ext.define('PumaMain.controller.Store', {
         areaStore.on('load',function(store,node,records) {
             me.getController('Area').onLoad(store,node,records);
         },this);
-        Ext.StoreMgr.lookup('activedataset').on('load',function(store) {
-            me.getController('Settings').onDatasetLoad();
-        })
-        Ext.StoreMgr.lookup('selectedlayers').on('datachanged',function(store) {
-            me.getController('Layers').onLayerDrop();
-        })
+//        Ext.StoreMgr.lookup('activedataset').on('load',function(store) {
+//            me.getController('Settings').onDatasetLoad();
+//        })
+//        Ext.StoreMgr.lookup('selectedlayers').on('datachanged',function(store) {
+//            me.getController('Layers').onLayerDrop();
+//        })
         
     },
         
     initSlaveStores: function() {
        
-    
+        // active objects
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'visualization4window',
@@ -151,7 +149,7 @@ Ext.define('PumaMain.controller.Store', {
             slave: true,
             storeId: 'activescope',
             filters: [function(rec) {
-                    return rec.get('active');
+                    return rec.get('active')!==false;
             }],
             model: 'Puma.model.Scope'
         })
@@ -159,7 +157,7 @@ Ext.define('PumaMain.controller.Store', {
             slave: true,
             storeId: 'activedataset',
             filters: [function(rec) {
-                    return rec.get('active');
+                    return rec.get('active')!==false;
             }],
             model: 'Puma.model.Dataset'
         })
@@ -167,7 +165,7 @@ Ext.define('PumaMain.controller.Store', {
             slave: true,
             storeId: 'activelocation',
             filters: [function(rec) {
-                    return rec.get('active');
+                    return rec.get('active')!==false;
             }],
             model: 'Puma.model.Location'
         })
@@ -175,15 +173,41 @@ Ext.define('PumaMain.controller.Store', {
             slave: true,
             storeId: 'activeattributeset',
             filters: [function(rec) {
-                    return rec.get('active');
+                    return rec.get('active')!==false;
             }],
             model: 'Puma.model.AttributeSet'
         })
+    
+    
+        // objects for selection
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
-            storeId: 'attributeset4chart',
-            model: 'Puma.model.AttributeSet'
+            storeId: 'theme4sel',
+            filters: [function(rec) {
+                    return false;
+            }],
+            model: 'Puma.model.Theme'
         })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'year4sel',
+            filters: [function(rec) {
+                    return false;
+            }],
+            model: 'Puma.model.Year'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'visualization4sel',
+            filters: [function(rec) {
+                    return false;
+            }],
+            model: 'Puma.model.Visualization'
+        })
+        
+ 
+        
+        // layer templates vs. feature layer templates
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'featurelayertemplate',
@@ -200,7 +224,19 @@ Ext.define('PumaMain.controller.Store', {
             }],
             model: 'Puma.model.AreaTemplate'
         })
+        
+        
+        
+        // need advanced logic
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'attributeset4chart',
+            model: 'Puma.model.AttributeSet'
+        })
     
+    
+    
+        // attributes based on attr sets
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'attribute4chart',
@@ -233,6 +269,8 @@ Ext.define('PumaMain.controller.Store', {
             }],
             model: 'Puma.model.Attribute'
         })
+    
+        // ? is needed, i think use of year4sel is sufficient
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'year4chart',
@@ -242,11 +280,6 @@ Ext.define('PumaMain.controller.Store', {
         
     initLocalStores: function() {
      
-     
-     
-        
-        
-        
         Ext.create('Ext.data.TreeStore', {
             fields: ['text'],
             model: 'Puma.model.MapLayer',
@@ -270,6 +303,10 @@ Ext.define('PumaMain.controller.Store', {
             model: 'Puma.model.MapLayer',
             filters: [function(rec) {
                 return rec.get('checked');
+            }],
+            sorters: [{
+                property: 'sortIndex',
+                direction: 'ASC'
             }],
             storeId: 'selectedlayers'
         })

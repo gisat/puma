@@ -21,6 +21,7 @@ Ext.define('PumaMain.controller.Select', {
     },
         
     select: function(areas,add,hover) {
+        debugger;
         if (!this.actualColor) return;
         if (this.task) {
             this.task.cancel();
@@ -202,10 +203,6 @@ Ext.define('PumaMain.controller.Select', {
         }
         return resultMap;
     }
-    
-    
-        
-    
     
     
 });

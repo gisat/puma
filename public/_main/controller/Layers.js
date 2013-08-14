@@ -127,8 +127,7 @@ Ext.define('PumaMain.controller.Layers', {
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
 
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')
-        var years = Ext.Array.pluck(yearBtns, 'objId');
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
         var areaTemplates = this.getController('Area').areaTemplateMap;
         var namedLayers1 = [];
         var namedLayers2 = [];
@@ -274,8 +273,7 @@ Ext.define('PumaMain.controller.Layers', {
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
 
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')
-        var years = Ext.Array.pluck(yearBtns, 'objId');
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
         for (var i = 0; i < Math.max(2, years.length); i++) {
             var year = years[i];
             var filterMap = this.getTreeFilters(year);
@@ -617,8 +615,7 @@ Ext.define('PumaMain.controller.Layers', {
                 
     },
     initChartLayer: function(node) {
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')
-        var years = Ext.Array.pluck(yearBtns, 'objId');
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var symObjs = this.getSymObj(node.get('params'));
         var ruleObjs = symObjs.rules;
         var legendRules = symObjs.legend;
@@ -643,14 +640,13 @@ Ext.define('PumaMain.controller.Layers', {
         }
     },
     onCheckChange: function(node, checked, performUncheck, bypassLegendRedraw) {
-
         Ext.StoreMgr.lookup('selectedlayers').filter();
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
-
+        
+        var me = this;
         if (node.get('type') == 'chartlayer' && node.get('checked')) {
             var root = Ext.StoreMgr.lookup('layers').getRootNode();
-            var me = this;
             root.cascadeBy(function(currentNode) {
                 if (currentNode.get('type') == 'chartlayer' && currentNode != node) {
                     currentNode.set('checked', false);
@@ -660,14 +656,24 @@ Ext.define('PumaMain.controller.Layers', {
             this.initChartLayer(node);
             return;
         }
-
+        var parentNode = node.parentNode;
+        if (parentNode.get('type')=='basegroup' && checked) {
+            for (var i=0;i<parentNode.childNodes.length;i++) {
+                var childNode = parentNode.childNodes[i];
+                if (node!=childNode) {
+                    childNode.set('checked',false);
+                    me.onCheckChange(childNode,false);
+                }
+            }
+        }
+        
         if (layer1.initialized)
             layer1.setVisibility(checked);
         if (layer2.initialized)
             layer2.setVisibility(checked);
         if (!bypassLegendRedraw)
             Ext.ComponentQuery.query('#legendpanel')[0].refresh();
-
+        me.onLayerDrop();
     },
     gatherSymbologiesAndOpacities: function() {
         var store = Ext.StoreMgr.lookup('selectedlayers');
@@ -690,9 +696,9 @@ Ext.define('PumaMain.controller.Layers', {
         })
         return confs;
     },
-    checkVisibilityAndStyles: function(preserveStyles, preserveVis) {
-        var visBtn = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[pressed=true]')[0]
-        var vis = Ext.StoreMgr.lookup('visualization').getById(visBtn.objId);
+    checkVisibilityAndStyles: function() {
+        var visId = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
+        var vis = Ext.StoreMgr.lookup('visualization').getById(visId);
         if (!vis && !Cnst.cfg) return;
         var atMap = Cnst.cfg ? Cnst.cfg.layerCfg : (vis.get('atMap') || []);
         

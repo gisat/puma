@@ -69,7 +69,6 @@ Ext.define('PumaMain.controller.UserPolygon', {
             me.getController('Area').reinitializeTree(true);
         })
 
-
     },
     onFeatureDragged: function(feature) {
         var format = new OpenLayers.Format.WKT();

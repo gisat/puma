@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Chart', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Ext.ux.grid.FiltersFeature', 'PumaMain.view.ChartConfig', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color'],
+    requires: ['Ext.ux.grid.FiltersFeature', 'PumaMain.view.ChartConfig', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color','PumaMain.view.ChartPanel'],
     init: function() {
         this.control({
             'initialbar #visualizationsbtn': {
@@ -16,6 +16,9 @@ Ext.define('PumaMain.controller.Chart', {
             'initialbar #urlbtn': {
                 click: this.onSaveView
             },
+            
+            
+            
             'visualizationform form': {
                 beforesave: this.onBeforeVisualizationSave,
                 aftersave: this.onAfterVisualizationSave
@@ -32,6 +35,9 @@ Ext.define('PumaMain.controller.Chart', {
             'chartconfigpanel #normalizationAttributeSet': {
                 change: this.onAttrSetChange
             },
+        
+        
+            
             'chartconfigpanel #addattrbtn': {
                 click: this.onAddAttribute
             },
@@ -59,18 +65,41 @@ Ext.define('PumaMain.controller.Chart', {
             'chartconfigpanel #useAttributeColors': {
                 change: this.onUseAttrColorsChange
             },
-            'chartbar #removebtn': {
+        
+        
+            'chartpanel tool[type=close]': {
                 click: this.onChartRemove
             },
-            'chartbar #urlbtn': {
-                click: this.onUrlClick
-            },
-            'chartbar #exportpngbtn': {
-                click: this.onUrlClick
-            },
-            'chartbar #cfgbtn': {
+            'chartpanel tool[type=gear]': {
                 click: this.onReconfigureClick
-            }}
+            },
+            'chartpanel tool[type=help]': {
+                click: this.onToggleLegend
+            },
+            'chartpanel tool[type=collapse]': {
+                click: this.onExportCsv
+            },
+            'chartpanel tool[type=search]':{
+                click: this.onSwitchZooming
+            },
+            'chartpanel tool[type=print]':{
+                click: this.onUrlClick
+            },
+            'chartpanel tool[type=save]':{}
+            
+//            'chartbar #removebtn': {
+//                click: this.onChartRemove
+//            },
+//            'chartbar #urlbtn': {
+//                click: this.onUrlClick
+//            },
+//            'chartbar #exportpngbtn': {
+//                click: this.onUrlClick
+//            },
+//            'chartbar #cfgbtn': {
+//                click: this.onReconfigureClick
+//            }
+        }
 
 
         )
@@ -80,6 +109,21 @@ Ext.define('PumaMain.controller.Chart', {
                 thousandsSep: ''
             }
         })
+    },
+    
+    onToggleLegend: function(btn) {
+        var chart = btn.up('panel').chart;
+        chart.legendOn = chart.legendOn ? false : true;
+        this.toggleLegendState(chart.chart,chart.legendOn);
+    },
+    
+    onSwitchZooming: function(btn) {
+        var chart = btn.up('panel').chart;
+        chart.zooming = chart.zooming ? false : true;
+    },
+    onExportCsv: function(btn) {
+        var chart = btn.up('panel').chart;
+        this.reconfigureChart(chart,true);
     },
         
     onSaveView: function() {
@@ -98,7 +142,7 @@ Ext.define('PumaMain.controller.Chart', {
         cfg.visualization = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[pressed=true]')[0].objId
         cfg.expanded = this.getController('Area').getExpandedAndFids().expanded;
         cfg.selMap = this.getController('Select').selMap;
-        cfg.multipleMaps = Ext.ComponentQuery.query('initialbar #multiplemapsbtn')[0].pressed==true;
+        //cfg.multipleMaps = Ext.ComponentQuery.query('initialbar #multiplemapsbtn')[0].pressed==true;
         Ext.Ajax.request({
             url: Cnst.url + '/api/urlview/saveView',
             params: {
@@ -302,10 +346,13 @@ Ext.define('PumaMain.controller.Chart', {
         var container = Ext.ComponentQuery.query('chartbar')[0];
         var me = this;
         container.items.each(function(item) {
-            me.onChartRemove(null, item);
+            if (item.xtype=='chartpanel') {
+               me.onChartRemove(null, item);
+            }
+            
         })
         for (var i = 0; i < cfg.length; i++) {
-                
+            if (cfg.type!='filter')
             this.addChart(cfg[i], true);
         }
 
@@ -324,7 +371,8 @@ Ext.define('PumaMain.controller.Chart', {
         //var opts = cfg.type == 'featurecount' ? {height: 150} : {};
         var opts = {
             height: 400,
-            width: 575
+            width: 575,
+            layout: 'fit'
         };
         if (cfg.type=='extentoutline') {
             opts.layout = {
@@ -334,109 +382,101 @@ Ext.define('PumaMain.controller.Chart', {
             opts.height = null;
         }
         var chart = Ext.widget('chartcmp', opts);
-        var layout = 'fit'
         var items = [chart];
-        if (cfg.type=='filter') {
-            items = [];
-            layout = 'auto'
-        }
         
-        var me = this;
         
-        var cnt = Ext.widget('panel', {
-            layout: layout,
-            frame: false,
-            margin: '10 10 10 0',
-            border: 0,
-            padding: 0,
-            buttons: [{
-                    text: 'Remove',
-                    itemId: 'removebtn'
-                }, {
-                    text: 'Config',
-                    itemId: 'cfgbtn'
-                }, {
-                    text: 'Legend',
-                    hidden: Ext.Array.contains(['grid', 'featurecount','extentoutline','filter'], cfg.type),
-                    pressed: false,
-                    scope: chart,
-                    enableToggle: true,
-                    itemId: 'legendbtn',
-                    handler: function(btn) {
-                        var chart = this.chart;
-                        if (!chart)
-                            return;
-                        me.toggleLegendState(chart, btn.pressed);
-                    }
-                },{
-                    text: 'Apply',
-                    itemId: 'applyfilterbtn',
-                    hidden: cfg.type!='filter'
-                },{
-                    text: 'Clear filter',
-                    itemId: 'clearfilterbtn',
-                    hidden: cfg.type!='filter'
-                },
-                {
-                    text: 'Export CSV',
-                    hidden: cfg.type != 'grid',
-                    scope: chart,
-                    itemId: 'exportbtn',
-                    handler: function(btn) {
-                        me.reconfigureChart(this, true)
-                    }
-                },
-                {
-                    text: 'Switch zooming',
-                    hidden: cfg.type != 'scatterchart',
-                    scope: chart,
-                    itemId: 'switchzoomingbtn',
-                    enableToggle: true
-                },
-                {
-                    text: 'Export PNG',
-                    hidden: cfg.type=='filter',
-                    scope: chart,
-                    itemId: 'exportpngbtn',
-                    handler: function(btn) {
-                        //me.reconfigureChart(this, true)
-                    }
-                },
-                {
-                    text: 'Save',
-                    //hidden: cfg.type=='filter',
-                    hidden: true,
-                    scope: chart,
-                    itemId: 'savebtn',
-                    handler: function(btn) {
-                        //me.reconfigureChart(this, true)
-                    }
-                },
-                {
-                    text: 'URL',
-                    hidden: cfg.type=='filter',
-                    scope: chart,
-                    itemId: 'urlbtn',
-                    handler: function(btn) {
-                        //me.reconfigureChart(this, true)
-                    }
-                }],
+        var cnt = Ext.widget('chartpanel', {
+            title: cfg.title || ('Anonymous '+cfg.type),
+            cfgType: cfg.type,
+//            buttons: [{
+//                    text: 'Remove',
+//                    itemId: 'removebtn'
+//                }, {
+//                    text: 'Config',
+//                    itemId: 'cfgbtn'
+//                }, {
+//                    text: 'Legend',
+//                    hidden: Ext.Array.contains(['grid', 'featurecount','extentoutline','filter'], cfg.type),
+//                    pressed: false,
+//                    scope: chart,
+//                    enableToggle: true,
+//                    itemId: 'legendbtn',
+//                    handler: function(btn) {
+//                        var chart = this.chart;
+//                        if (!chart)
+//                            return;
+//                        me.toggleLegendState(chart, btn.pressed);
+//                    }
+//                },{
+//                    text: 'Apply',
+//                    itemId: 'applyfilterbtn',
+//                    hidden: cfg.type!='filter'
+//                },{
+//                    text: 'Clear filter',
+//                    itemId: 'clearfilterbtn',
+//                    hidden: cfg.type!='filter'
+//                },
+//                {
+//                    text: 'Export CSV',
+//                    hidden: cfg.type != 'grid',
+//                    scope: chart,
+//                    itemId: 'exportbtn',
+//                    handler: function(btn) {
+//                        me.reconfigureChart(this, true)
+//                    }
+//                },
+//                {
+//                    text: 'Switch zooming',
+//                    hidden: cfg.type != 'scatterchart',
+//                    scope: chart,
+//                    itemId: 'switchzoomingbtn',
+//                    enableToggle: true
+//                },
+//                {
+//                    text: 'Export PNG',
+//                    hidden: cfg.type=='filter',
+//                    scope: chart,
+//                    itemId: 'exportpngbtn',
+//                    handler: function(btn) {
+//                        //me.reconfigureChart(this, true)
+//                    }
+//                },
+//                {
+//                    text: 'Save',
+//                    //hidden: cfg.type=='filter',
+//                    hidden: true,
+//                    scope: chart,
+//                    itemId: 'savebtn',
+//                    handler: function(btn) {
+//                        //me.reconfigureChart(this, true)
+//                    }
+//                },
+//                {
+//                    text: 'URL',
+//                    hidden: cfg.type=='filter',
+//                    scope: chart,
+//                    itemId: 'urlbtn',
+//                    handler: function(btn) {
+//                        //me.reconfigureChart(this, true)
+//                    }
+//                }],
             items: items
         })
-        container.add(cnt);
+        container.add(container.items.length-2,cnt);
         chart.cfg = cfg;
         chart.cnt = cnt;
         cnt.chart = chart;
-        if (!withoutReconfigure || chart.cfg.type=='filter') {
+        if (!withoutReconfigure) {
             this.reconfigureChart(chart,false,true);
         }
     },
     onChartRemove: function(btn, panel) {
+        
         var panel = btn ? btn.up('panel') : panel;
-        var chart = panel.items.getAt(0);
-        if (chart && chart.cfg) {
-            this.getController('Layers').onChartReconfigure(chart, {removing:true,attrs:JSON.stringify(chart.cfg.attrs),showChoropleth:chart.cfg.showChoropleth});
-        }
+//        var chart = panel.items.getAt(0);
+//        if (chart && chart.cfg) {
+//            this.getController('Layers').onChartReconfigure(chart, {removing:true,attrs:JSON.stringify(chart.cfg.attrs),showChoropleth:chart.cfg.showChoropleth});
+//        }
         panel.destroy();
     },
         
@@ -460,8 +500,8 @@ Ext.define('PumaMain.controller.Chart', {
         this.reconfigureChart(form.chart);
     },
     getChartWindowConfig: function(chart, reconfiguring) {
-        var datasetBtn = Ext.ComponentQuery.query('initialbar #datasetcontainer button[pressed=true]')[0];
-        var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetBtn.objId);
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
         var areaTemplates = dataset.get('featureLayers');
         var store = Ext.create('Gisatlib.data.SlaveStore', {
             slave: true,
@@ -596,10 +636,9 @@ Ext.define('PumaMain.controller.Chart', {
         queryCfg.areas = areas;
         queryCfg.selectedAreas = selectedAreas;
         if (cfg.useMaster == 'on') {
-            var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-            if (!yearBtns.length)
+            var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+            if (!years.length)
                 return;
-            var years = Ext.Array.pluck(yearBtns,'objId');
             queryCfg.years = years;
         }
         if (!queryCfg.years) {
@@ -657,7 +696,7 @@ Ext.define('PumaMain.controller.Chart', {
             success: forExport ? null : this.onChartReceived,
             failure: forExport ? null : this.onChartReceived
         })
-        this.getController('Layers').onChartReconfigure(chartCmp, params);
+        //this.getController('Layers').onChartReconfigure(chartCmp, params);
     },
 
     getParams: function(queryCfg) {
@@ -727,7 +766,7 @@ Ext.define('PumaMain.controller.Chart', {
             return;
         }
         if (!data) {
-            legendBtn.hide();
+            //legendBtn.hide();
             return;
         }
         if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
@@ -740,13 +779,13 @@ Ext.define('PumaMain.controller.Chart', {
             cmp.chart = chart;
             chart.cmp = cmp;
 
-            legendBtn.hide();
+            //legendBtn.hide();
             return;
         }
         
         
         if (!Ext.Array.contains(['grid', 'featurecount'], cmp.cfg.type)) {
-            legendBtn.show();
+            //legendBtn.show();
         }
         var isGrid = cmp.queryCfg.type == 'grid';
         if (isGrid) {
@@ -805,14 +844,13 @@ Ext.define('PumaMain.controller.Chart', {
         chart.cmp = cmp;
         var panel = cmp.ownerCt;
         if (!singlePage) {
-            var btn = Ext.ComponentQuery.query('#legendbtn', panel)[0];
-            me.toggleLegendState(chart, btn.pressed);
-            
+            me.toggleLegendState(chart, cmp.legendOn);
         }
         this.colourChart(cmp);
     },
         
     onUrlClick: function(btn) {
+        debugger;
         var chart = btn.up('panel').chart;
         var cfg = this.gatherChartCfg(chart,true)
         cfg.oldAreas = chart.cfg.areas;
@@ -950,7 +988,10 @@ Ext.define('PumaMain.controller.Chart', {
         evt.preventDefault();
     },
     onScatterSelected: function(evt) {
-        var zooming = Ext.ComponentQuery.query('#switchzoomingbtn',evt.target.cmp.cnt)[0].pressed
+//        var zooming = Ext.ComponentQuery.query('#switchzoomingbtn',evt.target.cmp.cnt)[0].pressed
+        
+        var chart = evt.target.cmp;
+        var zooming = chart.zooming;
         if (zooming || !evt.xAxis) {
             return true;
             
@@ -1014,8 +1055,9 @@ Ext.define('PumaMain.controller.Chart', {
         var selectController = this.getController('Select');
         var grid = Ext.widget('grid', {
             renderTo: cmp.el,
+            height: '100%',
+            header: false,
             store: store,
-            height: 392,
             title: cmp.cfg.title,
             //frame: true,
             //padding: 10,
@@ -1073,7 +1115,6 @@ Ext.define('PumaMain.controller.Chart', {
         var charts = Ext.ComponentQuery.query('chartcmp');
         for (var i = 0; i < charts.length; i++) {
             var chart = charts[i];
-            if (chart.cfg.type=='filter') continue;
             this.reconfigureChart(chart,false);
         }
     },
@@ -1260,8 +1301,7 @@ Ext.define('PumaMain.controller.Chart', {
         var window = Ext.WindowManager.get('newchartconfig');
         if (window) {
             var store = window.down('chartconfigpanel').areaTemplateStore;
-            var datasetBtn = Ext.ComponentQuery.query('initialbar #datasetcontainer button[pressed=true]')[0];
-            var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetBtn.objId);
+            var dataset = Ext.ComponentQuery.query('#seldataset')[0];
             var areaTemplates = dataset.get('featureLayers');
             store.clearFilter(true);
             store.filter([function(rec) {

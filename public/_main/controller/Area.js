@@ -25,7 +25,28 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestAreas = {};
         this.highestAreas = {};
     },
+    
+    applyTestFilter: function(from,to) {
         
+        this.areaFilter = {
+            areaTemplates: {
+                281: true
+            },
+            filters: [{
+                as: 321,
+                attr: 299,
+                normType: 'area',
+                min: from,
+                max: to
+            }]
+        }
+        if (from==null) {
+            this.areaFilter = null;
+        }
+        this.getController('LocationTheme').onYearChange({itemId:'filter'})
+    },        
+            
+            
     getArea: function(area) {
         var store = Ext.StoreMgr.lookup('area');
         var foundNode = store.getRootNode().findChildBy(function(node) {
@@ -72,6 +93,8 @@ Ext.define('PumaMain.controller.Area', {
         this.getController('Select').select(selected,add,hover);
     },
     
+    
+    
     colourTree: function(selectMap) {
         var areaTree = Ext.ComponentQuery.query('#areatree')[0];
         var view = areaTree.getView();
@@ -98,14 +121,10 @@ Ext.define('PumaMain.controller.Area', {
     
     onBeforeLoad: function(store, options) {
         var node = options.node;
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-        var datasetBtn = Ext.ComponentQuery.query('initialbar #datasetcontainer button[pressed=true]')[0];
-        if (!yearBtns.length) {
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        if (!years.length) {
             return;
-        }
-        var years = [];
-        for (var i=0;i<yearBtns.length;i++) {
-            years.push(yearBtns[i].objId);
         }
         if (this.areaFilter) {
             options.params['filter'] = JSON.stringify(this.areaFilter);
@@ -118,7 +137,7 @@ Ext.define('PumaMain.controller.Area', {
         parentGids[loc] = {};
         parentGids[loc][at] = [gid];
         options.params['refreshAreas'] = true;
-        options.params['dataset'] = datasetBtn.objId;
+        options.params['dataset'] = dataset;
         options.params['years'] = JSON.stringify(years);
         options.params['parentgids'] = JSON.stringify(parentGids)
     },

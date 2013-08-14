@@ -2,6 +2,8 @@ Ext.define('PumaMain.view.TopTools', {
     extend: 'Ext.container.Container',
     alias: 'widget.toptoolspanel',
     height: '100%',
+    // to be removed
+    width: 380,
     initComponent: function() {
         this.layout = {
             type: 'hbox'

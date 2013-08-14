@@ -1,21 +1,33 @@
 Ext.define('PumaMain.controller.Render', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar'],
+    requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer'],
     init: function() {},
-    renderItems: function() {
+    renderApp: function() {
         Ext.widget('pumacombo',{
             store: 'dataset',
+            itemId: 'seldataset',
             renderTo: 'app-toolbar-scope',
             width: 120
         })
         Ext.widget('pumacombo',{
-            store: 'theme',
+            store: 'theme4sel',
+            itemId: 'seltheme',
             renderTo: 'app-toolbar-theme',
             width: 120
         })
+        Ext.widget('storecontainer',{
+            renderTo: 'app-toolbar-year',
+            store: Ext.StoreMgr.lookup('year4sel'),
+            forceSelection: true,
+            itemId: 'selyear',
+            multiCtrl: true,
+            multi: true
+            ,type: 'checkbox'
+        })
         Ext.widget('pumacombo',{
-            store: 'visualization',
+            store: 'visualization4sel',
+            itemId: 'selvisualization',
             renderTo: 'app-toolbar-visualization',
             width: 120
         })
@@ -25,24 +37,33 @@ Ext.define('PumaMain.controller.Render', {
             width: '100%',
             height: '100%'
         })
-        Ext.widget('checkboxgroup',{
-            renderTo: 'app-toolbar-year',
-            defaults: {
-                margin: '0 5 0 0'
-            },
-            items: [
-                { boxLabel: '2000', name: 'rb', inputValue: '2000' },
-                { boxLabel: '2012', name: 'rb', inputValue: '2012' },
-                
-            ]
-        })
-        Ext.widget('multislider',{
+        
+        
+        var a = Ext.widget('multislider',{
             renderTo: 'app-toolbar-level',
             minValue: 0,
             values: [0,2],
             maxValue: 4,
             width: '100%'
         })
+        a.on('beforechange',function(slider,newVal,oldVal,opts) {
+            if (opts.index>0) return false;
+        })
+        Ext.widget('toptoolspanel',{
+            renderTo: 'app-tools-actions'
+        })
+        Ext.widget('toolspanel',{
+            renderTo: 'app-tools-actions'
+        })
+        Ext.widget('chartbar',{
+            renderTo: 'app-reports-accordeon'
+        })
+        
+        
+        
+    },
+        
+    renderIntro: function() {
         Ext.widget('component',{
             renderTo: 'app-map',
             itemId: 'map',
@@ -56,16 +77,18 @@ Ext.define('PumaMain.controller.Render', {
             width: 1920,
             height: 900
         })
-        Ext.widget('toptoolspanel',{
-            renderTo: 'app-tools-actions'
-        })
-        Ext.widget('toolspanel',{
-            renderTo: 'app-tools-actions'
-        })
-        Ext.widget('chartbar',{
-            renderTo: 'app-reports-accordeon'
+        Ext.widget('storecontainer',{
+            renderTo: 'app-intro-scope',
+            store: Ext.StoreMgr.lookup('dataset'),
+            itemId: 'initialdataset'
         })
     
+        Ext.widget('storecontainer',{
+            renderTo: 'app-intro-theme',
+            itemId: 'initialtheme',
+            store: Ext.StoreMgr.lookup('theme4sel')
+        })
+        
     }
     })
 

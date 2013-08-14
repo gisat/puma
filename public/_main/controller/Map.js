@@ -195,7 +195,7 @@ Ext.define('PumaMain.controller.Map', {
             checked: true,
             allowDrag: false,
             initialized: true,
-            
+            leaf: true,
             sortIndex: 10000,
             type: 'hybrid'
         });
@@ -204,7 +204,7 @@ Ext.define('PumaMain.controller.Map', {
             initialized: true,
             allowDrag: false,
             checked: false,
-            
+            leaf: true,
             sortIndex: 10000,
             type: 'roadmap'
         });
@@ -213,10 +213,12 @@ Ext.define('PumaMain.controller.Map', {
             initialized: true,
             allowDrag: false,
             checked: false,
-            
+            leaf: true,
             sortIndex: 10000,
             type: 'terrain'
         });
+        
+        Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode],true);
         baseNode.appendChild([hybridNode,streetNode,terrainNode]);
         
     },
@@ -367,12 +369,12 @@ Ext.define('PumaMain.controller.Map', {
         el.on('contextmenu',function(e) {
             
             
-//            e.stopEvent();
-//            var layerMenu = Ext.widget('layermenu', {
-//                map: map
-//            })
-//        
-//            layerMenu.showAt(e.getXY());
+            e.stopEvent();
+            var layerMenu = Ext.widget('layermenu', {
+                map: map
+            })
+        
+            layerMenu.showAt(e.getXY());
         })
         if (cmp.itemId=='map') {
             this.createBaseNodes();
@@ -422,18 +424,11 @@ Ext.define('PumaMain.controller.Map', {
                 case 'roadmap': layer = streetLayer; break;
                 case 'terrain': layer = terrainLayer; break;
             }
-            var nodeProp = cmp.id=='map' ? 'layer1':'layer2';
+            var nodeProp = cmp.itemId=='map' ? 'layer1':'layer2';
             node.set(nodeProp,layer);
-            nodes.push(node);
         }
         
-        
-        
-        
-        
-        
-       
-        
+   
         
         map.drawnLayer = new OpenLayers.Layer.Vector('',{
             style: {

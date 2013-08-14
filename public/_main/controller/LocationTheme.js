@@ -4,211 +4,153 @@ Ext.define('PumaMain.controller.LocationTheme', {
     requires: [],
     init: function() {
         this.control({
-            'initialbar #themecontainer button': {
-                toggle: this.onThemeChange
+//            'initialbar #themecontainer button': {
+//                toggle: this.onThemeChange
+//            },
+//            'initialbar #yearcontainer button': {
+//                click: this.onYearChange
+//            },
+//            'initialbar #datasetcontainer button': {
+//                toggle: this.onDatasetChange
+//            },
+//            'initialbar #visualizationcontainer button': {
+//                toggle: this.onVisualizationChange
+//            },
+            '#initialdataset':{
+                change: this.onDatasetChange
             },
-            'initialbar #yearcontainer button': {
-                click: this.onYearChange
+            '#initialtheme':{
+                change: this.onThemeChange
             },
-            'initialbar #datasetcontainer button': {
-                toggle: this.onDatasetChange
+            '#seldataset':{
+                change: this.onDatasetChange
             },
-            'initialbar #visualizationcontainer button': {
-                toggle: this.onVisualizationChange
+            '#seltheme': {
+                change: this.onThemeChange
             },
-            
+            '#selyear': {
+                change: this.onYearChange
+            },
+            '#selvisualization': {
+                change: this.onVisChange
+            }
         })
     },
-    
-    onDatasetChange: function(btn, value) {
-        if (!value)
-            return;
-        var id = btn.objId;
-        var themes = Ext.StoreMgr.lookup('theme').query('dataset', id).getRange();
-        var cfgs = [];
-        for (var i = 0; i < themes.length; i++) {
-            var theme = themes[i];
-            cfgs.push({text: theme.get('name'), objId: theme.get('_id'), allowDepress: false, pressed: false})
+    onDatasetChange: function(cnt,val) {
+        var themeStore = Ext.StoreMgr.lookup('theme4sel');
+        themeStore.clearFilter(true);
+        themeStore.filter([
+            function(rec) {
+                return rec.get('dataset')==val;
+            }
+        ]);
+        if (cnt.xtype!='storecontainer') {
+            var combo = Ext.ComponentQuery.query('#seltheme')[0];
+            var first = themeStore.getAt(0);
+            if (first) {
+                combo.setValue(first)
+            }
         }
-        var themeContainer = Ext.ComponentQuery.query('initialbar #themecontainer')[0];
-        var buttons = Ext.ComponentQuery.query('initialbar #themecontainer button')
-        for (var i = 0; i < buttons.length; i++) {
-            themeContainer.remove(buttons[i])
-        }
-        themeContainer.add(cfgs);
-        themeContainer.notInit = true;
-        this.deleteButtons(['year', 'visualization']);
-        var node = Ext.StoreMgr.lookup('area').getRootNode()
-        node.removeAll();
-        if (Cnst.cfg) {
-            var themeBtn = Ext.ComponentQuery.query('initialbar #themecontainer button[objId='+Cnst.cfg.theme+']')[0];
-            themeBtn.toggle();
-        }
-        //this.getController('Area').scanTree();
-        //this.getController('Chart').loadVisualization('custom');
-        //Ext.StoreMgr.lookup('layers').getRootNode().removeAll();
     },
+
+    onThemeChange: function(cnt,val) {
+        this.themeChanged = true;
+        
+        var themeCombo = null;
+        if (cnt.xtype=='storecontainer') {
+            Ext.getBody().removeCls('intro').addCls('application');
+            this.getController('Render').renderApp();
+            themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
+            var datasetVal = Ext.ComponentQuery.query('#initialdataset')[0].getValue();
+            var datasetCombo = Ext.ComponentQuery.query('#seldataset')[0];
+            datasetCombo.suspendEvents();
+            themeCombo.suspendEvents();
+            datasetCombo.setValue(datasetVal);
+            themeCombo.setValue(val);
+            datasetCombo.resumeEvents();
+            themeCombo.resumeEvents();
             
-            
- 
-        
-   
-        
-    onThemeChange: function(btn,value) {
-        if (!value) return;
-        var themeBtn = Ext.ComponentQuery.query('initialbar #themecontainer button[pressed=true]')[0];
-        var theme = Ext.StoreMgr.lookup('theme').getById(themeBtn.objId);
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button');
-        var pressedYearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-        var presentIds = [];
-        var containsActive = false;
-        
-        var yearStore = Ext.StoreMgr.lookup('year');
-        var years = theme.get('years');
-        var yearsChanged = false;
-        for (var i=0;i<yearBtns.length;i++) {
-            var yearBtn = yearBtns[i];
-            var btnId = yearBtn.objId;
-            if (!Ext.Array.contains(years,btnId)) {
-                yearBtn.ownerCt.remove(yearBtn);
-                if (Ext.Array.contains(pressedYearBtns,yearBtn)) {
-                    yearsChanged = true;
-                }
-                continue;
-            }
-            if (yearBtn.pressed) {
-                containsActive = true;
-            }
-            presentIds.push(btnId);
         }
-        var yearsToAdd = Ext.Array.difference(years,presentIds);
-        var confs = [];
-        for (var i=0;i<yearsToAdd.length;i++) {
-            var year = yearStore.getById(yearsToAdd[i]);
-            var conf = {text:year.get('name'),objId:year.get('_id')}
-            if (Cnst.cfg && Ext.Array.contains(Cnst.cfg.years,yearsToAdd[i])) {
-                conf.pressed = true;
-            }
-            confs.push(conf)
-        }
-        confs.sort(function(a,b) {
-            return a.objId > b.objId
-        })
-        var container = Ext.ComponentQuery.query('initialbar #yearcontainer')[0]
-        container.add(confs);
+        themeCombo = themeCombo || Ext.ComponentQuery.query('#seltheme')[0];
+        var yearCnt = Ext.ComponentQuery.query('#selyear')[0];
+        var visCnt = Ext.ComponentQuery.query('#selvisualization')[0];
+        yearCnt.suspendEvents();
+        visCnt.suspendEvents();
         
-        if (((!containsActive && !pressedYearBtns.length) || !presentIds.length) && !Cnst.cfg) {
-            
-            var node = Ext.StoreMgr.lookup('area').getRootNode()
-            node.removeAll();
-            this.getController('Area').scanTree();
-            this.getController('Chart').loadVisualization('custom');
-            //Ext.StoreMgr.lookup('layers').getRootNode().removeAll();
-            return;
-        }
-        if (!containsActive && pressedYearBtns.length) {
-            yearsChanged = true;
-            Ext.ComponentQuery.query('initialbar #yearcontainer button')[0].toggle();
-        }
-        this.onYearChange(btn,true,yearsChanged);
+        var visStore = Ext.StoreMgr.lookup('visualization4sel');
+        var yearStore = Ext.StoreMgr.lookup('year4sel');
+        var themeYears = Ext.StoreMgr.lookup('theme').getById(val).get('years');
         
-    },
-        
-    onYearChange: function(btn,value,forcedYearChange) {
-        var yearsCount = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]').length
-        if (value.browserEvent) {
-            
-            if (value.ctrlKey) {
+        yearStore.clearFilter(true);
+        yearStore.filter([function(rec) {
+            return Ext.Array.contains(themeYears,rec.get('_id'))
+        }])
+
+        visStore.clearFilter(true);
+        visStore.filter([function(rec) {
+            return rec.get('theme')==val
+        }]);
+
+        var vis = visCnt.getValue();
+        if (!vis) {
+            this.visChanged = true;
+            var first = visStore.getAt(0);
+            if (first) {
+                visCnt.setValue(first.get('_id'))
                 
-                // nedovolit odvybrani posledniho roku
-                if (!btn.pressed && !yearsCount) {
-                    btn.toggle(true,true);
-                    return;
-                }
             }
-            else {
-                var btns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-                // odvybrani ostatnich roku
-                for (var i=0;i<btns.length;i++) {
-                    if (btns[i]!=btn) {
-                        btns[i].toggle(false,true);
-                    }
-                }
-                if (!btn.pressed) {
-                    btn.toggle(true,true);
-                }
-            }
-            yearsCount = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]').length;
-            value = btn.pressed;
         }
         
-        if (!yearsCount) {
-            return;
+        var years = yearCnt.getValue();
+        if (!years.length) {
+            this.yearChanged = true;
+            yearCnt.setValue([yearStore.getAt(0).get('_id')])
         }
-        var multipleYearsBtn = Ext.ComponentQuery.query('initialbar #multiplemapsbtn')[0]
-        multipleYearsBtn.setDisabled(yearsCount<=1);
-        if (yearsCount>1 && multipleYearsBtn.pressed) {
-            this.getController('Map').switchMap(true);
-        }
-        else {
-            this.getController('Map').switchMap(false);
-        }
-        this.requestNewLayers(btn,forcedYearChange===true);
-    },
+        yearCnt.resumeEvents();
+        visCnt.resumeEvents();
+        this.onYearChange(themeCombo);
         
-    deleteButtons: function(containerNames) {
-        for (var i=0;i<containerNames.length;i++) {
-            var name = containerNames[i]+'container';
-            var buttons = Ext.ComponentQuery.query('initialbar #'+name+' button');
-            for (var j=0;j<buttons.length;j++) {
-                buttons[j].destroy();
-            }
-        }
+        
+        
+        
     },
     
-    requestNewLayers: function(originatingButton,forcedYearChange) {
-        var themeBtn = Ext.ComponentQuery.query('initialbar #themecontainer button[pressed=true]')[0];
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-        var datasetBtn = Ext.ComponentQuery.query('initialbar #datasetcontainer button[pressed=true]')[0];
-        if (!themeBtn || !yearBtns.length)
+    onYearChange: function(cnt) {
+        var val = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        if (!val.length || cnt.eventsSuspended) {
             return;
+        }
+        if (cnt.itemId=='selyear' ) {
+            this.yearChanged = true;
+        }
+        // zatim nepouzivano
+        var isFilter = cnt.itemId == 'filter';
         
+        var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+        var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         
-        var btnType = originatingButton.ownerCt.itemId;
         var params = {
-                theme: themeBtn.objId,
-                years: JSON.stringify(Ext.Array.pluck(yearBtns,'objId')),
-                dataset: datasetBtn.objId
+                theme: theme,
+                years: JSON.stringify(years),
+                dataset: dataset
             }
         var areaController = this.getController('Area');
         if (areaController.areaFilter) {
             params['filter'] = JSON.stringify(areaController.areaFilter);
         }
+        var cntId = cnt.itemId
+        
         var root = Ext.StoreMgr.lookup('area').getRootNode();
-        params['refreshLayers'] = ((btnType == 'themecontainer') || (!root.childNodes.length)) ? true : null;
-        //params['refreshAreas'] = ((btnType == 'yearcontainer') || forcedYearChange) ? true : null;
-        params['refreshAreas'] = true
+        params['refreshLayers'] = (this.themeChanged) ? true : null;
+        params['refreshAreas'] = true;
         if (params['refreshLayers']) {
-            var layerRoot = Ext.StoreMgr.lookup('layers').getRootNode();
-            var children = layerRoot.childNodes;
-            var presentTopics = [];
-            for (var i=0;i<children.length;i++) {
-                var node = children[i];
-                var topic = node.get('topic');
-                if (topic) {
-                    presentTopics.push(topic);
-                }
-            }
-            var themeTopics = Ext.StoreMgr.lookup('theme').getById(params['theme']).get('topics');
-            var queryTopics = Ext.Array.difference(themeTopics,presentTopics);
-            if (themeTopics.length!=queryTopics.length) {
-                params['queryTopics'] = JSON.stringify(queryTopics);
-            }
+            params['queryTopics'] = this.getQueryTopics(theme);
         }
         if (Cnst.cfg) {
             params['expanded'] = JSON.stringify(Cnst.cfg.expanded);
         }
-        if (btnType=='yearcontainer' && root.hasChildNodes()) {
+        if (cntId=='selyear' && root.hasChildNodes() || isFilter) {
             var expandedAndFids = this.getController('Area').getExpandedAndFids();
             params['expanded'] = JSON.stringify(expandedAndFids.expanded);
             params['fids'] = JSON.stringify(expandedAndFids.fids);
@@ -217,11 +159,54 @@ Ext.define('PumaMain.controller.LocationTheme', {
             url: Cnst.url+'/api/theme/getThemeYearConf',
             params: params,
             scope: this,
-            originatingButton: originatingButton,
+            originatingCnt: cnt,
+            visChanged: this.visChanged,
+            themeChanged: this.themeChanged,
+            yearChanged: this.yearChanged,
             success: this.onThemeLocationConfReceived
         })
+        
+        
+        if (this.visChanged) {
+            this.getController('Chart').loadVisualization(val);
+        }
+        this.visChanged = null;
+        this.themeChanged = null;
+        this.yearChanged = null;
     },
         
+    onVisChange: function(cnt) {
+        var val = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
+        this.getController('Chart').loadVisualization(val);
+        this.getController('Chart').reconfigureAll();
+        this.getController('Layers').checkVisibilityAndStyles();
+    },
+        
+    onFilter: function() {
+        var filterCmp = null;
+        this.onYearChange(filterCmp)
+    },
+    
+    getQueryTopics: function(theme) {
+        var layerRoot = Ext.StoreMgr.lookup('layers').getRootNode();
+        var children = layerRoot.childNodes;
+        var presentTopics = [];
+        for (var i = 0; i < children.length; i++) {
+            var node = children[i];
+            var topic = node.get('topic');
+            if (topic) {
+                presentTopics.push(topic);
+            }
+        }
+        var themeTopics = Ext.StoreMgr.lookup('theme').getById(theme).get('topics');
+        var queryTopics = Ext.Array.difference(themeTopics, presentTopics);
+        if (themeTopics.length != queryTopics.length) {
+            return queryTopics;
+
+        }
+    },
+    
+     
         
     addAreas: function(areasToAdd) {
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
@@ -296,7 +281,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             node.set('id',node.get('at')+'_'+node.get('gid'));
             node.parentNode.removeChild(node,false);
         }
-        var datasetId = Ext.ComponentQuery.query('initialbar #datasetcontainer button[pressed=true]')[0].objId;
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var featureLayers = Ext.StoreMgr.lookup('dataset').getById(datasetId).get('featureLayers');
         for (var i = 0;i<add.length;i++) {
             var area = add[i];
@@ -334,8 +319,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
     updateLayerContext: function(cfg) {
          var mapController = this.getController('Map');
-         var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-         var years = Ext.Array.pluck(yearBtns,'objId');
+         var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
          var map1Year = mapController.map1.year;
          var map2Year = mapController.map2.year;
          var map1Change = (map1Year!=years[0]) ? true : false;
@@ -392,7 +376,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     
     removeLayers: function() {
-        var themeId = Ext.ComponentQuery.query('initialbar #themecontainer button[pressed=true]')[0].objId;
+        var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var topics = Ext.StoreMgr.lookup('theme').getById(themeId).get('topics');
         var topicNodes = Ext.StoreMgr.lookup('layers').getRootNode().childNodes;
         for (var i=0;i<topicNodes.length;i++) {
@@ -472,11 +456,25 @@ Ext.define('PumaMain.controller.LocationTheme', {
             Ext.StoreMgr.lookup('selectedlayers').loadData(layersToAdd,true);
     },
         
-    
+    updateLeafs: function(leafMap) {
+        var root = Ext.StoreMgr.lookup('area').getRootNode();
+        root.cascadeBy(function(node) {
+            var loc = node.get('loc');
+            var at = node.get('at');
+            var gid = node.get('gid');
+            if (leafMap[loc] && leafMap[loc][at] && leafMap[loc][at][gid]) {
+                node.set('leaf',true);
+                node.set('expanded',false)
+            }
+            else if (node.get('leaf')) {
+                node.set('leaf',false)
+            }
+        })
+        
+    },
     
     onThemeLocationConfReceived: function(response) {
-    
-        var btn = response.request.options.originatingButton;
+        
         var conf = JSON.parse(response.responseText).data;
         if (conf.layerRefMap) {
             this.getController('Area').areaTemplateMap = conf.auRefMap;
@@ -494,11 +492,17 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (conf.layerRefMap) {
             this.updateLayerContext(conf.layerRefMap);
         }
+        if (conf.leafMap) {
+            this.updateLeafs(conf.leafMap)
+        }
         if (conf.areas || ((conf.add || conf.remove) && changed)) {
-            
             this.getController('Area').scanTree();
         }
-        this.initVisualizations(btn);
+        this.getController('Chart').reconfigureAll();
+        if (response.request.options.visChanged) {
+            this.getController('Layers').checkVisibilityAndStyles();
+        }
+        //this.initVisualizations(btn);
         
 //        mc.drawnLayer.destroyFeatures();
 //        if (conf.userPolygons) {
