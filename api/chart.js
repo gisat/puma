@@ -21,8 +21,9 @@ function shutdown(params,req,res,callback) {
     },1);
 }
 
+
 function exporter(params, req, res, callback) {
-    cp.execFile('phantomjs.exe', ['rasterize.js', 'http://192.168.2.196:3000/public/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+    cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+conn.getLocalAddress()+'/public/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
         return callback(err)
     })
 }
@@ -33,7 +34,7 @@ function getChart(params, req, res, callback) {
     params['userId'] = req.userId;
     mod.getChart(params, function(err, conf) {
         if (err) {
-            console.log(err.stack)
+            console.log('returning nodata')
             var noDataConf = {
                 chart: {
                 },

@@ -130,15 +130,12 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                 sql += ')';
                 flTemplates.reverse();
                 var flTemplatesIterate = flTemplates.slice(0,flTemplates.length-1);
-                console.log(flTemplatesIterate);
-                console.log(sql)
                 async.forEachSeries(flTemplatesIterate, function(item, asyncCallback) {
                     var layerRef = layerRefMap[item]['_id']
                     var i = flTemplatesIterate.indexOf(item);
                     var nextFl = flTemplates[i+1];
                     var currentSql = sql.replace('$INDEX$', nextFl);
                     currentSql = currentSql.replace('$LAYERREF$', layerRef);
-                    console.log('FL '+item)
                     client.query(currentSql, function(err, results) {
                         if (err)
                             return callback(err);

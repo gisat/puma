@@ -39,15 +39,13 @@ Ext.define('PumaMain.controller.Render', {
         })
         
         
-        var a = Ext.widget('multislider',{
+        Ext.widget('multislider',{
             renderTo: 'app-toolbar-level',
+            itemId: 'areaslider',
             minValue: 0,
             values: [0,2],
             maxValue: 4,
             width: '100%'
-        })
-        a.on('beforechange',function(slider,newVal,oldVal,opts) {
-            if (opts.index>0) return false;
         })
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'

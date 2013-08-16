@@ -16,19 +16,19 @@ Ext.define('PumaMain.controller.Map', {
                 afterrender: this.afterExtentOutlineRender,
                 resize: this.onResize
             },
-            'initialbar #zoomselectedbtn': {
+            '#zoomselectedbtn': {
                 click: this.onZoomSelected
             },
             'initialbar #featureinfobtn': {
                 toggle: this.onFeatureInfoActivated
             },
-            'initialbar #measurelinebtn': {
+            '#measurelinebtn': {
                 toggle: this.onMeasureActivated
             },
-            'initialbar #measurepolygonbtn': {
+            '#measurepolygonbtn': {
                 toggle: this.onMeasureActivated
             },
-            'initialbar #multiplemapsbtn': {
+            '#multiplemapsbtn': {
                 toggle: this.onMultipleYearsToggle
             },
             'layermenu #url': {
@@ -669,15 +669,13 @@ Ext.define('PumaMain.controller.Map', {
     
     updateGetFeatureControl: function() {
         
-        
         var layers1 = [];
         var layers2 = [];
         var controller = this.getController('Area');
         var areaTemplates = controller.areaTemplates;
         var areaTemplateMap = controller.areaTemplateMap;
         
-        var yearBtns = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]');
-        var years = Ext.Array.pluck(yearBtns,'objId');
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         if (!years.length) {
             return;
         }

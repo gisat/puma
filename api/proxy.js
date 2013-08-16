@@ -77,8 +77,8 @@ function wms(params, req, res, callback) {
         'Content-Type': 'application/x-www-form-urlencoded'
     };
     var options = {
-        host: '192.168.2.8',
-        //port: '8080',
+        host: conn.getBaseServer(),
+        port: conn.getPort(),
         timeout: 60000,
         //path: '/geoserver/geonode/wms?'+querystring.stringify(params),
         path: useFirst ? '/geoserver/geonode/wms' : '/geoserver_i2/puma/wms',
@@ -87,19 +87,13 @@ function wms(params, req, res, callback) {
 
     };
     
-    if (!useFirst) {
-        options.port = '8080';
-    }
+    
 
     var data = querystring.stringify(params)
     if (params['REQUEST'] == 'GetMap' || params['REQUEST']=='GetLegendGraphic') {
         options.resEncoding = 'binary';
     }
     if (params['REQUEST'] == 'GetLegendGraphic') {
-        console.log(data)
-        console.log('a')
-        console.log(params['SLD_BODY'])
-        console.log('b')
     }
     conn.request(options, data, function(err, output, resl) {
         if (err)
@@ -251,7 +245,6 @@ function saveSld(params, req, res, callback) {
         }],
         result: ['data', 'layerRef','density',function(asyncCallback, results) {
             
-            console.log('have')
             
             var topTreeNorm = params['normalization'] == 'toptree';
             if (params['showMapChart']) {

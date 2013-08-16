@@ -147,7 +147,7 @@ function getLayers(params, req, res, callback) {
     };
 
     var options = {
-        host: '192.168.2.8',
+        host: conn.getGeonodeServer(),
         path: '/data/acls',
         headers: headers,
         method: 'GET'
@@ -273,7 +273,8 @@ function getLayerDetails(params, req, res, callback) {
     };
     postData = querystring.stringify(postData);
     var options = {
-        host: '192.168.2.8',
+        host: conn.getBaseServer(),
+        port: conn.getPort(),
         path: '/geoserver/geonode/ows?' + postData,
         method: 'GET'
                 ,
@@ -286,15 +287,6 @@ function getLayerDetails(params, req, res, callback) {
             return callback(err);
         res.data = output;
         return callback();
-//        dom.execInDom(function() {
-//            var format = new OpenLayers.Format.WFSDescribeFeatureType();
-//            var data = format.read(output);
-//            if (!data.featureTypes) {
-//                return callback(new Error('nofeaturetype'))
-//            }
-//            res.data = data;
-//            return callback();
-//        })
 
     })
 }
@@ -529,10 +521,10 @@ function getSymbologiesFromServer(params, req, res, callback) {
 
             var path = '/geoserver/rest/styles.json'
             var options = {
-                host: '192.168.2.8',
+                host: conn.getBaseServer(),
                 path: path,
                 headers: headers,
-                port: 8080,
+                port: conn.getPort(),
                 method: 'GET'
             };
             conn.request(options, null, function(err, output, resl) {

@@ -36,7 +36,7 @@ function auth(req, res, next) {
     };
 
     var options = {
-        host: '192.168.2.8',
+        host: conn.getGeonodeServer(),
         path: '/data/acls',
         headers: headers,
         method: 'GET'

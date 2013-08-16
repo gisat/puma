@@ -180,10 +180,10 @@ function changeLayerGeoserver(layerId, method, callback) {
     console.log(method)
 
     var options = {
-        host: '192.168.2.8',
+        host: conn.getBaseServer(),
         path: path,
         headers: headers,
-        port: 8080,
+        port: conn.getPort(),
         method: method
     };
     conn.request(options, data, function(err, output, resl) {

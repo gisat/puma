@@ -12,6 +12,33 @@ var pgdb = null;
 var objectId = null;
 var io = null;
 
+
+
+var connString = "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode"
+var mongoConnString = "mongodb://192.168.2.13:27017/test";
+
+function getConnString() {
+    return connString;
+}
+
+function getLocalAddress() {
+    return "192.168.2.196:3000"
+}
+
+function getBaseServer() {
+    return "192.168.2.8"
+}
+
+function getGeonodeServer() {
+    return "192.168.2.8"
+}
+function getPort() {
+    return 8080;
+}
+
+
+
+
 function request(options,dataToWrite,callback) {
     var reqs = http.request(options, function(resl)
     {
@@ -43,14 +70,12 @@ function request(options,dataToWrite,callback) {
     reqs.end();   
 }
 
-function getConnString() {
-    return "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode";
-}
+
+
 
 function init(app,callback) {
    
-    var conString = "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode";
-    pgdb = new pg.Client(conString);
+    pgdb = new pg.Client(connString);
     pgdb.connect();
     var reconnectCommand = null;
     // keeping connection alive
@@ -62,7 +87,7 @@ function init(app,callback) {
             if (!pgdb.activeQuery) {
                 clearInterval(reconnectCommand);
                 pgdb.end();
-                pgdb = new pg.Client(conString);
+                pgdb = new pg.Client(connString);
                 pgdb.connect();
                 console.log('reconnected')
             }
@@ -71,7 +96,7 @@ function init(app,callback) {
             }
         },2000)
     },Math.round(1000*60*60*5.9))
-    MongoClient.connect("mongodb://192.168.2.13:27017/test", function(err, dbs) {
+    MongoClient.connect(mongoConnString, function(err, dbs) {
         if (err) callback(err)
         mongodb=dbs;
         var mongoSettings = mongodb.collection('settings');
@@ -114,5 +139,9 @@ module.exports = {
     getMongoDb: getMongoDb,
     getPgDb: getPgDb,
     getNextId: getNextId,
-    getConnString: getConnString
+    getConnString: getConnString,
+    getBaseServer: getBaseServer,
+    getGeonodeServer: getGeonodeServer,
+    getPort: getPort
+    
 }

@@ -1,3 +1,41 @@
+
+.screenshot {
+    margin: 5px;  
+    position: relative; 
+    float: left
+}
+.screenshot, .screenshot div {
+    width: 175px; 
+    height: 120px;
+}
+.screenshot .screenshoticon {
+    display: none;
+    position:absolute;
+    bottom:0;
+    cursor: pointer;
+    z-index: 1
+}
+.screenshot .screenshotpng {
+    right: 50px;
+}
+.screenshot .screenshotremove {
+    right: 10px;
+}
+.screenshot div {
+    position:absolute;
+    background-color:#000;
+    opacity:0.3;
+    top:0px;
+    overflow:hidden;
+    display: none;
+}
+.screenshot.screenshotover div,.screenshot.screenshotover .screenshoticon {
+    display: block;
+}
+
+
+
+
 .x-boundlist li {
     font-size: 11px;
 }

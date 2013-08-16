@@ -116,7 +116,27 @@ Ext.define('PumaMain.controller.Area', {
             }
         })
     },
+     
+    onBeforeSliderSlide: function(slider,newVal,oldVal,opts) {
+            if (opts.index>0) return false;
+    },
+    
+    onSliderSlide: function(slider,newVal,oldVal) {
+        var forward = newVal>oldVal;
+        var tree = Ext.ComponentQuery.query('#areatree')[0];
+        tree.suspendEvents();
+        if (forward) {
+            this.expandLowestLevel();
+        }
+    },
+        
+    expandLowestLevel: function() {
 
+    },
+    
+    collapseLowestLevel: function() {
+        
+    },
       
     
     onBeforeLoad: function(store, options) {

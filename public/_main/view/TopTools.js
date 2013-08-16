@@ -15,6 +15,8 @@ Ext.define('PumaMain.view.TopTools', {
             xtype: 'button',
             flex: 1,
             enableToggle: true,
+            toggleGroup: 'mapmodal',
+            itemId: 'selectinmapbtn',
             text: 'Select in map'
         },{
             xtype: 'button',

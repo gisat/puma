@@ -18,6 +18,27 @@ Ext.define('PumaMain.view.LayerPanel', {
                 displayField: 'name',
                 rootVisible: false,
                 border: true,
+                columns: [{
+                        xtype: 'treecolumn',
+                        dataIndex: 'name',
+                        flex: 1,
+                        header: 'Name'
+                    }
+//                    ,
+//                    {
+//                        xtype: 'actioncolumn',
+//                        width: 50,
+//                        items: [{
+//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png', // Use a URL in the icon config
+//                                tooltip: 'Edit', 
+//                                handler: function(grid, rowIndex, colIndex) {
+//                                }
+//                            }, {
+//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png',
+//                                tooltip: 'Delete'
+//                            }]
+//                    }
+                ],
                 style: {
                     borderRadius: '0px',
                     //overflow: 'hidden'
@@ -37,7 +58,25 @@ Ext.define('PumaMain.view.LayerPanel', {
                         dataIndex: 'name',
                         flex: 1,
                         header: 'Name'
-                    }],
+                    }
+//                    , {
+//                        xtype: 'actioncolumn',
+//                        width: 50,
+//                        items: [{
+//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png', // Use a URL in the icon config
+//                                tooltip: 'Edit', 
+//                                width: 20,
+//                                height: 20,
+//                                handler: function(grid, rowIndex, colIndex) {
+//                                }
+//                            }, {
+//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png',
+//                                width: 20,
+//                                height: 20,
+//                                tooltip: 'Delete'
+//                            }]
+//                    }
+                    ],
                 style: {
                     borderRadius: '0px',
                     //overflow: 'hidden'

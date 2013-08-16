@@ -1,7 +1,7 @@
 Ext.define('PumaMain.view.ChartBar', {
     extend: 'Ext.container.Container',
     alias: 'widget.chartbar',
-    requires: [],
+    requires: ['PumaMain.view.ScreenshotView'],
     autoScroll: true,
     maxHeight: 780,
     initComponent: function() {
@@ -9,14 +9,17 @@ Ext.define('PumaMain.view.ChartBar', {
         this.layout = {
             type: 'accordion',
             multi: true,
-            fill: false,
+            fill: false
         }
         this.items = [
             {
                 xtype: 'panel',
-                collapsed: true,
-                cfgType: 'screenshots',
-                //height: 50,               
+                collapsed: false,
+                layout: 'fit',
+                items: [{
+                    xtype: 'screenshotview'
+                }],
+                cfgType: 'screenshots',              
                 title: 'Screenshots'
             },
             {

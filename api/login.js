@@ -45,7 +45,7 @@ function logout(params,req,res,callback) {
 var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
     
     var options1 = {
-        host: '192.168.2.8',
+        host: conn.getGeonodeServer(),
         path: '/',
         method: 'GET'
     };      
@@ -65,7 +65,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
         }
         postData = querystring.stringify(postData);
         var options2 = {
-            host: '192.168.2.8',
+            host: conn.getGeonodeServer(),
             path: isLogin ? '/accounts/login/' : '/accounts/logout/',
             method: 'POST',
             headers: {

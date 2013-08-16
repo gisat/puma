@@ -129,7 +129,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
-        
+        var vis = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         var params = {
                 theme: theme,
                 years: JSON.stringify(years),
@@ -166,9 +166,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
             success: this.onThemeLocationConfReceived
         })
         
-        
         if (this.visChanged) {
-            this.getController('Chart').loadVisualization(val);
+            this.getController('Chart').loadVisualization(vis);
         }
         this.visChanged = null;
         this.themeChanged = null;
@@ -176,6 +175,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
         
     onVisChange: function(cnt) {
+        if (cnt.eventsSuspended) {
+            return;
+        }
         var val = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         this.getController('Chart').loadVisualization(val);
         this.getController('Chart').reconfigureAll();

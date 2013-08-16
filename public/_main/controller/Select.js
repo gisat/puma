@@ -4,13 +4,13 @@ Ext.define('PumaMain.controller.Select', {
     requires: [],
     init: function() {
         this.control({
-            'initialbar #hoverbtn': {
+            '#hoverbtn': {
                 toggle: this.onToggleHover
             },
-            'initialbar #selectinmapbtn': {
+            '#selectinmapbtn': {
                 toggle: this.onToggleSelectInMap
             },
-            'initialbar #selectcolorpicker': {
+            '#selectcolorpicker': {
                 select: this.onChangeColor
             }
         })
@@ -31,7 +31,7 @@ Ext.define('PumaMain.controller.Select', {
     },
         
     onToggleHover: function(btn,value) {
-        var selectInMap = Ext.ComponentQuery.query('initialbar #selectinmapbtn')[0];
+        var selectInMap = Ext.ComponentQuery.query('#selectinmapbtn')[0];
         var infoControls1 = this.getController('Map').map1.infoControls;
         var infoControls2 = this.getController('Map').map2.infoControls;
         this.getController('Area').hovering = value;
@@ -52,7 +52,7 @@ Ext.define('PumaMain.controller.Select', {
     },
         
     onToggleSelectInMap: function(btn,value) {
-        var hoverBtn = Ext.ComponentQuery.query('initialbar #hoverbtn')[0];
+        var hoverBtn = Ext.ComponentQuery.query('#hoverbtn')[0];
         var infoControls1 = this.getController('Map').map1.infoControls;
         var infoControls2 = this.getController('Map').map2.infoControls;
         var fn1 = value ? infoControls1.click.activate : infoControls1.click.deactivate;

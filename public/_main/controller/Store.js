@@ -19,6 +19,7 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.MapLayer',
         'Puma.model.MappedAttribute',
         'Puma.model.Visualization',
+        'Puma.model.Screenshot',
         'Puma.model.MappedChartAttribute',
         'Ext.data.Store',
         'Gisatlib.data.SlaveStore',
@@ -299,7 +300,6 @@ Ext.define('PumaMain.controller.Store', {
         })
     
         Ext.create('Ext.data.Store', {
-            fields: ['text'],
             model: 'Puma.model.MapLayer',
             filters: [function(rec) {
                 return rec.get('checked');
@@ -311,6 +311,11 @@ Ext.define('PumaMain.controller.Store', {
             storeId: 'selectedlayers'
         })
         
+        Ext.create('Ext.data.Store', {
+            model: 'Puma.model.Screenshot',
+            data: [{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'},{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'},{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'},{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'}],
+            storeId: 'screenshot'
+        })
         
         
         Ext.create('Ext.data.Store', {
