@@ -14,23 +14,23 @@ var io = null;
 
 
 
-var connString = "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode"
-var mongoConnString = "mongodb://192.168.2.13:27017/test";
+var connString = "postgres://geonode:VQq2xbJw@gw.gisat.cz:5432/geonode"
+var mongoConnString = "mongodb://gw.gisat.cz:27017/test";
 
 function getConnString() {
     return connString;
 }
 
 function getLocalAddress() {
-    return "192.168.2.196:3000"
+    return "gw.gisat.cz:3000"
 }
 
 function getBaseServer() {
-    return "192.168.2.8"
+    return "gw.gisat.cz"
 }
 
 function getGeonodeServer() {
-    return "192.168.2.8"
+    return "gw.gisat.cz"
 }
 function getPort() {
     return 8080;
