@@ -1,6 +1,10 @@
 /* BASICS */
-body {
-	background-color     : #434254;
+html, body {
+	height               : 100%;
+	width                : 100%;
+}
+body, .x-body {
+	background     : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 	color                : #c6bdc5;
 	font-family          : Arial, sans-serif;
 	font-size            : 13px;
@@ -87,7 +91,7 @@ body.application #content-application {
 	display              : block;
 }
 	.field {
-		margin-top       : 20px;
+		margin-top       : 10px;
 		height           : 30px;
 		line-height      : 30px;
 	}
@@ -107,13 +111,13 @@ body.application #content-application {
 	#content-intro {
 		position         : absolute;
 		width            : 645px;
-		height           : 110px;
 		top              : 85px;
 		left             : 0;
 		background-color : #434254;
 		background-color : rgba(67, 66, 84, .9);
 		color            : #fff;
 		font-weight      : bold;
+		padding-top      : 10px;
 		/* has to be above map*/
 		z-index          : 10000;
 	}
@@ -121,87 +125,121 @@ body.application #content-application {
 		text-transform   : uppercase;
 		font-size        : 30px;
 		display          : block;
-		margin-top       : 20px;
+		margin-top       : 10px;
 		margin-left      : 20px;
 		float            : left;
 		width            : 260px;
 		line-height      : 1.2em;
-	}
-	#content-intro .theme {
-		margin-top       : 10px;
+		height           : 130px;
 	}
 	
 	/* Application */
-	#content-application #toolbar {
+	#toolbar {
 		position         : absolute;
 		top              : 0;
 		width            : 100%;
-		height           : 100px;
+		height           : 95px;
+		padding-top      : 10px;
 		background-color : #434254;
 		color            : #fff;
 		/* has to be above map*/
 		z-index          : 10000;
 	}
-	#content-application #toolbar > .label {
+	#toolbar > .label {
 		text-transform   : uppercase;
 		font-size        : 30px;
 		display          : block;
-		margin-top       : 10px;
 		margin-left      : 20px;
 		float            : left;
 		width            : 260px;
 		line-height      : 1.2em;
 	}
-	#content-application #toolbar .group {
-		height           : 70px;
-		background       : url("../images/toolbar-group-border.png") repeat-y 0 0;
-		float            : left;
-		padding          : 0 20px;
-		margin-top       : 10px;
+	#toolbar .groups {
+		margin-left      : 260px;
+		width            : 800px;
 	}
-	#content-application #toolbar .group.first {
-		padding-left     : 0;
-		background       : none;
+	#toolbar .group {
+		padding          : 5px 20px 0 20px;
+		margin-top       : 5px;
+		background: url("../images/toolbar-group-border.png") repeat-x 0 0;
+		height: 30px;
 	}
-	#content-application #toolbar .group .field {
+	#toolbar .group:first-child {
+		background: none;
+		margin-top: 0;
+		padding-top: 0;
+	}
+	#toolbar .group .field {
 		margin-top       : 0;
 		margin-bottom    : 10px;
+		float: left;
+		margin-right: 10px;
 	}
-	#content-application #toolbar .group .label {
+	#toolbar .group .label {
 		width            : auto;
 	}
-	#content-application #toolbar .scope .label,
-	#content-application #toolbar .theme .label {
-		width            : 40px;
+	#toolbar .scope .label,
+	#toolbar .teritory .label,
+	#toolbar .theme .label {
+		width            : 50px;
 	}
-	#content-application #toolbar .help {
+	#toolbar .help {
 		text-align       : right;
 		font-weight      : bold;
 	}
-	#content-application #toolbar .share {
-		float            : right;
+	#toolbar .share {
+		position         : absolute;
+		top              : 10px;
+		right            : 20px;
 		width            : 150px;
 		height           : 70px;
-		background       : none;
 	}
-	#content-application #toolbar .share .widget {
+	#toolbar .share .widget {
 		margin-bottom    : 10px;
 	}
-	#content-application #sidebar-tools {
+	#sidebar-tools {
+		background     : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 		position         : absolute;
-		top              : 100px;
+		top              : 95px;
 		left             : 0;
-		width            : 250px;
+		width            : 380px;
 		/* has to be above map*/
 		z-index          : 10000;
 	}
-	#content-application #sidebar-reports {
+	#sidebar-reports {
+		background     : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 		position         : absolute;
-		top              : 100px;
+		top              : 95px;
 		right            : 0;
 		width            : 580px;
 		/* has to be above map*/
 		z-index          : 10000;
+		
+		-webkit-transition-property : right;
+		   -moz-transition-property : right;
+				transition-property : right;
+		-webkit-transition-duration : 500ms;
+		   -moz-transition-duration : 500ms;
+				transition-duration : 500ms;
+	}
+	#sidebar-reports.hidden {
+		right            : -580px;
+	}
+	#sidebar-reports-toggle {
+		display          : block;
+		width            : 20px;
+		height           : 20px;
+		background       : red;
+		position         : absolute;
+		left             : -20px;
+		top              : 0;
+		cursor           : pointer;
+	}
+	#sidebar-reports-toggle:hover {
+		background       : blue;
+	}
+	#sidebar-reports.hidden #sidebar-reports-toggle {
+		
 	}
 
 /* FOOTER */
@@ -226,13 +264,17 @@ body.application #content-application {
 	font-size            : 20px;
 	display              : inline-block;
 	margin-right         : 50px;
+	margin-top           : -3px;
+	vertical-align       : middle;
 }
 #footer .contact-person {
 	display              : inline-block;
 	margin-right         : 50px;
+	vertical-align       : middle;
 }
 #footer .contact-email {
 	text-decoration      : underline;
+	vertical-align       : middle;
 }
 #footer .contact-email:hover, #footer .contact-email:focus {
 	text-decoration      : none;
@@ -241,3 +283,15 @@ body.application #content-application {
 	position             : absolute;
 	right                : 10px;
 }
+
+/* WIDGETS */
+#app-intro-scope, #app-intro-teritory, #app-intro-theme {width:300px;}
+#app-toolbar-scope, #app-toolbar-theme {width:120px;}
+#app-toolbar-year {width:130px;}
+#app-toolbar-level {width:160px;}
+#app-toolbar-visualization {width:210px;}
+#app-toolbar-share {width:150px; height:30px;}
+#app-tools-actions {height:30px; width:250px;}
+#app-tools-accordeon {min-height:200px; width:250px;}
+#app-reports-paging {height:30px;}
+#app-reports-accordeon {min-height:400px; width:580px;}
