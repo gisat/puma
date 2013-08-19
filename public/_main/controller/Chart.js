@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Chart', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Ext.ux.grid.FiltersFeature', 'PumaMain.view.ChartConfig', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color','PumaMain.view.ChartPanel'],
+    requires: ['Ext.ux.grid.FiltersFeature', 'PumaMain.view.form.ChartForm', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color','PumaMain.view.ChartPanel'],
     init: function() {
         this.control({
             'initialbar #visualizationsbtn': {
@@ -23,25 +23,22 @@ Ext.define('PumaMain.controller.Chart', {
                 beforesave: this.onBeforeVisualizationSave,
                 aftersave: this.onAfterVisualizationSave
             },
-            'chartconfigpanel #attributeSet': {
+            'attributepanel #attributeSet': {
                 change: this.onAttrSetChange
             },
-            'chartconfigpanel #normAttributeSet': {
+            'attributepanel #normAttributeSet': {
                 change: this.onAttrSetChange
             },
-            'chartconfigpanel #showChoropleth': {
-                change: this.onShowChoroplethChange
-            },
-            'chartconfigpanel #normalizationAttributeSet': {
+            'attributepanel #normalizationAttributeSet': {
                 change: this.onAttrSetChange
             },
         
         
             
-            'chartconfigpanel #addattrbtn': {
+            'attributepanel #addattrbtn': {
                 click: this.onAddAttribute
             },
-            'chartconfigpanel #removeattrbtn': {
+            'attributepanel #removeattrbtn': {
                 click: this.onRemoveAttribute
             },
             'chartconfigpanel #closebtn': {
@@ -59,10 +56,10 @@ Ext.define('PumaMain.controller.Chart', {
             'chartconfigpanel #numCategories': {
                 change: this.onNumCategoriesChange
             },
-            'chartconfigpanel #classType': {
+            'choroplethpanel #classType': {
                 change: this.onClassTypeChange
             },
-            'chartconfigpanel #useAttributeColors': {
+            'choroplethpanel #useAttributeColors': {
                 change: this.onUseAttrColorsChange
             },
         
@@ -85,7 +82,11 @@ Ext.define('PumaMain.controller.Chart', {
             'chartpanel tool[type=print]':{
                 click: this.onUrlClick
             },
-            'chartpanel tool[type=save]':{}
+            'chartpanel tool[type=save]':{},
+            
+            'chartbar panel[cfgType=add]':{
+                beforeexpand: this.onChartBtnClick
+            }
             
 //            'chartbar #removebtn': {
 //                click: this.onChartRemove
@@ -360,9 +361,9 @@ Ext.define('PumaMain.controller.Chart', {
     onChartAdd: function(btn) {
         var form = btn.up('chartconfigpanel');
         var cfg = form.getForm().getValues();
-        var color = form.down('colorpicker');
-        var val = color.getValue();
-        cfg.selColor = Array.isArray(val) ? val : [val];
+//        var color = form.down('colorpicker');
+//        var val = color.getValue();
+//        cfg.selColor = Array.isArray(val) ? val : [val];
         this.addChart(cfg);
 
     },
@@ -493,9 +494,9 @@ Ext.define('PumaMain.controller.Chart', {
     onChartReconfigure: function(btn) {
         var form = btn.up('chartconfigpanel');
         var cfg = form.getForm().getValues();
-        var color = form.down('colorpicker');
-        var val = color.getValue();
-        cfg.selColor = Array.isArray(val) ? val : [val];
+//        var color = form.down('colorpicker');
+//        var val = color.getValue();
+//        cfg.selColor = Array.isArray(val) ? val : [val];
         form.chart.cfg = cfg;
         this.reconfigureChart(form.chart);
     },
@@ -542,6 +543,7 @@ Ext.define('PumaMain.controller.Chart', {
         var locations = this.getController('Area').getTreeLocations();
         var selectedAreas = [];
         var areas = {};
+        cfg.areas = 'treelowest';
         if ((cfg.selColor && cfg.selColor.length) || cfg.normalization=='select' || cfg.aggregation=='select') {
             
             var selMap = this.getController('Select').selMap;
@@ -635,12 +637,12 @@ Ext.define('PumaMain.controller.Chart', {
         }
         queryCfg.areas = areas;
         queryCfg.selectedAreas = selectedAreas;
-        if (cfg.useMaster == 'on') {
-            var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
-            if (!years.length)
-                return;
-            queryCfg.years = years;
-        }
+
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        if (!years.length)
+            return;
+        queryCfg.years = years;
+
         if (!queryCfg.years) {
             queryCfg.years = [];
         }
@@ -1301,7 +1303,8 @@ Ext.define('PumaMain.controller.Chart', {
         var window = Ext.WindowManager.get('newchartconfig');
         if (window) {
             var store = window.down('chartconfigpanel').areaTemplateStore;
-            var dataset = Ext.ComponentQuery.query('#seldataset')[0];
+            var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+            var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
             var areaTemplates = dataset.get('featureLayers');
             store.clearFilter(true);
             store.filter([function(rec) {
@@ -1311,6 +1314,7 @@ Ext.define('PumaMain.controller.Chart', {
         var cfg = this.getChartWindowConfig(null, false)
         window = window || Ext.widget('window', cfg)
         window.show();
+        return false;
     },
     onWindowClose: function(btn) {
         btn.up('window').close();
