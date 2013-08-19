@@ -1,6 +1,6 @@
 
 
-
+var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 var http = require('http');
@@ -14,26 +14,26 @@ var io = null;
 
 
 
-var connString = "postgres://geonode:VQq2xbJw@gw.gisat.cz:5432/geonode"
-var mongoConnString = "mongodb://gw.gisat.cz:27017/test";
+var connString = config.connString;
+var mongoConnString = config.mongoConnString;
 
 function getConnString() {
     return connString;
 }
 
 function getLocalAddress() {
-    return "gw.gisat.cz:3000"
+    return config.localAddress;
 }
 
 function getBaseServer() {
-    return "gw.gisat.cz"
+    return config.baseServer;
 }
 
 function getGeonodeServer() {
-    return "gw.gisat.cz"
+    return config.geonodeServer;
 }
 function getPort() {
-    return 8080;
+    return config.port;
 }
 
 
