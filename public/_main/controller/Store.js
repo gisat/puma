@@ -38,7 +38,7 @@ Ext.define('PumaMain.controller.Store', {
     
     },
     initStores: function() {
-        
+        debugger;
         Ext.create('Ext.data.Store',{
             storeId: 'location',
             autoLoad: true,

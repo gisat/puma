@@ -297,7 +297,7 @@ Ext.define('PumaMain.controller.Layers', {
         var me = this;
         
         Ext.Ajax.request({
-            url: Cnst.url + '/api/proxy/saveSld',
+            url: Config.url + '/api/proxy/saveSld',
             params: Ext.apply({
                 sldBody: sldText,
                 legendSld: legendSld || ''
@@ -519,7 +519,7 @@ Ext.define('PumaMain.controller.Layers', {
             var size = new OpenLayers.Filter.Function({name: 'Add', params: [min, sizeAdd]});
             var sizeSqrt = new OpenLayers.Filter.Function({name: 'pow', params: [size, 0.5]})
 
-            var url = Cnst.url + '/api/chart/drawChart/#url#';
+            var url = Config.url + '/api/chart/drawChart/#url#';
             symbolizer['Point'] = new OpenLayers.Symbolizer.Point({externalGraphic: url, graphicFormat: 'image/svg+xml', graphicWidth: sizeSqrt});
             var rule1 = {
                 symbolizer: symbolizer
@@ -600,8 +600,8 @@ Ext.define('PumaMain.controller.Layers', {
         var params = this.getController('Chart').getParams(cfg);
         
         
-        var layer1 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
-        var layer2 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        var layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        var layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         mapController.map1.addLayers([layer1]);
         mapController.map2.addLayers([layer2]);
         var node = Ext.create('Puma.model.MapLayer', {
@@ -674,7 +674,7 @@ Ext.define('PumaMain.controller.Layers', {
             
     loadVisualization: function(visId) {
         var store = Ext.StoreMgr.lookup('visualization');
-        var vis = Cnst.cfg ? Cnst.cfg : store.getById(visId);
+        var vis = Config.cfg ? Config.cfg : store.getById(visId);
         
         if (!vis) {
             
@@ -682,7 +682,7 @@ Ext.define('PumaMain.controller.Layers', {
         }
         
         var mapController = this.getController('Map');
-        var cfg = Cnst.cfg ?  Cnst.cfg.choroplethCfg : (vis.get('choroplethCfg') || []);
+        var cfg = Config.cfg ?  Config.cfg.choroplethCfg : (vis.get('choroplethCfg') || []);
         var layerStore = Ext.StoreMgr.lookup('layers');
         var choroplethNode = layerStore.getRootNode().findChild('type','choroplethgroup');
         for (var i=0;i<choroplethNode.childNodes.length;i++) {
@@ -712,7 +712,7 @@ Ext.define('PumaMain.controller.Layers', {
             obj['SLD_ID'] = layersOrSldId;
         }
         var query = Ext.Object.toQueryString(obj);
-        return Cnst.url + '/api/proxy/wms?' + query          
+        return Config.url + '/api/proxy/wms?' + query          
     },
     initChartLayer: function(node) {
         if (!node.get('checked')) {
@@ -796,8 +796,8 @@ Ext.define('PumaMain.controller.Layers', {
     checkVisibilityAndStyles: function() {
         var visId = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         var vis = Ext.StoreMgr.lookup('visualization').getById(visId);
-        if (!vis && !Cnst.cfg) return;
-        var atMap = Cnst.cfg ? Cnst.cfg.layerCfg : (vis.get('atMap') || []);
+        if (!vis && !Config.cfg) return;
+        var atMap = Config.cfg ? Config.cfg.layerCfg : (vis.get('atMap') || []);
         
         var store = Ext.StoreMgr.lookup('layers');
         var root = store.getRootNode();

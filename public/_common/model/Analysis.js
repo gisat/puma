@@ -7,7 +7,7 @@ Ext.define('Puma.model.Analysis', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/analysis',
+        url : Config.url+'/rest/analysis',
         reader: {
             type: 'json',
             root: 'data'

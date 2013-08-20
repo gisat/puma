@@ -132,7 +132,7 @@ Ext.define('PumaMain.controller.Chart', {
         cfg.selMap = this.getController('Select').selMap;
         //cfg.multipleMaps = Ext.ComponentQuery.query('initialbar #multiplemapsbtn')[0].pressed==true;
         Ext.Ajax.request({
-            url: Cnst.url + '/api/urlview/saveView',
+            url: Config.url + '/api/urlview/saveView',
             params: {
                 cfg: JSON.stringify(cfg)
             },
@@ -274,14 +274,14 @@ Ext.define('PumaMain.controller.Chart', {
     },
     loadVisualization: function(visId) {
         var store = Ext.StoreMgr.lookup('visualization');
-        var vis = Cnst.cfg ? Cnst.cfg : store.getById(visId);
+        var vis = Config.cfg ? Config.cfg : store.getById(visId);
         
         if (!vis) {
             // povolit konfiguraci
             return;
         }
         
-        var cfg = Cnst.cfg ?  Cnst.cfg.chartCfg : (vis.get('cfg') || []);
+        var cfg = Config.cfg ?  Config.cfg.chartCfg : (vis.get('cfg') || []);
         var container = Ext.ComponentQuery.query('chartbar')[0];
         var me = this;
         container.items.each(function(item) {
@@ -607,7 +607,7 @@ Ext.define('PumaMain.controller.Chart', {
                     items: items
                 });
                 form.getForm().submit({
-                    url: Cnst.url + '/api/chart/getGridDataCsv',
+                    url: Config.url + '/api/chart/getGridDataCsv',
                     success: function() {
                     },
                     failure: function() {
@@ -622,7 +622,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
 
         Ext.Ajax.request({
-            url: Cnst.url + '/api/chart/getChart',
+            url: Config.url + '/api/chart/getChart',
             params: params,
             scope: this,
             method: 'GET',
@@ -791,7 +791,7 @@ Ext.define('PumaMain.controller.Chart', {
         cfg.colorMap = this.getController('Select').colorMap;
         var me = this;
         Ext.Ajax.request({
-            url: Cnst.url + '/api/urlview/saveChart',
+            url: Config.url + '/api/urlview/saveChart',
             params: {
                 cfg: JSON.stringify(cfg)
             },
@@ -916,7 +916,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
         var areas = [{at: at, gid: gid, loc:loc}]
         var add = evt.originalEvent ? evt.originalEvent.ctrlKey : evt.ctrlKey;
-        if (!Cnst.exportPage) {
+        if (!Config.exportPage) {
             this.getController('Select').select(areas, add, hovering);
         }
         evt.preventDefault();
@@ -954,7 +954,7 @@ Ext.define('PumaMain.controller.Chart', {
             }
         }
         var add = evt.originalEvent.ctrlKey;
-        if (!Cnst.exportPage) {
+        if (!Config.exportPage) {
             this.getController('Select').select(areas, add, false);
         }
         evt.preventDefault();
@@ -976,7 +976,7 @@ Ext.define('PumaMain.controller.Chart', {
                     type: 'json',
                     root: 'data'
                 },
-                url: Cnst.url + '/api/chart/getGridData',
+                url: Config.url + '/api/chart/getGridData',
                 extraParams: response.request.options.params
             }
         });

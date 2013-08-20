@@ -44,7 +44,7 @@ Ext.define('PumaMain.controller.UserPolygon', {
         var format = new OpenLayers.Format.WKT();
         var geom = format.write(feature);
         Ext.Ajax.request({
-            url: Cnst.url + '/api/userpolygon/userPolygon',
+            url: Config.url + '/api/userpolygon/userPolygon',
             params: {
                 geom: geom,
                 method: 'create'
@@ -75,7 +75,7 @@ Ext.define('PumaMain.controller.UserPolygon', {
         var geom = format.write(feature);
         console.log(feature.gid)
         Ext.Ajax.request({
-            url: Cnst.url + '/api/userpolygon/userPolygon',
+            url: Config.url + '/api/userpolygon/userPolygon',
             params: {
                 geom: geom,
                 id: feature.gid,
@@ -111,7 +111,7 @@ Ext.define('PumaMain.controller.UserPolygon', {
     onFeatureRemoved: function(feature) {
         feature.layer.removeFeatures([feature]);
         Ext.Ajax.request({
-            url: Cnst.url + '/api/userpolygon/userPolygon',
+            url: Config.url + '/api/userpolygon/userPolygon',
             params: {
                 id: feature.gid,
                 method: 'delete'

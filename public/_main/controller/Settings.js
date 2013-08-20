@@ -17,13 +17,13 @@ Ext.define('PumaMain.controller.Settings', {
         var id = search ? search.split('=')[1] : null;
         if (id) {
             Ext.Ajax.request({
-            url: Cnst.url + '/api/urlview/getView',
+            url: Config.url + '/api/urlview/getView',
             params: {_id: id},
             scope: this,
             method: 'GET',
             success: function(response) {
                 var cfg = JSON.parse(response.responseText).data;
-                Cnst.cfg = cfg;
+                Config.cfg = cfg;
                 var datasetBtn = Ext.ComponentQuery.query('initialbar #datasetcontainer button[objId='+cfg.dataset+']')[0];
                 datasetBtn.toggle();
                 this.getController('LocationTheme').onDatasetChange();

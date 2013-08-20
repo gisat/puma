@@ -87,7 +87,7 @@ Ext.define('PumaMain.controller.Map', {
             zoom: map.zoom
         }
         Ext.Ajax.request({
-            url: Cnst.url + '/api/urlview/saveChart',
+            url: Config.url + '/api/urlview/saveChart',
             params: {
                 cfg: JSON.stringify(mapCfg)
             },
@@ -253,8 +253,8 @@ Ext.define('PumaMain.controller.Map', {
                 }
         );
         var layerDefaults = this.getController('Layers').getWmsLayerDefaults();
-        map.layer1 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
-        map.layer2 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        map.layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
 
         map.addLayers([hybridLayer, map.layer1, map.layer2]);
         var counterObj = {cnt:0, desired: 3}
@@ -462,26 +462,26 @@ Ext.define('PumaMain.controller.Map', {
         //params.layers = 'puma:layer_260,puma:layer_266'
         
 
-        map.selectInMapLayer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, {
+        map.selectInMapLayer = new OpenLayers.Layer.WMS('WMS', Config.url+'/api/proxy/wms', params, {
             visibility: true
         });
         map.selectInMapLayer.projection = map.projection;
         
-        map.getFeatureInfoLayer = new OpenLayers.Layer.WMS('WMS', Cnst.url+'/api/proxy/wms', params, {
+        map.getFeatureInfoLayer = new OpenLayers.Layer.WMS('WMS', Config.url+'/api/proxy/wms', params, {
             visibility: true
         });
         map.getFeatureInfoLayer.projection = map.projection;
         
         var infoControls = {
             click: new OpenLayers.Control.WMSGetFeatureInfo({
-                url: Cnst.url+'/api/proxy/wms', 
+                url: Config.url+'/api/proxy/wms', 
                 vendorParams: {
                     propertyName: 'gid'
                 },
                 layers: [map.selectInMapLayer]
             }), 
             hover: new OpenLayers.Control.WMSGetFeatureInfo({
-                url: Cnst.url+'/api/proxy/wms', 
+                url: Config.url+'/api/proxy/wms', 
                 vendorParams: {
                     propertyName: 'gid',
                     buffer: 1
@@ -491,7 +491,7 @@ Ext.define('PumaMain.controller.Map', {
             })
         };
         map.featureInfoControl = new OpenLayers.Control.WMSGetFeatureInfo({
-                url: Cnst.url+'/api/proxy/wms', 
+                url: Config.url+'/api/proxy/wms', 
                 vendorParams: {
                     propertyName: 'gid',
                     buffer: 1,

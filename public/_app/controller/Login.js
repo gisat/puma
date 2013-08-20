@@ -12,7 +12,7 @@ Ext.define('PumaMng.controller.Login',{
         
     onLogin: function() {
         var isAdmin = false;
-        if (Cnst.auth && Ext.Array.contains(Cnst.auth.groups,'admingroup')) {
+        if (Config.auth && Ext.Array.contains(Config.auth.groups,'admingroup')) {
                 isAdmin = true;
         }
         else {

@@ -147,8 +147,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
-        if (Cnst.cfg) {
-            params['expanded'] = JSON.stringify(Cnst.cfg.expanded);
+        if (Config.cfg) {
+            params['expanded'] = JSON.stringify(Config.cfg.expanded);
         }
         if (cntId=='selyear' && root.hasChildNodes() || isFilter) {
             var expandedAndFids = this.getController('Area').getExpandedAndFids();
@@ -159,7 +159,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             params['parentgids'] = JSON.stringify(this.getController('Area').parentGids)
         }
         Ext.Ajax.request({
-            url: Cnst.url+'/api/theme/getThemeYearConf',
+            url: Config.url+'/api/theme/getThemeYearConf',
             params: params,
             scope: this,
             originatingCnt: cnt,
@@ -460,8 +460,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
                         if (layerNode.get('layer1')) continue;
                         if (node.get('type')=='thematicgroup' && !Ext.Array.contains(topics,layerNode.get('topic'))) continue;
                         Ext.Array.include(layersToAdd,layerNode); 
-                        var layer1 = new OpenLayers.Layer.WMS('WMS',Cnst.url+'/api/proxy/wms',Ext.clone(layerDefaults.params),Ext.clone(layerDefaults.layerParams));
-                        var layer2 = new OpenLayers.Layer.WMS('WMS',Cnst.url+'/api/proxy/wms',Ext.clone(layerDefaults.params),Ext.clone(layerDefaults.layerParams));
+                        var layer1 = new OpenLayers.Layer.WMS('WMS',Config.url+'/api/proxy/wms',Ext.clone(layerDefaults.params),Ext.clone(layerDefaults.layerParams));
+                        var layer2 = new OpenLayers.Layer.WMS('WMS',Config.url+'/api/proxy/wms',Ext.clone(layerDefaults.params),Ext.clone(layerDefaults.layerParams));
                         mapController.map1.addLayers([layer1]);
                         mapController.map2.addLayers([layer2]);
                         layerNode.set('layer1',layer1);
@@ -588,8 +588,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
         container.insert(1,confs);
         var forceVisReinit = false;
         if (!containsActive) {
-            if (Cnst.cfg) {
-                var btnToActivate = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[objId='+Cnst.cfg.visualization+']')[0]
+            if (Config.cfg) {
+                var btnToActivate = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[objId='+Config.cfg.visualization+']')[0]
             }
             else {
                 var btnToActivate = Ext.ComponentQuery.query('initialbar #visualizationcontainer button')[0]
@@ -604,7 +604,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
     checkUserPolygons: function(years,analysis,callback) {
         Ext.Ajax.request({
-            url: Cnst.url+'/api/userpolygon/checkAnalysis',
+            url: Config.url+'/api/userpolygon/checkAnalysis',
             params: {
                 analysis: JSON.stringify(analysis || [955]),
                 years: JSON.stringify(years || [277])
@@ -627,8 +627,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var preserveVis = false;
         
         var selController = this.getController('Select')
-        if (Cnst.cfg) {
-            selController.selMap = Cnst.cfg.selMap
+        if (Config.cfg) {
+            selController.selMap = Config.cfg.selMap
             selController.colorMap = selController.prepareColorMap(selController.selMap);
         }
         this.getController('Chart').reconfigureAll();
@@ -636,17 +636,17 @@ Ext.define('PumaMain.controller.LocationTheme', {
             this.getController('Layers').checkVisibilityAndStyles(!visChanged,preserveVis);
             
         }
-        if (Cnst.cfg) {
+        if (Config.cfg) {
             this.getController('Area').colourTree(selController.colorMap);
             this.getController('Layers').colourMap(selController.colorMap);
             var map = this.getController('Map').map1;
-            if (Cnst.cfg.multipleMaps) {
+            if (Config.cfg.multipleMaps) {
                 Ext.ComponentQuery.query('initialbar #multiplemapsbtn')[0].toggle();
             }
-            map.setCenter([Cnst.cfg.mapCfg.center.lon,Cnst.cfg.mapCfg.center.lat],Cnst.cfg.mapCfg.zoom);
+            map.setCenter([Config.cfg.mapCfg.center.lon,Config.cfg.mapCfg.center.lat],Config.cfg.mapCfg.zoom);
             
         }
-        delete Cnst.cfg;
+        delete Config.cfg;
     }
 
 });

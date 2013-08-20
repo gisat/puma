@@ -7,7 +7,7 @@ Ext.define('Puma.model.Theme', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/theme',
+        url : Config.url+'/rest/theme',
         reader: {
             type: 'json',
             root: 'data'

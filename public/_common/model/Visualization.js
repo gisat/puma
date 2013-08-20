@@ -7,7 +7,7 @@ Ext.define('Puma.model.Visualization', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/visualization',
+        url : Config.url+'/rest/visualization',
         reader: {
             type: 'json',
             root: 'data'

@@ -8,7 +8,7 @@ Ext.define('Puma.model.AttributeSet', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/attributeset',
+        url : Config.url+'/rest/attributeset',
         reader: {
             type: 'json',
             root: 'data'

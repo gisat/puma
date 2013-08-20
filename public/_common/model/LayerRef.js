@@ -7,7 +7,7 @@ Ext.define('Puma.model.LayerRef', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/layerref',
+        url : Config.url+'/rest/layerref',
         reader: {
             type: 'json',
             root: 'data'

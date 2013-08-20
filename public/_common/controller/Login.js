@@ -32,7 +32,7 @@ Ext.define('Puma.controller.Login', {
         var pass = form.getComponent('password').getValue();
         var me = this;
         Ext.Ajax.request({
-            url: Cnst.url+'/api/login/login',
+            url: Config.url+'/api/login/login',
             params: {
                 username: userName,
                 password: pass
@@ -46,9 +46,9 @@ Ext.define('Puma.controller.Login', {
     onLogoutClicked: function() {
         var me = this;
         Ext.Ajax.request({
-            url: Cnst.url+'/api/login/logout',
+            url: Config.url+'/api/login/logout',
             success: function(response) {
-                Cnst.auth = null;
+                Config.auth = null;
                 me.onChangeLoginState(false);
             }
         })
@@ -56,7 +56,7 @@ Ext.define('Puma.controller.Login', {
     checkLogin: function(fromLogin) {
         var me = this;
         Ext.Ajax.request({
-            url: Cnst.url+'/api/login/getLoginInfo',
+            url: Config.url+'/api/login/getLoginInfo',
             success: function(response) {
                 var response = JSON.parse(response.responseText);
                 if (fromLogin && !response.data) {
@@ -64,7 +64,7 @@ Ext.define('Puma.controller.Login', {
                     Ext.ComponentQuery.query('loginwindow #password')[0].setValue('');
                     return;
                 }
-                Cnst.auth = response.data || null;
+                Config.auth = response.data || null;
                 me.onChangeLoginState(response.data ? true : false);
             }
         })
@@ -72,7 +72,7 @@ Ext.define('Puma.controller.Login', {
     onChangeLoginState: function(loggedIn) {
         var text = 'Not logged in'
         if (loggedIn) {
-            text = 'Logged in as ' + Cnst.auth.userName;
+            text = 'Logged in as ' + Config.auth.userName;
             var window = Ext.WindowManager.get('loginwindow');
             if (window) {
                 window.close();

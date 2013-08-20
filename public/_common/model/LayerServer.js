@@ -7,7 +7,7 @@ Ext.define('Puma.model.LayerServer', {
     idProperty: '_id',
     proxy: {
         type: 'ajax',
-        url : Cnst.url+'/api/layers/getLayers',
+        url : Config.url+'/api/layers/getLayers',
         reader: {
             type: 'json',
             root: 'data'

@@ -7,7 +7,7 @@ Ext.define('Puma.model.Topic', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/topic',
+        url : Config.url+'/rest/topic',
         reader: {
             type: 'json',
             root: 'data'

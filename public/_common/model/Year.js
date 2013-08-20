@@ -7,7 +7,7 @@ Ext.define('Puma.model.Year', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/year',
+        url : Config.url+'/rest/year',
         reader: {
             type: 'json',
             root: 'data'

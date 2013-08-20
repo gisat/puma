@@ -9,7 +9,7 @@ Ext.define('PumaMain.controller.Export', {
     initConf: function() {
         var id = window.location.search.split('?')[1].split('=')[1];
         Ext.Ajax.request({
-            url: Cnst.url + '/api/urlview/getChart',
+            url: Config.url + '/api/urlview/getChart',
             params: {_id: id},
             scope: this,
             method: 'GET',
@@ -53,7 +53,7 @@ Ext.define('PumaMain.controller.Export', {
         
         var params = chartController.getParams(cfg);
         Ext.Ajax.request({
-            url: Cnst.url + '/api/chart/getChart',
+            url: Config.url + '/api/chart/getChart',
             params: params,
             singlePage: true,
             scope: chartController,
@@ -122,7 +122,7 @@ Ext.define('PumaMain.controller.Export', {
                 if (layerCfg.symbologyId) {
                     params['styles'] = layerCfg.symbologyId
                 }
-                layer = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', params, layerParams);
+                layer = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', params, layerParams);
                 counterObj.desired++;
                 
             }

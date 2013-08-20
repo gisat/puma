@@ -108,7 +108,7 @@ Ext.define('PumaMng.controller.LayerLink', {
         var params = this.getParams();
         params['id'] = layerRefId;
         Ext.Ajax.request({
-            url: Cnst.url+'/api/layers/activateLayerRef',
+            url: Config.url+'/api/layers/activateLayerRef',
             params: params,
             success: function(response) {
                 var data = JSON.parse(response.responseText).data;
@@ -155,7 +155,7 @@ Ext.define('PumaMng.controller.LayerLink', {
             return;
         }
         Ext.Ajax.request({
-            url: Cnst.url + '/api/layers/getLayerDetails',
+            url: Config.url + '/api/layers/getLayerDetails',
             params: {
                 layer: value
             },
@@ -328,7 +328,7 @@ Ext.define('PumaMng.controller.LayerLink', {
         form.disable();
         Ext.StoreMgr.lookup('layerref').load();
         Ext.Ajax.request({
-            url: Cnst.url+'/api/layers/getLayerRefTable',
+            url: Config.url+'/api/layers/getLayerRefTable',
             params: vals,
             success: function(response) {
                 

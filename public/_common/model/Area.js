@@ -7,7 +7,7 @@ Ext.define('Puma.model.Area', {
     //idProperty: 'gid',
     proxy: {
         type: 'ajax',
-        url : Cnst.url+'/api/theme/getThemeYearConf',
+        url : Config.url+'/api/theme/getThemeYearConf',
         reader: {
             type: 'json',
             root: 'data'

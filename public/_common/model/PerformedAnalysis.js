@@ -9,9 +9,9 @@ Ext.define('Puma.model.PerformedAnalysis', {
     proxy: {
         type: 'ajax',
         api: {
-            create: Cnst.url+'/api/analysis/create',
-            destroy: Cnst.url+'/api/analysis/remove',
-            read: Cnst.url+'/rest/performedanalysis'
+            create: Config.url+'/api/analysis/create',
+            destroy: Config.url+'/api/analysis/remove',
+            read: Config.url+'/rest/performedanalysis'
         },
         reader: {
             type: 'json',

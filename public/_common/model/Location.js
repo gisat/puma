@@ -8,7 +8,7 @@ Ext.define('Puma.model.Location', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Cnst.url+'/rest/location',
+        url : Config.url+'/rest/location',
         reader: {
             type: 'json',
             root: 'data'

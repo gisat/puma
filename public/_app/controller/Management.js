@@ -46,7 +46,7 @@ Ext.define('PumaMng.controller.Management',{
     onGetFromServer: function(btn) {
         debugger;
         Ext.Ajax.request({
-            url: Cnst.url+'/api/layers/getSymbologiesFromServer',
+            url: Config.url+'/api/layers/getSymbologiesFromServer',
             success: function(response) {
                 Ext.StoreMgr.lookup('symbology').load()
             }
