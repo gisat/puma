@@ -1,0 +1,8 @@
+module.exports = {
+	connString      : "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode",
+	mongoConnString : "mongodb://192.168.2.13:27017/test",
+	localAddress    : "192.168.2.196:3000",
+	baseServer      : "192.168.2.8",
+	geonodeServer   : "192.168.2.8",
+	port            : 8080
+};

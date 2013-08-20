@@ -10,3 +10,5 @@
 /tmp/
 /puma.zip
 /out.png
+/config.js
+/public/config.js
