@@ -10,7 +10,11 @@ Ext.define('PumaMain.controller.Layers', {
             },
             'layerpanel' : {
                 choroplethreconfigure: this.onChoroplethReconfigureBtnClick,
-                choroplethremove: this.onChoroplethRemove
+                choroplethremove: this.onChoroplethRemove,
+                layerup: this.onLayerUp,
+                layerdown: this.onLayerDown,
+                layerremove: this.onLayerRemove,
+                layeropacity: this.openOpacityWindow
             },
 //            'layermenu #opacity': {
 //                click: this.openOpacityWindow
@@ -99,6 +103,35 @@ Ext.define('PumaMain.controller.Layers', {
             return false;
         }
     },
+        
+    onLayerRemove: function(panel,rec) {
+        rec.set('checked',false);
+        this.onCheckChange(rec,false);
+    },
+    onLayerDown: function(panel,rec) {
+        var store = Ext.StoreMgr.lookup('selectedlayers');
+        var idx = store.indexOf(rec);
+        var nextRec = store.getAt(idx+1);
+        if (!nextRec || nextRec.get('sortIndex')>=1000) {
+            return;
+        }
+        rec.set('sortIndex',rec.get('sortIndex')+1);
+        nextRec.set('sortIndex',nextRec.get('sortIndex')-1);
+        store.sort();
+        this.onLayerDrop();
+    },
+    onLayerUp: function(panel,rec) {
+        var store = Ext.StoreMgr.lookup('selectedlayers');
+        var idx = store.indexOf(rec);
+        var prevRec = store.getAt(idx-1);
+        if (!prevRec) {
+            return;
+        }
+        rec.set('sortIndex',rec.get('sortIndex')-1);
+        prevRec.set('sortIndex',prevRec.get('sortIndex')+1);
+        store.sort();
+        this.onLayerDrop();
+    },
     onLayerDrop: function() {
         var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
         var map1 = Ext.ComponentQuery.query('#map')[0].map;
@@ -114,14 +147,6 @@ Ext.define('PumaMain.controller.Layers', {
                 layers2.push(layers[i].get('layer2'))
             }
         }
-//        if (map1) {
-//            map1.layers = layers1;
-//            map1.resetLayersZIndex();
-//        }
-//        if (map2) {
-//            map2.layers = layers1;
-//            map2.resetLayersZIndex();
-//        }
         
         for (var i = 0; i < layers.length; i++) {
             if (map1 && layers1[i]) {
@@ -144,18 +169,19 @@ Ext.define('PumaMain.controller.Layers', {
             slider.layer2.setOpacity(value / 100);
         }
     },
-    openOpacityWindow: function(btn) {
-        var menu = btn.up('menu')
+    openOpacityWindow: function(panel,rec) {
+        var layer1 = rec.get('layer1');
+        var layer2 = rec.get('layer2');
         var window = Ext.widget('window', {
             layout: 'fit',
-            title: menu.layerName,
+            title: rec.get('name'),
             items: [{
                     xtype: 'slider',
                     itemId: 'opacity',
-                    layer1: menu.layer1,
-                    layer2: menu.layer2,
+                    layer1: layer1,
+                    layer2: layer2,
                     width: 200,
-                    value: menu.layer1.opacity * 100
+                    value: layer1.opacity * 100
 
                 }]
         })
@@ -745,7 +771,7 @@ Ext.define('PumaMain.controller.Layers', {
             this.saveSld(node, namedLayers, layer, node.get('params'), legendNamedLayers);
         }
     },
-    onCheckChange: function(node, checked, performUncheck, bypassLegendRedraw) {
+    onCheckChange: function(node, checked) {
         Ext.StoreMgr.lookup('selectedlayers').filter();
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');

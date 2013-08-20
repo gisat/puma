@@ -90,7 +90,8 @@ Ext.define('PumaMain.view.LayerPanel', {
                                 tooltip: 'Opacity', 
                                 width: 15,
                                 height: 20,
-                                handler: function(grid, rowIndex, colIndex) {
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layeropacity',me,record)
                                 }
                             },{
                                 icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
@@ -117,7 +118,8 @@ Ext.define('PumaMain.view.LayerPanel', {
                                         return 'invisible'
                                     }
                                 },
-                                handler: function(grid, rowIndex, colIndex) {
+                               handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layerup',me,record)
                                 }
                             },{
                                 icon: 'http://dummyimage.com/15x15/fdd/000&text=DO', // Use a URL in the icon config
@@ -130,14 +132,16 @@ Ext.define('PumaMain.view.LayerPanel', {
                                         return 'invisible'
                                     }
                                 },
-                                handler: function(grid, rowIndex, colIndex) {
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layerdown',me,record)
                                 }
                             },{
                                 icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
                                 tooltip: 'Remove', 
                                 width: 15,
                                 height: 20,
-                                handler: function(grid, rowIndex, colIndex) {
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layerremove',me,record)
                                 }
                             }]
                     }
