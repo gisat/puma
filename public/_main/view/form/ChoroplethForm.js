@@ -4,7 +4,10 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
     requires: ['Ext.ux.form.ItemSelector', 'PumaMain.view.form.AttributePanel'],
     width: 800,
     initComponent: function() {
-
+          var classificationStore = Ext.create('Ext.data.Store', {
+            data: [],
+            fields: ['color', 'threshold', 'idx']
+        })
         this.fieldDefaults = {
             labelAlign: 'left',
             labelWidth: 90,
@@ -25,11 +28,37 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
                         items: [{
                                 xtype: 'textfield',
                                 name: 'title',
+                                value: 'Anonymous',
                                 fieldLabel: 'Title'
                             }]
                     }, {
                         title: 'Attributes',
                         xtype: 'attributepanel'
+                    },{
+                        title: 'Normalization',
+                        layout: 'form',
+                        frame: true,
+                        padding: 10,
+                        items: [{
+                                xtype: 'pumacombo',
+                                store: Ext.StoreMgr.lookup('normalization4chart'),
+                                fieldLabel: 'Normalization',
+                                name: 'normalization',
+                                valueField: 'type',
+                                itemId: 'normalization'
+                            }, {
+                                xtype: 'pumacombo',
+                                store: Ext.StoreMgr.lookup('attributeset4chart'),
+                                fieldLabel: 'Norm. attr. set',
+                                name: 'normalizationAttributeSet',
+                                itemId: 'normalizationAttributeSet'
+                            }, {
+                                xtype: 'pumacombo',
+                                store: Ext.StoreMgr.lookup('attribute4chart4norm'),
+                                fieldLabel: 'Norm. attribute',
+                                name: 'normalizationAttribute',
+                                itemId: 'normalizationAttribute'
+                            }]
                     },
                     {title: 'Map',
                         layout: 'form',
@@ -40,7 +69,7 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
                                 fieldLabel: 'Num categories',
                                 name: 'numCategories',
                                 forChoro: 1,
-                                disabled: true,
+                                value: 3,
                                 allowDecimals: false,
                                 itemId: 'numCategories'
                             }, {
@@ -51,11 +80,9 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
                                 itemId: 'classType',
                                 name: 'classType',
                                 value: 'continuous',
-                                valueField: 'type',
-                                disabled: true
+                                valueField: 'type'
                             }, {
                                 xtype: 'checkbox',
-                                disabled: true,
                                 forChoro: 1,
                                 checked: true,
                                 fieldLabel: 'Use attr. colors',
@@ -63,7 +90,6 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
                                 itemId: 'useAttributeColors'
                             }, {
                                 xtype: 'storefield',
-                                disabled: true,
                                 itemId: 'classConfig',
                                 name: 'classConfig',
                                 forChoro: 1,
@@ -71,7 +97,6 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
                             }, {
                                 xtype: 'grid',
                                 forChoro: 1,
-                                disabled: true,
                                 height: 200,
                                 itemId: 'classgrid',
                                 store: classificationStore,
@@ -102,21 +127,19 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
                                     }]}, {
                                 xtype: 'textfield',
                                 forChoro: 1,
-                                disabled: true,
                                 fieldLabel: 'Null color',
                                 name: 'nullColor',
                                 itemId: 'nullColor'
                             }, {
                                 xtype: 'checkbox',
-                                disabled: true,
                                 forChoro: 1,
                                 fieldLabel: 'Zeroes as null',
                                 name: 'zeroesAsNull',
                                 itemId: 'zeroesAsNull'
                             }, {
                                 xtype: 'numberfield',
-                                hidden: true,
                                 forChoro: 1,
+                                hidden: true,
                                 value: 0,
                                 name: 'mapAttributeIndex',
                                 itemId: 'mapAttributeIndex'
@@ -133,7 +156,10 @@ Ext.define('PumaMain.view.form.ChoroplethForm', {
             },
             {
                 itemId: 'closebtn',
-                text: 'Close'
+                text: 'Close',
+                handler: function(btn) {
+                    btn.up('window').close();
+                }
             }
         ]
 

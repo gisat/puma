@@ -456,14 +456,14 @@ function getThemeYearConf(params, req, res, callback) {
                             continue;
                         }
                         var layers = map[i];
-                        var node = {
-                            name: results.topicMap[topic].name,
-                            expanded: true,
-                            type: 'topic',
-                            topic: topic,
-                            checked: null,
-                            children: []
-                        }
+//                        var node = {
+//                            name: results.topicMap[topic].name,
+//                            expanded: true,
+//                            type: 'topic',
+//                            topic: topic,
+//                            checked: null,
+//                            children: []
+//                        }
                         for (var j = 0; j < layers.length; j++) {
                             var layer = layers[j];
                             var symbologies = layer.symbologies || [];
@@ -477,14 +477,15 @@ function getThemeYearConf(params, req, res, callback) {
                                     symbologyId: symbology ? symbology.symbologyName : '#blank#',
                                     leaf: true,
                                     at: layer._id,
-                                    topic: node.topic,
+                                    topic: topic,
                                     type: 'topiclayer',
                                     checked: false
                                 }
-                                node.children.push(symbNode);
+                                //node.children.push(symbNode);
+                                nodes.push(symbNode)
                             }
                         }
-                        nodes.push(node);
+                        //nodes.push(node);
                     }
                     obj.layerNodes = nodes;
                     return asyncCallback(null, obj);

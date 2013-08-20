@@ -381,7 +381,7 @@ function getData(params, callback) {
                     var normalData = [];
                     var locAggDataMap = {};
 
-                    if (topLoc || topAll || aggSelect || true) {
+                    if (topLoc || topAll || aggSelect) {
                         
                             //console.log(originalSelected);
                         for (var i = 0; i < resls.rows.length; i++) {

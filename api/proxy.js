@@ -313,7 +313,7 @@ function saveSld(params, req, res, callback) {
                     }
                 }
             }
-            console.log(legendSld)
+            console.log(sld)
             sldMap[id] = {
                 sld: sld,
                 legendSld: legendSld

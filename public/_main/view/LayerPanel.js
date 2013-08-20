@@ -1,10 +1,10 @@
 Ext.define('PumaMain.view.LayerPanel', {
     extend: 'Ext.tab.Panel',
     alias: 'widget.layerpanel',
-    requires: [],
+    requires: ['Ext.ux.RowExpander'],
     initComponent: function() {
 
-
+        var me = this;
         this.items = [
             {
                 xtype: 'treepanel',
@@ -24,25 +24,43 @@ Ext.define('PumaMain.view.LayerPanel', {
                         flex: 1,
                         header: 'Name'
                     }
-//                    ,
-//                    {
-//                        xtype: 'actioncolumn',
-//                        width: 50,
-//                        items: [{
-//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png', // Use a URL in the icon config
-//                                tooltip: 'Edit', 
-//                                handler: function(grid, rowIndex, colIndex) {
-//                                }
-//                            }, {
-//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png',
-//                                tooltip: 'Delete'
-//                            }]
-//                    }
+                    ,
+                    {
+                        xtype: 'actioncolumn',
+                        width: 45,
+                        items: [{
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
+                                tooltip: 'Configure', 
+                                width: 15,
+                                height: 20,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.get('type')!='chartlayer') {
+                                        return 'invisible'
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('choroplethreconfigure',me,record)
+                                }
+                            }, {
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
+                                tooltip: 'Remove', 
+                                width: 15,
+                                height: 20,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.get('type')!='chartlayer') {
+                                        return 'invisible'
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('choroplethremove',me,record)
+                                }
+                            }]
+                    }
                 ],
                 style: {
                     borderRadius: '0px',
-                    //overflow: 'hidden'
-                    //backgroundColor: '#ffffee'
                 }
             }, {
                 xtype: 'grid',
@@ -54,46 +72,85 @@ Ext.define('PumaMain.view.LayerPanel', {
                 title: 'Layers selected',
                 displayField: 'name',
                 border: true,
+                plugins: [{
+                    ptype: 'rowexpander',
+                    rowBodyTpl : ['<tpl for=".">', '<tpl if="src">', '<div class="legenditem">', '<img src="{src}">', '</div>', '</tpl>', '</tpl>']
+                }],
                 columns: [{
                         dataIndex: 'name',
                         flex: 1,
                         header: 'Name'
                     }
-//                    , {
-//                        xtype: 'actioncolumn',
-//                        width: 50,
-//                        items: [{
-//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png', // Use a URL in the icon config
-//                                tooltip: 'Edit', 
-//                                width: 20,
-//                                height: 20,
-//                                handler: function(grid, rowIndex, colIndex) {
-//                                }
-//                            }, {
-//                                icon: 'http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png',
-//                                width: 20,
-//                                height: 20,
-//                                tooltip: 'Delete'
-//                            }]
-//                    }
+                    , {
+                        xtype: 'actioncolumn',
+                        width: 100,
+                        items: [
+                            {
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=OP', // Use a URL in the icon config
+                                tooltip: 'Opacity', 
+                                width: 15,
+                                height: 20,
+                                handler: function(grid, rowIndex, colIndex) {
+                                }
+                            },{
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
+                                tooltip: 'Configure', 
+                                width: 15,
+                                height: 20,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.get('type')!='chartlayer') {
+                                        return 'invisible'
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('choroplethreconfigure',me,record)
+                                }
+                            }, {
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=UP', // Use a URL in the icon config
+                                tooltip: 'Up', 
+                                width: 15,
+                                height: 20,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.parentNode && rec.parentNode.get('type')=='basegroup') {
+                                        return 'invisible'
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex) {
+                                }
+                            },{
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=DO', // Use a URL in the icon config
+                                tooltip: 'Down', 
+                                width: 15,
+                                height: 20,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.parentNode && rec.parentNode.get('type')=='basegroup') {
+                                        return 'invisible'
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex) {
+                                }
+                            },{
+                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
+                                tooltip: 'Remove', 
+                                width: 15,
+                                height: 20,
+                                handler: function(grid, rowIndex, colIndex) {
+                                }
+                            }]
+                    }
                     ],
                 style: {
                     borderRadius: '0px',
                     //overflow: 'hidden'
                     //backgroundColor: '#ffffee'
                 }
-            }, {
-                xtype: 'dataview',
-                itemId: 'legendpanel',
-                title: 'Legend',
-                autoScroll: true,
-                itemSelector: 'div.legenditem',
-                tpl: ['<tpl for=".">', '<tpl if="src">', '<div class="legenditem">', '<img src="{src}">', '</div>', '</tpl>', '</tpl>'],
-                //tpl:  ['<div class="legenditem">','<tpl for=".">','<img src="http://dummyimage.com/318x100&text={name}">','</tpl>','</div>'],
-                store: Ext.StoreMgr.lookup('selectedlayers')
             }
         ]
         this.callParent();
+        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown');
     }
 })
 

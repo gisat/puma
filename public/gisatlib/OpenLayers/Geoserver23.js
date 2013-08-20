@@ -97,6 +97,21 @@ OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1, {
 
                 return node;
             },
+            "Label": function(label) {
+                var node = null
+                if (!(label instanceof OpenLayers.Filter.Function)) {
+                    node = this.writers.sld._OGCExpression.call(
+                            this, "sld:Label", label
+                            );
+                }
+                else {
+                    var node = this.createElementNSPlus("sld:Label");
+                    var child = this.writeNode("ogc:Function", label, node);
+                    node.appendChild(child);
+                }
+
+                return node
+            },
             "Size": function(value) {
                 var node = null
                 if (!(value instanceof OpenLayers.Filter.Function)) {
@@ -187,6 +202,12 @@ OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1, {
                     this.writeOgcExpression(params[i], node);
                 }
                 return node;
+            },
+            
+            "PropertyIsNull": function(filter) {
+                var node = this.createElementNSPlus("ogc:PropertyIsNull");
+                this.writeNode("PropertyName", filter, node);
+                return node;
             }
         },OpenLayers.Format.SLD.v1.prototype.writers.ogc)
     }, OpenLayers.Format.SLD.v1.prototype.writers),
@@ -194,5 +215,5 @@ OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1, {
 
 });
 
-
+OpenLayers.Format.Filter.v1.prototype.filterMap['NULL'] = "PropertyIsNull"
 

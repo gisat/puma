@@ -4,25 +4,92 @@ Ext.define('PumaMain.controller.Layers', {
     requires: ['PumaMain.view.LayerMenu', 'Puma.util.Color'],
     init: function() {
         this.control({
-            '#layerselectedpanel': {
-                itemcontextmenu: this.onContextMenu
-            },
             '#layerpanel': {
-                itemcontextmenu: this.onLayerContextMenu,
-                checkchange: this.onCheckChange
+                checkchange: this.onCheckChange,
+                itemclick: this.onLayerClick,
             },
-            'layermenu #opacity': {
-                click: this.openOpacityWindow
+            'layerpanel' : {
+                choroplethreconfigure: this.onChoroplethReconfigureBtnClick,
+                choroplethremove: this.onChoroplethRemove
             },
+//            'layermenu #opacity': {
+//                click: this.openOpacityWindow
+//            },
             'slider[itemId=opacity]': {
                 change: this.onOpacityChange
             },
             '#layerselectedpanel gridview': {
                 drop: this.onLayerDrop,
                 beforedrop: this.onBeforeLayerDrop
-            }
+            },
+            'choroplethpanel #numCategories': {
+                change: this.onNumCategoriesChange
+            },
+            'choroplethpanel #classType': {
+                change: this.onClassTypeChange
+            },
+            'choroplethpanel #useAttributeColors': {
+                change: this.onUseAttrColorsChange
+            },
+            'choroplethpanel #fillbtn': {
+                click: this.onFillColors
+            },
+            'choroplethpanel #addbtn': {
+                click: this.onChoroplethAdd
+            },
+           
+            'choroplethpanel #reconfigurebtn': {
+                click: this.onChoroplethReconfigure
+            },
+            
         })
     },
+        
+   
+        
+    onFillColors: function(btn) {
+        var store = btn.up('grid').store;
+        var count = store.getCount();
+        if (count < 3)
+            return;
+        try {
+            var first = store.getAt(0).get('color');
+            var last = store.getAt(count - 1).get('color');
+        }
+        catch (e) {
+            return;
+        }
+        for (var i = 1; i < count - 1; i++) {
+            var ratio = i / (count - 1);
+            var rec = store.getAt(i);
+            var color = Puma.util.Color.determineColorFromRange(first, last, ratio);
+            rec.set('color', color);
+        }
+    },
+    onClassTypeChange: function(combo, val) {
+        var grid = Ext.ComponentQuery.query('choroplethpanel #classgrid')[0];
+        grid.columns[2].setVisible(val == 'range');
+    },
+    onUseAttrColorsChange: function(chb, val) {
+        var grid = Ext.ComponentQuery.query('choroplethpanel #classgrid')[0]
+        grid.columns[1].setVisible(val ? false : true)
+    },
+    onNumCategoriesChange: function(combo, val) {
+        var store = Ext.ComponentQuery.query('choroplethpanel #classgrid')[0].store;
+        var count = store.getCount();
+        if (val > count) {
+            var data = [];
+            for (var i = count; i < val; i++) {
+                data.push({idx: i + 1})
+            }
+            store.loadData(data, true);
+        }
+        if (val < count) {
+            store.removeAt(val, count - val);
+        }
+
+    },
+    
     onBeforeLayerDrop: function(row,obj,dropPos) {
         var type = obj.records[0].get('type');
         if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas'],type)) {
@@ -254,7 +321,7 @@ Ext.define('PumaMain.controller.Layers', {
                 }
                 if (node.get('checked')) {
                     layer.setVisibility(true);
-                    Ext.ComponentQuery.query('#legendpanel')[0].refresh();
+                    //Ext.ComponentQuery.query('#legendpanel')[0].refresh();
                 }
                 
             },
@@ -328,7 +395,7 @@ Ext.define('PumaMain.controller.Layers', {
 
         var legendRules = [];
         var symbolizer = null;
-        if (params['showChoropleth']) {
+        if (true) {
             symbolizer = {};
             var normalization = params['normalization'];
             var classConfig = JSON.parse(params['classConfig'])
@@ -363,8 +430,6 @@ Ext.define('PumaMain.controller.Layers', {
                     normAttr = '${' + normAttr + '}';
                 }
                 props = new OpenLayers.Filter.Function({name: 'Mul', params: [new OpenLayers.Filter.Function({name: 'Div', params: ['${#attr#}', normAttr]}), 100]});
-
-
             }
             else {
                 props = '${#attr#}';
@@ -373,6 +438,11 @@ Ext.define('PumaMain.controller.Layers', {
                 filtersNull.push(new OpenLayers.Filter.Comparison({type: '==', property: '#attr#', value: 0}))
                 filtersNotNull.push(new OpenLayers.Filter.Comparison({type: '!=', property: '#attr#', value: 0}))
             }
+                //var nullFilter = new OpenLayers.Filter.Function({name: 'isNull',params: ['${#attr#}']})
+                //filtersNull.push(new OpenLayers.Filter.Comparison({type: '==', property: nullFilter, value: 'true'}));
+            var nullFilter = new OpenLayers.Filter.Comparison({type:'NULL',property:'#attr#'})
+            filtersNotNull.push(new OpenLayers.Filter.Logical({type: '!', filters:[nullFilter]}))
+            filtersNull.push(nullFilter)
 
             var fcParams = [props];
             var numCat = params['numCategories']
@@ -423,7 +493,6 @@ Ext.define('PumaMain.controller.Layers', {
                 filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
                 symbolizer: symbolizer
             };
-
             var nullColor = params['nullColor'] || '#bbbbbb';
             var nullSymbolizer = {
                 'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: nullColor, strokeColor: '#000000', strokeWidth: 1})
@@ -510,92 +579,124 @@ Ext.define('PumaMain.controller.Layers', {
         }
         return namedLayers;
     },
-    onChartReconfigure: function(chartCmp, params) {
-        if (!params['showChoropleth']) {
-            return;
-        }
-        params = Ext.clone(params);
-        params['areas'] = JSON.stringify(this.getController('Area').lastMap);
-        var root = Ext.StoreMgr.lookup('layers').getRootNode();
-        var me = this;
-        var attrs = JSON.parse(params['attrs']);
+    
+    onLayerClick: function(panel,rec) {
+        if (rec.get('type')!='addchoropleth') return;
+        this.getController('Chart').onChartBtnClick(panel);
+        
+    },
+            
+    addChoropleth: function(cfg,autoActivate) {
+        var layerStore = Ext.StoreMgr.lookup('layers');
+        var choroplethNode = layerStore.getRootNode().findChild('type','choroplethgroup');
+        
+        var attr = cfg['attrs'][0];
+        var attrObj = Ext.StoreMgr.lookup('attribute').getById(attr.attr);
+        //var attrSetObj = Ext.StoreMgr.lookup('attributeset').getById(attr.as);
+        
         var layerDefaults = this.getWmsLayerDefaults();
         var mapController = this.getController('Map');
-
-
-        var foundNodes = [];
-        var chartTopicNodesToRemove = [];
-        for (var i = 0; i < attrs.length; i++) {
-            var attr = attrs[i];
-            var attrObj = Ext.StoreMgr.lookup('attribute').getById(attr.attr);
-            var attrSetObj = Ext.StoreMgr.lookup('attributeset').getById(attr.as);
-            var topic = attrSetObj.get('topic');
-            var topicNode = root.findChild('topic', topic);
-            if (!topicNode) continue;
-            var chartTopicNode = topicNode.findChild('bindChart', chartCmp);
-            if (!chartTopicNode && !params.removing) {
-                chartTopicNode = Ext.create('Puma.model.MapLayer', {
-                    name: params['title'],
-                    topic: topic,
-                    type: 'chart',
-                    bindChart: chartCmp,
-                    checked: null
-                });
-
-                topicNode.appendChild(chartTopicNode)
-            }
-            var foundNode = chartTopicNode.findChildBy(function(node) {
-                if (attr.as == node.get('attributeSet') && attr.attr == node.get('attribute')) {
-                    return true;
-                }
-                return false;
-            })
-            var newParams = Ext.clone(params);
-            newParams['attrs'] = JSON.stringify([attr]);
-            if (foundNode && params.removing) {
-                mapController.map1.removeLayer(foundNode.get('layer1'));
-                mapController.map2.removeLayer(foundNode.get('layer2'));
-                if (chartTopicNode) {
-                    Ext.Array.include(chartTopicNodesToRemove,chartTopicNode)
-                }
-                continue;
-            }
-            if (!foundNode) {
-                var layer1 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
-                var layer2 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
-                mapController.map1.addLayers([layer1]);
-                mapController.map2.addLayers([layer2]);
-                foundNode = Ext.create('Puma.model.MapLayer', {
-                    name: attrObj.get('name'),
-                    attribute: attr.attr,
-                    attributeSet: attr.as,
-                    topic: topic,
-                    type: 'chartlayer',
-                    leaf: true,
-                    bindChart: chartCmp,
-                    layer1: layer1,
-                    layer2: layer2,
-                    checked: false
-                });
-                chartTopicNode.appendChild(foundNode);
-                Ext.StoreMgr.lookup('selectedlayers').loadData([foundNode], true);
-            }
-            foundNode.set('params', newParams)
-            foundNodes.push(foundNode);
+        
+        var params = this.getController('Chart').getParams(cfg);
+        
+        
+        var layer1 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        var layer2 = new OpenLayers.Layer.WMS('WMS', Cnst.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        mapController.map1.addLayers([layer1]);
+        mapController.map2.addLayers([layer2]);
+        var node = Ext.create('Puma.model.MapLayer', {
+            name: params['title']+' - '+attrObj.get('name'),
+            attribute: attr.attr,
+            attributeSet: attr.as,
+            type: 'chartlayer',
+            leaf: true,
+            params: params,
+            cfg: cfg,
+            layer1: layer1,
+            layer2: layer2,
+            checked: autoActivate ? true : false
+        });
+        choroplethNode.appendChild(node);
+        Ext.StoreMgr.lookup('selectedlayers').loadData([node],true);
+        if (autoActivate) {
+            this.initChartLayer(node);
         }
-
-        for (var i = 0; i < foundNodes.length; i++) {
-            var node = foundNodes[i];
-            if (node.get('checked')) {
-                this.initChartLayer(node);
-            }
+    },
+        
+    onChoroplethAdd: function(btn) {
+        var form = btn.up('choroplethpanel');
+        var cfg = form.getForm().getValues();
+        this.addChoropleth(cfg,true);
+    },
+    
+    
+    onChoroplethRemove: function(panel,record) {
+        var mapController = this.getController('Map');
+        mapController.map1.removeLayer(record.get('layer1'));
+        mapController.map2.removeLayer(record.get('layer2'));
+        record.destroy();
+    },    
+        
+    reconfigureAll: function() {
+        var layerStore = Ext.StoreMgr.lookup('layers');
+        var choroplethNode = layerStore.getRootNode().findChild('type','choroplethgroup');
+        for (var i=0;i<choroplethNode.childNodes.length;i++) {
+            var childNode = choroplethNode.childNodes[i];
+            this.initChartLayer(childNode);
         }
-        for (var i = 0; i < chartTopicNodesToRemove.length; i++) {
-            var node = chartTopicNodesToRemove[i];
-            node.parentNode.removeChild(node);
+    },
+    
+    onChoroplethReconfigure: function(btn) {
+        var form = btn.up('choroplethpanel');
+        var cfg = form.getForm().getValues();
+        var rec = form.chart;
+        var params = this.getController('Chart').getParams(cfg);
+        
+        var attr = cfg['attrs'][0];
+        var attrObj = Ext.StoreMgr.lookup('attribute').getById(attr.attr);
+        //var attrSetObj = Ext.StoreMgr.lookup('attributeset').getById(attr.as);
+        
+        rec.set('name',cfg['title']+' - '+attrObj.get('name'));
+        rec.set('attributeSet',attr.as);
+        rec.set('attribute',attr.attr);
+        rec.set('cfg',cfg);
+        rec.set('params',params);
+        rec.commit();
+        this.initChartLayer(rec);
+    },
+    onChoroplethReconfigureBtnClick: function(panel,rec) {
+        var cfg = this.getController('Chart').getChartWindowConfig(rec, true, 'choroplethpanel');
+        var window = Ext.widget('window', cfg);
+        window.down('choroplethpanel').getForm().setValues(rec.get('cfg'));
+        window.show();
+    },
+    
             
+    loadVisualization: function(visId) {
+        var store = Ext.StoreMgr.lookup('visualization');
+        var vis = Cnst.cfg ? Cnst.cfg : store.getById(visId);
+        
+        if (!vis) {
+            
+            return;
         }
-
+        
+        var mapController = this.getController('Map');
+        var cfg = Cnst.cfg ?  Cnst.cfg.choroplethCfg : (vis.get('choroplethCfg') || []);
+        var layerStore = Ext.StoreMgr.lookup('layers');
+        var choroplethNode = layerStore.getRootNode().findChild('type','choroplethgroup');
+        for (var i=0;i<choroplethNode.childNodes.length;i++) {
+            var childNode = choroplethNode.childNodes[i];
+            if (childNode.get('type')=='addchoropleth') continue;
+            mapController.map1.removeLayer(childNode.get('layer1'))
+            mapController.map2.removeLayer(childNode.get('layer2'))
+            choroplethNode.removeChild(childNode);
+        }
+       
+        for (var i = 0; i < cfg.length; i++) {
+            this.addChoropleth(cfg[i]);
+        }
+        
     },
     getLegendUrl: function(layersOrSldId,legendLayerName) {
         var obj = {
@@ -611,11 +712,16 @@ Ext.define('PumaMain.controller.Layers', {
             obj['SLD_ID'] = layersOrSldId;
         }
         var query = Ext.Object.toQueryString(obj);
-        return Cnst.url + '/api/proxy/wms?' + query
-                
+        return Cnst.url + '/api/proxy/wms?' + query          
     },
     initChartLayer: function(node) {
+        if (!node.get('checked')) {
+            return;
+        }
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var params = node.get('params');
+        params['areas'] = JSON.stringify(this.getController('Area').lastMap);
+        params['showChoropleth'] = 'true';
         var symObjs = this.getSymObj(node.get('params'));
         var ruleObjs = symObjs.rules;
         var legendRules = symObjs.legend;
@@ -646,13 +752,6 @@ Ext.define('PumaMain.controller.Layers', {
         
         var me = this;
         if (node.get('type') == 'chartlayer' && node.get('checked')) {
-            var root = Ext.StoreMgr.lookup('layers').getRootNode();
-            root.cascadeBy(function(currentNode) {
-                if (currentNode.get('type') == 'chartlayer' && currentNode != node) {
-                    currentNode.set('checked', false);
-                    me.onCheckChange(currentNode, false);
-                }
-            })
             this.initChartLayer(node);
             return;
         }
@@ -671,8 +770,6 @@ Ext.define('PumaMain.controller.Layers', {
             layer1.setVisibility(checked);
         if (layer2.initialized)
             layer2.setVisibility(checked);
-        if (!bypassLegendRedraw)
-            Ext.ComponentQuery.query('#legendpanel')[0].refresh();
         me.onLayerDrop();
     },
     gatherSymbologiesAndOpacities: function() {
@@ -722,7 +819,7 @@ Ext.define('PumaMain.controller.Layers', {
                     else {
                         node.set('sortIndex',1000);
                     }
-                    layerConf = selLayer
+                    layerConf = selLayer;
                     break;
                 }
                 if (selLayer.type == 'topiclayer' && selLayer.at == node.get('at') && (selLayer.symbologyId == node.get('symbologyId'))) {
@@ -751,7 +848,7 @@ Ext.define('PumaMain.controller.Layers', {
         store.sorters = new Ext.util.MixedCollection();
         
         store.sort('sortIndex','ASC');
-        Ext.ComponentQuery.query('#legendpanel')[0].refresh();
+        //Ext.ComponentQuery.query('#legendpanel')[0].refresh();
 
     }
 });

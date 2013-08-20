@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Chart', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Ext.ux.grid.FiltersFeature', 'PumaMain.view.form.ChartForm', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color','PumaMain.view.ChartPanel'],
+    requires: ['PumaMain.view.form.ChoroplethForm','Ext.ux.grid.FiltersFeature', 'PumaMain.view.form.ChartForm', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color','PumaMain.view.ChartPanel'],
     init: function() {
         this.control({
             'initialbar #visualizationsbtn': {
@@ -41,27 +41,14 @@ Ext.define('PumaMain.controller.Chart', {
             'attributepanel #removeattrbtn': {
                 click: this.onRemoveAttribute
             },
-            'chartconfigpanel #closebtn': {
-                click: this.onWindowClose
-            },
             'chartconfigpanel #addbtn': {
                 click: this.onChartAdd
             },
-            'chartconfigpanel #fillbtn': {
-                click: this.onFillColors
-            },
+           
             'chartconfigpanel #reconfigurebtn': {
                 click: this.onChartReconfigure
             },
-            'chartconfigpanel #numCategories': {
-                change: this.onNumCategoriesChange
-            },
-            'choroplethpanel #classType': {
-                change: this.onClassTypeChange
-            },
-            'choroplethpanel #useAttributeColors': {
-                change: this.onUseAttrColorsChange
-            },
+            
         
         
             'chartpanel tool[type=close]': {
@@ -158,56 +145,7 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
-    onFillColors: function(btn) {
-        var store = btn.up('grid').store;
-        var count = store.getCount();
-        if (count < 3)
-            return;
-        try {
-            var first = store.getAt(0).get('color');
-            var last = store.getAt(count - 1).get('color');
-        }
-        catch (e) {
-            return;
-        }
-        for (var i = 1; i < count - 1; i++) {
-            var ratio = i / (count - 1);
-            var rec = store.getAt(i);
-            var color = Puma.util.Color.determineColorFromRange(first, last, ratio);
-            rec.set('color', color);
-        }
-    },
-    onClassTypeChange: function(combo, val) {
-        var grid = Ext.ComponentQuery.query('chartconfigpanel #classgrid')[0];
-        grid.columns[2].setVisible(val == 'range');
-    },
-    onUseAttrColorsChange: function(chb, val) {
-        var grid = Ext.ComponentQuery.query('chartconfigpanel #classgrid')[0]
-        grid.columns[1].setVisible(val ? false : true)
-    },
-    onNumCategoriesChange: function(combo, val) {
-        var store = Ext.ComponentQuery.query('chartconfigpanel #classgrid')[0].store;
-        var count = store.getCount();
-        if (val > count) {
-            var data = [];
-            for (var i = count; i < val; i++) {
-                data.push({idx: i + 1})
-            }
-            store.loadData(data, true);
-        }
-        if (val < count) {
-            store.removeAt(val, count - val);
-        }
-
-    },
-    onShowChoroplethChange: function(chb, val) {
-        var container = chb.up('container');
-        var disabled = val ? false : true;
-        var choroItems = Ext.ComponentQuery.query('component[forChoro=1]', container);
-        for (var i = 0; i < choroItems.length; i++) {
-            choroItems[i].setDisabled(disabled);
-        }
-    },
+    
     onAfterVisualizationSave: function(formCmp, rec, operation) {
         if (operation.action == 'update') {
             var btn = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[objId=' + rec.get('_id') + ']')[0]
@@ -361,9 +299,6 @@ Ext.define('PumaMain.controller.Chart', {
     onChartAdd: function(btn) {
         var form = btn.up('chartconfigpanel');
         var cfg = form.getForm().getValues();
-//        var color = form.down('colorpicker');
-//        var val = color.getValue();
-//        cfg.selColor = Array.isArray(val) ? val : [val];
         this.addChart(cfg);
 
     },
@@ -500,7 +435,7 @@ Ext.define('PumaMain.controller.Chart', {
         form.chart.cfg = cfg;
         this.reconfigureChart(form.chart);
     },
-    getChartWindowConfig: function(chart, reconfiguring) {
+    getChartWindowConfig: function(chart, reconfiguring, type) {
         var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
         var areaTemplates = dataset.get('featureLayers');
@@ -509,14 +444,13 @@ Ext.define('PumaMain.controller.Chart', {
             filters: [function(rec) {
                     return Ext.Array.contains(areaTemplates, rec.get('_id'));
                 }],
-            //autoLoad: true,
             model: 'Puma.model.AreaTemplate'
         })
         store.load();
         var cfg = {
             layout: 'fit',
             items: [{
-                    xtype: 'chartconfigpanel',
+                    xtype: type,
                     areaTemplateStore: store,
                     chart: chart,
                     reconfiguring: reconfiguring
@@ -524,13 +458,13 @@ Ext.define('PumaMain.controller.Chart', {
         }
         if (!reconfiguring) {
             cfg['closeAction'] = 'hide'
-            cfg['id'] = 'newchartconfig'
+            cfg['id'] = 'new'+type
         }
         return cfg;
     },
     onReconfigureClick: function(btn) {
         var chart = btn.up('panel').chart;
-        var cfg = this.getChartWindowConfig(chart, true);
+        var cfg = this.getChartWindowConfig(chart, true, 'chartconfigpanel');
         var window = Ext.widget('window', cfg);
         window.down('chartconfigpanel').getForm().setValues(chart.cfg);
         window.show();
@@ -538,8 +472,6 @@ Ext.define('PumaMain.controller.Chart', {
     reconfigureChart: function(chartCmp, forExport,addingNew) {
         var cfg = chartCmp.cfg;
         var queryCfg = this.gatherChartCfg(chartCmp);
-        var configColor = Ext.ComponentQuery.query('chartconfigpanel #selColor')[0]
-        if (configColor) configColor.select(cfg.selColor);
         var locations = this.getController('Area').getTreeLocations();
         var selectedAreas = [];
         var areas = {};
@@ -1252,15 +1184,16 @@ Ext.define('PumaMain.controller.Chart', {
 
     },
     onAddAttribute: function(btn) {
-        var attributeSet = Ext.ComponentQuery.query('chartconfigpanel #attributeSet')[0].getValue();
+        var panel = btn.up('panel').up('panel')
+        var attributeSet = Ext.ComponentQuery.query('#attributeSet',panel)[0].getValue();
         var grid = btn.up('grid');
         var sel = grid.getSelectionModel().getSelection();
         if (!sel || !sel.length)
             return;
         var recsToAdd = [];
-        var normType = Ext.ComponentQuery.query('chartconfigpanel #normType')[0].getValue();
-        var normAttrSet = Ext.ComponentQuery.query('chartconfigpanel #normAttributeSet')[0].getValue();
-        var normGrid = Ext.ComponentQuery.query('chartconfigpanel #normselgrid')[0];
+        var normType = Ext.ComponentQuery.query('#normType',panel)[0].getValue();
+        var normAttrSet = Ext.ComponentQuery.query('#normAttributeSet',panel)[0].getValue();
+        var normGrid = Ext.ComponentQuery.query('#normselgrid',panel)[0];
         var normAttr = normGrid.getSelectionModel().getSelection()[0];
         if (Ext.Array.contains(['year','area'],normType)) {
             normAttrSet = null;
@@ -1290,7 +1223,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
         
         
-        var addedGrid = Ext.ComponentQuery.query('chartconfigpanel #addedgrid')[0]
+        var addedGrid = Ext.ComponentQuery.query('#addedgrid',panel)[0]
         addedGrid.store.add(recsToAdd);
 
     },
@@ -1299,10 +1232,11 @@ Ext.define('PumaMain.controller.Chart', {
         var sel = grid.getSelectionModel().getSelection();
         grid.store.remove(sel);
     },
-    onChartBtnClick: function() {
-        var window = Ext.WindowManager.get('newchartconfig');
+    onChartBtnClick: function(parent) {
+        var type = parent.ownerCt.itemId=='layerpanel' ? 'choroplethpanel':'chartconfigpanel';
+        var window = Ext.WindowManager.get('new'+type);
         if (window) {
-            var store = window.down('chartconfigpanel').areaTemplateStore;
+            var store = window.down(type).areaTemplateStore;
             var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
             var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
             var areaTemplates = dataset.get('featureLayers');
@@ -1311,14 +1245,11 @@ Ext.define('PumaMain.controller.Chart', {
                     return Ext.Array.contains(areaTemplates, rec.get('_id'));
                 }])
         }
-        var cfg = this.getChartWindowConfig(null, false)
+        var cfg = this.getChartWindowConfig(null, false,type)
         window = window || Ext.widget('window', cfg)
         window.show();
         return false;
-    },
-    onWindowClose: function(btn) {
-        btn.up('window').close();
-    },
+    }
 });
 
 

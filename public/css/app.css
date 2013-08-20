@@ -34,13 +34,18 @@
 }
 
 
-
+img.invisible {
+    visibility: hidden
+}
 
 .x-boundlist li {
     font-size: 11px;
 }
 
 
+.x-action-col-cell .x-grid-cell-inner img {
+    margin-right: 5px;
+}
 
 
 

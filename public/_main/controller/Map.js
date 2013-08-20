@@ -341,7 +341,6 @@ Ext.define('PumaMain.controller.Map', {
                 return false;
             }
         })
-        debugger;
         if (loaded) {
             console.log('loadingdone');
         }

@@ -16,6 +16,10 @@ Ext.define('PumaMain.controller.Area', {
                     beforeselect: this.onBeforeSelect,
                     itemclick: this.onItemClick,
                     itemmouseenter: this.onItemMouseEnter
+                },
+                '#areaslider':{
+                    changecomplete: this.onSliderSlide,
+                    beforechange: this.onBeforeSliderSlide
                 }
                 })
         this.areaMap = {};
@@ -24,6 +28,7 @@ Ext.define('PumaMain.controller.Area', {
         this.allAreas = {};
         this.lowestAreas = {};
         this.highestAreas = {};
+        this.oldSliderVal = 0;
     },
     
     applyTestFilter: function(from,to) {
@@ -118,24 +123,63 @@ Ext.define('PumaMain.controller.Area', {
     },
      
     onBeforeSliderSlide: function(slider,newVal,oldVal,opts) {
-            if (opts.index>0) return false;
+        console.log(newVal,slider.getValue())    
+        if (opts.index>0 || newVal>slider.getValue()+1) return false;
     },
     
-    onSliderSlide: function(slider,newVal,oldVal) {
-        var forward = newVal>oldVal;
+    onSliderSlide: function(slider,newVal) {
+        var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
+        var needLoad = false;
+        var parentMap = {};
+        
         var tree = Ext.ComponentQuery.query('#areatree')[0];
         tree.suspendEvents();
-        if (forward) {
-            this.expandLowestLevel();
+        areaRoot.cascadeBy(function(node) {
+            var depth = node.get('depth');
+            if (depth==newVal+1) {
+                node.collapse(true);
+            }
+            if (depth==newVal) {
+                if (node.loaded) {
+                    node.expand();
+                }
+                else {
+                    needLoad = true;
+                    var loc = node.get('loc');
+                    var at = node.get('at');
+                    var gid = node.get('gid')
+                    parentMap[loc] = parentMap[loc] || {};
+                    parentMap[loc][at] = parentMap[loc][at] || {};
+                    parentMap[loc][at][gid] = true;
+                }
+            }
+        });
+        tree.resumeEvents();    
+        tree.view.refresh();
+        if (needLoad) {
+            
         }
+        else {
+            this.scanTree();  
+        }
+          
+        
     },
         
-    expandLowestLevel: function() {
-
+    expandToLevel: function(level) {
+        
     },
     
-    collapseLowestLevel: function() {
-        
+    collapseLowestLevel: function(level) {
+        var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
+        areaRoot.cascadeBy(function(node) {
+            var depth = node.get('depth');
+            
+        })
+        var tree = Ext.ComponentQuery.query('#areatree')[0];
+        tree.resumeEvents();    
+        tree.view.refresh();
+        this.scanTree();
     },
       
     
@@ -179,6 +223,7 @@ Ext.define('PumaMain.controller.Area', {
         }
         this.scanTree();
         this.getController('Chart').reconfigure();
+        this.getController('Layers').reconfigureAll();
 
     },
     onNodeCollapsed: function(node) {
@@ -187,6 +232,7 @@ Ext.define('PumaMain.controller.Area', {
         }
         this.scanTree();
         this.getController('Chart').reconfigure();
+        this.getController('Layers').reconfigureAll();
     },
         
     getTreeLocations: function() {

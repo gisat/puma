@@ -79,7 +79,10 @@ Ext.define('PumaMain.view.form.ChartForm', {
             },
             {
                 itemId: 'closebtn',
-                text: 'Close'
+                text: 'Close',
+                handler: function(btn) {
+                    btn.up('window').close();
+                }
             }
         ]
 

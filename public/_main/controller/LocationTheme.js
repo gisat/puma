@@ -155,6 +155,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
             params['expanded'] = JSON.stringify(expandedAndFids.expanded);
             params['fids'] = JSON.stringify(expandedAndFids.fids);
         }
+        if (cntId=='slider') {
+            params['parentgids'] = JSON.stringify(this.getController('Area').parentGids)
+        }
         Ext.Ajax.request({
             url: Cnst.url+'/api/theme/getThemeYearConf',
             params: params,
@@ -168,6 +171,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         if (this.visChanged) {
             this.getController('Chart').loadVisualization(vis);
+            this.getController('Layers').loadVisualization(vis);
         }
         this.visChanged = null;
         this.themeChanged = null;
@@ -180,7 +184,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         var val = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         this.getController('Chart').loadVisualization(val);
+        this.getController('Layers').loadVisualization(val);
         this.getController('Chart').reconfigureAll();
+        this.getController('Layers').reconfigureAll();
         this.getController('Layers').checkVisibilityAndStyles();
     },
         
@@ -380,12 +386,15 @@ Ext.define('PumaMain.controller.LocationTheme', {
     removeLayers: function() {
         var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var topics = Ext.StoreMgr.lookup('theme').getById(themeId).get('topics');
-        var topicNodes = Ext.StoreMgr.lookup('layers').getRootNode().childNodes;
-        for (var i=0;i<topicNodes.length;i++) {
-            var node = topicNodes[i];
+        var thematicNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','thematicgroup');
+        
+        var mapController = this.getController('Map');
+        for (var i=0;i<thematicNode.childNodes.length;i++) {
+            var node = thematicNode.childNodes[i];
             var topic = node.get('topic');
             if (topic && !Ext.Array.contains(topics,topic)) {
-                node.removeAll();
+                mapController.map1.removeLayer(node.get('layer1'))
+                mapController.map2.removeLayer(node.get('layer2'))
                 node.destroy();
             }
         }
@@ -403,6 +412,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             var areaLayerNode = null;
             var selectedLayerNode = null;
             var systemNode = null;
+            var thematicNode = null;
             for (var i=0;i<childNodes.length;i++) {
                 var node = childNodes[i];
                 var type = node.get('type');
@@ -410,10 +420,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 if (type=='systemgroup') {
                     systemNode = node;
                 }
+                if (type=='thematicgroup') {
+                    thematicNode = node;
+                }
             }
             
             
-            root.appendChild(layerNodes);
+            thematicNode.appendChild(layerNodes);
             
             if (!systemNode.childNodes.length) {
                 selectedLayerNode = {
@@ -441,10 +454,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
             var mapController = this.getController('Map');
             for (var i=0;i<root.childNodes.length;i++) {
                 var node = root.childNodes[i];
-                if (Ext.Array.contains(topics,node.get('topic')) || node.get('type')=='systemgroup') {
+                if (node.get('type')=='thematicgroup' || node.get('type')=='systemgroup') {
                     for (var j=0;j<node.childNodes.length;j++) {
                         var layerNode = node.childNodes[j];
                         if (layerNode.get('layer1')) continue;
+                        if (node.get('type')=='thematicgroup' && !Ext.Array.contains(topics,layerNode.get('topic'))) continue;
                         Ext.Array.include(layersToAdd,layerNode); 
                         var layer1 = new OpenLayers.Layer.WMS('WMS',Cnst.url+'/api/proxy/wms',Ext.clone(layerDefaults.params),Ext.clone(layerDefaults.layerParams));
                         var layer2 = new OpenLayers.Layer.WMS('WMS',Cnst.url+'/api/proxy/wms',Ext.clone(layerDefaults.params),Ext.clone(layerDefaults.layerParams));
@@ -501,6 +515,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             this.getController('Area').scanTree();
         }
         this.getController('Chart').reconfigureAll();
+        this.getController('Layers').reconfigureAll();
         if (response.request.options.visChanged) {
             this.getController('Layers').checkVisibilityAndStyles();
         }

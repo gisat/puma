@@ -290,10 +290,28 @@ Ext.define('PumaMain.controller.Store', {
                 children: [{
                     name: 'System',
                     type: 'systemgroup',
+                    expanded: true,
+                    checked: null
+                },{
+                    name: 'Choropleth',
+                    type: 'choroplethgroup',
+                    expanded: true,
+                    children: [{
+                        name: 'Add choropleth',
+                        type: 'addchoropleth',
+                        leaf: true,
+                        checked: null
+                    }],
+                    checked: null
+                },{
+                    name: 'Thematic',
+                    type: 'thematicgroup',
+                    expanded: true,
                     checked: null
                 },{
                     name: 'Base',
                     type: 'basegroup',
+                    expanded: true,
                     checked: null
                 }]
             }
