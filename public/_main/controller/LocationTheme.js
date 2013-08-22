@@ -37,6 +37,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         })
     },
     onDatasetChange: function(cnt,val) {
+        this.datasetChanged = true;
         var themeStore = Ext.StoreMgr.lookup('theme4sel');
         themeStore.clearFilter(true);
         themeStore.filter([
@@ -143,7 +144,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         params['refreshLayers'] = (this.themeChanged) ? true : null;
-        params['refreshAreas'] = true;
+        params['refreshAreas'] = (this.yearChanged || this.datasetChanged) ? true : false;
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
@@ -173,6 +174,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             this.getController('Chart').loadVisualization(vis);
             this.getController('Layers').loadVisualization(vis);
         }
+        this.datasetChanged = null;
         this.visChanged = null;
         this.themeChanged = null;
         this.yearChanged = null;
@@ -392,7 +394,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         for (var i=0;i<thematicNode.childNodes.length;i++) {
             var node = thematicNode.childNodes[i];
             var topic = node.get('topic');
-            if (topic && !Ext.Array.contains(topics,topic)) {
+            if (topic && !Ext.Array.contains(topics,parseInt(topic))) {
                 mapController.map1.removeLayer(node.get('layer1'))
                 mapController.map2.removeLayer(node.get('layer2'))
                 node.destroy();
@@ -403,10 +405,22 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     
     appendLayers: function(layerNodes) {
-            var topics = [];
+            
+            this.topics = this.topics || [];
+            var topics  = [];
+            var nodesToAdd = [];
             for (var i=0;i<layerNodes.length;i++) {
-                topics.push(layerNodes[i].topic);
+                var topic = layerNodes[i].topic;
+                Ext.Array.include(topics,topic);
+                if (Ext.Array.contains(this.topics,topic)) {
+                    continue;
+                }
+                
+                nodesToAdd.push(layerNodes[i])
             }
+            
+            this.topics = topics;
+            
             var root = Ext.StoreMgr.lookup('layers').getRootNode();
             var childNodes = root.childNodes;
             var areaLayerNode = null;
@@ -425,9 +439,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 }
             }
             
-            
-            thematicNode.appendChild(layerNodes);
-            
+            if (nodesToAdd.length) {
+                thematicNode.appendChild(nodesToAdd);
+            }
             if (!systemNode.childNodes.length) {
                 selectedLayerNode = {
                     type: 'selectedareas',

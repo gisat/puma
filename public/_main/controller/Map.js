@@ -335,6 +335,9 @@ Ext.define('PumaMain.controller.Map', {
     onExtentOutlineComplete: function(cmp) {
         cmp.mapLoaded = true;
         var loaded = true;
+        if (!cmp.ownerCt) {
+            return;
+        }
         cmp.ownerCt.items.each(function(mapCmp) {
             if (!mapCmp.mapLoaded) {
                 loaded = false;

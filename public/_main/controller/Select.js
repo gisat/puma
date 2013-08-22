@@ -14,14 +14,13 @@ Ext.define('PumaMain.controller.Select', {
                 select: this.onChangeColor
             }
         })
-        this.selMap = {'FF0000':[]};
+        this.selMap = {'ff0000':[]};
         this.colorMap = {};
         this.hoverMap = [];
-        this.actualColor = 'FF0000';
+        this.actualColor = 'ff0000';
     },
         
     select: function(areas,add,hover) {
-        debugger;
         if (!this.actualColor) return;
         if (this.task) {
             this.task.cancel();
@@ -106,16 +105,6 @@ Ext.define('PumaMain.controller.Select', {
             var add = this.arrDifference(areas,sel);
             newSel = Ext.Array.merge(diff,add);
         }
-        var colorsToChange = [this.actualColor];
-        // 
-        for (var color in this.selMap) {
-            if (color==this.actualColor) continue;
-            var selLength = this.selMap[color].length;
-            this.selMap[color] = this.arrDifference(this.selMap[color],newSel);
-            if (this.selMap[color].length!=selLength) {
-                colorsToChange.push(color);
-            }
-        }
         
         if (!hover) {
             this.selMap[this.actualColor] = newSel;
@@ -123,8 +112,49 @@ Ext.define('PumaMain.controller.Select', {
         else {
             this.hoverMap = newSel;
         }
+        
         this.colorMap = this.prepareColorMap();
-        this.callControllers();         
+        
+        var lowestMap = this.getController('Area').lowestMap;
+        var outerCount = 0;
+        for (var color in this.selMap) {
+            for (var i=0;i<this.selMap[color].length;i++) {
+                var obj = this.selMap[color][i];
+                if (lowestMap[obj.loc] && lowestMap[obj.loc][obj.at] && Ext.Array.contains(lowestMap[obj.loc][obj.at],obj.gid)) {}
+                else {
+                    this.outerSelect = true;
+                    outerCount++;
+                }
+            }
+        }
+        this.outerCount = outerCount
+       
+        
+        this.getController('Area').colourTree(this.colorMap); 
+        this.getController('Chart').reconfigure('immediate'); 
+        
+        
+        
+        if (this.selectTask) {
+            this.selectTask.cancel();
+        }
+        this.selectTask = new Ext.util.DelayedTask();
+        this.selectTask.delay(500,this.selectDelayed,this,arguments);
+        
+    },
+        
+    selectDelayed: function(areas,add,hover) {
+        this.getController('Layers').colourMap(this.colorMap); 
+        
+        if (!hover) {
+            var lowestCount = this.getController('Area').lowestCount;
+            Ext.StoreMgr.lookup('paging').setCount(lowestCount+this.outerCount);
+            
+            var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect)
+            this.getController('Chart').reconfigure(outer ? 'outer' : 'inner');    
+        }
+        this.prevOuterSelect = this.outerSelect
+        this.outerSelect = false;
     },
       
     // taken from Ext.Array
@@ -150,12 +180,6 @@ Ext.define('PumaMain.controller.Select', {
         return clone;
     },
         
-    callControllers: function() {
-        var selectMap = this.colorMap;
-        this.getController('Area').colourTree(selectMap);
-        this.getController('Layers').colourMap(selectMap); 
-        this.getController('Chart').reconfigure(true);
-    },
     clearSelections: function() {
         this.selMap = {'FF0000':[]};
         this.hoverMap = [];
@@ -163,27 +187,6 @@ Ext.define('PumaMain.controller.Select', {
         this.callControllers();
     },
     
-    refreshSelection: function() {
-        var allMap = this.getController('Area').allMap;
-        var changed = false;
-        for (var color in this.selMap) {
-            var selsToRemove = []
-            for (var i=0;i<this.selMap[color].length;i++) {
-                var sel = this.selMap[color][i];
-                if (allMap[sel.loc] && allMap[sel.loc][sel.at] && Ext.Array.contains (allMap[sel.loc][sel.at],sel.gid)) {}
-                else {
-                    selsToRemove.push(sel);
-                    changed = true;
-                }
-            }
-            this.selMap[color] = Ext.Array.difference(this.selMap[color],selsToRemove);
-        }
-        if (changed) {
-            this.colorMap = this.prepareColorMap();
-//            this.getController('Area').colourTree(this.colorMap);
-//            this.getController('Layers').colourMap(this.colorMap); 
-        }
-    },
     prepareColorMap: function() {
         var resultMap = {};
         for (var color in this.selMap) {

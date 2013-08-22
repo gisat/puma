@@ -15,7 +15,7 @@ Ext.define('PumaMng.view.form.Location', {
                     xtype: 'pumacombo',
                     name: 'dataset',
                     store: Ext.StoreMgr.lookup('activedataset'),
-                    allowBlank: false,
+                    allowBlank: true,
                     fieldLabel: 'Dataset'
                 }];
 

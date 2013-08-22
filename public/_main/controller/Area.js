@@ -222,7 +222,7 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
-        this.getController('Chart').reconfigure();
+        this.getController('Chart').reconfigure('expand');
         this.getController('Layers').reconfigureAll();
 
     },
@@ -231,7 +231,7 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
-        this.getController('Chart').reconfigure();
+        this.getController('Chart').reconfigure('expand');
         this.getController('Layers').reconfigureAll();
     },
         
@@ -252,6 +252,8 @@ Ext.define('PumaMain.controller.Area', {
         var lastMap = {};
         var highestMap = {};
         var parent = null;
+        var lowestCount = 0;
+        
         root.cascadeBy(function(node) {
             var at = node.get('at');
             var loc = node.get('loc')
@@ -289,18 +291,39 @@ Ext.define('PumaMain.controller.Area', {
             var lastAreaTemplate = areaTemplates[areaTemplates.length-1];
             for (var loc in allMap) {
                 if (!allMap[loc][lastAreaTemplate]) continue;
-                
+                lowestCount += allMap[loc][lastAreaTemplate].length;
                 lowestMap[loc] = lowestMap[loc] || {};
                 lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
             }
         }
         this.getController('Map').updateGetFeatureControl();
+        this.lowestCount = lowestCount;
         this.allMap = allMap;
         this.lowestMap = lowestMap;
         this.highestMap = highestMap;
         this.lastMap = lastMap;
         
-        this.getController('Select').refreshSelection();
+        var selMap = this.getController('Select').selMap;
+        var outerCount = 0;
+        for (var color in selMap) {
+            for (var i=0;i<selMap[color].length;i++) {
+                var obj = selMap[color][i];
+                if (allMap[obj.loc] && allMap[obj.loc][obj.at] && Ext.Array.contains(allMap[obj.loc][obj.at],obj.gid)) {}
+                else {
+                    selMap[color] = Ext.Array.difference(selMap[color],[obj])
+                }
+                if (lowestMap[obj.loc] && lowestMap[obj.loc][obj.at] && Ext.Array.contains(lowestMap[obj.loc][obj.at],obj.gid)) {}
+                else if (allMap[obj.loc] && allMap[obj.loc][obj.at] && Ext.Array.contains(allMap[obj.loc][obj.at],obj.gid)) {
+                    outerCount++;
+                }
+                else {
+                    selMap[color] = Ext.Array.difference(selMap[color],[obj]);
+                }
+            }
+        }
+        this.getController('Select').prepareColorMap();
+        Ext.StoreMgr.lookup('paging').setCount(lowestCount+outerCount);
+        
         this.getController('Layers').refreshOutlines();
         //this.getController('Layers').checkVisibilityAndStyles(true,false);
         

@@ -23,6 +23,7 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.MappedChartAttribute',
         'Ext.data.Store',
         'Gisatlib.data.SlaveStore',
+        'Gisatlib.paging.PhantomStore',
         'Gisatlib.data.AggregatedStore'
     ],
     init: function() {
@@ -116,6 +117,8 @@ Ext.define('PumaMain.controller.Store', {
             autoLoad: true,
             model: 'Puma.model.Topic'
         })
+    
+        
     },
         
     initEvents: function() {
@@ -279,7 +282,10 @@ Ext.define('PumaMain.controller.Store', {
     },
         
     initLocalStores: function() {
-     
+        
+        Ext.create('Gisatlib.paging.PhantomStore',{
+            storeId: 'paging'
+        })
         Ext.create('Ext.data.TreeStore', {
             fields: ['text'],
             model: 'Puma.model.MapLayer',

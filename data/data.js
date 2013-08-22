@@ -68,6 +68,23 @@ function getData(params, callback) {
     var anotherNormYear = (normalization && normalizationYear && years.indexOf(normalizationYear) < 0);
     var moreYears = years.length > 1;
     var aliases = [];
+    
+
+    var attrsWithSort = attrs;
+    if (sort && sortProperty != 'name') {
+        var as = sortProperty.split('_')[1].split('_')[0];
+        var attr = sortProperty.split('_')[3].split('_')[0];
+
+        var attrObj = {
+            as: as,
+            attr: attr
+        }
+        if (params['sortNorm']) {
+            us.extend(attrObj, JSON.parse(params['sortNorm']))
+        }
+        attrsWithSort = us.union(attrs, [attrObj]);
+    }
+    
     for (var i = 0; i < years.length; i++) {
         var yearId = years[i];
         var pre = 'x_' + yearId + '.';
@@ -83,13 +100,16 @@ function getData(params, callback) {
             topAllSql += 'SELECT -1 as gid,\'All\' as name,area';
             
         }
-        for (var j = 0; j < attrs.length; j++) {
-            var attr = attrs[j];
+        
+        for (var j = 0; j < attrsWithSort.length; j++) {
+            var attr = attrsWithSort[j];
             var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
             var aliasAttrName = moreYears ? (attrName + '_y_' + yearId) : attrName;
-            if (sortProperty==aliasAttrName) {
-                sortPropertyContained = true;
+            if (us.contains(aliases,aliasAttrName)) {
+                continue;
             }
+            
+            
             if (params['normalization'] == 'toptree' || params['normalization'] == 'topall' || attr.normType == 'toptree' || attr.normType == 'topall') {
                 attr.normType = null;
             }
@@ -141,7 +161,9 @@ function getData(params, callback) {
                 }
             }
             select += ' AS ' + aliasAttrName + ' ';
-            aliases.push(aliasAttrName);
+            if (us.contains(attrs,attr)) {
+                aliases.push(aliasAttrName);    
+            }
         }
     }
     if (anotherNormYear) {
@@ -365,11 +387,16 @@ function getData(params, callback) {
                 var dataSql = 'SELECT * FROM (' + results.sql + ') as a';
                 dataSql += ' WHERE 1=1';
                 dataSql += filterSql;
-                if (sort && sortPropertyContained) {
-                    dataSql += ' ORDER BY pr ASC,' + sort[0].property + ' ' + sort[0].direction;
+                var nameSort = 'name ASC';
+                dataSql += ' ORDER BY ';
+                if (sort && sortProperty=='name') {
+                    dataSql += 'pr ASC,' + sort[0].property + ' ' + sort[0].direction
+                }
+                else if (sort) {
+                    dataSql += sort[0].property + ' ' + sort[0].direction+','+nameSort;
                 }
                 else {
-                    dataSql += ' ORDER BY pr ASC';
+                    dataSql += 'pr ASC,'+nameSort;
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';

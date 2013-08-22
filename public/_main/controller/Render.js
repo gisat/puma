@@ -56,8 +56,12 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('chartbar',{
             renderTo: 'app-reports-accordeon'
         })
-        
-        
+        Ext.widget('pagingtoolbar',{
+            renderTo: 'app-reports-paging',
+            itemId: 'areapager',
+            displayInfo: true,
+            store: Ext.StoreMgr.lookup('paging')
+        })
         
     },
         

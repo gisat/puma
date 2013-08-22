@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Chart', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['PumaMain.view.form.ChoroplethForm','Ext.ux.grid.FiltersFeature', 'PumaMain.view.form.ChartForm', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color','PumaMain.view.ChartPanel'],
+    requires: ['PumaMain.view.form.ChoroplethForm', 'Ext.ux.grid.FiltersFeature', 'PumaMain.view.form.ChartForm', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color', 'PumaMain.view.ChartPanel'],
     init: function() {
         this.control({
             'initialbar #visualizationsbtn': {
@@ -16,9 +16,6 @@ Ext.define('PumaMain.controller.Chart', {
             'initialbar #urlbtn': {
                 click: this.onSaveView
             },
-            
-            
-            
             'visualizationform form': {
                 beforesave: this.onBeforeVisualizationSave,
                 aftersave: this.onAfterVisualizationSave
@@ -32,9 +29,6 @@ Ext.define('PumaMain.controller.Chart', {
             'attributepanel #normalizationAttributeSet': {
                 change: this.onAttrSetChange
             },
-        
-        
-            
             'attributepanel #addattrbtn': {
                 click: this.onAddAttribute
             },
@@ -44,13 +38,9 @@ Ext.define('PumaMain.controller.Chart', {
             'chartconfigpanel #addbtn': {
                 click: this.onChartAdd
             },
-           
             'chartconfigpanel #reconfigurebtn': {
                 click: this.onChartReconfigure
             },
-            
-        
-        
             'chartpanel tool[type=close]': {
                 click: this.onChartRemove
             },
@@ -63,18 +53,20 @@ Ext.define('PumaMain.controller.Chart', {
             'chartpanel tool[type=collapse]': {
                 click: this.onExportCsv
             },
-            'chartpanel tool[type=search]':{
+            'chartpanel tool[type=search]': {
                 click: this.onSwitchZooming
             },
-            'chartpanel tool[type=print]':{
+            'chartpanel tool[type=print]': {
                 click: this.onUrlClick
             },
-            'chartpanel tool[type=save]':{},
-            
-            'chartbar panel[cfgType=add]':{
+            'chartpanel tool[type=save]': {},
+            'chartbar panel[cfgType=add]': {
                 beforeexpand: this.onChartBtnClick
-            }
-            
+            },
+            '#areapager' : {
+                beforechange: this.onPageChange
+            },
+
 //            'chartbar #removebtn': {
 //                click: this.onChartRemove
 //            },
@@ -98,22 +90,19 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
-    
     onToggleLegend: function(btn) {
         var chart = btn.up('panel').chart;
         chart.legendOn = chart.legendOn ? false : true;
-        this.toggleLegendState(chart.chart,chart.legendOn);
+        this.toggleLegendState(chart.chart, chart.legendOn);
     },
-    
     onSwitchZooming: function(btn) {
         var chart = btn.up('panel').chart;
         chart.zooming = chart.zooming ? false : true;
     },
     onExportCsv: function(btn) {
         var chart = btn.up('panel').chart;
-        this.reconfigureChart(chart,true);
+        this.reconfigureChart(chart, true);
     },
-        
     onSaveView: function() {
         var cfg = {};
         cfg.chartCfg = this.gatherCfg();
@@ -126,7 +115,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
         cfg.dataset = Ext.ComponentQuery.query('initialbar #datasetcontainer button[pressed=true]')[0].objId;
         cfg.theme = Ext.ComponentQuery.query('initialbar #themecontainer button[pressed=true]')[0].objId
-        cfg.years = Ext.Array.pluck(Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]'),'objId');
+        cfg.years = Ext.Array.pluck(Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]'), 'objId');
         cfg.visualization = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[pressed=true]')[0].objId
         cfg.expanded = this.getController('Area').getExpandedAndFids().expanded;
         cfg.selMap = this.getController('Select').selMap;
@@ -140,12 +129,11 @@ Ext.define('PumaMain.controller.Chart', {
             method: 'POST',
             success: function(response) {
                 var id = JSON.parse(response.responseText).data;
-                var url = window.location.origin+'/public/index2.html?id='+id;
+                var url = window.location.origin + '/public/index2.html?id=' + id;
                 console.log(url);
             }
         })
     },
-    
     onAfterVisualizationSave: function(formCmp, rec, operation) {
         if (operation.action == 'update') {
             var btn = Ext.ComponentQuery.query('initialbar #visualizationcontainer button[objId=' + rec.get('_id') + ']')[0]
@@ -210,57 +198,54 @@ Ext.define('PumaMain.controller.Chart', {
                 return false;
             }
             var atMap = this.getController('Layers').gatherSymbologiesAndOpacities();
-            
+
             rec.set('atMap', atMap);
-            rec.set('cfg', cfg);
+            rec.set('cfg', cfg); }
+    },
+    gatherChartCfg: function(chart, useQueryCfg) {
+        chart.cfg.chartId = chart.cfg.chartId || parseInt(Math.random() * 10000000)
+        var cfg = Ext.clone(useQueryCfg ? chart.queryCfg : chart.cfg);
+        var legendItems = chart.chart && chart.chart.legend ? chart.chart.legend.allItems : [];
+        if (legendItems.length) {
+            cfg.invisibleAttrs = [];
+            cfg.invisibleYears = [];
+
         }
+        if (cfg.type == 'grid' && chart.chart) {
+            cfg.activeFilters = [];
+            cfg.activeSorters = [];
+            chart.chart.store.sorters.each(function(sorter) {
+                cfg.activeSorters.push({direction: sorter.direction, property: sorter.property})
+            })
+            chart.chart.filters.filters.each(function(filter) {
+                if (filter.type == 'numeric' && filter.active) {
+                    cfg.activeFilters.push({dataIndex: filter.dataIndex, value: filter.getValue()});
+                }
+            })
+        }
+        for (var j = 0; j < legendItems.length; j++) {
+            var legendItem = legendItems[j];
+            if (legendItem.visible)
+                continue;
+            if (legendItem.as) {
+                cfg.invisibleAttrs.push({as: legendItem.as, attr: legendItem.attr})
+            }
+            else if (legendItem.userOptions.as) {
+                cfg.invisibleAttrs.push({as: legendItem.userOptions.as, attr: legendItem.userOptions.attr})
+            }
+            else if (legendItem.userOptions.year) {
+                cfg.invisibleYears.push(legendItem.userOptions.year)
+            }
+        }
+        return cfg
     },
-        
-        
-    gatherChartCfg: function(chart,useQueryCfg) {
-            chart.cfg.chartId = chart.cfg.chartId || parseInt(Math.random() * 10000000)
-            var cfg = Ext.clone(useQueryCfg ? chart.queryCfg : chart.cfg);
-            var legendItems = chart.chart && chart.chart.legend ? chart.chart.legend.allItems : [];
-            if (legendItems.length) {
-                cfg.invisibleAttrs = [];
-                cfg.invisibleYears = [];
-                
-            }
-            if (cfg.type == 'grid' && chart.chart) {
-                cfg.activeFilters = [];
-                cfg.activeSorters = [];
-                chart.chart.store.sorters.each(function(sorter) {
-                    cfg.activeSorters.push({direction:sorter.direction,property:sorter.property})
-                }) 
-                chart.chart.filters.filters.each(function(filter) {
-                    if (filter.type=='numeric' && filter.active) {
-                        cfg.activeFilters.push({dataIndex:filter.dataIndex,value:filter.getValue()});
-                    }
-                })
-            }
-            for (var j=0;j<legendItems.length;j++) {
-                var legendItem = legendItems[j];
-                if (legendItem.visible) continue;
-                if (legendItem.as) {
-                    cfg.invisibleAttrs.push({as:legendItem.as,attr:legendItem.attr})
-                }
-                else if (legendItem.userOptions.as) {
-                    cfg.invisibleAttrs.push({as:legendItem.userOptions.as,attr:legendItem.userOptions.attr})
-                }
-                else if (legendItem.userOptions.year) {
-                    cfg.invisibleYears.push(legendItem.userOptions.year)
-                }
-            }
-            return cfg
-    },
-    
     gatherCfg: function() {
         var charts = Ext.ComponentQuery.query('chartbar chartcmp');
         var cfgs = [];
         for (var i = 0; i < charts.length; i++) {
             var chart = charts[i];
             var cfg = this.gatherChartCfg(chart);
-            
+
             cfgs.push(cfg);
         }
         return cfgs;
@@ -275,24 +260,24 @@ Ext.define('PumaMain.controller.Chart', {
     loadVisualization: function(visId) {
         var store = Ext.StoreMgr.lookup('visualization');
         var vis = Config.cfg ? Config.cfg : store.getById(visId);
-        
+
         if (!vis) {
             // povolit konfiguraci
             return;
         }
-        
-        var cfg = Config.cfg ?  Config.cfg.chartCfg : (vis.get('cfg') || []);
+
+        var cfg = Config.cfg ? Config.cfg.chartCfg : (vis.get('cfg') || []);
         var container = Ext.ComponentQuery.query('chartbar')[0];
         var me = this;
         container.items.each(function(item) {
-            if (item.xtype=='chartpanel') {
-               me.onChartRemove(null, item);
+            if (item.xtype == 'chartpanel') {
+                me.onChartRemove(null, item);
             }
-            
+
         })
         for (var i = 0; i < cfg.length; i++) {
-            if (cfg.type!='filter')
-            this.addChart(cfg[i], true);
+            if (cfg.type != 'filter')
+                this.addChart(cfg[i], true);
         }
 
     },
@@ -310,7 +295,7 @@ Ext.define('PumaMain.controller.Chart', {
             width: 575,
             layout: 'fit'
         };
-        if (cfg.type=='extentoutline') {
+        if (cfg.type == 'extentoutline') {
             opts.layout = {
                 type: 'table',
                 columns: 2
@@ -319,103 +304,30 @@ Ext.define('PumaMain.controller.Chart', {
         }
         var chart = Ext.widget('chartcmp', opts);
         var items = [chart];
-        
-        
+
+
         var cnt = Ext.widget('chartpanel', {
-            title: cfg.title || ('Anonymous '+cfg.type),
+            title: cfg.title || ('Anonymous ' + cfg.type),
             cfgType: cfg.type,
-//            buttons: [{
-//                    text: 'Remove',
-//                    itemId: 'removebtn'
-//                }, {
-//                    text: 'Config',
-//                    itemId: 'cfgbtn'
-//                }, {
-//                    text: 'Legend',
-//                    hidden: Ext.Array.contains(['grid', 'featurecount','extentoutline','filter'], cfg.type),
-//                    pressed: false,
-//                    scope: chart,
-//                    enableToggle: true,
-//                    itemId: 'legendbtn',
-//                    handler: function(btn) {
-//                        var chart = this.chart;
-//                        if (!chart)
-//                            return;
-//                        me.toggleLegendState(chart, btn.pressed);
-//                    }
-//                },{
-//                    text: 'Apply',
-//                    itemId: 'applyfilterbtn',
-//                    hidden: cfg.type!='filter'
-//                },{
-//                    text: 'Clear filter',
-//                    itemId: 'clearfilterbtn',
-//                    hidden: cfg.type!='filter'
-//                },
-//                {
-//                    text: 'Export CSV',
-//                    hidden: cfg.type != 'grid',
-//                    scope: chart,
-//                    itemId: 'exportbtn',
-//                    handler: function(btn) {
-//                        me.reconfigureChart(this, true)
-//                    }
-//                },
-//                {
-//                    text: 'Switch zooming',
-//                    hidden: cfg.type != 'scatterchart',
-//                    scope: chart,
-//                    itemId: 'switchzoomingbtn',
-//                    enableToggle: true
-//                },
-//                {
-//                    text: 'Export PNG',
-//                    hidden: cfg.type=='filter',
-//                    scope: chart,
-//                    itemId: 'exportpngbtn',
-//                    handler: function(btn) {
-//                        //me.reconfigureChart(this, true)
-//                    }
-//                },
-//                {
-//                    text: 'Save',
-//                    //hidden: cfg.type=='filter',
-//                    hidden: true,
-//                    scope: chart,
-//                    itemId: 'savebtn',
-//                    handler: function(btn) {
-//                        //me.reconfigureChart(this, true)
-//                    }
-//                },
-//                {
-//                    text: 'URL',
-//                    hidden: cfg.type=='filter',
-//                    scope: chart,
-//                    itemId: 'urlbtn',
-//                    handler: function(btn) {
-//                        //me.reconfigureChart(this, true)
-//                    }
-//                }],
             items: items
         })
-        container.add(container.items.length-2,cnt);
+        container.add(container.items.length - 2, cnt);
         chart.cfg = cfg;
         chart.cnt = cnt;
         cnt.chart = chart;
         if (!withoutReconfigure) {
-            this.reconfigureChart(chart,false,true);
+            this.reconfigureChart(chart, false, true);
         }
     },
     onChartRemove: function(btn, panel) {
-        
+
         var panel = btn ? btn.up('panel') : panel;
-//        var chart = panel.items.getAt(0);
-//        if (chart && chart.cfg) {
-//            this.getController('Layers').onChartReconfigure(chart, {removing:true,attrs:JSON.stringify(chart.cfg.attrs),showChoropleth:chart.cfg.showChoropleth});
-//        }
+        if (panel.chart.chart) {
+            panel.chart.chart.destroy();
+        }
         panel.destroy();
-    },
         
+    },
     toggleLegendState: function(chart, on) {
         var id = chart.container.id;
         var selector = '#' + id + ' .highcharts-legend';
@@ -429,9 +341,6 @@ Ext.define('PumaMain.controller.Chart', {
     onChartReconfigure: function(btn) {
         var form = btn.up('chartconfigpanel');
         var cfg = form.getForm().getValues();
-//        var color = form.down('colorpicker');
-//        var val = color.getValue();
-//        cfg.selColor = Array.isArray(val) ? val : [val];
         form.chart.cfg = cfg;
         this.reconfigureChart(form.chart);
     },
@@ -458,7 +367,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
         if (!reconfiguring) {
             cfg['closeAction'] = 'hide'
-            cfg['id'] = 'new'+type
+            cfg['id'] = 'new' + type
         }
         return cfg;
     },
@@ -469,104 +378,43 @@ Ext.define('PumaMain.controller.Chart', {
         window.down('chartconfigpanel').getForm().setValues(chart.cfg);
         window.show();
     },
-    reconfigureChart: function(chartCmp, forExport,addingNew) {
+    reconfigureChart: function(chartCmp, forExport, addingNew) {
         var cfg = chartCmp.cfg;
         var queryCfg = this.gatherChartCfg(chartCmp);
-        var locations = this.getController('Area').getTreeLocations();
         var selectedAreas = [];
         var areas = {};
-        cfg.areas = 'treelowest';
-        if ((cfg.selColor && cfg.selColor.length) || cfg.normalization=='select' || cfg.aggregation=='select') {
-            
-            var selMap = this.getController('Select').selMap;
-            if (cfg.selColor && cfg.selColor.length) {
-                var colors = cfg.selColor;
+        var selMap = this.getController('Select').selMap
+        var colors = [];
+        for (var color in selMap) {
+            colors.push(color);
+        }
+        var selMaps = [];
+        var map = {};
+        for (var i = 0; i < colors.length; i++) {
+            var actualMap = selMap[colors[i]];
+            if (actualMap && actualMap.length) {
+                selMaps.push(actualMap);
             }
-            else {
-                var colors = [];
-                for (var color in selMap) {
-                    colors.push(color);
-                }
-                queryCfg.noSelect = true;
-            }
-            
-            var selMaps = [];
+
+        }
+        for (var i = 0; i < selMaps.length; i++) {
+            var selMap = selMaps[i];
             var map = {};
-            var empty = true;
-            for (var i = 0; i < colors.length; i++) {
-                var actualMap = selMap[colors[i]];
-                if (actualMap && actualMap.length) {
-                    empty = false;
-                    selMaps.push(actualMap);
-                }
+            for (var j = 0; j < selMap.length; j++) {
+                var at = selMap[j].at;
+                var gid = selMap[j].gid;
+                var loc = selMap[j].loc;
+                map[loc] = map[loc] || {};
+                map[loc][at] = map[loc][at] || [];
+                map[loc][at].push(gid);
+            }
+            selectedAreas.push(map);
+        }
 
-            }
-            if (empty && cfg.selColor && cfg.selColor.length) {
-                if (cfg.areaTemplate) {
-                    
-                    for (var i=0;i<locations.length;i++) {
-                        areas[locations[i]]={};
-                        areas[locations[i]][cfg.areaTemplate] = true;
-                    }
-                }
-            }
-                for (var i = 0; i < selMaps.length; i++) {
-                    var selMap = selMaps[i];
-                    var map = {};
-                    for (var j = 0; j < selMap.length; j++) {
-                        var at = selMap[j].at;
-                        var gid = selMap[j].gid;
-                        var loc = selMap[j].loc;
-                        map[loc] = map[loc] || {};
-                        map[loc][at] = map[loc][at] || [];
-                        map[loc][at].push(gid);
-                    }
-                    selectedAreas.push(map);
-                }
+        if (cfg.type != 'extentoutline') {
+            areas = Ext.clone(this.getController('Area').lowestMap);
+        }
 
-        }
-        if (!cfg.selColor || !cfg.selColor.length) {
-            queryCfg.noSelect = true;
-        }
-        if (cfg.areas!='select') {
-            var areaController = this.getController('Area');
-            if (cfg.areas == 'areatemplate') {
-                if (cfg.areaTemplate) {
-                    for (var i=0;i<locations.length;i++) {
-                        areas[locations[i]]={};
-                        areas[locations[i]][cfg.areaTemplate] = true;
-                    }
-                }
-                else {
-                    return;
-                }
-            }
-            else {
-                var map = null;
-                switch (cfg.areas) {
-                    case 'treeall': map = areaController.allMap; break;
-                    case 'treelowest': map = areaController.lowestMap; break;
-                    case 'treehighest': map = areaController.highestMap; break;
-                }
-                var areas = map;
-            }
-        }
-        if (cfg.type == 'filter') {
-            var allMap = this.getController('Area').allMap;
-            areas = {};
-            selectedAreas = [];
-            
-                if (!Ext.isArray(cfg.areaTemplates)) {
-                    cfg.areaTemplates = [cfg.areaTemplates]
-                }
-            for (var locationId in allMap) {
-                areas[locationId] = {};
-                for (var i=0;i<cfg.areaTemplates.length;i++) {
-                    areas[locationId][cfg.areaTemplates[i]] = true;
-                }
-            }
-        
-        }
         queryCfg.areas = areas;
         queryCfg.selectedAreas = selectedAreas;
 
@@ -581,44 +429,13 @@ Ext.define('PumaMain.controller.Chart', {
         if (!queryCfg.years.length) {
             queryCfg.years = [queryCfg.years]
         }
-        
+        if (Ext.Array.contains(['grid','columnchart','piechart'],cfg.type)) {
+            Ext.apply(queryCfg,this.getPagingParams());
+        }
         var params = this.getParams(queryCfg);
         chartCmp.queryCfg = queryCfg;
         if (forExport) {
-            var store = chartCmp.chart.store;
-            store.on('beforeload', function(st, operation) {
-                Ext.applyIf(params, store.proxy.getParams(operation));
-                var filterFeature = chartCmp.chart.filters;
-                var filterParams = filterFeature.buildQuery(filterFeature.getFilterData());
-                Ext.apply(params, filterParams);
-                console.log(params)
-                var items = [{
-                        xtype: 'filefield',
-                        name: 'file'
-                    }];
-                for (var key in params) {
-                    items.push({
-                        xtype: 'textfield',
-                        name: key,
-                        value: params[key]
-                    })
-                }
-                var form = Ext.widget('form', {
-                    items: items
-                });
-                form.getForm().submit({
-                    url: Config.url + '/api/chart/getGridDataCsv',
-                    success: function() {
-                    },
-                    failure: function() {
-                    }
-                });
-                return false;
-            }, true, {single: true})
-            chartCmp.chart.view.loadMask.disabled = true;
-            store.load();
-            chartCmp.chart.view.loadMask.disabled = false;
-            return;
+            this.handleExport(chartCmp,params)
         }
 
         Ext.Ajax.request({
@@ -633,9 +450,44 @@ Ext.define('PumaMain.controller.Chart', {
         //this.getController('Layers').onChartReconfigure(chartCmp, params);
     },
 
+    handleExport: function(chartCmp, params) {
+        var store = chartCmp.chart.store;
+        store.on('beforeload', function(st, operation) {
+            Ext.applyIf(params, store.proxy.getParams(operation));
+            var filterFeature = chartCmp.chart.filters;
+            var filterParams = filterFeature.buildQuery(filterFeature.getFilterData());
+            Ext.apply(params, filterParams);
+            var items = [{
+                    xtype: 'filefield',
+                    name: 'file'
+                }];
+            for (var key in params) {
+                items.push({
+                    xtype: 'textfield',
+                    name: key,
+                    value: params[key]
+                })
+            }
+            var form = Ext.widget('form', {
+                items: items
+            });
+            form.getForm().submit({
+                url: Config.url + '/api/chart/getGridDataCsv',
+                success: function() {
+                },
+                failure: function() {
+                }
+            });
+            return false;
+        }, true, {single: true})
+        chartCmp.chart.view.loadMask.disabled = true;
+        store.load();
+        chartCmp.chart.view.loadMask.disabled = false;
+        return;
+    },
     getParams: function(queryCfg) {
         var params = {};
-        var keysToJson = ['areas', 'selectedAreas','attrs', 'years', 'classConfig','areaTemplates','oldAreas','invisibleAttrs','invisibleYears','activeFilters','activeSorters'];
+        var keysToJson = ['areas', 'selectedAreas', 'attrs', 'years', 'classConfig', 'areaTemplates', 'oldAreas', 'invisibleAttrs', 'invisibleYears', 'activeFilters', 'activeSorters'];
         for (var key in queryCfg) {
             if (Ext.Array.contains(keysToJson, key)) {
                 params[key] = JSON.stringify(queryCfg[key])
@@ -646,46 +498,25 @@ Ext.define('PumaMain.controller.Chart', {
         }
         return params;
     },
-    
     onOutlineReceived: function(data, cmp) {
         cmp.removeAll();
         data.layerRefs = data.layerRefs || [];
-        
+
         for (var i = 0; i < data.layerRefs.length; i++) {
             var layerRefs = data.layerRefs[i];
             var rows = data.rows[i];
             cmp.add({
-                xtype: 'component',type:'extentoutline',width: 286,height:300, layerRefs: layerRefs, rows: rows
+                xtype: 'component', type: 'extentoutline', width: 286, height: 300, layerRefs: layerRefs, rows: rows
             })
         }
-        
+
     },
-    onFilterReceived: function(data, cmp) {
-        var toAdd = []
-        for (var i=0;i<data.length;i++) {
-            var attr = data[i]
-            toAdd.push({
-                xtype: 'displayfield',
-                value: attr.name + ' ('+attr.units+')'
-            })
-            toAdd.push({
-                xtype: 'multislider',
-                width: '100%',
-                minValue: attr.min,
-                maxValue: attr.max,
-                attr: attr,
-                values: [attr.min,attr.max]
-            })
-        }
-        cmp.cnt.removeAll();
-        cmp.cnt.add(toAdd);
-    },
-    
     
     onChartReceived: function(response) {
         var cmp = response.request.options.cmp;
         var singlePage = response.request.options.singlePage
         if (cmp.chart) {
+            
             try {
                 cmp.chart.destroy();
             }
@@ -695,8 +526,8 @@ Ext.define('PumaMain.controller.Chart', {
 
         var legendBtn = singlePage ? Ext.widget('button') : Ext.ComponentQuery.query('#legendbtn', cmp.ownerCt)[0];
         var data = response.responseText ? JSON.parse(response.responseText).data : null;
-        if (cmp.queryCfg.type=='filter') {
-            this.onFilterReceived(data,cmp)
+        if (cmp.queryCfg.type == 'filter') {
+            this.onFilterReceived(data, cmp)
             return;
         }
         if (!data) {
@@ -704,7 +535,7 @@ Ext.define('PumaMain.controller.Chart', {
             return;
         }
         if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
-            this.onOutlineReceived(data,cmp);
+            this.onOutlineReceived(data, cmp);
             return;
         }
         if (data.noData) {
@@ -716,8 +547,8 @@ Ext.define('PumaMain.controller.Chart', {
             //legendBtn.hide();
             return;
         }
-        
-        
+
+
         if (!Ext.Array.contains(['grid', 'featurecount'], cmp.cfg.type)) {
             //legendBtn.show();
         }
@@ -731,7 +562,7 @@ Ext.define('PumaMain.controller.Chart', {
         data.chart.events.selection = function(evt) {
             me.onScatterSelected(evt);
         }
-        
+
         data.plotOptions = data.plotOptions || {series: {events: {}}}
 
         data.plotOptions.series.events.click = function(evt) {
@@ -763,13 +594,13 @@ Ext.define('PumaMain.controller.Chart', {
             enabled: false
         }
         data.chart.renderTo = cmp.el.dom;
-        data.chart.events.load= function() {
-                if (singlePage) {
-                    console.log('loadingdone')
-                }
+        data.chart.events.load = function() {
+            if (singlePage) {
+                console.log('loadingdone')
             }
+        }
         if (singlePage) {
-            for (var i=0;i<data.series.length;i++) {
+            for (var i = 0; i < data.series.length; i++) {
                 data.series[i].animation = false;
             }
         }
@@ -782,11 +613,10 @@ Ext.define('PumaMain.controller.Chart', {
         }
         this.colourChart(cmp);
     },
-        
     onUrlClick: function(btn) {
         debugger;
         var chart = btn.up('panel').chart;
-        var cfg = this.gatherChartCfg(chart,true)
+        var cfg = this.gatherChartCfg(chart, true)
         cfg.oldAreas = chart.cfg.areas;
         cfg.colorMap = this.getController('Select').colorMap;
         var me = this;
@@ -807,7 +637,7 @@ Ext.define('PumaMain.controller.Chart', {
 
     },
     onUrlCallback: function(id, isUrl) {
-        if (isUrl) {
+        if (true) {
             var url = window.location.origin + '/public/index3.html?id=' + id;
             Ext.widget('window', {
                 items: [{
@@ -834,8 +664,7 @@ Ext.define('PumaMain.controller.Chart', {
         form.getForm().submit({
             url: url
         });
-},
-    
+    },
     onLegendToggle: function(point) {
         var as = point.as;
         var attr = point.attr;
@@ -914,7 +743,7 @@ Ext.define('PumaMain.controller.Chart', {
                 return;
             }
         }
-        var areas = [{at: at, gid: gid, loc:loc}]
+        var areas = [{at: at, gid: gid, loc: loc}]
         var add = evt.originalEvent ? evt.originalEvent.ctrlKey : evt.ctrlKey;
         if (!Config.exportPage) {
             this.getController('Select').select(areas, add, hovering);
@@ -923,12 +752,12 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onScatterSelected: function(evt) {
 //        var zooming = Ext.ComponentQuery.query('#switchzoomingbtn',evt.target.cmp.cnt)[0].pressed
-        
+
         var chart = evt.target.cmp;
         var zooming = chart.zooming;
         if (zooming || !evt.xAxis) {
             return true;
-            
+
         }
         var xAxis = evt.xAxis[0];
         var yAxis = evt.yAxis[0];
@@ -946,7 +775,7 @@ Ext.define('PumaMain.controller.Chart', {
             var point = points[i];
 
             if (point.x > xMin && point.x < xMax && point.y > yMin && point.y < yMax) {
-                var atGid = point.at + '_' + point.gid+'_'+point.loc;
+                var atGid = point.at + '_' + point.gid + '_' + point.loc;
                 if (!Ext.Array.contains(atGids, atGid)) {
                     areas.push({at: point.at, gid: point.gid, loc: point.loc});
                     atGids.push(atGid)
@@ -959,16 +788,43 @@ Ext.define('PumaMain.controller.Chart', {
         }
         evt.preventDefault();
     },
+        
+    getPagingParams: function() {
+        var store =  Ext.StoreMgr.lookup('paging');
+        var page = store.currentPage;
+        var grid = Ext.ComponentQuery.query('grid[isGrid]')[0];
+        var params = {
+            start: store.pageSize*(page-1),
+            limit: store.pageSize
+        }
+        if (grid) {
+            var sorters = grid.store.sorters;
+            var sortProps = [];
+            sorters.each(function(sorter) {
+                sortProps.push({
+                    property: sorter.property,
+                    direction: sorter.direction
+                })
+            })
+            if (sortProps.length) {
+                params['sort'] = JSON.stringify(sortProps)
+            }
+            else {
+                params['sort'] = null;
+            }
+        }
+        return params
+    },
     onGridReceived: function(response) {
+        var me = this;
         var data = JSON.parse(response.responseText).data;
         var cmp = response.request.options.cmp;
         var sorters = response.request.options.params['activeSorters'] ? JSON.parse(response.request.options.params['activeSorters']) : [];
         var store = Ext.create('Ext.data.Store', {
             fields: data.fields,
             autoLoad: false,
-            remoteFilter: true,
-            remoteSort: true,
-            pageSize: 14,
+            // vypnuto defaultni sortovani, rizeno pouze extraParams
+            doSort: function() {},
             sorters: sorters,
             proxy: {
                 type: 'ajax',
@@ -992,6 +848,7 @@ Ext.define('PumaMain.controller.Chart', {
             height: '100%',
             header: false,
             store: store,
+            isGrid: true,
             title: cmp.cfg.title,
             //frame: true,
             //padding: 10,
@@ -1009,39 +866,52 @@ Ext.define('PumaMain.controller.Chart', {
                     return color ? ('select_' + color) : ''
                 }
             },
-            dockedItems: [Ext.create('Ext.toolbar.Paging', {
-                    dock: 'bottom',
-                    store: store
-                })],
             columns: data.columns
         })
         grid.filters.createFilters();
         store.load();
         cmp.chart = grid;
         cmp.relayEvents(grid, ['beforeselect', 'itemclick', 'itemmouseenter']);
-        grid.view.on('viewready',function() {
+        grid.on('sortchange',function() {
+            debugger;
+            me.reconfigure('page');
+        })
+        grid.view.on('viewready', function() {
             window.setTimeout(function() {
                 console.log('loadingdone');
-            },100)
+            }, 100)
         })
+
+    },
+
+    onPageChange: function() {
+        var me = this;
+        window.setTimeout(function() {
+            me.reconfigure('page');
+        },1)
         
     },
-    reconfigure: function(bySelect) {
+    
+    reconfigure: function(type) {
         var charts = Ext.ComponentQuery.query('chartcmp');
-        var selController = this.getController('Select');
-        var actualColor = selController.actualColor;
         for (var i = 0; i < charts.length; i++) {
             var chart = charts[i];
-            if (chart.cfg.type=='filter') continue;
-            var areas = chart.cfg.areas;
-            if (areas == 'select' && Ext.Array.contains(chart.cfg.selColor, actualColor) && bySelect) {
-                this.reconfigureChart(chart);
-            }
-            else if (bySelect) {
+            if (type=='immediate') {
                 this.colourChart(chart);
             }
-            if (areas != 'select' && !bySelect) {
+            else if (Ext.Array.contains(['outer','expand'],type)) {
                 this.reconfigureChart(chart);
+            }
+            else if (type=='inner' && chart.cfg.type == 'extentoutline') {
+                this.reconfigureChart(chart);
+            }
+            else if (Ext.Array.contains(['page','sort'],type) && Ext.Array.contains(['piechart','columnchart'],chart.cfg.type)) {
+                this.reconfigureChart(chart);
+            }
+            else if (type == 'page' && chart.cfg.type == 'grid') {
+                var store = chart.chart.store;
+                Ext.apply(store.proxy.extraParams,this.getPagingParams());
+                store.load();
             }
         }
     },
@@ -1049,7 +919,7 @@ Ext.define('PumaMain.controller.Chart', {
         var charts = Ext.ComponentQuery.query('chartcmp');
         for (var i = 0; i < charts.length; i++) {
             var chart = charts[i];
-            this.reconfigureChart(chart,false);
+            this.reconfigureChart(chart, false);
         }
     },
     colourChart: function(chart) {
@@ -1169,8 +1039,12 @@ Ext.define('PumaMain.controller.Chart', {
     onAttrSetChange: function(combo, value) {
         var storeToFilterName = null;
         switch (combo.itemId) {
-            case 'attributeSet': storeToFilterName = 'attribute4chart'; break;
-            case 'normAttributeSet': storeToFilterName = 'normattribute4chart'; break;
+            case 'attributeSet':
+                storeToFilterName = 'attribute4chart';
+                break;
+            case 'normAttributeSet':
+                storeToFilterName = 'normattribute4chart';
+                break;
         }
         var storeToFilterName = storeToFilterName || 'attribute4chart4norm';
         var attrSetStore = Ext.StoreMgr.lookup('attributeset');
@@ -1185,25 +1059,25 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onAddAttribute: function(btn) {
         var panel = btn.up('panel').up('panel')
-        var attributeSet = Ext.ComponentQuery.query('#attributeSet',panel)[0].getValue();
+        var attributeSet = Ext.ComponentQuery.query('#attributeSet', panel)[0].getValue();
         var grid = btn.up('grid');
         var sel = grid.getSelectionModel().getSelection();
         if (!sel || !sel.length)
             return;
         var recsToAdd = [];
-        var normType = Ext.ComponentQuery.query('#normType',panel)[0].getValue();
-        var normAttrSet = Ext.ComponentQuery.query('#normAttributeSet',panel)[0].getValue();
-        var normGrid = Ext.ComponentQuery.query('#normselgrid',panel)[0];
+        var normType = Ext.ComponentQuery.query('#normType', panel)[0].getValue();
+        var normAttrSet = Ext.ComponentQuery.query('#normAttributeSet', panel)[0].getValue();
+        var normGrid = Ext.ComponentQuery.query('#normselgrid', panel)[0];
         var normAttr = normGrid.getSelectionModel().getSelection()[0];
-        if (Ext.Array.contains(['year','area'],normType)) {
+        if (Ext.Array.contains(['year', 'area'], normType)) {
             normAttrSet = null;
             normAttr = null;
         }
-        else if (normType=='attributeset' && normAttrSet) {
+        else if (normType == 'attributeset' && normAttrSet) {
             normAttr = null
         }
-        else if (normType=='attribute' && normAttrSet && normAttr) {
-            
+        else if (normType == 'attribute' && normAttrSet && normAttr) {
+
         }
         else {
             normType = null;
@@ -1216,14 +1090,17 @@ Ext.define('PumaMain.controller.Chart', {
                 as: attributeSet,
                 attr: attr.get('_id')
             })
-            if (normType) rec.set('normType',normType);
-            if (normAttrSet) rec.set('normAs',normAttrSet);
-            if (normAttr) rec.set('normAttr',normAttr.get('_id'));
+            if (normType)
+                rec.set('normType', normType);
+            if (normAttrSet)
+                rec.set('normAs', normAttrSet);
+            if (normAttr)
+                rec.set('normAttr', normAttr.get('_id'));
             recsToAdd.push(rec);
         }
-        
-        
-        var addedGrid = Ext.ComponentQuery.query('#addedgrid',panel)[0]
+
+
+        var addedGrid = Ext.ComponentQuery.query('#addedgrid', panel)[0]
         addedGrid.store.add(recsToAdd);
 
     },
@@ -1233,8 +1110,8 @@ Ext.define('PumaMain.controller.Chart', {
         grid.store.remove(sel);
     },
     onChartBtnClick: function(parent) {
-        var type = parent.ownerCt.itemId=='layerpanel' ? 'choroplethpanel':'chartconfigpanel';
-        var window = Ext.WindowManager.get('new'+type);
+        var type = parent.ownerCt.itemId == 'layerpanel' ? 'choroplethpanel' : 'chartconfigpanel';
+        var window = Ext.WindowManager.get('new' + type);
         if (window) {
             var store = window.down(type).areaTemplateStore;
             var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
@@ -1245,7 +1122,7 @@ Ext.define('PumaMain.controller.Chart', {
                     return Ext.Array.contains(areaTemplates, rec.get('_id'));
                 }])
         }
-        var cfg = this.getChartWindowConfig(null, false,type)
+        var cfg = this.getChartWindowConfig(null, false, type)
         window = window || Ext.widget('window', cfg)
         window.show();
         return false;

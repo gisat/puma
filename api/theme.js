@@ -114,6 +114,7 @@ function getThemeYearConf(params, req, res, callback) {
 
                     }
                 }
+                console.log(confs)
                 async.forEach(confs, function(item, eachCallback) {
                     crud.read('layerref', item, function(err, resls) {
                         if (err)
@@ -132,31 +133,32 @@ function getThemeYearConf(params, req, res, callback) {
                             eachCallback(null);
                         });
                     }, function() {
+                        console.log(layerRefMap)
                         for (var loc in layerRefMap) {
                             for (var fl in layerRefMap[loc]) {
                                 for (var year in layerRefMap[loc][fl]) {
-
-                                    for (var i = 0; i < attrSets.length; i++) {
-                                        var attrLayerRef = null;
-                                        try {
-                                            var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]]
-                                        }
-                                        catch (e) {
-                                        }
-                                        if (!attrLayerRef) {
-                                            layerRefMap[loc][fl][year] = null;
-                                            if (fl == results.dataset.featureLayers[0]) {
-                                                for (var j = 0; j < results.locations.length; j++) {
-                                                    var currentLoc = results.locations[j];
-                                                    if (loc == currentLoc) {
-                                                        results.locations = us.difference(results.locations, [currentLoc]);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    }
+                                    // vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
+//                                    for (var i = 0; i < attrSets.length; i++) {
+//                                        var attrLayerRef = null;
+//                                        try {
+//                                            var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]]
+//                                        }
+//                                        catch (e) {
+//                                        }
+//                                        if (!attrLayerRef) {
+//                                            layerRefMap[loc][fl][year] = null;
+//                                            if (fl == results.dataset.featureLayers[0]) {
+//                                                for (var j = 0; j < results.locations.length; j++) {
+//                                                    var currentLoc = results.locations[j];
+//                                                    if (loc == currentLoc) {
+//                                                        results.locations = us.difference(results.locations, [currentLoc]);
+//                                                        break;
+//                                                    }
+//                                                }
+//                                            }
+//                                            break;
+//                                        }
+//                                    }
                                 }
                             }
                         }
@@ -166,7 +168,7 @@ function getThemeYearConf(params, req, res, callback) {
                 })
             }],
         sql: ['layerRefs', function(asyncCallback, results) {
-                if (!params['refreshAreas']) {
+                if (!params['refreshAreas'] || params['refreshAreas']=='false') {
                     return asyncCallback(null, {});
                 }
                 var locations = results.locations;
@@ -197,7 +199,6 @@ function getThemeYearConf(params, req, res, callback) {
                         }
                         if (!layerRef)
                             continue;
-                        
                         var flIdx = featureLayers.indexOf(fl);
                         var prevFl = flIdx > 0 ? featureLayers[flIdx - 1] : null;
                         var leaf = 'FALSE';
@@ -211,7 +212,6 @@ function getThemeYearConf(params, req, res, callback) {
                         }
                         if (!cont)
                             continue;
-
                         sql += sql ? ' UNION ' : '';
                         sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + loc + ' AS loc,' + layerRef._id + ' AS lr, a.name, ST_AsText(a.extent) as extent';
 
@@ -234,7 +234,6 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                 }
                 sql += ' ORDER BY idx ASC'
-                console.log(sql)
                 var client = conn.getPgDb();
                 client.query(sql, {}, function(err, resls) {
 
@@ -263,6 +262,9 @@ function getThemeYearConf(params, req, res, callback) {
 
             }],
         leafs: ['sql', function(asyncCallback, results) {
+                if (!params['refreshAreas'] || params['refreshAreas']=='false') {
+                    return asyncCallback(null, {});
+                }
                 var atMap = {};
                 var layerRefsToCheck = [];
                 var areas = results.sql.areas || results.sql.add;
