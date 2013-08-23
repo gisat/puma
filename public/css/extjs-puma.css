@@ -1,0 +1,56 @@
+/* BUTTONS */
+.x-btn {
+	background-image     : -moz-linear-gradient(center top, #f00 0%, #fff 100%);
+	border               : 1px solid blue;
+	border-radius        : 1px;
+}
+.x-btn em {
+	
+}
+.x-btn button {
+}
+.x-btn .x-btn-inner {
+	font-family          : Arial, sans-serif;
+	font-size            : 13px;
+}
+
+/* FIELDS */
+.x-field {
+	height               : 30px;
+}
+.x-border-box .x-form-text {
+	height               : 30px;
+	border               : none;
+	background           : #666470;
+	color                : #fff;
+	font-family          : Arial, sans-serif;
+	font-size            : 12px;
+	padding              : 5px;
+}
+.x-border-box .x-form-trigger {
+	height               : 30px;
+	width                : 26px;
+	background           : #7f7c85;
+	border               : none;
+}
+
+/* COMBO LIST */
+.x-boundlist {
+	border               : none;
+}
+.x-boundlist .x-boundlist-item {
+	background           : #b7b5bb;
+	color                : #424451;
+	font-family          : Arial, sans-serif;
+	font-size            : 12px;
+	border               : none;
+	border-top           : 1px solid #fff;
+	padding              : 5px;
+}
+.x-boundlist .x-boundlist-item:first-child {
+	border-top           : none;
+}
+.x-boundlist .x-boundlist-item:hover,
+.x-boundlist .x-boundlist-item-over {
+	background           : #a4a0a9;
+}

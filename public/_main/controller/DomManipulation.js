@@ -26,7 +26,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
 			w = $("#sidebar-reports").position().left;
 		}
 		
-		$("#app-map").css({width : w, height : h});
+		$("#map-holder").css({width : w, height : h});
 	},
 	
 	_onSidebarToggleClick: function() {
