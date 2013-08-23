@@ -11,6 +11,13 @@ Ext.define('PumaMain.controller.Render', {
             width: 120
         })
         Ext.widget('pumacombo',{
+            store: 'location4init',
+            itemId: 'sellocation',
+            valueField: 'id',
+            renderTo: 'app-toolbar-teritory',
+            width: 120
+        })
+        Ext.widget('pumacombo',{
             store: 'theme4sel',
             itemId: 'seltheme',
             renderTo: 'app-toolbar-theme',
@@ -79,14 +86,24 @@ Ext.define('PumaMain.controller.Render', {
             width: 1920,
             height: 900
         })
-        Ext.widget('storecontainer',{
+        Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
+            initial: true,
             store: Ext.StoreMgr.lookup('dataset'),
             itemId: 'initialdataset'
         })
-    
-        Ext.widget('storecontainer',{
+        Ext.widget('pumacombo',{
+            renderTo: 'app-intro-teritory',
+            initial: true,
+            hidden: true,
+            valueField: 'id',
+            store: Ext.StoreMgr.lookup('location4init'),
+            itemId: 'initiallocation'
+        })
+        Ext.widget('pumacombo',{
             renderTo: 'app-intro-theme',
+            initial: true,
+            hidden: true,
             itemId: 'initialtheme',
             store: Ext.StoreMgr.lookup('theme4sel')
         })

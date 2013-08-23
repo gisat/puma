@@ -32,8 +32,23 @@ Ext.define('PumaMain.controller.Store', {
         this.initLocalStores();
         this.initAggregatedStores();
         this.initEvents();
+        this.initLocations();
     },
         
+    initLocations: function() {
+        Ext.Ajax.request({
+            url: Config.url + '/api/theme/getLocationConf',
+            scope: this,
+            method: 'GET',
+            success: function(response) {
+                var data = JSON.parse(response.responseText).data;
+                var store = Ext.StoreMgr.lookup('location4init');
+                store.loadData(data);
+            }
+
+        })
+    },
+    
     initAggregatedStores: function() {
         
     
@@ -451,10 +466,6 @@ Ext.define('PumaMain.controller.Store', {
                 name: 'Tree lowest level',
                 type: 'treelowest'
             }
-//            ,{
-//                name: 'Tree highest level',
-//                type: 'treehighest'
-//            }
         ]
         })
     
@@ -494,6 +505,16 @@ Ext.define('PumaMain.controller.Store', {
             model: 'Puma.model.MappedChartAttribute',
             data: []
         })
+    
+        Ext.create('Ext.data.Store',{
+            storeId: 'location4init',
+            fields: ['name','locGid','location','dataset'],
+            filters: [function(rec) {
+                return false;
+            }],
+            data: []
+        })
+        
     }
     
 });

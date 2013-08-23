@@ -4,7 +4,92 @@ var us = require('underscore')
 
 var conn = require('../common/conn');
 
+function getLocationConf(params, req, res, callback) {
+    var opts = {
+        dataset: function(asyncCallback) {
+            crud.read('dataset', {}, function(err, results) {
+                if (err)
+                    return callback(err);
+                var datasetMap = {};
+                for (var i=0;i<results.length;i++) {
+                    var result = results[i];
+                    datasetMap[result._id] = result;
+                }
+                
+                asyncCallback(null, datasetMap);
+            });
+        },
+        datasetMap: function(asyncCallback) {
+            crud.read('location', {active: {$ne:false}}, function(err, results) {
+                if (err)
+                    return callback(err);
+                var datasetMap = {};
+                for (var i=0;i<results.length;i++) {
+                    var result = results[i];
+                    if (!result.dataset) continue;
+                    datasetMap[result.dataset] = datasetMap[result.dataset] || [];
+                    datasetMap[result.dataset].push(result)
+                }
+                
+                asyncCallback(null, datasetMap);
+            });
+        },
+        singleLocationAreas: ['dataset','datasetMap',function(asyncCallback,results) {
+            var datasetMap = results.datasetMap;
+            var locToQuery = [];
+            var resultArr = [];
+            for (var datasetId in datasetMap) {
+                var locs = datasetMap[datasetId];
+                
+                // lokalita je pouze jedna, nutno se dotazat primo na vrstvu
+                if (locs.length<2) {
+                    var dataset = results.dataset[datasetId];
+                    console.log(dataset)
+                    locToQuery.push({location: locs[0]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId})
+                }
+                // prime pridani lokalit
+                else {
+                    for (var i=0;i<locs.length;i++) {
+                        resultArr.push({dataset:datasetId,name: locs[i].name,location: locs[i]._id,id:'1_'+locs[i]._id})
+                    }
+                }
+            }
+            
+            console.log(locToQuery)
+            var client = conn.getPgDb();
+            async.forEach(locToQuery, function(item, eachCallback) {
+                var datasetId = item.dataset;
+                delete item.dataset;
+                
+                crud.read('layerref', item, function(err, results) {
+                    if (err)
+                        return callback(err)
+                    if (!results.length)
+                        return eachCallback(null);
+                    var layerRef = results[0];
+                    var sql = 'SELECT gid,name FROM views.layer_' + layerRef._id;
+                    client.query(sql, {}, function(err, resls) {
+                        if (err)
+                            return callback(err);
+                        for (var i = 0; i < resls.rows.length; i++) {
+                            var row = resls.rows[i];
+                            resultArr.push({name: row.name,locGid: row.gid,id:'2_'+row.gid,dataset:datasetId})
+                        }
+                        eachCallback(null)
 
+                    })
+                })
+            },function() {
+                if (resultArr.length>1) {
+                    resultArr.push({name:'All',id: 0})
+                }
+                res.data = resultArr;
+                return callback();
+            })
+        }]
+    }
+    async.auto(opts);
+}
 
 function getThemeYearConf(params, req, res, callback) {
     if (!params['dataset'] || !params['years']) {
@@ -539,5 +624,6 @@ var getFilterSql = function(atFilter, prefix) {
 
 
 module.exports = {
-    getThemeYearConf: getThemeYearConf
+    getThemeYearConf: getThemeYearConf,
+    getLocationConf: getLocationConf
 }

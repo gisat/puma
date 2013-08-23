@@ -52,6 +52,7 @@ Ext.define('PumaMain.controller.Export', {
         var chartController = this.getController('Chart');
         
         var params = chartController.getParams(cfg);
+        params['forExport'] = true;
         Ext.Ajax.request({
             url: Config.url + '/api/chart/getChart',
             params: params,
