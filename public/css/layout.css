@@ -4,10 +4,13 @@ html, body {
 	width                : 100%;
 }
 body, .x-body {
-	background     : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+	background           : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 	color                : #c6bdc5;
 	font-family          : Arial, sans-serif;
 	font-size            : 13px;
+}
+body.application {
+	background-image     : none;
 }
 a {
 	text-decoration      : none;
