@@ -16,7 +16,7 @@ function getChart(params, callback) {
     }
     var opts = {
         data: function(asyncCallback) {
-            params['limit'] = 150;
+            
             dataMod.getData(params, function(err, dataObj) {
                 if (err)
                     return callback(err);
@@ -68,6 +68,9 @@ function getChart(params, callback) {
                         var attr = attrs[j];
                         var columnName = 'as_' + attr.as + '_attr_' + attr.attr;
                         var visible = invisibleAttrsMap[columnName] ? false : true;
+                        if (params['forExport'] && !visible) {
+                            continue;
+                        }
                         if (year) {
                             columnName += '_y_'+year;
                         }
@@ -140,8 +143,8 @@ function getChart(params, callback) {
                     for (var i = 0; i < series.length; i++) {
                         var conf = cfg();
                         var serie = series[i]
-                        conf.title.text = '';
-                        conf.legend.enabled = false;
+                        //conf.title.text = '';
+                        //conf.legend.enabled = false;
                         conf.chart.height = 65;
                         conf.chart.width = 65;
                         conf.chart.backgroundColor = null;
@@ -155,10 +158,10 @@ function getChart(params, callback) {
                 else {
                     var conf = cfg();
                     conf.series = series;
-                    conf.chart.width = years.length>1 ? width+24 : null;
+                    //conf.chart.width = years.length>1 ? width+24 : null;
                     conf.chart.height = years.length>1 ? 382 : null;
                     conf.chart.spacingBottom = years.length>1 ? 1 : 10;
-                    conf.title.text = params['title']
+                    //conf.title.text = params['title']
                     if (data.length <= 15) {
                         conf.labels = {
                             items: labels
@@ -194,32 +197,9 @@ var cfg = function() {
             spacingBottom: 1,
             spacingRight: 0
         },
-        credits: {
-            enabled: false
-        },
-        legend: {
-            layout: 'vertical',
-            backgroundColor: '#FFFFFF',
-            align: 'left',
-            verticalAlign: 'top',
-            lineHeight: 18,
-            padding: 10,
-            itemStyle: {
-                fontSize: '10px'
-            },
-            x: 70,
-            y: 20,
-            floating: true,
-            layout: 'vertical',
-                    shadow: true
-        },
         xAxis: {
             categories: [],
             title: 'Test'
-        },
-        title: {
-            x: 36,
-            align: 'left'
         },
         tooltip: {
             hideDelay: 0,

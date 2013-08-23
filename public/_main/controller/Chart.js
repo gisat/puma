@@ -950,7 +950,7 @@ Ext.define('PumaMain.controller.Chart', {
                         var center = serie.userOptions.center;
                         var size = serie.userOptions.size
                         //elem = chart.chart.renderer.rect(bbox.x - 1, bbox.y + 37, bbox.width+4, bbox.height+4, 2)
-                        elem = chart.chart.renderer.rect(center[0] - size / 2 + 8, center[1] - size / 2 + 48, size + 24, size + 24, 2)
+                        elem = chart.chart.renderer.rect(center[0] - size / 2 + 8, center[1] - size / 2 + 18, size + 24, size + 24, 2)
                     }
                     elem.attr({
                         'stroke-width': 3,

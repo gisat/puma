@@ -31,8 +31,6 @@ function getChart(params, callback) {
                 
                 var stacking = params['stacking']
                 var attrsNum = (!stacking || stacking == 'none' || stacking == 'double') ? attrs.length * years.length : years.length;
-                var limit = attrsNum>1 ? Math.round(300/attrsNum) : 200;
-                params['limit'] = limit;
                 dataMod.getData(params, function(err, dataObj) {
                     if (err)
                         return callback(err);
@@ -116,6 +114,9 @@ function getChart(params, callback) {
                 for (var i = 0; i < attrs.length; i++) {
                     var attr = attrs[i];
                     //console.log(attr.series)
+                    if (params['forExport'] && invisibleAttrsMap['as_'+attr.as+'_attr_'+attr.attr]) {
+                        continue;
+                    }
                     var obj = attrConf[attr.as][attr.attr];
                     units = units || obj.units || '';
                     for (var j = 0; j < years.length; j++) {
@@ -256,11 +257,6 @@ var cfg = function() {
             type: 'column',
             spacingBottom: 4
         },
-        title: {
-            text: 'Title',
-            x: 25,
-            align: 'left'
-        },
         xAxis: {
             labels: {}
 
@@ -273,25 +269,6 @@ var cfg = function() {
             },
             endOnTick: false
 
-        },
-        credits: {
-            enabled: false
-        },
-        legend: {
-            layout: 'vertical',
-            backgroundColor: '#FFFFFF',
-            align: 'left',
-            verticalAlign: 'top',
-            lineHeight: 18,
-            padding: 10,
-            itemStyle: {
-                fontSize: '10px'
-            },
-            x: 70,
-            y: 20,
-            floating: true,
-            layout: 'vertical',
-                    shadow: true
         },
         tooltip: {
             hideDelay: 0,

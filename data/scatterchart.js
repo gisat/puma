@@ -91,7 +91,7 @@ function getChart(params, callback) {
                     conf.yAxis.endOnTick = false;
                 }
                 conf.chart.type = zAttrName ? 'bubble' : 'scatter'
-                conf.title.text = params['title'];
+                //conf.title.text = params['title'];
                 var colors = ['rgba(128,128,255,0.7)','rgba(255,128,128,0.7)']
                 for (var i=0;i<years.length;i++) {
                     conf.series.push({
@@ -127,14 +127,7 @@ var cfg = function() {
             borderColor: '#ff0000'
 
         },
-        title: {
-            text: 'Title',
-            x: 25,
-            align: 'left'
-        },
-        credits: {
-            enabled: false
-        },
+        
         xAxis: {
             title: {
                 enabled: true,
@@ -144,22 +137,6 @@ var cfg = function() {
             startOnTick: true,
             endOnTick: true,
             showLastLabel: true
-        },
-        legend: {
-            layout: 'vertical',
-            backgroundColor: '#FFFFFF',
-            align: 'left',
-            verticalAlign: 'top',
-            lineHeight: 18,
-            padding: 10,
-            itemStyle: {
-                fontSize: '10px'
-            },
-            x: 70,
-            y: 20,
-            floating: true,
-            layout: 'vertical',
-                    shadow: true
         },
         tooltip: {
                     headerFormat: '',

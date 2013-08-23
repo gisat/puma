@@ -16,7 +16,7 @@ Ext.application({
     enableQuickTips: false,
     requires: [],
     launch: function() {
-        Cnst.exportPage = true;
+        Config.exportPage = true;
         this.getController('Export').initConf();
     }
 });
