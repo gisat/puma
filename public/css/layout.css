@@ -164,19 +164,19 @@ body.application #content-application {
 	#toolbar .group {
 		padding          : 5px 20px 0 20px;
 		margin-top       : 5px;
-		background: url("../images/toolbar-group-border.png") repeat-x 0 0;
-		height: 30px;
+		background       : url("../images/toolbar-group-border.png") repeat-x 0 0;
+		height           : 30px;
 	}
 	#toolbar .group:first-child {
-		background: none;
-		margin-top: 0;
-		padding-top: 0;
+		background       : none;
+		margin-top       : 0;
+		padding-top      : 0;
 	}
 	#toolbar .group .field {
 		margin-top       : 0;
 		margin-bottom    : 10px;
-		float: left;
-		margin-right: 10px;
+		float            : left;
+		margin-right     : 10px;
 	}
 	#toolbar .group .label {
 		width            : auto;
@@ -201,7 +201,7 @@ body.application #content-application {
 		margin-bottom    : 10px;
 	}
 	#sidebar-tools {
-		background     : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+		background       : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 		position         : absolute;
 		top              : 95px;
 		left             : 0;
@@ -210,24 +210,19 @@ body.application #content-application {
 		z-index          : 10000;
 	}
 	#sidebar-reports {
-		background     : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+		background       : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 		position         : absolute;
 		top              : 95px;
-		right            : 0;
 		width            : 580px;
 		/* has to be above map*/
 		z-index          : 10000;
-		
-		-webkit-transition-property : right;
-		   -moz-transition-property : right;
-				transition-property : right;
-		-webkit-transition-duration : 500ms;
-		   -moz-transition-duration : 500ms;
-				transition-duration : 500ms;
 	}
-	#sidebar-reports.hidden {
-		right            : -580px;
-	}
+		body.intro #sidebar-reports, body.application #sidebar-reports.hidden {
+			right        : -580px;
+		}
+		body.application #sidebar-reports {
+			right        : 0;
+		}
 	#sidebar-reports-toggle {
 		display          : block;
 		width            : 20px;
