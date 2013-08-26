@@ -4,6 +4,7 @@
 	<title>Data Exploration</title>
 	<meta charset="utf-8">
 	
+	<link rel="stylesheet" type="text/css" href="http://fonts.googleapis.com/css?family=Open+Sans:400,800,700">
 	<link rel="stylesheet" type="text/css" href="css/ux/ItemSelector.css">
 	<link rel="stylesheet" type="text/css" href="css/app.css">
 	<link rel="stylesheet" type="text/css" href="extjs-4.1.3/resources/css/ext-all-gray.css">
@@ -39,35 +40,45 @@
 				<li><a href="#">About</a></li>
 			</ul>
 			<div class="user">
-				<a href="#">Sign in</a>
-				<span></span>
+				<a href="#">Login</a>
+				<span class="sep"></span>
 				<a href="#">Sign up</a>
 			</div>
 		</div>
 		<div id="content">
 			<div id="map-holder">
-				<div id="app-map"></div>
-				<div id="app-map2" style="display: none;"></div>
+				<div class="map" id="app-map"></div>
+				<div class="map" id="app-map2" style="display: none;"></div>
 			</div>
-			<div id="content-intro">
+			<div id="content-intro" class="fields-holder">
 				<div class="label">Data Exploration</div>
-				<div class="field scope">
-					<div class="label">Scope</div>
-					<div id="app-intro-scope" class="widget"></div>
-				</div>
-				<div class="field teritory">
-					<div class="label">Teritory</div>
-					<div id="app-intro-teritory" class="widget"></div>
-				</div>
-				<div class="field theme">
-					<div class="label">Theme</div>
-					<div id="app-intro-theme" class="widget"></div>
+				<div class="fields">
+					<div class="group">
+						<div class="field scope">
+							<div class="label">Scope</div>
+							<div id="app-intro-scope" class="widget"></div>
+						</div>
+						<div class="field teritory">
+							<div class="label">Teritory</div>
+							<div id="app-intro-teritory" class="widget"></div>
+						</div>
+					</div>
+					<div class="group">
+						<div class="field theme">
+							<div class="label">Theme</div>
+							<div id="app-intro-theme" class="widget"></div>
+						</div>
+						<div class="field confirm">
+							<div class="label"></div>
+							<div id="app-intro-confirm" class="widget"></div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div id="content-application">
-				<div id="toolbar">
+				<div id="toolbar" class="fields-holder">
 					<div class="label">Data Exploration</div>
-					<div class="groups">
+					<div class="fields">
 						<div class="group">
 							<div class="field scope">
 								<div class="label">Scope</div>
@@ -81,27 +92,33 @@
 								<div class="label">Theme</div>
 								<div id="app-toolbar-theme" class="widget"></div>
 							</div>
+							<div class="field help">
+								<div class="widget"><a href="#">Help</a></div>
+							</div>
 						</div>
 						<div class="group">
-							<div class="field year">
+							<div class="field with-sep year">
 								<div class="label">Year</div>
 								<div id="app-toolbar-year" class="widget"></div>
 							</div>
-							<div class="field level">
+							<div class="field with-sep level">
 								<div class="label">Analysis level</div>
-								<div id="app-toolbar-level" class="widget"></div>
+								<div id="app-toolbar-level" class="widget">
+									<div id="app-toolbar-level-less" class="button"></div>
+									<div id="app-toolbar-level-more" class="button"></div>
+								</div>
 							</div>
 							<div class="field visualization">
 								<div class="label">Visualization</div>
 								<div id="app-toolbar-visualization" class="widget"></div>
 							</div>
+							<div class="field visualization-save">
+								<div id="app-toolbar-visualization-save" class="widget"></div>
+							</div>
 						</div>
 					</div>
-					<div class="share">
+					<div class="share field">
 						<div id="app-toolbar-share" class="widget"></div>
-						<div class="field help">
-							<a href="#">Help</a>
-						</div>
 					</div>
 				</div>
 				<div id="sidebar-tools">
@@ -117,8 +134,8 @@
 		</div>
 		<div id="footer">
 			<span class="label">Contact us</span>
-			<span class="contact-person">HARRY DOE (Project coordinator)</span>
-			<a href="mailto:harry.doe@worldbank.org" class="contact-email">harry.doe@worldbank.org</a>
+			<span class="contact"><strong>HARRY DOE</strong> (Project coordinator)</span>
+			<a href="mailto:harry.doe@worldbank.org" class="contact">harry.doe@worldbank.org</a>
 			<span class="copyright">&copy; 2013 The World Bank Group, All Rights Reserved.</span>
 		</div>
 	</div>

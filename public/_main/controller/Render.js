@@ -7,21 +7,18 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'dataset',
             itemId: 'seldataset',
-            renderTo: 'app-toolbar-scope',
-            width: 120
+            renderTo: 'app-toolbar-scope'
         })
         Ext.widget('pumacombo',{
             store: 'location4init',
             itemId: 'sellocation',
             valueField: 'id',
-            renderTo: 'app-toolbar-teritory',
-            width: 120
+            renderTo: 'app-toolbar-teritory'
         })
         Ext.widget('pumacombo',{
             store: 'theme4sel',
             itemId: 'seltheme',
-            renderTo: 'app-toolbar-theme',
-            width: 120
+            renderTo: 'app-toolbar-theme'
         })
         Ext.widget('storecontainer',{
             renderTo: 'app-toolbar-year',
@@ -35,8 +32,13 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
             itemId: 'selvisualization',
-            renderTo: 'app-toolbar-visualization',
-            width: 120
+            renderTo: 'app-toolbar-visualization'
+        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-visualization-save',
+            text: 'Save',
+            width: '100%',
+            height: '100%'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-share',
@@ -136,6 +138,12 @@ Ext.define('PumaMain.controller.Render', {
             }]
                 
             
+        })
+        Ext.widget('button',{
+            renderTo: 'app-intro-confirm',
+            text: 'Confirm',
+            width: '100%',
+            height: '100%'
         })
         
     }

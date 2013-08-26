@@ -3,293 +3,348 @@ html, body {
 	height               : 100%;
 	width                : 100%;
 }
-body, .x-body {
+body {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
 	background           : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
-	color                : #c6bdc5;
-	font-family          : Arial, sans-serif;
-	font-size            : 13px;
 }
 body.application {
 	background-image     : none;
 }
 a {
 	text-decoration      : none;
-	color                : #c6bdc5;
+	color                : #999;
 }
 a:hover, a:focus {
 	text-decoration      : underline;
 }
-
-/* HEADER */
-#header {
-	background-color     : #371733;
-	height               : 40px;
-	line-height          : 40px;
-	position             : relative;
-	text-align           : center;
+strong {
 	font-weight          : bold;
 }
-#header a {
-	padding              : 0 10px;
+em {
+	font-style           : italic;
 }
-#header a:hover, #header a:focus {
-	text-decoration      : none;
-}
-	#header .home {
-		display          : inline-block;
-		background-color : #482a43;
+
+/* LAYOUT */
+	#main {
+		width            : 100%;
+		height           : 100%;
+		padding          : 40px 0;
+	}
+	body.application #main {
+		padding-top      : 130px;
+	}
+	
+	/* Header */
+	#header {
+		height           : 40px;
+		line-height      : 40px;
+		background-color : #333;
+		color            : #999;
 		font-weight      : bold;
-		font-size        : 18px;
-		text-transform   : uppercase;
+		position         : absolute;
+		top              : 0;
+		left             : 0;
+		width            : 100%;
+		text-align       : center;
+	}
+	#header a {
+		padding          : 0 10px;
+		display          : inline-block;
+	}
+	#header a:hover, #header a:focus {
+		text-decoration  : none;
+		color            : #fff;
+	}
+	
+	#header .home {
+		height           : 40px;
 		position         : absolute;
 		left             : 0;
 		top              : 0;
+		background-color : #3b3b44;
+		color            : #bebdc9;
+		font-size        : 22px;
 	}
+	#header .home:hover, #header .home:focus {
+		color            : #bebdc9;
+	}
+	
 	#header .menu {
 		display          : inline-block;
+		font-size        : 14px;
 	}
 	#header .menu li {
-		display          : inline-block;
-		font-size        : 14px;
-		margin-right     : 20px;
+		float            : left;
 	}
 	#header .menu li a {
-		display          : block;
+		padding          : 0 20px;
 	}
-	#header .menu li a:hover, #header .menu li a:focus {
-		background-color : #482a43;
-	}
-	#header .menu li a.active {
-		color            : #fff;
-	}
+	
 	#header .user {
 		position         : absolute;
-		right            : 0;
 		top              : 0;
-		background-color : #482a43;
+		right            : 0;
+		background-color : #3b3b44;
+		color            : #bebdc9;
 		text-transform   : uppercase;
 	}
-	#header .user a, #header .user span {
-		float            : left;
-	}
-	#header .user span {
+	#header .user .sep {
+		display          : inline-block;
+		height           : 12px;
 		width            : 1px;
-		background-color : #c6bdc5;
-		height           : 1em;
-		margin-top       : 13px;
+		background-color : #6f6e75;
+		position         : relative;
+		top              : 1px;
 	}
-	#header .user a:hover, #header .user a:focus {
+	
+	/* Content */
+	.map {
+		width            : 100%;
+		height           : 100%;
+	}
+	#content-intro, #content-application {
+		display          : none;
+		position         : absolute;
+		z-index          : 10000;
+	}
+	body.intro #content-intro, body.application #content-application {
+		display          : block;
+	}
+		/* Fields */
+		.fields-holder {
+			background-color : #434254;
+			color            : #fff;
+		}
+		.fields-holder > .label {
+			width            : 300px;
+			height           : 69px;
+			padding-left     : 81px;
+			background       : url("../images/puma-square.png") no-repeat 0 8px;
+			line-height      : 38px;
+			font-size        : 30px;
+			font-weight      : 800;
+			float            : left;
+			text-transform   : uppercase;
+		}
+		.fields-holder > .fields {
+			float            : left;
+			margin-left      : 10px;
+		}
+		.fields-holder .group {
+			width            : 220px;
+			float            : left;
+			margin-left      : 5px;
+		}
+		.fields-holder .group:first-child {
+			margin-left      : 0;
+		}
+		.fields-holder .field {
+			height           : 30px;
+			display          : inline-table;
+			margin-top       : 10px;
+		}
+		.fields-holder .field:first-child {
+			margin-top       : 0;
+		}
+		.fields-holder .field > .label {
+			display          : table-cell;
+			text-align       : right;
+			vertical-align   : middle;
+			padding-right    : 10px;
+			color            : #c8bfc7;
+			font-weight      : bold;
+			width            : 70px;
+		}
+		.fields-holder .field > .widget {
+			display          : table-cell;
+			width            : 150px;
+			height           : 30px;
+			line-height      : 30px;
+		}
+		.fields-holder .field > .widget .x-btn,
+		.fields-holder .field > .widget .x-field {
+			vertical-align   : top;
+		}
+		
+		/* Intro */
+		#content-intro {
+			background-color : #434254;
+			background-color : rgba(67, 66, 84, .9);
+			color            : #fff;
+			top              : 125px;
+			padding          : 20px;
+			width            : 795px;
+		}
+		#content-intro .field .x-btn {
+			background: #c92d42;
+		}
+		#content-intro .field .x-btn .x-btn-inner {
+			color:#fff;
+		}
+		
+		/* Application */
+		#content-application {
+			top              : 40px;
+			width            : 100%;
+		}
+		#toolbar {
+			width            : 100%;
+			height           : 90px;
+			background-color : #434254;
+			position         : absolute;
+			top              : 0;
+			left             : 0;
+			padding-left     : 23px;
+		}
+		#toolbar .group {
+			float            : none;
+			width            : 745px;
+			margin           : 0;
+		}
+		#toolbar .group .field {
+			vertical-align   : middle;
+			margin-top       : 10px;
+		}
+		#toolbar .group .field.with-sep {
+			background       : url("../images/toolbar-group-border.png") repeat-y 100% 0;
+		}
+		
+		#toolbar .share {
+			position         : absolute;
+			top              : 10px;
+			right            : 10px;
+			width            : 147px;
+			margin-top       : 0;
+		}
+		#toolbar .help a {
+			display          : inline-block;
+			background       : url("../images/help-icon.png") no-repeat 0 50%;
+			padding-left     : 20px;
+		}
+		
+		/* Component specific */
+			.field.year {
+				padding-right        : 0;
+				margin-right         : 20px;
+			}
+			.field.year .widget {
+				width                : 135px;
+			}
+			.field.year .widget .x-field .x-form-item-body {
+				padding-left         : 10px;
+				color                : #807e87;
+				font-weight          : bold;
+			}
+			.field.year .widget .x-form-cb-checked .x-form-item-body {
+				color                : #fff;
+			}
+			.field.year .widget .x-field:first-child .x-form-item-body {
+				padding-left         : 0;
+			}
+			.field.level {
+				padding-right        : 2px;
+				margin-right         : 17px;
+			}
+			.field.level .label {
+				width                : 90px;
+			}
+			.field.level .widget {
+				width                : 90px;
+			}
+			.field.level .widget .button {
+				width                : 30px;
+				height               : 30px;
+				float                : left;
+				margin-left          : 5px;
+			}
+			.field.level .widget .button:first-child {
+				margin-left          : 0;
+			}
+			.field.level .widget .button .x-btn {
+				background           : #807e87;
+				border               : none;
+			}
+			.field.level .widget .button .x-btn-inner {
+				color                : #434254;
+				font-size            : 23px;
+			}
+			.field.help .widget {
+				width                : 70px;
+				line-height          : 30px;
+				text-align           : right;
+				font-weight          : bold;
+			}
+			.field.visualization-save .widget {
+				width                : 70px;
+			}
+			
+		/* Sidebar tools */
+		#sidebar-tools {
+			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+			position     : absolute;
+			top          : 90px;
+			left         : 0;
+			width        : 380px;
+		}
+		
+		/* Sidebar reports */
+		#sidebar-reports {
+			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+			position     : absolute;
+			top          : 90px;
+			width        : 580px;
+		}
+			body.intro #sidebar-reports, body.application #sidebar-reports.hidden {
+				right    : -580px;
+			}
+			body.application #sidebar-reports {
+				right    : 0;
+			}
+		#sidebar-reports-toggle {
+			display      : block;
+			width        : 20px;
+			height       : 20px;
+			background   : red;
+			position     : absolute;
+			left         : -20px;
+			top          : 0;
+			cursor       : pointer;
+		}
+		#sidebar-reports-toggle:hover {
+			background       : blue;
+		}
+		#sidebar-reports.hidden #sidebar-reports-toggle {
+			
+		}
+		
+	/* Footer */
+	#footer {
+		height           : 40px;
+		line-height      : 40px;
+		background-color : #333;
+		color            : #999;
+		width            : 100%;
+		position         : absolute;
+		bottom           : 0;
+		left             : 0;
+		padding          : 0 10px;
+	}
+	#footer a {
 		text-decoration  : underline;
 	}
-
-/* CONTENTS */
-#content {
-	position             : relative;
-}
-#content-intro, #content-application {
-	display              : none;
-}
-body.intro #content-intro,
-body.application #content-application {
-	display              : block;
-}
-	.field {
-		margin-top       : 10px;
-		height           : 30px;
-		line-height      : 30px;
+	#footer a:hover, #footer a:focus {
+		color            : #fff;
 	}
-	.field .label {
-		float            : left;
-		width            : 40px;
-		margin-right     : 10px;
-		font-weight      : bold;
-		color            : #c6bdc5;
+	#footer .label {
+		font-weight      : 800;
+		font-size        : 18px;
 	}
-	.field .widget {
-		height           : 30px;
-		float            : left;
+	#footer .contact {
+		display          : inline-block;
+		margin-left      : 45px;
+	}
+	#footer .copyright {
+		float            : right;
 	}
 	
-	/* Intro */
-	#content-intro {
-		position         : absolute;
-		width            : 645px;
-		top              : 85px;
-		left             : 0;
-		background-color : #434254;
-		background-color : rgba(67, 66, 84, .9);
-		color            : #fff;
-		font-weight      : bold;
-		padding-top      : 10px;
-		/* has to be above map*/
-		z-index          : 10000;
-	}
-	#content-intro > .label {
-		text-transform   : uppercase;
-		font-size        : 30px;
-		display          : block;
-		margin-top       : 10px;
-		margin-left      : 20px;
-		float            : left;
-		width            : 260px;
-		line-height      : 1.2em;
-		height           : 130px;
-	}
-	
-	/* Application */
-	#toolbar {
-		position         : absolute;
-		top              : 0;
-		width            : 100%;
-		height           : 95px;
-		padding-top      : 10px;
-		background-color : #434254;
-		color            : #fff;
-		/* has to be above map*/
-		z-index          : 10000;
-	}
-	#toolbar > .label {
-		text-transform   : uppercase;
-		font-size        : 30px;
-		display          : block;
-		margin-left      : 20px;
-		float            : left;
-		width            : 260px;
-		line-height      : 1.2em;
-	}
-	#toolbar .groups {
-		margin-left      : 260px;
-		width            : 800px;
-	}
-	#toolbar .group {
-		padding          : 5px 20px 0 20px;
-		margin-top       : 5px;
-		background       : url("../images/toolbar-group-border.png") repeat-x 0 0;
-		height           : 30px;
-	}
-	#toolbar .group:first-child {
-		background       : none;
-		margin-top       : 0;
-		padding-top      : 0;
-	}
-	#toolbar .group .field {
-		margin-top       : 0;
-		margin-bottom    : 10px;
-		float            : left;
-		margin-right     : 10px;
-	}
-	#toolbar .group .label {
-		width            : auto;
-	}
-	#toolbar .scope .label,
-	#toolbar .teritory .label,
-	#toolbar .theme .label {
-		width            : 50px;
-	}
-	#toolbar .help {
-		text-align       : right;
-		font-weight      : bold;
-	}
-	#toolbar .share {
-		position         : absolute;
-		top              : 10px;
-		right            : 20px;
-		width            : 150px;
-		height           : 70px;
-	}
-	#toolbar .share .widget {
-		margin-bottom    : 10px;
-	}
-	#sidebar-tools {
-		background       : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
-		position         : absolute;
-		top              : 95px;
-		left             : 0;
-		width            : 380px;
-		/* has to be above map*/
-		z-index          : 10000;
-	}
-	#sidebar-reports {
-		background       : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
-		position         : absolute;
-		top              : 95px;
-		width            : 580px;
-		/* has to be above map*/
-		z-index          : 10000;
-	}
-		body.intro #sidebar-reports, body.application #sidebar-reports.hidden {
-			right        : -580px;
-		}
-		body.application #sidebar-reports {
-			right        : 0;
-		}
-	#sidebar-reports-toggle {
-		display          : block;
-		width            : 20px;
-		height           : 20px;
-		background       : red;
-		position         : absolute;
-		left             : -20px;
-		top              : 0;
-		cursor           : pointer;
-	}
-	#sidebar-reports-toggle:hover {
-		background       : blue;
-	}
-	#sidebar-reports.hidden #sidebar-reports-toggle {
-		
-	}
-
-/* FOOTER */
-#footer {
-	height               : 40px;
-	line-height          : 40px;
-	background-color     : #371733;
-	color                : #fff;
-	position             : fixed;
-	bottom               : 0;
-	width                : 100%;
-	padding              : 0 10px;
-	-webkit-box-sizing   : border-box;
-	-moz-box-sizing      : border-box;
-	box-sizing           : border-box;
-	font-size            : 12px;
-	/* has to be above map*/
-	z-index              : 10000;
-}
-#footer .label {
-	font-weight          : bold;
-	font-size            : 20px;
-	display              : inline-block;
-	margin-right         : 50px;
-	margin-top           : -3px;
-	vertical-align       : middle;
-}
-#footer .contact-person {
-	display              : inline-block;
-	margin-right         : 50px;
-	vertical-align       : middle;
-}
-#footer .contact-email {
-	text-decoration      : underline;
-	vertical-align       : middle;
-}
-#footer .contact-email:hover, #footer .contact-email:focus {
-	text-decoration      : none;
-}
-#footer .copyright {
-	position             : absolute;
-	right                : 10px;
-}
-
-/* WIDGETS */
-#app-intro-scope, #app-intro-teritory, #app-intro-theme {width:300px;}
-#app-toolbar-scope, #app-toolbar-teritory, #app-toolbar-theme {width:140px;}
-#app-toolbar-year {width:130px;}
-#app-toolbar-level {width:160px;}
-#app-toolbar-visualization {width:210px;}
-#app-toolbar-share {width:150px; height:30px;}
-#app-tools-actions {height:30px; width:250px;}
-#app-tools-accordeon {min-height:200px; width:250px;}
-#app-reports-paging {height:30px;}
-#app-reports-accordeon {min-height:400px; width:580px;}

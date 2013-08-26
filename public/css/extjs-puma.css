@@ -1,8 +1,9 @@
 /* BUTTONS */
 .x-btn {
-	background-image     : -moz-linear-gradient(center top, #f00 0%, #fff 100%);
-	border               : 1px solid blue;
-	border-radius        : 1px;
+	background-image     : -moz-linear-gradient(center top, #d6d3d0 0%, #f6f2ee 100%);
+	border               : none;
+	border-radius        : 0;
+	padding              : 0;
 }
 .x-btn em {
 	
@@ -10,8 +11,9 @@
 .x-btn button {
 }
 .x-btn .x-btn-inner {
-	font-family          : Arial, sans-serif;
-	font-size            : 13px;
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
+	font-weight          : bold;
 }
 
 /* FIELDS */
@@ -23,14 +25,14 @@
 	border               : none;
 	background           : #666470;
 	color                : #fff;
-	font-family          : Arial, sans-serif;
+	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 	padding              : 5px;
 }
 .x-border-box .x-form-trigger {
 	height               : 30px;
-	width                : 26px;
-	background           : #7f7c85;
+	width                : 30px;
+	background           : #7f7c85 url("../images/combo-arrow.png") no-repeat 50% 50%;
 	border               : none;
 }
 
@@ -41,7 +43,7 @@
 .x-boundlist .x-boundlist-item {
 	background           : #b7b5bb;
 	color                : #424451;
-	font-family          : Arial, sans-serif;
+	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 	border               : none;
 	border-top           : 1px solid #fff;
@@ -53,4 +55,9 @@
 .x-boundlist .x-boundlist-item:hover,
 .x-boundlist .x-boundlist-item-over {
 	background           : #a4a0a9;
+}
+
+.x-form-item {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
 }

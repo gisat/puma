@@ -19,14 +19,24 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	},
 	
 	resizeMap: function() {
-		var w = $(window).width();
-		var h = $(window).height() - $("#header").outerHeight(true) - $("#footer").outerHeight(true);
+		var w  = $(window).width();
+		var h  = $(window).height() - $("#header").outerHeight(true) - $("#footer").outerHeight(true);
+		var sl = $("#sidebar-reports").position().left;
 		
-		if ($("body").hasClass("application")) {
-			w = $("#sidebar-reports").position().left;
+		if ($("body").hasClass("application") && sl > 0) {
+			w = sl;
 		}
 		
 		$("#map-holder").css({width : w, height : h});
+		
+		var map = Ext.ComponentQuery.query('#map')[0];
+		var map2 = Ext.ComponentQuery.query('#map2')[0];
+		if (map) {
+			this.getController('Map').onResize(map);
+		}
+		if (map2) {
+			this.getController('Map').onResize(map2);
+		}
 	},
 	
 	_onSidebarToggleClick: function() {
