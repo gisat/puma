@@ -195,7 +195,10 @@ em {
 			position         : absolute;
 			top              : 0;
 			left             : 0;
-			padding-left     : 23px;
+			padding-left     : 15px;
+		}
+		#toolbar > .label {
+			margin-top       : 5px;
 		}
 		#toolbar .group {
 			float            : none;
@@ -267,7 +270,8 @@ em {
 			}
 			.field.level .widget .button .x-btn-inner {
 				color                : #434254;
-				font-size            : 23px;
+				font-size            : 25px;
+				font-family          : "Courier new", monospace;
 			}
 			.field.help .widget {
 				width                : 70px;
@@ -287,6 +291,9 @@ em {
 			left         : 0;
 			width        : 380px;
 		}
+		#app-tools-actions {
+			height       : 30px;
+		}
 		
 		/* Sidebar reports */
 		#sidebar-reports {
@@ -303,19 +310,16 @@ em {
 			}
 		#sidebar-reports-toggle {
 			display      : block;
-			width        : 20px;
-			height       : 20px;
-			background   : red;
+			width        : 21px;
+			height       : 35px;
+			background   : url("../images/sidebar-toggle-sprite.png") no-repeat 0 0;
 			position     : absolute;
 			left         : -20px;
 			top          : 0;
 			cursor       : pointer;
 		}
-		#sidebar-reports-toggle:hover {
-			background       : blue;
-		}
 		#sidebar-reports.hidden #sidebar-reports-toggle {
-			
+			background-position : -21px 0;
 		}
 		
 	/* Footer */
