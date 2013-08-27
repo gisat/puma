@@ -439,15 +439,18 @@ Ext.define('PumaMain.controller.Layers', {
                 var baseColor = attrStore.getById(attrId).get('color');
                 colorRange = Puma.util.Color.determineColorRange(baseColor);
             }
-        
-
+            normalization = attrs[0].normType || normalization;
+            var normAttrSet = attrs[0].normAs || params['normalizationAttributeSet'];
+            var normAttribute = attrs[0].normAttr || params['normalizationAttribute'];
+            
+            
             var props = '';
             var filtersNull = [];
             var filtersNotNull = [];
             if (normalization && normalization != 'none' && normalization != 'year') {
                 var normAttr = normalization == 'area' ? 'area' : '';
-                normAttr = normalization == 'attributeset' ? ('as_' + params['normalizationAttributeSet'] + '_attr_#attrid#') : normAttr;
-                normAttr = normalization == 'attribute' ? ('as_' + params['normalizationAttributeSet'] + '_attr_' + params['normalizationAttribute']) : normAttr;
+                normAttr = normalization == 'attributeset' ? ('as_' + normAttrSet + '_attr_#attrid#') : normAttr;
+                normAttr = normalization == 'attribute' ? ('as_' + normAttrSet + '_attr_' + normAttribute) : normAttr;
                 normAttr = normalization == 'toptree' ? '#toptree#' : normAttr;
 
                 if (normalization != 'toptree') {
@@ -724,7 +727,7 @@ Ext.define('PumaMain.controller.Layers', {
         }
         
     },
-    getLegendUrl: function(layersOrSldId,legendLayerName) {
+    getLegendUrl: function(layersOrSldId,legendLayerName,symbologyId) {
         var obj = {
             "LAYERS": layersOrSldId,
             "REQUEST": 'GetLegendGraphic',
@@ -736,6 +739,9 @@ Ext.define('PumaMain.controller.Layers', {
             obj['LAYER'] = legendLayerName;
             delete obj['LAYERS'];
             obj['SLD_ID'] = layersOrSldId;
+        }
+        if (symbologyId) {
+            obj['STYLE'] = symbologyId;
         }
         var query = Ext.Object.toQueryString(obj);
         return Config.url + '/api/proxy/wms?' + query          

@@ -163,17 +163,18 @@ Ext.define('PumaMain.controller.Map', {
             control2.deactivate();
         }
     },
-        
-    onZoomSelected: function(btn) {
+    // areas can be specified or taken from selection
+    onZoomSelected: function(btn,areas) {
         var selectController = this.getController('Select');
         var color = selectController.actualColor;
         var sel = color ? selectController.selMap[color] : [];
+        sel = areas.length ? areas : sel;
         if (!sel.length) return;
         var areaController = this.getController('Area');
         var format = new OpenLayers.Format.WKT();
         var overallExtent = null;
         for (var i=0;i<sel.length;i++) {
-            var area = areaController.getArea(sel[i]);
+            var area = areas.length ? areas[i] : areaController.getArea(sel[i]);
             var extent = format.read(area.get('extent')).geometry.getBounds();
             extent = extent.transform(new OpenLayers.Projection("EPSG:4326"),new OpenLayers.Projection("EPSG:900913"))
             if (!overallExtent) {
@@ -455,7 +456,7 @@ Ext.define('PumaMain.controller.Map', {
         })
         
         map.updateSize();
-        map.zoomToExtent(new OpenLayers.Bounds(-675736.2753,9187051.894,704022.2164,9204621.9448))
+        //map.zoomToExtent(new OpenLayers.Bounds(-675736.2753,9187051.894,704022.2164,9204621.9448))
         
         var params = {
             transparent: true,

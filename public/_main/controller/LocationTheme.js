@@ -39,11 +39,21 @@ Ext.define('PumaMain.controller.LocationTheme', {
             },
             '#selvisualization': {
                 change: this.onVisChange
+            },
+            '#initialconfirm': {
+                click: this.onConfirm
             }
         })
     },
     onDatasetChange: function(cnt,val) {
         this.datasetChanged = true;
+        
+        var locationCombo = Ext.ComponentQuery.query(cnt.initial ? '#initiallocation':'#sellocation')[0];
+        var themeCombo = Ext.ComponentQuery.query(cnt.initial ? '#initialitheme':'#seltheme')[0];
+        
+        locationCombo.suspendEvents();
+        
+        
         var themeStore = Ext.StoreMgr.lookup('theme4sel');
         themeStore.clearFilter(true);
         themeStore.filter([
@@ -58,53 +68,100 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 return rec.get('dataset')==val || !rec.get('dataset');
             }
         ]);
-        if (!cnt.initial) {
             
-            var locationCombo = Ext.ComponentQuery.query('#sellocation')[0];
-            var first = locStore.getAt(0);
-            if (first) {
-                locationCombo.suspendEvents();
-                locationCombo.setValue(first);
-                locationCombo.resumeEvents();
-            }
+        locationCombo.show();
+        var first = locStore.getAt(0);
+        if (first && !cnt.initial) {
+            locationCombo.setValue(first);
             
-            var themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
-            var first = themeStore.getAt(0);
-            if (first) {
-                themeCombo.setValue(first)
+        }
+        
+
+        var first = themeStore.getAt(0);
+        if (first && !cnt.initial) {
+            themeCombo.setValue(first)
+        }
+        if (cnt.initial) {
+            locationCombo.setValue(null);
+            if (themeCombo && themeCombo.isVisible()) {
+                themeCombo.setValue(null);
             }
         }
-        else {
-            var combo = Ext.ComponentQuery.query('#initiallocation')[0];
-            combo.show();
-        }
+        locationCombo.resumeEvents();
     },
     
     onLocationChange: function(cnt,val) {
-        this.locationChanged = true;
+        if (cnt.eventsSuspended) {
+            return;
+        }
         var rec = Ext.StoreMgr.lookup('location4init').getById(val);
         var areaController = this.getController('Area');
         areaController.location = rec.get('location');
         areaController.locGid = rec.get('locGid')
+        if (cnt.initial) {
+            return;
+        }
         
-        if (!cnt.initial) {
+        if (this.datasetChanged) {
+            
+            this.locationChanged = true;
             this.onYearChange(cnt);
+            return;
+        }
+        
+        var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
+        
+        var nodesToCollapse = [];
+        var nodeToExpand = null
+        for (var i=0;i<areaRoot.childNodes.length;i++) {
+            var node = areaRoot.childNodes[i];
+            if (node.get('loc') == areaController.location && node.get('gid') == areaController.locGid) {
+                nodeToExpand = node;
+            }
+            else {
+                nodesToCollapse.push(node);
+            }
+        }
+        for (var i=0;i<nodesToCollapse.length;i++) {
+            var node = nodesToCollapse[i];
+            if (nodeToExpand || i!=nodesToCollapse.length-1) {
+                node.suppress = true;
+            }
+            node.collapse();
+            node.suppress = false;
+        }
+        
+        if (nodeToExpand) {
+            var loaded = nodeToExpand.get('loaded')
+            if (!loaded) {
+                this.locationChanged = true;
+            }
+            nodeToExpand.expand();
+            
+            if (loaded) {
+                this.getController('Area').zoomToLocation();
+            }
         }
         else {
-            var combo = Ext.ComponentQuery.query('#initialtheme')[0];
-            combo.show();
+            this.getController('Area').zoomToLocation();
         }
+   
+    },
+    
+    onConfirm: function() {
+        var val = Ext.ComponentQuery.query('#initialtheme')[0].getValue();
+        this.onThemeChange({switch:true},val)
     },
     
     onThemeChange: function(cnt,val) {
-        if (cnt.eventsSuspended) {
+        if (cnt.eventsSuspended || cnt.initial) {
             return;
         }
         
         this.themeChanged = true;
         
         var themeCombo = null;
-        if (cnt.initial) {
+        if (cnt.switch) {
             Ext.getBody().removeCls('intro').addCls('application');
             this.getController('Render').renderApp();
             themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
@@ -163,10 +220,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         yearCnt.resumeEvents();
         visCnt.resumeEvents();
         this.onYearChange(themeCombo);
-        
-        
-        
-        
+  
     },
     
     onYearChange: function(cnt) {
@@ -179,10 +233,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         // zatim nepouzivano
         var isFilter = cnt.itemId == 'filter';
+        var detailLevelChanged = cnt.itemId == 'detaillevel';
         
         var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var locationId = Ext.ComponentQuery.query('#sellocation')[0].getValue();
+        var locationObj = Ext.StoreMgr.lookup('location4init').getById(locationId);
         var vis = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         var params = {
                 theme: theme,
@@ -197,9 +254,23 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         params['refreshLayers'] = (this.themeChanged) ? true : null;
-        params['refreshAreas'] = (this.yearChanged || this.datasetChanged || this.locationChanged) ? true : false;
+        params['refreshAreas'] = (this.yearChanged || this.datasetChanged || this.locationChanged || detailLevelChanged) ? true : false;
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
+        }
+        var loc = locationObj.get('location')
+        if (this.datasetChanged && loc) {
+            var expanded = {};
+            var at = locationObj.get('at');
+            var locGid = locationObj.get('locGid');
+            expanded[loc] = {};
+            expanded[loc][at] = [locGid]
+            params['expanded'] = JSON.stringify(expanded);
+        }
+        if (detailLevelChanged) {
+            var parentGids = this.getController('Area').detailLevelParents;
+            params['parentgids'] = JSON.stringify(parentGids);
+            params['artifexpand'] = true;
         }
         if (Config.cfg) {
             params['expanded'] = JSON.stringify(Config.cfg.expanded);
@@ -211,6 +282,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         if (cntId=='slider') {
             params['parentgids'] = JSON.stringify(this.getController('Area').parentGids)
+            
         }
         Ext.Ajax.request({
             url: Config.url+'/api/theme/getThemeYearConf',
@@ -219,6 +291,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
             originatingCnt: cnt,
             visChanged: this.visChanged,
             themeChanged: this.themeChanged,
+            datasetChanged: this.datasetChanged,
+            locationChanged: this.locationChanged,
             yearChanged: this.yearChanged,
             success: this.onThemeLocationConfReceived
         })
@@ -274,17 +348,17 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
     addAreas: function(areasToAdd) {
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
+        areaRoot.removeAll();
         var data = [];
         var currentLevel = [];
         var parentLevel = null;
         var level = null;
         this.addAreasToAreaMap(areasToAdd);
+        var leafMap = {};
         for (var i=0;i<areasToAdd.length;i++) {
             var area = areasToAdd[i];
             level = level || area.at;
             //area.children = [];
-            
-            area.children = [];
             if (area.at!=level) {
                 level = area.at;
                 parentLevel = currentLevel;
@@ -292,6 +366,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
             if (!area.leaf) {
                 area.expandable = true;
+                area.children = [];
+            }
+            else {
+                leafMap[area.loc] = leafMap[area.loc] || {};
+                leafMap[area.loc][area.at] = leafMap[area.loc][area.at] || [];
+                leafMap[area.loc][area.at].push(area.gid)
             }
             area.id = area.at+'_'+area.gid;
             var node = Ext.create('Puma.model.Area',area);
@@ -310,6 +390,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         areaRoot.removeAll();
         areaRoot.appendChild(data);
+        
     },
         
     addAreasToAreaMap: function(addedAreas) {
@@ -327,6 +408,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var changed = false;
         var nodesToDestroy = [];
         this.addAreasToAreaMap(add);
+        
+        
+        var tree = Ext.ComponentQuery.query('#areatree')[0];
+        tree.suspendEvents();
+        
         for (var loc in remove) {
             var locRoot = root.findChild('loc',loc);
             for (var at in remove[loc]) {
@@ -347,6 +433,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var featureLayers = Ext.StoreMgr.lookup('dataset').getById(datasetId).get('featureLayers');
+        
         for (var i = 0;i<add.length;i++) {
             var area = add[i];
             var loc = area.loc;
@@ -374,8 +461,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
             
         }
+        tree.resumeEvents();
         if (changed) {
-            Ext.StoreMgr.lookup('area').sort();
+            //Ext.StoreMgr.lookup('area').sort();
+            tree.view.refresh();
         }
         return changed;
     },
@@ -430,7 +519,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             layers: layers.join(','),
             styles: symbologies.join(',')
         })
-        var src = this.getController('Layers').getLegendUrl(layers[0]);
+        var src = this.getController('Layers').getLegendUrl(layers[0],null,symbologyId);
         node.set('src',src)
         if (node.get('checked')) {
             layer.setVisibility(true);
@@ -558,8 +647,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onThemeLocationConfReceived: function(response) {
-        
         var conf = JSON.parse(response.responseText).data;
+        if (!conf.layerRefMap) {
+            conf = {
+                add: conf
+            }
+        }
         if (conf.layerRefMap) {
             this.getController('Area').areaTemplateMap = conf.auRefMap;
         }
@@ -567,6 +660,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             this.addAreas(conf.areas);
         }
         if (conf.add || conf.remove) {
+            
             var changed = this.refreshAreas(conf.add,conf.remove);
         }
         if (conf.layerNodes && conf.layerNodes.length) {
@@ -576,7 +670,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (conf.layerRefMap) {
             this.updateLayerContext(conf.layerRefMap);
         }
-        if (conf.leafMap) {
+        if (conf.leafMap && conf.add) {
             this.updateLeafs(conf.leafMap)
         }
         if (conf.areas || ((conf.add || conf.remove) && changed)) {
@@ -586,6 +680,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         this.getController('Layers').reconfigureAll();
         if (response.request.options.visChanged) {
             this.getController('Layers').checkVisibilityAndStyles();
+        }
+        if (response.request.options.locationChanged || response.request.options.datasetChanged) {
+            this.getController('Area').zoomToLocation();
         }
         //this.initVisualizations(btn);
         

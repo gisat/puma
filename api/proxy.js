@@ -266,10 +266,13 @@ function saveSld(params, req, res, callback) {
                 sld = sld.replace(new RegExp('#attrid#','g'),attrs[attrIndex].attr);
                 var min = results.data.altAggregate ? Math.min(results.data.aggregate['min_'+attrName],results.data.altAggregate['min_'+attrName]) : results.data.aggregate['min_'+attrName];
                 var max = results.data.altAggregate ? Math.max(results.data.aggregate['max_'+attrName],results.data.altAggregate['max_'+attrName]) : results.data.aggregate['max_'+attrName];
-                
+                console.log(max);
+                console.log(min)
                 if (params['classType']=='continuous') {
                     for (var i=0;i<numCat;i++) {
                         var val = min + (max-min)*i/(numCat-1);
+                        console.log(i);
+                        console.log(val)
                         sld = sld.replace(new RegExp('#minmax_'+(i+1)+'#','g'),val);
                         legendSld = legendSld.replace(new RegExp('#minmax_'+(i+1)+'#','g'),val);
                     }

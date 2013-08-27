@@ -59,26 +59,15 @@ Ext.define('PumaMain.controller.Chart', {
             'chartpanel tool[type=print]': {
                 click: this.onUrlClick
             },
-            'chartpanel tool[type=save]': {},
+            'chartpanel tool[type=save]': {
+                click: this.onUrlClick
+            },
             'chartbar panel[cfgType=add]': {
                 beforeexpand: this.onChartBtnClick
             },
             '#areapager' : {
                 beforechange: this.onPageChange
-            },
-
-//            'chartbar #removebtn': {
-//                click: this.onChartRemove
-//            },
-//            'chartbar #urlbtn': {
-//                click: this.onUrlClick
-//            },
-//            'chartbar #exportpngbtn': {
-//                click: this.onUrlClick
-//            },
-//            'chartbar #cfgbtn': {
-//                click: this.onReconfigureClick
-//            }
+            }
         }
 
 
@@ -381,8 +370,53 @@ Ext.define('PumaMain.controller.Chart', {
     reconfigureChart: function(chartCmp, forExport, addingNew) {
         var cfg = chartCmp.cfg;
         var queryCfg = this.gatherChartCfg(chartCmp);
-        var selectedAreas = [];
         var areas = {};
+ 
+        if (cfg.type != 'extentoutline') {
+            areas = Ext.clone(this.getController('Area').lowestMap);
+        }
+
+        queryCfg.areas = areas;
+
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        if (!years.length)
+            return;
+        queryCfg.years = years;
+
+        if (!queryCfg.years) {
+            queryCfg.years = [];
+        }
+        if (!queryCfg.years.length) {
+            queryCfg.years = [queryCfg.years]
+        }
+        if (Ext.Array.contains(['grid','columnchart','piechart'],cfg.type)) {
+            Ext.apply(queryCfg,this.getPagingParams());
+        }
+        if (cfg.type=='extentoutline') {
+            queryCfg.selectedAreas = JSON.stringify(this.getSelectedAreas());
+        }
+        var params = this.getParams(queryCfg);
+        chartCmp.queryCfg = queryCfg;
+        if (forExport) {
+            this.handleExport(chartCmp,params)
+        }
+
+        Ext.Ajax.request({
+            url: Config.url + '/api/chart/getChart',
+            params: params,
+            scope: this,
+            method: 'GET',
+            cmp: chartCmp,
+            success: forExport ? null : this.onChartReceived,
+            failure: forExport ? null : this.onChartReceived
+        })
+        //this.getController('Layers').onChartReconfigure(chartCmp, params);
+    },
+        
+        
+        
+    getSelectedAreas: function() {
+        var selectedAreas = [];
         var selMap = this.getController('Select').selMap
         var colors = [];
         for (var color in selMap) {
@@ -410,46 +444,9 @@ Ext.define('PumaMain.controller.Chart', {
             }
             selectedAreas.push(map);
         }
-
-        if (cfg.type != 'extentoutline') {
-            areas = Ext.clone(this.getController('Area').lowestMap);
-        }
-
-        queryCfg.areas = areas;
-        queryCfg.selectedAreas = selectedAreas;
-
-        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
-        if (!years.length)
-            return;
-        queryCfg.years = years;
-
-        if (!queryCfg.years) {
-            queryCfg.years = [];
-        }
-        if (!queryCfg.years.length) {
-            queryCfg.years = [queryCfg.years]
-        }
-        if (Ext.Array.contains(['grid','columnchart','piechart'],cfg.type)) {
-            Ext.apply(queryCfg,this.getPagingParams());
-        }
-        var params = this.getParams(queryCfg);
-        chartCmp.queryCfg = queryCfg;
-        if (forExport) {
-            this.handleExport(chartCmp,params)
-        }
-
-        Ext.Ajax.request({
-            url: Config.url + '/api/chart/getChart',
-            params: params,
-            scope: this,
-            method: 'GET',
-            cmp: chartCmp,
-            success: forExport ? null : this.onChartReceived,
-            failure: forExport ? null : this.onChartReceived
-        })
-        //this.getController('Layers').onChartReconfigure(chartCmp, params);
+        return selectedAreas;
     },
-
+    
     handleExport: function(chartCmp, params) {
         var store = chartCmp.chart.store;
         store.on('beforeload', function(st, operation) {
@@ -487,7 +484,7 @@ Ext.define('PumaMain.controller.Chart', {
     },
     getParams: function(queryCfg) {
         var params = {};
-        var keysToJson = ['areas', 'selectedAreas', 'attrs', 'years', 'classConfig', 'areaTemplates', 'oldAreas', 'invisibleAttrs', 'invisibleYears', 'activeFilters', 'activeSorters'];
+        var keysToJson = ['areas', 'attrs', 'years', 'classConfig', 'areaTemplates', 'oldAreas', 'invisibleAttrs', 'invisibleYears', 'activeFilters', 'activeSorters'];
         for (var key in queryCfg) {
             if (Ext.Array.contains(keysToJson, key)) {
                 params[key] = JSON.stringify(queryCfg[key])
@@ -614,7 +611,6 @@ Ext.define('PumaMain.controller.Chart', {
         this.colourChart(cmp);
     },
     onUrlClick: function(btn) {
-        debugger;
         var chart = btn.up('panel').chart;
         var cfg = this.gatherChartCfg(chart, true)
         cfg.oldAreas = chart.cfg.areas;
@@ -629,42 +625,54 @@ Ext.define('PumaMain.controller.Chart', {
             method: 'POST',
             success: function(response) {
                 var id = JSON.parse(response.responseText).data;
-                me.onUrlCallback(id, btn.itemId == 'urlbtn');
+                me.onUrlCallback(id, btn.type == 'print');
             }
         })
 
 
 
     },
-    onUrlCallback: function(id, isUrl) {
+    onUrlCallback: function(id, isPrint) {
         if (true) {
             var url = window.location.origin + '/public/index3.html?id=' + id;
             Ext.widget('window', {
                 items: [{
                         xtype: 'textfield',
-                        width: 400,
+                        visible: true,
                         value: url,
                         editable: false
                     }]
             }).show();
-            return;
+            
         }
-        var url = window.location.origin + '/print/index3.html?id=' + id;
-        var form = Ext.widget('form'
-                , {
-            items: [{
-                    xtype: 'filefield',
-                    name: 'file'
-                }, {
-                    xtype: 'textfield',
-                    name: 'dummy',
-                    value: 'dummy'
-                }]
-        });
-        form.getForm().submit({
-            url: url
-        });
+        if (isPrint) {
+            url = window.location.origin + '/print/index3.html?id=' + id;
+            var form = Ext.widget('form'
+                    , {
+                items: [{
+                        xtype: 'filefield',
+                        name: 'file'
+                    }, {
+                        xtype: 'textfield',
+                        name: 'dummy',
+                        value: 'dummy'
+                    }]
+            });
+            form.getForm().submit({
+                url: url
+            });
+        }
+        else {
+            url = window.location.origin + '/image/index3.html?id=' + id;
+            var screenshot = Ext.create('Puma.model.Screenshot',{
+                src: url,
+                width: 175,
+                height: 120
+            })
+            Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true)
+        }
     },
+    
     onLegendToggle: function(point) {
         var as = point.as;
         var attr = point.attr;
@@ -813,7 +821,9 @@ Ext.define('PumaMain.controller.Chart', {
                 params['sort'] = null;
             }
         }
-        return params
+        var selectedAreas = this.getSelectedAreas();
+        params['selectedAreas'] = JSON.stringify(selectedAreas);
+        return params;
     },
     onGridReceived: function(response) {
         var me = this;
@@ -873,7 +883,6 @@ Ext.define('PumaMain.controller.Chart', {
         cmp.chart = grid;
         cmp.relayEvents(grid, ['beforeselect', 'itemclick', 'itemmouseenter']);
         grid.on('sortchange',function() {
-            debugger;
             me.reconfigure('page');
         })
         grid.view.on('viewready', function() {
@@ -1077,7 +1086,7 @@ Ext.define('PumaMain.controller.Chart', {
             normAttr = null
         }
         else if (normType == 'attribute' && normAttrSet && normAttr) {
-
+                
         }
         else {
             normType = null;

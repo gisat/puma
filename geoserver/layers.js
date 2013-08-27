@@ -42,7 +42,7 @@ function recreateLayerDb(layerRef,isUpdate,callback) {
     ],
         function(err,baseLayerRef,layerRefs) {
             if (err) return callback(err);
-            return recreateLayerDbInternal(baseLayerRef,layerRefs,!layerRef.isData,isUpdate,callback);
+            return recreateLayerDbInternal(baseLayerRef,layerRefs,layerRef.isData ? false : true,isUpdate,callback);
         } 
     )
 }
@@ -78,9 +78,7 @@ function checkUniqueId(layerRef,callback) {
 var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdate,callback) {
     var layerName =' views.layer_'+areaLayerRef['_id'];
     var from = areaLayerRef.layer.split(':')[0] == 'geonode' ? areaLayerRef.layer.split(':')[1] : (areaLayerRef.layer.split(':')[0]+'.'+areaLayerRef.layer.split(':')[1])
-    
-    
-    
+    console.log(isBase)
     // priprava view
     var sql = 'BEGIN; DROP VIEW IF EXISTS '+layerName+'; ';
     if (isBase && !isUpdate) {

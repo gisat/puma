@@ -149,12 +149,15 @@ function remove(collName,filter,params,callback) {
                 return asyncCallback(null, result);
             });
         }],
-        hooks: ['remove',function(asyncCallback,results) {
-            doHooks("remove",collName,results.remove,params,function(err,result) {
-                if (err) return callback(err);
-                return callback(null,result);
-            });    
-        }]
+        hooks: ['remove', function(asyncCallback, results) {
+                if (!params['bypassHooks']) {
+                    doHooks("remove", collName, results.remove, params, function(err, result) {
+                        if (err)
+                            return callback(err);
+                        return callback(null, result);
+                    });
+                }
+            }]
     }
     
     async.auto(opts);   

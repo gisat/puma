@@ -46,19 +46,37 @@ Ext.define('PumaMain.controller.Render', {
         })
         
         
-        Ext.widget('slider',{
+//        Ext.widget('slider',{
+//            renderTo: 'app-toolbar-level',
+//            itemId: 'areaslider',
+//            minValue: 0,
+//            value: 0,
+//            maxValue: 2,
+//            width: '100%'
+//        })
+        
+        Ext.widget('container',{
             renderTo: 'app-toolbar-level',
-            itemId: 'areaslider',
-            minValue: 0,
-            value: 0,
-            maxValue: 2,
-            width: '100%'
+            layout: {
+                type: 'hbox'
+            },
+            items: [{
+                xtype: 'button',
+                itemId: 'areamoredetails',
+                text: '+'
+                
+            },{
+                xtype: 'button',
+                itemId: 'arealessdetails',
+                text: '-'
+            }]
         })
+        
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'
         })
         Ext.widget('toolspanel',{
-            renderTo: 'app-tools-actions'
+            renderTo: 'app-tools-accordeon'
         })
         Ext.widget('chartbar',{
             renderTo: 'app-reports-accordeon'
@@ -95,17 +113,29 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-teritory',
             initial: true,
-            hidden: true,
+            //hidden: true,
             valueField: 'id',
             store: Ext.StoreMgr.lookup('location4init'),
             itemId: 'initiallocation'
         })
-        Ext.widget('pumacombo',{
+        Ext.widget('container',{
             renderTo: 'app-intro-theme',
-            initial: true,
-            hidden: true,
-            itemId: 'initialtheme',
-            store: Ext.StoreMgr.lookup('theme4sel')
+            layout: {
+                type: 'hbox'
+            },
+            items: [{
+                xtype: 'pumacombo',
+                initial: true,
+                //hidden: true,
+                itemId: 'initialtheme',
+                store: Ext.StoreMgr.lookup('theme4sel')
+            },{
+                xtype: 'button',
+                text: 'Confirm',
+                itemId: 'initialconfirm'
+            }]
+                
+            
         })
         
     }

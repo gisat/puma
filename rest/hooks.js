@@ -1,6 +1,6 @@
 
 var geoserverLayers = require('../geoserver/layers');
-
+var crud = require('./crud')
 
 
 function precreateLayerRef(result, callback, params) {
@@ -34,8 +34,13 @@ function createLayerRef(result, callback, params) {
                 return callback(null, result);
             }
             geoserverLayers.recreateLayerDb(result, false, function(err,baseLayerRef) {
-                if (err)
-                    return callback(err);
+                if (err) {
+                    crud.remove('layerref',result,{bypassHooks:true},function(err2) {
+                        if (err2) return callback(err2);
+                        return callback(err);
+                    })
+                    return;
+                }
                 console.log(baseLayerRef)
                 asyncCallback(null,baseLayerRef);
             })
@@ -65,6 +70,8 @@ function updateLayerRef(result, callback) {
         })
     })
 }
+
+
 
 function removeLayerRef(result, callback, params) {
     if (!result.isData && result.fidColumn) {

@@ -202,7 +202,6 @@ function getChart(params, callback) {
                 conf.chart.height = 382;
                 conf.yAxis.plotLines = plotLines.length ? plotLines : null;
                 conf.xAxis.labels.staggerLines = staggerLines;
-                conf.title.text = params['title']
                 conf.series = series;
                 conf.xAxis.categories = categories;
                 conf.yAxis.title.text = (stacking && stacking == 'percent') ? '%' : attrConf.units;

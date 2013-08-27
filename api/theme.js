@@ -41,21 +41,12 @@ function getLocationConf(params, req, res, callback) {
             for (var datasetId in datasetMap) {
                 var locs = datasetMap[datasetId];
                 
-                // lokalita je pouze jedna, nutno se dotazat primo na vrstvu
-                if (locs.length<2) {
-                    var dataset = results.dataset[datasetId];
-                    console.log(dataset)
-                    locToQuery.push({location: locs[0]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId})
-                }
-                // prime pridani lokalit
-                else {
-                    for (var i=0;i<locs.length;i++) {
-                        resultArr.push({dataset:datasetId,name: locs[i].name,location: locs[i]._id,id:'1_'+locs[i]._id})
-                    }
+                var dataset = results.dataset[datasetId];
+                for (var i=0;i<locs.length;i++) {
+                    locToQuery.push({location: locs[i]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId})    
                 }
             }
             
-            console.log(locToQuery)
             var client = conn.getPgDb();
             async.forEach(locToQuery, function(item, eachCallback) {
                 var datasetId = item.dataset;
@@ -73,7 +64,7 @@ function getLocationConf(params, req, res, callback) {
                             return callback(err);
                         for (var i = 0; i < resls.rows.length; i++) {
                             var row = resls.rows[i];
-                            resultArr.push({name: row.name,locGid: row.gid,id:'2_'+row.gid,dataset:datasetId})
+                            resultArr.push({name: row.name,locGid: row.gid,id:'2_'+row.gid,dataset:datasetId,location:item.location,at:item.areaTemplate})
                         }
                         eachCallback(null)
 
@@ -118,8 +109,10 @@ function getThemeYearConf(params, req, res, callback) {
             });
         },
         locations: function(asyncCallback, results) {
-            if (params['locations']) {
-                return asyncCallback(null, JSON.parse(params['locations']));
+            
+            var locations = locations ? JSON.parse(params['locations']) : null;
+            if (locations) {
+                return asyncCallback(null,locations);
             }
             crud.read('location', {dataset: parseInt(params['dataset'])}, function(err, resls) {
                 if (err)
@@ -177,7 +170,9 @@ function getThemeYearConf(params, req, res, callback) {
                 var attrLayerRefMap = {};
                 var confs = [];
                 var attrConfs = [];
-                var attrSets = results.requiredAttrSets || [];
+                //var attrSets = results.requiredAttrSets || [];
+                // zadne attr sets nejsou vyzadovany
+                var attrSets = [];
                 for (var i = 0; i < results.locations.length; i++) {
                     var loc = results.locations[i];
                     layerRefMap[loc] = layerRefMap[loc] || {};
@@ -559,6 +554,12 @@ function getThemeYearConf(params, req, res, callback) {
                             }
                             for (var k = 0; k < symbologies.length; k++) {
                                 var symbology = symbologies[k] != -1 ? results.symbologies[symbologies[k]] : null;
+                                if (symbology && symbology.topic && topics.indexOf(symbology.topic)<0) {
+                                    continue
+                                }
+                                else {
+                                    //console.log('found')
+                                }
                                 var symbNode = {
                                     name: layer.name + (symbology ? '-' + symbology.name : ''),
                                     symbologyId: symbology ? symbology.symbologyName : '#blank#',
@@ -583,7 +584,7 @@ function getThemeYearConf(params, req, res, callback) {
             }],
         finish: ['layers', 'leafs', function(asyncCallback, results) {
                 
-                res.data = params['parentgids'] ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
+                res.data = (params['parentgids']) ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
                     add: results.leafs ? results.leafs.add : results.sql.add,
                     leafMap: results.leafs ? results.leafs.leafMap : null,
                     auRefMap: results.layerRefs,

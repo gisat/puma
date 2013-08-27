@@ -351,7 +351,7 @@ Ext.define('PumaMain.controller.Store', {
         
         Ext.create('Ext.data.Store', {
             model: 'Puma.model.Screenshot',
-            data: [{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'},{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'},{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'},{src:'http://www.mundo.cz/sites/default/files/images/korsika-pointe-de-la-parata.jpg'}],
+            data: [],
             storeId: 'screenshot'
         })
         
@@ -508,7 +508,7 @@ Ext.define('PumaMain.controller.Store', {
     
         Ext.create('Ext.data.Store',{
             storeId: 'location4init',
-            fields: ['name','locGid','location','dataset'],
+            fields: ['name','locGid','location','dataset','at'],
             filters: [function(rec) {
                 return false;
             }],
