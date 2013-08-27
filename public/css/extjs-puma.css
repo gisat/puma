@@ -1,19 +1,38 @@
 /* BUTTONS */
 .x-btn {
+	background-color     : #d6d3d0;
+	background-image     : -webkit-linear-gradient(center top, #d6d3d0 0%, #f6f2ee 100%);
 	background-image     : -moz-linear-gradient(center top, #d6d3d0 0%, #f6f2ee 100%);
+	background-image     : linear-gradient(center top, #d6d3d0 0%, #f6f2ee 100%);
 	border               : none;
-	border-radius        : 0;
 	padding              : 0;
-}
-.x-btn em {
 	
+	-webkit-border-radius       : 0;
+	   -moz-border-radius       : 0;
+	        border-radius       : 0;
 }
-.x-btn button {
+.x-btn:hover, .x-btn:focus {
+	background-color     : #aaa;
+	background-image     : -webkit-linear-gradient(center top, #aaa 0%, #eee 100%);
+	background-image     : -moz-linear-gradient(center top, #aaa 0%, #eee 100%);
+	background-image     : linear-gradient(center top, #aaa 0%, #eee 100%);
 }
+.x-btn em {}
+.x-btn button {}
 .x-btn .x-btn-inner {
 	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 	font-weight          : bold;
+}
+/* Red button */
+.x-btn.btn-confirm {
+	background           : #c92d42;
+}
+.x-btn.btn-confirm .x-btn-inner {
+	color                : #fff;
+}
+.x-btn.btn-confirm:hover, .x-btn.btn-confirm:focus {
+	background           : #ad2738;
 }
 
 /* FIELDS */

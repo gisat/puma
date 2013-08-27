@@ -97,6 +97,11 @@ em {
 		position         : relative;
 		top              : 1px;
 	}
+	#header .user .login {
+		display          : inline-block;
+		background       : url("../images/icons/user.png") no-repeat 10px 50%;
+		padding-left     : 35px;
+	}
 	
 	/* Content */
 	.map {
@@ -176,12 +181,6 @@ em {
 			padding          : 20px;
 			width            : 795px;
 		}
-		#content-intro .field .x-btn {
-			background: #c92d42;
-		}
-		#content-intro .field .x-btn .x-btn-inner {
-			color:#fff;
-		}
 		
 		/* Application */
 		#content-application {
@@ -222,74 +221,17 @@ em {
 		}
 		#toolbar .help a {
 			display          : inline-block;
-			background       : url("../images/help-icon.png") no-repeat 0 50%;
+			background       : url("../images/icons/help.png") no-repeat 0 50%;
 			padding-left     : 20px;
 		}
 		
-		/* Component specific */
-			.field.year {
-				padding-right        : 0;
-				margin-right         : 20px;
-			}
-			.field.year .widget {
-				width                : 135px;
-			}
-			.field.year .widget .x-field .x-form-item-body {
-				padding-left         : 10px;
-				color                : #807e87;
-				font-weight          : bold;
-			}
-			.field.year .widget .x-form-cb-checked .x-form-item-body {
-				color                : #fff;
-			}
-			.field.year .widget .x-field:first-child .x-form-item-body {
-				padding-left         : 0;
-			}
-			.field.level {
-				padding-right        : 2px;
-				margin-right         : 17px;
-			}
-			.field.level .label {
-				width                : 90px;
-			}
-			.field.level .widget {
-				width                : 90px;
-			}
-			.field.level .widget .button {
-				width                : 30px;
-				height               : 30px;
-				float                : left;
-				margin-left          : 5px;
-			}
-			.field.level .widget .button:first-child {
-				margin-left          : 0;
-			}
-			.field.level .widget .button .x-btn {
-				background           : #807e87;
-				border               : none;
-			}
-			.field.level .widget .button .x-btn-inner {
-				color                : #434254;
-				font-size            : 25px;
-				font-family          : "Courier new", monospace;
-			}
-			.field.help .widget {
-				width                : 70px;
-				line-height          : 30px;
-				text-align           : right;
-				font-weight          : bold;
-			}
-			.field.visualization-save .widget {
-				width                : 70px;
-			}
-			
 		/* Sidebar tools */
 		#sidebar-tools {
 			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
 			position     : absolute;
 			top          : 90px;
 			left         : 0;
-			width        : 380px;
+			width        : 250px;
 		}
 		#app-tools-actions {
 			height       : 30px;

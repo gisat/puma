@@ -5,7 +5,7 @@ Ext.define('PumaMain.view.MapTools', {
     initComponent: function() { 
         this.defaults = {
             height: 60,
-            width: 189
+            width: 125
         }
         this.layout = {
             type: 'table',
@@ -15,31 +15,36 @@ Ext.define('PumaMain.view.MapTools', {
             xtype: 'button',
             enableToggle: true,
             itemId: 'hoverbtn',
-            text: 'Hover'
+            text: 'Hover',
+            cls: 'btn-tool-hover'
         },{
             xtype: 'button',
             itemId: 'zoomselectedbtn',
-            
-            text: 'Zoom selected'
+            text: 'Zoom selected',
+            cls: 'btn-tool-zoom-selected'
         },{
             xtype: 'button',
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'measurelinebtn',
-            text: 'Measure line'
+            text: 'Measure line',
+            cls: 'btn-tool-measure-line'
         },{
             xtype: 'button',
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'measurepolygonbtn',
-            text: 'Measure polygon'
+            text: 'Measure polygon',
+            cls: 'btn-tool-measure-polygon'
         },{
             xtype: 'button',
             itemId: 'multiplemapsbtn',
-            text: 'Multiple maps'
+            text: 'Multiple maps',
+            cls: 'btn-tool-multiple-maps'
         },{
             xtype: 'button',
-            text: 'Save as image'
+            text: 'Save as image',
+            cls: 'btn-tool-save-image'
         }]
         
         this.callParent();
