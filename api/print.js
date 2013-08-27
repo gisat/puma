@@ -22,7 +22,7 @@ function exporter(params, req, res, callback) {
                 res.data = data;
                 res.contType = 'image/png';
                 res.encType = 'utf8';
-                
+                res.set('Cache-Control','max-age=60000000')
                 callback()
                 fs.unlink(outFile);
             })

@@ -1,7 +1,7 @@
 Ext.define('Puma.model.Screenshot', {
     extend: 'Ext.data.Model',
     fields: [
-    'src'
+    'src','large','visible'
     ],
     proxy: 'memory'
 });

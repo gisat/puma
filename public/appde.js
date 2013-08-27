@@ -12,7 +12,7 @@ Ext.Loader.setPath('Puma', '_common');
 Ext.application({
     name: 'PumaMain',
     appFolder: '_main',
-    controllers: ['Render','Store','Map','LocationTheme','Area','Layers'],
+    controllers: ['Render','Store','Map','LocationTheme','Area','Layers','Screenshot'],
     enableQuickTips: false,
     requires: ['Puma.patch.Main'],
     launch: function() {

@@ -2,12 +2,12 @@
 .screenshot {
     margin: 5px;  
     position: relative; 
-    float: left
+    display: inline-block;
 }
-.screenshot, .screenshot div {
+/*.screenshot, .screenshot div {
     width: 175px; 
     height: 120px;
-}
+}*/
 .screenshot .screenshoticon {
     display: none;
     position:absolute;
