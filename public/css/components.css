@@ -53,6 +53,9 @@
 .field.visualization-save .widget {
 	width                : 70px;
 }
+.field.share, .field.share > .widget {
+	display              : block;
+}
 .x-btn.btn-share button .x-btn-icon {
 	left                 : 10px;
 }
