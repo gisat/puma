@@ -40,6 +40,16 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		}
 	},
 	
+	activateMapSplit: function() {
+		$("#map-holder").addClass("split");
+		this.resizeMap();
+	},
+	
+	deactivateMapSplit: function() {
+		$("#map-holder").removeClass("split");
+		this.resizeMap();
+	},
+	
 	_onSidebarToggleClick: function() {
 		$("#sidebar-reports").toggleClass("hidden");
 		this.resizeMap();

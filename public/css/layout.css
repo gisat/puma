@@ -35,6 +35,22 @@ em {
 		padding-top      : 130px;
 	}
 	
+	/* Maps */
+	#map-holder .map {
+		width            : 100%;
+		height           : 100%;
+		overflow         : hidden;
+	}
+	#app-map2 {
+		display          : none;
+	}
+	#map-holder.split .map {
+		width            : 50%;
+	}
+	#map-holder.split #app-map2 {
+		display          : block;
+	}
+	
 	/* Header */
 	#header {
 		height           : 40px;
