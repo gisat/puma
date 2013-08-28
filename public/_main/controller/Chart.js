@@ -250,12 +250,12 @@ Ext.define('PumaMain.controller.Chart', {
         var store = Ext.StoreMgr.lookup('visualization');
         var vis = Config.cfg ? Config.cfg : store.getById(visId);
 
-        if (!vis) {
-            // povolit konfiguraci
-            return;
+        var cfg = Config.cfg ? Config.cfg.chartCfg : null;
+        if (vis) {
+            cfg = cfg || vis.get('cfg');
         }
+        cfg = cfg || [];
 
-        var cfg = Config.cfg ? Config.cfg.chartCfg : (vis.get('cfg') || []);
         var container = Ext.ComponentQuery.query('chartbar')[0];
         var me = this;
         container.items.each(function(item) {
@@ -635,14 +635,14 @@ Ext.define('PumaMain.controller.Chart', {
     onUrlCallback: function(id, isPrint) {
         if (true) {
             var url = window.location.origin + '/public/index3.html?id=' + id;
-            Ext.widget('window', {
-                items: [{
-                        xtype: 'textfield',
-                        visible: true,
-                        value: url,
-                        editable: false
-                    }]
-            }).show();
+//            Ext.widget('window', {
+//                items: [{
+//                        xtype: 'textfield',
+//                        visible: true,
+//                        value: url,
+//                        editable: false
+//                    }]
+//            }).show();
             
         }
         if (isPrint) {

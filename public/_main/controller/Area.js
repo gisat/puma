@@ -37,6 +37,16 @@ Ext.define('PumaMain.controller.Area', {
         this.oldSliderVal = 0;
     },
     
+    getLocationObj: function() {
+        var locObjId =  Ext.ComponentQuery.query('#sellocation')[0].getValue();
+        var rec = Ext.StoreMgr.lookup('location4init').getById(locObjId);
+        return {
+            location: rec.get('location'),
+            locGid: rec.get('locGid'),
+            at: rec.get('at')
+        }
+    },
+    
     onShowMoreDetailed: function() {
         var toExpand = {};
         var needQuery = false;
@@ -67,7 +77,9 @@ Ext.define('PumaMain.controller.Area', {
                 toExpand[loc][at].push(gid);
                 needQuery = true;
             }
+            node.suppress = true;
             node.expand();
+            node.suppress = false
             
         });
         tree.resumeEvents();
@@ -109,7 +121,9 @@ Ext.define('PumaMain.controller.Area', {
             nodesToCollapse.push(node.parentNode);
         });
         for (var i=0;i<nodesToCollapse.length;i++) {
+            nodesToCollapse[i].suppress = true;
             nodesToCollapse[i].collapse();
+            nodesToCollapse[i].suppress = false
         }
         tree.resumeEvents();
         if (nodesToCollapse.length) {
@@ -143,8 +157,9 @@ Ext.define('PumaMain.controller.Area', {
             
     zoomToLocation: function() {
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
-        var loc = this.location;
-        var locGid = this.locGid;
+        var locObj = this.getLocationObj();
+        var loc = locObj.location;
+        var locGid = locObj.locGid;
         var areas = [];
         for (var i=0;i<areaRoot.childNodes.length;i++) {
             var node = areaRoot.childNodes[i];
@@ -262,7 +277,7 @@ Ext.define('PumaMain.controller.Area', {
     },
         
     onNodeExpanded: function(node) {
-        if (!node.isLoaded() || !node.childNodes.length) {
+        if (!node.isLoaded() || !node.childNodes.length || node.suppress) {
             return;
         }
         this.scanTree();
