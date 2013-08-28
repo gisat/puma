@@ -1,0 +1,67 @@
+.field.year {
+	padding-right        : 0;
+	margin-right         : 20px;
+}
+.field.year .widget {
+	width                : 135px;
+}
+.field.year .widget .x-field .x-form-item-body {
+	padding-left         : 10px;
+	color                : #807e87;
+	font-weight          : bold;
+}
+.field.year .widget .x-form-cb-checked .x-form-item-body {
+	color                : #fff;
+}
+.field.year .widget .x-field:first-child .x-form-item-body {
+	padding-left         : 0;
+}
+.field.level {
+	padding-right        : 2px;
+	margin-right         : 17px;
+}
+.field.level .label {
+	width                : 90px;
+}
+.field.level .widget {
+	width                : 90px;
+}
+.field.level .widget .button {
+	width                : 30px;
+	height               : 30px;
+	float                : left;
+	margin-left          : 5px;
+}
+.field.level .widget .button:first-child {
+	margin-left          : 0;
+}
+.x-btn.btn-level {
+	background           : #807e87;
+	border               : none;
+}
+.x-btn.btn-level .x-btn-inner {
+	color                : #434254;
+	font-size            : 25px;
+	font-family          : "Courier new", monospace;
+}
+.field.help .widget {
+	width                : 70px;
+	line-height          : 30px;
+	text-align           : right;
+	font-weight          : bold;
+}
+.field.visualization-save .widget {
+	width                : 70px;
+}
+.x-btn.btn-share button .x-btn-icon {
+	left                 : 10px;
+}
+
+/* Sidebar tools */
+.x-btn.btn-map-select button .x-btn-icon {
+	left                 : 8px;
+}
+.x-btn.btn-snapshot button .x-btn-icon {
+	left                 : 14px;
+	width                : 20px;
+}

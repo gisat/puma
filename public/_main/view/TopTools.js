@@ -3,7 +3,7 @@ Ext.define('PumaMain.view.TopTools', {
     alias: 'widget.toptoolspanel',
     height: '100%',
     // to be removed
-    width: 380,
+    width: '100%',
     initComponent: function() {
         this.layout = {
             type: 'hbox'
@@ -17,11 +17,15 @@ Ext.define('PumaMain.view.TopTools', {
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'selectinmapbtn',
-            text: 'Select in map'
+            text: 'Select in map',
+            icon: 'images/icons/map-select.png',
+            cls: 'btn-map-select'
         },{
             xtype: 'button',
             flex: 1,
-            text: 'Snapshot'
+            text: 'Snapshot',
+            icon: 'images/icons/snapshot.png',
+            cls: 'btn-snapshot'
         }]
         
         this.callParent();

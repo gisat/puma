@@ -158,8 +158,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
         this.themeChanged = true;
         
         var themeCombo = null;
-        if (cnt.switch) {
-            Ext.getBody().removeCls('intro').addCls('application');
+        if (cnt.initial) {
+            this.getController('DomManipulation').renderApp();
             this.getController('Render').renderApp();
             themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
             var datasetVal = Ext.ComponentQuery.query('#initialdataset')[0].getValue();

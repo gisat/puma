@@ -775,6 +775,8 @@ Ext.define('PumaMain.controller.Map', {
     
     onResize: function(cmp) {
         if (cmp.map) {
+            cmp.setWidth(cmp.container.getWidth());
+            cmp.setHeight(cmp.container.getHeight());
             cmp.map.updateSize();
             if (!cmp.initialZoom) {
                 console.log('resized')
