@@ -147,7 +147,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     onConfirm: function() {
         var val = Ext.ComponentQuery.query('#initialtheme')[0].getValue();
-        this.onThemeChange({switch:true},val)
+        this.onThemeChange({switching:true},val)
     },
     
     onThemeChange: function(cnt,val) {
@@ -158,7 +158,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         this.themeChanged = true;
         
         var themeCombo = null;
-        if (cnt.switch) {
+        if (cnt.switching) {
             this.getController('DomManipulation').renderApp();
             this.getController('Render').renderApp();
             themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
@@ -672,6 +672,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (conf.areas || ((conf.add || conf.remove) && changed)) {
             this.getController('Area').scanTree();
         }
+        if (conf.attrSets) {
+            this.checkAttrSets(conf.attrSets)
+        }
         this.getController('Chart').reconfigureAll();
         this.getController('Layers').reconfigureAll();
         if (response.request.options.visChanged) {
@@ -696,7 +699,36 @@ Ext.define('PumaMain.controller.LocationTheme', {
 //        this.reinitializeTreesAreas(conf.areaTrees,btn)
     },
    
+    
+    checkAttrSets: function(attrSets) {
+        var store = Ext.StoreMgr.lookup('attributes2choose');
+        var attrStore = Ext.StoreMgr.lookup('attributeset');
+        var existingAttrSets = store.collect('as');
+        var asToAdd = Ext.Array.difference(attrSets,existingAttrSets);
+        var asToRemove = Ext.Array.difference(existingAttrSets,attrSets);
+        var recsToRemove = store.query('as',asToRemove);
+        store.remove(recsToRemove);
+        var recsToAdd = [];
+        for (var i=0;i<asToAdd.length;i++) {
+            var as = asToAdd[i];
+            var attrs = attrStore.getById(as).get('attributes');
+            for (var j=0;j<attrs.length;j++) {
+                var attr = attrs[i];
+                var rec = Ext.create('Puma.model.MappedChartAttribute',{
+                    as: as,
+                    attr: attr
+                })
+                recsToAdd.push(rec)
+            }
+        }
+        store.add(recsToAdd);
+        var asStoreToFilter = Ext.StoreMgr.lookup('attributeset2choose');
+        asStoreToFilter.clearFilter(true);
+        asStoreToFilter.filter([function(rec){
+            return Ext.Array.contains(attrSets,rec.get('_id'));
+        }])
         
+    },
         
     checkUserPolygons: function(years,analysis,callback) {
         Ext.Ajax.request({
