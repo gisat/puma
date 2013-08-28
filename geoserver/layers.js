@@ -67,7 +67,7 @@ function checkUniqueId(layerRef,callback) {
     var sql = 'ALTER TABLE '+from+' DROP CONSTRAINT IF EXISTS '+fromWithoutSchema+'_unique;'
     sql += 'ALTER TABLE '+from+' ADD CONSTRAINT '+fromWithoutSchema+'_unique UNIQUE("'+layerRef.fidColumn+'");'
     var client = conn.getPgDb();
-    console.log(sql)
+    //console.log(sql)
     client.query(sql,function(err) {
         if (err) return callback(new Error('IDs not unique'));
         
@@ -78,7 +78,7 @@ function checkUniqueId(layerRef,callback) {
 var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdate,callback) {
     var layerName =' views.layer_'+areaLayerRef['_id'];
     var from = areaLayerRef.layer.split(':')[0] == 'geonode' ? areaLayerRef.layer.split(':')[1] : (areaLayerRef.layer.split(':')[0]+'.'+areaLayerRef.layer.split(':')[1])
-    console.log(isBase)
+    //console.log(isBase)
     // priprava view
     var sql = 'BEGIN; DROP VIEW IF EXISTS '+layerName+'; ';
     if (isBase && !isUpdate) {
@@ -137,6 +137,8 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
     }
 
     sql += '; COMMIT;'; 
+    //console.log(sql);
+    
     var client = conn.getPgDb();
     client.query(sql,function(err,results) {
         if (err) return callback(err);

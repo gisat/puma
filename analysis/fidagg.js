@@ -9,7 +9,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
     var year = performedAnalysisObj.year;
     var featureLayerTemplate = performedAnalysisObj.featureLayerTemplates[0];
     var attrSets = getAttrSets(analysisObj);
-
+    
 
 
     var layerRefMap = {};
@@ -33,7 +33,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
                         return callback(err);
                     if (!resls.length) {
                         
-                        return callback(new Error('missinglayerref'))
+                        return callback(new Error('missinglayerrefbase'))
                     }
                     if (flTemplates.indexOf(flTemplate)!=0 && !resls[0].parentColumn) {
                         return callback(new Error('missingparent'))
@@ -54,7 +54,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
                         if (err)
                             return callback(err);
                         if (!resls.length) {
-                            return callback(new Error('missinglayerref'))
+                            return callback(new Error('missinglayerrefattrset'))
                         }
                         return mapCallback(null, resls[0]);
                     });

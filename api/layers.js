@@ -314,7 +314,7 @@ function getLayerRefTable(params,req,res,callback) {
         attributeSets: ['dataset','theme',function(asyncCallback,results) {
             crud.read('attributeset',{topic:{$in:results.theme.topics}},{},function(err,resl) {
                 if (err) return callback(err);
-                console.log(resl)
+                //console.log(resl)
                 var attrSetMap = {};
                 var flMap = {'-1':[]};
                 for (var i=0;i<resl.length;i++) {

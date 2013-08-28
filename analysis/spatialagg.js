@@ -150,10 +150,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                             text = results.geomType.dm > 0 ? 'SUM(&ATTR& * &AREA& / &AREA2&)' : 'SUM(&ATTR&)';
                             break;
                         case 'avgattrarea':
-                            text = results.geomType.dm > 0 ? 'AVG(&ATTR& * &AREA&) / SUM(&AREA&)' : 'AVG(&ATTR&)';
+                            text = results.geomType.dm > 0 ? 'SUM(&ATTR& * &AREA&) / SUM(&AREA&)' : 'AVG(&ATTR&)';
                             break;
                         case 'avgattrattr':
-                            text = results.geomType.dm > 0 ? 'AVG(&ATTR& * &ATTR2& * &AREA& / &AREA2&) / SUM(&ATTR2& * &AREA& / &AREA2&)' : 'AVG(&ATTR& * &ATTR2&) / SUM(&ATTR2&)';
+                            text = results.geomType.dm > 0 ? 'SUM(&ATTR& * &ATTR2& * &AREA& / &AREA2&) / SUM(&ATTR2& * &AREA& / &AREA2&)' : 'SUM(&ATTR& * &ATTR2&) / SUM(&ATTR2&)';
                             break;
                     }
                     var stText = results.geomType.dm > 1 ? 'ST_Area' : 'ST_Length';
@@ -202,6 +202,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                     var layerName = item != -1 ? 'views.layer_'+layerRef : performedAnalysisObj.sourceTable;
                     var currentSql = sql.replace('$INDEX$', item);
                     currentSql = currentSql.replace('$LAYERREF$', layerName);
+                    console.log(currentSql)
                     client.query(currentSql, function(err, results) {
                         if (err)
                             return callback(err);

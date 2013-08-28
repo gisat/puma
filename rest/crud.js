@@ -23,7 +23,6 @@ function ensureCollection(req,res,next) {
 
 function create(collName,obj,params,callback) {
     if (typeof(params) === 'function') callback = params;
-    console.log(obj)
     var opts = {
         checkRefs: function(asyncCallback) {
             checkRefs(obj,collName,function(err) {
@@ -86,7 +85,6 @@ function update(collName, obj, params, callback,bypassHooks) {
     }
     var opts = {
         checkRefs: function(asyncCallback) {
-            console.log(obj);
             checkRefs(obj,collName,function(err) {
                 if (err) return callback(err);
                 asyncCallback(null);
@@ -97,13 +95,10 @@ function update(collName, obj, params, callback,bypassHooks) {
             obj['changed'] = new Date();
             obj['changedBy'] = params.userId;
             
-            console.log('updating')
             collection.update(filter, {'$set': obj}, {}, function(err) {
-                console.log('updated')
                 if (err)
                     return callback(err);
                 collection.findOne(filter, function(err, result) {
-                    console.log('one found')
                     if (err)
                         return callback(err);
                     asyncCallback(null, result)
@@ -140,12 +135,10 @@ function remove(collName,filter,params,callback) {
         remove: ['checkRef',function(asyncCallback) {
             var collection = db.collection(collName);
             
-            console.log(filter)
             collection.findAndRemove(filter, [], function(err, result) {
                 if (err)
                     return callback(err);
                 
-                console.log(result._id)
                 return asyncCallback(null, result);
             });
         }],

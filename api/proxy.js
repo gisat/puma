@@ -220,8 +220,8 @@ function saveSld(params, req, res, callback) {
             crud.read('layerref',query,function(err,resls) {
                 if (err) return callback(err);
                 var layerName = resls[0] ? resls[0]._id : ('user_'+req.userId+'_loc_'+params['location']+'_y_'+year);
-                console.log(layerName)
-                console.log(params['location'])
+                //console.log(layerName)
+                //console.log(params['location'])
                 return asyncCallback(null,layerName);
             })
         },
@@ -316,7 +316,7 @@ function saveSld(params, req, res, callback) {
                     }
                 }
             }
-            console.log(sld)
+            //console.log(sld)
             sldMap[id] = {
                 sld: sld,
                 legendSld: legendSld

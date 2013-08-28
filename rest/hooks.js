@@ -41,7 +41,7 @@ function createLayerRef(result, callback, params) {
                     })
                     return;
                 }
-                console.log(baseLayerRef)
+                //console.log(baseLayerRef)
                 asyncCallback(null,baseLayerRef);
             })
         },

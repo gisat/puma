@@ -46,7 +46,7 @@ function getLocationConf(params, req, res, callback) {
                     locToQuery.push({location: locs[i]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId})    
                 }
             }
-            
+            console.log(locToQuery);
             var client = conn.getPgDb();
             async.forEach(locToQuery, function(item, eachCallback) {
                 var datasetId = item.dataset;
