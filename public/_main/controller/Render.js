@@ -123,27 +123,16 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('location4init'),
             itemId: 'initiallocation'
         })
-        Ext.widget('container',{
+        Ext.widget('pumacombo',{
             renderTo: 'app-intro-theme',
-            layout: {
-                type: 'hbox'
-            },
-            items: [{
-                xtype: 'pumacombo',
-                initial: true,
-                //hidden: true,
-                itemId: 'initialtheme',
-                store: Ext.StoreMgr.lookup('theme4sel')
-            },{
-                xtype: 'button',
-                text: 'Confirm',
-                itemId: 'initialconfirm'
-            }]
-                
-            
+            initial: true,
+            //hidden: true,
+            itemId: 'initialtheme',
+            store: Ext.StoreMgr.lookup('theme4sel')
         })
         Ext.widget('button',{
             renderTo: 'app-intro-confirm',
+            itemId: 'initialconfirm',
             text: 'Confirm',
             width: '100%',
             height: '100%',
