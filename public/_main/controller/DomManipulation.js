@@ -25,6 +25,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		
 		if ($("body").hasClass("application") && sl > 0) {
 			w = sl;
+			h -= $("#toolbar").outerHeight(true);
 		}
 		
 		$("#map-holder").css({width : w, height : h});
