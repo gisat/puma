@@ -44,9 +44,6 @@ Ext.define('PumaMain.controller.Chart', {
             'chartpanel tool[type=close]': {
                 click: this.onChartRemove
             },
-            'chartpanel tool[type=gear]': {
-                click: this.onReconfigureClick
-            },
             'chartpanel tool[type=help]': {
                 click: this.onToggleLegend
             },
@@ -61,9 +58,6 @@ Ext.define('PumaMain.controller.Chart', {
             },
             'chartpanel tool[type=save]': {
                 click: this.onUrlClick
-            },
-            'chartbar panel[cfgType=add]': {
-                beforeexpand: this.onChartBtnClick
             },
             '#areapager' : {
                 beforechange: this.onPageChange
@@ -200,7 +194,7 @@ Ext.define('PumaMain.controller.Chart', {
             cfg.invisibleYears = [];
 
         }
-        if (cfg.type == 'grid' && chart.chart) {
+        if (cfg.type == 'grid' && chart.chart && chart.chart.store) {
             cfg.activeFilters = [];
             cfg.activeSorters = [];
             chart.chart.store.sorters.each(function(sorter) {
@@ -360,13 +354,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
         return cfg;
     },
-    onReconfigureClick: function(btn) {
-        var chart = btn.up('panel').chart;
-        var cfg = this.getChartWindowConfig(chart, true, 'chartconfigpanel');
-        var window = Ext.widget('window', cfg);
-        window.down('chartconfigpanel').getForm().setValues(chart.cfg);
-        window.show();
-    },
+    
     reconfigureChart: function(chartCmp, forExport, addingNew) {
         var cfg = chartCmp.cfg;
         var queryCfg = this.gatherChartCfg(chartCmp);
@@ -400,7 +388,10 @@ Ext.define('PumaMain.controller.Chart', {
         if (forExport) {
             this.handleExport(chartCmp,params)
         }
-
+        if (queryCfg['start']<0) {
+            this.onChartReceived({cmp:chartCmp});
+            return;
+        }
         Ext.Ajax.request({
             url: Config.url + '/api/chart/getChart',
             params: params,
@@ -510,8 +501,8 @@ Ext.define('PumaMain.controller.Chart', {
     },
     
     onChartReceived: function(response) {
-        var cmp = response.request.options.cmp;
-        var singlePage = response.request.options.singlePage
+        var cmp = response.cmp || response.request.options.cmp;
+        
         if (cmp.chart) {
             
             try {
@@ -520,7 +511,11 @@ Ext.define('PumaMain.controller.Chart', {
             catch (e) {
             }
         }
-
+        // nebyla k dispozici zadna uzemi
+        if (response.cmp) {
+            return;
+        }
+        var singlePage = response.request.options.singlePage
         var legendBtn = singlePage ? Ext.widget('button') : Ext.ComponentQuery.query('#legendbtn', cmp.ownerCt)[0];
         var data = response.responseText ? JSON.parse(response.responseText).data : null;
         if (cmp.queryCfg.type == 'filter') {
@@ -1117,24 +1112,6 @@ Ext.define('PumaMain.controller.Chart', {
         var grid = btn.up('grid');
         var sel = grid.getSelectionModel().getSelection();
         grid.store.remove(sel);
-    },
-    onChartBtnClick: function(parent) {
-        var type = parent.ownerCt.itemId == 'layerpanel' ? 'choroplethpanel' : 'chartconfigpanel';
-        var window = Ext.WindowManager.get('new' + type);
-        if (window) {
-            var store = window.down(type).areaTemplateStore;
-            var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
-            var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
-            var areaTemplates = dataset.get('featureLayers');
-            store.clearFilter(true);
-            store.filter([function(rec) {
-                    return Ext.Array.contains(areaTemplates, rec.get('_id'));
-                }])
-        }
-        var cfg = this.getChartWindowConfig(null, false, type)
-        window = window || Ext.widget('window', cfg)
-        window.show();
-        return false;
     }
 });
 

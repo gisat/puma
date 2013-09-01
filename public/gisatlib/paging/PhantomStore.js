@@ -23,6 +23,9 @@ Ext.define('Gisatlib.paging.PhantomStore',{
         if (count<=(this.currentPage-1)*this.pageSize) {
             this.currentPage = Math.ceil(count/this.pageSize);
         }
+        if (count && this.currentPage < 1) {
+            this.currentPage = 1;
+        }
         this.proxy.data = data;
         this.load();
     }
