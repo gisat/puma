@@ -145,19 +145,23 @@ function getThemeYearConf(params, req, res, callback) {
                     return asyncCallback(null)
                 }
                 var requiredTopics = [];
+                var allTopics = [];
                 var topicMap = results.topicMap;
                 for (var topicId in topicMap) {
                     var topic = topicMap[topicId];
+                    allTopics.push(topic._id);
                     if (topic.requiresFullRef) {
                         requiredTopics.push(topic._id);
                     }
                 }
-                crud.read('attributeset', {topic: {$in: requiredTopics}}, function(err, resls) {
+                // zatim se requiredtopicneresi, nacita se info o vsech attributsetech pro dane tema
+                crud.read('attributeset', {topic: {$in: allTopics}}, function(err, resls) {
                     if (err)
                         return callback(err);
                     var ids = [];
                     for (var i = 0; i < resls.length; i++) {
                         var attrSet = resls[i];
+                        
                         if (!attrSet.featureLayers || !attrSet.featureLayers.length) {
                             ids.push(attrSet._id);
                         }
@@ -410,8 +414,8 @@ function getThemeYearConf(params, req, res, callback) {
                             }
                             else {
                                 console.log(leafMap)
-                                leafMap[item.loc] = leafMap[item.loc];
-                                leafMap[item.loc][item.at] = leafMap[item.loc][item.at];
+                                leafMap[item.loc] = leafMap[item.loc] || {};
+                                leafMap[item.loc][item.at] = leafMap[item.loc][item.at] || {};
                                 leafMap[item.loc][item.at][area] = true;
                             }
                         }
@@ -589,6 +593,7 @@ function getThemeYearConf(params, req, res, callback) {
                     leafMap: results.leafs ? results.leafs.leafMap : null,
                     auRefMap: results.layerRefs,
                     remove: results.sql.remove,
+                    attrSets: results.requiredAttrSets,
                     areas: results.leafs ? results.leafs.areas : results.sql.areas,
                     layerRefMap: results.layers ? results.layers.layerRefMap : null,
                     layerNodes: results.layers ? results.layers.layerNodes : null
