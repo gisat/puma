@@ -519,7 +519,7 @@ Ext.define('PumaMain.controller.Chart', {
         var legendBtn = singlePage ? Ext.widget('button') : Ext.ComponentQuery.query('#legendbtn', cmp.ownerCt)[0];
         var data = response.responseText ? JSON.parse(response.responseText).data : null;
         if (cmp.queryCfg.type == 'filter') {
-            this.onFilterReceived(data, cmp)
+            //this.onFilterReceived(data, cmp)
             return;
         }
         if (!data) {
