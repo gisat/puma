@@ -1,12 +1,12 @@
 Ext.define('Ext.ux.CheckColumn', {
     extend: 'Ext.grid.column.Column',
-    alias: 'widget.checkcolumn',
+    alias: 'widget.checkcolumnwithheader',
 
     disableColumn: false,
     disableFunction: null,
     disabledColumnDataIndex: null,
     columnHeaderCheckbox: false,
-
+    autoCommit: true,
     constructor: function(config) {
 
         var me = this;
@@ -101,6 +101,9 @@ Ext.define('Ext.ux.CheckColumn', {
                 if(this.fireEvent('beforecheckchange', this, recordIndex, checked, record))
                 {
                     record.set(dataIndex, checked);
+                    if (this.autoCommit) {
+                        record.commit();
+                    }
                     this.fireEvent('checkchange', this, recordIndex, checked, record);
                 }
             }

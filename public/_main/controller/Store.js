@@ -242,7 +242,24 @@ Ext.define('PumaMain.controller.Store', {
             }],
             model: 'Puma.model.AreaTemplate'
         })
-        
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'layertemplate2choose',
+            filters: [function(rec) {
+                return false;
+            }],
+            model: 'Puma.model.AreaTemplate'
+        })
+    
+    
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'attributeset2choose',
+            filters: [function(rec) {
+                return false;
+            }],
+            model: 'Puma.model.AttributeSet'
+        })
         
         
         // need advanced logic
@@ -279,6 +296,9 @@ Ext.define('PumaMain.controller.Store', {
             }],
             model: 'Puma.model.Attribute'
         })
+    
+    
+    
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'attribute4chart4norm',
@@ -301,6 +321,15 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Gisatlib.paging.PhantomStore',{
             storeId: 'paging'
         })
+    
+    
+        Ext.create('Ext.data.Store', {
+            model: 'Puma.model.MappedChartAttribute',
+            data: [],
+            storeId: 'attributes2choose'
+        })
+        
+        
         Ext.create('Ext.data.TreeStore', {
             fields: ['text'],
             model: 'Puma.model.MapLayer',
@@ -316,12 +345,7 @@ Ext.define('PumaMain.controller.Store', {
                     name: 'Choropleth',
                     type: 'choroplethgroup',
                     expanded: true,
-                    children: [{
-                        name: 'Add choropleth',
-                        type: 'addchoropleth',
-                        leaf: true,
-                        checked: null
-                    }],
+                    children: [],
                     checked: null
                 },{
                     name: 'Thematic',
@@ -398,13 +422,15 @@ Ext.define('PumaMain.controller.Store', {
             ,{
                 name: 'Extent outline',
                 type: 'extentoutline'
-            },{
-                name: 'Just map',
-                type: 'justmap'
-            },{
-                name: 'Filter',
-                type: 'filter'
-            }]
+            }
+//            {
+//                name: 'Just map',
+//                type: 'justmap'
+//            },{
+//                name: 'Filter',
+//                type: 'filter'
+//            }
+        ]
         })
     
         Ext.create('Ext.data.Store',{
@@ -472,10 +498,9 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Ext.data.Store',{
             storeId: 'normalization4chart',
             fields: ['name','type'],
-            data: [{
-                name: 'None',
-                type: 'none'
-            },{
+            data: [
+            
+            {
                 name: 'Area',
                 type: 'area'
             },{
@@ -484,13 +509,15 @@ Ext.define('PumaMain.controller.Store', {
             },{
                 name: 'Attribute set',
                 type: 'attributeset'
-            },{
-                name: 'Tree',
-                type: 'toptree'
-            },{
-                name: 'All',
-                type: 'topall'
-            },{
+            },
+//            {
+//                name: 'Tree',
+//                type: 'toptree'
+//            },{
+//                name: 'All',
+//                type: 'topall'
+//            },
+            {
                 name: 'Select',
                 type: 'select'
             },
