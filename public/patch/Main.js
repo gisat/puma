@@ -8,6 +8,7 @@ Ext.define('Puma.patch.Main',{
         ,'Puma.patch.data.proxy.Server'
         ,'Puma.patch.dd.DropZone'
         ,'Puma.patch.picker.Color'
+        ,'Puma.patch.Component'
     ]
 })
 
