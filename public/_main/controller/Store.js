@@ -7,6 +7,7 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.Attribute',
         'Puma.model.AreaTemplate',
         'Puma.model.Dataset',
+        'Puma.model.DataView',
         'Puma.model.Topic',
         'Puma.model.Symbology',
         'Puma.model.LayerRef',
@@ -133,6 +134,15 @@ Ext.define('PumaMain.controller.Store', {
             model: 'Puma.model.Topic'
         })
     
+        Ext.create('Ext.data.Store',{
+            storeId: 'dataview',
+            autoLoad: true,
+            filters: [function(rec) {
+                    return rec.get('name');
+            }],
+            model: 'Puma.model.DataView'
+        })
+    
         
     },
         
@@ -219,6 +229,21 @@ Ext.define('PumaMain.controller.Store', {
             storeId: 'visualization4sel',
             filters: [function(rec) {
                     return false;
+            }],
+            sorters: [{
+                sorterFn: function(o1,o2) {
+                    var activeThemeCombo = Ext.ComponentQuery.query('#seltheme')[0];
+                    var activeThemeId = activeThemeCombo ? activeThemeCombo.getValue() : null;
+                    var theme = activeThemeId ? Ext.StoreMgr.lookup('theme').getById(activeThemeId) : null;
+                    var order = theme ? theme.get('visOrder') : null;
+                    if (!order) return o1.get('name')>o2.get('name');
+                    var idx1 = Ext.Array.indexOf(order,o1.get('_id'));
+                    var idx2 = Ext.Array.indexOf(order,o2.get('_id'));
+                    if (idx1<0) return true;
+                    if (idx2<0) return false;
+                    return idx1>idx2;
+                    
+                }
             }],
             model: 'Puma.model.Visualization'
         })

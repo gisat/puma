@@ -37,7 +37,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-visualization-save',
             text: 'Save as',
-            itemId: 'testConf',
+            itemId: 'savevisualization',
             width: '100%',
             height: '100%',
             cls: 'btn-visualization-save'
@@ -45,6 +45,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-share',
             text: 'Share data view',
+            itemId: 'sharedataview',
             width: '100%',
             height: '100%',
             icon: 'images/icons/share.png',

@@ -78,7 +78,7 @@ var refs = {
     }
 }
 
-var collections = ['chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
+var collections = ['dataview','chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
 
 module.exports = {
     ensureIds: ensureIds,

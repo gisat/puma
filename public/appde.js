@@ -12,10 +12,11 @@ Ext.Loader.setPath('Puma', '_common');
 Ext.application({
     name: 'PumaMain',
     appFolder: '_main',
-    controllers: ['DomManipulation','Render','Store','Map','LocationTheme','Area','Layers','Screenshot','AttributeConfig','Help','Filter'],
+    controllers: ['DomManipulation','Render','Store','Map','LocationTheme','Area','Layers','Screenshot','AttributeConfig','Help','Filter','ViewMng'],
     enableQuickTips: false,
     requires: ['Puma.patch.Main'],
     launch: function() {
+        this.getController('Puma.controller.Login');
         this.getController('Render').renderIntro();
     }
 });

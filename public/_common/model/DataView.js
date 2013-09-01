@@ -1,13 +1,16 @@
-Ext.define('Puma.model.Theme', {
+Ext.define('Puma.model.DataView', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','active','years','dataset','analysis','topics','minFeatureLayer','minAttributeSets','visOrder'
+    '_id','name'
     ],
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Config.url+'/rest/theme',
+        url : Config.url+'/rest/dataview',
+        extraParams: {
+            justMine: true
+        },
         reader: {
             type: 'json',
             root: 'data'
