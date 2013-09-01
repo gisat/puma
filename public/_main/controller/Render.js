@@ -37,6 +37,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-visualization-save',
             text: 'Save as',
+            itemId: 'testConf',
             width: '100%',
             height: '100%',
             cls: 'btn-visualization-save'
@@ -60,21 +61,33 @@ Ext.define('PumaMain.controller.Render', {
 //            width: '100%'
 //        })
         
-        Ext.widget('container',{
-            renderTo: 'app-toolbar-level',
-            layout: {
-                type: 'hbox'
-            },
-            items: [{
-                xtype: 'button',
-                itemId: 'areamoredetails',
-                text: '+'
-                
-            },{
-                xtype: 'button',
-                itemId: 'arealessdetails',
-                text: '-'
-            }]
+     
+        
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-level-more',
+            itemId: 'areamoredetails',
+            text: '+'
+        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-level-less',
+            itemId: 'arealessdetails',
+            text: '-'
+        })
+    
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-manage',
+            itemId: 'managedataview',
+            text: 'M'
+        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-visualization-manage',
+            itemId: 'managevisualization',
+            text: 'VM'
+        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-save',
+            itemId: 'savedataview',
+            text: 'S'
         })
         
         Ext.widget('toptoolspanel',{
