@@ -11,6 +11,9 @@ function getData(params, callback) {
     var areas = JSON.parse(params['areas']);
     var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
     var attrs = JSON.parse(params['attrs']);
+    if (attrs[0].normType=='select') {
+        params['normalization'] = 'select'
+    }
     var years = JSON.parse(params['years']);
     var normalization = params['normalization'] || null;
     var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) : null;
@@ -61,7 +64,9 @@ function getData(params, callback) {
 
     var topAll = params['aggregate'] == 'topall' || params['normalization'] == 'topall' || params['topall'];
     var topLoc = params['aggregate'] == 'toptree' || params['normalization'] == 'toptree' || params['toptree'];
-    var aggSelect =  params['aggregate'] == 'select' || params['normalization'] == 'select'
+    var aggSelect =  params['aggregate'] == 'select' || params['normalization'] == 'select';
+    
+    console.log(aggSelect)
     var layerRefMap = {};
 
     var select = "SELECT "
@@ -348,9 +353,6 @@ function getData(params, callback) {
                                 catch (e) {
                                 }
                                 if (!layerRef && locationId!=-1) {
-                                    console.log(locationId)
-                                    console.log(areaId)
-                                    console.log(year)
                                     return callback(new Error('strange'))
                                 }
                                 //var layerName = areaId != -1 ? 'layer_' + layerRef['_id'] : ('layer_user_' + params['userId'] + '_loc_' + locationId + '_y_' + year);
@@ -400,7 +402,6 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);

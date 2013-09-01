@@ -200,11 +200,11 @@ Ext.define('PumaMain.controller.Chart', {
             chart.chart.store.sorters.each(function(sorter) {
                 cfg.activeSorters.push({direction: sorter.direction, property: sorter.property})
             })
-            chart.chart.filters.filters.each(function(filter) {
-                if (filter.type == 'numeric' && filter.active) {
-                    cfg.activeFilters.push({dataIndex: filter.dataIndex, value: filter.getValue()});
-                }
-            })
+//            chart.chart.filters.filters.each(function(filter) {
+//                if (filter.type == 'numeric' && filter.active) {
+//                    cfg.activeFilters.push({dataIndex: filter.dataIndex, value: filter.getValue()});
+//                }
+//            })
         }
         for (var j = 0; j < legendItems.length; j++) {
             var legendItem = legendItems[j];
@@ -842,11 +842,6 @@ Ext.define('PumaMain.controller.Chart', {
             }
         });
 
-        var filters = {
-            ftype: 'filters',
-            encode: true,
-            local: false
-        };
         var selectController = this.getController('Select');
         var grid = Ext.widget('grid', {
             renderTo: cmp.el,
@@ -857,7 +852,6 @@ Ext.define('PumaMain.controller.Chart', {
             title: cmp.cfg.title,
             //frame: true,
             //padding: 10,
-            features: [filters],
             viewConfig: {
                 getRowClass: function(record, rowIndex, rowParams, store) {
                     var colorMap = cmp.cfg.colorMap || selectController.colorMap;
@@ -873,7 +867,6 @@ Ext.define('PumaMain.controller.Chart', {
             },
             columns: data.columns
         })
-        grid.filters.createFilters();
         store.load();
         cmp.chart = grid;
         cmp.relayEvents(grid, ['beforeselect', 'itemclick', 'itemmouseenter']);
