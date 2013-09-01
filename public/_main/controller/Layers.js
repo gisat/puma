@@ -5,8 +5,8 @@ Ext.define('PumaMain.controller.Layers', {
     init: function() {
         this.control({
             '#layerpanel': {
-                checkchange: this.onCheckChange,
                 itemclick: this.onLayerClick,
+                checkchange: this.onCheckChange,
             },
             'layerpanel' : {
                 choroplethreconfigure: this.onChoroplethReconfigureBtnClick,
@@ -49,7 +49,54 @@ Ext.define('PumaMain.controller.Layers', {
         })
     },
         
-   
+    reconfigureChoropleths: function(cfg) {
+        
+        var root = Ext.StoreMgr.lookup('layers').getRootNode();
+        var chartNodes = [];
+        root.cascadeBy(function(node) {
+            if (node.get('type')=='chartLayer') {
+                chartNodes.push(node);
+            }
+            
+        })
+        var nodesToRemove = [];
+        var attrs = Ext.clone(cfg.attrs);
+        for (var i=0;i<chartNodes.length;i++) {
+            var node = chartNodes[i];
+            var attr = node.get('attr');
+            var as = node.get('as');
+            var attrObj = null
+            for (var j=0;j<attrs.length;j++) {
+                attrObj = attrs[j];
+                if (attrObj.as==as && attrObj.attr == attr) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                nodesToRemove.push(node)
+            }
+            else {
+                Ext.Array.remove(attrs,attrObj)
+            }
+            
+        }
+        for (var i=0;i<nodesToRemove.length;i++) {
+            var node = nodesToRemove[i];
+            this.removeChoropleth(node);
+        }
+        
+        for (var i=0;i<attrs.length;i++) {
+            var attr = attrs[i];
+            var oneCfg = Ext.clone(cfg);
+            oneCfg.attrs = [attr];
+            oneCfg.numCategories = attr.numCategories || 5;
+            oneCfg.classType = attr.classType || 'quantiles';
+            oneCfg.zeroesAsNull = attr.zeroesAsNull || true;
+            oneCfg.useAttributeColors = true;
+            this.addChoropleth(oneCfg);
+        }
+    },
         
     onFillColors: function(btn) {
         var store = btn.up('grid').store;
@@ -394,7 +441,7 @@ Ext.define('PumaMain.controller.Layers', {
 
     },
     getTreeFilters: function(year) {
-        var allAreas = this.getController('Area').lastMap;
+        var allAreas = this.getController('Area').lowestMap;
         var areaTemplates = this.getController('Area').areaTemplateMap;
         var filterMap = {};
         for (var loc in allAreas) {
@@ -424,7 +471,7 @@ Ext.define('PumaMain.controller.Layers', {
         if (true) {
             symbolizer = {};
             var normalization = params['normalization'];
-            var classConfig = JSON.parse(params['classConfig'])
+            var classConfig = params['classConfig'] ? JSON.parse(params['classConfig']) : [];
             var colors = [];
             var thresholds = [];
             for (var i = 0; i < classConfig.length; i++) {
@@ -432,10 +479,11 @@ Ext.define('PumaMain.controller.Layers', {
                 thresholds.push(classConfig[i].threshold)
             }
             var colorRange = null;
+   
+            var attrs = JSON.parse(params['attrs']);
             if (params['useAttributeColors']) {
                 var attrStore = Ext.StoreMgr.lookup('attribute');
-                var attrs = JSON.parse(params['attrs']);
-                var attrId = attrs[params['mapAttributeIndex'] || 0].attr;
+                var attrId = attrs[0].attr;
                 var baseColor = attrStore.getById(attrId).get('color');
                 colorRange = Puma.util.Color.determineColorRange(baseColor);
             }
@@ -621,7 +669,7 @@ Ext.define('PumaMain.controller.Layers', {
         
         var attr = cfg['attrs'][0];
         var attrObj = Ext.StoreMgr.lookup('attribute').getById(attr.attr);
-        //var attrSetObj = Ext.StoreMgr.lookup('attributeset').getById(attr.as);
+        var attrSetObj = Ext.StoreMgr.lookup('attributeset').getById(attr.as);
         
         var layerDefaults = this.getWmsLayerDefaults();
         var mapController = this.getController('Map');
@@ -634,7 +682,7 @@ Ext.define('PumaMain.controller.Layers', {
         mapController.map1.addLayers([layer1]);
         mapController.map2.addLayers([layer2]);
         var node = Ext.create('Puma.model.MapLayer', {
-            name: params['title']+' - '+attrObj.get('name'),
+            name: attrSetObj.get('name')+' - '+attrObj.get('name'),
             attribute: attr.attr,
             attributeSet: attr.as,
             type: 'chartlayer',
@@ -752,7 +800,7 @@ Ext.define('PumaMain.controller.Layers', {
         }
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var params = node.get('params');
-        params['areas'] = JSON.stringify(this.getController('Area').lastMap);
+        params['areas'] = JSON.stringify(this.getController('Area').lowestMap);
         params['showChoropleth'] = 'true';
         var symObjs = this.getSymObj(node.get('params'));
         var ruleObjs = symObjs.rules;

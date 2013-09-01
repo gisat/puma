@@ -5,6 +5,10 @@ Ext.define('PumaMain.view.LayerPanel', {
     initComponent: function() {
 
         var me = this;
+        this.buttons = [{
+            text: 'Configure',
+            itemId: 'configurelayers'
+        }]
         this.items = [
             {
                 xtype: 'treepanel',
@@ -24,40 +28,40 @@ Ext.define('PumaMain.view.LayerPanel', {
                         flex: 1,
                         header: 'Name'
                     }
-                    ,
-                    {
-                        xtype: 'actioncolumn',
-                        width: 45,
-                        items: [{
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
-                                tooltip: 'Configure', 
-                                width: 15,
-                                height: 20,
-                                getClass: function(v,metadata,rec) {
-                                    
-                                    if (rec.get('type')!='chartlayer') {
-                                        return 'invisible'
-                                    }
-                                },
-                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('choroplethreconfigure',me,record)
-                                }
-                            }, {
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
-                                tooltip: 'Remove', 
-                                width: 15,
-                                height: 20,
-                                getClass: function(v,metadata,rec) {
-                                    
-                                    if (rec.get('type')!='chartlayer') {
-                                        return 'invisible'
-                                    }
-                                },
-                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('choroplethremove',me,record)
-                                }
-                            }]
-                    }
+//                    ,
+//                    {
+//                        xtype: 'actioncolumn',
+//                        width: 45,
+//                        items: [{
+//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
+//                                tooltip: 'Configure', 
+//                                width: 15,
+//                                height: 20,
+//                                getClass: function(v,metadata,rec) {
+//                                    
+//                                    if (rec.get('type')!='chartlayer') {
+//                                        return 'invisible'
+//                                    }
+//                                },
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('choroplethreconfigure',me,record)
+//                                }
+//                            }, {
+//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
+//                                tooltip: 'Remove', 
+//                                width: 15,
+//                                height: 20,
+//                                getClass: function(v,metadata,rec) {
+//                                    
+//                                    if (rec.get('type')!='chartlayer') {
+//                                        return 'invisible'
+//                                    }
+//                                },
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('choroplethremove',me,record)
+//                                }
+//                            }]
+//                    }
                 ],
                 style: {
                     borderRadius: '0px',
@@ -77,13 +81,22 @@ Ext.define('PumaMain.view.LayerPanel', {
                     rowBodyTpl : ['<tpl for=".">', '<tpl if="src">', '<div class="legenditem">', '<img src="{src}">', '</div>', '</tpl>', '</tpl>']
                 }],
                 columns: [{
+                        dataIndex: 'checked',
+                        xtype: 'checkcolumnwithheader',
+                        listeners: {
+                            checkchange: function(a,b,checked,rec) {
+                                me.fireEvent('checkchange',rec,checked)
+                            }
+                        },
+                        width: 30
+                    },{
                         dataIndex: 'name',
                         flex: 1,
                         header: 'Name'
                     }
                     , {
                         xtype: 'actioncolumn',
-                        width: 100,
+                        width: 65,
                         items: [
                             {
                                 icon: 'http://dummyimage.com/15x15/fdd/000&text=OP', // Use a URL in the icon config
@@ -93,21 +106,23 @@ Ext.define('PumaMain.view.LayerPanel', {
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
                                     me.fireEvent('layeropacity',me,record)
                                 }
-                            },{
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
-                                tooltip: 'Configure', 
-                                width: 15,
-                                height: 20,
-                                getClass: function(v,metadata,rec) {
-                                    
-                                    if (rec.get('type')!='chartlayer') {
-                                        return 'invisible'
-                                    }
-                                },
-                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('choroplethreconfigure',me,record)
-                                }
-                            }, {
+                            }
+//                            ,{
+//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
+//                                tooltip: 'Configure', 
+//                                width: 15,
+//                                height: 20,
+//                                getClass: function(v,metadata,rec) {
+//                                    
+//                                    if (rec.get('type')!='chartlayer') {
+//                                        return 'invisible'
+//                                    }
+//                                },
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('choroplethreconfigure',me,record)
+//                                }
+//                            }
+                            , {
                                 icon: 'http://dummyimage.com/15x15/fdd/000&text=UP', // Use a URL in the icon config
                                 tooltip: 'Up', 
                                 width: 15,
@@ -135,15 +150,17 @@ Ext.define('PumaMain.view.LayerPanel', {
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
                                     me.fireEvent('layerdown',me,record)
                                 }
-                            },{
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
-                                tooltip: 'Remove', 
-                                width: 15,
-                                height: 20,
-                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('layerremove',me,record)
-                                }
-                            }]
+                            }
+//                            ,{
+//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
+//                                tooltip: 'Remove', 
+//                                width: 15,
+//                                height: 20,
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('layerremove',me,record)
+//                                }
+//                            }
+                        ]
                     }
                     ],
                 style: {
@@ -154,7 +171,7 @@ Ext.define('PumaMain.view.LayerPanel', {
             }
         ]
         this.callParent();
-        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown');
+        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange');
     }
 })
 
