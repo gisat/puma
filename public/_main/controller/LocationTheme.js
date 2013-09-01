@@ -250,7 +250,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         params['refreshLayers'] = (this.themeChanged) ? true : null;
-        params['refreshAreas'] = (this.yearChanged || this.datasetChanged || this.locationChanged || detailLevelChanged) ? true : false;
+        params['refreshAreas'] = (this.yearChanged || this.datasetChanged || this.locationChanged || detailLevelChanged || isFilter) ? true : false;
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
@@ -673,7 +673,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
             this.getController('Area').scanTree();
         }
         if (conf.attrSets) {
-            this.checkAttrSets(conf.attrSets)
+            this.checkFeatureLayers();
+            this.checkAttrSets(conf.attrSets);
         }
         this.getController('Chart').reconfigureAll();
         this.getController('Layers').reconfigureAll();
@@ -698,7 +699,16 @@ Ext.define('PumaMain.controller.LocationTheme', {
 //        }
 //        this.reinitializeTreesAreas(conf.areaTrees,btn)
     },
-   
+    checkFeatureLayers: function() {
+        var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+        var theme = Ext.StoreMgr.lookup('theme').getById(themeId);
+        var topics = theme.get('topics');
+        var store = Ext.StoreMgr.lookup('layertemplate2choose');
+        store.clearFilter(true);
+        store.filter([function(rec) {
+            return Ext.Array.contains(topics,rec.get('topic'));
+        }]);
+    },
     
     checkAttrSets: function(attrSets) {
         var store = Ext.StoreMgr.lookup('attributes2choose');
@@ -706,14 +716,16 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var existingAttrSets = store.collect('as');
         var asToAdd = Ext.Array.difference(attrSets,existingAttrSets);
         var asToRemove = Ext.Array.difference(existingAttrSets,attrSets);
-        var recsToRemove = store.query('as',asToRemove);
+        var recsToRemove = store.queryBy(function(rec) {
+            return Ext.Array.contains(asToRemove,rec.get('as'))
+        }).getRange();
         store.remove(recsToRemove);
         var recsToAdd = [];
         for (var i=0;i<asToAdd.length;i++) {
             var as = asToAdd[i];
             var attrs = attrStore.getById(as).get('attributes');
             for (var j=0;j<attrs.length;j++) {
-                var attr = attrs[i];
+                var attr = attrs[j];
                 var rec = Ext.create('Puma.model.MappedChartAttribute',{
                     as: as,
                     attr: attr

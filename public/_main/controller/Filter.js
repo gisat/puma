@@ -5,44 +5,99 @@ Ext.define('PumaMain.controller.Filter', {
     init: function() {
         this.control(
                 {
-                    "chartbar #applyfilterbtn": {
-                        click: this.onApplyFilter
-                    },
-                    "chartbar #clearfilterbtn": {
-                        click: this.onClearFilter
+                    '#advancedfilters multislider' : {
+                        changecomplete: this.applyFilters
                     }
                 })
     },
-    onApplyFilter: function(btn) {
-        var areaTemplates = btn.up('panel').chart.cfg.areaTemplates
-        var sliders = Ext.ComponentQuery.query('multislider',btn.up('panel'));
-        var filter = {
-            areaTemplates: {},
-        };
-        for (var i=0;i<areaTemplates.length;i++) {
-            filter.areaTemplates[areaTemplates[i]] = true;
-        }
+    
+    applyFilters: function() {
+        var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
+        var areaController = this.getController('Area');
         var filters = [];
         for (var i=0;i<sliders.length;i++) {
             var slider = sliders[i];
-            var value = slider.getValue();
-            var attr = Ext.clone(slider.attr);
-            attr.min = value[0];
-            attr.max = value[1];
-            filters.push(attr);
+            var obj = Ext.clone(slider.attrObj);
+            var val = slider.getValue();
+            obj.min = val[0];
+            obj.max = val[1];
+            filters.push(obj);
         }
-        filter.filters = filters;
-        var yearBtn = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')[0];
-        this.getController('Area').areaFilter = filter;
-        this.getController('LocationTheme').requestNewLayers(yearBtn);
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
+        var featureLayers = dataset.get('featureLayers');
+        var atMap = {};
+        for (var i=this.minFl;i<=this.maxFl;i++) {
+            atMap[featureLayers[i]] = true;
+        }
+        if (!filters.length) {
+            areaController.areaFilter = null;
+        }
+        else {
+            areaController.areaFilter = {
+                areaTemplates: atMap,
+                filters: filters
+            }
+        }
+        this.getController('LocationTheme').onYearChange({itemId:'filter'})
     },
-        
-    onClearFilter: function(btn) {
-        var yearBtn = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')[0];
-        this.getController('Area').areaFilter = null;
-        this.getController('LocationTheme').requestNewLayers(yearBtn);
-    }
-})
     
+    reconfigureFilters: function(cfg) {
+        var attrs = Ext.clone(cfg.attrs);
+        this.minFl = cfg.constrainFl[0];
+        this.maxFl = cfg.constrainFl[1];
+        var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
+        var sliders = Ext.ComponentQuery.query('multislider',filterPanel);
+        for (var i = 0; i < sliders.length; i++) {
+            var slider = sliders[i];
+            var found = false;
+            var attr = null;
+            for (var j = 0; j < attrs.length; j++) {
+                attr = attrs[j];
+                if (slider.attrObj.as == attr.as && slider.attrObj.attr == attr.attr) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                filterPanel.remove(slider.up('container'));
+            }
+            else {
+                Ext.Array.remove(attrs, attr);
+            }
+        }
+        for (var i = 0; i < attrs.length; i++) {
+            var attr = attrs[i]
+            var idx = Ext.Array.indexOf(cfg.attrs, attr);
+
+            var cnt = {
+                xtype: 'container',
+                layout: {
+                    type: 'vbox',
+                    align: 'stretch'
+                },
+                items: [{
+                        xtype: 'displayfield',
+                        value: attr.attrName
+                    }, {
+                        xtype: 'multislider',
+                        values: [0, 100],
+                        attrObj: attr,
+                        increment: 1,
+                        minValue: 0,
+                        maxValue: 100,
+                        constrainThumbs: true
+                    }]
+            }
+
+            filterPanel.insert(idx, cnt)
+        }
+        this.applyFilters();
+
+
+    },
+    
+})
+
 
 

@@ -48,7 +48,16 @@ Ext.define('PumaMain.view.Tools', {
         },{
             xtype: 'panel',
             collapsed: true,
-            height: 100,
+            layout: {
+                type: 'vbox',
+                align: 'stretch'
+                
+            },
+            itemId: 'advancedfilters',
+            buttons: [{
+            text: 'Configure',
+            itemId: 'configurefilters'
+            }],
             title: 'Advanced filters'
         }]
         
