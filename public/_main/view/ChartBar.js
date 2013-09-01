@@ -19,13 +19,15 @@ Ext.define('PumaMain.view.ChartBar', {
                 items: [{
                     xtype: 'screenshotview'
                 }],
-                cfgType: 'screenshots',              
+                cfgType: 'screenshots',  
+                height: 450,
                 title: 'Screenshots'
             },
             {
                 xtype: 'panel',
                 collapsed: true,
                 cfgType: 'add',
+                hideCollapseTool: true,
                 title: 'Add chart'
             }
         ]

@@ -6,7 +6,6 @@ Ext.define('PumaMain.view.ChartPanel', {
     border: 0,
     padding: 0,
     initComponent: function() {
-        this.hideCollapseTool = true;
         
         
         var toolMap = {
