@@ -68,6 +68,9 @@ function read(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
     var collection = db.collection(collName);
+    if (params['justMine']) {
+        filter['createdBy'] = params['userId']
+    }
     collection.find(filter).toArray(function(err,items) {
         callback(err,items)
     });

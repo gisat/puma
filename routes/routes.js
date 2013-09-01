@@ -21,7 +21,7 @@ module.exports = function(app) {
     
     app.get('/rest/:objType',function(req,res,next) {
         var filter = req.query.filter ? JSON.parse(req.query.filter) : {};
-        crud.read(req.params.objType,filter,function(err,result) {
+        crud.read(req.params.objType,filter,{userId: req.userId, justMine: req.query['justMine']},function(err,result) {
             if (err) return next(err);
             res.data = result;
             next();
@@ -30,7 +30,7 @@ module.exports = function(app) {
     
     app.get('/rest/:objType/:objId',function(req,res,next) {
         var filter = {_id: parseInt(req.params.objId)}
-        crud.read(req.params.objType,filter,function(err,result) {
+        crud.read(req.params.objType,filter,{userId: req.userId, justMine: req.query['justMine']},function(err,result) {
             if (err) return next(err);
             res.data = result;
             next();
