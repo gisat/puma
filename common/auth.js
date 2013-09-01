@@ -11,13 +11,17 @@ function anyUser(req, res, next) {
     return next(new Error('unauthorized'))
 }
 
-function adminUser(req, res, next) {
+function adminOrOwner(req, res, next) {
     if (req.groups && req.groups.indexOf('admingroup') != -1) {
         return next();
     }
+    
     return next(new Error('unauthorized'))
 }
 
+function owner(req,res,next) {
+    
+}
 
 
 function auth(req, res, next) {
@@ -73,6 +77,7 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
         }
         req.userId = id;
         req.groups = groups;
+        req.isAdmin = groups.indexOf('admingroup') != -1;
         req.userName = userName;
         sessionCache[sessionId] = userName;
         return next();
@@ -83,7 +88,7 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
 module.exports = {
     auth: auth,
     anyUser: anyUser,
-    adminUser: adminUser
+    adminOrOwner: adminOrOwner
 }
 
 

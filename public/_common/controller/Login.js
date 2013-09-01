@@ -74,24 +74,30 @@ Ext.define('Puma.controller.Login', {
         })
     },
     onChangeLoginState: function(loggedIn) {
-//        var text = 'Not logged in'
-//        if (loggedIn) {
-//            text = 'Logged in as ' + Config.auth.userName;
-//            var window = Ext.WindowManager.get('loginwindow');
-//            if (window) {
-//                window.close();
-//            }
-//        }
-//        
-//        Ext.ComponentQuery.query('loginheader #logintext')[0].update(text);
-//        Ext.ComponentQuery.query('loginheader #loginbtn')[0].setVisible(!loggedIn)
-//        Ext.ComponentQuery.query('loginheader #logoutbtn')[0].setVisible(loggedIn);
-        var window = Ext.WindowManager.get('loginwindow');
-        if (window) {
-            window.close();
+
+        var cmp = Ext.ComponentQuery.query('loginheader #logintext')[0]
+        if (!cmp) {
+            var window = Ext.WindowManager.get('loginwindow');
+            if (window) {
+                window.close();
+            }
+            $('.login').html(Config.auth ? Config.auth.userName : 'Login')
+            this.application.fireEvent('login', loggedIn);
+            return;
         }
-        $('.login').html(Config.auth ? Config.auth.userName : 'Login')
-        this.application.fireEvent('login',loggedIn);
+        var text = 'Not logged in'
+        if (loggedIn) {
+            text = 'Logged in as ' + Config.auth.userName;
+            var window = Ext.WindowManager.get('loginwindow');
+            if (window) {
+                window.close();
+            }
+        }
+
+        Ext.ComponentQuery.query('loginheader #logintext')[0].update(text);
+        Ext.ComponentQuery.query('loginheader #loginbtn')[0].setVisible(!loggedIn)
+        Ext.ComponentQuery.query('loginheader #logoutbtn')[0].setVisible(loggedIn);
+        this.application.fireEvent('login', loggedIn);
     }
 });
 

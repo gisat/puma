@@ -68,8 +68,12 @@ function read(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
     var collection = db.collection(collName);
+    console.log(filter)
     if (params['justMine']) {
         filter['createdBy'] = params['userId']
+    }
+    if (collName=='dataview') {
+        console.log(filter)
     }
     collection.find(filter).toArray(function(err,items) {
         callback(err,items)
@@ -85,6 +89,9 @@ function update(collName, obj, params, callback,bypassHooks) {
     var collection = db.collection(collName);
     var filter = {
         "_id": obj['_id']
+    }
+    if (!params.isAdmin) {
+        filter['createdBy'] = params.userId;
     }
     var opts = {
         checkRefs: function(asyncCallback) {
@@ -125,7 +132,9 @@ function remove(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
     var collection = db.collection(collName);
     
-    
+    if (!params.isAdmin) {
+        filter['createdBy'] = params.userId;
+    }
     var opts = {
         checkRef: function(asyncCallback) {
             if (filter['_id']) {
