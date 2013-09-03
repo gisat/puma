@@ -72,7 +72,7 @@ Ext.define('PumaMain.controller.ViewMng', {
     onSaveFinish: function(rec,operation) {
         var isView = rec.modelName == 'Puma.model.DataView';
         var store = Ext.StoreMgr.lookup(isView ? 'dataview' : 'visualization');
-        store.add(rec);
+        store.addWithSlaves(rec);
         if (isView) {
             var window = Ext.widget('window',{
                 items: [{
