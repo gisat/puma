@@ -8,7 +8,16 @@ Ext.define('Gisatlib.data.SlaveStore',{
             this.callParent();
             return;
         }
-        var records = masterStore.getRange();
+        if (masterStore.getRange) {
+             var records = masterStore.getRange();
+        }
+        else {
+            var records = [];
+            masterStore.getRootNode().cascadeBy(function(node) {
+                records.push(node);
+            })
+        }
+       
         this.loadRecords(records);
         this.filter();
         this.fireEvent('load',this,records,true);
