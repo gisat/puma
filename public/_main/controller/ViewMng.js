@@ -31,6 +31,7 @@ Ext.define('PumaMain.controller.ViewMng', {
     },
     
     
+    
     onRecMoved: function(grid,rec, moveUp) {
         var store = Ext.StoreMgr.lookup('visualization4sel');
         var ids = store.collect('_id');
@@ -97,10 +98,35 @@ Ext.define('PumaMain.controller.ViewMng', {
     },
     onVisSave: function() {
         var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
-        var sortIndex = Ext.StoreMgr.lookup('visualization4sel').max('sortIndex');
-        debugger;
+        var cfgs = this.getController('Chart').gatherCfg();
+        var layerCfgs = this.getController('AttributeConfig').layerConfig
+        var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
+        var visibleLayers = [];
+        for (var i=0;i<layers.length;i++) {
+            var layer = layers[i];
+            var type = layer.get('type')
+            
+            if (type=='topiclayer') {
+                visibleLayers.push({
+                    at: layer.get('at'),
+                    symbologyId: layer.get('symbologyId')
+                })
+            }
+            if (type=='chartlayer') {
+                visibleLayers.push({
+                    attributeSet: layer.get('attributeSet'),
+                    attribute: layer.get('attribute')
+                })
+            }
+        }
+        
+        
+        
         var vis = Ext.create('Puma.model.Visualization',{
-            theme: theme
+            theme: theme,
+            cfg: cfgs,
+            choroplethCfg: layerCfgs,
+            visibleLayers: visibleLayers
         });
         var window = Ext.widget('window',{
             layout: 'fit',

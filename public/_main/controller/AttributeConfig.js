@@ -160,7 +160,8 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             }]
         })
         window.show();
-        window.down('configform').getForm().setValues(cfg)
+        window.down('configform').getForm().setValues(cfg);
+        return false;
     },
     
     onChartBtnClick: function(parent) {

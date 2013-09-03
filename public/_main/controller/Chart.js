@@ -188,13 +188,13 @@ Ext.define('PumaMain.controller.Chart', {
     gatherChartCfg: function(chart, useQueryCfg) {
         chart.cfg.chartId = chart.cfg.chartId || parseInt(Math.random() * 10000000)
         var cfg = Ext.clone(useQueryCfg ? chart.queryCfg : chart.cfg);
-        var legendItems = chart.chart && chart.chart.legend ? chart.chart.legend.allItems : [];
+        var legendItems = chart.chart && chart.chart.legend && useQueryCfg ? chart.chart.legend.allItems : [];
         if (legendItems.length) {
             cfg.invisibleAttrs = [];
             cfg.invisibleYears = [];
 
         }
-        if (cfg.type == 'grid' && chart.chart && chart.chart.store) {
+        if (cfg.type == 'grid' && chart.chart && chart.chart.store && useQueryCfg) {
             cfg.activeFilters = [];
             cfg.activeSorters = [];
             chart.chart.store.sorters.each(function(sorter) {

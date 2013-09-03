@@ -312,7 +312,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         this.getController('Chart').loadVisualization(val);
         this.getController('Layers').loadVisualization(val);
         this.getController('Chart').reconfigureAll();
-        this.getController('Layers').reconfigureAll();
+        //this.getController('Layers').reconfigureAll();
         this.getController('Layers').checkVisibilityAndStyles();
     },
         
@@ -591,7 +591,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 areaLayerNode = {
                     type: 'areaoutlines',
                     name: 'Area outlines',
-                    checked: false,
+                    checked: true,
                     leaf: true
                 }
                 systemNode.appendChild([selectedLayerNode,areaLayerNode]);
