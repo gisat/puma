@@ -31,19 +31,20 @@ Ext.define('PumaMain.controller.Map', {
             '#multiplemapsbtn': {
                 toggle: this.onMultipleYearsToggle
             },
-            'layermenu #url': {
+            '#savemapbtn': {
                 click: this.onExportMapUrl
             },
-            'layermenu #exportpng': {
+            '#mapsnapshotbtn': {
                 click: this.onExportMapUrl
             }
         })
     },
         
     onExportMapUrl: function(btn) {
-        var map = btn.up('layermenu').map;
+        var map = Ext.ComponentQuery.query('#map')[0].map;
         var layerStore = Ext.StoreMgr.lookup('selectedlayers');
-        var useFirst = layerStore.getAt(0).get('layer1').map == map;
+        var useFirst = true;
+        //var useFirst = layerStore.getAt(0).get('layer1').map == map;
         var mapCfg = {};
         var layers = [];
         var me = this;
@@ -53,31 +54,18 @@ Ext.define('PumaMain.controller.Map', {
             
             var sldId = layer.params ? layer.params['SLD_ID'] : null;
             var layersParam = layer.params ? layer.params['LAYERS'] : null;
+            var stylesParam = layer.params ? layer.params['STYLES'] : null;
             var obj = {
                 type: rec.get('type'),
-                opacity: layer.opacity || 1
+                opacity: layer.opacity || 1,
+                sldId: sldId,
+                layersParam: layersParam,
+                stylesParam: stylesParam
             }
-            var at = rec.get('at');
-            var attrSet = rec.get('attributeSet');
-            var attr = rec.get('attribute');
-            var bindChart = rec.get('bindChart');
-            if (attrSet) {
-                obj.as = attrSet;
-                obj.attr = attr;
-                var cfg = me.getController('Chart').gatherChartCfg(bindChart);
-                obj.bindChart = JSON.stringify(cfg)
-            }
-            if (at) {
-                obj.at = at;
-            }
-            if (sldId) {
-                obj.sldId = sldId;
-            }
-            if (layersParam) {
-                obj.layers = layersParam;
-            }
+            
             layers.push(obj);
         })
+        
         mapCfg = {
             layers: layers,
             type: 'map',
@@ -95,7 +83,7 @@ Ext.define('PumaMain.controller.Map', {
             method: 'POST',
             success: function(response) {
                 var id = JSON.parse(response.responseText).data;
-                this.getController('Chart').onUrlCallback(id,btn.itemId=='url')
+                this.getController('Chart').onUrlCallback(id,btn.itemId=='savemapbtn')
             }
         })
     },

@@ -93,7 +93,7 @@ Ext.define('PumaMain.controller.Export', {
         for (var i=0;i<cfg.layers.length;i++) {
             var layerCfg = cfg.layers[i];
             var layer = null;
-            if (!layerCfg.sldId && !layerCfg.layers && layerCfg.type!='selectedareas') {
+            if (!layerCfg.sldId && !layerCfg.layersParam && layerCfg.type!='selectedareas') {
                 layer = new OpenLayers.Layer.Google(
                 'Google',
                 {
@@ -101,13 +101,16 @@ Ext.define('PumaMain.controller.Export', {
                     animationEnabled: true,
                     initialized: true,
                     visibility: true
+                    // zajimavy issues pri tisku pokud opacita neni 1
+                    //,
+                    //opacity: layerCfg.opacity
                 }
 
                 );
                 gLayer = layer;
                 counterObj.desired++;
             }
-            else if (layerCfg.sldId || layerCfg.layers) {
+            else if (layerCfg.sldId || layerCfg.layersParam){
                 var layerParams = {
                     singleTile: true,
                     visibility: true,
@@ -118,14 +121,14 @@ Ext.define('PumaMain.controller.Export', {
                     transparent: true,
                     format: 'image/png'
                 }
-                if (layerCfg.layers) {
-                    params['layers'] = layerCfg.layers
+                if (layerCfg.layersParam) {
+                    params['layers'] = layerCfg.layersParam
                 }
                 if (layerCfg.sldId) {
                     params['sld_id'] = layerCfg.sldId
                 }
-                if (layerCfg.symbologyId) {
-                    params['styles'] = layerCfg.symbologyId
+                if (layerCfg.stylesParam) {
+                    params['styles'] = layerCfg.stylesParam
                 }
                 layer = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', params, layerParams);
                 counterObj.desired++;

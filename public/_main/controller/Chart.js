@@ -662,9 +662,10 @@ Ext.define('PumaMain.controller.Chart', {
         }
         else {
             url = window.location.origin + '/image/index3.html?id=' + id;
+            var rec = Ext.StoreMgr.lookup('screenshot').findRecord('large',true);
             var screenshot = Ext.create('Puma.model.Screenshot',{
                 src: url,
-                visible: 1
+                visible: rec ? 0 : 1
             })
             Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true)
         }

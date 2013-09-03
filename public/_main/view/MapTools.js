@@ -44,6 +44,7 @@ Ext.define('PumaMain.view.MapTools', {
         },{
             xtype: 'button',
             text: 'Save as image',
+            itemId: 'savemapbtn',
             cls: 'btn-tool-save-image'
         }]
         

@@ -25,6 +25,7 @@ Ext.define('PumaMain.view.TopTools', {
             flex: 1,
             text: 'Snapshot',
             icon: 'images/icons/snapshot.png',
+            itemId: 'mapsnapshotbtn',
             cls: 'btn-snapshot'
         }]
         
