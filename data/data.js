@@ -312,7 +312,7 @@ function getData(params, callback) {
 
 
                             var gids = partailAreas[locationId][areaId];
-                            sql += sql ? ' UNION (' : '(';
+                            var oneSql = sql ? ' UNION (' : '(';
                             var gidSql = '';
                             var nameSql = '';
                             if ((params['useAggregation'] && userAggregates[locationId] && userAggregates[locationId][areaId])) {
@@ -340,10 +340,11 @@ function getData(params, callback) {
                                 gidSql = 'x_' + years[0] + '."gid"';
                                 nameSql = 'x_' + years[0] + '."name"';
                             }
-                            sql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',i);
+                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',i);
 
                             var baseLayerRef = null;
                             var baseYear = null;
+                            var atLeastOne = false;
                             for (var j = 0; j < years.length; j++) {
                                 var year = years[j];
                                 var layerRef = null;
@@ -353,31 +354,38 @@ function getData(params, callback) {
                                 catch (e) {
                                 }
                                 if (!layerRef && locationId!=-1) {
-                                    return callback(new Error('strange'))
+                                    
+                                    continue;
+                                    
                                 }
+                                atLeastOne = true;
                                 //var layerName = areaId != -1 ? 'layer_' + layerRef['_id'] : ('layer_user_' + params['userId'] + '_loc_' + locationId + '_y_' + year);
                                 var tableSql = locationId == -1 ? getTopAllSql(topAllSql, results.layerRefMap, results.dataset, locationIds, year) : 'views.layer_' + layerRef['_id'];
                                 if (!baseLayerRef) {
 
-                                    sql += ' FROM ' + tableSql + ' x_' + year;
+                                    oneSql += ' FROM ' + tableSql + ' x_' + year;
                                     baseYear = year;
                                     baseLayerRef = layerRef;
                                 }
                                 else {
-                                    sql += ' INNER JOIN ' + tableSql + ' x_' + year;
-                                    sql += ' ON x_' + baseYear + '."gid" = x_' + year + '."gid"';
+                                    oneSql += ' INNER JOIN ' + tableSql + ' x_' + year;
+                                    oneSql += ' ON x_' + baseYear + '."gid" = x_' + year + '."gid"';
                                 }
                             }
-                            sql += ' WHERE 1=1';
+                            if (!atLeastOne) {
+                                continue;
+                            }
+                            oneSql += ' WHERE 1=1';
 
                             if (gids !== true) {
-                                sql += ' AND x_' + baseYear + '."gid" IN ';
-                                sql += '(' + gids.join(',') + ')';
+                                oneSql += ' AND x_' + baseYear + '."gid" IN ';
+                                oneSql += '(' + gids.join(',') + ')';
                             }
                             if (params['useAggregation'] || topAll) {
-                                sql += ' GROUP BY 1,2,3,4'
+                                oneSql += ' GROUP BY 1,2,3,4'
                             }
-                            sql += ')';
+                            oneSql += ')';
+                            sql += oneSql
                             //sql += ' ORDER BY name)';
                         }
                     }

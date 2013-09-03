@@ -9,6 +9,7 @@ var api = {
     analysis: require('../api/analysis'),
     userpolygon: require('../api/userpolygon'),
     urlview: require('../api/urlview'),
+    filter: require('../api/filter'),
     print: require('../api/print')
 }
 

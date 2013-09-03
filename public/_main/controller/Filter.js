@@ -48,6 +48,7 @@ Ext.define('PumaMain.controller.Filter', {
         this.maxFl = cfg.constrainFl[1];
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var sliders = Ext.ComponentQuery.query('multislider',filterPanel);
+        
         for (var i = 0; i < sliders.length; i++) {
             var slider = sliders[i];
             var found = false;
@@ -66,10 +67,51 @@ Ext.define('PumaMain.controller.Filter', {
                 Ext.Array.remove(attrs, attr);
             }
         }
+        
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
+        
+        var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+        var theme = Ext.StoreMgr.lookup('theme').getById(themeId);
+        
+        var featureLayers = dataset.get('featureLayers');
+        var filteredFeatureLayers = [];
+        for (var i=this.minFl;i<=this.maxFl;i++) {
+            filteredFeatureLayers.push(featureLayers[i]);
+        }
+        if (!attrs.length) {
+            this.applyFilters();
+            return;
+        }
+        Ext.Ajax.request({
+            url: Config.url + '/api/filter/getFilterConfig',
+            params: {
+                attrs: JSON.stringify(attrs),
+                dataset: datasetId,
+                featureLayers: JSON.stringify(filteredFeatureLayers),
+                years: JSON.stringify(theme.get('years'))
+            },
+            scope: this,
+            method: 'GET',
+            cfg: cfg,
+            attrs: attrs,
+            success: this.reconfigureFiltersCallback
+        })
+        
+        
+    },
+    reconfigureFiltersCallback: function(response) {
+        debugger;
+        var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
+        var attrs = response.request.options.attrs;
+        var cfg = response.request.options.cfg;
+        var attrMap = JSON.parse(response.responseText).data;
+        
+        
         for (var i = 0; i < attrs.length; i++) {
             var attr = attrs[i]
             var idx = Ext.Array.indexOf(cfg.attrs, attr);
-
+            var attrCfg = attrMap['as_'+attr.as+'_attr_'+attr.attr];
             var cnt = {
                 xtype: 'container',
                 layout: {
@@ -81,11 +123,11 @@ Ext.define('PumaMain.controller.Filter', {
                         value: attr.attrName
                     }, {
                         xtype: 'multislider',
-                        values: [0, 100],
+                        values: [attrCfg.min,attrCfg.max],
                         attrObj: attr,
-                        increment: 1,
-                        minValue: 0,
-                        maxValue: 100,
+                        increment: attrCfg.inc,
+                        minValue: attrCfg.min,
+                        maxValue: attrCfg.max,
                         constrainThumbs: true
                     }]
             }
@@ -93,9 +135,7 @@ Ext.define('PumaMain.controller.Filter', {
             filterPanel.insert(idx, cnt)
         }
         this.applyFilters();
-
-
-    },
+    }
     
 })
 
