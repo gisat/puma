@@ -246,7 +246,7 @@ Ext.define('PumaMain.controller.Area', {
         var node = options.node;
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
-        if (!years.length) {
+        if (!years || !years.length) {
             return;
         }
         if (this.areaFilter) {

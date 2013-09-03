@@ -62,7 +62,6 @@ Ext.define('Gisatlib.container.StoreContainer', {
             this.remove(cmpsToDelete[i])
         }
         this.add(cmpsToAdd);
-        
         if (this.forceSelection && !containsPressed) {
             var cmp = this.items.getAt(0);
             if (cmp) {
@@ -83,7 +82,7 @@ Ext.define('Gisatlib.container.StoreContainer', {
         for (var i=0;i<recs.length;i++) {
             ids.push(recs[i].get(this.valueField))
         }
-        return this.multi ? ids : ids[0];
+        return ids;
     },
     getRecords: function() {
         var recs = [];
@@ -163,6 +162,7 @@ Ext.define('Gisatlib.container.StoreContainer', {
         // single mode
         if ((!this.multi || (this.multiCtrl && !me.e.ctrlKey))) {
             // select just one item from already selected
+            debugger;
             if (this.multi && !val && multiValue.length) {
                 this.items.each(function(item) {
                     if (item == cmp) {

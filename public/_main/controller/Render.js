@@ -25,8 +25,8 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('year4sel'),
             forceSelection: true,
             itemId: 'selyear',
-            multiCtrl: true,
-            multi: true
+            multiCtrl: false,
+            multi: false
             ,type: 'checkbox'
         })
         Ext.widget('pumacombo',{
