@@ -48,7 +48,8 @@ Ext.define('PumaMain.view.ConfigForm', {
                         xtype: 'normalizeform'
                     },{
                         xtype: 'pumacombo',
-                        store: 'layertemplate2choose',
+                        store: Ext.StoreMgr.lookup('layers4outline'),
+                        valueField: 'atWithSymbology',
                         fieldLabel: 'Layer',
                         name: 'featureLayer'
             },{

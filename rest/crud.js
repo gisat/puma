@@ -68,13 +68,10 @@ function read(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
     var collection = db.collection(collName);
-    console.log(filter)
     if (params['justMine']) {
         filter['createdBy'] = params['userId']
     }
-    if (collName=='dataview') {
-        console.log(filter)
-    }
+    
     collection.find(filter).toArray(function(err,items) {
         callback(err,items)
     });

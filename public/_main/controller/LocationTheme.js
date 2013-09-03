@@ -662,6 +662,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (conf.layerNodes && conf.layerNodes.length) {
             this.removeLayers();
             this.appendLayers(conf.layerNodes);
+            Ext.StoreMgr.lookup('layers4outline').load()
         }
         if (conf.layerRefMap) {
             this.updateLayerContext(conf.layerRefMap);

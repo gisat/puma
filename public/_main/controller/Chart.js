@@ -279,11 +279,11 @@ Ext.define('PumaMain.controller.Chart', {
             layout: 'fit'
         };
         if (cfg.type == 'extentoutline') {
-            opts.layout = {
-                type: 'table',
-                columns: 2
-            }
-            opts.height = null;
+//            opts.layout = {
+//                type: 'table',
+//                columns: 2
+//            }
+//            opts.height = null;
         }
         var chart = Ext.widget('chartcmp', opts);
         var items = [chart];
@@ -363,7 +363,9 @@ Ext.define('PumaMain.controller.Chart', {
         if (cfg.type != 'extentoutline') {
             areas = Ext.clone(this.getController('Area').lowestMap);
         }
-
+        if (cfg.title) {
+            chartCmp.up('chartpanel').setTitle(cfg.title)
+        }
         queryCfg.areas = areas;
 
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
@@ -526,10 +528,7 @@ Ext.define('PumaMain.controller.Chart', {
             //legendBtn.hide();
             return;
         }
-        if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
-            this.onOutlineReceived(data, cmp);
-            return;
-        }
+        
         if (data.noData) {
             data.chart.renderTo = cmp.el.dom;
             var chart = new Highcharts.Chart(data);
@@ -539,7 +538,10 @@ Ext.define('PumaMain.controller.Chart', {
             //legendBtn.hide();
             return;
         }
-
+        if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
+            this.onOutlineReceived(data, cmp);
+            return;
+        }
 
         if (!Ext.Array.contains(['grid', 'featurecount'], cmp.cfg.type)) {
             //legendBtn.show();

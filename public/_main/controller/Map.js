@@ -296,6 +296,7 @@ Ext.define('PumaMain.controller.Map', {
                 overallExtent.extend(extent)
             }
         }
+        
         var filter = filters.length < 2 ? filters[0] : new OpenLayers.Filter.Logical({type: '||', filters: filters});
         var style = new OpenLayers.Style();
         var layerName = 'puma:layer_' + layerRefs.areaRef._id;
@@ -318,9 +319,23 @@ Ext.define('PumaMain.controller.Map', {
         var sldNode = format.write(sldObject);
         var xmlFormat = new OpenLayers.Format.XML();
         var sldText = xmlFormat.write(sldNode);
-        map.layer1.mergeNewParams({
+        
+        var parent = cmp.up('chartcmp');
+        var symbologyId = null;
+        var atWithSymbology = parent.cfg.featureLayer || parent.cfg.outlineLayerTemplate;
+        var splitted = atWithSymbology.split('_');
+        if (splitted.length>1) {
+            symbologyId = splitted.slice(1).join('_');
+            symbologyId = symbologyId == '#blank#' ? null : symbologyId
+        }
+        var layer1Conf = {
             layers: layerRefs.layerRef.layer
-        })
+        }
+        if (symbologyId) {
+            layer1Conf.styles = symbologyId;
+        }
+        
+        map.layer1.mergeNewParams(layer1Conf)
         map.layer2.mergeNewParams({
             "USE_SECOND": true,
             "SLD_BODY": sldText

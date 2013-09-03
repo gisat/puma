@@ -339,6 +339,15 @@ Ext.define('PumaMain.controller.Store', {
             storeId: 'year4chart',
             model: 'Puma.model.Year'
         })
+    
+        Ext.create('Gisatlib.data.SlaveStore', {
+            model: 'Puma.model.MapLayer',
+            slave: true,
+            filters: [function(rec) {
+                return rec.get('type')=='topiclayer';
+            }],
+            storeId: 'layers4outline'
+        })
     },
         
     initLocalStores: function() {
@@ -391,6 +400,7 @@ Ext.define('PumaMain.controller.Store', {
             filters: [function(rec) {
                 return rec.get('checked');
             }],
+            slave: true,
             sorters: [{
                 property: 'sortIndex',
                 direction: 'ASC'

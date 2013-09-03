@@ -10,7 +10,9 @@ function getChart(params, callback) {
         selectedAreas.push(JSON.parse(params['areas']));
     }
     var years = JSON.parse(params['years']);
-    var layerTemplate = parseInt(params['outlineLayerTemplate']);
+    var layer = params['featureLayer'] || params['outlineLayerTemplate'];
+    var splitted = layer.split('_')[0];
+    var layerTemplate = parseInt(splitted);
     var areaConfs = [];
     for (var i = 0; i < selectedAreas.length; i++) {
         var areas = selectedAreas[i];
@@ -31,14 +33,20 @@ function getChart(params, callback) {
         }
 
     }
-    
+    if (!areaConfs.length) {
+        return callback(new Error('No areas'));
+    }
+    if (areaConfs.length>4) {
+        areaConfs = areaConfs.slice(0,4);
+    }
     var opts = {
         layerRefs: function(asyncCallback) {
             async.map(areaConfs, function(item, eachCallback) {
                 var query = {location: item.loc, year: item.year, isData: false, active: {$ne:false}, areaTemplate: {$in: [item.at, layerTemplate]}};
                 crud.read('layerref', query, function(err, resls) {
                     if (err)
-                        return callback(err);
+                            return callback(err);
+                            
                     var layerRef = null;
                     var areaRef = null;
                     for (var i = 0; i < resls.length; i++) {
@@ -50,8 +58,10 @@ function getChart(params, callback) {
                             layerRef = lr;
                         }
                     }
-                    
+                    console.log(layerRef)
+                    console.log(areaRef)
                     if (!layerRef || !areaRef) {
+                        
                         return callback(new Error('Missing reference'));
                     }
                     return eachCallback(null, {layerRef: layerRef, areaRef: areaRef, item: item})
@@ -59,6 +69,7 @@ function getChart(params, callback) {
             }, asyncCallback);
         },
         areas: ['layerRefs', function(asyncCallback, results) {
+                console.log('Lr '+results.layerRefs)
                 async.map(results.layerRefs, function(item, eachCallback) {
                     var areaRef = item.areaRef;
                     var layerId = areaRef['_id'];
