@@ -32,13 +32,6 @@ Ext.define('PumaMain.controller.Settings', {
         }
     },
     onThemeLoad: function() {
-//        var recs = Ext.StoreMgr.lookup('theme').getRange();
-//        var confs = [];
-//        for (var i=0;i<recs.length;i++) {
-//            confs.push({text:recs[i].get('name'),objId:recs[i].get('_id')})
-//        }
-//        var container = Ext.ComponentQuery.query('initialbar #themecontainer')[0];
-//        container.add(confs)
     }
         
 });

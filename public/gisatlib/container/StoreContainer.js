@@ -1,7 +1,7 @@
 Ext.define('Gisatlib.container.StoreContainer', {
     extend: 'Ext.container.Container',
     alias: 'widget.storecontainer',
-    mixins: ['Ext.util.Bindable'],
+    mixins: ['Ext.util.Bindable','Ext.form.field.Field'],
     initComponent: function() {
         if (this.store) {
             this.bindStore(this.store);
@@ -16,7 +16,7 @@ Ext.define('Gisatlib.container.StoreContainer', {
         this.valueField = this.valueField || '_id';
         this.type = this.type || 'button';
         this.callParent();
-        this.addEvents('change')
+        this.addEvents('change');
     },
     
     getStoreListeners: function() {
