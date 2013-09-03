@@ -9,6 +9,7 @@ Ext.define('Puma.patch.Main',{
         ,'Puma.patch.dd.DropZone'
         ,'Puma.patch.picker.Color'
         ,'Puma.patch.Component'
+        ,'Puma.patch.view.Table'
     ]
 })
 

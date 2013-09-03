@@ -408,7 +408,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var tree = Ext.ComponentQuery.query('#areatree')[0];
         tree.suspendEvents();
-        
+        tree.view.dontRefreshSize = true;
         for (var loc in remove) {
             var locRoot = root.findChild('loc',loc);
             for (var at in remove[loc]) {
@@ -458,6 +458,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             
         }
         tree.resumeEvents();
+        tree.view.dontRefreshSize = false;
         if (changed) {
             //Ext.StoreMgr.lookup('area').sort();
             tree.view.refresh();

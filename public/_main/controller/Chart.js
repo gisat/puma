@@ -355,7 +355,7 @@ Ext.define('PumaMain.controller.Chart', {
         return cfg;
     },
     
-    reconfigureChart: function(chartCmp, forExport, addingNew) {
+    reconfigureChart: function(chartCmp, forExport, addingNew, fromConfigPanel) {
         var cfg = chartCmp.cfg;
         var queryCfg = this.gatherChartCfg(chartCmp);
         var areas = {};
@@ -363,7 +363,7 @@ Ext.define('PumaMain.controller.Chart', {
         if (cfg.type != 'extentoutline') {
             areas = Ext.clone(this.getController('Area').lowestMap);
         }
-        if (cfg.title) {
+        if (cfg.title && fromConfigPanel) {
             chartCmp.up('chartpanel').setTitle(cfg.title)
         }
         queryCfg.areas = areas;

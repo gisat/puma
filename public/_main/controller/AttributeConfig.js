@@ -114,7 +114,7 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         delete values['normAttributeSet'];
         if (form.chart) {
             form.chart.cfg = values;
-            this.getController('Chart').reconfigureChart(form.chart)
+            this.getController('Chart').reconfigureChart(form.chart,false,false,true)
         }
         else if (form.formType=='chart') {
             this.getController('Chart').addChart(values);
