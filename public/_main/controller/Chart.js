@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Chart', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['PumaMain.view.form.ChoroplethForm', 'Ext.ux.grid.FiltersFeature', 'PumaMain.view.form.ChartForm', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color', 'PumaMain.view.ChartPanel'],
+    requires: [ 'Ext.ux.grid.FiltersFeature', 'PumaMain.view.Chart', 'PumaMain.view.VisualizationForm', 'Puma.util.Color', 'PumaMain.view.ChartPanel'],
     init: function() {
         this.control({
             'initialbar #visualizationsbtn': {
@@ -491,12 +491,12 @@ Ext.define('PumaMain.controller.Chart', {
     onOutlineReceived: function(data, cmp) {
         cmp.removeAll();
         data.layerRefs = data.layerRefs || [];
-
+        
         for (var i = 0; i < data.layerRefs.length; i++) {
             var layerRefs = data.layerRefs[i];
             var rows = data.rows[i];
             cmp.add({
-                xtype: 'component', type: 'extentoutline', width: 286, height: 300, layerRefs: layerRefs, rows: rows
+                xtype: 'component', type: 'extentoutline', width: 550, height: 300, layerRefs: layerRefs, rows: rows
             })
         }
 
@@ -640,6 +640,7 @@ Ext.define('PumaMain.controller.Chart', {
 //                        editable: false
 //                    }]
 //            }).show();
+//            return;
             
         }
         if (isPrint) {
@@ -663,8 +664,7 @@ Ext.define('PumaMain.controller.Chart', {
             url = window.location.origin + '/image/index3.html?id=' + id;
             var screenshot = Ext.create('Puma.model.Screenshot',{
                 src: url,
-                width: 175,
-                height: 120
+                visible: 1
             })
             Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true)
         }

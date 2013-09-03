@@ -13,19 +13,19 @@ Ext.define('PumaMain.controller.Screenshot', {
                 })
     },
     onScreenshotRemove: function(view, rec) {
+        if (rec.get('large')) return;
         rec.destroy();
     },
     onScreenshotExpand: function(view, rec, el) {
-        debugger;
         //var childs = el.parent().select('.screenshot').removeElement(el);
         //childs.enableDisplayMode().hide();
         var isLarge = rec.get('large') ? true : false;
         Ext.StoreMgr.lookup('screenshot').each(function(r) {
             if (r==rec) {
-                rec.set('large',!isLarge)
+                r.set('large',!isLarge);
             }
             else {
-                rec.set('visible',isLarge);
+                r.set('visible',isLarge ? 1 : 0);
             }
         })
         Ext.ComponentQuery.query('screenshotview')[0].refresh()

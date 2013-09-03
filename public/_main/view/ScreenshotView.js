@@ -8,15 +8,14 @@ Ext.define('PumaMain.view.ScreenshotView', {
         this.itemSelector = 'div.screenshot'
         this.tpl = [
             '<tpl for=".">',
-            '<tpl if="visible">',
-            '<div class="screenshot" style="width:<tpl if="large">550px<tpl else>180px</tpl>;height:<tpl if="large">360px<tpl else>120px</tpl>">',
-            '<img class="screenshotimg" height=<tpl if="large">360<tpl else>120</tpl>width=<tpl if="large">550<tpl else>180</tpl> src="{src}"/>',
+            '<div class="screenshot" style="display:<tpl if="visible==1">inline<tpl else>none</tpl>;width:<tpl if="large">560px<tpl else>175px</tpl>;height:<tpl if="large">367px<tpl else>120px</tpl>">',
+            '<img class="screenshotimg" height=<tpl if="large">367<tpl else>120</tpl> width=<tpl if="large">560<tpl else>175</tpl> src="{src}"/>',
+            //'<img class="screenshotimg" src="{src}"/>',
             '<div>',
             '</div>',
             '<img class="screenshoticon screenshotpng" height=30 width=30 src="http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png" />',
             '<img class="screenshoticon screenshotremove" height=30 width=30 src="http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png" />',    
             '</div>',
-            '</tpl>',
             '</tpl>'
         ]
         this.callParent();

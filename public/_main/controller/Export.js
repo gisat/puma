@@ -25,11 +25,15 @@ Ext.define('PumaMain.controller.Export', {
         };
     
         if (cfg.type=='extentoutline') {
-            opts.layout = {
-                type: 'table',
-                columns: 2
+            opts.layout = 'auto'
+            var selAreas = JSON.parse(cfg.selectedAreas);
+            var count = 0;
+            for (var loc in selAreas) {
+                for (var at in selAreas[loc]) {
+                    count += selAreas[loc][at].length
+                }
             }
-            opts.height = null;
+            opts.height = 300*Math.min(4,count)+10;
         }
         if (cfg.type=='map') {
             opts = {

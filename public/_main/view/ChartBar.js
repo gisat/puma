@@ -20,8 +20,8 @@ Ext.define('PumaMain.view.ChartBar', {
                     xtype: 'screenshotview'
                 }],
                 cfgType: 'screenshots',  
-                height: 450,
-                title: 'Screenshots'
+                height: 400,
+                title: 'Snapshots'
             },
             {
                 xtype: 'panel',
