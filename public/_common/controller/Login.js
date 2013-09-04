@@ -17,6 +17,9 @@ Ext.define('Puma.controller.Login', {
         $('.login').click(function() {
             me.onLoginClicked();
         })
+        $('.signup').click(function() {
+            me.onLogoutClicked();
+        })
     },
     onLoginClicked: function(btn) {
         var window = Ext.WindowManager.get('loginwindow');
@@ -82,6 +85,7 @@ Ext.define('Puma.controller.Login', {
                 window.close();
             }
             $('.login').html(Config.auth ? Config.auth.userName : 'Login')
+            $('.signup').html(Config.auth ? 'Logout' : 'Sign up')
             this.application.fireEvent('login', loggedIn);
             return;
         }

@@ -40,6 +40,7 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'savevisualization',
             width: '100%',
             height: '100%',
+            hidden: !Config.auth || !Config.auth.isAdmin,
             cls: 'btn-visualization-save'
         })
         Ext.widget('button',{
@@ -48,6 +49,7 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'sharedataview',
             width: '100%',
             height: '100%',
+            hidden: !Config.auth,
             icon: 'images/icons/share.png',
             cls: 'btn-share'
         })
@@ -78,16 +80,19 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-manage',
             itemId: 'managedataview',
+            hidden: !Config.auth,
             text: 'M'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-visualization-manage',
             itemId: 'managevisualization',
+            hidden: !Config.auth || !Config.auth.isAdmin,
             text: 'VM'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-save',
             itemId: 'savedataview',
+            hidden: !Config.auth,
             text: 'S'
         })
         
