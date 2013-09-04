@@ -236,14 +236,13 @@ Ext.define('PumaMain.controller.Chart', {
     },
     loadVisualization: function(visId) {
         var store = Ext.StoreMgr.lookup('visualization');
-        var vis = Config.cfg ? Config.cfg : store.getById(visId);
+        var vis = Config.cfg ? null : store.getById(visId);
 
-        var cfg = Config.cfg ? Config.cfg.chartCfg : null;
+        var cfg = Config.cfg ? Config.cfg.cfgs : null;
         if (vis) {
-            cfg = cfg || vis.get('cfg');
+            cfg = vis.get('cfg');
         }
         cfg = cfg || [];
-
         var container = Ext.ComponentQuery.query('chartbar')[0];
         var me = this;
         container.items.each(function(item) {
@@ -253,8 +252,15 @@ Ext.define('PumaMain.controller.Chart', {
 
         })
         for (var i = 0; i < cfg.length; i++) {
-            if (cfg.type != 'filter')
-                this.addChart(cfg[i], true);
+            if (cfg.type != 'filter') {
+                if (Config.cfg) {
+                    this.addChart(cfg[i].cfg, true,cfg[i].queryCfg);
+                }
+                else {
+                    this.addChart(cfg[i], true);
+                }
+            }
+                
         }
 
     },
@@ -264,7 +270,7 @@ Ext.define('PumaMain.controller.Chart', {
         this.addChart(cfg);
 
     },
-    addChart: function(cfg, withoutReconfigure) {
+    addChart: function(cfg, withoutReconfigure, queryCfg) {
         var container = Ext.ComponentQuery.query('chartbar')[0];
         //var opts = cfg.type == 'featurecount' ? {height: 150} : {};
         var opts = {
@@ -290,6 +296,7 @@ Ext.define('PumaMain.controller.Chart', {
         })
         container.add(container.items.length - 2, cnt);
         chart.cfg = cfg;
+        chart.queryCfg = queryCfg;
         chart.cnt = cnt;
         cnt.chart = chart;
         if (!withoutReconfigure) {
@@ -351,7 +358,7 @@ Ext.define('PumaMain.controller.Chart', {
     
     reconfigureChart: function(chartCmp, forExport, addingNew, fromConfigPanel) {
         var cfg = chartCmp.cfg;
-        var queryCfg = chartCmp.queryCfg || Ext.clone(cfg);
+        var queryCfg = Ext.apply(chartCmp.queryCfg || {},Ext.clone(cfg));
         var areas = {};
  
         if (cfg.type != 'extentoutline') {

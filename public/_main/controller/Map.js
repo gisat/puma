@@ -153,6 +153,12 @@ Ext.define('PumaMain.controller.Map', {
     },
     // areas can be specified or taken from selection
     onZoomSelected: function(btn,areas) {
+        var map = Ext.ComponentQuery.query('#map')[0].map;
+        if (Config.cfg) {
+            map.setCenter([Config.cfg.mapCfg.center.lon,Config.cfg.mapCfg.center.lat],Config.cfg.mapCfg.zoom);
+            return;
+        }
+        
         var selectController = this.getController('Select');
         var color = selectController.actualColor;
         var sel = color ? selectController.selMap[color] : [];
@@ -172,7 +178,7 @@ Ext.define('PumaMain.controller.Map', {
                 overallExtent.extend(extent)
             }
         }
-        var map = Ext.ComponentQuery.query('#map')[0].map;
+        
         map.zoomToExtent(overallExtent);
         
     },

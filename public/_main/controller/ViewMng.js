@@ -64,7 +64,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         
     },
     onShare: function() {
-        var view = Ext.create('Puma.model.DataView');
+        var view = Ext.create('Puma.model.DataView',this.gatherViewConfig());
         view.save({
             callback: this.onSaveFinish
         });  
@@ -74,13 +74,14 @@ Ext.define('PumaMain.controller.ViewMng', {
         var store = Ext.StoreMgr.lookup(isView ? 'dataview' : 'visualization');
         store.addWithSlaves(rec);
         if (isView) {
-            var window = Ext.widget('window',{
+            var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id')
+            var win = Ext.widget('window',{
                 items: [{
                         xtype: 'displayfield',
-                        value: 'urlforid_'+rec.get('_id')
+                        value: url
                 }]
             })
-            window.show();
+            win.show();
         }
     },
         
@@ -98,6 +99,71 @@ Ext.define('PumaMain.controller.ViewMng', {
         window.show();
     },
         
+    onDataviewLoad: function() {
+        var yearCombo = Ext.ComponentQuery.query('#selyear')[0];
+        var datasetCombo = Ext.ComponentQuery.query('#seldataset')[0];
+        var themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
+        var visualizationCombo = Ext.ComponentQuery.query('#selvisualization')[0];
+        var locationCombo = Ext.ComponentQuery.query('#sellocation')[0];
+        
+        yearCombo.suspendEvents();
+        datasetCombo.suspendEvents();
+        themeCombo.suspendEvents();
+        visualizationCombo.suspendEvents();
+        locationCombo.suspendEvents();
+        
+        datasetCombo.setValue(Config.cfg.dataset);
+        
+        var locStore = Ext.StoreMgr.lookup('location4init');
+        locStore.clearFilter(true);
+        locStore.filter([
+            function(rec) {
+                return rec.get('dataset')==Config.cfg.dataset;
+            }
+        ]); 
+        locationCombo.setValue(Config.cfg.location);
+        
+        var themeStore = Ext.StoreMgr.lookup('theme4sel');
+        themeStore.clearFilter(true);
+        themeStore.filter([
+            function(rec) {
+                return rec.get('dataset')==Config.cfg.dataset;
+            }
+        ]);
+        themeCombo.setValue(Config.cfg.theme);
+        
+        var visStore = Ext.StoreMgr.lookup('visualization4sel');
+        var yearStore = Ext.StoreMgr.lookup('year4sel');
+        var themeYears = Ext.StoreMgr.lookup('theme').getById(Config.cfg.theme).get('years');
+        
+        yearStore.clearFilter(true);
+        yearStore.filter([function(rec) {
+            return Ext.Array.contains(themeYears,rec.get('_id'))
+        }])
+        yearCombo.setValue(Config.cfg.years)
+        
+        visStore.clearFilter(true);
+        visStore.filter([function(rec) {
+            return rec.get('theme')==Config.cfg.theme
+        }]);
+        visualizationCombo.setValue(Config.cfg.visualization);
+   
+        yearCombo.resumeEvents();
+        datasetCombo.resumeEvents();
+        themeCombo.resumeEvents();
+        visualizationCombo.resumeEvents();
+        locationCombo.resumeEvents();
+        
+        
+        var locationTheme = this.getController('LocationTheme');
+        locationTheme.datasetChanged = true;
+        locationTheme.visChanged = true;
+        locationTheme.themeChanged = true;
+        locationTheme.yearChanged = true;
+        locationTheme.locationChanged = true;
+        locationTheme.onYearChange({cntId:'dataview'});
+        
+    },
         
     gatherViewConfig: function() {
         var cfg = {};

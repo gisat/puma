@@ -776,12 +776,13 @@ Ext.define('PumaMain.controller.Layers', {
             
     loadVisualization: function(visId) {
         var store = Ext.StoreMgr.lookup('visualization');
-        var vis = Config.cfg ? Config.cfg : store.getById(visId);
+        var vis = store.getById(visId);
         
-        if (!vis) {
+        if (!vis && !Config.cfg) {
             return;
         }
-        var attrs = vis.get('choroplethCfg') || []
+        var attrs = Config.cfg ? Config.cfg.choroplethCfg : vis.get('choroplethCfg');
+        attrs = attrs || [];
         this.reconfigureChoropleths({attrs:attrs});
         
     },
@@ -888,28 +889,43 @@ Ext.define('PumaMain.controller.Layers', {
         var visId = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         var vis = Ext.StoreMgr.lookup('visualization').getById(visId);
         if (!vis && !Config.cfg) return;
-        var visibleLayers = Config.cfg ? Config.cfg.layerCfg : (vis.get('visibleLayers') || []);
+        var visibleLayers = Config.cfg ? Config.cfg.layers : (vis.get('visibleLayers') || []);
         var store = Ext.StoreMgr.lookup('layers');
         var root = store.getRootNode();
         var me = this;
         root.cascadeBy(function(node) {
             var type = node.get('type');
-            if (type!='topiclayer' && type!='chartlayer') return;
-            var toBeChecked = false;
+            if (type!='topiclayer' && type!='chartlayer' && !Config.cfg) return;
+            var layer1 = node.get('layer1');
+            var layer2 = node.get('layer2');
+            if (!layer1) return;
+            
+            var foundLayer = null;
             for (var i=0;i<visibleLayers.length;i++) {
                 var selLayer = visibleLayers[i];
                 if (type=='topiclayer' && selLayer.at == node.get('at') && selLayer.symbologyId==node.get('symbologyId')) {
-                    toBeChecked = true;
+                    foundLayer = selLayer;
                     break;
                 }
                 if (type=='chartlayer' && selLayer.attributeSet == node.get('attributeSet') && selLayer.attribute==node.get('attribute')) {
-                    toBeChecked = true;
+                    foundLayer = selLayer;
                     break;
                 }
+                if (type!='chartlayer' && type!='topiclayer' && type == selLayer.type) {
+                    foundLayer = selLayer;
+                    break;
+                }
+                
             }
-            if (toBeChecked) {
+            if (foundLayer) {
+                if (Config.cfg) {
+                    node.set('sortIndex',foundLayer.sortIndex);
+                    layer1.setOpacity(foundLayer.opacity);
+                    layer2.setOpacity(foundLayer.opacity);
+                }
                 node.set('checked',true);
                 me.onCheckChange(node,true,null,true);
+                
             }
             else {
                 node.set('checked',false)

@@ -34,17 +34,21 @@ Ext.define('PumaMain.controller.Store', {
         this.initAggregatedStores();
         this.initEvents();
         this.initLocations();
+        this.getController('Dataview').checkLoading();
     },
         
     initLocations: function() {
+        var store = Ext.StoreMgr.lookup('location4init');
+        store.loading = true;
         Ext.Ajax.request({
             url: Config.url + '/api/theme/getLocationConf',
             scope: this,
             method: 'GET',
             success: function(response) {
                 var data = JSON.parse(response.responseText).data;
-                var store = Ext.StoreMgr.lookup('location4init');
+                
                 store.loadData(data);
+                store.loading = false;
             }
 
         })
@@ -155,12 +159,6 @@ Ext.define('PumaMain.controller.Store', {
         areaStore.on('load',function(store,node,records) {
             me.getController('Area').onLoad(store,node,records);
         },this);
-//        Ext.StoreMgr.lookup('activedataset').on('load',function(store) {
-//            me.getController('Settings').onDatasetLoad();
-//        })
-//        Ext.StoreMgr.lookup('selectedlayers').on('datachanged',function(store) {
-//            me.getController('Layers').onLayerDrop();
-//        })
         
     },
         

@@ -17,7 +17,20 @@ Ext.application({
     requires: ['Puma.patch.Main'],
     launch: function() {
         this.getController('Puma.controller.Login');
-        this.getController('Render').renderIntro();
+        var search = window.location.search.split('?')[1];
+        var afterId = search ? search.split('id=')[1] : null;
+        var id = afterId ? afterId.split('&')[0] : null;
+        Config.dataviewId = id;
+        if (id) {
+            this.getController('DomManipulation').renderApp();
+            this.getController('Render').renderApp();
+            
+            this.getController('Render').renderMap();
+        }
+        else {
+            this.getController('Render').renderIntro();
+        }
+        
     }
 });
 

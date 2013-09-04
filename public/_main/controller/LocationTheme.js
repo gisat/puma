@@ -227,7 +227,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (cnt.itemId=='selyear' ) {
             this.yearChanged = true;
         }
-        // zatim nepouzivano
         var isFilter = cnt.itemId == 'filter';
         var detailLevelChanged = cnt.itemId == 'detaillevel';
         
@@ -418,7 +417,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
                        nodesToDestroy.push(node);
                        changed = true;
                    }
-                   
                 });
             }
         }
@@ -665,10 +663,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
             
             var changed = this.refreshAreas(conf.add,conf.remove);
         }
+        if (Config.cfg) {
+            Ext.StoreMgr.lookup('paging').currentPage = Config.cfg.page;
+        }
         if (conf.layerNodes && conf.layerNodes.length) {
             this.removeLayers();
             this.appendLayers(conf.layerNodes);
-            Ext.StoreMgr.lookup('layers4outline').load()
+            Ext.StoreMgr.lookup('layers4outline').load();
         }
         if (conf.layerRefMap) {
             this.updateLayerContext(conf.layerRefMap);
@@ -691,20 +692,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (response.request.options.locationChanged || response.request.options.datasetChanged) {
             this.getController('Area').zoomToLocation();
         }
-        //this.initVisualizations(btn);
-        
-//        mc.drawnLayer.destroyFeatures();
-//        if (conf.userPolygons) {
-//            var format = new OpenLayers.Format.WKT();
-//            
-//            for (var featureId in conf.userPolygons.geometries) {
-//                var obj = conf.userPolygons.geometries[featureId];
-//                var feature = format.read(obj.geom);
-//                feature.gid = parseInt(featureId);
-//                mc.drawnLayer.addFeatures([feature]);
-//            }
-//        }
-//        this.reinitializeTreesAreas(conf.areaTrees,btn)
+
     },
     checkFeatureLayers: function() {
         var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();

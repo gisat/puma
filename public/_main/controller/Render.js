@@ -113,8 +113,8 @@ Ext.define('PumaMain.controller.Render', {
         })
         
     },
-        
-    renderIntro: function() {
+    
+    renderMap: function() {
         Ext.widget('component',{
             renderTo: 'app-map',
             itemId: 'map',
@@ -128,6 +128,10 @@ Ext.define('PumaMain.controller.Render', {
             width: 1920,
             height: 900
         })
+    },        
+            
+    renderIntro: function() {
+        this.renderMap();
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
             initial: true,
