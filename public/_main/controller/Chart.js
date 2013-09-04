@@ -305,7 +305,7 @@ Ext.define('PumaMain.controller.Chart', {
     onChartRemove: function(btn, panel) {
 
         var panel = btn ? btn.up('panel') : panel;
-        if (panel.chart.chart) {
+        if (panel.chart.chart && panel.chart.chart.renderTo) {
             panel.chart.chart.destroy();
         }
         panel.destroy();
