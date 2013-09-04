@@ -3,7 +3,8 @@ Ext.define('PumaMain.view.ChartBar', {
     alias: 'widget.chartbar',
     requires: ['PumaMain.view.ScreenshotView'],
     autoScroll: true,
-    maxHeight: 760,
+    
+    height:"100%",
     initComponent: function() {
 
         this.layout = {

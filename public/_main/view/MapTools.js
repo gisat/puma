@@ -4,7 +4,7 @@ Ext.define('PumaMain.view.MapTools', {
     columns: 2,
     initComponent: function() { 
         this.defaults = {
-            height: 60,
+            height: 90,
             width: 125
         }
         this.layout = {
@@ -16,36 +16,48 @@ Ext.define('PumaMain.view.MapTools', {
             enableToggle: true,
             itemId: 'hoverbtn',
             text: 'Hover',
-            cls: 'btn-tool-hover'
+            iconAlign: 'top',
+            icon: 'images/icons/tools-hover.png',
+            cls: 'btn-map-tool btn-tool-hover'
         },{
             xtype: 'button',
             itemId: 'zoomselectedbtn',
             text: 'Zoom selected',
-            cls: 'btn-tool-zoom-selected'
+            iconAlign: 'top',
+            icon: 'images/icons/tools-zoom.png',
+            cls: 'btn-map-tool btn-tool-zoom-selected'
         },{
             xtype: 'button',
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'measurelinebtn',
             text: 'Measure line',
-            cls: 'btn-tool-measure-line'
+            iconAlign: 'top',
+            icon: 'images/icons/tools-measure-line.png',
+            cls: 'btn-map-tool btn-tool-measure-line'
         },{
             xtype: 'button',
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'measurepolygonbtn',
             text: 'Measure polygon',
-            cls: 'btn-tool-measure-polygon'
+            iconAlign: 'top',
+            icon: 'images/icons/tools-measure-polygon.png',
+            cls: 'btn-map-tool btn-tool-measure-polygon'
         },{
             xtype: 'button',
             itemId: 'multiplemapsbtn',
             text: 'Multiple maps',
-            cls: 'btn-tool-multiple-maps'
+            iconAlign: 'top',
+            icon: 'images/icons/tools-maps-multiple.png',
+            cls: 'btn-map-tool btn-tool-multiple-maps'
         },{
             xtype: 'button',
             text: 'Save as image',
             itemId: 'savemapbtn',
-            cls: 'btn-tool-save-image'
+            icon: 'images/icons/tools-save.png',
+            iconAlign: 'top',
+            cls: 'btn-map-tool btn-tool-save-image'
         }]
         
         this.callParent();

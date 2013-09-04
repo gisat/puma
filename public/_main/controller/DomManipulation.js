@@ -7,11 +7,13 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		
 		this.resizeMap();
+		this.resizeReports();
 	},
 	
 	renderApp: function() {
 		$("body").removeClass("intro").addClass("application");
 		this.resizeMap();
+		this.resizeReports();
 	},
 	
 	renderIntro: function() {
@@ -19,13 +21,14 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	},
 	
 	resizeMap: function() {
-		var w  = $(window).width();
-		var h  = $(window).height() - $("#header").outerHeight(true) - $("#footer").outerHeight(true);
+		var availableSize = this.getContentAvailableSize();
+		
+		var w  = availableSize.width;
+		var h  = availableSize.height;
 		var sl = $("#sidebar-reports").position().left;
 		
 		if ($("body").hasClass("application") && sl > 0) {
 			w = sl;
-			h -= $("#toolbar").outerHeight(true);
 		}
 		
 		$("#map-holder").css({width : w, height : h});
@@ -40,6 +43,12 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		}
 	},
 	
+	resizeReports: function() {
+		var availableSize = this.getContentAvailableSize();
+		$("#sidebar-reports").height(availableSize.height);
+		$("#app-reports-accordeon").height(availableSize.height - $("#app-reports-paging").outerHeight(true));
+	},
+	
 	activateMapSplit: function() {
 		$("#map-holder").addClass("split");
 		this.resizeMap();
@@ -50,6 +59,16 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		this.resizeMap();
 	},
 	
+	getContentAvailableSize: function() {
+		var w  = $(window).width();
+		var h  = $(window).height() - $("#header").outerHeight(true) - $("#footer").outerHeight(true);
+		
+		if ($("body").hasClass("application")) {
+			h -= $("#toolbar").outerHeight(true);
+		}
+		return { width  : w, height : h };
+	},
+	
 	_onSidebarToggleClick: function() {
 		$("#sidebar-reports").toggleClass("hidden");
 		this.resizeMap();
@@ -57,5 +76,6 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	
 	_onWindowResize: function() {
 		this.resizeMap();
+		this.resizeReports();
 	}
 });
