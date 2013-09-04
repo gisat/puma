@@ -187,7 +187,7 @@ Ext.define('PumaMain.controller.Chart', {
     },
     gatherChartCfg: function(chart, useQueryCfg) {
         chart.cfg.chartId = chart.cfg.chartId || parseInt(Math.random() * 10000000)
-        var cfg = Ext.clone(useQueryCfg ? chart.queryCfg : chart.cfg);
+        var cfg = useQueryCfg ? {} : Ext.clone(chart.cfg);
         var legendItems = chart.chart && chart.chart.legend && useQueryCfg ? chart.chart.legend.allItems : [];
         if (legendItems.length) {
             cfg.invisibleAttrs = [];
@@ -195,16 +195,10 @@ Ext.define('PumaMain.controller.Chart', {
 
         }
         if (cfg.type == 'grid' && chart.chart && chart.chart.store && useQueryCfg) {
-            cfg.activeFilters = [];
             cfg.activeSorters = [];
             chart.chart.store.sorters.each(function(sorter) {
                 cfg.activeSorters.push({direction: sorter.direction, property: sorter.property})
             })
-//            chart.chart.filters.filters.each(function(filter) {
-//                if (filter.type == 'numeric' && filter.active) {
-//                    cfg.activeFilters.push({dataIndex: filter.dataIndex, value: filter.getValue()});
-//                }
-//            })
         }
         for (var j = 0; j < legendItems.length; j++) {
             var legendItem = legendItems[j];
@@ -222,13 +216,13 @@ Ext.define('PumaMain.controller.Chart', {
         }
         return cfg
     },
-    gatherCfg: function() {
+    gatherCfg: function(useQuery) {
         var charts = Ext.ComponentQuery.query('chartbar chartcmp');
         var cfgs = [];
         for (var i = 0; i < charts.length; i++) {
             var chart = charts[i];
-            var cfg = this.gatherChartCfg(chart);
-
+            var cfg = this.gatherChartCfg(chart,useQuery);
+            
             cfgs.push(cfg);
         }
         return cfgs;
@@ -357,7 +351,7 @@ Ext.define('PumaMain.controller.Chart', {
     
     reconfigureChart: function(chartCmp, forExport, addingNew, fromConfigPanel) {
         var cfg = chartCmp.cfg;
-        var queryCfg = this.gatherChartCfg(chartCmp);
+        var queryCfg = chartCmp.queryCfg || Ext.clone(cfg);
         var areas = {};
  
         if (cfg.type != 'extentoutline') {
@@ -381,6 +375,10 @@ Ext.define('PumaMain.controller.Chart', {
         }
         if (Ext.Array.contains(['grid','columnchart','piechart'],cfg.type)) {
             Ext.apply(queryCfg,this.getPagingParams());
+        }
+        if (cfg.type=='scatterchart') {
+            delete queryCfg['start'];
+            delete queryCfg['limit'];
         }
         if (cfg.type=='extentoutline') {
             queryCfg.selectedAreas = JSON.stringify(this.getSelectedAreas());

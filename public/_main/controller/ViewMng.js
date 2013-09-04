@@ -97,6 +97,78 @@ Ext.define('PumaMain.controller.ViewMng', {
         })
         window.show();
     },
+        
+        
+    gatherViewConfig: function() {
+        var cfg = {};
+        cfg.years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        cfg.dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        cfg.theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+        cfg.visualization = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
+        cfg.location = Ext.ComponentQuery.query('#sellocation')[0].getValue();
+        cfg.expanded = this.getController('Area').getExpandedAndFids().expanded;
+        cfg.selMap = this.getController('Select').selMap;
+        cfg.choroplethCfg = this.getController('AttributeConfig').layerConfig
+        
+        var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
+        var filters = [];
+        for (var i=0;i<sliders.length;i++) {
+            var slider = sliders[i];
+            filters.push({
+                min: slider.minValue,
+                max: slider.maxValue,
+                inc: slider.increment,
+                value: slider.getValue()
+            })
+        }
+        cfg.filters = filters;
+        cfg.minFilterFl = this.getController('Filter').minFl
+        cfg.maxFilterFl = this.getController('Filter').maxFl
+        
+        var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
+        this.getController('Layers').resetIndexes();
+        var layerCfg = [];
+        for (var i=0;i<layers.length;i++) {
+            var layer = layers[i];
+            layerCfg.push({
+                opacity: layer.get('layer1').opacity || 1,
+                sortIndex: layer.get('sortIndex'),
+                type: layer.get('type'),
+                attributeSet: layer.get('attributeSet'),
+                attribute: layer.get('attribute'),
+                at: layer.get('at'),
+                symbologyId: layer.get('symbologyId')
+            })
+        }
+        cfg.layers = layerCfg
+        
+        var store =  Ext.StoreMgr.lookup('paging');
+        cfg.page = store.currentPage;
+        
+        var map = Ext.ComponentQuery.query('#map')[0].map;
+        cfg.mapCfg = {
+            center: map.center,
+            zoom: map.zoom
+        }
+        
+        var cfgs = this.getController('Chart').gatherCfg();
+        var queryCfgs = this.getController('Chart').gatherCfg(true);
+        var viewCfgs = [];
+        for (var i=0;i<cfgs.length;i++) {
+            viewCfgs.push({
+                cfg: cfgs[i],
+                queryCfg: queryCfgs[i]
+            })
+        }
+        cfg.cfgs = viewCfgs;
+        
+        return {
+            conf: cfg
+        }
+        
+    },
+    
+    
     onVisSave: function() {
         var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var cfgs = this.getController('Chart').gatherCfg();
@@ -141,7 +213,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         window.show();
     },
     onViewSave: function() {
-        var view = Ext.create('Puma.model.DataView');
+        var view = Ext.create('Puma.model.DataView',this.gatherViewConfig());
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 300,

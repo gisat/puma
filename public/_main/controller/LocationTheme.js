@@ -273,7 +273,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         if (cntId=='selyear' && root.hasChildNodes() || isFilter) {
             var expandedAndFids = this.getController('Area').getExpandedAndFids();
-            params['expanded'] = JSON.stringify(expandedAndFids.expanded);
+            params['expanded'] = JSON.stringify(expandedAndFids.loaded);
             params['fids'] = JSON.stringify(expandedAndFids.fids);
         }
         if (cntId=='slider') {

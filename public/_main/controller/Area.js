@@ -186,6 +186,7 @@ Ext.define('PumaMain.controller.Area', {
         
     getExpandedAndFids: function() {
             var expanded = {};
+            var loaded = {};
             var fids = {};
             var root = Ext.StoreMgr.lookup('area').getRootNode();
             root.cascadeBy(function(node) {
@@ -194,6 +195,11 @@ Ext.define('PumaMain.controller.Area', {
                 var at = node.get('at');
                 var gid = node.get('gid');
                 if (node.isLoaded()) {
+                    loaded[loc] = loaded[loc] || {};
+                    loaded[loc][at] = loaded[loc][at] || [];
+                    loaded[loc][at].push(gid);
+                }
+                if (node.isExpanded()) {
                     expanded[loc] = expanded[loc] || {};
                     expanded[loc][at] = expanded[loc][at] || [];
                     expanded[loc][at].push(gid);
@@ -202,7 +208,7 @@ Ext.define('PumaMain.controller.Area', {
                 fids[loc][at] = fids[loc][at] || [];
                 fids[loc][at].push(gid);
             })
-            return {expanded:expanded, fids: fids};
+            return {expanded:expanded, fids: fids, loaded: loaded};
     },
     onItemClick: function(tree,rec,item,index,evt) {
         var selected = [{at:rec.get('at'),gid:rec.get('gid'),loc:rec.get('loc')}];
