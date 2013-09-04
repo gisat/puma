@@ -91,6 +91,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             height: 400,
             items: [{
                 xtype: 'commonmnggrid',
+                allowReorder: btn.itemId == 'managevisualization',
                 store: Ext.StoreMgr.lookup(btn.itemId == 'managevisualization' ? 'visualization4sel':'dataview')
             }]
         })
