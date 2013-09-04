@@ -35,11 +35,11 @@
 .field.level .widget .button:first-child {
 	margin-left          : 0;
 }
-.x-btn.btn-level {
+.field.level .x-btn {
 	background           : #807e87;
 	border               : none;
 }
-.x-btn.btn-level .x-btn-inner {
+.field.level .x-btn .x-btn-inner {
 	color                : #434254;
 	font-size            : 25px;
 	font-family          : "Courier new", monospace;
@@ -50,15 +50,44 @@
 	text-align           : right;
 	font-weight          : bold;
 }
-.field.visualization-save .widget {
+#app-toolbar-visualization-save,
+#app-toolbar-visualization-manage {
 	width                : 70px;
+	margin-left          : 5px;
+	float                : left;
+	display              : block;
 }
-.field.share, .field.share > .widget {
+#app-toolbar-visualization-manage {
+	width                : 30px;
+}
+.x-btn.btn-visualization-manage button .x-btn-icon {
+	left                 : 7px;
+	top                  : 7px;
+}
+.field.dataview, .field.dataview > .widget {
 	display              : block;
 }
 .x-btn.btn-share button .x-btn-icon {
 	left                 : 10px;
 }
+#app-toolbar-save {
+	width                : 110px;
+	float                : left;
+	margin-top           : 10px;
+}
+#app-toolbar-manage {
+	width                : 30px;
+	float                : right;
+	margin-top           : 10px;
+}
+.x-btn.btn-save button .x-btn-icon {
+	left                 : 10px;
+}
+.x-btn.btn-manage button .x-btn-icon {
+	left                 : 7px;
+	top                  : 7px;
+}
+
 
 /* Sidebar tools */
 .x-btn.btn-map-select button .x-btn-icon {
@@ -67,4 +96,71 @@
 .x-btn.btn-snapshot button .x-btn-icon {
 	left                 : 14px;
 	width                : 20px;
+}
+
+.x-btn.btn-map-tool {
+	background : transparent;
+}
+.x-btn.btn-map-tool:focus, .x-btn.btn-map-tool:hover {
+	background : #eee;
+}
+.x-btn.btn-map-tool button .x-btn-icon {
+	left : 50%;
+	top: 20px;
+}
+.x-btn.btn-map-tool button .x-btn-inner {
+	padding-top: 60px;
+}
+	.x-btn-pressed.btn-map-tool button .x-btn-inner {
+		color : #c92d42;
+	}
+.x-btn.btn-tool-hover button .x-btn-icon {
+	width: 23px;
+	height: 36px;
+	margin-left: -12px;
+}
+	.x-btn-pressed.btn-tool-hover button .x-btn-icon {
+		background-image: url("../images/icons/tools-hover-pressed.png") !important;
+	}
+.x-btn.btn-tool-zoom-selected button .x-btn-icon {
+	width: 35px;
+	height: 35px;
+	margin-left: -17px;
+}
+.x-btn.btn-tool-measure-line button .x-btn-icon {
+	width: 39px;
+	height: 36px;
+	margin-left: -19px;
+}
+	.x-btn-pressed.btn-tool-measure-line button .x-btn-icon {
+		background-image: url("../images/icons/tools-measure-line-pressed.png") !important;
+	}
+.x-btn.btn-tool-measure-polygon button .x-btn-icon {
+	width: 44px;
+	height: 35px;
+	margin-left: -22px;
+}
+	.x-btn-pressed.btn-tool-measure-polygon button .x-btn-icon {
+		background-image: url("../images/icons/tools-measure-polygon-pressed.png") !important;
+	}
+.x-btn.btn-tool-multiple-maps button .x-btn-icon {
+	width: 60px;
+	height: 30px;
+	margin-left: -30px;
+}
+	.x-btn-pressed.btn-tool-multiple-maps button .x-btn-icon {
+		background-image: url("../images/icons/tools-maps-multiple-pressed.png") !important;
+	}
+.x-btn.btn-tool-save-image button .x-btn-icon {
+	width: 48px;
+	height: 35px;
+	margin-left: -16px;
+}
+
+/* Reports */
+#app-reports-paging {
+	height               : 35px;
+}
+#app-reports-accordeon {
+	overflow             : auto;
 }

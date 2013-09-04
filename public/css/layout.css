@@ -179,6 +179,7 @@ em {
 		}
 		.fields-holder .field > .widget {
 			display          : table-cell;
+			vertical-align   : top;
 			width            : 150px;
 			height           : 30px;
 			line-height      : 30px;
@@ -214,10 +215,14 @@ em {
 		}
 		#toolbar > .label {
 			margin-top       : 5px;
+			padding-top      : 8px;
+			line-height      : 30px;
+			font-size        : 24px;
+			width            : 250px;
 		}
 		#toolbar .group {
 			float            : none;
-			width            : 745px;
+			width            : 800px;
 			margin           : 0;
 		}
 		#toolbar .group .field {
@@ -228,11 +233,11 @@ em {
 			background       : url("../images/toolbar-group-border.png") repeat-y 100% 0;
 		}
 		
-		#toolbar .share {
+		#toolbar .dataview {
 			position         : absolute;
 			top              : 10px;
 			right            : 10px;
-			width            : 147px;
+			width            : 150px;
 			margin-top       : 0;
 		}
 		#toolbar .help a {
@@ -291,6 +296,7 @@ em {
 		bottom           : 0;
 		left             : 0;
 		padding          : 0 10px;
+		z-index          : 10000;
 	}
 	#footer a {
 		text-decoration  : underline;
