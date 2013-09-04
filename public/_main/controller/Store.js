@@ -365,9 +365,17 @@ Ext.define('PumaMain.controller.Store', {
         
         
         Ext.create('Ext.data.TreeStore', {
-            fields: ['text'],
             model: 'Puma.model.MapLayer',
             storeId: 'layers',
+            sorters: [{
+                sorterFn: function(o1,o2) {
+                    var type1 = o1.get('type');
+                    
+                    if (Ext.Array.contains(['systemgroup,choroplethgroup','themtaicgroup','basegroup'],type1)) {
+                        return null;
+                    }
+                }
+            }],
             root: {
                 expanded: true,
                 children: [{

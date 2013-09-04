@@ -570,6 +570,7 @@ function getThemeYearConf(params, req, res, callback) {
                                     leaf: true,
                                     at: layer._id,
                                     topic: topic,
+                                    sortIndex: 2.5,
                                     type: 'topiclayer',
                                     checked: false
                                 }

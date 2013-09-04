@@ -586,11 +586,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 selectedLayerNode = {
                     type: 'selectedareas',
                     name: 'Selected areas',
+                    sortIndex: 0,
                     checked: true,
                     leaf: true
                 }
                 areaLayerNode = {
                     type: 'areaoutlines',
+                    sortIndex: 1,
                     name: 'Area outlines',
                     checked: true,
                     leaf: true
@@ -624,6 +626,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 }
             }
             Ext.StoreMgr.lookup('selectedlayers').loadData(layersToAdd,true);
+            var layerController = this.getController('Layers');
+            layerController.resetIndexes();
+            layerController.onLayerDrop();
     },
         
     updateLeafs: function(leafMap) {

@@ -156,6 +156,8 @@ Ext.define('PumaMain.controller.Layers', {
         this.onCheckChange(rec,false);
     },
     onLayerDown: function(panel,rec) {
+        
+        this.resetIndexes();
         var store = Ext.StoreMgr.lookup('selectedlayers');
         var idx = store.indexOf(rec);
         var nextRec = store.getAt(idx+1);
@@ -168,6 +170,7 @@ Ext.define('PumaMain.controller.Layers', {
         this.onLayerDrop();
     },
     onLayerUp: function(panel,rec) {
+        this.resetIndexes();
         var store = Ext.StoreMgr.lookup('selectedlayers');
         var idx = store.indexOf(rec);
         var prevRec = store.getAt(idx-1);
@@ -179,8 +182,28 @@ Ext.define('PumaMain.controller.Layers', {
         store.sort();
         this.onLayerDrop();
     },
+        
+    resetIndexes: function() {
+        var store = Ext.StoreMgr.lookup('selectedlayers')
+        store.suspendEvents();
+        var layers = store.getRange();
+        for (var i=0;i<layers.length;i++) {
+            var layer = layers[i];
+            var type = layer.get('type');
+            if (type!='topiclayer' && type!='chartlayer' && type!='selectedareas' && type!='areaoutlines') {
+                continue;
+            }
+            layer.set('sortIndex',i);
+        }
+        
+        store.resumeEvents();
+        store.sort();
+    },
+    
     onLayerDrop: function() {
-        var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
+        var store = Ext.StoreMgr.lookup('selectedlayers');
+        var layers = store.getRange();
+       
         var map1 = Ext.ComponentQuery.query('#map')[0].map;
         var map2 = Ext.ComponentQuery.query('#map2')[0].map;
         layers.reverse();
@@ -194,7 +217,6 @@ Ext.define('PumaMain.controller.Layers', {
                 layers2.push(layers[i].get('layer2'))
             }
         }
-        
         for (var i = 0; i < layers.length; i++) {
             if (map1 && layers1[i]) {
                 if (i==0) {
@@ -388,12 +410,13 @@ Ext.define('PumaMain.controller.Layers', {
                     "SLD_ID": id
                 })
                 layer.initialized = true;
+                node.initialized = true;
                 if (legendLayer) {
                     node.set('src',me.getLegendUrl(id,legendLayer))
                     
                 }
                 if (node.get('checked')) {
-                    layer.setVisibility(true);
+                    me.onCheckChange(node,true)
                     //Ext.ComponentQuery.query('#legendpanel')[0].refresh();
                 }
                 
@@ -689,6 +712,7 @@ Ext.define('PumaMain.controller.Layers', {
             leaf: true,
             params: params,
             cfg: cfg,
+            sortIndex: 1.5,
             layer1: layer1,
             layer2: layer2,
             checked: autoActivate ? true : false
@@ -816,7 +840,7 @@ Ext.define('PumaMain.controller.Layers', {
         var layer2 = node.get('layer2');
         
         var me = this;
-        if (node.get('type') == 'chartlayer' && node.get('checked')) {
+        if (node.get('type') == 'chartlayer' && node.get('checked') && !node.initialized) {
             this.initChartLayer(node);
             return;
         }
@@ -830,12 +854,13 @@ Ext.define('PumaMain.controller.Layers', {
                 }
             }
         }
-        
         if (layer1.initialized)
             layer1.setVisibility(checked);
         if (layer2.initialized)
             layer2.setVisibility(checked);
+        me.resetIndexes();
         me.onLayerDrop();
+        
     },
     gatherVisibleLayers: function() {
         var store = Ext.StoreMgr.lookup('selectedlayers');
