@@ -11,6 +11,7 @@ Ext.define('PumaMain.controller.Layers', {
             'layerpanel' : {
                 choroplethreconfigure: this.onChoroplethReconfigureBtnClick,
                 choroplethremove: this.onChoroplethRemove,
+                checkchange: this.onCheckChange,
                 layerup: this.onLayerUp,
                 layerdown: this.onLayerDown,
                 layerremove: this.onLayerRemove,
@@ -838,7 +839,7 @@ Ext.define('PumaMain.controller.Layers', {
         Ext.StoreMgr.lookup('selectedlayers').filter();
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
-        
+        node.commit();
         var me = this;
         if (node.get('type') == 'chartlayer' && node.get('checked') && !node.initialized) {
             this.initChartLayer(node);
