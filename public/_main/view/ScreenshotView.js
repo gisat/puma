@@ -5,11 +5,14 @@ Ext.define('PumaMain.view.ScreenshotView', {
     overItemCls: 'screenshotover',
     initComponent: function() {
         this.store = Ext.StoreMgr.lookup('screenshot');
-        this.itemSelector = 'div.screenshot'
+        this.itemSelector = 'div.screenshot';
+        this.style = {
+            overflowY: 'auto'
+        }
         this.tpl = [
             '<tpl for=".">',
-            '<div class="screenshot" style="display:<tpl if="visible==1">inline<tpl else>none</tpl>;width:<tpl if="large">560px<tpl else>175px</tpl>;height:<tpl if="large">367px<tpl else>120px</tpl>">',
-            '<img class="screenshotimg" height=<tpl if="large">367<tpl else>120</tpl> width=<tpl if="large">560<tpl else>175</tpl> src="{src}"/>',
+            '<div class="screenshot" style="display:<tpl if="visible==1">inline<tpl else>none</tpl>;width:<tpl if="large">550px<tpl else>172px</tpl>;height:<tpl if="large">360px<tpl else>118px</tpl>">',
+            '<img class="screenshotimg" height=<tpl if="large">360<tpl else>118</tpl> width=<tpl if="large">550<tpl else>172</tpl> src="{src}"/>',
             //'<img class="screenshotimg" src="{src}"/>',
             '<div>',
             '</div>',
