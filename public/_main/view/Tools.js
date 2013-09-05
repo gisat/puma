@@ -13,7 +13,7 @@ Ext.define('PumaMain.view.Tools', {
         this.items = [{
             xtype: 'panel',
             collapsed: true,
-            height: 46,
+            height: 56,
             title: 'Select color',
             items: [{
                     xtype: 'colorpicker',

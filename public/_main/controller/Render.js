@@ -125,6 +125,7 @@ Ext.define('PumaMain.controller.Render', {
             displayInfo: true,
             store: Ext.StoreMgr.lookup('paging')
         })
+        Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
         
     },
     
