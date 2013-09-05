@@ -120,7 +120,6 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             this.getController('Chart').addChart(values);
         }
         else if (form.formType=='layers') {
-            this.layerConfig = values.attrs;
             this.getController('Layers').reconfigureChoropleths(values);
         }
         else if (form.formType=='filters') {

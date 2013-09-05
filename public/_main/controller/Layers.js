@@ -51,11 +51,11 @@ Ext.define('PumaMain.controller.Layers', {
     },
         
     reconfigureChoropleths: function(cfg) {
-        
+        this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
         var chartNodes = [];
         root.cascadeBy(function(node) {
-            if (node.get('type')=='chartLayer') {
+            if (node.get('type')=='chartlayer') {
                 chartNodes.push(node);
             }
             
@@ -64,9 +64,10 @@ Ext.define('PumaMain.controller.Layers', {
         var attrs = Ext.clone(cfg.attrs);
         for (var i=0;i<chartNodes.length;i++) {
             var node = chartNodes[i];
-            var attr = node.get('attr');
-            var as = node.get('as');
-            var attrObj = null
+            var attr = node.get('attribute');
+            var as = node.get('attributeSet');
+            var attrObj = null;
+            var found = false;
             for (var j=0;j<attrs.length;j++) {
                 attrObj = attrs[j];
                 if (attrObj.as==as && attrObj.attr == attr) {
@@ -78,13 +79,23 @@ Ext.define('PumaMain.controller.Layers', {
                 nodesToRemove.push(node)
             }
             else {
-                Ext.Array.remove(attrs,attrObj)
+                Ext.Array.remove(attrs,attrObj);
+                node.initialized = false;
+                var oneCfg = {attrs:[attrObj]};
+                oneCfg.numCategories = attrObj.numCategories || 5;
+                oneCfg.classType = attrObj.classType || 'quantiles';
+                oneCfg.zeroesAsNull = attrObj.zeroesAsNull!==false;
+                oneCfg.useAttributeColors = true;
+                var params = this.getController('Chart').getParams(oneCfg);
+                node.set('params',params);
+                node.set('cfg',oneCfg);
+                this.initChartLayer(node);
             }
             
         }
         for (var i=0;i<nodesToRemove.length;i++) {
             var node = nodesToRemove[i];
-            this.removeChoropleth(node);
+            this.onChoroplethRemove(null,node);
         }
         
         for (var i=0;i<attrs.length;i++) {
