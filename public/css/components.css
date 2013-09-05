@@ -207,3 +207,25 @@
 	background           : none;
 	border-color         : transparent;
 }
+
+.x-panel-header .x-tool img {
+	width                : 20px;
+	height               : 20px;
+	background-repeat    : no-repeat;
+	background-position  : 50% 50%;
+}
+.x-panel-header .x-tool-gear {
+	background-image     : url("../images/icons/settings.png") !important;
+}
+.x-panel-header .x-tool-close {
+	background-image     : url("../images/icons/close.png") !important;
+}
+.x-panel-header .x-tool-help {
+	background-image     : url("../images/icons/info.png") !important;
+}
+.x-panel-header .x-tool-save {
+	background-image     : url("../images/icons/save.png") !important;
+}
+.x-panel-header .x-tool-print {
+	background-image     : url("../images/icons/print.png") !important;
+}

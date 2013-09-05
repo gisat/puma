@@ -79,7 +79,8 @@
 
 /* ACCORDEON */
 .x-accordion-hd {
-	padding              : 10px;
+	padding-left         : 10px;
+	padding-right        : 10px;
 	border               : none;
 	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;
 }
