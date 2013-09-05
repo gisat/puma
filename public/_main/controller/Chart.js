@@ -273,6 +273,9 @@ Ext.define('PumaMain.controller.Chart', {
         var opts = {
             height: 400,
             width: 575,
+            style: {
+                "overflowX": 'hidden ! important'
+            },
             layout: 'fit'
         };
         if (cfg.type == 'extentoutline') {
