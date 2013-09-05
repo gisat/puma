@@ -13,7 +13,7 @@ Ext.define('PumaMain.view.Tools', {
         this.items = [{
             xtype: 'panel',
             collapsed: true,
-            height: 56,
+            height: 60,
             title: 'Select color',
             items: [{
                     xtype: 'colorpicker',
@@ -27,7 +27,6 @@ Ext.define('PumaMain.view.Tools', {
         }, {
             xtype: 'treepanel',
             title: 'Areas',
-            height: 46,
             itemId: 'areatree',
             store: Ext.StoreMgr.lookup('area'),
             selModel: {
@@ -35,11 +34,11 @@ Ext.define('PumaMain.view.Tools', {
             },
             rootVisible: false,
             displayField: 'name',
-            height: 600
+            height: 580
         }, {
             xtype: 'layerpanel',
             collapsed: true,
-            height: 600,
+            height: 580,
             title: 'Layers'
         },{
             xtype: 'maptools',

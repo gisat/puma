@@ -6,6 +6,6 @@ Ext.define('Puma.patch.panel.Panel', {
             collapseLeft: this.collapseLeft
         } : false;
         this.callParent();
-    },
+    }
 })
 

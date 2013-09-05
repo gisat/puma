@@ -162,14 +162,19 @@
 #app-reports-paging {
 	height               : 35px;
 }
-#app-reports-paging .x-toolbar {
-	padding              : 2px 10px;
+#app-reports-paging .paging-toolbar {
+	padding              : 6px 10px;
 	height               : 35px;
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
 }
 #app-reports-accordeon {
 	overflow             : auto;
+}
+.paging-toolbar .x-toolbar-text,
+.paging-toolbar .x-form-text {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
 }
 .paging-toolbar .x-tbar-page-first {
 	background-image     : url("../images/icons/paging-first.png") !important;
@@ -197,4 +202,8 @@
 }
 .paging-toolbar .x-tbar-loading {
 	background-image     : url("../images/icons/paging-refresh.png") !important;
+}
+.paging-toolbar .x-btn:hover, .paging-toolbar .x-btn:focus, .paging-toolbar .x-btn-over, .paging-toolbar .x-btn-focus {
+	background           : none;
+	border-color         : transparent;
 }
