@@ -12,6 +12,8 @@ Ext.define('Puma.patch.Main',{
         ,'Puma.patch.view.Table'
         ,'Puma.patch.panel.Panel'
         ,'Puma.patch.panel.Tool'
+        ,'Puma.patch.panel.Header'
+        
     ]
 })
 
