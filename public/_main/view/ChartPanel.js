@@ -4,6 +4,7 @@ Ext.define('PumaMain.view.ChartPanel', {
     layout: 'fit',
     frame: false,
     border: 0,
+    collapseLeft: true,
     padding: 0,
     initComponent: function() {
         

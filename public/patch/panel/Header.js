@@ -81,12 +81,12 @@ Ext.define('Puma.patch.panel.Header', {
             var collapseTool = null
             for (var i=0;i<me.items.length;i++) {
                 var item = me.items[i];
-                if (item.type=='collapse-top') {
+                if (item.type=='collapse-top' || item.type=='expand-bottom') {
                     collapseTool = item;
                     break;
                 }
             }
-            if (collapseTool) {
+            if (collapseTool && me.collapseLeft) {
                 Ext.Array.remove(me.items,collapseTool)
                 Ext.Array.insert(me.items,0,[collapseTool])
                 

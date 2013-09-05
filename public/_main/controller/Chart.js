@@ -292,6 +292,7 @@ Ext.define('PumaMain.controller.Chart', {
         var cnt = Ext.widget('chartpanel', {
             title: cfg.title || ('Anonymous ' + cfg.type),
             cfgType: cfg.type,
+            iconCls: 'cmptype-'+cfg.type,
             layout: {
                 type: 'fit',
                 reserveScrollbar: true

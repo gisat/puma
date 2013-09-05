@@ -17,6 +17,7 @@ Ext.define('PumaMain.view.ChartBar', {
                 xtype: 'panel',
                 collapsed: false,
                 layout: 'fit',
+                collapseLeft: true,
                 itemId: 'screenshotpanel',
                 items: [{
                     xtype: 'screenshotview'

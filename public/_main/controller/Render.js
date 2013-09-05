@@ -150,6 +150,8 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
             initial: true,
+            blankText: 'Select scope...',
+            allowBlank: false,
             store: Ext.StoreMgr.lookup('dataset'),
             itemId: 'initialdataset'
         })
