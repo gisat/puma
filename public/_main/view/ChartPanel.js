@@ -16,7 +16,8 @@ Ext.define('PumaMain.view.ChartPanel', {
             },
             close: {
                 type: 'close',
-                tooltip: 'Remove'
+                tooltip: 'Remove',
+                cls: 'tool-chart-close'
             },
             help: {
                 type: 'help',
@@ -43,15 +44,15 @@ Ext.define('PumaMain.view.ChartPanel', {
         var toolNames = [];
         switch (this.cfgType) {
             case 'grid':
-                toolNames = ['gear','close','collapse','print','save']; break;
+                toolNames = ['gear','collapse','print','save','close']; break;
             case 'piechart':
-                toolNames = ['gear','close','help','print','save']; break;
+                toolNames = ['gear','help','print','save','close']; break;
             case 'columnchart':
-                toolNames = ['gear','close','help','print','save']; break;
+                toolNames = ['gear','help','print','save','close']; break;
             case 'scatterchart':
-                toolNames = ['gear','close','help','print','save','search']; break;
+                toolNames = ['gear','help','print','save','search','close']; break;
             case 'extentoutline':
-                toolNames = ['gear','close','print','save']; break;
+                toolNames = ['gear','print','save','close']; break;
         }
         for (var i=0;i<toolNames.length;i++) {
             this.tools.push(toolMap[toolNames[i]]);

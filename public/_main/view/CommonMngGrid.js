@@ -8,27 +8,27 @@ Ext.define('PumaMain.view.CommonMngGrid', {
 
         var actionItems = [
             {
-                icon: 'http://dummyimage.com/15x15/fdd/000&text=UP', // Use a URL in the icon config
+                icon: 'images/icons/up.png', // Use a URL in the icon config
                 tooltip: 'Up',
-                width: 15,
-                height: 20,
+                width: 16,
+                height: 16,
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
                     me.fireEvent('recmoved', me, record, true)
                 }
             }, {
-                icon: 'http://dummyimage.com/15x15/fdd/000&text=DO', // Use a URL in the icon config
+                icon: 'images/icons/down.png', // Use a URL in the icon config
                 tooltip: 'Down',
                 hidden: !this.allowReorder,
-                width: 15,
-                height: 20,
+                width: 16,
+                height: 16,
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
                     me.fireEvent('recmoved', me, record, false)
                 }
             }, {
-                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
+                icon: 'images/icons/remove.png', // Use a URL in the icon config
                 tooltip: 'Remove',
-                width: 15,
-                height: 20,
+                width: 16,
+                height: 16,
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
                     me.fireEvent('recdeleted', me, record)
                 }

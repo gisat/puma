@@ -94,14 +94,40 @@
 }
 
 .x-accordion-hd .x-tool-expand-top, .x-accordion-hd .x-tool-expand-right, .x-accordion-hd .x-tool-expand-bottom, .x-accordion-hd .x-tool-expand-left {
-	background           : url("../images/expand.png") no-repeat 50% 50%;
+	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
 }
 .x-accordion-hd .x-tool-over .x-tool-expand-top, .x-accordion-hd .x-tool-over .x-tool-expand-right, .x-accordion-hd .x-tool-over .x-tool-expand-bottom, .x-accordion-hd .x-tool-over .x-tool-expand-left {
-	background           : url("../images/expand.png") no-repeat 50% 50%;
+	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
 }
 .x-accordion-hd .x-tool-collapse-top, .x-accordion-hd .x-tool-collapse-right, .x-accordion-hd .x-tool-collapse-bottom, .x-accordion-hd .x-tool-collapse-left {
-	background           : url("../images/collapse.png") no-repeat 50% 50%;
+	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
 }
 .x-accordion-hd .x-tool-over .x-tool-collapse-top, .x-accordion-hd .x-tool-over .x-tool-collapse-right, .x-accordion-hd .x-tool-over .x-tool-collapse-bottom, .x-accordion-hd .x-tool-over .x-tool-collapse-left {
-	background           : url("../images/collapse.png") no-repeat 50% 50%;
+	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+}
+
+/* TABS */
+.x-border-box .x-tab-bar {
+	background           : none;
+}
+.x-border-box .x-tab-bar-top .x-tab-bar-body {
+	height               : 35px;
+}
+.x-border-box .x-tab-default-top {
+	height               : 35px;
+	background           : #f4f0ec url("../images/tab-bg.png") repeat-x 0 0;
+	border               : none;
+	-webkit-border-radius: 0;
+	-moz-border-radius   : 0;
+	border-radius        : 0;
+}
+.x-border-box .x-tab-default-top .x-tab-inner {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
+}
+.x-border-box .x-tab-top-active {
+	background-image     : url("../images/tab-selected-bg.png");
+}
+.x-tab-bar-top .x-tab-bar-strip {
+	top                  : 35px;
 }
