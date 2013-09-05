@@ -45,7 +45,7 @@ function getChart(params, callback) {
                 return asyncCallback(null,map)
             })
         },
-        res: ['data', 'attrConf', function(asyncCallback, results) {
+        res: ['data', 'attrConf','years', function(asyncCallback, results) {
                 var newData = [];
                 var data = results.data;
                 var xName = null;
