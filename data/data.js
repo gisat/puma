@@ -39,7 +39,6 @@ function getData(params, callback) {
 
     var sort = params['sort'] ? JSON.parse(params['sort']) : [{property: 'name', direction: 'ASC'}];
     var sortProperty = sort[0].property;
-    var sortPropertyContained = sortProperty=='name' ? true : false;
     var filter = params['filter'] ? JSON.parse(params['filter']) : [];
     // limit
     // start
@@ -76,7 +75,7 @@ function getData(params, callback) {
     
 
     var attrsWithSort = attrs;
-    if (sort && sortProperty != 'name') {
+    if (sort && sortProperty && sortProperty != 'name') {
         var as = sortProperty.split('_')[1].split('_')[0];
         var attr = sortProperty.split('_')[3].split('_')[0];
 
@@ -394,7 +393,9 @@ function getData(params, callback) {
 
             }],
         data: ['sql', function(asyncCallback, results) {
-                var dataSql = 'SELECT * FROM (' + results.sql + ') as a';
+                var dataSql = 'SELECT gid,name,loc,at,pr,'
+                dataSql += aliases.join(',')
+                dataSql += ' FROM (' + results.sql + ') as a';
                 dataSql += ' WHERE 1=1';
                 dataSql += filterSql;
                 var nameSort = 'name ASC';
@@ -410,6 +411,7 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
+                console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);

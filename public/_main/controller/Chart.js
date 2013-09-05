@@ -194,11 +194,8 @@ Ext.define('PumaMain.controller.Chart', {
             cfg.invisibleYears = [];
 
         }
-        if (cfg.type == 'grid' && chart.chart && chart.chart.store && useQueryCfg) {
-            cfg.activeSorters = [];
-            chart.chart.store.sorters.each(function(sorter) {
-                cfg.activeSorters.push({direction: sorter.direction, property: sorter.property})
-            })
+        if (chart.cfg.type == 'grid' && chart.chart && chart.chart.store && useQueryCfg) {
+            Ext.apply(cfg,this.getSortParamsFromGrid(chart.chart,true));
         }
         for (var j = 0; j < legendItems.length; j++) {
             var legendItem = legendItems[j];
@@ -358,9 +355,8 @@ Ext.define('PumaMain.controller.Chart', {
     
     reconfigureChart: function(chartCmp, forExport, addingNew, fromConfigPanel) {
         var cfg = chartCmp.cfg;
-        var queryCfg = Ext.apply(chartCmp.queryCfg || {},Ext.clone(cfg));
+        var queryCfg = Ext.apply(Ext.clone(cfg),chartCmp.queryCfg || {});
         var areas = {};
- 
         if (cfg.type != 'extentoutline') {
             areas = Ext.clone(this.getController('Area').lowestMap);
         }
@@ -380,6 +376,7 @@ Ext.define('PumaMain.controller.Chart', {
         if (!queryCfg.years.length) {
             queryCfg.years = [queryCfg.years]
         }
+        
         if (Ext.Array.contains(['grid','columnchart','piechart'],cfg.type)) {
             Ext.apply(queryCfg,this.getPagingParams());
         }
@@ -522,6 +519,7 @@ Ext.define('PumaMain.controller.Chart', {
         if (response.cmp) {
             return;
         }
+        
         var singlePage = response.request.options.singlePage
         var legendBtn = singlePage ? Ext.widget('button') : Ext.ComponentQuery.query('#legendbtn', cmp.ownerCt)[0];
         var data = response.responseText ? JSON.parse(response.responseText).data : null;
@@ -803,36 +801,80 @@ Ext.define('PumaMain.controller.Chart', {
     getPagingParams: function() {
         var store =  Ext.StoreMgr.lookup('paging');
         var page = store.currentPage;
+        var chartCmps = Ext.ComponentQuery.query('chartcmp');
+        
         var grid = Ext.ComponentQuery.query('grid[isGrid]')[0];
         var params = {
             start: store.pageSize*(page-1),
             limit: store.pageSize
         }
         if (grid) {
-            var sorters = grid.store.sorters;
-            var sortProps = [];
-            sorters.each(function(sorter) {
-                sortProps.push({
-                    property: sorter.property,
-                    direction: sorter.direction
-                })
-            })
-            if (sortProps.length) {
-                params['sort'] = JSON.stringify(sortProps)
+            Ext.apply(params,this.getSortParamsFromGrid(grid));
+        }
+        else {
+            for (var i=0;i<chartCmps.length;i++) {
+                var cmp = chartCmps[i]
+                if (cmp.cfg.type=='grid') {
+                    grid = cmp;
+                    break;
+                }
+            
+            }
+            if (grid && grid.queryCfg) {
+                params['sort'] = Ext.isString(grid.queryCfg.sort) ? grid.queryCfg.sort : JSON.stringify(grid.queryCfg.sort)
+                params['sortNorm'] = Ext.isString(grid.queryCfg.sortNorm) ? grid.queryCfg.sortNorm : JSON.stringify(grid.queryCfg.sortNorm)
             }
             else {
                 params['sort'] = null;
             }
         }
+        
+        
         var selectedAreas = this.getSelectedAreas();
         params['selectedAreas'] = JSON.stringify(selectedAreas);
         return params;
     },
+        
+    getSortParamsFromGrid: function(grid,dontStringify) {
+            var params = {};
+            var sorters = grid.store.sorters;
+            var sortProps = [];
+            var cfg = grid.cmp.cfg;
+            var sortAs = null;
+            var sortAttr = null;
+            sorters.each(function(sorter) {
+                sortProps.push({
+                    property: sorter.property,
+                    direction: sorter.direction
+                })
+                if (sorter.property!='name') {
+                    sortAs = sorter.property.split('_')[1]
+                    sortAttr = sorter.property.split('_')[3];
+                }
+            })
+            if (sortAs) {
+                for (var i=0;i<cfg.attrs.length;i++) {
+                    var attr = cfg.attrs[i];
+                    if (attr.as == sortAs && attr.attr == sortAttr) {
+                        params['sortNorm'] = dontStringify ? attr : JSON.stringify(attr);
+                    }
+                }
+            }
+            
+            if (sortProps.length) {
+                params['sort'] = dontStringify ? sortProps : JSON.stringify(sortProps)
+            }
+            else {
+                params['sort'] = null;
+            }
+            return params;
+    },
+    
     onGridReceived: function(response) {
         var me = this;
         var data = JSON.parse(response.responseText).data;
         var cmp = response.request.options.cmp;
-        var sorters = response.request.options.params['activeSorters'] ? JSON.parse(response.request.options.params['activeSorters']) : [];
+        var sorters = response.request.options.params['sort'] ? JSON.parse(response.request.options.params['sort']) : [];
         var store = Ext.create('Ext.data.Store', {
             fields: data.fields,
             autoLoad: false,
@@ -877,6 +919,7 @@ Ext.define('PumaMain.controller.Chart', {
         })
         store.load();
         cmp.chart = grid;
+        grid.cmp = cmp;
         cmp.relayEvents(grid, ['beforeselect', 'itemclick', 'itemmouseenter']);
         grid.on('sortchange',function() {
             me.reconfigure('page');
