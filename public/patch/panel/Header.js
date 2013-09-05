@@ -100,7 +100,26 @@ Ext.define('Puma.patch.panel.Header', {
                 scope: me
             });
         }
+        
     },
+    initIconCmp: function() {
+        var me = this,
+            cfg = {
+                focusable: false,
+                src: Ext.BLANK_IMAGE_URL,
+                cls: [me.baseCls + '-icon', me.iconCls],
+                id: me.id + '-iconEl',
+                margin: '0 0 0 '+me.leftSpace || 5,
+                iconCls: me.iconCls
+            };
+            
+        if (!Ext.isEmpty(me.icon)) {
+            delete cfg.iconCls;
+            cfg.src = me.icon;
+        }
+        
+        me.iconCmp = new Ext.Img(cfg);
+    }
 })
 
 

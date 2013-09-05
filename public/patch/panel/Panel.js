@@ -3,7 +3,8 @@ Ext.define('Puma.patch.panel.Panel', {
     initComponent: function() {
         this.header = this.header !== false && (this.title || this.xtype=='window') ? {
             height: 37,
-            collapseLeft: this.collapseLeft
+            collapseLeft: this.collapseLeft,
+            leftSpace: this.leftSpace
         } : false;
         this.callParent();
     }
