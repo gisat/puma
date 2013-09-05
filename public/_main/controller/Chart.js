@@ -355,7 +355,10 @@ Ext.define('PumaMain.controller.Chart', {
     
     reconfigureChart: function(chartCmp, forExport, addingNew, fromConfigPanel) {
         var cfg = chartCmp.cfg;
-        var queryCfg = Ext.apply(Ext.clone(cfg),chartCmp.queryCfg || {});
+        if (cfg.type=='piechart') {
+            //debugger;
+        }
+        var queryCfg = Ext.apply(chartCmp.queryCfg || {},chartCmp.cfg,this.gatherChartCfg(chartCmp,true));
         var areas = {};
         if (cfg.type != 'extentoutline') {
             areas = Ext.clone(this.getController('Area').lowestMap);
@@ -481,7 +484,7 @@ Ext.define('PumaMain.controller.Chart', {
         var params = {};
         var keysToJson = ['areas', 'attrs', 'years', 'classConfig', 'areaTemplates', 'oldAreas', 'invisibleAttrs', 'invisibleYears', 'activeFilters', 'activeSorters'];
         for (var key in queryCfg) {
-            if (Ext.Array.contains(keysToJson, key)) {
+            if (Ext.isObject(queryCfg[key]) || Ext.isArray(queryCfg[key])) {
                 params[key] = JSON.stringify(queryCfg[key])
             }
             else {
@@ -537,10 +540,11 @@ Ext.define('PumaMain.controller.Chart', {
             var chart = new Highcharts.Chart(data);
             cmp.chart = chart;
             chart.cmp = cmp;
-
+            cmp.noData = true;
             //legendBtn.hide();
             return;
         }
+        cmp.noData = false;
         if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
             this.onOutlineReceived(data, cmp);
             return;
@@ -612,10 +616,13 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onUrlClick: function(btn) {
         var chart = btn.up('panel').chart;
-        var cfg = this.gatherChartCfg(chart, true)
+        var cfg = Ext.apply(Ext.clone(chart.queryCfg),this.gatherChartCfg(chart, true));
         cfg.oldAreas = chart.cfg.areas;
         cfg.colorMap = this.getController('Select').colorMap;
         var me = this;
+        if (chart.noData) {
+            return;
+        }
         Ext.Ajax.request({
             url: Config.url + '/api/urlview/saveChart',
             params: {

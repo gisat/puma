@@ -154,6 +154,16 @@ Ext.define('PumaMain.controller.ViewMng', {
         visualizationCombo.resumeEvents();
         locationCombo.resumeEvents();
         
+        var filters = Config.cfg.filters || [];
+        var items = this.getController('Filter').getFilterItems(filters);
+        if (items.length) {
+            var filterPanel =  Ext.ComponentQuery.query('#advancedfilters')[0];
+            filterPanel.add(items);
+            var filterController = this.getController('Filter');
+            filterController.minFl = Config.cfg.minFilterFl;
+            filterController.maxFl = Config.cfg.maxFilterFl;
+            filterController.applyFilters(true);
+        }
         
         var locationTheme = this.getController('LocationTheme');
         locationTheme.datasetChanged = true;
@@ -164,7 +174,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         locationTheme.onYearChange({cntId:'dataview'});
         
     },
-        
+     
     gatherViewConfig: function() {
         var cfg = {};
         cfg.years = Ext.ComponentQuery.query('#selyear')[0].getValue();
@@ -181,6 +191,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         for (var i=0;i<sliders.length;i++) {
             var slider = sliders[i];
             filters.push({
+                attrObj: slider.attrObj,
                 min: slider.minValue,
                 max: slider.maxValue,
                 inc: slider.increment,

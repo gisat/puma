@@ -77,7 +77,7 @@
 
 /* ACCORDEON */
 .x-accordion-hd {
-	padding              : 10px;
+/*	padding              : 10px;*/
 /*	height               : 37px;*/
 	border               : none;
 	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;

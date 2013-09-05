@@ -11,7 +11,7 @@ Ext.define('PumaMain.controller.Filter', {
                 })
     },
     
-    applyFilters: function() {
+    applyFilters: function(withoutRefresh) {
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var areaController = this.getController('Area');
         var filters = [];
@@ -39,7 +39,9 @@ Ext.define('PumaMain.controller.Filter', {
                 filters: filters
             }
         }
-        this.getController('LocationTheme').onYearChange({itemId:'filter'})
+        if (withoutRefresh!==true) {
+            this.getController('LocationTheme').onYearChange({itemId:'filter'});
+        }
     },
     
     reconfigureFilters: function(cfg) {
@@ -135,6 +137,36 @@ Ext.define('PumaMain.controller.Filter', {
             filterPanel.insert(idx, cnt)
         }
         this.applyFilters();
+    },
+        
+    getFilterItems: function(filters) {
+        var items = [];
+        for (var i = 0; i < filters.length; i++) {
+            var filter = filters[i];
+            var cnt = {
+                xtype: 'container',
+                layout: {
+                    type: 'vbox',
+                    align: 'stretch'
+                },
+                items: [{
+                        xtype: 'displayfield',
+                        value: filter.attrObj.attrName
+                    }, {
+                        xtype: 'multislider',
+                        values: filter.value,
+                        attrObj: filter.attrObj,
+                        increment: filter.inc,
+                        minValue: filter.min,
+                        maxValue: filter.max,
+                        constrainThumbs: true
+                    }]
+            }
+            items.push(cnt)
+        }
+        return items;
+
+
     }
     
 })

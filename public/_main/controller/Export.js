@@ -23,7 +23,7 @@ Ext.define('PumaMain.controller.Export', {
             height: 400,
             width: 575
         };
-    
+        debugger;
         if (cfg.type=='extentoutline') {
             opts.layout = 'auto'
             var selAreas = JSON.parse(cfg.selectedAreas);

@@ -3,6 +3,7 @@ Ext.define('PumaMain.view.ConfigForm', {
     alias: 'widget.configform',
     autoScroll: true,
     frame: true,
+    header: false,
     requires: ['Ext.ux.CheckColumn', 'PumaMain.view.AddAttributeGrid','PumaMain.view.ChoroplethForm', 'PumaMain.view.AttributeGrid', 'Gisatlib.container.StoreContainer','PumaMain.view.NormalizeForm'],
     initComponent: function() {
         this.attrStore = Ext.create('Ext.data.Store', {

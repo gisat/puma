@@ -4,6 +4,7 @@ Ext.define('PumaMain.view.AttributeGrid', {
     colspan: 2,
     border: 0,
     autoScroll: true,
+    header: false,
     requires: ['Ext.ux.CheckColumn'],
     initComponent: function() {
         this.columns = [{

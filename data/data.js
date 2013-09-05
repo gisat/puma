@@ -38,7 +38,7 @@ function getData(params, callback) {
     //params['useAggregation'] = true;
 
     var sort = params['sort'] ? JSON.parse(params['sort']) : [{property: 'name', direction: 'ASC'}];
-    var sortProperty = sort[0].property;
+    var sortProperty = sort ? sort[0].property : null;
     var filter = params['filter'] ? JSON.parse(params['filter']) : [];
     // limit
     // start

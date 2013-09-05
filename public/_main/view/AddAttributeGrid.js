@@ -3,6 +3,7 @@ Ext.define('PumaMain.view.AddAttributeGrid', {
     alias: 'widget.addattributegrid',
     colspan: 2,
     border: 0,
+    header: false,
     autoScroll: true,
     requires: ['Ext.ux.CheckColumn','Ext.ux.grid.filter.StringFilter'],
     initComponent: function() {

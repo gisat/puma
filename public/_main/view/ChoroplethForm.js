@@ -2,6 +2,7 @@ Ext.define('PumaMain.view.ChoroplethForm', {
     extend: 'Ext.form.Panel',
     alias: 'widget.choroplethform',
     frame: true,
+    header: false,
     initComponent: function() {
         this.items = [ {
                 xtype: 'pumacombo',

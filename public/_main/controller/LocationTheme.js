@@ -665,6 +665,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         if (Config.cfg) {
             Ext.StoreMgr.lookup('paging').currentPage = Config.cfg.page;
+            var selController = this.getController('Select');
+            selController.selMap = Config.cfg.selMap;
+            selController.colorMap = selController.prepareColorMap();
+            this.getController('Area').colourTree(selController.colorMap);
         }
         if (conf.layerNodes && conf.layerNodes.length) {
             this.removeLayers();
@@ -692,6 +696,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (response.request.options.locationChanged || response.request.options.datasetChanged) {
             this.getController('Area').zoomToLocation();
         }
+        delete Config.cfg;
 
     },
     checkFeatureLayers: function() {
