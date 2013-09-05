@@ -78,7 +78,7 @@ Ext.define('PumaMain.view.LayerPanel', {
                 border: true,
                 plugins: [{
                     ptype: 'rowexpander',
-                    rowBodyTpl : ['<tpl for=".">', '<tpl if="src">', '<div class="legenditem">', '<img src="{src}">', '</div>', '</tpl>', '</tpl>']
+                    rowBodyTpl : ['<tpl for=".">', '<tpl if="src">', '<div style="overflow-x:auto;background-color:white" class="legenditem">', '<img src="{src}">', '</div>', '</tpl>', '</tpl>']
                 }],
                 columns: [{
                         dataIndex: 'checked',

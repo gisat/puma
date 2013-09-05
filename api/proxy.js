@@ -266,13 +266,21 @@ function saveSld(params, req, res, callback) {
                 sld = sld.replace(new RegExp('#attrid#','g'),attrs[attrIndex].attr);
                 var min = results.data.altAggregate ? Math.min(results.data.aggregate['min_'+attrName],results.data.altAggregate['min_'+attrName]) : results.data.aggregate['min_'+attrName];
                 var max = results.data.altAggregate ? Math.max(results.data.aggregate['max_'+attrName],results.data.altAggregate['max_'+attrName]) : results.data.aggregate['max_'+attrName];
-                console.log(max);
-                console.log(min);
+               
+                var fixNum = 0;
+                if (max<100000 || diff<10000) {
+                    fixNum = 1;
+                }
+                if (max<1000 || diff<100) {
+                    fixNum = 2;
+                }
+                if (max<10 || diff<1) {
+                    fixNum = 3;
+                }
                 if (params['classType']=='continuous') {
                     for (var i=0;i<numCat;i++) {
                         var val = min + (max-min)*i/(numCat-1);
-                        console.log(i);
-                        console.log(val)
+                        val = val.toFixed(fixNum);
                         sld = sld.replace(new RegExp('#minmax_'+(i+1)+'#','g'),val);
                         legendSld = legendSld.replace(new RegExp('#minmax_'+(i+1)+'#','g'),val);
                     }
@@ -297,6 +305,7 @@ function saveSld(params, req, res, callback) {
                             var prev = results.data.data[idx - 1][attrName];
                             if (prev!=null && dataLength!=1) {
                                 val = prev+(current-prev)/2;
+                                val = val.toFixed(fixNum);
                                 sld = sld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
                                 legendSld = legendSld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
                             }
@@ -311,6 +320,7 @@ function saveSld(params, req, res, callback) {
                 else if (params['classType']=='equal') {
                     for (var i=1;i<numCat;i++) {
                         var val = min + (max-min)*i/numCat;
+                        val = val.toFixed(fixNum);
                         sld = sld.replace(new RegExp('#val_'+i+'#','g'),val);
                         legendSld = legendSld.replace(new RegExp('#val_'+i+'#','g'),val);
                     }
