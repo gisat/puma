@@ -717,7 +717,7 @@ Ext.define('PumaMain.controller.Layers', {
         mapController.map1.addLayers([layer1]);
         mapController.map2.addLayers([layer2]);
         var node = Ext.create('Puma.model.MapLayer', {
-            name: attrSetObj.get('name')+' - '+attrObj.get('name'),
+            name: attrObj.get('name')+' - '+attrSetObj.get('name'),
             attribute: attr.attr,
             attributeSet: attr.as,
             type: 'chartlayer',

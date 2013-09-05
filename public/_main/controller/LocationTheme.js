@@ -527,16 +527,19 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var topics = Ext.StoreMgr.lookup('theme').getById(themeId).get('topics');
         var thematicNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','thematicgroup');
-        
         var mapController = this.getController('Map');
+        var nodesToDestroy = []
         for (var i=0;i<thematicNode.childNodes.length;i++) {
             var node = thematicNode.childNodes[i];
             var topic = node.get('topic');
             if (topic && !Ext.Array.contains(topics,parseInt(topic))) {
                 mapController.map1.removeLayer(node.get('layer1'))
                 mapController.map2.removeLayer(node.get('layer2'))
-                node.destroy();
+                nodesToDestroy.push(node);
             }
+        }
+        for (var i=0;i<nodesToDestroy.length;i++) {
+            nodesToDestroy[i].destroy();
         }
    
     },
