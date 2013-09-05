@@ -17,7 +17,8 @@ Ext.define('PumaMain.view.ChartPanel', {
             close: {
                 type: 'close',
                 tooltip: 'Remove',
-                cls: 'tool-chart-close'
+                cls: 'tool-chart-close',
+                margin: '0 0 0 0'
             },
             help: {
                 type: 'help',

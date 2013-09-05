@@ -229,3 +229,22 @@
 .x-panel-header .x-tool-print {
 	background-image     : url("../images/icons/print.png") !important;
 }
+.x-panel-header .x-tool-search {
+	background-image     : url("../images/icons/search.png") !important;
+}
+
+.cmptype-grid {
+	background-image     : url("../images/icons/grid.png");
+}
+.cmptype-piechart {
+	background-image     : url("../images/icons/graph.png");
+}
+.cmptype-scatterchart {
+	background-image     : url("../images/icons/graph.png");
+}
+.cmptype-snapshots {
+	
+}
+.cmptype-snapshots {
+	
+}
