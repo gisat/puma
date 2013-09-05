@@ -153,7 +153,7 @@ em {
 			margin-left      : 10px;
 		}
 		.fields-holder .group {
-			width            : 220px;
+			width            : 245px;
 			float            : left;
 			margin-left      : 5px;
 		}
@@ -179,8 +179,8 @@ em {
 		}
 		.fields-holder .field > .widget {
 			display          : table-cell;
-			vertical-align   : top;
-			width            : 150px;
+			vertical-align   : middle;
+			width            : 163px;
 			height           : 30px;
 			line-height      : 30px;
 		}
@@ -196,7 +196,7 @@ em {
 			color            : #fff;
 			top              : 125px;
 			padding          : 20px;
-			width            : 795px;
+			width            : 845px;
 		}
 		
 		/* Application */
@@ -222,7 +222,7 @@ em {
 		}
 		#toolbar .group {
 			float            : none;
-			width            : 800px;
+			width            : 820px;
 			margin           : 0;
 		}
 		#toolbar .group .field {
@@ -255,7 +255,7 @@ em {
 			width        : 250px;
 		}
 		#app-tools-actions {
-			height       : 30px;
+			height       : 35px;
 		}
 		
 		/* Sidebar reports */
@@ -277,7 +277,7 @@ em {
 			height       : 35px;
 			background   : url("../images/sidebar-toggle-sprite.png") no-repeat 0 0;
 			position     : absolute;
-			left         : -20px;
+			left         : -21px;
 			top          : 0;
 			cursor       : pointer;
 		}

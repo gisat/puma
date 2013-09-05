@@ -7,17 +7,29 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'dataset',
             itemId: 'seldataset',
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             renderTo: 'app-toolbar-scope'
         })
         Ext.widget('pumacombo',{
             store: 'location4init',
             itemId: 'sellocation',
             valueField: 'id',
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             renderTo: 'app-toolbar-teritory'
         })
         Ext.widget('pumacombo',{
             store: 'theme4sel',
             itemId: 'seltheme',
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             renderTo: 'app-toolbar-theme'
         })
         Ext.widget('storecontainer',{
@@ -32,6 +44,10 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
             itemId: 'selvisualization',
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             renderTo: 'app-toolbar-visualization'
         })
         Ext.widget('button',{
@@ -41,7 +57,7 @@ Ext.define('PumaMain.controller.Render', {
             width: '100%',
             height: '100%',
             hidden: !Config.auth || !Config.auth.isAdmin,
-            cls: 'btn-visualization-save'
+            cls: 'custom-button btn-visualization-save'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-share',
@@ -51,7 +67,7 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             hidden: !Config.auth,
             icon: 'images/icons/share.png',
-            cls: 'btn-share'
+            cls: 'custom-button btn-share'
         })
         
         
@@ -71,14 +87,16 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'areamoredetails',
             text: '+',
             width: '100%',
-            height: '100%'
+            height: '100%',
+            cls: 'custom-button'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-less',
             itemId: 'arealessdetails',
             text: '-',
             width: '100%',
-            height: '100%'
+            height: '100%',
+            cls: 'custom-button'
         })
     
         Ext.widget('button',{
@@ -88,7 +106,7 @@ Ext.define('PumaMain.controller.Render', {
             icon: 'images/icons/settings.png',
             width: '100%',
             height: '100%',
-            cls: 'btn-manage'
+            cls: 'custom-button btn-manage'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-visualization-manage',
@@ -97,7 +115,7 @@ Ext.define('PumaMain.controller.Render', {
             icon: 'images/icons/settings.png',
             width: '100%',
             height: '100%',
-            cls: 'btn-visualization-manage'
+            cls: 'custom-button btn-visualization-manage'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-save',
@@ -107,7 +125,7 @@ Ext.define('PumaMain.controller.Render', {
             icon: 'images/icons/save.png',
             width: '100%',
             height: '100%',
-            cls: 'btn-save'
+            cls: 'custom-button btn-save'
         })
         
         Ext.widget('toptoolspanel',{
@@ -123,6 +141,7 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-reports-paging',
             itemId: 'areapager',
             displayInfo: true,
+            cls: 'paging-toolbar',
             store: Ext.StoreMgr.lookup('paging')
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
@@ -153,6 +172,10 @@ Ext.define('PumaMain.controller.Render', {
             blankText: 'Select scope...',
             allowBlank: false,
             store: Ext.StoreMgr.lookup('dataset'),
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             itemId: 'initialdataset'
         })
         Ext.widget('pumacombo',{
@@ -161,6 +184,10 @@ Ext.define('PumaMain.controller.Render', {
             //hidden: true,
             valueField: 'id',
             store: Ext.StoreMgr.lookup('location4init'),
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             itemId: 'initiallocation'
         })
         Ext.widget('pumacombo',{
@@ -168,6 +195,10 @@ Ext.define('PumaMain.controller.Render', {
             initial: true,
             //hidden: true,
             itemId: 'initialtheme',
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
             store: Ext.StoreMgr.lookup('theme4sel')
         })
         Ext.widget('button',{
@@ -176,7 +207,7 @@ Ext.define('PumaMain.controller.Render', {
             text: 'Confirm',
             width: '100%',
             height: '100%',
-            cls: 'btn-confirm'
+            cls: 'custom-button btn-confirm'
         })
         
     }

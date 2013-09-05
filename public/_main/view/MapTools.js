@@ -18,14 +18,14 @@ Ext.define('PumaMain.view.MapTools', {
             text: 'Hover',
             iconAlign: 'top',
             icon: 'images/icons/tools-hover.png',
-            cls: 'btn-map-tool btn-tool-hover'
+            cls: 'custom-button btn-map-tool btn-tool-hover'
         },{
             xtype: 'button',
             itemId: 'zoomselectedbtn',
             text: 'Zoom selected',
             iconAlign: 'top',
             icon: 'images/icons/tools-zoom.png',
-            cls: 'btn-map-tool btn-tool-zoom-selected'
+            cls: 'custom-button btn-map-tool btn-tool-zoom-selected'
         },{
             xtype: 'button',
             enableToggle: true,
@@ -34,7 +34,7 @@ Ext.define('PumaMain.view.MapTools', {
             text: 'Measure line',
             iconAlign: 'top',
             icon: 'images/icons/tools-measure-line.png',
-            cls: 'btn-map-tool btn-tool-measure-line'
+            cls: 'custom-button btn-map-tool btn-tool-measure-line'
         },{
             xtype: 'button',
             enableToggle: true,
@@ -43,7 +43,7 @@ Ext.define('PumaMain.view.MapTools', {
             text: 'Measure polygon',
             iconAlign: 'top',
             icon: 'images/icons/tools-measure-polygon.png',
-            cls: 'btn-map-tool btn-tool-measure-polygon'
+            cls: 'custom-button btn-map-tool btn-tool-measure-polygon'
         },{
             xtype: 'button',
             itemId: 'multiplemapsbtn',
@@ -51,14 +51,14 @@ Ext.define('PumaMain.view.MapTools', {
             text: 'Multiple maps',
             iconAlign: 'top',
             icon: 'images/icons/tools-maps-multiple.png',
-            cls: 'btn-map-tool btn-tool-multiple-maps'
+            cls: 'custom-button btn-map-tool btn-tool-multiple-maps'
         },{
             xtype: 'button',
             text: 'Save as image',
             itemId: 'savemapbtn',
             icon: 'images/icons/tools-save.png',
             iconAlign: 'top',
-            cls: 'btn-map-tool btn-tool-save-image'
+            cls: 'custom-button btn-map-tool btn-tool-save-image'
         }]
         
         this.callParent();

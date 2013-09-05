@@ -19,14 +19,14 @@ Ext.define('PumaMain.view.TopTools', {
             itemId: 'selectinmapbtn',
             text: 'Select in map',
             icon: 'images/icons/map-select.png',
-            cls: 'btn-map-select'
+            cls: 'custom-button btn-map-select'
         },{
             xtype: 'button',
             flex: 1,
             text: 'Snapshot',
             icon: 'images/icons/snapshot.png',
             itemId: 'mapsnapshotbtn',
-            cls: 'btn-snapshot'
+            cls: 'custom-button btn-snapshot'
         }]
         
         this.callParent();

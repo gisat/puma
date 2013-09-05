@@ -1,5 +1,5 @@
 /* BUTTONS */
-.x-btn {
+.x-btn.custom-button {
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
 	padding              : 0;
@@ -8,32 +8,34 @@
 	   -moz-border-radius       : 0;
 	        border-radius       : 0;
 }
-.x-btn:hover, .x-btn:focus {
+.x-btn.custom-button:hover, .x-btn.custom-button:focus {
 	background           : #eee url("../images/btn-bg-hover.png") repeat-x 0 0;
 }
-.x-btn em {}
-.x-btn button {}
-.x-btn .x-btn-inner {
+.x-btn.custom-button em {
+	font-style           : normal;
+}
+.x-btn.custom-button button {}
+.x-btn.custom-button .x-btn-inner {
 	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 	font-weight          : bold;
 }
 /* Red button */
-.x-btn.btn-confirm {
+.x-btn.custom-button.btn-confirm {
 	background           : #c92d42;
 }
-.x-btn.btn-confirm .x-btn-inner {
+.x-btn.custom-button.btn-confirm .x-btn-inner {
 	color                : #fff;
 }
-.x-btn.btn-confirm:hover, .x-btn.btn-confirm:focus {
+.x-btn.custom-button.btn-confirm:hover, .x-btn.btn-confirm:focus {
 	background           : #ad2738;
 }
 
 /* FIELDS */
-.x-field {
+.x-field.custom-combo {
 	height               : 30px;
 }
-.x-border-box .x-form-text {
+.custom-combo .x-form-text {
 	height               : 30px;
 	border               : none;
 	background           : #666470;
@@ -42,7 +44,7 @@
 	font-size            : 12px;
 	padding              : 5px;
 }
-.x-border-box .x-form-trigger {
+.custom-combo .x-form-trigger {
 	height               : 30px;
 	width                : 30px;
 	background           : #7f7c85 url("../images/combo-arrow.png") no-repeat 50% 50%;
@@ -50,10 +52,10 @@
 }
 
 /* COMBO LIST */
-.x-boundlist {
+.x-boundlist.custom-combo-list {
 	border               : none;
 }
-.x-boundlist .x-boundlist-item {
+.x-boundlist.custom-combo-list .x-boundlist-item {
 	background           : #b7b5bb;
 	color                : #424451;
 	font-family          : "Open Sans", sans-serif;
@@ -62,11 +64,11 @@
 	border-top           : 1px solid #fff;
 	padding              : 5px;
 }
-.x-boundlist .x-boundlist-item:first-child {
+.x-boundlist.custom-combo-list .x-boundlist-item:first-child {
 	border-top           : none;
 }
-.x-boundlist .x-boundlist-item:hover,
-.x-boundlist .x-boundlist-item-over {
+.x-boundlist.custom-combo-list .x-boundlist-item:hover,
+.x-boundlist.custom-combo-list .x-boundlist-item-over {
 	background           : #a4a0a9;
 }
 
@@ -77,10 +79,12 @@
 
 /* ACCORDEON */
 .x-accordion-hd {
-/*	padding              : 10px;*/
-/*	height               : 37px;*/
+	padding-left         : 10px;
+	padding-right        : 10px;
 	border               : none;
 	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;
+}
+.x-accordion-hd, .x-accordion-hd .x-panel-header-text {
 	cursor               : pointer;
 }
 .x-accordion-hd .x-panel-header-text {
@@ -90,14 +94,40 @@
 }
 
 .x-accordion-hd .x-tool-expand-top, .x-accordion-hd .x-tool-expand-right, .x-accordion-hd .x-tool-expand-bottom, .x-accordion-hd .x-tool-expand-left {
-	background           : url("../images/expand.png") no-repeat 50% 50%;
+	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
 }
 .x-accordion-hd .x-tool-over .x-tool-expand-top, .x-accordion-hd .x-tool-over .x-tool-expand-right, .x-accordion-hd .x-tool-over .x-tool-expand-bottom, .x-accordion-hd .x-tool-over .x-tool-expand-left {
-	background           : url("../images/expand.png") no-repeat 50% 50%;
+	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
 }
 .x-accordion-hd .x-tool-collapse-top, .x-accordion-hd .x-tool-collapse-right, .x-accordion-hd .x-tool-collapse-bottom, .x-accordion-hd .x-tool-collapse-left {
-	background           : url("../images/collapse.png") no-repeat 50% 50%;
+	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
 }
 .x-accordion-hd .x-tool-over .x-tool-collapse-top, .x-accordion-hd .x-tool-over .x-tool-collapse-right, .x-accordion-hd .x-tool-over .x-tool-collapse-bottom, .x-accordion-hd .x-tool-over .x-tool-collapse-left {
-	background           : url("../images/collapse.png") no-repeat 50% 50%;
+	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+}
+
+/* TABS */
+.x-border-box .x-tab-bar {
+	background           : none;
+}
+.x-border-box .x-tab-bar-top .x-tab-bar-body {
+	height               : 35px;
+}
+.x-border-box .x-tab-default-top {
+	height               : 35px;
+	background           : #f4f0ec url("../images/tab-bg.png") repeat-x 0 0;
+	border               : none;
+	-webkit-border-radius: 0;
+	-moz-border-radius   : 0;
+	border-radius        : 0;
+}
+.x-border-box .x-tab-default-top .x-tab-inner {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
+}
+.x-border-box .x-tab-top-active {
+	background-image     : url("../images/tab-selected-bg.png");
+}
+.x-tab-bar-top .x-tab-bar-strip {
+	top                  : 35px;
 }

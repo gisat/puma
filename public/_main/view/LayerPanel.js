@@ -64,7 +64,7 @@ Ext.define('PumaMain.view.LayerPanel', {
 //                    }
                 ],
                 style: {
-                    borderRadius: '0px',
+                    borderRadius: '0px'
                 }
             }, {
                 xtype: 'grid',
@@ -99,10 +99,10 @@ Ext.define('PumaMain.view.LayerPanel', {
                         width: 65,
                         items: [
                             {
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=OP', // Use a URL in the icon config
+                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
                                 tooltip: 'Opacity', 
-                                width: 15,
-                                height: 20,
+                                width: 16,
+                                height: 16,
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
                                     me.fireEvent('layeropacity',me,record)
                                 }
@@ -123,10 +123,10 @@ Ext.define('PumaMain.view.LayerPanel', {
 //                                }
 //                            }
                             , {
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=UP', // Use a URL in the icon config
+                                icon: 'images/icons/up.png', // Use a URL in the icon config
                                 tooltip: 'Up', 
-                                width: 15,
-                                height: 20,
+                                width: 16,
+                                height: 16,
                                 getClass: function(v,metadata,rec) {
                                     
                                     if (rec.parentNode && rec.parentNode.get('type')=='basegroup') {
@@ -137,10 +137,10 @@ Ext.define('PumaMain.view.LayerPanel', {
                                     me.fireEvent('layerup',me,record)
                                 }
                             },{
-                                icon: 'http://dummyimage.com/15x15/fdd/000&text=DO', // Use a URL in the icon config
+                                icon: 'images/icons/down.png', // Use a URL in the icon config
                                 tooltip: 'Down', 
-                                width: 15,
-                                height: 20,
+                                width: 16,
+                                height: 16,
                                 getClass: function(v,metadata,rec) {
                                     
                                     if (rec.parentNode && rec.parentNode.get('type')=='basegroup') {
