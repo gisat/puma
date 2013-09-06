@@ -57,7 +57,8 @@ Ext.define('PumaMain.view.Tools', {
             text: 'Configure',
             itemId: 'configurefilters'
             }],
-            title: 'Advanced filters'
+            title: 'Advanced filters',
+            bodyCls: 'tools-filters-list'
         }]
         
         this.callParent();

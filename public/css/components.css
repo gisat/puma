@@ -258,3 +258,15 @@
 .cmptype-addchart {
 	background-image     : url("../images/icons/add.png");
 }
+
+.tools-filters-list {
+	padding              : 0 10px;
+}
+.tools-filters-list .x-vbox-form-item {
+	height               : auto;
+}
+.tools-filters-list .x-form-display-field {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
+	font-weight          : bold;
+}
