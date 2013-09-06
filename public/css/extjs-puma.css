@@ -110,10 +110,12 @@
 }
 
 /* CHECKBOX/RADIO */
-.x-form-checkbox, .x-form-radio {
+.x-form-checkbox, .x-form-radio,
+.x-tree-checkbox {
 	background           : url("../images/icons/checkbox.png") no-repeat 0 0;
 }
-.x-form-cb-checked .x-form-checkbox, .x-form-cb-checked .x-form-radio {
+.x-form-cb-checked .x-form-checkbox, .x-form-cb-checked .x-form-radio,
+.x-tree-checkbox-checked {
 	background-image     : url("../images/icons/checkbox-checked.png");
 	background-position  : 0 0;
 }
