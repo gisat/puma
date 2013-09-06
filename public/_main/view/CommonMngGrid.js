@@ -27,8 +27,8 @@ Ext.define('PumaMain.view.CommonMngGrid', {
                 }
             },
             {
-                icon: 'images/icons/remove.png', // Use a URL in the icon config
-                tooltip: 'Remove',
+                icon: 'images/icons/view.png', // Use a URL in the icon config
+                tooltip: 'Open',
                 hidden: this.allowReorder,
                 width: 16,
                 height: 16,
@@ -37,7 +37,7 @@ Ext.define('PumaMain.view.CommonMngGrid', {
                 }
             },
             {
-                icon: 'images/icons/remove.png', // Use a URL in the icon config
+                icon: 'images/icons/remove-16.png', // Use a URL in the icon config
                 tooltip: 'Remove',
                 width: 16,
                 height: 16,
@@ -59,7 +59,7 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             },
             {
                 xtype: 'actioncolumn',
-                width: this.allowReorder ? 60 : 38,
+                width: this.allowReorder ? 72 : 50,
                 items: actionItems}
         ]
         this.callParent();

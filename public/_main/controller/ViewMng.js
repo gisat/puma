@@ -91,6 +91,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            bodyCls: 'manageDwWindow',
             items: [{
                 xtype: 'commonmnggrid',
                 allowReorder: btn.itemId == 'managevisualization',

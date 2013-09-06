@@ -273,3 +273,11 @@
 	font-size            : 12px;
 	font-weight          : bold;
 }
+
+.urlwindow {
+	padding              : 10px;
+}
+.manageDwWindow .x-grid {
+	margin-top           : 0;
+	border               : none;
+}

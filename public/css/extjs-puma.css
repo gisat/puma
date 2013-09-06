@@ -51,6 +51,10 @@
 .x-field {
 	height               : 30px;
 }
+.x-form-field, .x-form-display-field {
+	font-family          : "Open Sans", sans-serif;
+	font-size            : 12px;
+}
 .x-border-box .x-form-text {
 	height               : 30px;
 	color                : #000;
