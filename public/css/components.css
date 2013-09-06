@@ -259,6 +259,9 @@
 	background-image     : url("../images/icons/add.png");
 }
 
+.tools-colorpicker {
+	padding              : 10px;
+}
 .tools-filters-list {
 	padding              : 0 10px;
 }
