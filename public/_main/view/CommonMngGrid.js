@@ -10,6 +10,7 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             {
                 icon: 'images/icons/up.png', // Use a URL in the icon config
                 tooltip: 'Up',
+                hidden: !this.allowReorder,
                 width: 16,
                 height: 16,
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
@@ -24,7 +25,18 @@ Ext.define('PumaMain.view.CommonMngGrid', {
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
                     me.fireEvent('recmoved', me, record, false)
                 }
-            }, {
+            },
+            {
+                icon: 'images/icons/remove.png', // Use a URL in the icon config
+                tooltip: 'Remove',
+                hidden: this.allowReorder,
+                width: 16,
+                height: 16,
+                handler: function(grid, rowIndex, colIndex, item, e, record) {
+                    me.fireEvent('urlopen', me, record)
+                }
+            },
+            {
                 icon: 'images/icons/remove.png', // Use a URL in the icon config
                 tooltip: 'Remove',
                 width: 16,
@@ -47,12 +59,12 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             },
             {
                 xtype: 'actioncolumn',
-                width: this.allowReorder ? 65 : 25,
+                width: this.allowReorder ? 60 : 38,
                 items: actionItems}
         ]
         this.callParent();
 
-        this.addEvents('recmoved', 'recdeleted');
+        this.addEvents('recmoved', 'recdeleted','urlopen');
     }
 })
 

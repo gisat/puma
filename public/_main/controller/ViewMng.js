@@ -76,6 +76,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         if (isView) {
             var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id')
             var win = Ext.widget('window',{
+                bodyCls: 'urlwindow',
                 items: [{
                         xtype: 'displayfield',
                         value: url
@@ -282,6 +283,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',
                 rec: vis
@@ -295,6 +297,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',
                 rec: view
