@@ -11,13 +11,14 @@ Ext.define('PumaMain.view.ScreenshotView', {
         }
         this.tpl = [
             '<tpl for=".">',
-            '<div class="screenshot" style="display:<tpl if="visible==1">inline<tpl else>none</tpl>;width:<tpl if="large">550px<tpl else>172px</tpl>;height:<tpl if="large">360px<tpl else>118px</tpl>">',
+            '<div class="screenshot" style="display:<tpl if="visible==1">inline-block<tpl else>none</tpl>;width:<tpl if="large">550px<tpl else>172px</tpl>;height:<tpl if="large">360px<tpl else>118px</tpl>">',
             '<img class="screenshotimg" height=<tpl if="large">360<tpl else>118</tpl> width=<tpl if="large">550<tpl else>172</tpl> src="{src}"/>',
             //'<img class="screenshotimg" src="{src}"/>',
             '<div>',
             '</div>',
-            '<img class="screenshoticon screenshotpng" height=30 width=30 src="http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png" />',
-            '<img class="screenshoticon screenshotremove" height=30 width=30 src="http://img.csfd.cz/documents/marketing/logos/icon-white-red/icon-white-red-small.png" />',    
+            '<img class="screenshoticon screenshotpng" height=30 width=30 src="images/icons/snapshot-download.png" />',
+            '<img class="screenshoticon screenshotremove" height=30 width=30 src="images/icons/snapshot-delete.png" />',    
+            '<img class="screenshoticon screenshotenlarge" height=36 width=36 src="images/icons/snapshot-enlarge.png" />',    
             '</div>',
             '</tpl>'
         ]

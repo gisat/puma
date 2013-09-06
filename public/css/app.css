@@ -16,10 +16,10 @@
     z-index: 1
 }
 .screenshot .screenshotpng {
-    right: 50px;
+    right: 35px;
 }
 .screenshot .screenshotremove {
-    right: 10px;
+    right: 0;
 }
 .screenshot div {
     position:absolute;

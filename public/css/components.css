@@ -281,3 +281,15 @@
 	margin-top           : 0;
 	border               : none;
 }
+
+.screenshot .screenshotenlarge {
+	display: none;
+}
+.screenshotover .screenshotenlarge {
+	display: block;
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -18px;
+	margin-top: -18px;
+}
