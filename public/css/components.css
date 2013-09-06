@@ -17,8 +17,8 @@
 	padding-left         : 0;
 }
 .field.level {
-	padding-right        : 15px;
-	margin-right         : 30px;
+	padding-right        : 3px;
+	margin-right         : 16px;
 }
 .field.level .label {
 	width                : 90px;
@@ -171,6 +171,10 @@
 #app-reports-accordeon {
 	overflow             : auto;
 }
+#app-reports-paging .x-btn,
+#app-reports-paging .x-field {
+	height               : auto;
+}
 .paging-toolbar .x-toolbar-text,
 .paging-toolbar .x-form-text {
 	font-family          : "Open Sans", sans-serif;
@@ -236,6 +240,9 @@
 	background-image     : url("../images/icons/save-csv.png") !important;
 }
 
+.cmptype-grid, .cmptype-piechart, .cmptype-scatterchart, .cmptype-snapshot, .cmptype-addchart {
+	width                : 17px;
+}
 .cmptype-grid {
 	background-image     : url("../images/icons/grid.png");
 }

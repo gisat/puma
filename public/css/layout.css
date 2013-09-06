@@ -177,7 +177,7 @@ strong {
 		.fields-holder .field > .widget {
 			display          : table-cell;
 			vertical-align   : middle;
-			width            : 163px;
+			width            : 150px;
 			height           : 30px;
 			line-height      : 30px;
 		}
@@ -257,7 +257,7 @@ strong {
 		
 		/* Sidebar reports */
 		#sidebar-reports {
-			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 100px;
 			position     : absolute;
 			top          : 90px;
 			width        : 580px;
