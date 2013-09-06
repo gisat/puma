@@ -274,6 +274,11 @@
 .x-tree-lines .x-tree-elbow, .x-tree-lines .x-tree-elbow-end, .x-tree-lines .x-tree-elbow-line {
 	background-image     : none;
 }
+.x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow,
+.x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow-end,
+.x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow-line {
+	width: 12px;
+}
 .x-grid-row-over .x-grid-cell, .x-grid-row-over .x-grid-rowwrap-div,
 .x-grid-row-focused .x-grid-cell, .x-grid-row-focused .x-grid-rowwrap-div {
 	background-color     : #ddd;
