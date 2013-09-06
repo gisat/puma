@@ -41,6 +41,7 @@ Ext.define('Puma.patch.panel.Header', {
             // Add Icon
             if (!Ext.isEmpty(me.iconCls) || !Ext.isEmpty(me.icon)) {
                 me.initIconCmp();
+                me.iconCmp.margin = '0 5 0 0';
                 me.items.push(me.iconCmp);
             }
 

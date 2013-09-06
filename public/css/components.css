@@ -233,7 +233,7 @@
 	background-image     : url("../images/icons/search.png") !important;
 }
 .x-panel-header .x-tool-collapse {
-	background-image     : url("../images/icons/save.png") !important;
+	background-image     : url("../images/icons/save-csv.png") !important;
 }
 
 .cmptype-grid {
@@ -245,9 +245,9 @@
 .cmptype-scatterchart {
 	background-image     : url("../images/icons/graph.png");
 }
-.cmptype-snapshots {
-	
+.cmptype-snapshot {
+	background-image     : url("../images/icons/snapshots.png");
 }
-.cmptype-snapshots {
-	
+.cmptype-addchart {
+	background-image     : url("../images/icons/add.png");
 }
