@@ -245,7 +245,7 @@ strong {
 		
 		/* Sidebar tools */
 		#sidebar-tools {
-			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+			background   : #e5e3df;
 			position     : absolute;
 			top          : 90px;
 			left         : 0;

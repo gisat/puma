@@ -232,6 +232,9 @@
 .x-panel-header .x-tool-search {
 	background-image     : url("../images/icons/search.png") !important;
 }
+.x-panel-header .x-tool-collapse {
+	background-image     : url("../images/icons/save.png") !important;
+}
 
 .cmptype-grid {
 	background-image     : url("../images/icons/grid.png");
