@@ -61,8 +61,8 @@ function auth(req, res, next) {
 var fetchUserInfo = function(userName, req, sessionId, next) {
     
     var client = conn.getPgDb();
-    var sql = 'SELECT u.id, u.username, g.name FROM auth_user u, auth_group g, auth_user_groups ug \n\
-                WHERE u.username = $1 AND ug.user_id = u.id AND ug.group_id = g.id'
+    var sql = 'SELECT u.id, u.username, g.name FROM auth_user u'
+    sql += ' LEFT JOIN auth_user_groups ug ON ug.user_id = u.id LEFT JOIN auth_group g ON ug.group_id = g.id WHERE u.username = $1';
     client.query(sql, [userName], function(err, result) {
 
         if (err) {
@@ -72,7 +72,9 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
         var id = null;
         for (var i = 0; i < result.rows.length; i++) {
             var row = result.rows[i];
-            groups.push(row.name);
+            if (row.name) {
+                groups.push(row.name);
+            }
             id = id || row.id;
         }
         req.userId = id;
