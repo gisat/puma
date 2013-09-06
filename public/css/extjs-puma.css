@@ -243,3 +243,36 @@
 .x-column-header-inner .x-grid-checkheader {
 	margin-top           : 4px;
 }
+
+/* TREE */
+.x-tree-icon-parent {
+	background-image     : url("../images/icons/tree-node-closed.png");
+	background-repeat     : no-repeat;
+}
+.x-grid-tree-node-expanded .x-tree-icon-parent {
+	background-image     : url("../images/icons/tree-node-opened.png");
+}
+.x-tree-icon-leaf {
+	background-image     : url("../images/icons/tree-node-item.png");
+	background-repeat     : no-repeat;
+}
+.x-tree-lines .x-tree-elbow-plus, .x-tree-lines .x-tree-elbow-end-plus,
+.x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-plus, .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-end-plus,
+.x-tree-lines .x-tree-elbow, .x-tree-lines .x-tree-elbow-end, .x-tree-lines .x-tree-elbow-line {
+	width                : 18px;
+	height               : 18px;
+	margin-right         : 5px;
+}
+.x-tree-lines .x-tree-elbow-plus, .x-tree-lines .x-tree-elbow-end-plus {
+	background-image     : url("../images/icons/tree-node-expand.png");
+}
+.x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-plus, .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-end-plus {
+	background-image     : url("../images/icons/tree-node-collapse.png");
+}
+.x-tree-lines .x-tree-elbow, .x-tree-lines .x-tree-elbow-end, .x-tree-lines .x-tree-elbow-line {
+	background-image     : none;
+}
+.x-grid-row-over .x-grid-cell, .x-grid-row-over .x-grid-rowwrap-div,
+.x-grid-row-focused .x-grid-cell, .x-grid-row-focused .x-grid-rowwrap-div {
+	background-color     : #ddd;
+}
