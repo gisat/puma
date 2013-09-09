@@ -60,7 +60,6 @@ function getChart(params, req, res, callback) {
                         res.data = noDataConf;
                         return callback(null);
         }
-        conf = us.extend(conf,require('../data/defaultchart'))
         if (params['forExport']) {
             conf = us.extend(conf,require('../data/printchart'))
         }
@@ -149,13 +148,27 @@ function drawChart(params, req, res, callback) {
 
 function getGridData(params, req, res, callback) {
     params['userId'] = req.userId;
-    charts.data.getData(params, function(err, dataObj) {
-        if (err)
-            return callback(err);
-        res.data = dataObj.data;
-        res.total = dataObj.total;
-        callback(null);
-    })
+    var opts = {
+        attrConf: function(asyncCallback) {
+            charts.data.getAttrConf(params, function(err, attrConf) {
+                if (err)
+                    return callback(err);
+
+                return asyncCallback(null, attrConf);
+            })
+        },
+        res: ['attrConf', function(asyncCallback, results) {
+                params.attrMap = results.attrConf.prevAttrMap;
+                charts.data.getData(params, function(err, dataObj) {
+                    if (err)
+                        return callback(err);
+                    res.data = dataObj.data;
+                    res.total = dataObj.total;
+                    return callback();
+                })
+            }]
+    }
+    async.auto(opts)
 }
 
 function getGridDataCsv(params,req,res,callback) {

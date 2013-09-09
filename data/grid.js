@@ -9,62 +9,87 @@ function getChart(params, callback) {
     var attrs = JSON.parse(params['attrs']);
     var filters = params['activeFilters'] ? JSON.parse(params['activeFilters']) : [];
     var filterMap = {};
-    for (var i=0;i<filters.length;i++) {
+    for (var i = 0; i < filters.length; i++) {
         filterMap[filters[i].dataIndex] = filters[i].value
     }
-    
+
     var moreYears = years.length > 1;
-    dataMod.getAttrConf(params, function(err, attrMap) {
-        if (err)
-            return callback(err);
-        attrMap = attrMap.attrMap;
-        var columns = [{
-                dataIndex: 'name',
-                text: 'Name',
-                flex: 1,
-                minWidth: 120,
-                filter: {
-                    type: 'string'
+    var opts = {
+        years: function(asyncCallback) {
+            crud.read('year', {}, function(err, resls) {
+                if (err)
+                    return callback(err);
+                var map = {};
+                for (var i = 0; i < resls.length; i++) {
+                    var resl = resls[i];
+                    map[resl['_id']] = resl.name;
                 }
-            }];
-        var fields = ['gid', 'name', 'at', 'loc'];
-        
-        for (var i = 0; i < attrs.length; i++) {
-            var attr = attrs[i];
-            var attrConf = attrMap[attr.as][attr.attr];
-            var attrName = attrConf.name;
-            for (var j = 0; j < years.length; j++) {
-                var year = years[j];
-                var dataIndex = 'as_' + attr.as + '_attr_' + attr.attr;
-                dataIndex += moreYears ? ('_y_' + year) : '';
-                var filter = {
-                    type: 'numeric'
-                }
-                if (filterMap[dataIndex]) {
-                    filter.active = true;
-                    filter.value = filterMap[dataIndex]
-                }
-                columns.push({
-                    dataIndex: dataIndex,
-                    xtype: 'numbercolumn',
-                    format: '0.00',
-                    text: attrName,
-                    minWidth: 100,
-                    filter: filter
+                return asyncCallback(null, map)
+            })
+        },
+        res: ['years', function(asyncCallback, results) {
+                dataMod.getAttrConf(params, function(err, attrMap) {
+                    if (err)
+                        return callback(err);
+                    attrMap = attrMap.attrMap;
+                    var columns = [{
+                            dataIndex: 'name',
+                            text: 'Name',
+                            flex: 1,
+                            minWidth: 120,
+                            filter: {
+                                type: 'string'
+                            }
+                        }];
+                    var fields = ['gid', 'name', 'at', 'loc'];
+
+                    for (var i = 0; i < attrs.length; i++) {
+                        var attr = attrs[i];
+                        var attrConf = attrMap[attr.as][attr.attr];
+                        //var attrName = attrConf.code || (attrConf.name > 15 ? (attrConf.Name.slice(0, 13)+'...') : attrConf.name);
+                        var attrName = (attrConf.name.length > 14 ? (attrConf.name.slice(0, 12)+'...') : attrConf.name);
+                        var fullName = attrConf.name;
+                        for (var j = 0; j < years.length; j++) {
+                            var year = years[j];
+                            var dataIndex = 'as_' + attr.as + '_attr_' + attr.attr;
+                            dataIndex += moreYears ? ('_y_' + year) : '';
+                            var filter = {
+                                type: 'numeric'
+                            }
+                            if (filterMap[dataIndex]) {
+                                filter.active = true;
+                                filter.value = filterMap[dataIndex]
+                            }
+                            columns.push({
+                                dataIndex: dataIndex,
+                                units: attrConf.units,
+                                xtype: 'numbercolumn',
+                                text: attrName,
+                                yearName: results.years[year],
+                                fullName: fullName,
+                                minWidth: 100,
+                                filter: filter
+                            })
+                            fields.push(dataIndex);
+
+                        }
+                    }
+
+
+                    var result = {
+                        columns: columns,
+                        fields: fields,
+                        units: attrMap.units
+                    }
+                    callback(null, result);
+
+
                 })
-                fields.push(dataIndex);
+            }]
+    }
+    async.auto(opts)
 
-            }
-        }
 
-
-        var result = {
-            columns: columns,
-            fields: fields,
-            units: attrMap.units
-        }
-        callback(null, result);
-    })
 }
 
 function createCsv(params, callback) {

@@ -1,3 +1,23 @@
+/* QUICKTIPS */
+#ext-quicktips-tip-body.x-tip-body {
+    background-color: white ! important;
+    font-family          : "Open Sans", sans-serif;
+    font-size            : 12px;
+    line-height: 17px;
+    padding: 8px;
+}
+#ext-quicktips-tip.x-tip {
+    webkit-border-radius: 0px;
+    -moz-border-radius: 0px;
+    -ms-border-radius: 0px;
+    -o-border-radius: 0px;
+    border-radius: 0px;
+    padding: 0px;
+    opacity: 0.9
+}
+
+
+
 /* BUTTONS */
 .x-btn {
 	height               : 30px;

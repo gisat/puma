@@ -129,6 +129,9 @@ Ext.define('PumaMain.controller.Area', {
         if (nodesToCollapse.length) {
             tree.view.refresh();
             this.scanTree();
+            var selController = this.getController('Select');
+            this.colourTree(selController.colorMap)
+            this.getController('Layers').colourMap(selController.colorMap); 
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
         }
@@ -303,6 +306,9 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
+        var selController = this.getController('Select');
+        this.colourTree(selController.colorMap)
+        this.getController('Layers').colourMap(selController.colorMap); 
         this.getController('Chart').reconfigure('expand');
         this.getController('Layers').reconfigureAll();
     },

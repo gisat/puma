@@ -204,6 +204,7 @@ Ext.define('PumaMain.controller.Select', {
             resultMap[area.loc][area.at] = resultMap[area.loc][area.at] || {};
             resultMap[area.loc][area.at][area.gid] = this.actualColor;
         }
+        this.colorMap = resultMap;
         return resultMap;
     }
     

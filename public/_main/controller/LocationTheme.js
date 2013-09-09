@@ -47,21 +47,23 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     onDatasetChange: function(cnt,val) {
         this.datasetChanged = true;
-        
         var locationCombo = Ext.ComponentQuery.query(cnt.initial ? '#initiallocation':'#sellocation')[0];
         var locationComboAlt = Ext.ComponentQuery.query(!cnt.initial ? '#initiallocation':'#sellocation')[0] || locationCombo;
         var themeCombo = Ext.ComponentQuery.query(cnt.initial ? '#initialtheme':'#seltheme')[0];
         var themeComboAlt = Ext.ComponentQuery.query(!cnt.initial ? '#initialtheme':'#seltheme')[0] || themeCombo;
         
+        
         locationCombo.suspendEvents();
         locationComboAlt.suspendEvents();
         themeComboAlt.suspendEvents();
+        themeCombo.resumeEvents();
         
         var locStore = Ext.StoreMgr.lookup('location4init');
         locStore.clearFilter(true);
+        var locCount = locStore.query('dataset',val).getCount();
         locStore.filter([
             function(rec) {
-                return rec.get('dataset')==val || !rec.get('dataset');
+                return rec.get('dataset')==val || (!rec.get('dataset') && locCount>1);
             }
         ]); 
         locationCombo.show();
@@ -78,7 +80,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 return rec.get('dataset')==val;
             }
         ]);
-        
+        themeCombo.eventsSuspended = 0;
         var first = themeStore.getAt(0);
         if (first && !cnt.initial) {
             themeCombo.setValue(first)

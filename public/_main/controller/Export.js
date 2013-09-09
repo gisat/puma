@@ -25,7 +25,7 @@ Ext.define('PumaMain.controller.Export', {
         };
         debugger;
         if (cfg.type=='extentoutline') {
-            opts.layout = 'auto'
+            opts.layout = 'absolute'
             var selAreas = JSON.parse(cfg.selectedAreas);
             var count = 0;
             for (var loc in selAreas) {
@@ -33,7 +33,7 @@ Ext.define('PumaMain.controller.Export', {
                     count += selAreas[loc][at].length
                 }
             }
-            opts.height = 300*Math.min(4,count)+10;
+            //opts.height = 300*Math.min(4,count)+10;
         }
         if (cfg.type=='map') {
             opts = {

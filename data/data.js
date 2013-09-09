@@ -109,8 +109,11 @@ function getData(params, callback) {
             var attr = attrsWithSort[j];
             var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
             var aliasAttrName = moreYears ? (attrName + '_y_' + yearId) : attrName;
-            if (us.contains(aliases,aliasAttrName)) {
-                continue;
+            if (us.contains(attrs,attr)) {
+                aliases.push(aliasAttrName);    
+            }
+            else {
+                aliasAttrName = aliasAttrName+'_sort'
             }
             
             
@@ -122,6 +125,36 @@ function getData(params, callback) {
             var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
             var normAttrName = null;
             var norm = '';
+            
+            var attrUnits = null;
+            var normAttrUnits = null;
+            var factor = 1;
+            var attrMap = params.attrMap
+            if (attrMap && attrMap[attr.as] && attrMap[attr.as][attr.attr]) {
+                attrUnits = attrMap[attr.as][attr.attr].units;
+            }
+            if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
+                normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
+            }
+            console.log(attrUnits);
+            console.log(normAttrUnits);
+            if (currentNorm=='area') {
+                normAttrUnits = 'm2'
+            }
+            if (attrUnits && attrUnits=='m2') {
+                factor /= 1000000;
+            }
+            if (normAttrUnits && normAttrUnits=='m2') {
+                
+                factor *= 1000000;
+            }
+            if ((normAttrUnits=='m2' || normAttrUnits=='km2') && (attrUnits=='m2' || attrUnits=='km2')) {
+                factor *= 100;
+            }
+            else if (attrUnits && attrUnits==normAttrUnits) {
+                factor *= 100;
+            }
+            
             if (currentNorm == 'area') {
                 norm = normPre + '"area"';
             }
@@ -158,16 +191,14 @@ function getData(params, callback) {
             }
             else {
                 if (norm) {
-                    select += ', CASE WHEN (' + norm + '=0) THEN NULL ELSE ' + pre + '"' + attrName + '" / ' + norm + '*100 END';
+                    select += ', CASE WHEN (' + norm + '=0) THEN NULL ELSE ' + pre + '"' + attrName + '"::float / ' + norm + ' * '+factor+' END';
                 }
                 else {
-                    select += ',' + pre + '"' + attrName + '"';
+                    select += ',' + pre + '"' + attrName + '" * '+factor;
                 }
             }
             select += ' AS ' + aliasAttrName + ' ';
-            if (us.contains(attrs,attr)) {
-                aliases.push(aliasAttrName);    
-            }
+            
         }
     }
     if (anotherNormYear) {
@@ -404,7 +435,7 @@ function getData(params, callback) {
                     dataSql += 'pr ASC,' + sort[0].property + ' ' + sort[0].direction
                 }
                 else if (sort) {
-                    dataSql += sort[0].property + ' ' + sort[0].direction+','+nameSort;
+                    dataSql += sort[0].property + '_sort ' + sort[0].direction+','+nameSort;
                 }
                 else {
                     dataSql += 'pr ASC,'+nameSort;
@@ -628,14 +659,22 @@ function getAttrConf(params, callback) {
         },
         res: ['attr', 'attrSet', function(asyncCallback, results) {
                 var attrMap = {};
+                var prevAttrMap = {};
                 var unitsArr = [];
                 for (var i = 0; i < attrs.length; i++) {
                     var attrRec = attrs[i];
                     attrMap[attrRec.as] = attrMap[attrRec.as] || {};
                     attrMap[attrRec.as][attrRec.attr] = results.attr[attrRec.attr];
+                    prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
+                    prevAttrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     var normType = attrRec.normType || params['normalization'];
                     var units = results.attr[attrRec.attr].units || '';
                     var normUnits = null;
+                    
+                    
+                    
+                    
+                    
                     if (normType == 'area') {
                         normUnits = 'm2'
                     }
@@ -653,14 +692,23 @@ function getAttrConf(params, callback) {
                             normUnits = normAttrRec.units || '';
                             attrMap[normAttrSet] = attrMap[normAttrSet] || {}
                             attrMap[normAttrSet][normAttr] = normAttrRec;
+                            prevAttrMap[normAttrSet] = prevAttrMap[normAttrSet] || {}
+                            prevAttrMap[normAttrSet][normAttr] = us.clone(normAttrRec);
                         }
                     }
-                    var unitsTotal = units + (normUnits ? ('/' + normUnits) : '');
+                
+                    if (units == 'm2') {
+                        units = 'km2'
+                    }
+                    if (normUnits == 'm2') {
+                        normUnits = 'km2'
+                    }
+                    var unitsTotal = units.replace('2', '<sup>2</sup>') + (normUnits ? ('/' + normUnits.replace('2', '<sup>2</sup>')) : '');
                     if (units == normUnits) {
                         unitsTotal = '%'
                     }
                     attrMap[attrRec.as][attrRec.attr].units = unitsTotal;
-                    unitsArr.push(unitsTotal);
+                    unitsArr.push(unitsTotal)
                 }
 
                 if (params['normalization'] == 'toptree' || params['normalization'] == 'topall' || params['normalization'] == 'select') {
@@ -671,17 +719,17 @@ function getAttrConf(params, callback) {
                 }
                 else if (params['type'] == 'scatterchart') {
 
-                    attrMap.unitsX = unitsArr[0].replace('2', '<sup>2</sup>');
-                    attrMap.unitsY = unitsArr[1].replace('2', '<sup>2</sup>');
-                    attrMap.unitsZ = unitsArr.length > 2 ? unitsArr[2].replace('2', '<sup>2</sup>') : null;
+                    attrMap.unitsX = unitsArr[0];
+                    attrMap.unitsY = unitsArr[1];
+                    attrMap.unitsZ = unitsArr.length > 2 ? unitsArr[2] : null;
 
                 }
                 else {
-                    attrMap.units = unitsArr[0].replace('2', '<sup>2</sup>');
+                    attrMap.units = unitsArr[0];
 
                 }
 
-                callback(null, {attrMap: attrMap, attrSetMap: results.attrSet});
+                callback(null, {attrMap: attrMap, attrSetMap: results.attrSet, prevAttrMap: prevAttrMap});
             }]
     }
     async.auto(opts);

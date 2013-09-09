@@ -1,12 +1,14 @@
 var dataMod = require('./data');
 var async = require('async')
 var crud = require('../rest/crud');
-
+var us = require('underscore')
 function getChart(params, callback) {
     var attrs = JSON.parse(params['attrs']);
     var width = params['width'] || 535;
     var height = params['height'] || 320;
     var years = JSON.parse(params['years']);
+    years = [years[0]];
+    params.years = JSON.stringify(years);
     var invisibleAttrs = params['invisibleAttrs'] ? JSON.parse(params['invisibleAttrs']) : [];
     var invisibleAttrsMap = {};
     for (var i=0;i<invisibleAttrs.length;i++) {
@@ -15,14 +17,14 @@ function getChart(params, callback) {
         invisibleAttrsMap[dataIndex] = true;
     }
     var opts = {
-        data: function(asyncCallback) {
-            
+        data: ['attrConf',function(asyncCallback,results) {
+            params.attrMap = results.attrConf.prevAttrMap;
             dataMod.getData(params, function(err, dataObj) {
                 if (err)
                     return callback(err);
                 return asyncCallback(null, dataObj.data);
             })
-        },
+        }],
         years: function(asyncCallback) {
             crud.read('year', {}, function(err, resls) {
                 if (err)
@@ -62,7 +64,7 @@ function getChart(params, callback) {
                 
                 var labels = [];
 
-                function chartIteration(row,ri,rj,year) {
+                function chartIteration(row,ri,rj,year,yearId) {
                     var serieData = [];
                     for (var j = 0; j < attrs.length; j++) {
                         var attr = attrs[j];
@@ -91,9 +93,13 @@ function getChart(params, callback) {
                         y: (height / numRows) * (ri + 0.5)
                     }
                     var serieName = row.name;
+                    console.log(year)
+                    console.log(yearId)
                     serieName += (year ? (' '+results.years[year]) : '');
                     var serie = {
                         data: serieData,
+                        year: year,
+                        yearName: results.years[yearId],
                         name: serieName,
                         loc: row.loc,
                         at: row.at,
@@ -126,14 +132,15 @@ function getChart(params, callback) {
                 var year = null;
                 for (var ri = 0; ri < numRows; ri++) {
                     if (years.length>1) {
-                        year = years[ri];
                         i = 0;
+                        year = years[ri];
                     }
+                    var yearId = year || years[0];
                     for (var rj = 0; rj < numCols; rj++) {
                         var row = data[i];
                         if (!row)
                             break;
-                        chartIteration(row,ri,rj,year);              
+                        chartIteration(row,ri,rj,year,yearId);              
                         i++;
                     }
                 }
@@ -142,6 +149,7 @@ function getChart(params, callback) {
                 if (params['forMap']) {
                     for (var i = 0; i < series.length; i++) {
                         var conf = cfg();
+                        conf = us.extend(conf,require('../data/defaultchart'))
                         var serie = series[i]
                         //conf.title.text = '';
                         //conf.legend.enabled = false;
@@ -157,6 +165,7 @@ function getChart(params, callback) {
 
                 else {
                     var conf = cfg();
+                    conf = us.extend(conf,require('../data/defaultchart'))
                     conf.series = series;
                     //conf.chart.width = years.length>1 ? width+24 : null;
                     conf.chart.height = years.length>1 ? 382 : null;

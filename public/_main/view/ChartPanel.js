@@ -53,6 +53,8 @@ Ext.define('PumaMain.view.ChartPanel', {
                 toolNames = ['gear','help','print','save','search','close']; break;
             case 'extentoutline':
                 toolNames = ['gear','print','save','close']; break;
+            case 'filter':
+                toolNames = ['close']; break;
         }
         for (var i=0;i<toolNames.length;i++) {
             this.tools.push(toolMap[toolNames[i]]);

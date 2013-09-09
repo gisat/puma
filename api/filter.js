@@ -36,11 +36,26 @@ function getFilterConfig(params,req,res,callback) {
                 var newParams = us.clone(params);
                 newParams.aggregate = 'min,max';
                 newParams.years = JSON.stringify([item]);
-                data.getData(newParams, function(err, dataObj) {
-                if (err)
-                    return callback(err)
-                return mapCallback(null,dataObj)
-            })
+                
+                var opts2 = {
+                    attrConf: function(asyncCallback2) {
+                        data.getAttrConf(newParams, function(err, attrConf) {
+                            if (err)
+                                return callback(err);
+
+                            return asyncCallback2(null, attrConf);
+                        })
+                    },
+                    res: ['attrConf', function(asyncCallback2, results) {
+                            newParams.attrMap = results.attrConf.prevAttrMap;
+                            data.getData(newParams, function(err, dataObj) {
+                            if (err)
+                                return callback(err)
+                            return mapCallback(null, dataObj)
+                        })
+                    }]
+                }
+                async.auto(opts2)
             },function(err,resls) {
                 var attrMap = {};
                 for (var i=0;i<attrs.length;i++) {

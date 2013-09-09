@@ -38,6 +38,9 @@ function create(collName,obj,params,callback) {
             obj['createdBy'] = params.userId;
             obj['changed'] = date;
             obj['changedBy'] = params.userId;
+            if (params['bypassHooks']) {
+                return asyncCallback(null);
+            }
             doHooks("precreate",collName,obj,params,function(err,result) {
                 if (err) return callback(err);
                 return asyncCallback(null);
@@ -51,7 +54,9 @@ function create(collName,obj,params,callback) {
             });
         }],
         hooks: ['create', function(asyncCallback,results) {
-            console.log('hook')
+            if (params['bypassHooks']) {
+                return callback(null,results.create);
+            }
             doHooks("create",collName,results.create,params,function(err,result) {
                 if (err) return callback(err);
                 

@@ -346,13 +346,13 @@ Ext.define('PumaMain.controller.Layers', {
                         filter: filterFc,
                         symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: recodeFc, strokeWidth: 1, fillOpacity: 0})}
                     }
-                    var rule1 = new OpenLayers.Rule({
-                        filter: filterFc,
-                        minScaleDenominator: 5000000,
-                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({strokeColor: '#888888', strokeWidth: 1, graphicName: 'circle', pointRadius: 8, fillColor: recodeFc})}
-                    });
+//                    var rule1 = new OpenLayers.Rule({
+//                        filter: filterFc,
+//                        minScaleDenominator: 5000000,
+//                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({strokeColor: '#888888', strokeWidth: 1, graphicName: 'circle', pointRadius: 8, fillColor: recodeFc})}
+//                    });
                     var rule2 = new OpenLayers.Rule(obj);
-                    style.addRules([rule1, rule2]);
+                    style.addRules([ rule2]);
                     var namedLayers = i == 0 ? namedLayers1 : namedLayers2;
                     namedLayers.push({
                         name: layerName,
@@ -526,6 +526,31 @@ Ext.define('PumaMain.controller.Layers', {
             var normAttrSet = attrs[0].normAs || params['normalizationAttributeSet'];
             var normAttribute = attrs[0].normAttr || params['normalizationAttribute'];
             
+            var factor = 1;
+            var attrUnits = Ext.StoreMgr.lookup('attribute').getById(attrs[0].attr).get('units')
+            var normAttrUnits = null;
+            if (normalization == 'attribute' || normalization == 'attributeset') {
+                normAttrUnits = Ext.StoreMgr.lookup('attribute').getById(normAttribute).get('units')
+            }
+            if (normalization == 'area') {
+                normAttrUnits = 'm2'
+            }
+            if (normalization == 'select' || normalization=='year') {
+                normAttrUnits = attrUnits;
+            }
+        
+            if (attrUnits && attrUnits == 'm2') {
+                factor /= 1000000;
+            }
+            if (normAttrUnits && normAttrUnits == 'm2') {
+                factor *= 1000000;
+            }
+            if ((normAttrUnits == 'm2' || normAttrUnits == 'km2') && (attrUnits == 'm2' || attrUnits == 'km2')) {
+                factor *= 100;
+            }
+            else if (attrUnits && attrUnits == normAttrUnits) {
+                factor *= 100;
+            }
             
             var props = '';
             var filtersNull = [];
@@ -541,10 +566,11 @@ Ext.define('PumaMain.controller.Layers', {
                     filtersNotNull.push(new OpenLayers.Filter.Comparison({type: '!=', property: normAttr, value: 0}))
                     normAttr = '${' + normAttr + '}';
                 }
-                props = new OpenLayers.Filter.Function({name: 'Mul', params: [new OpenLayers.Filter.Function({name: 'Div', params: ['${#attr#}', normAttr]}), 100]});
+
+                props = new OpenLayers.Filter.Function({name: 'Mul', params: [new OpenLayers.Filter.Function({name: 'Div', params: ['${#attr#}', normAttr]}), factor]});
             }
             else {
-                props = '${#attr#}';
+                props = new OpenLayers.Filter.Function({name: 'Mul', params: ['${#attr#}', factor]});
             }
             if (params['zeroesAsNull']) {
                 filtersNull.push(new OpenLayers.Filter.Comparison({type: '==', property: '#attr#', value: 0}))
@@ -851,6 +877,9 @@ Ext.define('PumaMain.controller.Layers', {
         Ext.StoreMgr.lookup('selectedlayers').filter();
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
+        if (checked) {
+            node.set('sortIndex',node.get('sortIndex')-0.1);
+        }
         node.commit();
         var me = this;
         if (node.get('type') == 'chartlayer' && node.get('checked') && !node.initialized) {
@@ -858,7 +887,7 @@ Ext.define('PumaMain.controller.Layers', {
             return;
         }
         var parentNode = node.parentNode;
-        if (parentNode.get('type')=='basegroup' && checked) {
+        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup'],parentNode.get('type')) && checked) {
             for (var i=0;i<parentNode.childNodes.length;i++) {
                 var childNode = parentNode.childNodes[i];
                 if (node!=childNode) {
@@ -871,6 +900,7 @@ Ext.define('PumaMain.controller.Layers', {
             layer1.setVisibility(checked);
         if (layer2.initialized)
             layer2.setVisibility(checked);
+        
         me.resetIndexes();
         me.onLayerDrop();
         

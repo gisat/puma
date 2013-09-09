@@ -17,6 +17,22 @@ var filter = {
 }
 
 
+function copyYears(params, req, res, callback) {
+    var filter = {
+        attributeSet: {$in: [328,329,369,370,473,404,1694,450,451,467]},
+        year: 277
+    }
+    crud.read('layerref',filter,function(err,resls) {
+        async.forEach(resls,function(item,eachCallback) {
+            var obj = us.clone(item);
+            delete obj['_id'];
+            obj.year = 278;
+            crud.create('layerref',obj,{bypassHooks: true,userId: req.userId},eachCallback);
+            
+        },callback)
+    })
+}
+
 function gatherLayerData(featureInfo, callback) {
     var confs = [];
     var features = JSON.parse(featureInfo).features;
@@ -603,5 +619,6 @@ module.exports = {
     getLayerDetails: getLayerDetails,
     getSymbologiesFromServer: getSymbologiesFromServer,
     activateLayerRef: activateLayerRef,
-    gatherLayerData: gatherLayerData
+    gatherLayerData: gatherLayerData,
+    copyYears: copyYears
 }

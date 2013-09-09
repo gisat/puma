@@ -2,12 +2,13 @@ var dataMod = require('./data');
 var async = require('async')
 var crud = require('../rest/crud');
 
-
+var us = require('underscore')
 
 function getChart(params, callback) {
     var conf = cfg();
+    conf = us.extend(conf,require('../data/defaultchart'))
     var attrs = JSON.parse(params['attrs']);
-    var width = params['width'] || 573;
+    var width = params['width'] || 560;
     var areas = JSON.parse(params['areas']);
     var oldAreas = params['areas']
     var years = JSON.parse(params['years']);
@@ -27,8 +28,8 @@ function getChart(params, callback) {
     }
     var opts = {
         
-        data: function(asyncCallback, results) {
-                
+        data: ['attrConf',function(asyncCallback,results) {
+                params.attrMap = results.attrConf.prevAttrMap;
                 var stacking = params['stacking']
                 var attrsNum = (!stacking || stacking == 'none' || stacking == 'double') ? attrs.length * years.length : years.length;
                 dataMod.getData(params, function(err, dataObj) {
@@ -36,7 +37,7 @@ function getChart(params, callback) {
                         return callback(err);
                     return asyncCallback(null, dataObj);
                 })
-            },
+            }],
         attrConf: function(asyncCallback) {
 
             dataMod.getAttrConf(params, function(err, attrConf) {
@@ -46,7 +47,19 @@ function getChart(params, callback) {
                 return asyncCallback(null, attrConf);
             })
         },
-        res: ['data', 'attrConf',  function(asyncCallback, results) {
+        years: function(asyncCallback) {
+            crud.read('year', {}, function(err, resls) {
+                if (err)
+                    return callback(err);
+                var map = {};
+                for (var i=0;i<resls.length;i++) {
+                    var resl = resls[i];
+                    map[resl['_id']] = resl.name;
+                }
+                return asyncCallback(null,map)
+            })
+        },
+        res: ['years','data', 'attrConf',  function(asyncCallback, results) {
                 var data = results.data.data;
                 var attrConf = results.attrConf.attrMap;
                 for (var i = 0; i < attrs.length; i++) {
@@ -70,7 +83,7 @@ function getChart(params, callback) {
                         var attrName = 'as_' + attr.as + '_attr_' + attr.attr;
                         for (var k = 0; k < years.length; k++) {
                             attr.series[k] = attr.series[k] || [];
-
+                            
                             var yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
                             if (params['aggregate'] == 'toptree' && row.loc!=-1 && !attr.topTreeAlready) {
                                 var aggRow = results.data.aggDataMap[row.loc];
@@ -96,10 +109,10 @@ function getChart(params, callback) {
                             }
                             
                             if (params['stacking'] != 'double' || j < (attrs.length / 2)) {
-                                attr.series[k].push({y: row[yearAttrName], loc: row.loc, at: row.at, gid: row.gid});
+                                attr.series[k].push({y: row[yearAttrName], loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
                             }
                             else {
-                                attr.series[k].push({y: -row[yearAttrName], loc: row.loc, at: row.at, gid: row.gid});
+                                attr.series[k].push({y: -row[yearAttrName], loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
                             }
                         }
 
@@ -197,7 +210,7 @@ function getChart(params, callback) {
                 stacking = (!stacking || stacking=='none') ? null : stacking;
                 console.log(stacking)
                 var optimalWidth = Math.max(areasNum * 30, columnNum * 10, width);
-                var staggerLines = Math.ceil(100 / (optimalWidth / areasNum));
+                var staggerLines = Math.ceil(120 / (optimalWidth / areasNum));
                 conf.chart.width = optimalWidth;
                 conf.chart.height = 382;
                 conf.yAxis.plotLines = plotLines.length ? plotLines : null;
@@ -254,6 +267,7 @@ var cfg = function() {
     var conf = {
         chart: {
             type: 'column',
+            spacingRight: 25,
             spacingBottom: 4
         },
         xAxis: {

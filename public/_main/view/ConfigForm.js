@@ -13,11 +13,12 @@ Ext.define('PumaMain.view.ConfigForm', {
         this.items = [{
                 xtype: 'textfield',
                 name: 'title',
+                marginLeft: 5,
                 hidden: this.formType!='chart',
                 fieldLabel: 'Name'
             }, {
                                 xtype: 'pumacombo',
-                                
+                                marginLeft: 5,
                                 hidden: this.formType!='chart',
                                 store: Ext.StoreMgr.lookup('charttype4chart'),
                                 fieldLabel: 'Type',
@@ -48,11 +49,14 @@ Ext.define('PumaMain.view.ConfigForm', {
                     }, {
                         xtype: 'normalizeform'
                     },{
-                        xtype: 'pumacombo',
+                        xtype: 'form',
+                        frame: true,
+                        items: [{xtype: 'pumacombo',
                         store: Ext.StoreMgr.lookup('layers4outline'),
                         valueField: 'atWithSymbology',
                         fieldLabel: 'Layer',
-                        name: 'featureLayer'
+                        name: 'featureLayer'}]
+                        
             },{
                         xtype: 'choroplethform'
             }]
@@ -62,7 +66,7 @@ Ext.define('PumaMain.view.ConfigForm', {
             name: 'constrainFl',
             values: [0, this.levelCount-1],
             hidden: this.formType!='filters',
-            width: 300,
+            width: 424,
             increment: 1,
             minValue: 0,
             maxValue: this.levelCount-1

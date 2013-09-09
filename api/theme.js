@@ -64,7 +64,7 @@ function getLocationConf(params, req, res, callback) {
                             return callback(err);
                         for (var i = 0; i < resls.rows.length; i++) {
                             var row = resls.rows[i];
-                            resultArr.push({name: row.name,locGid: row.gid,id:'2_'+row.gid,dataset:datasetId,location:item.location,at:item.areaTemplate})
+                            resultArr.push({name: row.name,locGid: row.gid,id:item.location+'_'+row.gid,dataset:datasetId,location:item.location,at:item.areaTemplate})
                         }
                         eachCallback(null)
 

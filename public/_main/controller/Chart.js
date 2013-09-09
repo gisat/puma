@@ -80,6 +80,7 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onSwitchZooming: function(btn) {
         var chart = btn.up('panel').chart;
+        $(btn.el.dom).toggleClass('tool-active');
         chart.zooming = chart.zooming ? false : true;
     },
     onExportCsv: function(btn) {
@@ -274,16 +275,15 @@ Ext.define('PumaMain.controller.Chart', {
             height: 400,
             width: 575,
             style: {
-                "overflowX": 'hidden ! important'
+                //"overflowX": 'hidden ! important'
             },
             layout: 'fit'
         };
         if (cfg.type == 'extentoutline') {
-//            opts.layout = {
-//                type: 'table',
-//                columns: 2
-//            }
-//            opts.height = null;
+            opts.layout = {
+                type: 'absolute'
+            }
+            //opts.height = null;
         }
         var chart = Ext.widget('chartcmp', opts);
         var items = [chart];
@@ -457,9 +457,9 @@ Ext.define('PumaMain.controller.Chart', {
         var store = chartCmp.chart.store;
         store.on('beforeload', function(st, operation) {
             Ext.applyIf(params, store.proxy.getParams(operation));
-            var filterFeature = chartCmp.chart.filters;
-            var filterParams = filterFeature.buildQuery(filterFeature.getFilterData());
-            Ext.apply(params, filterParams);
+            //var filterFeature = chartCmp.chart.filters;
+            //var filterParams = filterFeature.buildQuery(filterFeature.getFilterData());
+           // Ext.apply(params, filterParams);
             var items = [{
                     xtype: 'filefield',
                     name: 'file'
@@ -504,12 +504,43 @@ Ext.define('PumaMain.controller.Chart', {
     onOutlineReceived: function(data, cmp) {
         cmp.removeAll();
         data.layerRefs = data.layerRefs || [];
-        
+        var l = data.layerRefs.length
+        //var anchor = data.layerRefs.length==1 ? '100% 100%' : '45% 100%';
+        //anchor = data.layerRefs.length<3 ? anchor : '45% 45%'
+        var width = l==1 ? 550 : 260;
+        var height = l<3 ? 300 : 140;
         for (var i = 0; i < data.layerRefs.length; i++) {
             var layerRefs = data.layerRefs[i];
             var rows = data.rows[i];
+            var anchor = '100% 100%'
+            var x = 0;
+            var y = 0;
+            
+            if (i==0 && l>1) {
+                anchor = '49% 100%';
+            }
+            if (i==0 && l>2) {
+                anchor = '49% 49%'
+            }
+            if (i==1) {
+                anchor = '100% 100%';
+                if (l>2) {
+                    anchor = '100% 49%';
+                }
+                x = 285;
+            }
+            if (i==2) {
+                y = 200;
+                anchor = '49% 100%'
+            }
+                
+
+            if (i==3) {
+                x = 285;
+                y = 200;
+            }
             cmp.add({
-                xtype: 'component', type: 'extentoutline', width: 550, height: 300, layerRefs: layerRefs, rows: rows
+                xtype: 'component', type: 'extentoutline', width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
             })
         }
 
@@ -571,7 +602,53 @@ Ext.define('PumaMain.controller.Chart', {
         data.chart.events.selection = function(evt) {
             me.onScatterSelected(evt);
         }
-
+        data.tooltip.formatter = function() {
+            var obj = this;
+            var type = obj.series.type;
+            var attrConf = [];
+            var yearName = '';
+            var areaName = '';
+            if (type=='column') {
+                areaName = obj.x;
+                yearName = obj.point.yearName
+                attrConf.push({
+                    name: obj.series.name,
+                    val: obj.y,
+                    units: obj.series.tooltipOptions.valueSuffix.split(' ')[1]
+                })
+            }
+            else if (type=='pie') {
+                areaName = obj.series.name;
+                yearName = obj.series.userOptions.yearName
+                attrConf.push({
+                    name: obj.key,
+                    val: obj.y,
+                    units: obj.series.tooltipOptions.valueSuffix.split(' ')[1]
+                })
+            }
+            else {
+                areaName = obj.key;
+                yearName = obj.series.name;
+                attrConf.push ({
+                    name: obj.point.yName,
+                    val: obj.point.y,
+                    units: obj.point.yUnits
+                })
+                attrConf.push ({
+                    name: obj.point.xName,
+                    val: obj.point.x,
+                    units: obj.point.xUnits
+                })
+                if (obj.point.zName) {
+                    attrConf.push({
+                        name: obj.point.zName,
+                        val: obj.point.z,
+                        units: obj.point.zUnits
+                    })
+                }
+            }
+            return me.getTooltipHtml(areaName,yearName,attrConf)
+        }
         data.plotOptions = data.plotOptions || {series: {events: {}}}
 
         data.plotOptions.series.events.click = function(evt) {
@@ -908,6 +985,26 @@ Ext.define('PumaMain.controller.Chart', {
         });
 
         var selectController = this.getController('Select');
+        var me = this;
+        for (var i=0;i<data.columns.length;i++) {
+            var column = data.columns[i];
+            column.menuDisabled = true;
+            column.resizable = false;
+            if (column.dataIndex=='name') continue;
+            column.renderer = function(val,metadata,rec,rowIndex,colIndex) {
+                var columns = this.view.getGridColumns();
+                var column = columns[colIndex];
+                var attrConf = [{
+                    name: column.fullName,
+                    val: val,
+                    units: column.units
+                }]
+                var html = me.getTooltipHtml(rec.get('name'),column.yearName,attrConf)
+                metadata.tdAttr = 'data-qtip="' + html + '"';
+                
+                return me.formatVal(val);
+            }
+        }
         var grid = Ext.widget('grid', {
             renderTo: cmp.el,
             height: '100%',
@@ -939,14 +1036,43 @@ Ext.define('PumaMain.controller.Chart', {
         grid.on('sortchange',function() {
             me.reconfigure('page');
         })
+        var attrs = JSON.parse(response.request.options.params['attrs']);
+        var years = JSON.parse(response.request.options.params['years']);
         grid.view.on('viewready', function() {
+            if (years.length*attrs.length<5)
+                grid.view.el.setStyle ({
+                    overflow: 'hidden'
+                })  
             window.setTimeout(function() {
                 console.log('loadingdone');
             }, 100)
         })
 
     },
-
+    
+    getTooltipHtml: function(areaName,yearName,attrConf) {
+        var html = areaName+' ('+yearName+')';
+        for (var i=0;i<attrConf.length;i++) {
+            html += '<br/>'
+            var conf = attrConf[i];
+            html += conf.name+': '
+            html +=  '<b>'+this.formatVal(conf.val)+'</b> ';
+            html += conf.units
+        }
+        return html;
+    },
+    formatVal: function(val) {
+        if (this.isInt(val)) return val;
+        var deci = 3;
+        if (val>1) deci = 2;
+        if (val>100) deci = 1;
+        if (val>10000) deci = 0;
+        return val.toFixed(deci);
+    },
+    isInt: function(value) {
+        return !isNaN(parseInt(value,10)) && (parseFloat(value,10) == parseInt(value,10));
+    },
+    
     onPageChange: function() {
         var me = this;
         window.setTimeout(function() {
@@ -1020,7 +1146,7 @@ Ext.define('PumaMain.controller.Chart', {
                         stroke: color,
                         zIndex: 1
                     }).add();
-                    elem.toFront();
+                    //elem.toFront();
                     serie.borderElem = elem;
                 }
                 else {

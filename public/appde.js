@@ -13,9 +13,14 @@ Ext.application({
     name: 'PumaMain',
     appFolder: '_main',
     controllers: ['DomManipulation','Render','Store','Map','LocationTheme','Area','Layers','Screenshot','AttributeConfig','Help','Filter','ViewMng','Login'],
-    enableQuickTips: false,
+    enableQuickTips: true,
     requires: ['Puma.patch.Main'],
     launch: function() {
+        Ext.tip.QuickTipManager.init();
+
+        Ext.apply(Ext.tip.QuickTipManager.getQuickTip(), {
+            cls: 'standardqtip'     
+        });
         this.getController('Puma.controller.Login');
         var search = window.location.search.split('?')[1];
         var afterId = search ? search.split('id=')[1] : null;

@@ -5,6 +5,27 @@ module.exports = {
     credits: {
         enabled: false
     },
+    tooltip: {
+        borderRadius: 0,
+        itemStyle: {
+            fontSize: '12px',
+            fontFamily: '"Open Sans", sans-serif'
+        },
+        style: {
+            fontSize: '12px',
+            fontFamily: '"Open Sans", sans-serif'
+        },
+    },
+    labels: {
+        itemStyle: {
+            fontSize: '12px',
+            fontFamily: '"Open Sans", sans-serif'
+        },
+        style: {
+            fontSize: '12px',
+            fontFamily: '"Open Sans", sans-serif'
+        },
+    },
     legend: {
         layout: 'vertical',
         backgroundColor: '#FFFFFF',
@@ -12,14 +33,20 @@ module.exports = {
         verticalAlign: 'top',
         lineHeight: 18,
         padding: 10,
+        borderRadius: 0,
         itemStyle: {
-            fontSize: '10px'
+            fontSize: '12px',
+            fontFamily: '"Open Sans", sans-serif'
         },
-        x: 50,
+        style: {
+            fontSize: '12px',
+            fontFamily: '"Open Sans", sans-serif'
+        },
+        x: 60,
         y: 10,
         floating: true,
         layout: 'vertical',
-                shadow: true
+        shadow: true
     },
 }
 

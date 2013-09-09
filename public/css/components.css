@@ -236,11 +236,17 @@
 .x-panel-header .x-tool-search {
 	background-image     : url("../images/icons/search.png") !important;
 }
+
 .x-panel-header .x-tool-collapse {
 	background-image     : url("../images/icons/save-csv.png") !important;
 }
 
-.cmptype-grid, .cmptype-piechart, .cmptype-scatterchart, .cmptype-snapshot, .cmptype-addchart {
+.x-panel-header .tool-active {
+    background-color: #aaa !important;
+}
+ 
+
+.cmptype-grid, .cmptype-piechart, .cmptype-scatterchart, .cmptype-snapshot, .cmptype-addchart, .cmptype-columnchart, .cmptype-extentoutline {
 	width                : 17px;
 }
 .cmptype-grid {
@@ -252,8 +258,14 @@
 .cmptype-scatterchart {
 	background-image     : url("../images/icons/graph.png");
 }
+.cmptype-columnchart {
+	background-image     : url("../images/icons/graph.png");
+}
 .cmptype-snapshot {
 	background-image     : url("../images/icons/snapshots.png");
+}
+.cmptype-extentoutline {
+	background-image     : url("../images/icons/graph.png");
 }
 .cmptype-addchart {
 	background-image     : url("../images/icons/add.png");

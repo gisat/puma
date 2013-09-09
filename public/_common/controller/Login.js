@@ -18,7 +18,12 @@ Ext.define('Puma.controller.Login', {
             me.onLoginClicked();
         })
         $('.signup').click(function() {
-            me.onLogoutClicked();
+            if ($(this).html()=='Logout') {
+                me.onLogoutClicked();
+            }
+            else {
+                window.open(Config.signupAddress, "_blank")
+            }
         })
     },
     onLoginClicked: function(btn) {

@@ -147,8 +147,18 @@ function saveSld(params, req, res, callback) {
         }
     }
     var opts = {
-        
-        data: function(asyncCallback) {
+        attrConf: function(asyncCallback) {
+            if (!params['attrs']) {
+                return asyncCallback(null)
+            }
+            data.getAttrConf(params, function(err, attrConf) {
+                if (err)
+                    return callback(err);
+
+                return asyncCallback(null, attrConf);
+            })
+        },
+        data: ['attrConf',function(asyncCallback,results) {
             if (!params['showChoropleth'] && !params['showMapChart']) {
                 return asyncCallback(null);
             }
@@ -176,6 +186,7 @@ function saveSld(params, req, res, callback) {
                 
             }
             dataParams['normalizationYear'] = null;
+            dataParams.attrMap = results.attrConf.prevAttrMap;
             data.getData(dataParams, function(err, dataObj) {
                 if (err)
                     return callback(err);
@@ -192,7 +203,7 @@ function saveSld(params, req, res, callback) {
                     return asyncCallback(null, dataObj);
                 }
             })
-        },
+        }],
         layerRef: function(asyncCallback) {
             if (!params['showMapChart']) {
                 return asyncCallback(null);

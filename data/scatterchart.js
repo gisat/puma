@@ -2,10 +2,11 @@ var dataMod = require('./data');
 var async = require('async');
 
 var crud = require('../rest/crud');
-
+var us = require('underscore')
 function getChart(params, callback) {
     
     var conf = cfg();
+    conf = us.extend(conf,require('../data/defaultchart'))
     var attrs = JSON.parse(params['attrs']);
     var xAttr = attrs[0]
     var yAttr = attrs[1];
@@ -18,13 +19,14 @@ function getChart(params, callback) {
     var zAttrName = zAttr ? ('as_'+zAttr.as+'_attr_'+zAttr.attr):null;
     var invisibleYears = params['invisibleYears'] ? JSON.parse(params['invisibleYears']) : []
     var opts = {
-        data: function(asyncCallback) {
+        data: ['attrConf',function(asyncCallback,results) {
+            params.attrMap = results.attrConf.prevAttrMap;
             dataMod.getData(params,function(err, dataObj) {
                 if (err)
                     return callback(err);
                 return asyncCallback(null,dataObj.data);
             })
-        },
+        }],
         attrConf: function(asyncCallback) {
             dataMod.getAttrConf(params, function(err, attrConf) {
                 if (err)
@@ -76,9 +78,17 @@ function getChart(params, callback) {
                         var yearSuffix = year ? '_y_'+year : '';
                         var obj = {x: row[xAttrName+yearSuffix], y: row[yAttrName+yearSuffix], name: row['name'], loc: row['loc'], at: row['at'], gid: row['gid']}
                         obj.z = zAttrName ? row[zAttrName+yearSuffix] : 1;
-                        obj.xTooltip = xName+': '+(obj.x!=null ? obj.x.toFixed(2) : '')+' '+unitsX;
-                        obj.yTooltip = yName+': '+(obj.y!=null ? obj.y.toFixed(2) : '')+' '+unitsY;
-                        obj.zTooltip = zName ? (zName+': '+(obj.z!=null ? obj.z.toFixed(2) : '')+' '+unitsZ) : '';
+//                        obj.xTooltip = xName+': '+(obj.x!=null ? obj.x.toFixed(2) : '')+' '+unitsX;
+//                        obj.yTooltip = yName+': '+(obj.y!=null ? obj.y.toFixed(2) : '')+' '+unitsY;
+//                        obj.zTooltip = zName ? (zName+': '+(obj.z!=null ? obj.z.toFixed(2) : '')+' '+unitsZ) : '';
+                        obj.xName = xName;
+                        obj.yName = yName;
+                        obj.zName = zName;
+                        obj.xUnits = unitsX;
+                        obj.yUnits = unitsY;
+                        obj.zUnits = unitsZ;
+                        obj.year = year;
+                        obj.yearName = results.years[year]
                         series[j] = series[j] || [];
                         
                         series[j].push(obj);
