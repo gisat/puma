@@ -301,13 +301,16 @@ strong {
 	#footer a:hover, #footer a:focus {
 		color            : #fff;
 	}
-	#footer .label {
-		font-weight      : 800;
-		font-size        : 18px;
+	#footer .logo {
+		position         : relative;
+		top              : 5px;
+		display          : inline-block;
+		width            : 76px;
+		height           : 20px;
 	}
 	#footer .contact {
 		display          : inline-block;
-		margin-left      : 45px;
+		margin-left      : 25px;
 	}
 	#footer .copyright {
 		float            : right;
