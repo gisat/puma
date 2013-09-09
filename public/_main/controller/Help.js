@@ -8,8 +8,12 @@ Ext.define('PumaMain.controller.Help', {
                     component: {
                         click: this.testClick
                     }
-                }
-    )},
+                })
+        $('.field.help').click(function() {
+            window.open('help/PUMA webtool help.html', "_blank")
+
+        })
+    },
         
     testClick: function(cmp) {
 //        debugger;

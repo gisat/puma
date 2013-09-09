@@ -7,7 +7,8 @@ Ext.define('PumaMain.controller.ViewMng', {
                 {
                     'commonmnggrid' : {
                         recmoved: this.onRecMoved,
-                        recdeleted: this.onDelete
+                        recdeleted: this.onDelete,
+                        urlopen: this.onUrlOpen
                     },
                     'commonsaveform #save' : {
                         click: this.onSave
@@ -30,7 +31,17 @@ Ext.define('PumaMain.controller.ViewMng', {
                 })
     },
     
-    
+    onUrlOpen: function(grid,rec) {
+        var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id');
+        var win = Ext.widget('window',{
+                bodyCls: 'urlwindow',
+                items: [{
+                        xtype: 'displayfield',
+                        value: url
+                }]
+            })
+            win.show();
+    },
     
     onRecMoved: function(grid,rec, moveUp) {
         var store = Ext.StoreMgr.lookup('visualization4sel');

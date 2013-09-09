@@ -51,6 +51,7 @@ Ext.define('PumaMain.controller.Area', {
         var toExpand = {};
         var needQuery = false;
         var needChange = false;
+        this.getController('DomManipulation').activateLoadingMask();
         var tree = Ext.ComponentQuery.query('#areatree')[0];
         tree.suspendEvents();
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();

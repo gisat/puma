@@ -17,7 +17,8 @@ Ext.define('Gisatlib.data.SlaveStore',{
                 records.push(node);
             })
         }
-       
+        //console.log(this.storeId);
+        //console.log(records);
         this.loadRecords(records);
         this.filter();
         this.fireEvent('load',this,records,true);

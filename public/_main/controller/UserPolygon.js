@@ -73,7 +73,7 @@ Ext.define('PumaMain.controller.UserPolygon', {
     onFeatureDragged: function(feature) {
         var format = new OpenLayers.Format.WKT();
         var geom = format.write(feature);
-        console.log(feature.gid)
+        //console.log(feature.gid)
         Ext.Ajax.request({
             url: Config.url + '/api/userpolygon/userPolygon',
             params: {

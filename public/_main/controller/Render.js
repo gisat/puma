@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Render', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer'],
+    requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer','Ext.slider.Multi'],
     init: function() {},
     renderApp: function() {
         Ext.widget('pumacombo',{

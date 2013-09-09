@@ -114,7 +114,7 @@ Ext.define('PumaMain.controller.Chart', {
             success: function(response) {
                 var id = JSON.parse(response.responseText).data;
                 var url = window.location.origin + '/public/index2.html?id=' + id;
-                console.log(url);
+                //console.log(url);
             }
         })
     },

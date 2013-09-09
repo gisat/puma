@@ -788,7 +788,7 @@ Ext.define('PumaMain.controller.Map', {
             cmp.setHeight(cmp.container.getHeight());
             cmp.map.updateSize();
             if (!cmp.initialZoom) {
-                console.log('resized')
+                //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
                 cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(12490000, -900000, 12530000, -800000));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))

@@ -139,7 +139,7 @@ Ext.define('PumaMain.controller.Export', {
                 layers.push(layer);
             }
         }
-        console.log(layers);
+        //console.log(layers);
         
         
         

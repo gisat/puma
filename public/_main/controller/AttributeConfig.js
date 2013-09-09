@@ -260,8 +260,9 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         }
     },
     onChartTypeChange: function(combo,val) {
-        var advanced = Ext.ComponentQuery.query('configform #advancedfieldset')[0];
-        var cardContainer = Ext.ComponentQuery.query('configform #attributecontainer')[0];
+        var configForm = combo.up('configform');
+        var advanced = Ext.ComponentQuery.query('#advancedfieldset',configForm)[0];
+        var cardContainer = Ext.ComponentQuery.query('#attributecontainer',configForm)[0];
         cardContainer.show();
         if (val!='extentoutline') {
             cardContainer.getLayout().setActiveItem(0);

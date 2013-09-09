@@ -53,6 +53,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var themeComboAlt = Ext.ComponentQuery.query(!cnt.initial ? '#initialtheme':'#seltheme')[0] || themeCombo;
         
         
+        
         locationCombo.suspendEvents();
         locationComboAlt.suspendEvents();
         themeComboAlt.suspendEvents();
@@ -72,10 +73,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
             locationCombo.setValue(first);
             
         }
-        
         var themeStore = Ext.StoreMgr.lookup('theme4sel');
         themeStore.clearFilter(true);
         themeStore.filter([
+            
             function(rec) {
                 return rec.get('dataset')==val;
             }
@@ -653,6 +654,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     onThemeLocationConfReceived: function(response) {
         var conf = JSON.parse(response.responseText).data;
+        this.getController('DomManipulation').deactivateLoadingMask();
         if (!conf.layerRefMap) {
             conf = {
                 add: conf

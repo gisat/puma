@@ -108,7 +108,7 @@ Ext.define('Gisatlib.form.HiddenStoreField', {
     setValueTree: function(value) {
         
         if (!value) {
-            console.log('removed')
+            //console.log('removed')
             var nodes = this.store.getRootNode().removeAll(false);
             return;
         }

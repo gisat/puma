@@ -9,7 +9,13 @@ function exporter(params, req, res, callback) {
     var url = fullUrl.replace(params.download ? 'print' : 'image', 'public');
     var imgId = 'snap_' + generateId() + '.png'
     var outFile = 'tmp/' + imgId;
-    cp.execFile('phantomjs.exe', ['rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
+    var isWin = !!process.platform.match(/^win/);
+    var phantomName = isWin ? 'phantomjs.exe'  : '/home/gnode/install/phantomjs/bin/phantomjs'
+    //if (isWin)
+    cp.execFile(phantomName, ['rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
+        console.log(err);
+        console.log(stdout);
+        console.log(stderr)
         if (params['download']) {
             res.downFile = [outFile, imgId]
             return callback(err);
@@ -28,6 +34,25 @@ function exporter(params, req, res, callback) {
             })
         }
     })
+//    else cp.exec('phantomjs rasterize.js '+url+' '+outFile+' - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+//        if (params['download']) {
+//            res.downFile = [outFile, imgId]
+//            return callback(err);
+//        }
+//        else {
+//            
+//            fs.readFile(outFile, function(err, data) {
+//                if (err)
+//                    return callback(err);
+//                res.data = data;
+//                res.contType = 'image/png';
+//                res.encType = 'utf8';
+//                res.set('Cache-Control','max-age=60000000')
+//                callback()
+//                fs.unlink(outFile);
+//            })
+//        }
+//    })
 }
 
 var generateId = function() {
