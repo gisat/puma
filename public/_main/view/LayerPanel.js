@@ -75,6 +75,7 @@ Ext.define('PumaMain.view.LayerPanel', {
                 },
                 title: 'Layers selected',
                 displayField: 'name',
+                bodyCls: 'layers-selected',
                 border: true,
                 plugins: [{
                     ptype: 'rowexpander',

@@ -307,3 +307,29 @@
 .x-grid-row-focused .x-grid-cell, .x-grid-row-focused .x-grid-rowwrap-div {
 	background-color     : #ddd;
 }
+
+/* GRID EXPANDER */
+.x-grid-row-expander {
+	width                : 18px;
+	height               : 18px;
+	margin-left          : -1px;
+	background           : url("../images/icons/tree-node-collapse.png") no-repeat 0 0;
+}
+.x-grid-row-collapsed .x-grid-row-expander {
+	background-image     : url("../images/icons/tree-node-expand.png");
+}
+.layers-selected .x-grid-row-over .x-grid-cell, .layers-selected .x-grid-row-over .x-grid-rowwrap-div,
+.layers-selected .x-grid-row-focused .x-grid-cell, .layers-selected .x-grid-row-focused .x-grid-rowwrap-div {
+	background-color     : #fff !important;
+	border-right         : none;
+}
+.layers-selected .x-grid-row .x-grid-cell-special {
+	background           : none;
+	border-right         : none;
+}
+.layers-selected .x-grid-checkheader {
+	background           : url("../images/icons/checkbox.png") no-repeat 0 0;
+}
+.layers-selected .x-grid-checkheader-checked {
+	background           : url("../images/icons/checkbox-checked.png") no-repeat 0 0;
+}
