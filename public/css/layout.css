@@ -139,12 +139,12 @@ strong {
 		width            : 100%;
 		height           : 100%;
 	}
-	#content-intro, #content-application {
+	#content-intro, #content-intro-guide, #content-application {
 		display          : none;
 		position         : absolute;
 		z-index          : 10000;
 	}
-	body.intro #content-intro, body.application #content-application {
+	body.intro #content-intro, body.intro #content-intro-guide, body.application #content-application {
 		display          : block;
 	}
 		/* Fields */
@@ -212,6 +212,30 @@ strong {
 			top              : 125px;
 			padding          : 20px;
 			width            : 845px;
+		}
+		#content-intro-guide {
+			font-family      : "Open Sans", sans-serif !important;
+			font-size        : 12px;
+			background-color : #3c3b38;
+			background-color : rgba(60, 59, 56, .9);
+			color            : #fff;
+			top              : 280px;
+			right            : 0;
+			padding          : 15px 20px;
+			width            : 730px;
+		}
+		#content-intro-guide h2 {
+			font-size        : 24px;
+			font-weight      : 800;
+			margin-top       : 0;
+			border-bottom    : 1px solid #fff;
+			margin-bottom    : 10px;
+		}
+		#content-intro-guide h3 {
+			font-size        : 14px;
+		}
+		#content-intro-guide p {
+			margin-bottom    : 10px;
 		}
 		
 		/* Application */
