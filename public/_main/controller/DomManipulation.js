@@ -69,6 +69,14 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		return { width  : w, height : h };
 	},
 	
+	activateLoadingMask: function() {
+		$("#loading-mask-shim, #loading-mask").show();
+	},
+	
+	deactivateLoadingMask: function() {
+		$("#loading-mask-shim, #loading-mask").hide();
+	},
+	
 	_onSidebarToggleClick: function() {
 		$("#sidebar-reports").toggleClass("hidden");
 		this.resizeMap();

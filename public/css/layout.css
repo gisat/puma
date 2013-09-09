@@ -22,6 +22,24 @@ strong {
 	font-weight          : bold;
 }
 
+#loading-mask-shim, #loading-mask {
+	display              : none;
+	position             : absolute;
+	z-index              : 1000000;
+	top                  : 0;
+	left                 : 0;
+	width                : 100%;
+	height               : 100%;
+}
+#loading-mask-shim {
+	background           : #666;
+	opacity              : .5;
+	filter               : Alpha(opacity=50);
+}
+#loading-mask {
+	background           : url("../images/loading-mask.gif") no-repeat 50% 50%;
+}
+
 /* LAYOUT */
 	#main {
 		width            : 100%;
@@ -257,7 +275,7 @@ strong {
 		
 		/* Sidebar reports */
 		#sidebar-reports {
-			background   : #e5e3df url("../images/loading.gif") no-repeat 50% 100px;
+			background   : #e5e3df;
 			position     : absolute;
 			top          : 90px;
 			width        : 580px;
