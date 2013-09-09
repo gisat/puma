@@ -294,7 +294,7 @@
 	border               : none;
 }
 
-.screenshot .screenshotenlarge {
+.screenshot .screenshotenlarge, .screenshot.x-item-selected .screenshotenlarge {
 	display: none;
 }
 .screenshotover .screenshotenlarge {
