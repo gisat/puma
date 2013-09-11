@@ -139,6 +139,7 @@ module.exports = {
     getMongoDb: getMongoDb,
     getPgDb: getPgDb,
     getNextId: getNextId,
+    getLocalAddress: getLocalAddress,
     getConnString: getConnString,
     getBaseServer: getBaseServer,
     getGeonodeServer: getGeonodeServer,

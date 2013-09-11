@@ -38,6 +38,7 @@ strong {
 }
 #loading-mask {
 	background           : url("../images/loading-mask.gif") no-repeat 50% 50%;
+/*        background           : url("../images/loading.gif") no-repeat 50% 50%;*/
 }
 
 /* LAYOUT */
