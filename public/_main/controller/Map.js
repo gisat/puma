@@ -96,6 +96,8 @@ Ext.define('PumaMain.controller.Map', {
         else {
             domController.deactivateMapSplit();
         }
+        this.map1.multiMap = pressed;
+        this.map2.multiMap = pressed;
         this.switchMap(pressed);
     },
     
@@ -225,10 +227,12 @@ Ext.define('PumaMain.controller.Map', {
         
     },
     
-    onMapMove: function(mapId) {
-        return;
-        var mapMoved = mapId=='map' ? this.map1 : this.map2;
-        var mapAlt = mapId=='map' ? this.map2 : this.map1;
+    onMapMove: function(map) {
+        if (!map.multiMap) {
+            return;
+        }
+        var mapMoved = map;
+        var mapAlt = map==this.map1 ? this.map2 : this.map1;
         if (!mapMoved || !mapAlt) return;
         if (mapMoved.artifZoom) {
             mapMoved.artifZoom = false;
@@ -469,7 +473,7 @@ Ext.define('PumaMain.controller.Map', {
         }
         
         map.events.register('moveend',this,function(a) {
-            this.onMapMove(a.object.div.id);
+            this.onMapMove(a.object);
         })
         
         map.updateSize();

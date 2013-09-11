@@ -62,6 +62,7 @@ strong {
 	}
 	#map-holder.split .map {
 		width            : 50%;
+                float: left;
 	}
 	#map-holder.split #app-map2 {
 		display          : block;
