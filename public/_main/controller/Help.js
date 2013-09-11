@@ -9,10 +9,10 @@ Ext.define('PumaMain.controller.Help', {
                         click: this.testClick
                     }
                 })
-        $('.field.help').click(function() {
-            window.open('help/PUMA webtool help.html', "_blank")
-
-        })
+//        $('.field.help').click(function() {
+//            window.open('help/PUMA webtool help.html', "_blank")
+//
+//        })
     },
         
     testClick: function(cmp) {

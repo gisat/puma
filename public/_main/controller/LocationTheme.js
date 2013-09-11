@@ -46,6 +46,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         })
     },
     onDatasetChange: function(cnt,val) {
+        if (cnt.eventsSuspended) {
+            return;
+        }
         this.datasetChanged = true;
         var locationCombo = Ext.ComponentQuery.query(cnt.initial ? '#initiallocation':'#sellocation')[0];
         var locationComboAlt = Ext.ComponentQuery.query(!cnt.initial ? '#initiallocation':'#sellocation')[0] || locationCombo;
@@ -162,6 +165,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var themeCombo = null;
         if (cnt.switching) {
+            this.getController('DomManipulation').activateLoadingMask();
             this.getController('DomManipulation').renderApp();
             this.getController('Render').renderApp();
             themeCombo = Ext.ComponentQuery.query('#seltheme')[0];
@@ -225,6 +229,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     onYearChange: function(cnt) {
         var val = Ext.ComponentQuery.query('#selyear')[0].getValue();
         if (!val.length || cnt.eventsSuspended) {
+            this.getController('DomManipulation').deactivateLoadingMask();
             return;
         }
         if (cnt.itemId=='selyear' ) {
@@ -256,7 +261,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
-        var loc = locationObj.location
+        var loc = locationObj.location;
         if (this.datasetChanged && loc) {
             var expanded = {};
             var at = locationObj.at;
@@ -282,6 +287,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             params['parentgids'] = JSON.stringify(this.getController('Area').parentGids)
             
         }
+        var me = this;
         Ext.Ajax.request({
             url: Config.url+'/api/theme/getThemeYearConf',
             params: params,
@@ -292,7 +298,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
             datasetChanged: this.datasetChanged,
             locationChanged: this.locationChanged,
             yearChanged: this.yearChanged,
-            success: this.onThemeLocationConfReceived
+            success: this.onThemeLocationConfReceived,
+            failure: function() {
+                me.getController('DomManipulation').deactivateLoadingMask();
+            }
         })
         
         if (this.visChanged) {
@@ -549,7 +558,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     
     appendLayers: function(layerNodes) {
-            
+            layerNodes = layerNodes || [];
             this.topics = this.topics || [];
             var topics  = [];
             var nodesToAdd = [];
@@ -654,7 +663,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     onThemeLocationConfReceived: function(response) {
         var conf = JSON.parse(response.responseText).data;
-        this.getController('DomManipulation').deactivateLoadingMask();
+        
         if (!conf.layerRefMap) {
             conf = {
                 add: conf
@@ -677,7 +686,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             selController.colorMap = selController.prepareColorMap();
             this.getController('Area').colourTree(selController.colorMap);
         }
-        if (conf.layerNodes && conf.layerNodes.length) {
+        if (true) {
             this.removeLayers();
             this.appendLayers(conf.layerNodes);
             Ext.StoreMgr.lookup('layers4outline').load();
@@ -703,6 +712,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (response.request.options.locationChanged || response.request.options.datasetChanged) {
             this.getController('Area').zoomToLocation();
         }
+        this.getController('DomManipulation').deactivateLoadingMask();
         delete Config.cfg;
 
     },

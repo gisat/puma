@@ -37,7 +37,7 @@ Ext.define('PumaMain.view.ChartPanel', {
             },
             save: {
                 type: 'save',
-                tooltip: 'Screenshot'
+                tooltip: 'Snapshot'
             }
         }
         this.tools = [];
@@ -46,11 +46,11 @@ Ext.define('PumaMain.view.ChartPanel', {
             case 'grid':
                 toolNames = ['gear','collapse','print','save','close']; break;
             case 'piechart':
-                toolNames = ['gear','help','print','save','close']; break;
+                toolNames = ['gear','help','collapse','print','save','close']; break;
             case 'columnchart':
-                toolNames = ['gear','help','print','save','close']; break;
+                toolNames = ['gear','help','collapse','print','save','close']; break;
             case 'scatterchart':
-                toolNames = ['gear','help','print','save','search','close']; break;
+                toolNames = ['gear','help','collapse','print','save','search','close']; break;
             case 'extentoutline':
                 toolNames = ['gear','print','save','close']; break;
             case 'filter':

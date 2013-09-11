@@ -47,6 +47,7 @@ Ext.define('PumaMain.view.MapTools', {
         },{
             xtype: 'button',
             itemId: 'multiplemapsbtn',
+            enableToggle: true,
             hidden: true,
             text: 'Multiple maps',
             iconAlign: 'top',

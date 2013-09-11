@@ -85810,7 +85810,7 @@ Ext.define('PumaMain.view.ChartPanel', {
             },
             save: {
                 type: 'save',
-                tooltip: 'Snapshot'
+                tooltip: 'Screenshot'
             }
         }
         this.tools = [];
@@ -85819,11 +85819,11 @@ Ext.define('PumaMain.view.ChartPanel', {
             case 'grid':
                 toolNames = ['gear','collapse','print','save','close']; break;
             case 'piechart':
-                toolNames = ['gear','help','collapse','print','save','close']; break;
+                toolNames = ['gear','help','print','save','close']; break;
             case 'columnchart':
-                toolNames = ['gear','help','collapse','print','save','close']; break;
+                toolNames = ['gear','help','print','save','close']; break;
             case 'scatterchart':
-                toolNames = ['gear','help','collapse','print','save','search','close']; break;
+                toolNames = ['gear','help','print','save','search','close']; break;
             case 'extentoutline':
                 toolNames = ['gear','print','save','close']; break;
             case 'filter':
@@ -99886,10 +99886,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	views: [],
 	requires: [],
 	init: function() {
-		if (Config.exportPage) {
-                    return;
-                }
-                $("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
+		$("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		
 		this.resizeMap();
@@ -100844,9 +100841,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
         })
     },
     onDatasetChange: function(cnt,val) {
-        if (cnt.eventsSuspended) {
-            return;
-        }
         this.datasetChanged = true;
         var locationCombo = Ext.ComponentQuery.query(cnt.initial ? '#initiallocation':'#sellocation')[0];
         var locationComboAlt = Ext.ComponentQuery.query(!cnt.initial ? '#initiallocation':'#sellocation')[0] || locationCombo;
@@ -101027,7 +101021,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
     onYearChange: function(cnt) {
         var val = Ext.ComponentQuery.query('#selyear')[0].getValue();
         if (!val.length || cnt.eventsSuspended) {
-            this.getController('DomManipulation').deactivateLoadingMask();
             return;
         }
         if (cnt.itemId=='selyear' ) {
@@ -101059,7 +101052,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
-        var loc = locationObj.location;
+        var loc = locationObj.location
         if (this.datasetChanged && loc) {
             var expanded = {};
             var at = locationObj.at;
@@ -101085,7 +101078,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
             params['parentgids'] = JSON.stringify(this.getController('Area').parentGids)
             
         }
-        var me = this;
         Ext.Ajax.request({
             url: Config.url+'/api/theme/getThemeYearConf',
             params: params,
@@ -101096,10 +101088,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             datasetChanged: this.datasetChanged,
             locationChanged: this.locationChanged,
             yearChanged: this.yearChanged,
-            success: this.onThemeLocationConfReceived,
-            failure: function() {
-                me.getController('DomManipulation').deactivateLoadingMask();
-            }
+            success: this.onThemeLocationConfReceived
         })
         
         if (this.visChanged) {
@@ -101461,7 +101450,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     onThemeLocationConfReceived: function(response) {
         var conf = JSON.parse(response.responseText).data;
-        
+        this.getController('DomManipulation').deactivateLoadingMask();
         if (!conf.layerRefMap) {
             conf = {
                 add: conf
@@ -101510,7 +101499,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (response.request.options.locationChanged || response.request.options.datasetChanged) {
             this.getController('Area').zoomToLocation();
         }
-        this.getController('DomManipulation').deactivateLoadingMask();
         delete Config.cfg;
 
     },
@@ -101732,8 +101720,6 @@ Ext.define('PumaMain.controller.Area', {
             break;
         }
         if (!lastAt) return;
-        
-        this.getController('DomManipulation').activateLoadingMask();
         areaRoot.cascadeBy(function(node) {
             var at = node.get('at')
             if (at!=lastAt || !node.parentNode.get('expanded') || !node.parentNode.get('gid')) return;
@@ -101753,10 +101739,6 @@ Ext.define('PumaMain.controller.Area', {
             this.getController('Layers').colourMap(selController.colorMap); 
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
-            this.getController('DomManipulation').deactivateLoadingMask();
-        }
-        else {
-            this.getController('DomManipulation').activateLoadingMask();
         }
     },
     
@@ -101947,15 +101929,13 @@ Ext.define('PumaMain.controller.Area', {
     scanTree: function() {
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         var areaTemplates = [];
-        var leafMap = {};
+        
         var allMap = {};
         var lowestMap = {};
         var lastMap = {};
         var highestMap = {};
         var parent = null;
         var lowestCount = 0;
-        var containsLower = false;
-        var lowestNoLeafs = false;
         
         root.cascadeBy(function(node) {
             var at = node.get('at');
@@ -101972,9 +101952,6 @@ Ext.define('PumaMain.controller.Area', {
                     highestMap[loc][at].push(gid);
                 }
             }
-            else {
-                containsLower = true;
-            }
             if (parent && node.parentNode==parent) {
                 highestMap[loc] = highestMap[loc] || {}
                 highestMap[loc][at] = highestMap[loc][at] || [];
@@ -101990,10 +101967,6 @@ Ext.define('PumaMain.controller.Area', {
             allMap[loc] = allMap[loc] || {}
             allMap[loc][at] = allMap[loc][at] || [];
             allMap[loc][at].push(gid);
-            if (node.isLeaf()) {
-                leafMap[loc] = leafMap[loc] || {}
-                leafMap[loc][at] = true;
-            }
         })
         this.areaTemplates = areaTemplates;
         if (areaTemplates.length) 
@@ -102004,9 +101977,6 @@ Ext.define('PumaMain.controller.Area', {
                 lowestCount += allMap[loc][lastAreaTemplate].length;
                 lowestMap[loc] = lowestMap[loc] || {};
                 lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
-                if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
-                    lowestNoLeafs = true;
-                }
             }
         }
         this.getController('Map').updateGetFeatureControl();
@@ -102016,12 +101986,6 @@ Ext.define('PumaMain.controller.Area', {
         this.highestMap = highestMap;
         this.lastMap = lastMap;
         
-        var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
-        var showLess = Ext.ComponentQuery.query('#arealessdetails')[0]
-        
-        showMore.setDisabled(lowestCount>100 || !lowestNoLeafs);
-        showLess.setDisabled(!containsLower)
-  
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;
         for (var color in selMap) {
@@ -102857,7 +102821,7 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             {
                 icon: 'images/icons/view.png', // Use a URL in the icon config
                 tooltip: 'Open',
-                hidden: this.allowReorder ? true: false,
+                hidden: this.allowReorder,
                 width: 16,
                 height: 16,
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
@@ -102875,9 +102839,6 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             }]
         if (!me.allowReorder) {
             actionItems = actionItems.slice(2);
-        }
-        else {
-            actionItems = [actionItems[0],actionItems[1],actionItems[3]]
         }
 
         this.columns = [{
@@ -107303,9 +107264,7 @@ Ext.define('PumaMain.controller.Chart', {
         var params = this.getParams(queryCfg);
         chartCmp.queryCfg = queryCfg;
         if (forExport) {
-            this.handleExport(chartCmp,params);
-            return;
-            
+            this.handleExport(chartCmp,params)
         }
         if (queryCfg['start']<0) {
             this.onChartReceived({cmp:chartCmp});
@@ -107358,30 +107317,38 @@ Ext.define('PumaMain.controller.Chart', {
     },
     
     handleExport: function(chartCmp, params) {
-        params = Ext.clone(params);
-        delete params.start;
-        delete params.limit;
-        var items = [{
-                xtype: 'filefield',
-                name: 'file'
-            }];
-        for (var key in params) {
-            items.push({
-                xtype: 'textfield',
-                name: key,
-                value: params[key]
-            })
-        }
-        var form = Ext.widget('form', {
-            items: items
-        });
-        form.getForm().submit({
-            url: Config.url + '/api/chart/getGridDataCsv',
-            success: function() {
-            },
-            failure: function() {
+        var store = chartCmp.chart.store;
+        store.on('beforeload', function(st, operation) {
+            Ext.applyIf(params, store.proxy.getParams(operation));
+            //var filterFeature = chartCmp.chart.filters;
+            //var filterParams = filterFeature.buildQuery(filterFeature.getFilterData());
+           // Ext.apply(params, filterParams);
+            var items = [{
+                    xtype: 'filefield',
+                    name: 'file'
+                }];
+            for (var key in params) {
+                items.push({
+                    xtype: 'textfield',
+                    name: key,
+                    value: params[key]
+                })
             }
-        });
+            var form = Ext.widget('form', {
+                items: items
+            });
+            form.getForm().submit({
+                url: Config.url + '/api/chart/getGridDataCsv',
+                success: function() {
+                },
+                failure: function() {
+                }
+            });
+            return false;
+        }, true, {single: true})
+        chartCmp.chart.view.loadMask.disabled = true;
+        store.load();
+        chartCmp.chart.view.loadMask.disabled = false;
         return;
     },
     getParams: function(queryCfg) {
@@ -107559,7 +107526,7 @@ Ext.define('PumaMain.controller.Chart', {
             data.plotOptions.series.point.events.mouseOver = function(evt) {
                 me.onPointClick(this.series.chart.cmp, evt, true)
             }
-            if (cmp.cfg.type == 'scatterchart') {
+            if (cmp.cfg.type == 'scatterchart' && cmp.cfg.years && cmp.cfg.years.length > 1) {
                 data.plotOptions.series.point.events.mouseOut = function(evt) {
                     $('path[linecls=1]').hide();
                 }
@@ -107622,12 +107589,20 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onUrlCallback: function(id, isPrint) {
         if (true) {
-            var url = (window.location.origin + window.location.pathname).split('public')[0];
-
+            var url = window.location.origin + '/public/index3.html?id=' + id;
+//            Ext.widget('window', {
+//                items: [{
+//                        xtype: 'textfield',
+//                        visible: true,
+//                        value: url,
+//                        editable: false
+//                    }]
+//            }).show();
+//            return;
             
         }
         if (isPrint) {
-            url = url + 'print/index3.html?id=' + id;
+            url = window.location.origin + '/print/index3.html?id=' + id;
             var form = Ext.widget('form'
                     , {
                 items: [{
@@ -107644,7 +107619,7 @@ Ext.define('PumaMain.controller.Chart', {
             });
         }
         else {
-            url = url + 'image/index3.html?id=' + id;
+            url = window.location.origin + '/image/index3.html?id=' + id;
             var rec = Ext.StoreMgr.lookup('screenshot').findRecord('large',true);
             var screenshot = Ext.create('Puma.model.Screenshot',{
                 src: url,
@@ -107674,7 +107649,7 @@ Ext.define('PumaMain.controller.Chart', {
 
     },
     onPointClick: function(cmp, evt, hovering) {
-        if (hovering && !this.hovering && cmp.cfg.type != 'scatterchart')
+        if (hovering && !this.hovering && (cmp.cfg.type != 'scatterchart' || !cmp.cfg.years || cmp.cfg.years.length < 2))
             return;
         var at = null;
         var gid = null;
@@ -107693,9 +107668,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
         if (!at || !gid || !loc)
             return;
-        if (!this.hovering && hovering && cmp.cfg.type == 'scatterchart') {
-            var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
-            if (years.length<2) return;
+        if (hovering && cmp.cfg.type == 'scatterchart' && cmp.cfg.years && cmp.cfg.years.length > 1) {
             $('path[linecls=1]').hide();
             if (point.yearLines) {
                 for (var i = 0; i < point.yearLines.length; i++) {
@@ -109556,9 +109529,6 @@ Ext.define('PumaMain.controller.Store', {
         'Gisatlib.data.AggregatedStore'
     ],
     init: function() {
-        if (Config.exportPage) {
-            return;
-        }
         this.initStores();
         this.initSlaveStores();
         this.initLocalStores();
@@ -113062,9 +113032,8 @@ Ext.define('PumaMain.view.Tools', {
     initComponent: function() {
         this.layout = {
             type: 'accordion',
-            fill: false
-            //,
-            //multi: true
+            fill: false,
+            
         }   
         this.items = [{
             xtype: 'panel',
@@ -114993,18 +114962,13 @@ Ext.application({
     enableQuickTips: true,
     requires: ['Puma.patch.Main','Ext.data.reader.Json','Ext.util.Point','Ext.Layer','Ext.window.Window','Ext.data.ArrayStore','Ext.data.proxy.Memory','Ext.data.reader.Array','Ext.util.Grouper','Ext.PluginManager','Ext.ComponentLoader','Ext.layout.Context','Ext.resizer.Resizer','Ext.panel.Tool','Ext.util.CSS','Ext.layout.component.Body','Ext.Img','Ext.menu.Menu','Ext.data.Batch','Ext.selection.RowModel','Ext.selection.CellModel','Ext.selection.CheckboxModel','Ext.grid.PagingScroller','Ext.grid.header.Container','Ext.grid.column.Column','Ext.grid.Lockable','Ext.view.TableLayout','Ext.view.TableChunker','Ext.data.Request','Ext.grid.column.Number','Ext.layout.container.Accordion','Ext.picker.Color','Ext.tree.Panel','Ext.grid.column.Action','Ext.grid.plugin.DragDrop','Ext.layout.container.Table','Ext.form.field.Checkbox','Ext.ux.grid.FiltersFeature','PumaMain.view.Chart','PumaMain.view.VisualizationForm','Puma.view.CommonForm','Puma.view.CommonGrid','Gisatlib.form.HiddenStoreField','Ext.form.field.Hidden','PumaMain.view.ChartPanel','Ext.ux.grid.menu.ListMenu','Ext.ux.grid.menu.RangeMenu','Ext.ux.grid.filter.BooleanFilter','Ext.picker.Date','Ext.ux.grid.filter.DateTimeFilter','Ext.picker.Month','Ext.ux.grid.filter.ListFilter'],
     launch: function() {
-        window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''))
-        
-        if (Config.exportPage) {
-            this.getController('Export').initConf();
-            return;
-        }
         Ext.tip.QuickTipManager.init();
 
         Ext.apply(Ext.tip.QuickTipManager.getQuickTip(), {
             cls: 'standardqtip'     
         });
     
+        window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''))
         
         this.getController('Puma.controller.Login');
         var search = window.location.search.split('?')[1];

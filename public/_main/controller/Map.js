@@ -89,6 +89,13 @@ Ext.define('PumaMain.controller.Map', {
     },
     
     onMultipleYearsToggle: function(btn,pressed) {
+        var domController = this.getController('DomManipulation');
+        if (pressed) {
+            domController.activateMapSplit();
+        }
+        else {
+            domController.deactivateMapSplit();
+        }
         this.switchMap(pressed);
     },
     
@@ -187,7 +194,7 @@ Ext.define('PumaMain.controller.Map', {
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
         var hybridNode = Ext.create('Puma.model.MapLayer',{
             name: 'Google hybrid',
-            checked: true,
+            checked: false,
             allowDrag: false,
             initialized: true,
             leaf: true,
@@ -207,7 +214,7 @@ Ext.define('PumaMain.controller.Map', {
             name: 'Google terain',
             initialized: true,
             allowDrag: false,
-            checked: false,
+            checked: true,
             leaf: true,
             sortIndex: 10000,
             type: 'terrain'
@@ -242,7 +249,7 @@ Ext.define('PumaMain.controller.Map', {
         var hybridLayer = new OpenLayers.Layer.Google(
                 'Google',
                 {
-                    type: 'hybrid',
+                    type: 'terrain',
                     initialized: true,
                     animationEnabled: true
                 }
@@ -379,7 +386,7 @@ Ext.define('PumaMain.controller.Map', {
         cmp.map = map;
         var el = Ext.get(cmp.id);
         el.on('contextmenu',function(e) {
-            
+            return;
             
             e.stopEvent();
             var layerMenu = Ext.widget('layermenu', {
@@ -402,7 +409,8 @@ Ext.define('PumaMain.controller.Map', {
                 {
                     type: 'hybrid',
                     initialized: true,
-                    animationEnabled: true
+                    animationEnabled: true,
+                    visibility: false
                 }
         );
         map.defaultLayer = layer;
@@ -421,7 +429,7 @@ Ext.define('PumaMain.controller.Map', {
                     type: 'terrain',
                     animationEnabled: true,
                     initialized: true,
-                    visibility: false
+                    visibility: true
                 }
                     
         );

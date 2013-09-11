@@ -100,29 +100,26 @@ function createCsv(params, callback) {
     params['start'] = null;
     
     var opts = {
-        data: function(asyncCallback) {
+        
+        data: ['attrConf',function(asyncCallback,results) {
+            params.attrMap = results.attrConf.prevAttrMap;
             dataMod.getData(params, function(err, dataObj) {
                 if (err)
                     return callback(err);
+                //console.log(dataObj)
                 return asyncCallback(null, dataObj);
             })
-        },
-        attrConf: ['data', function(asyncCallback) {
-                var newAttrs = JSON.parse(params['attrs'])
-                if (params['normalization'] == 'attributeset') {
-                    newAttrs.push({as: params['normalizationAttributeSet'], attr: -1})
-                }
-                if (params['normalization'] == 'attribute') {
-                    newAttrs.push({as: params['normalizationAttributeSet'], attr: params['normalizationAttribute']})
-                }
-                params['attrs'] = JSON.stringify(newAttrs);
+        }],
+        attrConf: function(asyncCallback) {
+                
+                
                 dataMod.getAttrConf(params, function(err, attrMap) {
                     if (err)
                         return callback(err);
                     
                     return asyncCallback(null, attrMap)
                 })
-            }],
+            },
         yearMap: function(asyncCallback) {
             crud.read('year', {_id: {$in: years}}, function(err, resls) {
                 if (err)
@@ -137,7 +134,7 @@ function createCsv(params, callback) {
         file: function(asyncCallback) {
             fs.open(fileName, 'w', asyncCallback);
         },
-        result: ['data', 'attrConf','yearMap', function(asyncCallback, results) {
+        result: ['data', 'attrConf','yearMap','file', function(asyncCallback, results) {
                 var data = results.data.data;
                 var attrs = JSON.parse(params['attrs']);
                 var attrArray = [];

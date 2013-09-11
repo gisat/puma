@@ -64,7 +64,10 @@ Ext.define('PumaMain.controller.Area', {
             }
             break;
         }
-        if (!lastAt) return;
+        if (!lastAt) {
+            this.getController('DomManipulation').deactivateLoadingMask();
+            return;
+        }
         areaRoot.cascadeBy(function(node) {
             var at = node.get('at')
             if (node.get('leaf') || at!=lastAt || !node.parentNode.get('expanded')) return;
@@ -93,8 +96,12 @@ Ext.define('PumaMain.controller.Area', {
         }
         else if (needChange) {
             this.scanTree();
+            this.getController('DomManipulation').deactivateLoadingMask();
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
+        }
+        else {
+            this.getController('DomManipulation').deactivateLoadingMask();
         }
         
     },
@@ -116,6 +123,8 @@ Ext.define('PumaMain.controller.Area', {
             break;
         }
         if (!lastAt) return;
+        
+        this.getController('DomManipulation').activateLoadingMask();
         areaRoot.cascadeBy(function(node) {
             var at = node.get('at')
             if (at!=lastAt || !node.parentNode.get('expanded') || !node.parentNode.get('gid')) return;
@@ -135,6 +144,10 @@ Ext.define('PumaMain.controller.Area', {
             this.getController('Layers').colourMap(selController.colorMap); 
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
+            this.getController('DomManipulation').deactivateLoadingMask();
+        }
+        else {
+            this.getController('DomManipulation').activateLoadingMask();
         }
     },
     
@@ -325,13 +338,15 @@ Ext.define('PumaMain.controller.Area', {
     scanTree: function() {
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         var areaTemplates = [];
-        
+        var leafMap = {};
         var allMap = {};
         var lowestMap = {};
         var lastMap = {};
         var highestMap = {};
         var parent = null;
         var lowestCount = 0;
+        var containsLower = false;
+        var lowestNoLeafs = false;
         
         root.cascadeBy(function(node) {
             var at = node.get('at');
@@ -348,6 +363,9 @@ Ext.define('PumaMain.controller.Area', {
                     highestMap[loc][at].push(gid);
                 }
             }
+            else {
+                containsLower = true;
+            }
             if (parent && node.parentNode==parent) {
                 highestMap[loc] = highestMap[loc] || {}
                 highestMap[loc][at] = highestMap[loc][at] || [];
@@ -363,6 +381,10 @@ Ext.define('PumaMain.controller.Area', {
             allMap[loc] = allMap[loc] || {}
             allMap[loc][at] = allMap[loc][at] || [];
             allMap[loc][at].push(gid);
+            if (node.isLeaf()) {
+                leafMap[loc] = leafMap[loc] || {}
+                leafMap[loc][at] = true;
+            }
         })
         this.areaTemplates = areaTemplates;
         if (areaTemplates.length) 
@@ -373,6 +395,9 @@ Ext.define('PumaMain.controller.Area', {
                 lowestCount += allMap[loc][lastAreaTemplate].length;
                 lowestMap[loc] = lowestMap[loc] || {};
                 lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
+                if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
+                    lowestNoLeafs = true;
+                }
             }
         }
         this.getController('Map').updateGetFeatureControl();
@@ -382,6 +407,12 @@ Ext.define('PumaMain.controller.Area', {
         this.highestMap = highestMap;
         this.lastMap = lastMap;
         
+        var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
+        var showLess = Ext.ComponentQuery.query('#arealessdetails')[0]
+        
+        showMore.setDisabled(lowestCount>100 || !lowestNoLeafs);
+        showLess.setDisabled(!containsLower)
+  
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;
         for (var color in selMap) {

@@ -99886,10 +99886,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	views: [],
 	requires: [],
 	init: function() {
-		if (Config.exportPage) {
-                    return;
-                }
-                $("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
+		$("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		
 		this.resizeMap();
@@ -107622,12 +107619,20 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onUrlCallback: function(id, isPrint) {
         if (true) {
-            var url = (window.location.origin + window.location.pathname).split('public')[0];
-
+            var url = window.location.origin + '/public/index3.html?id=' + id;
+//            Ext.widget('window', {
+//                items: [{
+//                        xtype: 'textfield',
+//                        visible: true,
+//                        value: url,
+//                        editable: false
+//                    }]
+//            }).show();
+//            return;
             
         }
         if (isPrint) {
-            url = url + 'print/index3.html?id=' + id;
+            url = window.location.origin + '/print/index3.html?id=' + id;
             var form = Ext.widget('form'
                     , {
                 items: [{
@@ -107644,7 +107649,7 @@ Ext.define('PumaMain.controller.Chart', {
             });
         }
         else {
-            url = url + 'image/index3.html?id=' + id;
+            url = window.location.origin + '/image/index3.html?id=' + id;
             var rec = Ext.StoreMgr.lookup('screenshot').findRecord('large',true);
             var screenshot = Ext.create('Puma.model.Screenshot',{
                 src: url,
@@ -109556,9 +109561,6 @@ Ext.define('PumaMain.controller.Store', {
         'Gisatlib.data.AggregatedStore'
     ],
     init: function() {
-        if (Config.exportPage) {
-            return;
-        }
         this.initStores();
         this.initSlaveStores();
         this.initLocalStores();
@@ -114993,8 +114995,6 @@ Ext.application({
     enableQuickTips: true,
     requires: ['Puma.patch.Main','Ext.data.reader.Json','Ext.util.Point','Ext.Layer','Ext.window.Window','Ext.data.ArrayStore','Ext.data.proxy.Memory','Ext.data.reader.Array','Ext.util.Grouper','Ext.PluginManager','Ext.ComponentLoader','Ext.layout.Context','Ext.resizer.Resizer','Ext.panel.Tool','Ext.util.CSS','Ext.layout.component.Body','Ext.Img','Ext.menu.Menu','Ext.data.Batch','Ext.selection.RowModel','Ext.selection.CellModel','Ext.selection.CheckboxModel','Ext.grid.PagingScroller','Ext.grid.header.Container','Ext.grid.column.Column','Ext.grid.Lockable','Ext.view.TableLayout','Ext.view.TableChunker','Ext.data.Request','Ext.grid.column.Number','Ext.layout.container.Accordion','Ext.picker.Color','Ext.tree.Panel','Ext.grid.column.Action','Ext.grid.plugin.DragDrop','Ext.layout.container.Table','Ext.form.field.Checkbox','Ext.ux.grid.FiltersFeature','PumaMain.view.Chart','PumaMain.view.VisualizationForm','Puma.view.CommonForm','Puma.view.CommonGrid','Gisatlib.form.HiddenStoreField','Ext.form.field.Hidden','PumaMain.view.ChartPanel','Ext.ux.grid.menu.ListMenu','Ext.ux.grid.menu.RangeMenu','Ext.ux.grid.filter.BooleanFilter','Ext.picker.Date','Ext.ux.grid.filter.DateTimeFilter','Ext.picker.Month','Ext.ux.grid.filter.ListFilter'],
     launch: function() {
-        window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''))
-        
         if (Config.exportPage) {
             this.getController('Export').initConf();
             return;
@@ -115005,6 +115005,7 @@ Ext.application({
             cls: 'standardqtip'     
         });
     
+        window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''))
         
         this.getController('Puma.controller.Login');
         var search = window.location.search.split('?')[1];

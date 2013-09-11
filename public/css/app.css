@@ -1,9 +1,16 @@
-
+div.olControlZoom {
+    top: auto ! important;
+    left: auto ! important;
+    bottom: 8px ! important;
+    right: 8px ! important;
+}
 .screenshot {
     margin: 5px;  
     position: relative; 
     display: inline-block;
+    background           : url("../images/loading.gif") no-repeat 50% 50%;
 }
+
 /*.screenshot, .screenshot div {
     width: 175px; 
     height: 120px;

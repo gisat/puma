@@ -17,6 +17,8 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.Area',
         'Puma.model.Year',
         'Puma.model.Scope',
+        'Puma.model.ColumnMap',
+        'Puma.model.Column',
         'Puma.model.MapLayer',
         'Puma.model.MappedAttribute',
         'Puma.model.Visualization',
@@ -28,6 +30,9 @@ Ext.define('PumaMain.controller.Store', {
         'Gisatlib.data.AggregatedStore'
     ],
     init: function() {
+        if (Config.exportPage) {
+            return;
+        }
         this.initStores();
         this.initSlaveStores();
         this.initLocalStores();

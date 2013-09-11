@@ -3,7 +3,10 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	views: [],
 	requires: [],
 	init: function() {
-		$("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
+		if (Config.exportPage) {
+                    return;
+                }
+                $("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		
 		this.resizeMap();

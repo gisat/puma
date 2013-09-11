@@ -29,7 +29,7 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             {
                 icon: 'images/icons/view.png', // Use a URL in the icon config
                 tooltip: 'Open',
-                hidden: this.allowReorder,
+                hidden: this.allowReorder ? true: false,
                 width: 16,
                 height: 16,
                 handler: function(grid, rowIndex, colIndex, item, e, record) {
@@ -47,6 +47,9 @@ Ext.define('PumaMain.view.CommonMngGrid', {
             }]
         if (!me.allowReorder) {
             actionItems = actionItems.slice(2);
+        }
+        else {
+            actionItems = [actionItems[0],actionItems[1],actionItems[3]]
         }
 
         this.columns = [{

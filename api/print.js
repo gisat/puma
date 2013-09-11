@@ -4,9 +4,14 @@
 var cp = require('child_process');
 var fs = require('fs');
 
+
 function exporter(params, req, res, callback) {
-    var fullUrl = req.protocol + "://" + req.get('host') + req.url;
+    //var fullUrl = req.protocol + "://" + req.get('host') + req.url;
+
+    var fullUrl = require('../common/conn').getLocalAddress()+req.url;
     var url = fullUrl.replace(params.download ? 'print' : 'image', 'public');
+    
+    console.log(url)
     var imgId = 'snap_' + generateId() + '.png'
     var outFile = 'tmp/' + imgId;
     var isWin = !!process.platform.match(/^win/);

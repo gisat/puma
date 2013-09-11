@@ -7,8 +7,9 @@ Ext.define('PumaMain.view.Tools', {
     initComponent: function() {
         this.layout = {
             type: 'accordion',
-            fill: false,
-            
+            fill: false
+            //,
+            //multi: true
         }   
         this.items = [{
             xtype: 'panel',

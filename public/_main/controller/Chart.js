@@ -401,7 +401,9 @@ Ext.define('PumaMain.controller.Chart', {
         var params = this.getParams(queryCfg);
         chartCmp.queryCfg = queryCfg;
         if (forExport) {
-            this.handleExport(chartCmp,params)
+            this.handleExport(chartCmp,params);
+            return;
+            
         }
         if (queryCfg['start']<0) {
             this.onChartReceived({cmp:chartCmp});
@@ -454,38 +456,30 @@ Ext.define('PumaMain.controller.Chart', {
     },
     
     handleExport: function(chartCmp, params) {
-        var store = chartCmp.chart.store;
-        store.on('beforeload', function(st, operation) {
-            Ext.applyIf(params, store.proxy.getParams(operation));
-            //var filterFeature = chartCmp.chart.filters;
-            //var filterParams = filterFeature.buildQuery(filterFeature.getFilterData());
-           // Ext.apply(params, filterParams);
-            var items = [{
-                    xtype: 'filefield',
-                    name: 'file'
-                }];
-            for (var key in params) {
-                items.push({
-                    xtype: 'textfield',
-                    name: key,
-                    value: params[key]
-                })
+        params = Ext.clone(params);
+        delete params.start;
+        delete params.limit;
+        var items = [{
+                xtype: 'filefield',
+                name: 'file'
+            }];
+        for (var key in params) {
+            items.push({
+                xtype: 'textfield',
+                name: key,
+                value: params[key]
+            })
+        }
+        var form = Ext.widget('form', {
+            items: items
+        });
+        form.getForm().submit({
+            url: Config.url + '/api/chart/getGridDataCsv',
+            success: function() {
+            },
+            failure: function() {
             }
-            var form = Ext.widget('form', {
-                items: items
-            });
-            form.getForm().submit({
-                url: Config.url + '/api/chart/getGridDataCsv',
-                success: function() {
-                },
-                failure: function() {
-                }
-            });
-            return false;
-        }, true, {single: true})
-        chartCmp.chart.view.loadMask.disabled = true;
-        store.load();
-        chartCmp.chart.view.loadMask.disabled = false;
+        });
         return;
     },
     getParams: function(queryCfg) {
@@ -663,7 +657,7 @@ Ext.define('PumaMain.controller.Chart', {
             data.plotOptions.series.point.events.mouseOver = function(evt) {
                 me.onPointClick(this.series.chart.cmp, evt, true)
             }
-            if (cmp.cfg.type == 'scatterchart' && cmp.cfg.years && cmp.cfg.years.length > 1) {
+            if (cmp.cfg.type == 'scatterchart') {
                 data.plotOptions.series.point.events.mouseOut = function(evt) {
                     $('path[linecls=1]').hide();
                 }
@@ -726,20 +720,12 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onUrlCallback: function(id, isPrint) {
         if (true) {
-            var url = window.location.origin + '/public/index3.html?id=' + id;
-//            Ext.widget('window', {
-//                items: [{
-//                        xtype: 'textfield',
-//                        visible: true,
-//                        value: url,
-//                        editable: false
-//                    }]
-//            }).show();
-//            return;
+            var url = (window.location.origin + window.location.pathname).split('public')[0];
+
             
         }
         if (isPrint) {
-            url = window.location.origin + '/print/index3.html?id=' + id;
+            url = url + 'print/index3.html?id=' + id;
             var form = Ext.widget('form'
                     , {
                 items: [{
@@ -756,7 +742,7 @@ Ext.define('PumaMain.controller.Chart', {
             });
         }
         else {
-            url = window.location.origin + '/image/index3.html?id=' + id;
+            url = url + 'image/index3.html?id=' + id;
             var rec = Ext.StoreMgr.lookup('screenshot').findRecord('large',true);
             var screenshot = Ext.create('Puma.model.Screenshot',{
                 src: url,
@@ -786,7 +772,7 @@ Ext.define('PumaMain.controller.Chart', {
 
     },
     onPointClick: function(cmp, evt, hovering) {
-        if (hovering && !this.hovering && (cmp.cfg.type != 'scatterchart' || !cmp.cfg.years || cmp.cfg.years.length < 2))
+        if (hovering && !this.hovering && cmp.cfg.type != 'scatterchart')
             return;
         var at = null;
         var gid = null;
@@ -805,7 +791,9 @@ Ext.define('PumaMain.controller.Chart', {
         }
         if (!at || !gid || !loc)
             return;
-        if (hovering && cmp.cfg.type == 'scatterchart' && cmp.cfg.years && cmp.cfg.years.length > 1) {
+        if (!this.hovering && hovering && cmp.cfg.type == 'scatterchart') {
+            var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+            if (years.length<2) return;
             $('path[linecls=1]').hide();
             if (point.yearLines) {
                 for (var i = 0; i < point.yearLines.length; i++) {

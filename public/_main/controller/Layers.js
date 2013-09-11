@@ -269,7 +269,7 @@ Ext.define('PumaMain.controller.Layers', {
         window.show();
     },
     onLayerContextMenu: function(tree, rec, item, index, e) {
-       
+        return;
         var bindChart = rec.get('bindChart');
         if (!bindChart || rec.get('type')!='chart') {
             return;
@@ -282,7 +282,7 @@ Ext.define('PumaMain.controller.Layers', {
         
     },
     onContextMenu: function(tree, rec, item, index, e) {
-
+        return;
         e.stopEvent();
         
         var layerMenu = Ext.widget('layermenu', {
