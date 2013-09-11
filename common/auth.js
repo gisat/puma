@@ -5,7 +5,7 @@ var pg = require('pg');
 var sessionCache = {};
 
 function anyUser(req, res, next) {
-    if (req.groups && req.groups.length) {
+    if (req.userId) {
         return next();
     }
     return next(new Error('unauthorized'))
