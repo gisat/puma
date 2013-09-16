@@ -11,9 +11,12 @@ Ext.define('PumaMain.view.NormalizeForm', {
             }],
             model: 'Puma.model.Attribute'
         })
+        this.bodyStyle = {
+            padding: '0px'
+        }
         this.items = [{
                 xtype: 'pumacombo',
-                store: Ext.StoreMgr.lookup('normalization4chart'),
+                store: Ext.StoreMgr.lookup(this.formType=='chart'  ? 'normalization4chart':'normalization4chartlimited'),
                 fieldLabel: 'Norm type',
                 name: 'normType',
                 valueField: 'type',
@@ -32,13 +35,16 @@ Ext.define('PumaMain.view.NormalizeForm', {
                 name: 'normAttribute',
                 hidden: true,
                 itemId: 'normAttribute'
-            },{
-                xtype: 'pumacombo',
-                store: Ext.StoreMgr.lookup('year4sel'),
-                fieldLabel: 'Norm year',
-                name: 'normYear',
-                itemId: 'normYear'
-            }]
+            }
+//            ,{
+//                xtype: 'pumacombo',
+//                hidden: true,
+//                store: Ext.StoreMgr.lookup('year4sel'),
+//                fieldLabel: 'Norm year',
+//                name: 'normYear',
+//                itemId: 'normYear'
+//            }
+        ]
         this.buttons = [{
                 text: 'Normalize',
                 itemId: 'normalize'

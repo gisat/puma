@@ -40,36 +40,53 @@ Ext.define('PumaMain.view.ConfigForm', {
                 helpId: 'test',
                 layout: 'card',
                 items: [
-                    {
-                        xtype: 'attributegrid',
-                        formType: this.formType,
-                        store: this.attrStore
-                    }, {
-                        xtype: 'addattributegrid'
-                    }, {
-                        xtype: 'normalizeform'
-                    },{
-                        xtype: 'form',
-                        frame: true,
-                        items: [{xtype: 'pumacombo',
+            {
+                xtype: 'attributegrid',
+                formType: this.formType,
+                store: this.attrStore
+            }, {
+                xtype: 'addattributegrid'
+            }, {
+                xtype: 'normalizeform'
+            }, {
+                xtype: 'form',
+                bodyStyle:{
+                    padding: '0px'
+                },
+                frame: true,
+                items: [{
+                        xtype: 'pumacombo',
                         store: Ext.StoreMgr.lookup('layers4outline'),
                         valueField: 'atWithSymbology',
                         fieldLabel: 'Layer',
-                        name: 'featureLayer'}]
-                        
-            },{
-                        xtype: 'choroplethform'
+                        name: 'featureLayer'
+                    }, {
+                        xtype: 'numberfield',
+                        minValue: 0,
+                        value: 70,
+                        maxValue: 100,
+                        fieldLabel: 'Opacity',
+                        name: 'featureLayerOpacity'
+                            }]
+
+            }, {
+                xtype: 'choroplethform'
             }]
         }, {
             xtype: 'multislider',
             itemId: 'constrainFl',
             name: 'constrainFl',
-            values: [0, this.levelCount-1],
+            values: [0, this.featureLayers.length-1],
             hidden: this.formType!='filters',
-            width: 424,
+            width: 672,
+            useTips: {
+                getText: function(thumb) {
+                    return thumb.slider.up('form').featureLayers[thumb.value].get('name')
+                }
+            },
             increment: 1,
             minValue: 0,
-            maxValue: this.levelCount-1
+            maxValue: this.featureLayers.length-1
             ,
             //constrainThumbs: true
         }, {

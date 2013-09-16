@@ -162,7 +162,6 @@ Ext.define('Gisatlib.container.StoreContainer', {
         // single mode
         if ((!this.multi || (this.multiCtrl && !me.e.ctrlKey))) {
             // select just one item from already selected
-            debugger;
             if (this.multi && !val && multiValue.length) {
                 this.items.each(function(item) {
                     if (item == cmp) {

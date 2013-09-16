@@ -79,7 +79,22 @@ Ext.define('PumaMain.controller.AttributeConfig', {
     
             
     onConfigureChoropleth: function(btn) {
+        var attrStore = btn.up('[itemId=attributecontainer]').down('attributegrid').store
+        var recs = this.getChecked(attrStore);
+        if (recs.length<1) {
+            return;
+        }
+        
         this.setActiveCard(btn,4);
+        
+        var form = btn.up('[itemId=attributecontainer]').down('choroplethform')
+        if (recs.length==1) {
+            form.down('#classType').setValue(recs[0].get('classType'));
+            form.down('#numCategories').setValue(recs[0].get('numCategories'));
+        }
+        else {
+            form.getForm().reset();
+        }
     },
     onClassTypeChanged: function(combo,val) {
         var categories = combo.up('panel').down('#numCategories');
@@ -98,7 +113,7 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             var rec = recs[i];
             rec.set('numCategories',form.getComponent('numCategories').getValue());
             rec.set('classType',form.getComponent('classType').getValue());
-            rec.set('zeroesAsNull',form.getComponent('zeroesAsNull').getValue());
+            rec.set('zeroesAsNull',true);
             rec.commit();
         }
         
@@ -147,13 +162,16 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         }
         var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
-        var levelCount = dataset.get('featureLayers').length;
+        var levels = dataset.get('featureLayers');
+        var fls = Ext.StoreMgr.lookup('layertemplate').queryBy(function(rec) {
+            return Ext.Array.contains(levels,rec.get('_id'));
+        }).getRange();
         var window = Ext.widget('window',{
             layout: 'fit',
-            width: 450,
+            width: 700,
             items: [{
                 xtype: 'configform',
-                levelCount: levelCount,
+                featureLayers: fls,
                 chart: chart,
                 formType: formType
             }]
@@ -185,7 +203,24 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         this.setActiveCard(btn,1);
     },
     onNormalizeAttribute: function(btn) {
+        
+        var attrStore = btn.up('[itemId=attributecontainer]').down('attributegrid').store
+        var recs = this.getChecked(attrStore);
+        if (recs.length<1) {
+            return;
+        }
+        
         this.setActiveCard(btn,2);
+        
+        var form = btn.up('[itemId=attributecontainer]').down('normalizeform')
+        if (recs.length==1) {
+            form.down('#normType').setValue(recs[0].get('normType'));
+            form.down('#normAttributeSet').setValue(recs[0].get('normAs'));
+            form.down('#normAttribute').setValue(recs[0].get('normAttr'));
+        }
+        else {
+            form.getForm().reset();
+        }
     },
     onRemoveAttribute: function(btn) {
         var store = btn.up('grid').store;
@@ -221,13 +256,13 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         var normType = normalize ? form.getComponent('normType').getValue() : null;
         var normAttr = normalize ? form.getComponent('normAttribute').getValue() : null;
         var normAs = normalize ? form.getComponent('normAttributeSet').getValue() : null;
-        var normYear = normalize ? form.getComponent('normYear').getValue() : null;
+        //var normYear = normalize ? form.getComponent('normYear').getValue() : null;
         for (var i=0;i<recs.length;i++) {
             var rec = recs[i];
             rec.set('normType',normType);
             rec.set('normAttr',normAttr);
             rec.set('normAs',normAs);
-            rec.set('normYear',normYear);
+            //rec.set('normYear',normYear);
             rec.commit();
         }
         

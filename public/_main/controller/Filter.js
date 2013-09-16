@@ -19,8 +19,8 @@ Ext.define('PumaMain.controller.Filter', {
             var slider = sliders[i];
             var obj = Ext.clone(slider.attrObj);
             var val = slider.getValue();
-            obj.min = val[0];
-            obj.max = val[1];
+            obj.min = val[0]/slider.multiplier;
+            obj.max = val[1]/slider.multiplier;
             filters.push(obj);
         }
         var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
@@ -76,6 +76,18 @@ Ext.define('PumaMain.controller.Filter', {
         var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var theme = Ext.StoreMgr.lookup('theme').getById(themeId);
         
+        var attrMap = {};
+        var attrsToRemove = [];
+        for (var i=0;i<attrs.length;i++) {
+            var attr = attrs[i];
+            if (attrMap[attr.as+'_'+attr.attr]) {
+                attrsToRemove.push(attr);
+            }
+            attrMap[attr.as+'_'+attr.attr] = true;
+        }
+        attrs = Ext.Array.difference(attrs,attrsToRemove);
+        
+        
         var featureLayers = dataset.get('featureLayers');
         var filteredFeatureLayers = [];
         for (var i=this.minFl;i<=this.maxFl;i++) {
@@ -103,46 +115,36 @@ Ext.define('PumaMain.controller.Filter', {
         
     },
     reconfigureFiltersCallback: function(response) {
-        debugger;
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var attrs = response.request.options.attrs;
         var cfg = response.request.options.cfg;
         var attrMap = JSON.parse(response.responseText).data;
         
-        
+        var attrCfgs = [];
         for (var i = 0; i < attrs.length; i++) {
             var attr = attrs[i]
             var idx = Ext.Array.indexOf(cfg.attrs, attr);
-            var attrCfg = attrMap['as_'+attr.as+'_attr_'+attr.attr];
-            var cnt = {
-                xtype: 'container',
-                layout: {
-                    type: 'vbox',
-                    align: 'stretch'
-                },
-                items: [{
-                        xtype: 'displayfield',
-                        value: attr.attrName
-                    }, {
-                        xtype: 'multislider',
-                        values: [attrCfg.min,attrCfg.max],
-                        attrObj: attr,
-                        increment: attrCfg.inc,
-                        minValue: attrCfg.min,
-                        maxValue: attrCfg.max,
-                        constrainThumbs: true
-                    }]
+            var attrIndex = 'as_'+attr.as+'_attr_'+attr.attr
+            if (Ext.Array.contains(attrCfgs,attrIndex)) {
+                continue;
             }
-
+            attrCfgs.push(attrIndex);
+            var attrCfg = attrMap[attrIndex];
+            attrCfg.attrObj = attr;
+            var cnt = this.getFilterItems([attrCfg])[0]
             filterPanel.insert(idx, cnt)
         }
         this.applyFilters();
     },
         
-    getFilterItems: function(filters) {
+    getFilterItems: function(attrCfgs) {
         var items = [];
-        for (var i = 0; i < filters.length; i++) {
-            var filter = filters[i];
+        
+        for (var i = 0; i < attrCfgs.length; i++) {
+            var attrCfg = attrCfgs[i];
+            attrCfg.multiplier = attrCfg.multiplier || 1;
+            var min = attrCfg.value ? attrCfg.value[0] : attrCfg.min;
+            var max = attrCfg.value ? attrCfg.value[1] : attrCfg.max;
             var cnt = {
                 xtype: 'container',
                 layout: {
@@ -151,14 +153,48 @@ Ext.define('PumaMain.controller.Filter', {
                 },
                 items: [{
                         xtype: 'displayfield',
-                        value: filter.attrObj.attrName
-                    }, {
+                        value: attrCfg.attrObj.attrName + ' ('+attrCfg.units+')'
+                    }, 
+                    {
+                        xtype: 'container',
+                        layout: {
+                            type: 'hbox'
+                        },
+                        items: [{
+                            xtype: 'container',
+                            flex: 1,
+                            items: [{xtype: 'component',html: String(attrCfg.min)}],
+                            layout: {
+                                type: 'hbox',
+                                pack: 'start'
+                            }
+                        },{
+                            xtype: 'container',
+                            flex: 1,
+                            items: [{xtype: 'component',html: String(attrCfg.max)}],
+                            layout: {
+                                type: 'hbox',
+                                pack: 'end'
+                            }
+                        }]
+                    },{
                         xtype: 'multislider',
-                        values: filter.value,
-                        attrObj: filter.attrObj,
-                        increment: filter.inc,
-                        minValue: filter.min,
-                        maxValue: filter.max,
+                        useTips: {
+                            getText: function(thumb) {
+                                var val = thumb.value;
+                                if (thumb.slider.multiplier) {
+                                    val = val/thumb.slider.multiplier
+                                }
+                                return String(val);
+                            }
+                        },
+                        values: [min*attrCfg.multiplier,max*attrCfg.multiplier],
+                        multiplier: attrCfg.multiplier,
+                        attrObj: attrCfg.attrObj,
+                        increment: attrCfg.inc,
+                        units: attrCfg.units,
+                        minValue: attrCfg.min*attrCfg.multiplier,
+                        maxValue: attrCfg.max*attrCfg.multiplier,
                         constrainThumbs: true
                     }]
             }

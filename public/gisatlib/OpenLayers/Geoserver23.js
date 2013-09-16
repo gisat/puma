@@ -1,4 +1,4 @@
-OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1, {
+OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1_0_0_GeoServer, {
     /**
      * Property: namespaces
      * {Object} Mapping of namespace aliases to namespace URIs.

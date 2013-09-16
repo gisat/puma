@@ -51,6 +51,7 @@ function getFilterConfig(params,req,res,callback) {
                             data.getData(newParams, function(err, dataObj) {
                             if (err)
                                 return callback(err)
+                            dataObj.units = results.attrConf.attrMap.units
                             return mapCallback(null, dataObj)
                         })
                     }]
@@ -81,7 +82,11 @@ function getFilterConfig(params,req,res,callback) {
                             break;
                         }
                     }
-                    attrMap['as_'+attr.as+'_attr_'+attr.attr] = {min:Math.floor(min),max:Math.ceil(max),inc:inc};
+                    var multiplier = 1;
+                    while (diff*multiplier<20) {
+                        multiplier = multiplier * 10;
+                    }
+                    attrMap['as_'+attr.as+'_attr_'+attr.attr] = {min:Math.floor(min),max:Math.ceil(max),inc:inc,multiplier:multiplier,units:resl.units};
                 }
                 res.data = attrMap;
                 return callback(null);

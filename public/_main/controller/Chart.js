@@ -270,7 +270,9 @@ Ext.define('PumaMain.controller.Chart', {
     },
     addChart: function(cfg, withoutReconfigure, queryCfg) {
         var container = Ext.ComponentQuery.query('chartbar')[0];
-        //var opts = cfg.type == 'featurecount' ? {height: 150} : {};
+        if (cfg.type=='grid') {
+            
+        }
         var opts = {
             height: 400,
             width: 575,
@@ -284,6 +286,18 @@ Ext.define('PumaMain.controller.Chart', {
                 type: 'absolute'
             }
             //opts.height = null;
+        }
+        if (cfg.type=='grid') {
+            var hasGrid = false;
+            container.items.each(function(item) {
+                if (item.chart && item.chart.cfg.type=='grid') {
+                    hasGrid = true;
+                    return false;
+                }
+            })
+            if (hasGrid) {
+                opts.disableSort = true;
+            }
         }
         var chart = Ext.widget('chartcmp', opts);
         var items = [chart];
@@ -534,7 +548,7 @@ Ext.define('PumaMain.controller.Chart', {
                 y = 200;
             }
             cmp.add({
-                xtype: 'component', type: 'extentoutline', width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
+                xtype: 'component', type: 'extentoutline', opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
             })
         }
 
@@ -978,6 +992,7 @@ Ext.define('PumaMain.controller.Chart', {
             var column = data.columns[i];
             column.menuDisabled = true;
             column.resizable = false;
+            column.sortable = cmp.disableSort!==true;
             if (column.dataIndex=='name') continue;
             column.renderer = function(val,metadata,rec,rowIndex,colIndex) {
                 var columns = this.view.getGridColumns();
@@ -1055,7 +1070,7 @@ Ext.define('PumaMain.controller.Chart', {
         if (val>1) deci = 2;
         if (val>100) deci = 1;
         if (val>10000) deci = 0;
-        return val.toFixed(deci);
+        return val!=null ? val.toFixed(deci) : val;
     },
     isInt: function(value) {
         return !isNaN(parseInt(value,10)) && (parseFloat(value,10) == parseInt(value,10));

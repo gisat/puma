@@ -259,9 +259,9 @@ Ext.define('PumaMain.controller.Map', {
                 }
         );
         var layerDefaults = this.getController('Layers').getWmsLayerDefaults();
-        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.apply(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         map.layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
-
+        map.layer1.opacity = cmp.opacity;
         map.addLayers([hybridLayer, map.layer1, map.layer2]);
         var counterObj = {cnt:0, desired: 3}
         var me = this;
@@ -307,7 +307,8 @@ Ext.define('PumaMain.controller.Map', {
         var layerName = 'puma:layer_' + layerRefs.areaRef._id;
 
         var rule = new OpenLayers.Rule({
-            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#ff0000'})},
+            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#ff0000'}),
+            "Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})},
             filter: filter
         });
         style.addRules([rule]);

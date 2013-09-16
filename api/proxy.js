@@ -98,7 +98,6 @@ function wms(params, req, res, callback) {
     conn.request(options, data, function(err, output, resl) {
         if (err)
             return callback(err);
-        
         res.data = output;
         if (params['REQUEST'] == 'GetFeatureInfo') {
             if (params['COMPLETELAYER']) {
@@ -186,6 +185,7 @@ function saveSld(params, req, res, callback) {
                 
             }
             dataParams['normalizationYear'] = null;
+            dataParams['sortNorm'] = JSON.stringify(attrs[attrIndex]);
             dataParams.attrMap = results.attrConf.prevAttrMap;
             data.getData(dataParams, function(err, dataObj) {
                 if (err)
@@ -254,7 +254,7 @@ function saveSld(params, req, res, callback) {
                 asyncCallback(null);
             })
         }],
-        result: ['data', 'layerRef','density',function(asyncCallback, results) {
+        result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
             
             
             var topTreeNorm = params['normalization'] == 'toptree';
@@ -338,6 +338,10 @@ function saveSld(params, req, res, callback) {
                 }
             }
             //console.log(sld)
+            if (results.attrConf) {
+                legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units);
+                
+            }
             sldMap[id] = {
                 sld: sld,
                 legendSld: legendSld

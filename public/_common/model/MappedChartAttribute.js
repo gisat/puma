@@ -2,7 +2,7 @@ Ext.define('Puma.model.MappedChartAttribute', {
     extend: 'Ext.data.Model',
     fields: [
 
-    'as','attr','normType','normAs','normAttr','normYear','attrName','attrNameNormalized','asName','checked','numCategories','classType','zeroesAsNull',
+    'as','attr','normType','normAs','normAttr','normYear','attrName','attrNameNormalized','asName','checked','numCategories','classType','zeroesAsNull','name',
     {
         name: 'attrName',
         convert: function(value,record) {

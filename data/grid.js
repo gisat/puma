@@ -2,7 +2,7 @@ var dataMod = require('./data');
 var fs = require('fs')
 var async = require('async')
 var crud = require('../rest/crud')
-
+var us = require('underscore')
 function getChart(params, callback) {
 
     var years = JSON.parse(params['years']);
@@ -42,7 +42,7 @@ function getChart(params, callback) {
                             }
                         }];
                     var fields = ['gid', 'name', 'at', 'loc'];
-
+                    var dataIndexes = [];
                     for (var i = 0; i < attrs.length; i++) {
                         var attr = attrs[i];
                         var attrConf = attrMap[attr.as][attr.attr];
@@ -53,6 +53,10 @@ function getChart(params, callback) {
                             var year = years[j];
                             var dataIndex = 'as_' + attr.as + '_attr_' + attr.attr;
                             dataIndex += moreYears ? ('_y_' + year) : '';
+                            if (us.contains(dataIndexes,dataIndex)) {
+                                continue;
+                            }
+                            dataIndexes.push(dataIndex);
                             var filter = {
                                 type: 'numeric'
                             }
@@ -64,6 +68,7 @@ function getChart(params, callback) {
                                 dataIndex: dataIndex,
                                 units: attrConf.units,
                                 xtype: 'numbercolumn',
+                                tooltip: attrConf.name + ' '+results.years[year],
                                 text: attrName,
                                 yearName: results.years[year],
                                 fullName: fullName,

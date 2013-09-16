@@ -190,6 +190,7 @@ Ext.define('PumaMain.controller.ViewMng', {
      
     gatherViewConfig: function() {
         var cfg = {};
+        cfg.multipleMaps = Ext.ComponentQuery.query('maptools #multiplemapsbtn')[0].pressed===true;
         cfg.years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         cfg.dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         cfg.theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
@@ -203,12 +204,17 @@ Ext.define('PumaMain.controller.ViewMng', {
         var filters = [];
         for (var i=0;i<sliders.length;i++) {
             var slider = sliders[i];
+            var val = slider.getValue();
+            val[0] = val[0]/slider.multiplier;
+            val[1] = val[1]/slider.multiplier;
             filters.push({
                 attrObj: slider.attrObj,
-                min: slider.minValue,
-                max: slider.maxValue,
+                multiplier: slider.multiplier,
+                min: slider.minValue/slider.multiplier,
+                units: slider.units,
+                max: slider.maxValue/slider.multiplier,
                 inc: slider.increment,
-                value: slider.getValue()
+                value: val
             })
         }
         cfg.filters = filters;

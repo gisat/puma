@@ -91,6 +91,17 @@
 	border               : 1px solid #999;
 	border-left          : none;
 }
+
+.x-border-box .x-form-trigger.x-form-spinner-down, .x-border-box .x-form-trigger.x-form-spinner-up{
+    height: 15px ! important;
+    width: 30px ! important;
+}
+.x-border-box .x-form-trigger.x-form-spinner-up {
+    background           : #ddd url("../images/combo-arrow-up.png") no-repeat 50% 50%;
+}
+
+
+
 .x-border-box .custom-combo .x-form-text {
 	color                : #fff;
 	background           : #666470;

@@ -104,12 +104,16 @@ function getData(params, callback) {
             topAllSql += 'SELECT -1 as gid,\'All\' as name,area';
             
         }
-        
+        console.log(attrs.length);
+        console.log(attrsWithSort.length)
         for (var j = 0; j < attrsWithSort.length; j++) {
             var attr = attrsWithSort[j];
             var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
             var aliasAttrName = moreYears ? (attrName + '_y_' + yearId) : attrName;
             if (us.contains(attrs,attr)) {
+                if (us.contains(aliases,aliasAttrName)) {
+                    continue;
+                }
                 aliases.push(aliasAttrName);    
             }
             else {
@@ -435,7 +439,13 @@ function getData(params, callback) {
                     dataSql += 'pr ASC,' + sort[0].property + ' ' + sort[0].direction
                 }
                 else if (sort) {
-                    dataSql += sort[0].property + '_sort ' + sort[0].direction+','+nameSort;
+                    if (moreYears && sortProperty.search('y')<0) {
+                        sortProperty = sortProperty+'_y_'+years[0];
+                    }
+                    if (!moreYears && sortProperty.search('y')>=0) {
+                        sortProperty = sortProperty.split('_y_')[0];
+                    }
+                    dataSql += sortProperty + '_sort ' + sort[0].direction+','+nameSort;
                 }
                 else {
                     dataSql += 'pr ASC,'+nameSort;

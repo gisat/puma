@@ -115,7 +115,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
         
         var nodesToCollapse = [];
-        var nodeToExpand = null
+        var nodeToExpand = null;
         for (var i=0;i<areaRoot.childNodes.length;i++) {
             var node = areaRoot.childNodes[i];
             if (node.get('loc') == locObj.location && node.get('gid') == locObj.locGid) {
@@ -142,10 +142,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
             nodeToExpand.expand();
             
             if (loaded) {
+                
                 this.getController('Area').zoomToLocation();
             }
         }
         else {
+            
             this.getController('Area').zoomToLocation();
         }
    
@@ -663,6 +665,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     onThemeLocationConfReceived: function(response) {
         var conf = JSON.parse(response.responseText).data;
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var multiMapBtn = Ext.ComponentQuery.query('maptools #multiplemapsbtn')[0];
+        if (years.length<2 && multiMapBtn.pressed) {
+            multiMapBtn.toggle(false);
+        }
+        multiMapBtn.setDisabled(years.length<2);
         
         if (!conf.layerRefMap) {
             conf = {
@@ -709,9 +717,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (response.request.options.visChanged) {
             this.getController('Layers').checkVisibilityAndStyles();
         }
+        if (Config.cfg && Config.cfg.multipleMaps) {
+            multiMapBtn.toggle(true);
+        }
         if (response.request.options.locationChanged || response.request.options.datasetChanged) {
             this.getController('Area').zoomToLocation();
         }
+        
         this.getController('DomManipulation').deactivateLoadingMask();
         delete Config.cfg;
 

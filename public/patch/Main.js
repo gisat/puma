@@ -13,7 +13,7 @@ Ext.define('Puma.patch.Main',{
         ,'Puma.patch.panel.Panel'
         ,'Puma.patch.panel.Tool'
         ,'Puma.patch.panel.Header'
-        
+        ,'Puma.patch.tree.View'
     ]
 })
 

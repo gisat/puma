@@ -58,8 +58,6 @@ function getChart(params, callback) {
                             layerRef = lr;
                         }
                     }
-                    console.log(layerRef)
-                    console.log(areaRef)
                     if (!layerRef || !areaRef) {
                         
                         return callback(new Error('Missing reference'));
@@ -86,7 +84,7 @@ function getChart(params, callback) {
                         return eachCallback(null, results.rows);
                     })
                 },function(err,resls) {
-                    return callback(err,{rows:resls,layerRefs: results.layerRefs})
+                    return callback(err,{rows:resls,layerRefs: results.layerRefs,opacity:params['featureLayerOpacity'] ? params['featureLayerOpacity']/100 : 0.7})
                 })
             }]
 

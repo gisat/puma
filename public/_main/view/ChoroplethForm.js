@@ -4,6 +4,9 @@ Ext.define('PumaMain.view.ChoroplethForm', {
     frame: true,
     header: false,
     initComponent: function() {
+        this.bodyStyle = {
+            padding: '0px'
+        }
         this.items = [ {
                 xtype: 'pumacombo',
                 forChoro: 1,
@@ -18,16 +21,19 @@ Ext.define('PumaMain.view.ChoroplethForm', {
                 fieldLabel: 'Num categories',
                 name: 'numCategories',
                 forChoro: 1,
-                value: 3,
+                value: 5,
+                minValue: 2,
                 allowDecimals: false,
                 itemId: 'numCategories'
-            }, {
-                xtype: 'checkbox',
-                forChoro: 1,
-                fieldLabel: 'Zeroes as null',
-                name: 'zeroesAsNull',
-                itemId: 'zeroesAsNull'
-            }]
+            }
+//            ,{
+//                xtype: 'checkbox',
+//                forChoro: 1,
+//                fieldLabel: 'Zeroes as null',
+//                name: 'zeroesAsNull',
+//                itemId: 'zeroesAsNull'
+//            }
+        ]
         this.buttons = [{
                 text: 'Apply',
                 itemId: 'apply'

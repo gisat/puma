@@ -7,8 +7,9 @@ function getChart(params, callback) {
     var width = params['width'] || 535;
     var height = params['height'] || 320;
     var years = JSON.parse(params['years']);
+    var pastYears = years;
     years = [years[0]];
-    params.years = JSON.stringify(years);
+    params.years = JSON.stringify(pastYears);
     var invisibleAttrs = params['invisibleAttrs'] ? JSON.parse(params['invisibleAttrs']) : [];
     var invisibleAttrsMap = {};
     for (var i=0;i<invisibleAttrs.length;i++) {
@@ -93,9 +94,7 @@ function getChart(params, callback) {
                         y: (height / numRows) * (ri + 0.5)
                     }
                     var serieName = row.name;
-                    console.log(year)
-                    console.log(yearId)
-                    serieName += (year ? (' '+results.years[year]) : '');
+                    //serieName += (year ? (' '+results.years[year]) : '');
                     var serie = {
                         data: serieData,
                         year: year,
@@ -131,9 +130,9 @@ function getChart(params, callback) {
 
                 var year = null;
                 for (var ri = 0; ri < numRows; ri++) {
-                    if (years.length>1) {
-                        i = 0;
-                        year = years[ri];
+                    if (pastYears.length>1) {
+                        //i = 0;
+                        year = years[0];
                     }
                     var yearId = year || years[0];
                     for (var rj = 0; rj < numCols; rj++) {

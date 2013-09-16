@@ -307,6 +307,9 @@ Ext.define('PumaMain.controller.Area', {
         var locThemeController = this.getController('LocationTheme');
         if (locThemeController.locationChanged) {
             this.zoomToLocation();
+            var selController = this.getController('Select');
+            this.colourTree(selController.colorMap)
+            this.getController('Layers').colourMap(selController.colorMap); 
             locThemeController.locationChanged = false;
         }
         this.getController('Chart').reconfigure('expand');
