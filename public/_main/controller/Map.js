@@ -104,15 +104,19 @@ Ext.define('PumaMain.controller.Map', {
     switchMap: function(both,second) {
         var map1 = Ext.ComponentQuery.query('#map')[0];
         var map2 = Ext.ComponentQuery.query('#map2')[0];
+        
         if (both) {
+            map2.map.noSync = true;
             map1.show();
             map2.show();
+            map2.map.noSync = false;
+            this.onMapMove(map1.map);
         }
-        else if (second) {
-            
-            map1.hide();
-            map2.show();
-        }
+//        else if (second) {
+//            
+//            map1.hide();
+//            map2.show();
+//        }
         else {
             map2.hide();
             map1.show();
@@ -228,7 +232,7 @@ Ext.define('PumaMain.controller.Map', {
     },
     
     onMapMove: function(map) {
-        if (!map.multiMap) {
+        if (!map.multiMap || map.noSync) {
             return;
         }
         var mapMoved = map;
