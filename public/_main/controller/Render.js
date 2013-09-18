@@ -5,8 +5,8 @@ Ext.define('PumaMain.controller.Render', {
     init: function() {},
     renderApp: function() {
         Ext.widget('pumacombo',{
-            store: 'dataset',
-            itemId: 'seldataset',
+            store: 'scope',
+            itemId: 'selscope',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -14,9 +14,9 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-scope'
         })
         Ext.widget('pumacombo',{
-            store: 'location4init',
-            itemId: 'sellocation',
-            valueField: 'id',
+            store: Ext.StoreMgr.lookup('dataset4sel'),
+            itemId: 'seldataset',
+            valueField: '_id',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -24,7 +24,7 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-teritory'
         })
         Ext.widget('pumacombo',{
-            store: 'theme4sel',
+            store: 'theme',
             itemId: 'seltheme',
             cls: 'custom-combo',
             listConfig: {
@@ -34,41 +34,41 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('storecontainer',{
             renderTo: 'app-toolbar-year',
-            store: Ext.StoreMgr.lookup('year4sel'),
+            store: Ext.StoreMgr.lookup('year'),
             forceSelection: true,
             itemId: 'selyear',
             multiCtrl: true,
             multi: true
             ,type: 'checkbox'
         })
-        Ext.widget('pumacombo',{
-            store: 'visualization4sel',
-            itemId: 'selvisualization',
-            cls: 'custom-combo',
-            listConfig: {
-                cls: 'custom-combo-list',
-            },
-            renderTo: 'app-toolbar-visualization'
-        })
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-visualization-save',
-            text: 'Save as',
-            itemId: 'savevisualization',
-            width: '100%',
-            height: '100%',
-            hidden: !Config.auth || !Config.auth.isAdmin,
-            cls: 'custom-button btn-visualization-save'
-        })
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-share',
-            text: 'Share data view',
-            itemId: 'sharedataview',
-            width: '100%',
-            height: '100%',
-            hidden: !Config.auth,
-            icon: 'images/icons/share.png',
-            cls: 'custom-button btn-share'
-        })
+//        Ext.widget('pumacombo',{
+//            store: 'visualization4sel',
+//            itemId: 'selvisualization',
+//            cls: 'custom-combo',
+//            listConfig: {
+//                cls: 'custom-combo-list',
+//            },
+//            renderTo: 'app-toolbar-visualization'
+//        })
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-visualization-save',
+//            text: 'Save as',
+//            itemId: 'savevisualization',
+//            width: '100%',
+//            height: '100%',
+//            hidden: !Config.auth || !Config.auth.isAdmin,
+//            cls: 'custom-button btn-visualization-save'
+//        })
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-share',
+//            text: 'Share data view',
+//            itemId: 'sharedataview',
+//            width: '100%',
+//            height: '100%',
+//            hidden: !Config.auth,
+//            icon: 'images/icons/share.png',
+//            cls: 'custom-button btn-share'
+//        })
         
         
 //        Ext.widget('slider',{
@@ -99,34 +99,34 @@ Ext.define('PumaMain.controller.Render', {
             cls: 'custom-button'
         })
     
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-manage',
-            itemId: 'managedataview',
-            hidden: !Config.auth,
-            icon: 'images/icons/settings.png',
-            width: '100%',
-            height: '100%',
-            cls: 'custom-button btn-manage'
-        })
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-visualization-manage',
-            itemId: 'managevisualization',
-            hidden: !Config.auth || !Config.auth.isAdmin,
-            icon: 'images/icons/settings.png',
-            width: '100%',
-            height: '100%',
-            cls: 'custom-button btn-visualization-manage'
-        })
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-save',
-            itemId: 'savedataview',
-            hidden: !Config.auth,
-            text: 'Save view',
-            icon: 'images/icons/save.png',
-            width: '100%',
-            height: '100%',
-            cls: 'custom-button btn-save'
-        })
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-manage',
+//            itemId: 'managedataview',
+//            hidden: !Config.auth,
+//            icon: 'images/icons/settings.png',
+//            width: '100%',
+//            height: '100%',
+//            cls: 'custom-button btn-manage'
+//        })
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-visualization-manage',
+//            itemId: 'managevisualization',
+//            hidden: !Config.auth || !Config.auth.isAdmin,
+//            icon: 'images/icons/settings.png',
+//            width: '100%',
+//            height: '100%',
+//            cls: 'custom-button btn-visualization-manage'
+//        })
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-save',
+//            itemId: 'savedataview',
+//            hidden: !Config.auth,
+//            text: 'Save view',
+//            icon: 'images/icons/save.png',
+//            width: '100%',
+//            height: '100%',
+//            cls: 'custom-button btn-save'
+//        })
         
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'
@@ -169,26 +169,24 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
             initial: true,
-            blankText: 'Select scope...',
             allowBlank: false,
-            store: Ext.StoreMgr.lookup('dataset'),
+            store: Ext.StoreMgr.lookup('scope'),
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
             },
-            itemId: 'initialdataset'
+            itemId: 'initialscope'
         })
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-teritory',
             initial: true,
             //hidden: true,
-            valueField: 'id',
-            store: Ext.StoreMgr.lookup('location4init'),
+            store: Ext.StoreMgr.lookup('dataset4sel'),
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
             },
-            itemId: 'initiallocation'
+            itemId: 'initialdataset'
         })
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-theme',
@@ -199,7 +197,7 @@ Ext.define('PumaMain.controller.Render', {
             listConfig: {
                 cls: 'custom-combo-list',
             },
-            store: Ext.StoreMgr.lookup('theme4sel')
+            store: Ext.StoreMgr.lookup('theme')
         })
         Ext.widget('button',{
             renderTo: 'app-intro-confirm',

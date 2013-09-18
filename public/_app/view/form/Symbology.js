@@ -11,13 +11,6 @@ Ext.define('PumaMng.view.form.Symbology', {
                     name: 'symbologyName',
                     allowBlank: false,
                     fieldLabel: 'Server symbology'
-                },{
-                    xtype: 'pumacombo',
-                    store: Ext.StoreMgr.lookup('activetopic'),
-                    fieldLabel: 'Topic',
-                    allowBlank: false,
-                    name: 'topic',
-                    itemId: 'topic'
                 }];
 
         this.callParent();

@@ -35,7 +35,6 @@ Ext.define('Gisatlib.container.StoreContainer', {
         var cmpsToAdd = [];
         var changed = false;
         var containsPressed = false;
-        
         this.items.each(function(cmp) {
             var value = me.type == 'button' ? cmp.pressed : cmp.value
             if (!Ext.Array.contains(recs,cmp.rec)) {

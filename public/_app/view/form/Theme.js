@@ -7,13 +7,6 @@ Ext.define('PumaMng.view.form.Theme', {
         
         this.width = 500;
         this.items = [{
-            xtype: 'pumacombo',
-            store: Ext.StoreMgr.lookup('activedataset'),
-            name: 'dataset',
-            allowBlank: false,
-            itemId: 'dataset',
-            fieldLabel: 'Dataset'
-        },{
             xtype: 'itemselector',
             store: Ext.StoreMgr.lookup('activetopic'),
             displayField: 'name',
@@ -23,17 +16,6 @@ Ext.define('PumaMng.view.form.Theme', {
             fieldLabel: 'Topics',
             name: 'topics',
             itemId: 'topics',
-        },
-        {
-            xtype: 'itemselector',
-            store: Ext.StoreMgr.lookup('activeyear'),
-            allowBlank: false,
-            displayField: 'name',
-            valueField: '_id',
-            height: 160,
-            fieldLabel: 'Years',
-            name: 'years',
-            itemId: 'years',
         }
 //        ,
 //        {

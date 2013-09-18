@@ -44,13 +44,13 @@ Ext.define('PumaMain.view.ChartPanel', {
         var toolNames = [];
         switch (this.cfgType) {
             case 'grid':
-                toolNames = ['gear','collapse','print','save','close']; break;
+                toolNames = ['collapse','print','save']; break;
             case 'piechart':
-                toolNames = ['gear','help','collapse','print','save','close']; break;
+                toolNames = ['help','collapse','print','save']; break;
             case 'columnchart':
-                toolNames = ['gear','help','collapse','print','save','close']; break;
+                toolNames = ['help','collapse','print','save']; break;
             case 'scatterchart':
-                toolNames = ['gear','help','collapse','print','save','search','close']; break;
+                toolNames = ['help','collapse','print','save','search']; break;
             case 'extentoutline':
                 toolNames = ['gear','print','save','close']; break;
             case 'filter':
@@ -59,6 +59,54 @@ Ext.define('PumaMain.view.ChartPanel', {
         for (var i=0;i<toolNames.length;i++) {
             this.tools.push(toolMap[toolNames[i]]);
         }
+        
+        
+        
+        var items = [{
+            xtype: 'pumacombo',
+            store: Ext.StoreMgr.lookup('attribute4set'),
+            multiSelect: this.cfgType=='columnchart',
+            attributeCombo: 1,
+            listConfig: {
+                selModel: {
+                    mode: 'MULTI'
+                }
+            },
+            height: 30,
+//            cls: 'custom-combo',
+            flex: 1
+//            ,
+//            listConfig: {
+//                cls: 'custom-combo-list',
+//            }
+        },{
+            xtype: 'pumacombo',
+            store: Ext.StoreMgr.lookup('attribute4set'),
+            multiSelect: this.cfgType=='columnchart',
+            attributeCombo: 1,
+            alternative: this.cfgType=='scatterchart',
+            listConfig: {
+                selModel: {
+                    mode: 'MULTI'
+                }
+            },
+            height: 30,
+//            cls: 'custom-combo',
+            flex: 1
+//            ,
+//            listConfig: {
+//                cls: 'custom-combo-list',
+//            }
+        }]
+        if (this.cfgType!='scatterchart') {
+            items = items.slice(1);
+        }
+        
+        if (this.cfgType!='grid') {
+            this.tbar = items
+        }
+        
+        
         
         this.callParent();
 

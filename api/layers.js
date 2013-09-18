@@ -315,20 +315,26 @@ function getLayerRefTable(params,req,res,callback) {
     var year = parseInt(params['year']);
     var theme = parseInt(params['theme']);
     var opts = {
+        location: function(asyncCallback) {
+            crud.read('location',{_id:location},{},function(err,resl) {
+                if (err) return callback(err);
+                return asyncCallback(null,resl[0]);
+            })
+        },
         theme: function(asyncCallback) {
             crud.read('theme',{_id:theme},{},function(err,resl) {
                 if (err) return callback(err);
                 return asyncCallback(null,resl[0]);
             })
         },
-        dataset: ['theme',function(asyncCallback,results) {
-            crud.read('dataset',{_id:results.theme.dataset},{},function(err,resl) {
+        dataset: ['location',function(asyncCallback,results) {
+            crud.read('dataset',{_id:results.location.dataset},{},function(err,resl) {
                 if (err) return callback(err);
                 return asyncCallback(null,resl[0]);
             })
         }],
         attributeSets: ['dataset','theme',function(asyncCallback,results) {
-            crud.read('attributeset',{topic:{$in:results.theme.topics}},{},function(err,resl) {
+            crud.read('attributeset',{topic:{$in:results.theme.topics},dataset:results.location.dataset},{},function(err,resl) {
                 if (err) return callback(err);
                 //console.log(resl)
                 var attrSetMap = {};
@@ -336,17 +342,7 @@ function getLayerRefTable(params,req,res,callback) {
                 for (var i=0;i<resl.length;i++) {
                     var attrSet = resl[i];
                     attrSetMap[attrSet._id] = attrSet;
-                    var featureLayers = attrSet.featureLayers;
-                    if (featureLayers && featureLayers.length) {
-                        for (var j=0;j<featureLayers.length;j++) {
-                            var featureLayer = featureLayers[j];
-                            flMap[featureLayer] = flMap[featureLayer] || [];
-                            flMap[featureLayer].push(attrSet._id)
-                        }     
-                    }
-                    else {
-                        flMap[-1].push(attrSet._id);
-                    }
+                    flMap[-1].push(attrSet._id);
                 }
                 return asyncCallback(null,{attrSetMap:attrSetMap,flMap:flMap});
             })

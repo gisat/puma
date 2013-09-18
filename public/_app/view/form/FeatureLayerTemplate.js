@@ -14,22 +14,6 @@ Ext.define('PumaMng.view.form.FeatureLayerTemplate', {
                     value: false,
                     allowBlank: false,
                     fieldLabel: 'BBOX'
-                },{
-                    xtype: 'pumacombo',
-                    store: Ext.StoreMgr.lookup('activetopic'),
-                    fieldLabel: 'Topic',
-                    name: 'topic',
-                    itemId: 'topic'
-                },{
-                    xtype: 'itemselector',
-                    store: Ext.StoreMgr.lookup('activesymbology'),
-                    fieldLabel: 'Symbologies',
-                    name: 'symbologies',
-                    itemId: 'symbologies',
-                    height: 170,
-                    autoScroll: false,
-                    valueField: '_id',
-                    displayField: 'name'
                 }];
 
         this.callParent();

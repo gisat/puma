@@ -46,22 +46,25 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'maptools',
             collapsed: false,
             title: 'Map tools'
-        },{
-            xtype: 'panel',
-            collapsed: true,
-            layout: {
-                type: 'vbox',
-                align: 'stretch'
-                
-            },
-            itemId: 'advancedfilters',
-            buttons: [{
-            text: 'Configure',
-            itemId: 'configurefilters'
-            }],
-            title: 'Advanced filters',
-            bodyCls: 'tools-filters-list'
-        }]
+        }
+//        ,{
+//            xtype: 'panel',
+//            collapsed: true,
+//            layout: {
+//                type: 'vbox',
+//                align: 'stretch'
+//                
+//            }
+//            ,
+//            itemId: 'advancedfilters',
+//            buttons: [{
+//            text: 'Configure',
+//            itemId: 'configurefilters'
+//            }],
+//            title: 'Advanced filters',
+//            bodyCls: 'tools-filters-list'
+//        }
+    ]
         
         this.callParent();
         

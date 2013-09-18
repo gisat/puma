@@ -18,19 +18,18 @@ Ext.define('PumaMng.view.form.AttributeSet', {
                 height: 170
             },{
                 xtype: 'pumacombo',
+                store: Ext.StoreMgr.lookup('activedataset'),
+                fieldLabel: 'Dataset',
+                allowBlank: false,
+                name: 'dataset',
+                itemId: 'dataset'
+            },{
+                xtype: 'pumacombo',
                 store: Ext.StoreMgr.lookup('activetopic'),
                 fieldLabel: 'Topic',
                 allowBlank: false,
                 name: 'topic',
                 itemId: 'topic'
-            },{
-                xtype: 'itemselector',
-                store: Ext.StoreMgr.lookup('activefeaturelayer'),
-                valueField: '_id',
-                displayField: 'name',
-                fieldLabel: 'Feature layers',
-                name: 'featureLayers',
-                itemId: 'featureLayers'
             }];
 
         this.callParent();

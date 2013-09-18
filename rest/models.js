@@ -21,14 +21,13 @@ var refs = {
     'attributeset':{
         'attributes': {coll: 'attribute', canUpdate: true},
         'topic': {coll:'topic', canUpdate: true},
-        'featureLayers': {coll:'areatemplate', canUpdate: true}
+        'dataset': {coll:'dataset', canUpdate: true}
     },
     'areatemplate':{
         'symbologies': {coll:'symbology', canUpdate: true},
-        'topic': {coll:'topic', canUpdate: true},
+        'topic': {coll:'topic', canUpdate: true}
     },
     'symbology':{
-        'topic': {coll:'topic', canUpdate: true},
     },
     'scope':{
         'datasets': {coll:'dataset', canUpdate: true}
@@ -57,23 +56,18 @@ var refs = {
         'attributeMap.calcAttributeSet': {coll:'attributeset',canUpdate:true},
         'attributeMap.calcAttribute': {coll:'attribute',canUpdate:true},
         'attributeMap.normAttributeSet': {coll:'attributeset',canUpdate:true},
-        'attributeMap.normAttribute': {coll:'attribute',canUpdate:true},
+        'attributeMap.normAttribute': {coll:'attribute',canUpdate:true}
     },   
     'performedanalysis': {
         'location': {coll:'location',canUpdate:true},
         'year': {coll:'year',canUpdate:true},
         'dataset': {coll:'dataset',canUpdate:true},
-        'analysis': {coll:'analysis',canUpdate:true},
+        'analysis': {coll:'analysis',canUpdate:true}
     },
     
     'theme': {
-        'years': {coll:'year', canUpdate: true},
-        'dataset': {coll:'dataset', canUpdate: true},
         'topics': {coll:'topic', canUpdate: true},
-        'analysis': {coll:'analysis', canUpdate: true},
-        'visualizations': {coll:'visualization', canUpdate: true},
-        'minFeatureLayer': {coll:'areatemplate', canUpdate: true},
-        'minAttributeSets': {coll:'attributeset', canUpdate: true},
+        'visualizations': {coll:'visualization', canUpdate: true}
         
     }
 }

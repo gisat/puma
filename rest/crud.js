@@ -76,7 +76,6 @@ function read(collName,filter,params,callback) {
     if (params['justMine']) {
         filter['createdBy'] = params['userId']
     }
-    
     collection.find(filter).toArray(function(err,items) {
         callback(err,items)
     });

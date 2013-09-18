@@ -56,13 +56,13 @@ function getChart(params, callback) {
                 for (var attrSetId in results.attrConf.attrMap) {
                     for (var attrId in results.attrConf.attrMap[attrSetId]) {
                         if (xAttr.as == attrSetId && xAttr.attr == attrId) {
-                            xName = results.attrConf.attrMap[attrSetId][attrId].name + ' ('+results.attrConf.attrSetMap[attrSetId].name+')';
+                            xName = results.attrConf.attrMap[attrSetId][attrId].name;
                         }
                         if (yAttr.as == attrSetId && yAttr.attr == attrId) {
-                            yName = results.attrConf.attrMap[attrSetId][attrId].name+ ' ('+results.attrConf.attrSetMap[attrSetId].name+')';
+                            yName = results.attrConf.attrMap[attrSetId][attrId].name;
                         }
                         if (zAttr && zAttr.as == attrSetId && zAttr.attr == attrId) {
-                            zName = results.attrConf.attrMap[attrSetId][attrId].name+ ' ('+results.attrConf.attrSetMap[attrSetId].name+')';
+                            zName = results.attrConf.attrMap[attrSetId][attrId].name;
                         }
                     }
                 }

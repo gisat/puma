@@ -19,10 +19,12 @@ Ext.define('PumaMng.view.MainTabPanel' ,{
         }, {
             xtype: 'analysistab',
             disabled: true,
+            hidden: true,
             title: 'Analysis'
         }, {
             xtype: 'performedanalysistab',
             disabled: true,
+            hidden: true,
             title: 'Performed Analysis'
         }
 //        ,

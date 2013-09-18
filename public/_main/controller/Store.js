@@ -351,6 +351,24 @@ Ext.define('PumaMain.controller.Store', {
             }],
             storeId: 'layers4outline'
         })
+    
+        Ext.create('Gisatlib.data.SlaveStore', {
+            model: 'Puma.model.Dataset',
+            slave: true,
+            filters: [function(rec) {
+                return false;
+            }],
+            storeId: 'dataset4sel'
+        })
+    
+        Ext.create('Gisatlib.data.SlaveStore', {
+            model: 'Puma.model.Attribute',
+            slave: true,
+            filters: [function(rec) {
+                return false;
+            }],
+            storeId: 'attribute4set'
+        })
     },
         
     initLocalStores: function() {

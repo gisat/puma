@@ -3,7 +3,7 @@ Ext.define('Puma.model.Location', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','bbox','center','active','dataset'
+    '_id','name','active','dataset'
     ],
     idProperty: '_id',
     proxy: {

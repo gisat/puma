@@ -109,7 +109,7 @@ function init(app,callback) {
 
     var server = require('http').createServer(app)
     io = require('socket.io').listen(server,{log:false})
-    server.listen(3100)
+    server.listen(3101)
 }
 
 function getIo() {

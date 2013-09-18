@@ -651,7 +651,7 @@ Ext.define('PumaMng.controller.Store',{
             slave: true,
             storeId: 'year4layerref',
             filters: [function(rec) {
-                return false;
+                return true;
             }],
             model: 'Puma.model.Year'
         })
@@ -671,7 +671,7 @@ Ext.define('PumaMng.controller.Store',{
             slave: true,
             storeId: 'theme4layerref',
             filters: [function(rec) {
-                return false
+                return true;
             }],
             model: 'Puma.model.Theme'
         })

@@ -96,7 +96,9 @@ Ext.define('Puma.view.form.DefaultComboBox',{
         me.onShowClearTrigger(false);
         me.fireEvent('clear', me);
     },
-        
+    
+            
+            
     getValue: function() {
         var value = this.callParent();
         if (this.multiSelect && !Ext.isArray(value)) {

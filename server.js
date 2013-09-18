@@ -5,7 +5,7 @@ var staticFn = express['static'];
 
 var async = require('async');
 var loc = require('./common/loc');
-
+console.log('init')
 function initServer() {
     
     // Order is important
@@ -18,8 +18,8 @@ function initServer() {
     require('./routes/security')(app);
     require('./routes/routes')(app);
     require('./routes/finish')(app);
-    app.listen(3000);
-    console.log('Listening on port 3000'); 
+    app.listen(3001);
+    console.log('Listening on port 3001'); 
 }
 
 async.series([

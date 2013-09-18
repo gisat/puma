@@ -2,7 +2,7 @@ Ext.define('Puma.model.Theme', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','active','years','dataset','analysis','topics','minFeatureLayer','minAttributeSets','visOrder'
+    '_id','name','active','topics'
     ],
     idProperty: '_id',
     proxy: {

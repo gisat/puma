@@ -6,12 +6,7 @@ Ext.define('PumaMng.view.form.Location', {
     initComponent: function() {
         
         
-        this.items = [{
-                    xtype: 'textfield',
-                    name: 'bbox',
-                    allowBlank: false,
-                    fieldLabel: 'BBOX'
-                },  {
+        this.items = [ {
                     xtype: 'pumacombo',
                     name: 'dataset',
                     store: Ext.StoreMgr.lookup('activedataset'),

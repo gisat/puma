@@ -169,7 +169,7 @@ function createCsv(params, callback) {
                         var year = years[j];
                         attrArray.push('as_' + attr.as + '_attr_' + attr.attr + (years.length > 1 ? '_y_' + year : ''))
                         firstRow += ',"';
-                        firstRow += results.attrConf.attrSetMap[attr.as].name + '-';
+                        //firstRow += results.attrConf.attrSetMap[attr.as].name + '-';
                         firstRow += results.attrConf.attrMap[attr.as][attr.attr].name;
                         firstRow += ' '+results.yearMap[year].name+' ';
                         firstRow += normText+' ('

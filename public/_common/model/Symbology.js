@@ -3,7 +3,7 @@ Ext.define('Puma.model.Symbology', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','symbologyName','active','topic'
+    '_id','name','symbologyName','active'
     ],
     idProperty: '_id',
     proxy: {

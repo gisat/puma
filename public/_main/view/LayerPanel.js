@@ -5,10 +5,11 @@ Ext.define('PumaMain.view.LayerPanel', {
     initComponent: function() {
 
         var me = this;
-        this.buttons = [{
-            text: 'Configure',
-            itemId: 'configurelayers'
-        }]
+//        this.buttons = [{
+//            text: 'Configure',
+//            hidden: true,
+//            itemId: 'configurelayers'
+//        }]
         this.items = [
             {
                 xtype: 'treepanel',

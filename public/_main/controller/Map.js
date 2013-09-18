@@ -101,18 +101,22 @@ Ext.define('PumaMain.controller.Map', {
         this.switchMap(pressed);
     },
     
-    switchMap: function(both,second) {
+       switchMap: function(both,second) {
         var map1 = Ext.ComponentQuery.query('#map')[0];
         var map2 = Ext.ComponentQuery.query('#map2')[0];
+        
         if (both) {
+            map2.map.noSync = true;
             map1.show();
             map2.show();
+            map2.map.noSync = false;
+            this.onMapMove(map1.map);
         }
-        else if (second) {
-            
-            map1.hide();
-            map2.show();
-        }
+//        else if (second) {
+//            
+//            map1.hide();
+//            map2.show();
+//        }
         else {
             map2.hide();
             map1.show();
@@ -228,7 +232,7 @@ Ext.define('PumaMain.controller.Map', {
     },
     
     onMapMove: function(map) {
-        if (!map.multiMap) {
+        if (!map.multiMap || map.noSync) {
             return;
         }
         var mapMoved = map;
@@ -803,7 +807,7 @@ Ext.define('PumaMain.controller.Map', {
             if (!cmp.initialZoom) {
                 //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(12490000, -900000, 12530000, -800000));
+                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(6960977, -434794.06241276, 20071456.585033, 7059703.685849));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))
                 cmp.initialZoom = true;
             }

@@ -110,7 +110,7 @@ function getThemeYearConf(params, req, res, callback) {
         },
         locations: function(asyncCallback, results) {
             
-            var locations = locations ? JSON.parse(params['locations']) : null;
+            var locations = params['locations'] ? JSON.parse(params['locations']) : null;
             if (locations) {
                 return asyncCallback(null,locations);
             }
@@ -155,7 +155,7 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                 }
                 // zatim se requiredtopicneresi, nacita se info o vsech attributsetech pro dane tema
-                crud.read('attributeset', {topic: {$in: allTopics}}, function(err, resls) {
+                crud.read('attributeset', {topic: {$in: allTopics}, dataset: parseInt(params['dataset'])}, function(err, resls) {
                     if (err)
                         return callback(err);
                     var ids = [];

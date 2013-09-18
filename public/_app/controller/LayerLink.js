@@ -45,14 +45,13 @@ Ext.define('PumaMng.controller.LayerLink', {
             locationCombo.disable();
             return;
         }
-        var themeStore = Ext.StoreMgr.lookup('theme4layerref');
         var locationStore = Ext.StoreMgr.lookup('location4layerref');
         
-        themeStore.clearFilter(true);
+        //themeStore.clearFilter(true);
         locationStore.clearFilter(true);
-        themeStore.filter([function(rec) {
-            return rec.get('dataset')==val;
-        }])
+//        themeStore.filter([function(rec) {
+//            return rec.get('dataset')==val;
+//        }])
         locationStore.filter([function(rec) {
             return rec.get('dataset')==val;
         }])
@@ -66,11 +65,11 @@ Ext.define('PumaMng.controller.LayerLink', {
             return
         }
         var theme = Ext.StoreMgr.lookup('theme').getById(val);
-        var store = Ext.StoreMgr.lookup('year4layerref');
-        store.clearFilter(true);
-        store.filter([function(rec) {
-            return Ext.Array.contains(theme.get('years'),rec.get('_id'))
-        }]) 
+//        var store = Ext.StoreMgr.lookup('year4layerref');
+//        store.clearFilter(true);
+//        store.filter([function(rec) {
+//            return Ext.Array.contains(theme.get('years'),rec.get('_id'))
+//        }]) 
         yearCombo.enable();
         
     },
