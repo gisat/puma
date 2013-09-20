@@ -1138,7 +1138,11 @@ Ext.define('PumaMain.controller.Chart', {
         if (!chart.chart || chart.cfg.type == 'featurecount')
             return;
         if (chart.cfg.type == 'grid') {
-            chart.chart.getView().refresh();
+            try {
+                chart.chart.getView().refresh();
+            }
+            // problems with refreshing empty grid
+            catch(err) {}
             return;
         }
         if (!chart.chart.hasRendered) {
