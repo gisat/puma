@@ -117,9 +117,11 @@ Ext.define('PumaMain.controller.Select', {
         
         var lowestMap = this.getController('Area').lowestMap;
         var outerCount = 0;
+        var overallCount = 0;
         for (var color in this.selMap) {
             for (var i=0;i<this.selMap[color].length;i++) {
                 var obj = this.selMap[color][i];
+                overallCount++;
                 if (lowestMap[obj.loc] && lowestMap[obj.loc][obj.at] && Ext.Array.contains(lowestMap[obj.loc][obj.at],obj.gid)) {}
                 else {
                     this.outerSelect = true;
@@ -127,8 +129,8 @@ Ext.define('PumaMain.controller.Select', {
                 }
             }
         }
-        this.outerCount = outerCount
-       
+        this.outerCount = outerCount;
+        this.overallCount = overallCount;
         
         this.getController('Area').colourTree(this.colorMap); 
         this.getController('Chart').reconfigure('immediate'); 
@@ -148,9 +150,12 @@ Ext.define('PumaMain.controller.Select', {
         
         if (!hover) {
             var lowestCount = this.getController('Area').lowestCount;
-            Ext.StoreMgr.lookup('paging').setCount(lowestCount+this.outerCount);
+            var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+            var count = onlySel ? (this.overallCount) : (lowestCount+this.outerCount)
             
-            var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect)
+            Ext.StoreMgr.lookup('paging').setCount(count);
+            
+            var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect) || onlySel;
             this.getController('Chart').reconfigure(outer ? 'outer' : 'inner');    
         }
         this.prevOuterSelect = this.outerSelect

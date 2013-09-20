@@ -142,6 +142,11 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'areapager',
             displayInfo: true,
             cls: 'paging-toolbar',
+            buttons: [{
+                itemId: 'onlySelected',
+                text: 'Selected',
+                enableToggle: true
+            }],
             store: Ext.StoreMgr.lookup('paging')
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();

@@ -418,9 +418,11 @@ Ext.define('PumaMain.controller.Area', {
   
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;
+        var overallCount = 0;
         for (var color in selMap) {
             for (var i=0;i<selMap[color].length;i++) {
                 var obj = selMap[color][i];
+                overallCount++;
                 if (allMap[obj.loc] && allMap[obj.loc][obj.at] && Ext.Array.contains(allMap[obj.loc][obj.at],obj.gid)) {}
                 else {
                     selMap[color] = Ext.Array.difference(selMap[color],[obj])
@@ -435,7 +437,12 @@ Ext.define('PumaMain.controller.Area', {
             }
         }
         this.getController('Select').prepareColorMap();
-        Ext.StoreMgr.lookup('paging').setCount(lowestCount+outerCount);
+        this.getController('Select').overallCount = overallCount;
+        this.getController('Select').outerCount = outerCount;
+                
+        var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+        var count = onlySel ? (overallCount) : (lowestCount+outerCount)
+        Ext.StoreMgr.lookup('paging').setCount(count);
         
         this.getController('Layers').refreshOutlines();
         //this.getController('Layers').checkVisibilityAndStyles(true,false);

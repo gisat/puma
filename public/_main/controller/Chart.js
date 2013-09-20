@@ -61,6 +61,9 @@ Ext.define('PumaMain.controller.Chart', {
             },
             '#areapager' : {
                 beforechange: this.onPageChange
+            },
+            '#areapager #onlySelected': {
+                toggle: this.onToggleShowSelected
             }
         }
 
@@ -73,6 +76,16 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
+        
+    onToggleShowSelected: function(btn) {
+        var selCtrl = this.getController('Select');
+        var areaCtrl = this.getController('Area');
+        var onlySel = btn.pressed;
+        var count = onlySel ? (selCtrl.overallCount) : (areaCtrl+selCtrl.outerCount);
+        Ext.StoreMgr.lookup('paging').setCount(count);
+        this.getController('Chart').reconfigure('outer');    
+    },
+    
     onToggleLegend: function(btn) {
         var chart = btn.up('panel').chart;
         chart.legendOn = chart.legendOn ? false : true;
@@ -385,6 +398,9 @@ Ext.define('PumaMain.controller.Chart', {
         if (cfg.type != 'extentoutline') {
             areas = Ext.clone(this.getController('Area').lowestMap);
         }
+        var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+        
+        
         if (cfg.title && fromConfigPanel) {
             chartCmp.up('chartpanel').setTitle(cfg.title)
         }
@@ -403,6 +419,10 @@ Ext.define('PumaMain.controller.Chart', {
         }
         
         if (Ext.Array.contains(['grid','columnchart','piechart'],cfg.type)) {
+            var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+            if (onlySel) {
+                queryCfg.areas = [];
+            }
             Ext.apply(queryCfg,this.getPagingParams());
         }
         if (cfg.type=='scatterchart') {
