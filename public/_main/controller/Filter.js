@@ -7,11 +7,37 @@ Ext.define('PumaMain.controller.Filter', {
                 {
                     '#advancedfilters multislider' : {
                         changecomplete: this.applyFilters
+                    },
+                    '#advancedfilters #instantfilter' : {
+                        toggle: this.onInstantChange
+                    },
+                    '#advancedfilters #filterselect' : {
+                        click: this.onSelectFilter
                     }
                 })
     },
     
-    applyFilters: function(withoutRefresh) {
+    onInstantChange: function(btn) {
+        var filterSelect = Ext.ComponentQuery.query('#advancedfilters #filterselect')[0];
+        filterSelect.setDisabled(btn.pressed);
+        if (!btn.pressed) {
+            var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
+             for (var i=0;i<sliders.length;i++) {
+                var slider = sliders[i];
+                slider.setValue([slider.minValue,slider.maxValue],false)    
+             }
+        }
+        this.applyFilters(null,true);
+    },
+        
+    onSelectFilter: function() {
+        this.applyFilters(null,true,true)
+    },
+    
+    applyFilters: function(withoutRefresh,bypassInstant,bySelectFilter) {
+        
+        var instantFilter = Ext.ComponentQuery.query('#instantfilter')[0].pressed
+        if (!instantFilter && bypassInstant!==true) return;
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var areaController = this.getController('Area');
         var filters = [];
@@ -40,7 +66,8 @@ Ext.define('PumaMain.controller.Filter', {
             }
         }
         if (withoutRefresh!==true) {
-            this.getController('LocationTheme').onYearChange({itemId:'filter'});
+            var itemId = bySelectFilter === true ? 'selectfilter' : 'filter'
+            this.getController('LocationTheme').onYearChange({itemId:itemId});
         }
     },
     

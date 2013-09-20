@@ -77,7 +77,7 @@ Ext.define('PumaMain.controller.Select', {
         }
     },
     
-    selectInternal: function(areas,add,hover) {
+    selectInternal: function(areas,add,hover,delay) {
         if (!hover) {
             var sel = this.selMap[this.actualColor];
         }
@@ -141,7 +141,7 @@ Ext.define('PumaMain.controller.Select', {
             this.selectTask.cancel();
         }
         this.selectTask = new Ext.util.DelayedTask();
-        this.selectTask.delay(500,this.selectDelayed,this,arguments);
+        this.selectTask.delay(delay || 500,this.selectDelayed,this,arguments);
         
     },
         

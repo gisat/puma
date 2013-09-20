@@ -237,7 +237,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (cnt.itemId=='selyear' ) {
             this.yearChanged = true;
         }
-        var isFilter = cnt.itemId == 'filter';
+        var isFilter = cnt.itemId == 'filter' || cnt.itemId == 'selectfilter';
         var detailLevelChanged = cnt.itemId == 'detaillevel';
         
         var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
@@ -254,8 +254,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
             params['filter'] = JSON.stringify(areaController.areaFilter);
         }
         
+        
         var locationObj = areaController.getLocationObj();
-        var cntId = cnt.itemId
+        var cntId = cnt.itemId;
         
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         params['refreshLayers'] = (this.themeChanged) ? true : null;
@@ -287,7 +288,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         if (cntId=='slider') {
             params['parentgids'] = JSON.stringify(this.getController('Area').parentGids)
-            
+        }
+        if (cntId=='selectfilter') {
+            delete params['fids'];
         }
         var me = this;
         Ext.Ajax.request({
@@ -665,6 +668,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     onThemeLocationConfReceived: function(response) {
         var conf = JSON.parse(response.responseText).data;
+        
+        if (response.request.options.originatingCnt.itemId=='selectfilter') {
+            this.getController('Select').selectInternal(conf.areas,false,false,1);
+            return;
+        }
+        
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var multiMapBtn = Ext.ComponentQuery.query('maptools #multiplemapsbtn')[0];
         if (years.length<2 && multiMapBtn.pressed) {
