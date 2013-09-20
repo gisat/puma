@@ -56,8 +56,17 @@ Ext.define('PumaMain.view.Tools', {
             },
             itemId: 'advancedfilters',
             buttons: [{
-            text: 'Configure',
-            itemId: 'configurefilters'
+                text: 'Configure',
+                itemId: 'configurefilters'
+            },{
+                text: 'Instant',
+                pressed: true,
+                itemId: 'instantfilter',
+                enableToggle: true
+            },{
+                text: 'Select',
+                disabled: true,
+                itemId: 'filterselect'
             }],
             title: 'Advanced filters',
             bodyCls: 'tools-filters-list'
