@@ -22,12 +22,12 @@ Ext.define('PumaMain.controller.Login',{
         }
         var saveVis = Ext.ComponentQuery.query('#savevisualization')[0];
         if (!saveVis) return;
-        var manageVis = Ext.ComponentQuery.query('#managevisualization')[0];
+        //var manageVis = Ext.ComponentQuery.query('#managevisualization')[0];
         var saveView = Ext.ComponentQuery.query('#savedataview')[0];
         var manageView = Ext.ComponentQuery.query('#managedataview')[0];
         var shareView = Ext.ComponentQuery.query('#sharedataview')[0];
         saveVis.setVisible(isAdmin);
-        manageVis.setVisible(isAdmin);
+        //manageVis.setVisible(isAdmin);
         saveView.setVisible(isUser);
         manageView.setVisible(isUser);
         shareView.setVisible(isUser);

@@ -50,25 +50,25 @@ Ext.define('PumaMain.controller.Render', {
 //            },
 //            renderTo: 'app-toolbar-visualization'
 //        })
-//        Ext.widget('button',{
-//            renderTo: 'app-toolbar-visualization-save',
-//            text: 'Save as',
-//            itemId: 'savevisualization',
-//            width: '100%',
-//            height: '100%',
-//            hidden: !Config.auth || !Config.auth.isAdmin,
-//            cls: 'custom-button btn-visualization-save'
-//        })
-//        Ext.widget('button',{
-//            renderTo: 'app-toolbar-share',
-//            text: 'Share data view',
-//            itemId: 'sharedataview',
-//            width: '100%',
-//            height: '100%',
-//            hidden: !Config.auth,
-//            icon: 'images/icons/share.png',
-//            cls: 'custom-button btn-share'
-//        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-visualization-save',
+            text: 'Save',
+            itemId: 'savevisualization',
+            width: '100%',
+            height: '100%',
+            hidden: !Config.auth || !Config.auth.isAdmin,
+            cls: 'custom-button btn-visualization-save'
+        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-share',
+            text: 'Share data view',
+            itemId: 'sharedataview',
+            width: '100%',
+            height: '100%',
+            hidden: !Config.auth,
+            icon: 'images/icons/share.png',
+            cls: 'custom-button btn-share'
+        })
         
         
 //        Ext.widget('slider',{
@@ -99,15 +99,15 @@ Ext.define('PumaMain.controller.Render', {
             cls: 'custom-button'
         })
     
-//        Ext.widget('button',{
-//            renderTo: 'app-toolbar-manage',
-//            itemId: 'managedataview',
-//            hidden: !Config.auth,
-//            icon: 'images/icons/settings.png',
-//            width: '100%',
-//            height: '100%',
-//            cls: 'custom-button btn-manage'
-//        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-manage',
+            itemId: 'managedataview',
+            hidden: !Config.auth,
+            icon: 'images/icons/settings.png',
+            width: '100%',
+            height: '100%',
+            cls: 'custom-button btn-manage'
+        })
 //        Ext.widget('button',{
 //            renderTo: 'app-toolbar-visualization-manage',
 //            itemId: 'managevisualization',
@@ -117,16 +117,16 @@ Ext.define('PumaMain.controller.Render', {
 //            height: '100%',
 //            cls: 'custom-button btn-visualization-manage'
 //        })
-//        Ext.widget('button',{
-//            renderTo: 'app-toolbar-save',
-//            itemId: 'savedataview',
-//            hidden: !Config.auth,
-//            text: 'Save view',
-//            icon: 'images/icons/save.png',
-//            width: '100%',
-//            height: '100%',
-//            cls: 'custom-button btn-save'
-//        })
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-save',
+            itemId: 'savedataview',
+            hidden: !Config.auth,
+            text: 'Save view',
+            icon: 'images/icons/save.png',
+            width: '100%',
+            height: '100%',
+            cls: 'custom-button btn-save'
+        })
         
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'

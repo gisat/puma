@@ -50,7 +50,7 @@ Ext.define('PumaMain.controller.Layers', {
         })
     },
         
-    reconfigureChoropleths: function(cfg) {
+    reconfigureChoropleths: function(cfg,visualization) {
         this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
         var chartNodes = [];
@@ -67,9 +67,7 @@ Ext.define('PumaMain.controller.Layers', {
             var node = chartNodes[i];
             var attr = node.get('attribute');
             var as = node.get('attributeSet');
-            if (node.get('checked')) {
-                checkedAttrs.push(attr);
-            }
+            
             var cfgAttr = node.get('cfg').attrs[0];
             var normType = cfgAttr.normType
             var normAs = cfgAttr.normAs
@@ -87,6 +85,9 @@ Ext.define('PumaMain.controller.Layers', {
                 nodesToRemove.push(node)
             }
             else {
+                if (node.get('checked')) {
+                    checkedAttrs.push(attr);
+                }
                 Ext.Array.remove(attrs,attrObj);
                 node.initialized = false;
                 var oneCfg = {attrs:[attrObj]};
@@ -109,6 +110,7 @@ Ext.define('PumaMain.controller.Layers', {
             this.onChoroplethRemove(null,node);
         }
         var autoActivated = false;
+        var visAttr = visualization ? visualization.get('choroAttr') : null
         for (var i=0;i<attrs.length;i++) {
             var attr = attrs[i];
             var oneCfg = Ext.clone(cfg);
@@ -117,9 +119,12 @@ Ext.define('PumaMain.controller.Layers', {
             oneCfg.classType = attr.classType || 'quantiles';
             oneCfg.zeroesAsNull = attr.zeroesAsNull || true;
             oneCfg.useAttributeColors = true;
-            var autoActivate = Ext.Array.contains(checkedAttrs,attr.attr) || (checkedAttrs.length==0 && i==0);
+            var autoActivate = Ext.Array.contains(checkedAttrs,attr.attr);
+            if (!checkedAttrs.length && attr.attr==visAttr) {
+                autoActivate = true;
+            }
             if (autoActivate) {
-                autoActivated = false;
+                autoActivated = true;
             }
             if (i==attrs.length-1 && !autoActivated) {
                 autoActivate = true;

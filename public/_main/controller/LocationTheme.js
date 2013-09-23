@@ -427,7 +427,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     
     removeLayers: function() {
-        debugger;
         var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var topics = Ext.StoreMgr.lookup('theme').getById(themeId).get('topics');
         var thematicNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','thematicgroup');
@@ -450,7 +449,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     
     appendLayers: function(layerNodes) {
-            debugger;
             layerNodes = layerNodes || [];
             this.topics = this.topics || [];
             var topics  = [];
@@ -641,19 +639,36 @@ Ext.define('PumaMain.controller.LocationTheme', {
             return Ext.Array.contains(attributes,rec.get('_id'));
         }])
         var combos = Ext.ComponentQuery.query('pumacombo[attributeCombo=1]');
+        var visualization = Ext.StoreMgr.lookup('visualization').findRecord('attrSet',attrSetId);
+        
         for (var i=0;i<combos.length;i++) {
             var combo = combos[i];
             var val = combo.getValue();
+            if (val && (!Ext.isArray(val) || val.length)) continue;
+            if (visualization) {
+                if (combo.cfgType=='columnchart') {
+                    combo.setValue(visualization.get('columnAttrs'));
+                }
+                if (combo.cfgType=='scatterchart' && !combo.alternative) {
+                    combo.setValue(visualization.get('scatterAttrs')[0])
+                }
+                if (combo.cfgType=='scatterchart' && combo.alternative) {
+                    combo.setValue(visualization.get('scatterAttrs')[1])
+                }
+                continue;
+            }
             var first = combo.store.getAt(0);
             var second = combo.store.getAt(1);
-            if ((!val || (Ext.isArray(val) && !val.length)) && first && !combo.alternative) {
+            if (!combo.alternative) {
                 combo.setValue(first.get(combo.valueField));
             }
-            if ((!val || (Ext.isArray(val) && !val.length)) && second && combo.alternative) {
-                combo.setValue(second.get(combo.valueField));
+            if (combo.alternative) {
+                combo.setValue(second ? second.get(combo.valueField) : first.get(combo.valueField));
             }
         }
         
+        
+        chartController.visualization = visualization;
         chartController.attrSet = attrSet;
         chartController.attrSetId = attrSetId;
         
@@ -667,7 +682,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 classType: 'quantiles'
             })
         }
-        this.getController('Layers').reconfigureChoropleths({attrs:choroAttrs})
+        this.getController('Layers').reconfigureChoropleths({attrs:choroAttrs},visualization)
         
     },
         

@@ -67,6 +67,7 @@ Ext.define('PumaMain.view.ChartPanel', {
             store: Ext.StoreMgr.lookup('attribute4set'),
             multiSelect: this.cfgType=='columnchart',
             attributeCombo: 1,
+            cfgType: this.cfgType,
             listConfig: {
                 selModel: {
                     mode: 'MULTI'
@@ -84,6 +85,7 @@ Ext.define('PumaMain.view.ChartPanel', {
             store: Ext.StoreMgr.lookup('attribute4set'),
             multiSelect: this.cfgType=='columnchart',
             attributeCombo: 1,
+            cfgType: this.cfgType,
             alternative: this.cfgType=='scatterchart',
             listConfig: {
                 selModel: {
