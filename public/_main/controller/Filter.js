@@ -18,6 +18,7 @@ Ext.define('PumaMain.controller.Filter', {
     },
     
     onInstantChange: function(btn) {
+        if (btn.eventsSuspended) return;
         var filterSelect = Ext.ComponentQuery.query('#advancedfilters #filterselect')[0];
         filterSelect.setDisabled(btn.pressed);
         if (!btn.pressed) {

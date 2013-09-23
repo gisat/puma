@@ -229,6 +229,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onYearChange: function(cnt) {
+        debugger;
         var val = Ext.ComponentQuery.query('#selyear')[0].getValue();
         if (!val.length || cnt.eventsSuspended) {
             this.getController('DomManipulation').deactivateLoadingMask();
@@ -250,7 +251,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 dataset: dataset
             }
         var areaController = this.getController('Area');
-        if (areaController.areaFilter) {
+        var instantFilter = Ext.ComponentQuery.query('#instantfilter')[0].pressed
+        if (areaController.areaFilter && (cnt.itemId!='dataview' || instantFilter)) {
             params['filter'] = JSON.stringify(areaController.areaFilter);
         }
         
