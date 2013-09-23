@@ -173,7 +173,7 @@ function saveSld(params, req, res, callback) {
                     dataParams['filter'] = JSON.stringify([{
                             field: attrName,
                             value: 0,
-                            comparison: 'gt'
+                            comparison: 'neq'
                         }])
                 }
                 dataParams['normalization'] = dataParams['normalization']=='year' ? 'none' : dataParams['normalization']
@@ -305,6 +305,7 @@ function saveSld(params, req, res, callback) {
                     var newRest = restSize;
                     var catIdx = 0;
                     var val = 0;
+                    console.log(dataLength)
                     for (var i=1;i<dataLength;i++) {
                         var idx = i;
                         var diff = catSize + ((newRest>0) ? 1 : 0);
@@ -313,6 +314,7 @@ function saveSld(params, req, res, callback) {
                             catIdx++;
                             var item = results.data.data[idx];
                             var current = results.data.data[idx][attrName];
+                            console.log(current);
                             var prev = results.data.data[idx - 1][attrName];
                             if (prev!=null && dataLength!=1) {
                                 val = prev+(current-prev)/2;

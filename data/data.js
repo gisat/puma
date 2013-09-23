@@ -56,6 +56,8 @@ function getData(params, callback) {
             case 'eq':
                 compOperator = '=';
                 break;
+            case 'neq':
+                compOperator = '<>'
         }
         filterSql += ' AND ' + f.field + compOperator + f.value + (f.comparison ? '' : '%\'')
     }
@@ -65,7 +67,7 @@ function getData(params, callback) {
     var topLoc = params['aggregate'] == 'toptree' || params['normalization'] == 'toptree' || params['toptree'];
     var aggSelect =  params['aggregate'] == 'select' || params['normalization'] == 'select';
     
-    console.log(aggSelect)
+    //console.log(aggSelect)
     var layerRefMap = {};
 
     var select = "SELECT "
@@ -104,8 +106,8 @@ function getData(params, callback) {
             topAllSql += 'SELECT -1 as gid,\'All\' as name,area';
             
         }
-        console.log(attrs.length);
-        console.log(attrsWithSort.length)
+        //console.log(attrs.length);
+        //console.log(attrsWithSort.length)
         for (var j = 0; j < attrsWithSort.length; j++) {
             var attr = attrsWithSort[j];
             var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
@@ -140,8 +142,8 @@ function getData(params, callback) {
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
-            console.log(attrUnits);
-            console.log(normAttrUnits);
+            //console.log(attrUnits);
+            //console.log(normAttrUnits);
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
@@ -452,7 +454,7 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                console.log(dataSql)
+                //console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);
