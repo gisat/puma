@@ -3,8 +3,15 @@ Ext.define('Puma.patch.Component', {
     initComponent: function() {
         this.callParent();
         this.on('render',function(cmp) {
-            //cmp.getEl().on('click', function(){ this.fireEvent('click',cmp); }, cmp);
+//            cmp.getEl().on('mousedown', this.onHelpClick, this, {
+//                
+//                stopEvent : true
+//            });
         })
+    },
+    
+    onHelpClick: function(a,b,c) {
+        debugger
     }
 })
 

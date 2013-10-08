@@ -1013,7 +1013,15 @@ Ext.define('PumaMain.controller.Chart', {
             column.menuDisabled = true;
             column.resizable = false;
             column.sortable = cmp.disableSort!==true;
-            if (column.dataIndex=='name') continue;
+            if (column.dataIndex=='name') {
+                if (data.columns.length>5) {
+                    column.locked = true;
+                    column.width = 160;
+                    column.flex = null;
+                    
+                 }
+                 continue;
+            }
             column.renderer = function(val,metadata,rec,rowIndex,colIndex) {
                 var columns = this.view.getGridColumns();
                 var column = columns[colIndex];

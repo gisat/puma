@@ -229,7 +229,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onYearChange: function(cnt) {
-        debugger;
         var val = Ext.ComponentQuery.query('#selyear')[0].getValue();
         if (!val.length || cnt.eventsSuspended) {
             this.getController('DomManipulation').deactivateLoadingMask();

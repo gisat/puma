@@ -81,6 +81,15 @@ Ext.define('PumaMain.controller.Render', {
 //        })
         
      
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-contexthelp',
+            itemId: 'contexthelp',
+            text: 'Context',
+            enableToggle: true,
+            //width: '100%',
+            //height: '100%',
+            cls: 'custom-button'
+        })
         
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',

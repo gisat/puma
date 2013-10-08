@@ -2,6 +2,7 @@ Ext.define('PumaMain.view.MapTools', {
     extend: 'Ext.panel.Panel',
     alias: 'widget.maptools',
     columns: 2,
+    helpId: 'Maptools',
     initComponent: function() { 
         this.defaults = {
             height: 90,
@@ -29,6 +30,7 @@ Ext.define('PumaMain.view.MapTools', {
         },{
             xtype: 'button',
             enableToggle: true,
+            helpId: 'Measuringdistance',
             toggleGroup: 'mapmodal',
             itemId: 'measurelinebtn',
             text: 'Measure line',
