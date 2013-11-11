@@ -11,62 +11,6 @@ Ext.define('PumaMain.view.LayerPanel', {
         }]
         this.items = [
             {
-                xtype: 'treepanel',
-                itemId: 'layerpanel',
-//                                viewConfig: {
-//                                    plugins: {ptype: 'treeviewdragdrop'}
-//                                },
-                store: Ext.StoreMgr.lookup('layers'),
-                //frame: true,
-                title: 'Layers available',
-                displayField: 'name',
-                rootVisible: false,
-                border: true,
-                columns: [{
-                        xtype: 'treecolumn',
-                        dataIndex: 'name',
-                        flex: 1,
-                        header: 'Name'
-                    }
-//                    ,
-//                    {
-//                        xtype: 'actioncolumn',
-//                        width: 45,
-//                        items: [{
-//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
-//                                tooltip: 'Configure', 
-//                                width: 15,
-//                                height: 20,
-//                                getClass: function(v,metadata,rec) {
-//                                    
-//                                    if (rec.get('type')!='chartlayer') {
-//                                        return 'invisible'
-//                                    }
-//                                },
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('choroplethreconfigure',me,record)
-//                                }
-//                            }, {
-//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
-//                                tooltip: 'Remove', 
-//                                width: 15,
-//                                height: 20,
-//                                getClass: function(v,metadata,rec) {
-//                                    
-//                                    if (rec.get('type')!='chartlayer') {
-//                                        return 'invisible'
-//                                    }
-//                                },
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('choroplethremove',me,record)
-//                                }
-//                            }]
-//                    }
-                ],
-                style: {
-                    borderRadius: '0px'
-                }
-            }, {
                 xtype: 'grid',
                 itemId: 'layerselectedpanel',
                 store: Ext.StoreMgr.lookup('selectedlayers'),
@@ -168,6 +112,62 @@ Ext.define('PumaMain.view.LayerPanel', {
                     borderRadius: '0px',
                     //overflow: 'hidden'
                     //backgroundColor: '#ffffee'
+                }
+            },{
+                xtype: 'treepanel',
+                itemId: 'layerpanel',
+//                                viewConfig: {
+//                                    plugins: {ptype: 'treeviewdragdrop'}
+//                                },
+                store: Ext.StoreMgr.lookup('layers'),
+                //frame: true,
+                title: 'Layers available',
+                displayField: 'name',
+                rootVisible: false,
+                border: true,
+                columns: [{
+                        xtype: 'treecolumn',
+                        dataIndex: 'name',
+                        flex: 1,
+                        header: 'Name'
+                    }
+//                    ,
+//                    {
+//                        xtype: 'actioncolumn',
+//                        width: 45,
+//                        items: [{
+//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
+//                                tooltip: 'Configure', 
+//                                width: 15,
+//                                height: 20,
+//                                getClass: function(v,metadata,rec) {
+//                                    
+//                                    if (rec.get('type')!='chartlayer') {
+//                                        return 'invisible'
+//                                    }
+//                                },
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('choroplethreconfigure',me,record)
+//                                }
+//                            }, {
+//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
+//                                tooltip: 'Remove', 
+//                                width: 15,
+//                                height: 20,
+//                                getClass: function(v,metadata,rec) {
+//                                    
+//                                    if (rec.get('type')!='chartlayer') {
+//                                        return 'invisible'
+//                                    }
+//                                },
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('choroplethremove',me,record)
+//                                }
+//                            }]
+//                    }
+                ],
+                style: {
+                    borderRadius: '0px'
                 }
             }
         ]

@@ -90,8 +90,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
             themeCombo.setValue(first)
         }
         if (cnt.initial) {
+            locationCombo.emptyText = 'Select location...';
             locationCombo.setValue(null);
             if (themeCombo && themeCombo.isVisible()) {
+                themeCombo.emptyText = 'Select theme...';
                 themeCombo.setValue(null);
             }
         }
@@ -609,6 +611,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     checked: true,
                     leaf: true
                 }
+                selectedLayerFilledNode = {
+                    type: 'selectedareasfilled',
+                    name: 'Selected areas filled',
+                    sortIndex: 0,
+                    checked: false,
+                    leaf: true
+                }
                 areaLayerNode = {
                     type: 'areaoutlines',
                     sortIndex: 1,
@@ -616,7 +625,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     checked: true,
                     leaf: true
                 }
-                systemNode.appendChild([selectedLayerNode,areaLayerNode]);
+                systemNode.appendChild([selectedLayerNode,areaLayerNode,selectedLayerFilledNode]);
             }
             
             
@@ -718,6 +727,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (conf.areas || ((conf.add || conf.remove) && changed)) {
             this.getController('Area').scanTree();
         }
+        else if (response.request.options.yearChanged){
+            this.getController('Layers').refreshOutlines();
+        }
         if (conf.attrSets) {
             this.checkFeatureLayers();
             this.checkAttrSets(conf.attrSets);
@@ -733,6 +745,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (response.request.options.locationChanged || response.request.options.datasetChanged) {
             this.getController('Area').zoomToLocation();
         }
+        
         
         this.getController('DomManipulation').deactivateLoadingMask();
         delete Config.cfg;

@@ -84,16 +84,17 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-contexthelp',
             itemId: 'contexthelp',
-            text: 'Context',
+            text: 'CH',
             enableToggle: true,
-            //width: '100%',
-            //height: '100%',
+            width: 30,
+            height: 25,
             cls: 'custom-button'
         })
         
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
             itemId: 'areamoredetails',
+            helpId: 'areamore',
             text: '+',
             width: '100%',
             height: '100%',
@@ -183,7 +184,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
             initial: true,
-            blankText: 'Select scope...',
+            emptyText: 'Select scope...',
             allowBlank: false,
             store: Ext.StoreMgr.lookup('dataset'),
             cls: 'custom-combo',

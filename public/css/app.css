@@ -11,6 +11,16 @@ div.olControlZoom {
     background           : url("../images/loading.gif") no-repeat 50% 50%;
 }
 
+#app-map2 .olLayerGooglePoweredBy,#app-map2 .olLayerGoogleCopyright {
+    display: none;
+}
+.extentoutline-notfirst .olLayerGooglePoweredBy {
+    display: none;
+}
+div .olControlAttribution {
+    left: 3px;
+    bottom: 5px;
+}
 /*.screenshot, .screenshot div {
     width: 175px; 
     height: 120px;

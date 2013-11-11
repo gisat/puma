@@ -81,7 +81,7 @@ Ext.define('PumaMain.controller.Chart', {
         var selCtrl = this.getController('Select');
         var areaCtrl = this.getController('Area');
         var onlySel = btn.pressed;
-        var count = onlySel ? (selCtrl.overallCount) : (areaCtrl+selCtrl.outerCount);
+        var count = onlySel ? (selCtrl.overallCount) : (areaCtrl.lowestCount+selCtrl.outerCount);
         Ext.StoreMgr.lookup('paging').setCount(count);
         this.getController('Chart').reconfigure('outer');    
     },
@@ -166,6 +166,7 @@ Ext.define('PumaMain.controller.Chart', {
         window = window || Ext.widget('window', {
             layout: 'fit',
             id: 'visualizationwindow',
+            y: 200,
             items: [{
                     xtype: 'visualizationform',
                     frame: true,
@@ -374,6 +375,7 @@ Ext.define('PumaMain.controller.Chart', {
         store.load();
         var cfg = {
             layout: 'fit',
+            y: 200,
             items: [{
                     xtype: type,
                     areaTemplateStore: store,
@@ -568,7 +570,7 @@ Ext.define('PumaMain.controller.Chart', {
                 y = 200;
             }
             cmp.add({
-                xtype: 'component', type: 'extentoutline', opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
+                xtype: 'component', type: 'extentoutline', cls:i==0 ? 'extentoutline-first' : 'extentoutline-notfirst' ,opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
             })
         }
 

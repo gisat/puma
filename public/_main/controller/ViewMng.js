@@ -102,6 +102,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            y: 200,
             bodyCls: 'manageDwWindow',
             items: [{
                 xtype: 'commonmnggrid',
@@ -322,6 +323,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            y: 200,
             bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',
@@ -336,6 +338,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            y: 200,
             bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',

@@ -303,15 +303,21 @@ Ext.define('PumaMain.controller.Layers', {
     colourMap: function(selectMap, map1NoChange, map2NoChange) {
         var store = Ext.StoreMgr.lookup('layers');
         var node = store.getRootNode().findChild('type', 'selectedareas', true);
+        var filledNode = store.getRootNode().findChild('type', 'selectedareasfilled', true);
         if (!node)
             return;
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
-
+        var filledLayer1 = filledNode.get('layer1');
+        var filledLayer2 = filledNode.get('layer2');
+        
+        
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
         var areaTemplates = this.getController('Area').areaTemplateMap;
         var namedLayers1 = [];
         var namedLayers2 = [];
+        var namedLayersFilled1 = [];
+        var namedLayersFilled2 = [];
         selectMap = selectMap || {};
 
         for (var loc in selectMap) {
@@ -327,6 +333,7 @@ Ext.define('PumaMain.controller.Layers', {
                     if (!lr && at != -1)
                         continue;
                     var style = new OpenLayers.Style();
+                    var filledStyle = new OpenLayers.Style();
                     //var layerId = at == -1 ? '#userlocation#_y_' + year : lr._id;
                     var layerId = lr._id;
                     var layerName = 'puma:layer_' + layerId
@@ -336,7 +343,7 @@ Ext.define('PumaMain.controller.Layers', {
                         )}
                     });
                     style.addRules([defRule]);
-
+                    filledStyle.addRules([defRule]);
                     var recode = ['${gid}'];
                     var filters = [];
                     for (var gid in selectMap[loc][at]) {
@@ -355,17 +362,29 @@ Ext.define('PumaMain.controller.Layers', {
                         symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: recodeFc, strokeWidth: 1, fillOpacity: 0})
                         ,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:12,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
                     }}
+                    var objFilled = {
+                        filter: filterFc,
+                        symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillColor: recodeFc, strokeWidth: 1, fillOpacity: 1})
+                        ,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:12,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
+                    }}
 //                    var rule1 = new OpenLayers.Rule({
 //                        filter: filterFc,
 //                        minScaleDenominator: 5000000,
 //                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({strokeColor: '#888888', strokeWidth: 1, graphicName: 'circle', pointRadius: 8, fillColor: recodeFc})}
 //                    });
-                    var rule2 = new OpenLayers.Rule(obj);
-                    style.addRules([ rule2]);
+                    var rule = new OpenLayers.Rule(obj);
+                    style.addRules([rule]);
+                    var ruleFilled = new OpenLayers.Rule(objFilled);
+                    filledStyle.addRules([ruleFilled]);
                     var namedLayers = i == 0 ? namedLayers1 : namedLayers2;
+                    var namedLayersFilled = i == 0 ? namedLayersFilled1 : namedLayersFilled2;
                     namedLayers.push({
                         name: layerName,
                         userStyles: [style]
+                    })
+                    namedLayersFilled.push({
+                        name: layerName,
+                        userStyles: [filledStyle]
                     })
                 }
             }
@@ -373,11 +392,12 @@ Ext.define('PumaMain.controller.Layers', {
         }
 
 
-        var namedLayersGroup = [namedLayers1, namedLayers2];
+        var namedLayersGroup = [namedLayers1, namedLayers2,namedLayersFilled1,namedLayersFilled2];
         for (var i = 0; i < namedLayersGroup.length; i++) {
             var namedLayer = namedLayersGroup[i];
-            var layer = i == 0 ? layer1 : layer2;
-            var change = i == 0 ? map1NoChange : map2NoChange;
+            var isFilled = i>1;
+            var layer = !isFilled ? (i%2 == 0 ? layer1 : layer2) : (i%2 == 0 ? filledLayer1 : filledLayer2);
+            var change = i%2 == 0 == 0 ? map1NoChange : map2NoChange;
             if (!namedLayer.length) {
                 if (!change) {
                     layer.setVisibility(false);
@@ -457,7 +477,7 @@ Ext.define('PumaMain.controller.Layers', {
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
 
-        var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         for (var i = 0; i < Math.max(2, years.length); i++) {
             var year = years[i];
             var filterMap = this.getTreeFilters(year);
@@ -879,7 +899,8 @@ Ext.define('PumaMain.controller.Layers', {
                 node.get('params')['altYears'] = JSON.stringify([years[1]]);
             }
             else if (i == 1) {
-                node.get('params')['altYears'] = JSON.stringify([years[0]]);
+                node.get('params')['altYears'] = JSON.stringify([years[1]]);
+                node.get('params')['years'] = JSON.stringify([years[0]]);
             }
             else {
                 delete node.get('params')['altYears'];

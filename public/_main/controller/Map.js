@@ -98,6 +98,11 @@ Ext.define('PumaMain.controller.Map', {
         }
         this.map1.multiMap = pressed;
         this.map2.multiMap = pressed;
+        //var gmapNoPrint = Ext.select('#app-map .gmnoprint');
+        var controlZoom = Ext.select('#app-map .olControlZoom');
+        //gmapNoPrint.setVisible(!pressed);
+        controlZoom.setVisible(!pressed);
+        
         this.switchMap(pressed);
     },
     
@@ -225,9 +230,18 @@ Ext.define('PumaMain.controller.Map', {
             sortIndex: 10000,
             type: 'terrain'
         });
+        var osmNode = Ext.create('Puma.model.MapLayer',{
+            name: 'OSM',
+            initialized: true,
+            allowDrag: false,
+            checked: false,
+            leaf: true,
+            sortIndex: 10000,
+            type: 'osm'
+        });
         
-        Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode],true);
-        baseNode.appendChild([hybridNode,streetNode,terrainNode]);
+        Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
+        baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
         
     },
     
@@ -442,6 +456,10 @@ Ext.define('PumaMain.controller.Map', {
                 }
                     
         );
+        var osmLayer = new OpenLayers.Layer.OSM('OSM',null,{
+            initialized: true,
+            visibility: false
+        });
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
         var nodes = [];
         for (var i=0;i<baseNode.childNodes.length;i++) {
@@ -452,6 +470,7 @@ Ext.define('PumaMain.controller.Map', {
                 case 'hybrid': layer = hybridLayer; break;
                 case 'roadmap': layer = streetLayer; break;
                 case 'terrain': layer = terrainLayer; break;
+                case 'osm': layer = osmLayer; break;
             }
             var nodeProp = cmp.itemId=='map' ? 'layer1':'layer2';
             node.set(nodeProp,layer);
@@ -471,7 +490,7 @@ Ext.define('PumaMain.controller.Map', {
         //bbox: 112.337169,-7.954641,112.977462,-7.029791
         //debugger;
         map.size = map.getCurrentSize();
-        map.addLayers([terrainLayer,streetLayer,hybridLayer]);
+        map.addLayers([terrainLayer,streetLayer,hybridLayer,osmLayer]);
         
         if (cmp.id=='map') {
             Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
