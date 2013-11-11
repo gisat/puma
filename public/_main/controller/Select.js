@@ -35,14 +35,14 @@ Ext.define('PumaMain.controller.Select', {
         var infoControls2 = this.getController('Map').map2.infoControls;
         this.getController('Area').hovering = value;
         this.getController('Chart').hovering = value;
-        if (selectInMap.pressed && value) {
+        //if (selectInMap.pressed && value) {
             infoControls1.hover.activate();
             infoControls2.hover.activate();
-        }
-        else {
-            infoControls1.hover.deactivate();
-            infoControls2.hover.deactivate();
-        }
+//        }
+//        else {
+//            infoControls1.hover.deactivate();
+//            infoControls2.hover.deactivate();
+//        }
         if (this.hoverMap.length) {
             this.hoverMap = [];
             this.selectInternal([],true,false);
@@ -58,14 +58,14 @@ Ext.define('PumaMain.controller.Select', {
         fn1.call(infoControls1.click);
         var fn2 = value ? infoControls2.click.activate : infoControls2.click.deactivate;
         fn2.call(infoControls2.click);
-        if (hoverBtn.pressed && value) {
-            infoControls1.hover.activate();
-            infoControls2.hover.activate();
-        }
-        else {
-            infoControls1.hover.deactivate();
-            infoControls2.hover.deactivate();
-        }
+//        if (hoverBtn.pressed && value) {
+//            infoControls1.hover.activate();
+//            infoControls2.hover.activate();
+//        }
+//        else {
+//            infoControls1.hover.deactivate();
+//            infoControls2.hover.deactivate();
+//        }
     },
     
     onChangeColor: function(picker,value) {
