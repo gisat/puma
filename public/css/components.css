@@ -228,10 +228,10 @@
 	background-image     : url("../images/icons/info.png") !important;
 }
 .x-panel-header .x-tool-save {
-	background-image     : url("../images/icons/save.png") !important;
+	background-image     : url("../images/icons/snapshot.png") !important;
 }
 .x-panel-header .x-tool-print {
-	background-image     : url("../images/icons/print.png") !important;
+	background-image     : url("../images/icons/save.png") !important;
 }
 .x-panel-header .x-tool-search {
 	background-image     : url("../images/icons/search.png") !important;
