@@ -96,6 +96,7 @@ Ext.define('PumaMain.controller.Map', {
         else {
             domController.deactivateMapSplit();
         }
+        this.multiMap = pressed;
         this.map1.multiMap = pressed;
         this.map2.multiMap = pressed;
         //var gmapNoPrint = Ext.select('#app-map .gmnoprint');
@@ -261,6 +262,30 @@ Ext.define('PumaMain.controller.Map', {
         mapAlt.artifZoom = false;
     },
     
+    onMouseMove: function(e) {
+        if (!this.multiMap) {
+            this.cursor1.hide();
+            this.cursor2.hide();
+            return;
+        }
+        var cursor = this.cursor1;
+        var offsetX = this.map1.viewPortDiv.offsetLeft;
+        if (e.object==this.map1) {
+            cursor = this.cursor2;
+            offsetX = this.map2.viewPortDiv.offsetLeft;
+        }
+        var x = e.x - e.element.offsetLeft + offsetX;
+        cursor.setStyle({
+            top: e.y + 'px',
+            left: x + 'px'
+        });
+        cursor.show();
+    },
+    onMouseOut: function(e) {
+        this.cursor1.hide();
+        this.cursor2.hide();
+    },
+    
     afterExtentOutlineRender: function(cmp) {
         var options = this.getOptions(cmp);
         options.controls = [];
@@ -421,10 +446,11 @@ Ext.define('PumaMain.controller.Map', {
         if (cmp.itemId=='map') {
             this.createBaseNodes();
             this.map1 = map;
-            
+            this.cursor1 = Ext.get('app-map').down('img')
         }
         else {
             this.map2 = map;
+            this.cursor2 = Ext.get('app-map2').down('img')
         }
         
         var hybridLayer = new OpenLayers.Layer.Google(
@@ -496,8 +522,14 @@ Ext.define('PumaMain.controller.Map', {
             Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
         }
         
-        map.events.register('moveend',this,function(a) {
-            this.onMapMove(a.object);
+        map.events.register('moveend',this,function(e) {
+            this.onMapMove(e.object);
+        })
+        map.events.register('mousemove',this,function(e) {
+            this.onMouseMove(e);
+        })
+        map.events.register('mouseout',this,function(e) {
+            this.onMouseOut(e);
         })
         
         map.updateSize();
