@@ -41,7 +41,7 @@ Ext.define('PumaMain.view.LayerPanel', {
                     }
                     , {
                         xtype: 'actioncolumn',
-                        width: 65,
+                        width: 85,
                         items: [
                             {
                                 icon: 'images/icons/opacity.png', // Use a URL in the icon config
@@ -50,6 +50,20 @@ Ext.define('PumaMain.view.LayerPanel', {
                                 height: 16,
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
                                     me.fireEvent('layeropacity',me,record)
+                                }
+                            },{
+                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
+                                tooltip: 'Metadata', 
+                                width: 16,
+                                height: 16,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.get('type')!='topiclayer') {
+                                        return 'invisible'
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('showmetadata',me,record)
                                 }
                             }
 //                            ,{
@@ -172,7 +186,7 @@ Ext.define('PumaMain.view.LayerPanel', {
             }
         ]
         this.callParent();
-        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange');
+        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange','showmetadata');
     }
 })
 

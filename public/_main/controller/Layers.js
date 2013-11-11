@@ -15,7 +15,8 @@ Ext.define('PumaMain.controller.Layers', {
                 layerup: this.onLayerUp,
                 layerdown: this.onLayerDown,
                 layerremove: this.onLayerRemove,
-                layeropacity: this.openOpacityWindow
+                layeropacity: this.openOpacityWindow,
+                showmetadata: this.onShowMetadata
             },
 //            'layermenu #opacity': {
 //                click: this.openOpacityWindow
@@ -159,6 +160,44 @@ Ext.define('PumaMain.controller.Layers', {
         }
 
     },
+    
+    onShowMetadata: function(panel, rec) {
+        var layer1 = rec.get('layer1');
+        var layer2 = rec.get('layer2');
+        var layers = layer1.params.LAYERS.split(',');
+        if (layer2 && layer2.params.LAYERS) {
+            layers = Ext.Array.merge(layers, layer2.params.LAYERS.split(','))
+        }
+        Ext.Ajax.request({
+            url: Config.url + '/api/layers/getMetadata',
+            params: {
+                layers: JSON.stringify(layers)
+            },
+            success: function(response) {
+                response = JSON.parse(response.responseText).data;
+                var html = '';
+                
+                for (var i=0;i<response.length;i++) {
+                    var r = response[i];
+                    html+= 'Title:<br/>'
+                    html+= r.title+'<br/>';
+                    html+= 'Abstract:<br/>';
+                    html+= r.abstract+'<br/>'
+                    html+= 'Date:<br/>'
+                    html+= Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d')+'<br/>';
+                    html+= 'For more details see <a target="_blank" href="'+r.distribution_url+'">here</a><br/>'
+                }
+                Ext.widget('window',{
+                    height: 600,
+                    width: 500,
+                    autoScroll: true,
+                    html: html
+                }).show();
+            }
+
+        })
+    },
+    
     
     onBeforeLayerDrop: function(row,obj,dropPos) {
         var type = obj.records[0].get('type');

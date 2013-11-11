@@ -519,7 +519,18 @@ var getCls = function(layerRef) {
 
 
 
+function getMetadata(params, req, res, callback) {
+    var client = conn.getPgDb();
+    var layers = "'" + JSON.parse(params['layers']).join("','") + "'";
+    var sql = 'SELECT title,date,date_type,abstract,temporal_extent_start,temporal_extent_end,distribution_url FROM maps_layer WHERE typename IN (' + layers + ')'
+    client.query(sql, function(err, resls) {
+        if (err)
+            return callback(err);
+        res.data = resls.rows;
+        return callback(null)
+    })
 
+}
 
 
 
@@ -613,8 +624,10 @@ function getSymbologiesFromServer(params, req, res, callback) {
 
 
 
+
 module.exports = {
     getLayers: getLayers,
+    getMetadata: getMetadata,
     getLayerRefTable: getLayerRefTable,
     getLayerDetails: getLayerDetails,
     getSymbologiesFromServer: getSymbologiesFromServer,
