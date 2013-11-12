@@ -57,14 +57,27 @@ strong {
 		height           : 100%;
 		overflow         : hidden;
 	}
+	#map-holder .map .map-label {
+		display          : none;
+	}
 	#app-map2 {
 		display          : none;
 	}
 	#map-holder.split .map {
+		-webkit-box-sizing : border-box;
+		-moz-box-sizing    : border-box;
+		box-sizing         : border-box;
 		width            : 50%;
-                float: left;
+		float            : left;
+		border-right     : 1px solid #333;
 	}
 	#map-holder.split #app-map2 {
+		display          : block;
+		float            : right;
+		border-left      : 1px solid #333;
+		border-right     : 0;
+	}
+	#map-holder.split .map .map-label {
 		display          : block;
 	}
 	
@@ -140,6 +153,27 @@ strong {
 	.map {
 		width            : 100%;
 		height           : 100%;
+		position         : relative;
+	}
+	.map .map-label {
+		-webkit-box-shadow : 0 0 2px rgba(0, 0, 0, .7);
+		-ms-box-shadow     : 0 0 2px rgba(0, 0, 0, .7);
+		box-shadow         : 0 0 2px rgba(0, 0, 0, .7);
+		position         : absolute;
+		top              : 5px;
+		right            : 5px;
+		border-radius    : 3px;
+		background       : #fff;
+		padding          : 2px 5px;
+		z-index          : 1000;
+		color            : #666;
+		font-family      : "Open sans";
+		font-size        : 12px;
+		font-weight      : bold;
+	}
+	#app-map2.map .map-label {
+		right            : auto;
+		left             : 5px;
 	}
 	.map .cursor {
 		visibility       : hidden;
