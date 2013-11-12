@@ -19,7 +19,19 @@ Ext.define('PumaMain.view.TopTools', {
             itemId: 'selectinmapbtn',
             text: 'Select in map',
             icon: 'images/icons/map-select.png',
-            cls: 'custom-button btn-map-select'
+            cls: 'custom-button btn-map-select',
+            listeners : {
+                toggle : {
+                    fn : function(btn, active) {
+                        if (active) {
+                            btn.addCls("toggle-active");
+                        }
+                        else {
+                            btn.removeCls("toggle-active");
+                        }
+                    }
+                }
+            }
         },{
             xtype: 'button',
             flex: 1,

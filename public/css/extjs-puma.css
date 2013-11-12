@@ -30,7 +30,6 @@
 	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 }
-
 .x-btn.custom-button {
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
@@ -38,6 +37,12 @@
 }
 .x-btn.custom-button:hover, .x-btn.custom-button:focus {
 	background           : #eee url("../images/btn-bg-hover.png") repeat-x 0 0;
+}
+.x-btn.custom-button.toggle-active {
+	background           : #fff;
+}
+.x-btn.custom-button.toggle-active .x-btn-inner {
+	color                : #c92d42;
 }
 .x-btn.custom-button em {
 	font-style           : normal;

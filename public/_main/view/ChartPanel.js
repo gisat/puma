@@ -29,7 +29,9 @@ Ext.define('PumaMain.view.ChartPanel', {
             },
             search: {
                 type: 'search',
-                tooltip: 'Switch zooming'
+                tooltip: 'Switch zooming',
+                width: 22,
+                height: 22
             },
             print: {
                 type: 'print',

@@ -124,7 +124,7 @@
 		background-image : url("../images/icons/tools-hover-pressed.png") !important;
 	}
 .x-btn.btn-tool-zoom-selected button .x-btn-icon {
-	width      : 35px;
+	width                : 35px;
 	height               : 35px;
 	margin-left          : -17px;
 }
@@ -211,7 +211,30 @@
 	background           : none;
 	border-color         : transparent;
 }
+.paging-toolbar .x-btn.x-btn-pressed,
+.paging-toolbar .x-btn.x-btn-pressed:focus,
+.paging-toolbar .x-btn.x-btn-pressed.x-btn-over,
+.paging-toolbar .x-btn.x-btn-pressed.x-btn-focus {
+	border               : 1px solid #888;
+	border-bottom-color  : #ccc;
+	border-right-color   : #ccc;
+	background           : -moz-linear-gradient(center top , #ccc, #ddd);
+	background           : -webkit-linear-gradient(center top , #ccc, #ddd);
+	background           : linear-gradient(center top , #ccc, #ddd);
+}
 
+.x-panel-header .x-tool {
+	border               : 1px solid transparent;
+	padding              : 0;
+}
+.x-panel-header .x-tool.tool-active {
+	border               : 1px solid #888;
+	border-bottom-color  : #aaa;
+	border-right-color   : #aaa;
+	background           : -moz-linear-gradient(center top , #ccc, #ddd);
+	background           : -webkit-linear-gradient(center top , #ccc, #ddd);
+	background           : linear-gradient(center top , #ccc, #ddd);
+}
 .x-panel-header .x-tool img {
 	width                : 20px;
 	height               : 20px;
@@ -240,11 +263,6 @@
 .x-panel-header .x-tool-collapse {
 	background-image     : url("../images/icons/save-csv.png") !important;
 }
-
-.x-panel-header .tool-active {
-    background-color: #aaa !important;
-}
- 
 
 .cmptype-grid, .cmptype-piechart, .cmptype-scatterchart, .cmptype-snapshot, .cmptype-addchart, .cmptype-columnchart, .cmptype-extentoutline {
 	width                : 17px;
