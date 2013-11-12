@@ -40,16 +40,40 @@
 	border               : none;
 }
 .field.level .x-btn .x-btn-inner {
-	color                : #434254;
+	color                : #eee;
 	font-size            : 25px;
 	font-family          : "Courier new", monospace;
 }
 .field.help .widget {
-	width                : 70px;
+	width                : 100px;
 	line-height          : 30px;
-	text-align           : right;
-	font-weight          : bold;
 }
+.field.help .help-btn {
+	display          : inline-block;
+	width            : 30px;
+	height           : 30px;
+	vertical-align   : top;
+}
+#app-toolbar-contexthelp {
+	margin-left      : 25px;
+}
+.field.help .help-btn .x-btn {
+	background       : #807e87;
+	border           : none;
+	padding          : 0;
+}
+.field.help .help-btn .x-btn.toggle-active {
+	background       : #c92d42;
+}
+.field.help .help-btn .x-btn .x-btn-inner {
+	display          : none;
+}
+.field.help .help-btn .x-btn .x-btn-icon {
+	width            : 30px;
+	height           : 30px;
+	cursor           : pointer;
+}
+
 #app-toolbar-visualization-save,
 #app-toolbar-visualization-manage {
 	width                : 70px;
