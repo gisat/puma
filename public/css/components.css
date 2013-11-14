@@ -376,6 +376,12 @@
 	background-image: -ms-linear-gradient(top center, #eee 0%, #ddd 100%);
 	background-image: linear-gradient(top center, #eee 0%, #ddd 100%);
 }
+.layertools .layertool.checked {
+	border: 1px solid #b6b4ba;
+	border-top-color: #7f7c85;
+	border-left-color: #7f7c85;
+	background: #eee;
+}
 .layertools .layertool img {
 	margin-right: 5px;
 	margin-left: 2px;
