@@ -18,6 +18,7 @@ Ext.define('PumaMain.controller.Select', {
         this.colorMap = {};
         this.hoverMap = [];
         this.actualColor = 'ff0000';
+        Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
     },
         
     select: function(areas,add,hover) {
@@ -120,6 +121,22 @@ Ext.define('PumaMain.controller.Select', {
         
         this.colorMap = this.prepareColorMap();
         
+        
+        
+        this.getController('Area').colourTree(this.colorMap); 
+        this.getController('Chart').reconfigure('immediate'); 
+        
+        this.updateCounts();
+        
+        if (this.selectTask) {
+            this.selectTask.cancel();
+        }
+        this.selectTask = new Ext.util.DelayedTask();
+        this.selectTask.delay(delay || 500,this.selectDelayed,this,arguments);
+        
+    },
+    
+    updateCounts: function() {
         var lowestMap = this.getController('Area').lowestMap;
         var outerCount = 0;
         var overallCount = 0;
@@ -136,18 +153,6 @@ Ext.define('PumaMain.controller.Select', {
         }
         this.outerCount = outerCount;
         this.overallCount = overallCount;
-        
-        this.getController('Area').colourTree(this.colorMap); 
-        this.getController('Chart').reconfigure('immediate'); 
-        
-        
-        
-        if (this.selectTask) {
-            this.selectTask.cancel();
-        }
-        this.selectTask = new Ext.util.DelayedTask();
-        this.selectTask.delay(delay || 500,this.selectDelayed,this,arguments);
-        
     },
         
     selectDelayed: function(areas,add,hover) {
@@ -194,7 +199,9 @@ Ext.define('PumaMain.controller.Select', {
         this.selMap = {'FF0000':[]};
         this.hoverMap = [];
         this.colorMap = {};
-        this.callControllers();
+        this.getController('Area').colourTree(this.colorMap); 
+        this.updateCounts();
+        this.selectDelayed();
     },
     
     prepareColorMap: function() {
