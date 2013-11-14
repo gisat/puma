@@ -8,10 +8,23 @@ Ext.define('PumaMain.controller.DomManipulation', {
                 }
                 $("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
-		
+		this.control({
+                    'toolspanel panel' : {
+                        expand: this.onToolPanelExpand,
+                        collapse: this.onToolPanelCollapse
+                    }
+                })
 		this.resizeMap();
 		this.resizeReports();
 	},
+            
+        onToolPanelExpand: function(panel) {
+            debugger;
+        },
+            
+        onToolPanelCollapse: function(panel) {
+            debugger;
+        },
 	
 	renderApp: function() {
 		$("body").removeClass("intro").addClass("application");
