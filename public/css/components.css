@@ -45,7 +45,7 @@
 	font-family          : "Courier new", monospace;
 }
 .field.help .widget {
-	width                : 100px;
+	width                : 106px;
 	line-height          : 30px;
 }
 .field.help .help-btn {
@@ -55,7 +55,7 @@
 	vertical-align   : top;
 }
 #app-toolbar-contexthelp {
-	margin-left      : 25px;
+	margin-left      : 42px;
 }
 .field.help .help-btn .x-btn {
 	background       : #807e87;
