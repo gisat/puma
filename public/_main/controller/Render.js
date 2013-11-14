@@ -161,7 +161,16 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button btn-save'
         })
-        
+        Ext.widget('colorpicker',{
+                    xtype: 'colorpicker',
+                    fieldLabel: 'CP',
+                    value: 'ff0000',
+                    itemId: 'selectcolorpicker',
+                    height: 16,
+                    width: 120,
+                    renderTo: 'app-tools-colors',
+                    colors: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']
+                })
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'
         })
@@ -177,7 +186,7 @@ Ext.define('PumaMain.controller.Render', {
             displayInfo: true,
             cls: 'paging-toolbar',
             
-            buttons: [{
+            buttons: ['-',{
                 xtype: 'splitbutton',
                 menu: {
                     items:[{
@@ -187,7 +196,7 @@ Ext.define('PumaMain.controller.Render', {
                     itemId: 'selectcolorpicker',
                     padding: '2 5',
                     height: 24,
-                    width: 118,
+                    width: 132,
                     //value: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff'],
                     colors: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']
                 }],

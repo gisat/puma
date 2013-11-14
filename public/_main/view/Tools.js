@@ -11,22 +11,8 @@ Ext.define('PumaMain.view.Tools', {
             //,
             //multi: true
         }   
-        this.items = [{
-            xtype: 'panel',
-            collapsed: true,
-            height: 80,
-            title: 'Select color',
-            bodyCls: 'tools-colorpicker',
-            items: [{
-                    xtype: 'colorpicker',
-                    fieldLabel: 'CP',
-                    value: 'ff0000',
-                    itemId: 'selectcolorpicker',
-                    height: 20,
-                    width: 120,
-                    colors: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']
-                }]
-        }, {
+        this.items = [
+             {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
