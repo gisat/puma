@@ -192,6 +192,7 @@
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
 }
+#app-tools-accordeon,
 #app-reports-accordeon {
 	overflow             : auto;
 }

@@ -4,9 +4,9 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	requires: [],
 	init: function() {
 		if (Config.exportPage) {
-                    return;
-                }
-                $("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
+			return;
+		}
+		$("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		this.control({
                     'toolspanel panel' : {
@@ -62,6 +62,8 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	resizeReports: function() {
 		var availableSize = this.getContentAvailableSize();
 		$("#sidebar-reports").height(availableSize.height);
+		$("#sidebar-tools").height(availableSize.height);
+		$("#app-tools-accordeon").height(availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true));
 		$("#app-reports-accordeon").height(availableSize.height - $("#app-reports-paging").outerHeight(true));
 	},
 	
