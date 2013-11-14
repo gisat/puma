@@ -178,7 +178,7 @@ Ext.define('PumaMain.controller.Render', {
             cls: 'paging-toolbar',
             buttons: [{
                 itemId: 'onlySelected',
-                text: 'Selected',
+                text: 'Only selected',
                 enableToggle: true,
                 icon: 'images/icons/colors.png'
             }],
