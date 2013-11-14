@@ -115,6 +115,12 @@
 
 
 /* Sidebar tools */
+#app-tools-accordeon {
+	overflow             : auto;
+}
+#app-tools-accordeon.scrollbar .x-panel-header .x-tool img {
+	margin-left          : -5px;
+}
 .x-btn.btn-map-select button .x-btn-icon {
 	left                 : 8px;
 }
@@ -192,7 +198,6 @@
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
 }
-#app-tools-accordeon,
 #app-reports-accordeon {
 	overflow             : auto;
 }

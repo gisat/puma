@@ -9,22 +9,27 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		$("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		this.control({
-                    'toolspanel panel' : {
-                        expand: this.onToolPanelExpand,
-                        collapse: this.onToolPanelCollapse
-                    }
-                })
+			"toolspanel panel" : {
+				resize   : this.onToolPanelResize,
+				expand   : this.onToolPanelExpand,
+				collapse : this.onToolPanelCollapse
+			}
+		});
 		this.resizeMap();
 		this.resizeSidebars();
 	},
-            
-        onToolPanelExpand: function(panel) {
-            debugger;
-        },
-            
-        onToolPanelCollapse: function(panel) {
-            debugger;
-        },
+	
+	onToolPanelResize: function(panel) {
+		this.resizeTools();
+	},
+	
+	onToolPanelExpand: function(panel) {
+		this.resizeTools();
+	},
+	
+	onToolPanelCollapse: function(panel) {
+		this.resizeTools();
+	},
 	
 	renderApp: function() {
 		$("body").removeClass("intro").addClass("application");
@@ -66,10 +71,17 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	
 	resizeTools: function() {
 		var availableSize = this.getContentAvailableSize();
-		if (availableSize.height < $("#app-tools-accordeon").outerHeight(true)) {
-			$("#sidebar-tools").height(availableSize.height);
-			$("#app-tools-accordeon").height(availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true));
+		var accordeonMaxH = availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true);
+		
+		$("#sidebar-tools").css("max-height", availableSize.height);
+		$("#app-tools-accordeon").css("max-height", "none");
+		if ($("#app-tools-accordeon").outerHeight(true) > accordeonMaxH) {
+			$("#app-tools-accordeon").addClass("scrollbar");
 		}
+		else {
+			$("#app-tools-accordeon").removeClass("scrollbar");
+		}
+		$("#app-tools-accordeon").css("max-height", accordeonMaxH);
 	},
 	
 	resizeReports: function() {
