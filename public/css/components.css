@@ -116,8 +116,11 @@
 
 /* Sidebar tools */
 #app-tools-accordeon {
-	overflow             : auto;
+	overflow             : hidden;
 }
+	#app-tools-accordeon > .x-container {
+		background-color : #e5e3df;
+	}
 .x-btn.btn-map-select button .x-btn-icon {
 	left                 : 8px;
 }
