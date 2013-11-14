@@ -494,6 +494,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
          var map2Change = (years.length>1 && map2Year!=years[1]) ? true : false;
          mapController.map1.year = years[0];
          mapController.map2.year = years.length>1 ? years[1] : null;
+         var yearStore = Ext.StoreMgr.lookup('year');
+         Ext.get('app-map-map-label').setHTML(yearStore.getById(mapController.map1.year).get('name'));
+         Ext.get('app-map-map2-label').setHTML(mapController.map2.year ? yearStore.getById(mapController.map2.year).get('name') : '');
+         
          var me = this;
          if (map1Change || map2Change) {
              var colorMap = this.getController('Select').colorMap
