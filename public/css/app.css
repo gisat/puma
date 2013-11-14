@@ -11,6 +11,10 @@ div.olControlZoom {
     background           : url("../images/loading.gif") no-repeat 50% 50%;
 }
 
+#app-tools-accordeon > div, #app-reports-accordeon > div {
+    overflow-x: hidden ! important;
+}
+
 #app-map2 .olLayerGooglePoweredBy,#app-map2 .olLayerGoogleCopyright {
     display: none;
 }

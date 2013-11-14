@@ -10,7 +10,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		this.control({
 			"toolspanel panel" : {
-				resize   : this.onToolPanelResize,
+				//resize   : this.resizeTools,
 				expand   : this.onToolPanelExpand,
 				collapse : this.onToolPanelCollapse
 			},
@@ -21,13 +21,17 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		});
 		this.resizeMap();
 		this.resizeSidebars();
+                Ext.get(window).on('resize',function() {
+                    this.resizeTools();
+                },this)
 	},
 	
         onToolsResize: function(toolPanel) {
+                toolPanel = toolPanel || Ext.ComponentQuery.query('toolspanel')[0];
+                if (!toolPanel) return;
                 var availableSize = this.getContentAvailableSize();
 		var accordeonMaxH = availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true);
                 toolPanel.maxHeight = accordeonMaxH;
-                console.log(accordeonMaxH)
         },
 	onToolPanelResize: function(panel) {
 		this.resizeTools();
