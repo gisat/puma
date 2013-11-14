@@ -388,3 +388,36 @@
 	line-height: 18px;
 	text-shadow: 0 1px 1px #fff;
 }
+
+#sidebar-tools-colors .label {
+	background-color: #dddddd;
+	padding: 5px 10px;
+	font-weight: bold;
+}
+#sidebar-tools-colors .contents {
+	background-color: #fff;
+	padding: 10px;
+	position: relative;
+}
+#sidebar-tools-colors #app-tools-colors {
+	height: 20px;
+	width: 170px;
+}
+#sidebar-tools-colors #app-tools-colors-unselect {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+	line-height: 20px;
+	font-weight: bold;
+	cursor: pointer;
+	color: #666;
+	text-decoration: underline;
+}
+#sidebar-tools-colors #app-tools-colors-unselect:hover {
+	text-decoration: none;
+}
+
+.x-color-picker em span {
+	width: 12px;
+	height: 12px;
+}
