@@ -75,12 +75,6 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		
 		$("#sidebar-tools").css("max-height", availableSize.height);
 		$("#app-tools-accordeon").css("max-height", "none");
-		if ($("#app-tools-accordeon").outerHeight(true) > accordeonMaxH) {
-			$("#app-tools-accordeon").addClass("scrollbar");
-		}
-		else {
-			$("#app-tools-accordeon").removeClass("scrollbar");
-		}
 		$("#app-tools-accordeon").css("max-height", accordeonMaxH);
 	},
 	
