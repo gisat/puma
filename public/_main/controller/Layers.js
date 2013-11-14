@@ -179,13 +179,31 @@ Ext.define('PumaMain.controller.Layers', {
                 
                 for (var i=0;i<response.length;i++) {
                     var r = response[i];
-                    html+= 'Title:<br/>'
-                    html+= r.title+'<br/>';
-                    html+= 'Abstract:<br/>';
-                    html+= r.abstract+'<br/>'
-                    html+= 'Date:<br/>'
-                    html+= Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d')+'<br/>';
-                    html+= 'For more details see <a target="_blank" href="'+r.distribution_url+'">here</a><br/>'
+                    html+= '<div class="metadata">';
+                    html+= '<table>';
+                    html+= '<colgroup><col width="100"><col></colgroup>';
+                    html+= '<thead>';
+                    html+= '<tr>';
+                    html+= '<th colspan="2">' + r.title + '</th>';
+                    html+= '</tr>';
+                    html+= '</thead>';
+                    html+= '<tbody>';
+                    html+= '<tr>';
+                    html+= '<th>Abstract</th>';
+                    html+= '<td>' + r.abstract + '</td>'
+                    html+= '</tr>';
+                    html+= '<tr>';
+                    html+= '<th>Date</th>'
+                    html+= '<td>' + Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d') + '</td>';
+                    html+= '</tr>';
+                    html+= '</tbody>';
+                    html+= '<tfoot>';
+                    html+= '<tr>';
+                    html+= '<td colspan="2">For more details see <a target="_blank" href="'+r.distribution_url+'">here</a></td>'
+                    html+= '</tr>';
+                    html+= '</tfoot>';
+                    html+= '</table>';
+                    html+= '</div>';
                 }
                 Ext.widget('window',{
                     height: 600,
