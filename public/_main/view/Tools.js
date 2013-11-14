@@ -8,7 +8,6 @@ Ext.define('PumaMain.view.Tools', {
         this.layout = {
             type: 'accordion',
             fill: false,
-            //,
             multi: true
         }   
         this.items = [
