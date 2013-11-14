@@ -193,7 +193,7 @@ Ext.define('PumaMain.controller.Render', {
                     xtype: 'colorpicker',
                     allowToggle: true,
                     fieldLabel: 'CP',
-                    itemId: 'selectcolorpicker',
+                    itemId: 'useselectedcolorpicker',
                     padding: '2 5',
                     height: 24,
                     width: 132,
@@ -210,7 +210,7 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('paging')
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
-        Ext.ComponentQuery.query('#areapager #selectcolorpicker')[0].select(['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']);
+        Ext.ComponentQuery.query('#areapager #useselectedcolorpicker')[0].select(['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']);
     },
     
     renderMap: function() {

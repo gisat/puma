@@ -3,6 +3,7 @@ Ext.define('PumaMain.view.Tools', {
     alias: 'widget.toolspanel',
     // to be removed
     width: '100%',
+    autoScroll: true,
     requires: ['PumaMain.view.LayerPanel','PumaMain.view.MapTools'],
     initComponent: function() {
         this.layout = {

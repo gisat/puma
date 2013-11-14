@@ -6,7 +6,7 @@ Ext.define('PumaMain.view.MapTools', {
     initComponent: function() { 
         this.defaults = {
             height: 90,
-            width: 125
+            width: 120
         }
         this.layout = {
             type: 'table',

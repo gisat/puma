@@ -108,6 +108,11 @@ Ext.define('PumaMain.controller.Select', {
         
         if (!hover) {
             this.selMap[this.actualColor] = newSel;
+            for (var col in this.selMap) {
+                if (col==this.actualColor) continue;
+                var diff = this.arrDifference(this.selMap[col],newSel);
+                this.selMap[col] = diff;
+            }
         }
         else {
             this.hoverMap = newSel;

@@ -13,12 +13,22 @@ Ext.define('PumaMain.controller.DomManipulation', {
 				resize   : this.onToolPanelResize,
 				expand   : this.onToolPanelExpand,
 				collapse : this.onToolPanelCollapse
-			}
+			},
+                        "toolspanel" : {
+                            resize: this.onToolsResize,
+                            afterrender: this.onToolsResize
+                        }
 		});
 		this.resizeMap();
 		this.resizeSidebars();
 	},
 	
+        onToolsResize: function(toolPanel) {
+                var availableSize = this.getContentAvailableSize();
+		var accordeonMaxH = availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true);
+                toolPanel.maxHeight = accordeonMaxH;
+                console.log(accordeonMaxH)
+        },
 	onToolPanelResize: function(panel) {
 		this.resizeTools();
 	},
@@ -72,9 +82,11 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	resizeTools: function() {
 		var availableSize = this.getContentAvailableSize();
 		var accordeonMaxH = availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true);
-		
+                var accordeon = Ext.ComponentQuery.query('toolspanel')[0];
+                if (accordeon) {
+                    accordeon.maxHeight = accordeonMaxH
+                }
 		$("#sidebar-tools").css("max-height", availableSize.height);
-		$("#app-tools-accordeon").css("max-height", "none");
 		$("#app-tools-accordeon").css("max-height", accordeonMaxH);
 	},
 	
