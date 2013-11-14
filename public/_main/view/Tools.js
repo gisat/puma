@@ -7,9 +7,9 @@ Ext.define('PumaMain.view.Tools', {
     initComponent: function() {
         this.layout = {
             type: 'accordion',
-            fill: false,
+            fill: false
             //,
-            multi: true
+            //multi: true
         }   
         this.items = [
              {
@@ -22,11 +22,11 @@ Ext.define('PumaMain.view.Tools', {
             },
             rootVisible: false,
             displayField: 'name',
-            height: 300
+            height: 580
         }, {
             xtype: 'layerpanel',
             collapsed: true,
-            height: 300,
+            height: 580,
             title: 'Layers'
         },{
             xtype: 'maptools',
