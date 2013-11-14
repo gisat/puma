@@ -176,7 +176,23 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'areapager',
             displayInfo: true,
             cls: 'paging-toolbar',
+            
             buttons: [{
+                xtype: 'splitbutton',
+                menu: {
+                    items:[{
+                    xtype: 'colorpicker',
+                    allowToggle: true,
+                    fieldLabel: 'CP',
+                    itemId: 'selectcolorpicker',
+                    padding: '2 5',
+                    height: 24,
+                    width: 118,
+                    //value: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff'],
+                    colors: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']
+                }],
+                showSeparator: false
+                },
                 itemId: 'onlySelected',
                 text: 'Selected',
                 enableToggle: true
@@ -184,7 +200,7 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('paging')
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
-        
+        Ext.ComponentQuery.query('#areapager #selectcolorpicker')[0].select(['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']);
     },
     
     renderMap: function() {
