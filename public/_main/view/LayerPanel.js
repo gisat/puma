@@ -13,6 +13,7 @@ Ext.define('PumaMain.view.LayerPanel', {
             {
                 xtype: 'grid',
                 itemId: 'layerselectedpanel',
+                id: 'layerselectedpanel',
                 store: Ext.StoreMgr.lookup('selectedlayers'),
                 viewConfig: {
                     plugins: {ptype: 'gridviewdragdrop'}
@@ -185,7 +186,17 @@ Ext.define('PumaMain.view.LayerPanel', {
                 }
             }
         ]
+        
+        
+        
+        
         this.callParent();
+        this.on('afterrender',function() {
+            Ext.get('layerselectedpanel').on('click',function(e,dom) {
+                Ext.get(dom)
+            },null,{delegate:'.legenditem'})
+        })
+        
         this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange','showmetadata');
     }
 })
