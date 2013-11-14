@@ -194,8 +194,9 @@ Ext.define('PumaMain.controller.Render', {
                 showSeparator: false
                 },
                 itemId: 'onlySelected',
-                text: 'Selected',
-                enableToggle: true
+                text: 'Only selected',
+                enableToggle: true,
+                icon: 'images/icons/colors.png'
             }],
             store: Ext.StoreMgr.lookup('paging')
         })

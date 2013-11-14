@@ -45,7 +45,7 @@
 	font-family          : "Courier new", monospace;
 }
 .field.help .widget {
-	width                : 100px;
+	width                : 106px;
 	line-height          : 30px;
 }
 .field.help .help-btn {
@@ -55,7 +55,7 @@
 	vertical-align   : top;
 }
 #app-toolbar-contexthelp {
-	margin-left      : 25px;
+	margin-left      : 42px;
 }
 .field.help .help-btn .x-btn {
 	background       : #807e87;
@@ -346,4 +346,45 @@
 	top: 50%;
 	margin-left: -18px;
 	margin-top: -18px;
+}
+
+.layertools {
+	padding: 10px 0;
+}
+.layertools .layertool {
+	display: inline-block;
+	border: 1px solid #7f7c85;
+	border-top-color: #b6b4ba;
+	border-left-color: #b6b4ba;
+	border-radius: 3px;
+	height: 22px;
+	vertical-align: middle;
+	width: 100px;
+	margin-right: 5px;
+	margin-bottom: 5px;
+	cursor: pointer;
+	background-color: #eee;
+	background-image: -moz-linear-gradient(top center, #fff 0%, #eee 100%);
+	background-image: -webkit-linear-gradient(top center, #fff 0%, #eee 100%);
+	background-image: -ms-linear-gradient(top center, #fff 0%, #eee 100%);
+	background-image: linear-gradient(top center, #fff 0%, #eee 100%);
+}
+.layertools .layertool:hover {
+	background-color: #ddd;
+	background-image: -moz-linear-gradient(top center, #eee 0%, #ddd 100%);
+	background-image: -webkit-linear-gradient(top center, #eee 0%, #ddd 100%);
+	background-image: -ms-linear-gradient(top center, #eee 0%, #ddd 100%);
+	background-image: linear-gradient(top center, #eee 0%, #ddd 100%);
+}
+.layertools .layertool img {
+	margin-right: 5px;
+	margin-left: 2px;
+	margin-top: 2px;
+}
+.layertools .layertool span {
+	vertical-align: top;
+	display: inline-block;
+	height: 20px;
+	line-height: 18px;
+	text-shadow: 0 1px 1px #fff;
 }
