@@ -15,7 +15,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
                     }
                 })
 		this.resizeMap();
-		this.resizeReports();
+		this.resizeSidebars();
 	},
             
         onToolPanelExpand: function(panel) {
@@ -29,7 +29,7 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	renderApp: function() {
 		$("body").removeClass("intro").addClass("application");
 		this.resizeMap();
-		this.resizeReports();
+		this.resizeSidebars();
 	},
 	
 	renderIntro: function() {
@@ -59,11 +59,22 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		}
 	},
 	
+	resizeSidebars: function() {
+		this.resizeTools();
+		this.resizeReports();
+	},
+	
+	resizeTools: function() {
+		var availableSize = this.getContentAvailableSize();
+		if (availableSize.height < $("#app-tools-accordeon").outerHeight(true)) {
+			$("#sidebar-tools").height(availableSize.height);
+			$("#app-tools-accordeon").height(availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true));
+		}
+	},
+	
 	resizeReports: function() {
 		var availableSize = this.getContentAvailableSize();
 		$("#sidebar-reports").height(availableSize.height);
-		$("#sidebar-tools").height(availableSize.height);
-		$("#app-tools-accordeon").height(availableSize.height - $("#app-tools-actions").outerHeight(true) - $("#sidebar-tools-colors").outerHeight(true));
 		$("#app-reports-accordeon").height(availableSize.height - $("#app-reports-paging").outerHeight(true));
 	},
 	
@@ -102,6 +113,6 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	
 	_onWindowResize: function() {
 		this.resizeMap();
-		this.resizeReports();
+		this.resizeSidebars();
 	}
 });
