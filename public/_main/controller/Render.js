@@ -43,6 +43,7 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
+            helpId: 'Selectingthevisualisation',
             itemId: 'selvisualization',
             cls: 'custom-combo',
             listConfig: {
@@ -118,7 +119,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
             itemId: 'areamoredetails',
-            helpId: 'areamore',
+            helpId: 'Settingthelevelofdetail',
             text: '+',
             width: '100%',
             height: '100%',
@@ -127,6 +128,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-less',
             itemId: 'arealessdetails',
+            helpId: 'Settingthelevelofdetail',
             text: '-',
             width: '100%',
             height: '100%',

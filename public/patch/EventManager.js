@@ -7,7 +7,8 @@ Ext.define('Puma.patch.EventManager', {
                 // Compile the implementation upon first firing
                 if (!gen) {
                     f = ['if(!' + Ext.name + ') {return;}'];
-                    // radka navic zde
+                    // 2 radky navic zde
+                    f.push('if(Config.contextHelp && e.type=="mouseover") {PumaMain.controller.Help.onHelpOver(e);return;}')
                     f.push('if(Config.contextHelp && e.type=="click") {PumaMain.controller.Help.onHelpClick(e);return;}')
                     if(options.buffer || options.delay || options.freezeEvent) {
                         if (options.freezeEvent) {

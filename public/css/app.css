@@ -14,7 +14,12 @@ div.olControlZoom {
 #app-tools-accordeon > div, #app-reports-accordeon > div {
     overflow-x: hidden ! important;
 }
-
+.help-over {
+    border-style: solid ! important;
+    border-width: 2px ! important;
+    border-color: red ! important;
+    cursor: help;
+}
 #app-map2 .olLayerGooglePoweredBy,#app-map2 .olLayerGoogleCopyright {
     display: none;
 }
