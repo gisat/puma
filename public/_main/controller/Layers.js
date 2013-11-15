@@ -170,13 +170,14 @@ Ext.define('PumaMain.controller.Layers', {
         }
         Ext.Ajax.request({
             url: Config.url + '/api/layers/getMetadata',
+            rec: rec,
             params: {
                 layers: JSON.stringify(layers)
             },
             success: function(response) {
+                var name = response.request.options.rec.get('name');
                 response = JSON.parse(response.responseText).data;
                 var html = '';
-                
                 for (var i=0;i<response.length;i++) {
                     var r = response[i];
                     html+= '<div class="metadata">';
@@ -188,14 +189,30 @@ Ext.define('PumaMain.controller.Layers', {
                     html+= '</tr>';
                     html+= '</thead>';
                     html+= '<tbody>';
+                    
                     html+= '<tr>';
                     html+= '<th>Abstract</th>';
                     html+= '<td>' + r.abstract + '</td>'
                     html+= '</tr>';
+                    
+                    html+= '<tr>';
+                    html+= '<th>Date type</th>'
+                    html+= '<td>' + r.date_type + '</td>';
+                    html+= '</tr>';
+                    
                     html+= '<tr>';
                     html+= '<th>Date</th>'
                     html+= '<td>' + Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d') + '</td>';
                     html+= '</tr>';
+                    
+                    if (r.temporal_extent_start && r.temporal_extent_end) {
+                    html+= '<tr>';
+                    html+= '<th>Time extent</th>'
+                    html+= '<td>' + Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_start,'c'),'Y-m-d') +' - '+Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_end,'c'),'Y-m-d')+ '</td>';
+                    html+= '</tr>';
+                    }
+                    
+                    
                     html+= '</tbody>';
                     html+= '<tfoot>';
                     html+= '<tr>';
@@ -207,6 +224,7 @@ Ext.define('PumaMain.controller.Layers', {
                 }
                 Ext.widget('window',{
                     height: 600,
+                    title: name,
                     width: 500,
                     autoScroll: true,
                     html: html
