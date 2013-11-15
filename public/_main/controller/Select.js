@@ -195,7 +195,7 @@ Ext.define('PumaMain.controller.Select', {
         return clone;
     },
         
-    clearSelections: function() {
+    clearSelectionsAll: function() {
         this.selMap = {'FF0000':[]};
         this.hoverMap = [];
         this.colorMap = {};
@@ -203,6 +203,13 @@ Ext.define('PumaMain.controller.Select', {
         this.updateCounts();
         this.selectDelayed();
     },
+    clearSelections: function() {
+        this.selMap[this.actualColor] = [];
+        this.prepareColorMap();
+        this.getController('Area').colourTree(this.colorMap); 
+        this.updateCounts();
+        this.selectDelayed();
+    },    
     
     prepareColorMap: function() {
         var resultMap = {};
