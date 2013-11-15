@@ -16,6 +16,7 @@ Ext.define('PumaMain.controller.Layers', {
                 layerdown: this.onLayerDown,
                 layerremove: this.onLayerRemove,
                 layeropacity: this.openOpacityWindow,
+                layerlegend: this.onLayerLegend,
                 showmetadata: this.onShowMetadata
             },
 //            'layermenu #opacity': {
@@ -50,7 +51,42 @@ Ext.define('PumaMain.controller.Layers', {
             
         })
     },
-        
+    onLayerLegend: function(panel, rec, el) {
+        var checked = el.hasCls('checked');
+        if (checked) {
+            var img = Ext.widget('image',{
+                src: rec.get('src')
+            })
+            
+            var window = Ext.widget('window', {
+                autoScroll: true,
+                islegend: 1,
+                items: [img],
+                title: rec.get('name')
+
+            })
+            img.on('resize',function(i) {
+                i.el.on('load',function(a, dom) {
+                    this.setSize(dom.clientWidth+26,dom.clientHeight+50);
+                    var leftPanel = Ext.ComponentQuery.query('toolspanel')[0];
+                    var factor = Ext.ComponentQuery.query('window[islegend=1]').length-1;
+                    this.showBy(leftPanel,'bl-br',[30*factor,-30*factor]);
+                    this.el.setOpacity(0.8)
+                },this)
+            },window,{single:true})
+            window.showAt(1,1);
+            
+            window.elem = el;
+            window.on('close', function(win) {
+                win.elem.removeCls('checked')
+            })
+            el.legend = window;
+        }
+        if (!checked && el.legend) {
+            el.legend.close();
+        }
+    },
+            
     reconfigureChoropleths: function(cfg) {
         this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();

@@ -24,7 +24,17 @@ Ext.define('PumaMain.view.LayerPanel', {
                 border: true,
                 plugins: [{
                     ptype: 'rowexpander',
-                    rowBodyTpl : ['<tpl for=".">', '<div style="overflow-x:auto;background-color:white" class="layertools">', '<span class="layertool layertool-legend"><img src="images/icons/legend.png"><span>Legend</span></span>', '<span class="layertool layertool-opacity"><img src="images/icons/opacity.png"><span>Opacity</span></span>', '<span class="layertool layertool-metadata"><img src="images/icons/metadata.png"><span>Metadata</span></span>', '</div>', '</tpl>']
+                    rowBodyTpl : ['<tpl for=".">', '<div style="overflow-x:auto;background-color:white" class="layertools" layerid="{id}">', 
+                        '<span class="layertool layertool-opacity"><img src="images/icons/opacity.png"><span>Opacity</span></span>',
+                        '<tpl if="this.hasLegend(src)"><span class="layertool layertool-legend"><img src="images/icons/legend.png"><span>Legend</span></span></tpl>', 
+                        '<tpl if="this.hasMetadata(type)"><span class="layertool layertool-metadata"><img src="images/icons/metadata.png"><span>Metadata</span></span></tpl>', '</div>', '</tpl>',{
+                        hasLegend: function(src) {
+                            return src ? true : false;
+                        },
+                        hasMetadata: function(type) {
+                            return type=='topiclayer'
+                        }
+                    }]
                 }],
                 columns: [{
                         dataIndex: 'checked',
@@ -42,31 +52,31 @@ Ext.define('PumaMain.view.LayerPanel', {
                     }
                     , {
                         xtype: 'actioncolumn',
-                        width: 85,
+                        width: 45,
                         items: [
-                            {
-                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
-                                tooltip: 'Opacity', 
-                                width: 16,
-                                height: 16,
-                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('layeropacity',me,record)
-                                }
-                            },{
-                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
-                                tooltip: 'Metadata', 
-                                width: 16,
-                                height: 16,
-                                getClass: function(v,metadata,rec) {
-                                    
-                                    if (rec.get('type')!='topiclayer') {
-                                        return 'invisible'
-                                    }
-                                },
-                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('showmetadata',me,record)
-                                }
-                            }
+//                            {
+//                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
+//                                tooltip: 'Opacity', 
+//                                width: 16,
+//                                height: 16,
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('layeropacity',me,record)
+//                                }
+//                            },{
+//                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
+//                                tooltip: 'Metadata', 
+//                                width: 16,
+//                                height: 16,
+//                                getClass: function(v,metadata,rec) {
+//                                    
+//                                    if (rec.get('type')!='topiclayer') {
+//                                        return 'invisible'
+//                                    }
+//                                },
+//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+//                                    me.fireEvent('showmetadata',me,record)
+//                                }
+//                            }
 //                            ,{
 //                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
 //                                tooltip: 'Configure', 
@@ -82,7 +92,7 @@ Ext.define('PumaMain.view.LayerPanel', {
 //                                    me.fireEvent('choroplethreconfigure',me,record)
 //                                }
 //                            }
-                            , {
+                             {
                                 icon: 'images/icons/up.png', // Use a URL in the icon config
                                 tooltip: 'Up', 
                                 width: 16,
@@ -193,11 +203,24 @@ Ext.define('PumaMain.view.LayerPanel', {
         this.callParent();
         this.on('afterrender',function() {
             Ext.get('layerselectedpanel').on('click',function(e,dom) {
-                Ext.get(dom)
-            },null,{delegate:'.legenditem'})
-        })
+                var el = Ext.get(dom);
+                var panel = Ext.ComponentQuery.query('#layerselectedpanel')[0]
+                var rec = panel.getView().getRecord(el.up('.x-grid-row'))
+                var cls = el.getAttribute('class');
+                var name = 'layeropacity';
+                if (cls.search('legend')>-1) {
+                    name = 'layerlegend';
+                    el.toggleCls('checked')
+                }
+                else if (cls.search('metadata')>-1) {
+                    name = 'showmetadata'
+                }
+                this.fireEvent(name,this,rec,el);
+                
+            },this,{delegate:'.layertool'})
+        },this)
         
-        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange','showmetadata');
+        this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange','showmetadata','layerlegend');
     }
 })
 
