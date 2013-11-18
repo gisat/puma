@@ -12,6 +12,9 @@ Ext.define('PumaMain.controller.Select', {
             },
             '#selectcolorpicker': {
                 select: this.onChangeColor
+            },
+            '#useselectedcolorpicker': {
+                select: this.onChangeChartColor
             }
         })
         this.selMap = {'ff0000':[]};
@@ -68,7 +71,10 @@ Ext.define('PumaMain.controller.Select', {
 //            infoControls2.hover.deactivate();
 //        }
     },
-    
+    onChangeChartColor: function(picker, value) {
+        this.updateCounts();
+        this.selectDelayed(null,null,null,true);
+    },
     onChangeColor: function(picker,value) {
         this.actualColor = value;
         this.selMap[value] = this.selMap[value] || [];
@@ -140,7 +146,13 @@ Ext.define('PumaMain.controller.Select', {
         var lowestMap = this.getController('Area').lowestMap;
         var outerCount = 0;
         var overallCount = 0;
+        var picker = Ext.ComponentQuery.query('#useselectedcolorpicker')[0]
+        var selectColors = picker.xValue || picker.value;
+        selectColors = Ext.isArray(selectColors) ? selectColors : [selectColors]
         for (var color in this.selMap) {
+            if (!Ext.Array.contains(selectColors,color)) {
+                continue;
+            }
             for (var i=0;i<this.selMap[color].length;i++) {
                 var obj = this.selMap[color][i];
                 overallCount++;
@@ -155,8 +167,10 @@ Ext.define('PumaMain.controller.Select', {
         this.overallCount = overallCount;
     },
         
-    selectDelayed: function(areas,add,hover) {
-        this.getController('Layers').colourMap(this.colorMap); 
+    selectDelayed: function(areas,add,hover,bypassMapColor) {
+        if (!bypassMapColor) {
+            this.getController('Layers').colourMap(this.colorMap); 
+        }
         
         if (!hover) {
             var lowestCount = this.getController('Area').lowestCount;
@@ -166,7 +180,8 @@ Ext.define('PumaMain.controller.Select', {
             Ext.StoreMgr.lookup('paging').setCount(count);
             
             var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect) || onlySel;
-            this.getController('Chart').reconfigure(outer ? 'outer' : 'inner');    
+            
+            this.getController('Chart').reconfigure(outer  ? 'outer' : 'inner');    
         }
         this.prevOuterSelect = this.outerSelect
         this.outerSelect = false;

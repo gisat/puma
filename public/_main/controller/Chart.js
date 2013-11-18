@@ -463,7 +463,13 @@ Ext.define('PumaMain.controller.Chart', {
         var selectedAreas = [];
         var selMap = this.getController('Select').selMap
         var colors = [];
+        var picker = Ext.ComponentQuery.query('#useselectedcolorpicker')[0]
+        var selectColors = picker.xValue || picker.value;
+        selectColors = Ext.isArray(selectColors) ? selectColors : [selectColors]
         for (var color in selMap) {
+            if (!Ext.Array.contains(selectColors,color)) {
+                continue;
+            }
             colors.push(color);
         }
         var selMaps = [];
@@ -533,14 +539,20 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onOutlineReceived: function(data, cmp) {
         cmp.removeAll();
+        
         data.layerRefs = data.layerRefs || [];
         var l = data.layerRefs.length
         //var anchor = data.layerRefs.length==1 ? '100% 100%' : '45% 100%';
         //anchor = data.layerRefs.length<3 ? anchor : '45% 45%'
         var width = l==1 ? 550 : 260;
         var height = l<3 ? 300 : 140;
+        var colorMap = this.getController('Select').colorMap;
         for (var i = 0; i < data.layerRefs.length; i++) {
+            
             var layerRefs = data.layerRefs[i];
+            var item = layerRefs.item;
+            var color = (colorMap[item.loc] && colorMap[item.loc][item.at]) ?  colorMap[item.loc][item.at][item.gid] : null;
+            if (!color) continue;
             var rows = data.rows[i];
             var anchor = '100% 100%'
             var x = 0;
@@ -570,7 +582,7 @@ Ext.define('PumaMain.controller.Chart', {
                 y = 200;
             }
             cmp.add({
-                xtype: 'component', type: 'extentoutline', cls:i==0 ? 'extentoutline-first' : 'extentoutline-notfirst' ,opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
+                xtype: 'component', color: color, type: 'extentoutline', cls:i==0 ? 'extentoutline-first' : 'extentoutline-notfirst' ,opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
             })
         }
 

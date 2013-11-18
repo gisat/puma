@@ -348,9 +348,8 @@ Ext.define('PumaMain.controller.Map', {
         var filter = filters.length < 2 ? filters[0] : new OpenLayers.Filter.Logical({type: '||', filters: filters});
         var style = new OpenLayers.Style();
         var layerName = 'puma:layer_' + layerRefs.areaRef._id;
-
         var rule = new OpenLayers.Rule({
-            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#ff0000'}),
+            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color}),
             "Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})},
             filter: filter
         });
