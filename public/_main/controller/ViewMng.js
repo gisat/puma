@@ -181,9 +181,16 @@ Ext.define('PumaMain.controller.ViewMng', {
         
         var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0];
         onlySel.suspendEvents();
-        onlySel.toggle(Config.cfg.pagingUseSelected)
+        onlySel.toggle(Config.cfg.pagingUseSelected);
         onlySel.resumeEvents();
         
+        var selColors = Ext.ComponentQuery.query('#useselectedcolorpicker')[0];
+        selColors.suspendEvents();
+        if (Config.cfg.pagingSelectedColors) {
+            selColors.select(Config.cfg.pagingSelectedColors);
+
+        }
+        selColors.resumeEvents();
         
         if (Config.cfg.filterUseSelected) {
             var instantFilter = Ext.ComponentQuery.query('#instantfilter')[0];
@@ -220,25 +227,27 @@ Ext.define('PumaMain.controller.ViewMng', {
         cfg.choroplethCfg = this.getController('AttributeConfig').layerConfig
         
         cfg.pagingUseSelected = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
-        cfg.filterUseSelected = !Ext.ComponentQuery.query('#instantfilter')[0].pressed
+        cfg.pagingSelectedColors = Ext.ComponentQuery.query('#useselectedcolorpicker')[0].getValue()
+        
+        //cfg.filterUseSelected = !Ext.ComponentQuery.query('#instantfilter')[0].pressed
         
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var filters = [];
-        for (var i=0;i<sliders.length;i++) {
-            var slider = sliders[i];
-            var val = slider.getValue();
-            val[0] = val[0]/slider.multiplier;
-            val[1] = val[1]/slider.multiplier;
-            filters.push({
-                attrObj: slider.attrObj,
-                multiplier: slider.multiplier,
-                min: slider.minValue/slider.multiplier,
-                units: slider.units,
-                max: slider.maxValue/slider.multiplier,
-                inc: slider.increment,
-                value: val
-            })
-        }
+//        for (var i=0;i<sliders.length;i++) {
+//            var slider = sliders[i];
+//            var val = slider.getValue();
+//            val[0] = val[0]/slider.multiplier;
+//            val[1] = val[1]/slider.multiplier;
+//            filters.push({
+//                attrObj: slider.attrObj,
+//                multiplier: slider.multiplier,
+//                min: slider.minValue/slider.multiplier,
+//                units: slider.units,
+//                max: slider.maxValue/slider.multiplier,
+//                inc: slider.increment,
+//                value: val
+//            })
+//        }
         cfg.filters = filters;
         cfg.minFilterFl = this.getController('Filter').minFl
         cfg.maxFilterFl = this.getController('Filter').maxFl
