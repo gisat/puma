@@ -392,6 +392,9 @@ Ext.define('PumaMain.controller.Chart', {
     
     reconfigureChart: function(chartCmp, forExport, addingNew, fromConfigPanel) {
         var cfg = chartCmp.cfg;
+        var chartPanel = chartCmp.up('chartpanel');
+        chartPanel.cfgType = cfg.type;
+        chartPanel.updateToolVisibility();
         if (cfg.type=='piechart') {
             //debugger;
         }

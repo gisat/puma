@@ -9,7 +9,7 @@ Ext.define('PumaMain.view.ChartPanel', {
     initComponent: function() {
         
         
-        var toolMap = {
+        this.toolMap = {
             gear: {
                 type: 'gear',
                 tooltip: 'Settings'
@@ -43,6 +43,17 @@ Ext.define('PumaMain.view.ChartPanel', {
             }
         }
         this.tools = [];
+        
+        var toolNames = ['gear','help','collapse','print','save','search','close'];
+        for (var i=0;i<toolNames.length;i++) {
+            this.tools.push(this.toolMap[toolNames[i]]);
+        }
+        
+        this.callParent();
+        this.updateToolVisibility();
+    },
+        
+    updateToolVisibility: function() {
         var toolNames = [];
         switch (this.cfgType) {
             case 'grid':
@@ -58,12 +69,16 @@ Ext.define('PumaMain.view.ChartPanel', {
             case 'filter':
                 toolNames = ['close']; break;
         }
-        for (var i=0;i<toolNames.length;i++) {
-            this.tools.push(toolMap[toolNames[i]]);
+        for (var i=0;i<this.tools.length;i++) {
+            var tool = this.tools[i];
+            var vis = Ext.Array.contains(toolNames,tool.type);
+            if (tool.rendered) {
+                tool.setVisible(vis);
+            }
+            else if (!vis) {
+                tool.hidden = true;
+            }
         }
-        
-        this.callParent();
-
     }
 })
 
