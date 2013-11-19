@@ -35,7 +35,7 @@ Ext.define('PumaMain.controller.Filter', {
         var id = slider.thumbs[0]==thumb ? 'thumb1' : 'thumb2';
         var label = slider.up('container').down('#'+id);
         var labelEl = label.el;
-        
+        if (!labelEl) return;
         labelEl.setHTML(value);
         labelEl.alignTo(thumb.el,"b-t",[0,0]);
     },
