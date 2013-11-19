@@ -114,6 +114,8 @@ function getChart(params, callback) {
                 }
                 conf.xAxis.title.text = xName+' (' +unitsX+')';
                 conf.yAxis.title.text = yName+' (' +unitsY+')';
+                conf.xAxis.title.text = conf.xAxis.title.text.length > 55 ? (conf.xAxis.title.text.substring(0,53)+'...') : conf.xAxis.title.text;
+                conf.yAxis.title.text = conf.yAxis.title.text.length > 47 ? (conf.yAxis.title.text.substring(0,45)+'...') : conf.yAxis.title.text;
                 return callback(null, conf);
 
             }]
