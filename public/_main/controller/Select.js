@@ -34,19 +34,18 @@ Ext.define('PumaMain.controller.Select', {
     },
         
     onToggleHover: function(btn,value) {
-        var selectInMap = Ext.ComponentQuery.query('#selectinmapbtn')[0];
         var infoControls1 = this.getController('Map').map1.infoControls;
         var infoControls2 = this.getController('Map').map2.infoControls;
         this.getController('Area').hovering = value;
         this.getController('Chart').hovering = value;
-        //if (selectInMap.pressed && value) {
+        if (value) {
             infoControls1.hover.activate();
             infoControls2.hover.activate();
-//        }
-//        else {
-//            infoControls1.hover.deactivate();
-//            infoControls2.hover.deactivate();
-//        }
+        }
+        else {
+            infoControls1.hover.deactivate();
+            infoControls2.hover.deactivate();
+        }
         if (this.hoverMap.length) {
             this.hoverMap = [];
             this.selectInternal([],true,false);
@@ -222,6 +221,7 @@ Ext.define('PumaMain.controller.Select', {
         this.selMap[this.actualColor] = [];
         this.prepareColorMap();
         this.getController('Area').colourTree(this.colorMap); 
+        this.getController('Chart').reconfigure('immediate'); 
         this.updateCounts();
         this.selectDelayed();
     },    
