@@ -176,7 +176,6 @@ strong {
 		left             : 5px;
 	}
 	.map .cursor {
-		visibility       : hidden;
 		width            : 10px;
 		position         : absolute;
 		z-index          : 10000;

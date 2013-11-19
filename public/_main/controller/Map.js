@@ -269,14 +269,15 @@ Ext.define('PumaMain.controller.Map', {
             return;
         }
         var cursor = this.cursor1;
-        var offsetX = this.map1.viewPortDiv.offsetLeft;
+        var offsetX = this.map1.div.offsetLeft;
         if (e.object==this.map1) {
             cursor = this.cursor2;
-            offsetX = this.map2.viewPortDiv.offsetLeft;
+            offsetX = this.map2.div.offsetLeft;
         }
-        var x = e.x - e.element.offsetLeft + offsetX;
+        var x = e.x - e.element.offsetParent.offsetLeft + offsetX;
+        var y = e.y - e.element.offsetParent.offsetTop;
         cursor.setStyle({
-            top: e.y + 'px',
+            top: y + 'px',
             left: x + 'px'
         });
         cursor.show();
@@ -354,6 +355,28 @@ Ext.define('PumaMain.controller.Map', {
             filter: filter
         });
         style.addRules([rule]);
+        var rasterStyle = new OpenLayers.Style();
+        var rasterRule = new OpenLayers.Rule({
+            symbolizer: {
+                "Raster": new OpenLayers.Symbolizer.Raster({colorMap:[{color:'#00ff00',quantity:-100},{color:'#0000ff',quantity:100}]})
+            }
+        });
+        rasterStyle.addRules([rasterRule]);
+        var rasternamedLayers = [{
+                name: layerRefs.layerRef.layer,
+                userStyles: [rasterStyle]
+            }];
+        var rastersldObject = {
+            name: 'style',
+            title: 'Style',
+            namedLayers: rasternamedLayers
+        }
+        var rasterformat = new OpenLayers.Format.SLD.Geoserver23();
+        var rastersldNode = rasterformat.write(rastersldObject);
+        var rasterxmlFormat = new OpenLayers.Format.XML();
+        var rastersldText = rasterxmlFormat.write(rastersldNode);
+        
+        
         var namedLayers = [{
                 name: layerName,
                 userStyles: [style]
@@ -384,6 +407,9 @@ Ext.define('PumaMain.controller.Map', {
         }
         
         map.layer1.mergeNewParams(layer1Conf)
+//        map.layer1.mergeNewParams({
+//            "SLD_BODY": rastersldText
+//        })
         map.layer2.mergeNewParams({
             "USE_SECOND": true,
             "SLD_BODY": sldText
