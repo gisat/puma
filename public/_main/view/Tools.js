@@ -30,11 +30,11 @@ Ext.define('PumaMain.view.Tools', {
             title: 'Layers'
         },{
             xtype: 'maptools',
-            collapsed: false,
+            collapsed: true,
             title: 'Map tools'
         },{
             xtype: 'panel',
-            collapsed: true,
+            collapsed: false,
             layout: {
                 type: 'vbox',
                 align: 'stretch'
@@ -46,11 +46,12 @@ Ext.define('PumaMain.view.Tools', {
                 itemId: 'configurefilters'
             },{
                 text: 'Instant',
-                pressed: true,
+                hidden: true,
                 itemId: 'instantfilter',
                 enableToggle: true
             },{
                 text: 'Select',
+                hidden: true,
                 disabled: true,
                 itemId: 'filterselect'
             }],

@@ -146,7 +146,6 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         
     onConfigureClick: function(cmp) {
         var formType = 'chart';
-        debugger;
         var cfg = {attrs:[]};
         var chart = null;
         if (cmp.itemId == 'configurelayers') {

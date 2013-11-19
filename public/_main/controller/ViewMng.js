@@ -233,21 +233,21 @@ Ext.define('PumaMain.controller.ViewMng', {
         
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var filters = [];
-//        for (var i=0;i<sliders.length;i++) {
-//            var slider = sliders[i];
-//            var val = slider.getValue();
-//            val[0] = val[0]/slider.multiplier;
-//            val[1] = val[1]/slider.multiplier;
-//            filters.push({
-//                attrObj: slider.attrObj,
-//                multiplier: slider.multiplier,
-//                min: slider.minValue/slider.multiplier,
-//                units: slider.units,
-//                max: slider.maxValue/slider.multiplier,
-//                inc: slider.increment,
-//                value: val
-//            })
-//        }
+        for (var i=0;i<sliders.length;i++) {
+            var slider = sliders[i];
+            var val = slider.getValue();
+            val[0] = val[0]/slider.multiplier;
+            val[1] = val[1]/slider.multiplier;
+            filters.push({
+                attrObj: slider.attrObj,
+                multiplier: slider.multiplier,
+                min: slider.minValue/slider.multiplier,
+                units: slider.units,
+                max: slider.maxValue/slider.multiplier,
+                inc: slider.increment,
+                value: val
+            })
+        }
         cfg.filters = filters;
         cfg.minFilterFl = this.getController('Filter').minFl
         cfg.maxFilterFl = this.getController('Filter').maxFl

@@ -1,20 +1,43 @@
 Ext.define('PumaMain.controller.Filter', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: [],
+    requires: ['Gisatlib.slider.AlwaysVisibleTip'],
     init: function() {
         this.control(
                 {
                     '#advancedfilters multislider' : {
-                        changecomplete: this.applyFilters
+                        changecomplete: this.applyFilters,
+                        change: this.onFilterChange
                     },
                     '#advancedfilters #instantfilter' : {
                         toggle: this.onInstantChange
                     },
                     '#advancedfilters #filterselect' : {
                         click: this.onSelectFilter
+                    },
+                    'toolspanel': {
+                        afterlayout: this.afterAccordionLayout
                     }
                 })
+    },
+        
+    afterAccordionLayout: function() {
+        var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
+        for (var i=0;i<sliders.length;i++) {
+            var slider = sliders[i];
+            var value = slider.getValue();
+            this.onFilterChange(slider,value[0],slider.thumbs[0]);
+            this.onFilterChange(slider,value[1],slider.thumbs[1]);
+        }
+    },
+    
+    onFilterChange: function(slider,value,thumb) {
+        var id = slider.thumbs[0]==thumb ? 'thumb1' : 'thumb2';
+        var label = slider.up('container').down('#'+id);
+        var labelEl = label.el;
+        
+        labelEl.setHTML(value);
+        labelEl.alignTo(thumb.el,"b-t",[0,0]);
     },
     
     onInstantChange: function(btn) {
@@ -175,6 +198,7 @@ Ext.define('PumaMain.controller.Filter', {
             var max = attrCfg.value ? attrCfg.value[1] : attrCfg.max;
             var cnt = {
                 xtype: 'container',
+                margin: 5,
                 layout: {
                     type: 'vbox',
                     align: 'stretch'
@@ -182,8 +206,35 @@ Ext.define('PumaMain.controller.Filter', {
                 items: [{
                         xtype: 'displayfield',
                         value: attrCfg.attrObj.attrName + ' ('+attrCfg.units+')'
-                    }, 
+                    }, {
+                        xtype: 'container',
+                        suspendLayout: true,
+                        layout: {
+                            type: 'hbox'
+                        },
+                        items: [{
+                            xtype: 'component',
+                            itemId: 'thumb1',
+                            html: 10
+                        },{
+                            xtype: 'component',
+                            itemId: 'thumb2',
+                            html: 20
+                        }]
+                    },
                     {
+                        xtype: 'multislider',
+                        useTips: false,
+                        clickToChange: false,
+                        values: [min*attrCfg.multiplier,max*attrCfg.multiplier],
+                        multiplier: attrCfg.multiplier,
+                        attrObj: attrCfg.attrObj,
+                        increment: attrCfg.inc,
+                        units: attrCfg.units,
+                        minValue: attrCfg.min*attrCfg.multiplier,
+                        maxValue: attrCfg.max*attrCfg.multiplier,
+                        constrainThumbs: true
+                    },{
                         xtype: 'container',
                         layout: {
                             type: 'hbox'
@@ -205,25 +256,6 @@ Ext.define('PumaMain.controller.Filter', {
                                 pack: 'end'
                             }
                         }]
-                    },{
-                        xtype: 'multislider',
-                        useTips: {
-                            getText: function(thumb) {
-                                var val = thumb.value;
-                                if (thumb.slider.multiplier) {
-                                    val = val/thumb.slider.multiplier
-                                }
-                                return String(val);
-                            }
-                        },
-                        values: [min*attrCfg.multiplier,max*attrCfg.multiplier],
-                        multiplier: attrCfg.multiplier,
-                        attrObj: attrCfg.attrObj,
-                        increment: attrCfg.inc,
-                        units: attrCfg.units,
-                        minValue: attrCfg.min*attrCfg.multiplier,
-                        maxValue: attrCfg.max*attrCfg.multiplier,
-                        constrainThumbs: true
                     }]
             }
             items.push(cnt)
