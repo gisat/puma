@@ -30,11 +30,11 @@ Ext.define('PumaMain.view.Tools', {
             title: 'Layers'
         },{
             xtype: 'maptools',
-            collapsed: true,
+            collapsed: false,
             title: 'Map tools'
         },{
             xtype: 'panel',
-            collapsed: false,
+            collapsed: true,
             layout: {
                 type: 'vbox',
                 align: 'stretch'

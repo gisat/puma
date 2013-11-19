@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Filter', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Gisatlib.slider.AlwaysVisibleTip'],
+    requires: [],
     init: function() {
         this.control(
                 {
