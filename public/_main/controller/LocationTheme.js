@@ -705,6 +705,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         if (conf.areas) {
             this.addAreas(conf.areas);
+            if (!this.initialAdd) {
+                Ext.ComponentQuery.query('#areatree')[0].getView().refresh();
+                this.initialAdd = true;
+            }
         }
         if (conf.add || conf.remove) {
             
