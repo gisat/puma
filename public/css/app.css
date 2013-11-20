@@ -138,6 +138,8 @@ html {
     overflow: hidden ! important
 }
 
+/*FIX ME*/
+
 tbody .x-grid-row .select_ff4c39, tbody .x-grid-row.select_ff4c39 .x-grid-cell {
     background-color: #ff4c39 ! important
 }
