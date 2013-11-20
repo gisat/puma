@@ -273,10 +273,10 @@ Ext.define('PumaMain.controller.Layers', {
     
     onBeforeLayerDrop: function(row,obj,dropPos) {
         var type = obj.records[0].get('type');
-        if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas'],type)) {
+        if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas','selectedareasfilled'],type)) {
             return false;
         }
-        else if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas'],dropPos.get('type'))) {
+        else if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas','selectedareasfilled'],dropPos.get('type'))) {
             return false;
         }
     },
@@ -320,7 +320,7 @@ Ext.define('PumaMain.controller.Layers', {
         for (var i=0;i<layers.length;i++) {
             var layer = layers[i];
             var type = layer.get('type');
-            if (type!='topiclayer' && type!='chartlayer' && type!='selectedareas' && type!='areaoutlines') {
+            if (type!='topiclayer' && type!='chartlayer' && type!='selectedareas' && type!='selectedareasfilled' && type!='areaoutlines') {
                 continue;
             }
             layer.set('sortIndex',i);
@@ -415,6 +415,7 @@ Ext.define('PumaMain.controller.Layers', {
         var store = Ext.StoreMgr.lookup('layers');
         var node = store.getRootNode().findChild('type', 'selectedareas', true);
         var filledNode = store.getRootNode().findChild('type', 'selectedareasfilled', true);
+     
         if (!node)
             return;
         var layer1 = node.get('layer1');
@@ -508,16 +509,17 @@ Ext.define('PumaMain.controller.Layers', {
             var namedLayer = namedLayersGroup[i];
             var isFilled = i>1;
             var layer = !isFilled ? (i%2 == 0 ? layer1 : layer2) : (i%2 == 0 ? filledLayer1 : filledLayer2);
-            var change = i%2 == 0 == 0 ? map1NoChange : map2NoChange;
+            var noChange = i%2 == 0 == 0 ? map1NoChange : map2NoChange;
             if (!namedLayer.length) {
-                if (!change) {
+                //if (noChange) {
                     layer.setVisibility(false);
                     layer.initialized = false;
-                }
+                //}
 
                 continue;
             }
-            this.saveSld(node, namedLayer, layer);
+            var changedNode = isFilled ? filledNode : node;
+            this.saveSld(changedNode, namedLayer, layer);
         }
     },
     saveSld: function(node, namedLayers, layer, params, legendNamedLayers) {
@@ -542,7 +544,6 @@ Ext.define('PumaMain.controller.Layers', {
             legendSld = xmlFormat.write(legendSldNode);
         }
         var me = this;
-        
         Ext.Ajax.request({
             url: Config.url + '/api/proxy/saveSld',
             params: Ext.apply({

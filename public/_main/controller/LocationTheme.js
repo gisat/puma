@@ -629,7 +629,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     checked: true,
                     leaf: true
                 }
-                systemNode.appendChild([selectedLayerNode,areaLayerNode,selectedLayerFilledNode]);
+                systemNode.appendChild([selectedLayerNode,selectedLayerFilledNode,areaLayerNode]);
             }
             
             
