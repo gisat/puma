@@ -547,7 +547,7 @@ Ext.define('PumaMain.controller.Chart', {
         var l = data.layerRefs.length
         //var anchor = data.layerRefs.length==1 ? '100% 100%' : '45% 100%';
         //anchor = data.layerRefs.length<3 ? anchor : '45% 45%'
-        var width = l==1 ? 550 : 260;
+        var width = l==1 ? 550 : 264;
         var height = l<3 ? 300 : 140;
         var colorMap = this.getController('Select').colorMap;
         for (var i = 0; i < data.layerRefs.length; i++) {
@@ -562,10 +562,10 @@ Ext.define('PumaMain.controller.Chart', {
             var y = 0;
             
             if (i==0 && l>1) {
-                anchor = '49% 100%';
+                anchor = '50% 100%';
             }
             if (i==0 && l>2) {
-                anchor = '49% 49%'
+                anchor = '50% 49%'
             }
             if (i==1) {
                 anchor = '100% 100%';
@@ -576,7 +576,7 @@ Ext.define('PumaMain.controller.Chart', {
             }
             if (i==2) {
                 y = 200;
-                anchor = '49% 100%'
+                anchor = '50% 100%'
             }
                 
 
