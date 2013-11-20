@@ -4,6 +4,9 @@ div.olControlZoom {
     bottom: 8px ! important;
     right: 8px ! important;
 }
+div .x-grid-dirty-cell {
+    background-image: none;
+}
 .screenshot {
     margin: 5px;  
     position: relative; 

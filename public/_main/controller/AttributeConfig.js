@@ -202,6 +202,10 @@ Ext.define('PumaMain.controller.AttributeConfig', {
     
     onAddAttribute: function(btn) {
         this.setActiveCard(btn,1);
+        var store = btn.up('[itemId=attributecontainer]').down('addattributegrid').store
+        store.each(function(rec) {
+            rec.set('checked',false)
+        })
     },
     onNormalizeAttribute: function(btn) {
         
