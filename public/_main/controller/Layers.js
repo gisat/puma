@@ -511,10 +511,10 @@ Ext.define('PumaMain.controller.Layers', {
             var layer = !isFilled ? (i%2 == 0 ? layer1 : layer2) : (i%2 == 0 ? filledLayer1 : filledLayer2);
             var noChange = i%2 == 0 == 0 ? map1NoChange : map2NoChange;
             if (!namedLayer.length) {
-                //if (noChange) {
+                if (noChange) {
                     layer.setVisibility(false);
                     layer.initialized = false;
-                //}
+                }
 
                 continue;
             }
