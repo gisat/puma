@@ -15,6 +15,7 @@ Ext.define('Puma.patch.Main',{
         ,'Puma.patch.panel.Tool'
         ,'Puma.patch.panel.Header'
         ,'Puma.patch.tree.View'
+        ,'Puma.patch.button.Button'
     ]
 })
 
