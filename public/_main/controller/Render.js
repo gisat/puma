@@ -166,12 +166,12 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('colorpicker',{
                     xtype: 'colorpicker',
                     fieldLabel: 'CP',
-                    value: 'ff0000',
+                    value: 'ff4c39',
                     itemId: 'selectcolorpicker',
                     height: 16,
                     width: 120,
                     renderTo: 'app-tools-colors',
-                    colors: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']
+                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
                 })
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'
@@ -200,7 +200,7 @@ Ext.define('PumaMain.controller.Render', {
                     height: 24,
                     width: 132,
                     //value: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff'],
-                    colors: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']
+                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
                 }],
                 showSeparator: false
                 },
@@ -212,7 +212,8 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('paging')
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
-        Ext.ComponentQuery.query('#areapager #useselectedcolorpicker')[0].select(['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff']);
+        Ext.ComponentQuery.query('#areapager #useselectedcolorpicker')[0].select(['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']);
+        
     },
     
     renderMap: function() {

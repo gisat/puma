@@ -138,24 +138,24 @@ html {
     overflow: hidden ! important
 }
 
-tbody .x-grid-row .select_ff0000, tbody .x-grid-row.select_ff0000 .x-grid-cell {
-    background-color: #ffeeee ! important
+tbody .x-grid-row .select_ff4c39, tbody .x-grid-row.select_ff4c39 .x-grid-cell {
+    background-color: #ff4c39 ! important
 }
 
-tbody .x-grid-row .select_ffff00, tbody .x-grid-row.select_ffff00 .x-grid-cell {
-    background-color: #ffffee ! important
+tbody .x-grid-row .select_34ea81, tbody .x-grid-row.select_34ea81 .x-grid-cell {
+    background-color: #34ea81 ! important
 }
-tbody .x-grid-row .select_00ff00, tbody .x-grid-row.select_00ff00 .x-grid-cell {
-    background-color: #eeffee ! important
+tbody .x-grid-row .select_39b0ff, tbody .x-grid-row.select_39b0ff .x-grid-cell {
+    background-color: #39b0ff ! important
 }
-tbody .x-grid-row .select_00ffff, tbody .x-grid-row.select_00ffff .x-grid-cell {
-    background-color: #eeffff ! important
+tbody .x-grid-row .select_ffde58, tbody .x-grid-row.select_ffde58 .x-grid-cell {
+    background-color: #ffde58 ! important
 }
-tbody .x-grid-row .select_ff00ff, tbody .x-grid-row.select_ff00ff .x-grid-cell {
-    background-color: #ffeeff ! important
+tbody .x-grid-row .select_5c6d7e, tbody .x-grid-row.select_5c6d7e .x-grid-cell {
+    background-color: #5c6d7e ! important
 }
-tbody .x-grid-row .select_0000ff, tbody .x-grid-row.select_0000ff .x-grid-cell {
-    background-color: #eeeeff ! important
+tbody .x-grid-row .select_d97dff, tbody .x-grid-row.select_d97dff .x-grid-cell {
+    background-color: #d97dff ! important
 }
 
 /*div::-webkit-scrollbar {

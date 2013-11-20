@@ -3,7 +3,14 @@ Ext.define('PumaMain.controller.Dataview', {
     views: [],
     requires: [],
     init: function() {
-        
+        this.colorBackComp = {
+            'ff0000':'ff4c39',
+            '00ff00':'34ea81',
+            '0000ff':'39b0ff',
+            'ffff00':'ffde58',
+            '00ffff':'5c6d7e',
+            'ff00ff':'d97dff'
+        }
     },
         
         
@@ -37,7 +44,13 @@ Ext.define('PumaMain.controller.Dataview', {
                 scope: this,
                 method: 'GET',
                 success: function(response) {
-                    var cfg = JSON.parse(response.responseText).data;
+                    var respText = response.responseText
+                    for (var oldColor in this.colorBackComp) {
+                        respText = respText.replace(oldColor,this.colorBackComp[oldColor]);
+                    }
+                    
+                    
+                    var cfg = JSON.parse(respText).data;
                     if (!cfg.length) {
                         alert('No such dataview');
                         return;

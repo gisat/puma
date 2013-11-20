@@ -17,10 +17,10 @@ Ext.define('PumaMain.controller.Select', {
                 select: this.onChangeChartColor
             }
         })
-        this.selMap = {'ff0000':[]};
+        this.selMap = {'ff4c39':[]};
         this.colorMap = {};
         this.hoverMap = [];
-        this.actualColor = 'ff0000';
+        this.actualColor = 'ff4c39';
         Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
     },
         
@@ -210,7 +210,7 @@ Ext.define('PumaMain.controller.Select', {
     },
         
     clearSelectionsAll: function() {
-        this.selMap = {'FF0000':[]};
+        this.selMap = {'ff4c39':[]};
         this.hoverMap = [];
         this.colorMap = {};
         this.getController('Area').colourTree(this.colorMap); 
