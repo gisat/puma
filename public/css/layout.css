@@ -328,6 +328,9 @@ strong {
 			left         : 0;
 			width        : 250px;
 		}
+			#sidebar-tools.hidden {
+				left     : -250px;
+			}
 		#app-tools-actions {
 			height       : 35px;
 		}
@@ -345,18 +348,31 @@ strong {
 			body.application #sidebar-reports {
 				right    : 0;
 			}
+		
+		/* Sidebar toggles */
+		#sidebar-tools-toggle,
 		#sidebar-reports-toggle {
-			display      : block;
-			width        : 21px;
-			height       : 35px;
-			background   : url("../images/sidebar-toggle-sprite.png") no-repeat 0 0;
-			position     : absolute;
-			left         : -21px;
-			top          : 0;
-			cursor       : pointer;
+			display             : block;
+			width               : 21px;
+			height              : 35px;
+			background-image    : url("../images/sidebar-toggle-sprite.png");
+			background-repeat   : no-repeat;
+			background-position : 0 0;
+			position            : absolute;
+			left                : -21px;
+			top                 : 0;
+			cursor              : pointer;
+		}
+		#sidebar-tools-toggle {
+			left                : auto;
+			right               : -21px;
+			background-position : -21px 0;
 		}
 		#sidebar-reports.hidden #sidebar-reports-toggle {
 			background-position : -21px 0;
+		}
+		#sidebar-tools.hidden #sidebar-tools-toggle {
+			background-position : 0 0;
 		}
 		
 	/* Footer */

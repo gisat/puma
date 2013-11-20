@@ -6,7 +6,8 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		if (Config.exportPage) {
 			return;
 		}
-		$("#sidebar-reports-toggle").on("click", $.proxy(this._onSidebarToggleClick, this));
+		$("#sidebar-reports-toggle").on("click", $.proxy(this._onReportsSidebarToggleClick, this));
+		$("#sidebar-tools-toggle").on("click", $.proxy(this._onToolsSidebarToggleClick, this));
 		$(window).on("resize", $.proxy(this._onWindowResize, this))
 		this.control({
 			"toolspanel panel" : {
@@ -126,9 +127,13 @@ Ext.define('PumaMain.controller.DomManipulation', {
 		$("#loading-mask-shim, #loading-mask").hide();
 	},
 	
-	_onSidebarToggleClick: function() {
+	_onReportsSidebarToggleClick: function() {
 		$("#sidebar-reports").toggleClass("hidden");
 		this.resizeMap();
+	},
+	
+	_onToolsSidebarToggleClick: function() {
+		$("#sidebar-tools").toggleClass("hidden");
 	},
 	
 	_onWindowResize: function() {
