@@ -40,6 +40,28 @@ Ext.define('PumaMain.controller.Filter', {
         labelEl.alignTo(thumb.el,"b-t",[0,0]);
     },
     
+      test: function(attrs) {
+        var areas = this.getController('Area').allMap;
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var years = [Ext.ComponentQuery.query('#selyear')[0].getValue()[0]];
+        Ext.Ajax.request({
+            url: Config.url + '/api/filter/filter',
+            params: {
+                attrs: JSON.stringify(attrs),
+                dataset: datasetId,
+                years: JSON.stringify(years),
+                areas: JSON.stringify(areas)
+            },
+            scope: this,
+            method: 'GET',
+            success: function(response) {
+                debugger;
+            }
+        })
+        
+        
+    },
+    
     onInstantChange: function(btn) {
         if (btn.eventsSuspended) return;
         var filterSelect = Ext.ComponentQuery.query('#advancedfilters #filterselect')[0];
@@ -97,6 +119,7 @@ Ext.define('PumaMain.controller.Filter', {
     
     reconfigureFilters: function(cfg) {
         var attrs = Ext.clone(cfg.attrs);
+        this.test(attrs);
         this.minFl = cfg.constrainFl[0];
         this.maxFl = cfg.constrainFl[1];
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
@@ -148,6 +171,8 @@ Ext.define('PumaMain.controller.Filter', {
             this.applyFilters();
             return;
         }
+        return;
+    
         Ext.Ajax.request({
             url: Config.url + '/api/filter/getFilterConfig',
             params: {
@@ -229,10 +254,15 @@ Ext.define('PumaMain.controller.Filter', {
                         values: [min*attrCfg.multiplier,max*attrCfg.multiplier],
                         multiplier: attrCfg.multiplier,
                         attrObj: attrCfg.attrObj,
-                        increment: attrCfg.inc,
+                        //increment: attrCfg.inc,
                         units: attrCfg.units,
-                        minValue: attrCfg.min*attrCfg.multiplier,
-                        maxValue: attrCfg.max*attrCfg.multiplier,
+                        //minValue: attrCfg.min*attrCfg.multiplier,
+                        //maxValue: attrCfg.max*attrCfg.multiplier,
+                        
+                        minValue: 0,
+                        maxValue: 1,
+                        decimalPrecision: 2,
+                        increment: 0.01,
                         constrainThumbs: true
                     },{
                         xtype: 'container',
