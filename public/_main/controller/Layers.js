@@ -217,45 +217,26 @@ Ext.define('PumaMain.controller.Layers', {
                 for (var i=0;i<response.length;i++) {
                     var r = response[i];
                     html+= '<div class="metadata">';
-                    html+= '<table>';
-                    html+= '<colgroup><col width="100"><col></colgroup>';
-                    html+= '<thead>';
-                    html+= '<tr>';
-                    html+= '<th colspan="2">' + r.title + '</th>';
-                    html+= '</tr>';
-                    html+= '</thead>';
-                    html+= '<tbody>';
                     
-                    html+= '<tr>';
-                    html+= '<th>Abstract</th>';
-                    html+= '<td>' + r.abstract + '</td>'
-                    html+= '</tr>';
+                    html+= '<p class="title">Title</p>';
+                    html+= '<p>' + r.title + '</p>';
                     
-                    html+= '<tr>';
-                    html+= '<th>Date type</th>'
-                    html+= '<td>' + r.date_type + '</td>';
-                    html+= '</tr>';
+                    html+= '<p class="title">Abstract</p>';
+                    html+= '<p>' + r.abstract + '</p>';
                     
-                    html+= '<tr>';
-                    html+= '<th>Date</th>'
-                    html+= '<td>' + Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d') + '</td>';
-                    html+= '</tr>';
+                    html+= '<p class="title">Date type</p>';
+                    html+= '<p>' + r.date_type + '</p>';
+                    
+                    html+= '<p class="title">Date</p>';
+                    html+= '<p>' + Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d') + '</p>';
                     
                     if (r.temporal_extent_start && r.temporal_extent_end) {
-                    html+= '<tr>';
-                    html+= '<th>Time extent</th>'
-                    html+= '<td>' + Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_start,'c'),'Y-m-d') +' - '+Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_end,'c'),'Y-m-d')+ '</td>';
-                    html+= '</tr>';
+                        html+= '<p class="title">Time extent</p>';
+                        html+= '<p>' + Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_start,'c'),'Y-m-d') +' - '+Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_end,'c'),'Y-m-d') + '</p>';
                     }
                     
+                    html+= '<p>For more details see <a target="_blank" href="'+r.distribution_url+'">Complete Metadata</a></p>';
                     
-                    html+= '</tbody>';
-                    html+= '<tfoot>';
-                    html+= '<tr>';
-                    html+= '<td colspan="2">For more details see <a target="_blank" href="'+r.distribution_url+'">here</a></td>'
-                    html+= '</tr>';
-                    html+= '</tfoot>';
-                    html+= '</table>';
                     html+= '</div>';
                 }
                 Ext.widget('window',{

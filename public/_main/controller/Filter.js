@@ -7,7 +7,9 @@ Ext.define('PumaMain.controller.Filter', {
                 {
                     '#advancedfilters multislider' : {
                         changecomplete: this.applyFilters,
-                        change: this.onFilterChange
+                        change: this.onFilterChange,
+                        dragstart: this.onFilterDragStart,
+                        dragend: this.onFilterDragEnd
                     },
                     '#advancedfilters #instantfilter' : {
                         toggle: this.onInstantChange
@@ -38,6 +40,24 @@ Ext.define('PumaMain.controller.Filter', {
         if (!labelEl) return;
         labelEl.setHTML(value);
         labelEl.alignTo(thumb.el,"b-t",[0,0]);
+    },
+    
+    onFilterDragStart: function(slider,value,thumb) {
+        var id = slider.thumbs[0]==thumb ? 'thumb1' : 'thumb2';
+        var label = slider.up('container').down('#'+id);
+        var labelEl = label.el;
+        if (!labelEl) return;
+        labelEl.addCls('sliding');
+    },
+    
+    onFilterDragEnd: function(slider,value,thumb) {
+        var label1 = slider.up('container').down('#thumb1');
+        var label1El = label1.el;
+        var label2 = slider.up('container').down('#thumb2');
+        var label2El = label2.el;
+        if (!label1El || !label2El) return;
+        label1El.removeCls('sliding');
+        label2El.removeCls('sliding');
     },
     
       test: function(attrs) {
@@ -240,10 +260,12 @@ Ext.define('PumaMain.controller.Filter', {
                         items: [{
                             xtype: 'component',
                             itemId: 'thumb1',
+                            cls: 'slider-thumb-label',
                             html: 10
                         },{
                             xtype: 'component',
                             itemId: 'thumb2',
+                            cls: 'slider-thumb-label',
                             html: 20
                         }]
                     },
@@ -272,7 +294,7 @@ Ext.define('PumaMain.controller.Filter', {
                         items: [{
                             xtype: 'container',
                             flex: 1,
-                            items: [{xtype: 'component',html: String(attrCfg.min)}],
+                            items: [{xtype: 'component',cls: 'slider-constraints slider-constraint-min',html: String(attrCfg.min)}],
                             layout: {
                                 type: 'hbox',
                                 pack: 'start'
@@ -280,7 +302,7 @@ Ext.define('PumaMain.controller.Filter', {
                         },{
                             xtype: 'container',
                             flex: 1,
-                            items: [{xtype: 'component',html: String(attrCfg.max)}],
+                            items: [{xtype: 'component',cls: 'slider-constraints slider-constraint-max',html: String(attrCfg.max)}],
                             layout: {
                                 type: 'hbox',
                                 pack: 'end'

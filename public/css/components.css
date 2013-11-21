@@ -365,7 +365,7 @@
 	border-radius: 3px;
 	height: 22px;
 	vertical-align: middle;
-	width: 100px;
+	width: 90px;
 	margin-right: 5px;
 	margin-bottom: 5px;
 	cursor: pointer;
@@ -436,33 +436,48 @@
 
 .metadata {
 	margin: 10px;
-}
-.metadata table {
-	width: 100%;
-	margin-bottom: 10px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #ccc;
 	font-family: "Open sans";
 }
-.metadata th, .metadata td {
-	padding: 3px 5px;
-	border: 1px solid #666470;
+.metadata p {
+	margin-bottom: 5px;
+	font-size: 13px;
 }
-.metadata thead th {
-	background-color: #434254;
-	background-image: -moz-linear-gradient(top center, #55546b 0%, #434254 100%);
-	background-image: -webkit-linear-gradient(top center, #55546b 0%, #434254 100%);
-	background-image: -ms-linear-gradient(top center, #55546b 0%, #434254 100%);
-	background-image: linear-gradient(top center, #55546b 0%, #434254 100%);
-	border: 1px solid #434254;
-	color: #fff;
+.metadata .title {
+	font-size: 14px;
 	font-weight: bold;
-}
-.metadata tbody th {
-	font-weight: bold;
-}
-.metadata tfoot td {
-	background-color: #eee;
-	color: #333;
+	margin: 0;
 }
 .metadata a {
 	color: #069;
+}
+
+/* Slider */
+.x-slider-horz, .x-slider-horz .x-slider-end, .x-slider-horz .x-slider-inner {
+	background-image: url("../images/puma-slider-bg.png");
+}
+.x-slider-horz {
+	background-position: 0 -24px;
+}
+.x-slider-horz .x-slider-end {
+	background-position: 100% -46px;
+}
+.x-slider-horz .x-slider-inner {
+	background-position: 0 -2px;
+}
+.x-slider-horz .x-slider-thumb {
+	background-image: url("../images/puma-slider-thumb.png");
+}
+.slider-thumb-label,
+.slider-constraints {
+	font-family: "Open Sans";
+	font-size: 11px;
+	color: #666572;
+}
+.slider-thumb-label.sliding {
+	color: #c92d42;
+}
+.slider-constraint-min {
+	padding-left: 3px;
 }
