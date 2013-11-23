@@ -60,24 +60,8 @@ Ext.define('PumaMain.controller.Filter', {
         label2El.removeCls('sliding');
     },
     
-      test: function(attrs) {
-        var areas = this.getController('Area').allMap;
-        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
-        var years = [Ext.ComponentQuery.query('#selyear')[0].getValue()[0]];
-        Ext.Ajax.request({
-            url: Config.url + '/api/filter/filter',
-            params: {
-                attrs: JSON.stringify(attrs),
-                dataset: datasetId,
-                years: JSON.stringify(years),
-                areas: JSON.stringify(areas)
-            },
-            scope: this,
-            method: 'GET',
-            success: function(response) {
-                debugger;
-            }
-        })
+    test: function(cfg) {
+        
         
         
     },
@@ -139,9 +123,6 @@ Ext.define('PumaMain.controller.Filter', {
     
     reconfigureFilters: function(cfg) {
         var attrs = Ext.clone(cfg.attrs);
-        this.test(attrs);
-        this.minFl = cfg.constrainFl[0];
-        this.maxFl = cfg.constrainFl[1];
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var sliders = Ext.ComponentQuery.query('multislider',filterPanel);
         
@@ -164,11 +145,6 @@ Ext.define('PumaMain.controller.Filter', {
             }
         }
         
-        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
-        var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
-        
-        var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
-        var theme = Ext.StoreMgr.lookup('theme').getById(themeId);
         
         var attrMap = {};
         var attrsToRemove = [];
@@ -181,25 +157,20 @@ Ext.define('PumaMain.controller.Filter', {
         }
         attrs = Ext.Array.difference(attrs,attrsToRemove);
         
-        
-        var featureLayers = dataset.get('featureLayers');
-        var filteredFeatureLayers = [];
-        for (var i=this.minFl;i<=this.maxFl;i++) {
-            filteredFeatureLayers.push(featureLayers[i]);
-        }
         if (!attrs.length) {
             this.applyFilters();
             return;
         }
-        return;
-    
+        var areas = this.getController('Area').allMap;
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var years = [Ext.ComponentQuery.query('#selyear')[0].getValue()[0]];
         Ext.Ajax.request({
-            url: Config.url + '/api/filter/getFilterConfig',
+            url: Config.url + '/api/filter/filter',
             params: {
-                attrs: JSON.stringify(attrs),
+                attrs: JSON.stringify(cfg.attrs),
                 dataset: datasetId,
-                featureLayers: JSON.stringify(filteredFeatureLayers),
-                years: JSON.stringify(theme.get('years'))
+                years: JSON.stringify(years),
+                areas: JSON.stringify(areas)
             },
             scope: this,
             method: 'GET',
@@ -214,7 +185,7 @@ Ext.define('PumaMain.controller.Filter', {
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var attrs = response.request.options.attrs;
         var cfg = response.request.options.cfg;
-        var attrMap = JSON.parse(response.responseText).data;
+        var attrMap = JSON.parse(response.responseText).data.metaData;
         
         var attrCfgs = [];
         for (var i = 0; i < attrs.length; i++) {
@@ -230,7 +201,7 @@ Ext.define('PumaMain.controller.Filter', {
             var cnt = this.getFilterItems([attrCfg])[0]
             filterPanel.insert(idx, cnt)
         }
-        this.applyFilters();
+        //this.applyFilters();
     },
         
     getFilterItems: function(attrCfgs) {
@@ -238,18 +209,19 @@ Ext.define('PumaMain.controller.Filter', {
         
         for (var i = 0; i < attrCfgs.length; i++) {
             var attrCfg = attrCfgs[i];
-            attrCfg.multiplier = attrCfg.multiplier || 1;
+            debugger;
             var min = attrCfg.value ? attrCfg.value[0] : attrCfg.min;
             var max = attrCfg.value ? attrCfg.value[1] : attrCfg.max;
             var cnt = {
                 xtype: 'container',
-                margin: 5,
+                margin: 0,
                 layout: {
                     type: 'vbox',
                     align: 'stretch'
                 },
                 items: [{
                         xtype: 'displayfield',
+                        margin: '0 17',
                         value: attrCfg.attrObj.attrName + ' ('+attrCfg.units+')'
                     }, {
                         xtype: 'container',
@@ -261,33 +233,36 @@ Ext.define('PumaMain.controller.Filter', {
                             xtype: 'component',
                             itemId: 'thumb1',
                             cls: 'slider-thumb-label',
-                            html: 10
+                            //html: min
+                            //,
+                            html: 1520252
                         },{
                             xtype: 'component',
                             itemId: 'thumb2',
                             cls: 'slider-thumb-label',
-                            html: 20
+                            html: max
                         }]
                     },
                     {
                         xtype: 'multislider',
                         useTips: false,
+                        margin: '0 17',
                         clickToChange: false,
-                        values: [min*attrCfg.multiplier,max*attrCfg.multiplier],
-                        multiplier: attrCfg.multiplier,
+                        values: [min,max],
                         attrObj: attrCfg.attrObj,
                         //increment: attrCfg.inc,
                         units: attrCfg.units,
                         //minValue: attrCfg.min*attrCfg.multiplier,
                         //maxValue: attrCfg.max*attrCfg.multiplier,
                         
-                        minValue: 0,
-                        maxValue: 1,
-                        decimalPrecision: 2,
-                        increment: 0.01,
+                        minValue: min,
+                        maxValue: max,
+                        decimalPrecision: Math.max(0,-attrCfg.decimal),
+                        increment: Math.pow(10,attrCfg.decimal),
                         constrainThumbs: true
                     },{
                         xtype: 'container',
+                        margin: '0 17',
                         layout: {
                             type: 'hbox'
                         },

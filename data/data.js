@@ -19,7 +19,7 @@ function getData(params, callback) {
     var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) : null;
     var normalizationAttributeSet = params['normalizationAttributeSet'] ? parseInt(params['normalizationAttributeSet']) : null;
     var normalizationAttribute = params['normalizationAttribute'] ? parseInt(params['normalizationAttribute']) : null;
-
+    
 
 //    var userAggregates = {
 //        276: {
@@ -140,8 +140,6 @@ function getData(params, callback) {
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
-            console.log(attrUnits);
-            console.log(normAttrUnits);
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
