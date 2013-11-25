@@ -40,6 +40,25 @@ Ext.define('PumaMain.controller.Filter', {
         if (!labelEl) return;
         labelEl.setHTML(value);
         labelEl.alignTo(thumb.el,"b-t",[0,0]);
+        if (slider.chartEl) {
+            
+            slider.chartEl.alignTo(slider.el,"b-t",[0,0]);
+            var points = slider.chart.series[0].data;
+            var value = slider.getValue();
+            var diff = slider.maxValue-slider.minValue;
+            var inc = diff/points.length;
+            
+            for (var i=0;i<points.length;i++) {
+                var point = points[i];
+                var hypoMin = slider.minValue + i*inc;
+                var hypoMax = slider.minValue + i*inc + inc;
+                var toSelect = (hypoMax>value[0] && hypoMin<value[1]);
+                point.select(toSelect,toSelect);
+                console.log(point,i,toSelect)
+            }
+            
+            
+        }
     },
     
     onFilterDragStart: function(slider,value,thumb) {
@@ -48,6 +67,13 @@ Ext.define('PumaMain.controller.Filter', {
         var labelEl = label.el;
         if (!labelEl) return;
         labelEl.addCls('sliding');
+        if (slider.chartEl) {
+            
+            slider.chartEl.show();
+        }
+        
+        
+        
     },
     
     onFilterDragEnd: function(slider,value,thumb) {
@@ -58,13 +84,12 @@ Ext.define('PumaMain.controller.Filter', {
         if (!label1El || !label2El) return;
         label1El.removeCls('sliding');
         label2El.removeCls('sliding');
+        if (slider.chartEl) {
+            
+            slider.chartEl.hide();
+        }
     },
     
-    test: function(cfg) {
-        
-        
-        
-    },
     
     onInstantChange: function(btn) {
         if (btn.eventsSuspended) return;
@@ -123,6 +148,7 @@ Ext.define('PumaMain.controller.Filter', {
     
     reconfigureFilters: function(cfg) {
         var attrs = Ext.clone(cfg.attrs);
+        this.cfg = cfg;
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var sliders = Ext.ComponentQuery.query('multislider',filterPanel);
         
@@ -155,53 +181,170 @@ Ext.define('PumaMain.controller.Filter', {
             }
             attrMap[attr.as+'_'+attr.attr] = true;
         }
-        attrs = Ext.Array.difference(attrs,attrsToRemove);
+        this.attrs = Ext.Array.difference(attrs,attrsToRemove);
         
         if (!attrs.length) {
-            this.applyFilters();
             return;
         }
-        var areas = this.getController('Area').allMap;
-        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
-        var years = [Ext.ComponentQuery.query('#selyear')[0].getValue()[0]];
-        Ext.Ajax.request({
-            url: Config.url + '/api/filter/filter',
-            params: {
-                attrs: JSON.stringify(cfg.attrs),
-                dataset: datasetId,
-                years: JSON.stringify(years),
-                areas: JSON.stringify(areas)
-            },
-            scope: this,
-            method: 'GET',
-            cfg: cfg,
-            attrs: attrs,
-            success: this.reconfigureFiltersCallback
-        })
+        this.reconfigureFiltersCall(false,true);
         
         
     },
-    reconfigureFiltersCallback: function(response) {
-        var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
-        var attrs = response.request.options.attrs;
-        var cfg = response.request.options.cfg;
-        var attrMap = JSON.parse(response.responseText).data.metaData;
+    
+    createChart: function(slider,dist) {
+        if (slider.chartEl) {
+            slider.chartEl.hide();
+        }
+        var cmp = Ext.create('Ext.Component',{
+            width: 200,
+            height: 150,
+            floating: true
+        })
+        cmp.show();
+        cmp.hide();
+        var chart = new Highcharts.Chart({
+            chart: {
+                renderTo: cmp.el.dom,
+                type: 'column',
+                events: {
+                    load: function(event) {
+//                        this.series[0].data[3].select(true,true);
+//                        this.series[0].data[4].select(true,true);
+//                        this.series[0].data[5].select(true,true);
+                    }
+            }        
+            },
+            yAxis: {
+                min: 0,
+                title: null,
+                allowDecimals: false,
+                 labels: {
+                    enabled: false
+                }
+            },
+            xAxis: {
+                labels: {
+                    enabled: false
+                },
+                tickLength: 0
+            },
+            credits: {
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            legend: {
+                enabled: false
+            },
+            title: {
+                text: null
+            },
+            plotOptions: {
+                column: {
+                    pointPadding: 0,
+                    groupPadding: 0.1,
+                    borderWidth: 0
+                }
+            },
+            series: [{
+                data: Ext.Array.clone(dist),
+                color: '#ccc',
+                states: {
+                    select: {
+                        color: '#aaaaff'
+                    }
+                }
+            }]
         
+        });
+        slider.chartEl = cmp.el;
+        slider.chart = chart;
+    },
+    
+        
+    reconfigureFiltersCall: function(requestData,requestDist) {
+        if (!this.attrs || !this.attrs.length) return;
+        var areas = this.getController('Area').allMap;
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var years = [Ext.ComponentQuery.query('#selyear')[0].getValue()[0]];
+        var params = {
+            dataset: datasetId,
+            years: JSON.stringify(years),
+        }
+        if (requestDist) {
+            params.attrs = JSON.stringify(this.attrs)
+            params.areas = JSON.stringify(areas);
+        }
+        if (requestData) {
+            
+        }
+        Ext.Ajax.request({
+            url: Config.url + '/api/filter/filter',
+            params: params,
+            scope: this,
+            method: 'GET',
+            success: this.reconfigureFiltersCallback
+        })
+    },    
+        
+    reconfigureFiltersCallback: function(response) {
+        var attrMap = JSON.parse(response.responseText).data.metaData;
+        var selMap = JSON.parse(response.responseText).data.data;
+        if (attrMap) {
+            this.updateDistributions(attrMap);
+        }
+        if (selMap) {
+            
+        }
+    },
+        
+    updateDistributions: function(attrMap) {
+        var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var attrCfgs = [];
-        for (var i = 0; i < attrs.length; i++) {
-            var attr = attrs[i]
-            var idx = Ext.Array.indexOf(cfg.attrs, attr);
-            var attrIndex = 'as_'+attr.as+'_attr_'+attr.attr
-            if (Ext.Array.contains(attrCfgs,attrIndex)) {
+        for (var i = 0; i < this.attrs.length; i++) {
+            var attr = this.attrs[i]
+            var idx = Ext.Array.indexOf(this.attrs, attr);
+            var attrName = 'as_'+attr.as+'_attr_'+attr.attr
+            if (Ext.Array.contains(attrCfgs,attrName)) {
                 continue;
             }
-            attrCfgs.push(attrIndex);
-            var attrCfg = attrMap[attrIndex];
+            
+            attrCfgs.push(attrName);
+            
+            var attrCfg = attrMap[attrName];
+            
             attrCfg.attrObj = attr;
-            var cnt = this.getFilterItems([attrCfg])[0]
-            filterPanel.insert(idx, cnt)
+            attrCfg.attrName = attrName;
+            
+            var slider = Ext.ComponentQuery.query('multislider[attrname='+attrName+']')[0];
+            
+            if (slider) {
+                this.updateSlider(slider,attrCfg);
+                this.createChart(slider,attrCfg.dist);
+            }
+            else {
+                
+                var cnt = this.getFilterItems([attrCfg])[0]
+                filterPanel.insert(idx, cnt);
+                slider = Ext.ComponentQuery.query('multislider[attrname='+attrName+']')[0];
+                this.createChart(slider,attrCfg.dist);
+            }
+            
         }
-        //this.applyFilters();
+    },
+        
+    updateSlider: function(slider,cfg) {
+        var container = slider.up('container');
+        var attrName = cfg.attrObj.attrName + ' ('+cfg.units+')';
+        slider.decimalPrecision = Math.max(0,-cfg.decimal);
+        slider.increment = Math.pow(10,cfg.decimal);
+        slider.setMinValue(cfg.min);
+        slider.setMaxValue(cfg.max);
+        
+        container.down('#attrName').setValue(attrName);
+        container.down('#minValue').el.setHTML(String(cfg.min))
+        container.down('#maxValue').el.setHTML(String(cfg.max))
     },
         
     getFilterItems: function(attrCfgs) {
@@ -209,7 +352,6 @@ Ext.define('PumaMain.controller.Filter', {
         
         for (var i = 0; i < attrCfgs.length; i++) {
             var attrCfg = attrCfgs[i];
-            debugger;
             var min = attrCfg.value ? attrCfg.value[0] : attrCfg.min;
             var max = attrCfg.value ? attrCfg.value[1] : attrCfg.max;
             var cnt = {
@@ -221,6 +363,7 @@ Ext.define('PumaMain.controller.Filter', {
                 },
                 items: [{
                         xtype: 'displayfield',
+                        itemId: 'attrName',
                         margin: '0 17',
                         value: attrCfg.attrObj.attrName + ' ('+attrCfg.units+')'
                     }, {
@@ -233,9 +376,7 @@ Ext.define('PumaMain.controller.Filter', {
                             xtype: 'component',
                             itemId: 'thumb1',
                             cls: 'slider-thumb-label',
-                            //html: min
-                            //,
-                            html: 1520252
+                            html: min
                         },{
                             xtype: 'component',
                             itemId: 'thumb2',
@@ -245,6 +386,8 @@ Ext.define('PumaMain.controller.Filter', {
                     },
                     {
                         xtype: 'multislider',
+                        
+                        attrname: attrCfg.attrName,
                         useTips: false,
                         margin: '0 17',
                         clickToChange: false,
@@ -269,7 +412,7 @@ Ext.define('PumaMain.controller.Filter', {
                         items: [{
                             xtype: 'container',
                             flex: 1,
-                            items: [{xtype: 'component',cls: 'slider-constraints slider-constraint-min',html: String(attrCfg.min)}],
+                            items: [{itemId: 'minValue',xtype: 'component',cls: 'slider-constraints slider-constraint-min',html: String(attrCfg.min)}],
                             layout: {
                                 type: 'hbox',
                                 pack: 'start'
@@ -277,7 +420,7 @@ Ext.define('PumaMain.controller.Filter', {
                         },{
                             xtype: 'container',
                             flex: 1,
-                            items: [{xtype: 'component',cls: 'slider-constraints slider-constraint-max',html: String(attrCfg.max)}],
+                            items: [{itemId: 'maxValue',xtype: 'component',cls: 'slider-constraints slider-constraint-max',html: String(attrCfg.max)}],
                             layout: {
                                 type: 'hbox',
                                 pack: 'end'

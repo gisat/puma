@@ -83,10 +83,12 @@ function filter(params, req, res, callback) {
                                 break;
                             }
                         }
+                        console.log(min);
+                        console.log(max)
                         min = (Math.abs(min-Math.round(min))<0.0001) ? Math.round(min) : min;
                         max = (Math.abs(max-Math.round(max))<0.0001) ? Math.round(max) : max;
-                        min = Math.floor(min*Math.pow(10,k))/Math.pow(10,k)
-                        max = Math.ceil(max*Math.pow(10,k))/Math.pow(10,k)
+                        min = Math.floor(min*Math.pow(10,-k))/Math.pow(10,-k)
+                        max = Math.ceil(max*Math.pow(10,-k))/Math.pow(10,-k)
                         
                         attrMetaMap['as_'+attr.as+'_attr_'+attr.attr] = {
                             dist: dist,

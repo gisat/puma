@@ -96,6 +96,7 @@ Ext.define('PumaMain.controller.Area', {
         }
         else if (needChange) {
             this.scanTree();
+            this.getController('Filter').reconfigureFiltersCall(true,true);
             this.getController('DomManipulation').deactivateLoadingMask();
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
@@ -139,6 +140,7 @@ Ext.define('PumaMain.controller.Area', {
         if (nodesToCollapse.length) {
             tree.view.refresh();
             this.scanTree();
+            this.getController('Filter').reconfigureFiltersCall(false,true);
             var selController = this.getController('Select');
             this.colourTree(selController.colorMap)
             this.getController('Layers').colourMap(selController.colorMap); 
@@ -304,6 +306,7 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
+        this.getController('Filter').reconfigureFiltersCall(true,true);
         var locThemeController = this.getController('LocationTheme');
         if (locThemeController.locationChanged) {
             this.zoomToLocation();
@@ -323,6 +326,7 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
+        this.getController('Filter').reconfigureFiltersCall(false,true);
         var selController = this.getController('Select');
         this.colourTree(selController.colorMap)
         this.getController('Layers').colourMap(selController.colorMap); 
