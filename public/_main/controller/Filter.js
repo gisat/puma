@@ -34,15 +34,28 @@ Ext.define('PumaMain.controller.Filter', {
     },
     
     onFilterChange: function(slider,value,thumb) {
-        var id = slider.thumbs[0]==thumb ? 'thumb1' : 'thumb2';
+        var isFirst = slider.thumbs[0]==thumb
+        var id =  isFirst ? 'thumb1' : 'thumb2';
         var label = slider.up('container').down('#'+id);
         var labelEl = label.el;
         if (!labelEl) return;
         labelEl.setHTML(value);
+        var offset = 0;
+        
         labelEl.alignTo(thumb.el,"b-t",[0,0]);
+        if (isFirst && labelEl.dom.offsetLeft<2) {
+            offset = 2 - labelEl.dom.offsetLeft
+        }
+        else if (labelEl.dom.offsetLeft+labelEl.dom.offsetWidth>labelEl.dom.offsetParent.offsetWidth-2){
+            offset = -(labelEl.dom.offsetLeft+labelEl.dom.offsetWidth-labelEl.dom.offsetParent.offsetWidth+2);
+        }
+        if (offset) {
+            labelEl.alignTo(thumb.el,"b-t",[offset,0]);
+            
+        }
         if (slider.chartEl) {
             
-            slider.chartEl.alignTo(slider.el,"b-t",[0,0]);
+            slider.chartEl.alignTo(slider.el,"b-t",[0,-20]);
             var points = slider.chart.series[0].data;
             var value = slider.getValue();
             var diff = slider.maxValue-slider.minValue;
@@ -53,8 +66,8 @@ Ext.define('PumaMain.controller.Filter', {
                 var hypoMin = slider.minValue + i*inc;
                 var hypoMax = slider.minValue + i*inc + inc;
                 var toSelect = (hypoMax>value[0] && hypoMin<value[1]);
-                point.select(toSelect,toSelect);
-                console.log(point,i,toSelect)
+                
+                point.select(toSelect,true);
             }
             
             
@@ -205,14 +218,7 @@ Ext.define('PumaMain.controller.Filter', {
         var chart = new Highcharts.Chart({
             chart: {
                 renderTo: cmp.el.dom,
-                type: 'column',
-                events: {
-                    load: function(event) {
-//                        this.series[0].data[3].select(true,true);
-//                        this.series[0].data[4].select(true,true);
-//                        this.series[0].data[5].select(true,true);
-                    }
-            }        
+                type: 'column'    
             },
             yAxis: {
                 min: 0,
@@ -243,7 +249,7 @@ Ext.define('PumaMain.controller.Filter', {
             plotOptions: {
                 column: {
                     pointPadding: 0,
-                    groupPadding: 0.1,
+                    groupPadding: 0,
                     borderWidth: 0
                 }
             },
