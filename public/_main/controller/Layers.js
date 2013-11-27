@@ -54,7 +54,8 @@ Ext.define('PumaMain.controller.Layers', {
     onLayerLegend: function(panel, rec, checked) {
         if (checked) {
             var img = Ext.widget('image',{
-                src: rec.get('src')
+                src: rec.get('src'),
+                margin: '5 0 0 0'
             })
             
             var window = Ext.widget('window', {
@@ -66,7 +67,7 @@ Ext.define('PumaMain.controller.Layers', {
             })
             img.on('resize',function(i) {
                 i.el.on('load',function(a, dom) {
-                    this.setSize(dom.clientWidth+32,dom.clientHeight+48);
+                    this.setSize(dom.clientWidth+32,dom.clientHeight+52);
                     var leftPanel = Ext.ComponentQuery.query('toolspanel')[0];
                     var factor = Ext.ComponentQuery.query('window[islegend=1]').length-1;
                     this.showBy(leftPanel,'bl-br',[30*factor,-30*factor]);

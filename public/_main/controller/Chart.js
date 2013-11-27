@@ -88,6 +88,7 @@ Ext.define('PumaMain.controller.Chart', {
     
     onToggleLegend: function(btn) {
         var chart = btn.up('panel').chart;
+        $(btn.el.dom).toggleClass('tool-active');
         chart.legendOn = chart.legendOn ? false : true;
         this.toggleLegendState(chart.chart, chart.legendOn);
     },
