@@ -73,6 +73,15 @@ Ext.define('PumaMain.controller.Chart', {
         Highcharts.setOptions({
             lang: {
                 thousandsSep: ''
+            },
+            chart: {
+                style: {
+                    fontSize: '12px',
+                    fontFamily: '"Open Sans", sans-serif',
+                    color: '#000',
+                    fontWeight: 'normal'
+                    
+                }
             }
         })
     },
