@@ -12,7 +12,44 @@ Ext.define('PumaMain.view.Tools', {
             multi: true
         }   
         this.items = [
-             {
+         {
+            xtype: 'panel',
+            title: 'Selection color',
+            itemId: 'selcolor',
+            collapseRight: true,
+            tools: [{
+               type: 'gear',
+               cls: 'detach',
+               itemId: 'undock'
+            }],
+            layout: {
+                type: 'hbox',
+                align: 'middle'
+            },
+            height: 72,
+            items: [{
+                    xtype: 'colorpicker',
+                    fieldLabel: 'CP',
+                    value: 'ff4c39',
+                    itemId: 'selectcolorpicker',
+                    height: 22,
+                    margin: '0 10',
+                    flex: 1,
+                    //width: 120,
+                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
+                
+            },{
+                xtype: 'component',
+                margin: '0 10',
+                itemId: 'unselectbtn',
+                html: '<span id="app-tools-colors-unselect">unselect</span>'
+            }]
+             
+             
+         },   
+            
+            
+        {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
@@ -20,21 +57,47 @@ Ext.define('PumaMain.view.Tools', {
             selModel: {
                 mode: 'MULTI'
             },
+            collapseRight: true,
+            tools: [{
+               type: 'gear',
+               cls: 'detach',
+               itemId: 'undock'
+            }],
             rootVisible: false,
             displayField: 'name',
-            height: 300
+            maxHeight: 500
         }, {
             xtype: 'layerpanel',
             collapsed: true,
-            height: 300,
+            maxHeight: 500,
+            itemId: 'layerpanel',
+            collapseRight: true,
+            tools: [{
+               type: 'gear',
+               cls: 'detach',
+               itemId: 'undock'
+            }],
             title: 'Layers'
         },{
             xtype: 'maptools',
             collapsed: false,
+            itemId: 'maptools',
+            collapseRight: true,
+            tools: [{
+               type: 'gear',
+               cls: 'detach',
+               itemId: 'undock'
+            }],
             title: 'Map tools'
         },{
             xtype: 'panel',
             collapsed: true,
+            collapseRight: true,
+            tools: [{
+               type: 'gear',
+               cls: 'detach',
+               itemId: 'undock'
+            }],
             layout: {
                 type: 'vbox',
                 align: 'stretch'

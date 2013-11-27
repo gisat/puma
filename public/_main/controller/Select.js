@@ -15,14 +15,21 @@ Ext.define('PumaMain.controller.Select', {
             },
             '#useselectedcolorpicker': {
                 select: this.onChangeChartColor
+            },
+            '#unselectbtn': {
+                afterrender: this.onAfterUnselectRender
             }
+            
         })
         this.selMap = {'ff4c39':[]};
         this.colorMap = {};
         this.hoverMap = [];
         this.actualColor = 'ff4c39';
+    },
+    onAfterUnselectRender: function() {
         Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
     },
+
         
     select: function(areas,add,hover) {
         if (!this.actualColor) return;

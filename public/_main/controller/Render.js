@@ -2,7 +2,56 @@ Ext.define('PumaMain.controller.Render', {
     extend: 'Ext.app.Controller',
     views: [],
     requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer','Ext.slider.Multi'],
-    init: function() {},
+    init: function() {
+        this.control({
+            'toolspanel tool[type=gear]': {
+                click: this.undockPanel
+            },
+            'window[isdetached=1]': {
+                close: this.dockPanel
+            }
+        })
+    },
+    
+    dockPanel: function(win) {
+        var panel = win.down('panel');
+        win.remove(panel,false);
+        var order = ['selcolor','areatree','layerpanel','maptools','advancedfilters'];
+        var idx = 0;
+        for (var i=0;i<order.length;i++) {
+            var name = order[i];
+            if (name==panel.itemId) break;
+            var cmp = Ext.ComponentQuery.query('toolspanel #'+name);
+            if (cmp.length) {
+                idx++;
+            }
+        }
+        
+        
+        var container = Ext.ComponentQuery.query('toolspanel')[0];
+        container.insert(idx,panel);
+
+    },
+    
+    undockPanel: function(tool) {
+        var panel = tool.up('panel');
+        panel.up('container').remove(panel,false);
+        
+        panel.el.setTop(0);
+        var win = Ext.widget('window',{
+            layout: 'fit',
+            width: 260,
+            maxHeight: 500,
+            cls: 'detached-window',
+            isdetached: 1,
+            constrainHeader: true
+            ,
+            items: [panel]
+        }).show();
+        win.el.setOpacity(0.9)
+    },
+    
+    
     renderApp: function() {
         Ext.widget('pumacombo',{
             store: 'dataset',
@@ -163,16 +212,16 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button btn-save'
         })
-        Ext.widget('colorpicker',{
-                    xtype: 'colorpicker',
-                    fieldLabel: 'CP',
-                    value: 'ff4c39',
-                    itemId: 'selectcolorpicker',
-                    height: 16,
-                    width: 120,
-                    renderTo: 'app-tools-colors',
-                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
-                })
+//        Ext.widget('colorpicker',{
+//                    xtype: 'colorpicker',
+//                    fieldLabel: 'CP',
+//                    value: 'ff4c39',
+//                    itemId: 'selectcolorpicker',
+//                    height: 16,
+//                    width: 120,
+//                    renderTo: 'app-tools-colors',
+//                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
+//                })
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'
         })
