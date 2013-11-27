@@ -2,6 +2,7 @@ Ext.define('PumaMain.view.LayerPanel', {
     extend: 'Ext.tab.Panel',
     alias: 'widget.layerpanel',
     requires: ['Ext.ux.RowExpander'],
+    cls: 'layerpanel',
     initComponent: function() {
 
         var me = this;
@@ -22,174 +23,125 @@ Ext.define('PumaMain.view.LayerPanel', {
                 displayField: 'name',
                 bodyCls: 'layers-selected',
                 border: true,
-                plugins: [{
-                    ptype: 'rowexpander',
-                    rowBodyTpl : ['<tpl for=".">', '<div style="overflow-x:auto;background-color:white" class="layertools" layerid="{id}">', 
-                        '<span class="layertool layertool-opacity"><img src="images/icons/opacity.png"><span>Opacity</span></span>',
-                        '<tpl if="this.hasLegend(src)"><span class="layertool layertool-legend"><img src="images/icons/legend.png"><span>Legend</span></span></tpl>', 
-                        '<tpl if="this.hasMetadata(type)"><span class="layertool layertool-metadata"><img src="images/icons/metadata.png"><span>Metadata</span></span></tpl>', '</div>', '</tpl>',{
-                        hasLegend: function(src) {
-                            return src ? true : false;
-                        },
-                        hasMetadata: function(type) {
-                            return type=='topiclayer'
-                        }
-                    }]
-                }],
-                columns: [{
-                        dataIndex: 'checked',
-                        xtype: 'checkcolumnwithheader',
-                        listeners: {
-                            checkchange: function(a,b,checked,rec) {
-                                me.fireEvent('checkchange',rec,checked)
-                            }
-                        },
-                        width: 30
-                    },{
+//                plugins: [{
+//                    ptype: 'rowexpander',
+//                    rowBodyTpl : ['<tpl for=".">', '<div style="overflow-x:auto;background-color:white" class="layertools" layerid="{id}">', 
+//                        '<span class="layertool layertool-opacity"><img src="images/icons/opacity.png"><span>Opacity</span></span>',
+//                        '<tpl if="this.hasLegend(src)"><span class="layertool layertool-legend"><img src="images/icons/legend.png"><span>Legend</span></span></tpl>', 
+//                        '<tpl if="this.hasMetadata(type)"><span class="layertool layertool-metadata"><img src="images/icons/metadata.png"><span>Metadata</span></span></tpl>', '</div>', '</tpl>',{
+//                        hasLegend: function(src) {
+//                            return src ? true : false;
+//                        },
+//                        hasMetadata: function(type) {
+//                            return type=='topiclayer'
+//                        }
+//                    }]
+//                }],
+                columns: [
+//                    {
+//                        dataIndex: 'checked',
+//                        xtype: 'checkcolumnwithheader',
+//                        listeners: {
+//                            checkchange: function(a,b,checked,rec) {
+//                                me.fireEvent('checkchange',rec,checked)
+//                            }
+//                        },
+//                        width: 30
+//                    }
+                    {
                         dataIndex: 'name',
                         flex: 1,
                         header: 'Name'
                     }
                     , {
                         xtype: 'actioncolumn',
-                        width: 45,
+                        width: 65,
                         items: [
-//                            {
-//                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
-//                                tooltip: 'Opacity', 
-//                                width: 16,
-//                                height: 16,
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('layeropacity',me,record)
-//                                }
-//                            },{
-//                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
-//                                tooltip: 'Metadata', 
-//                                width: 16,
-//                                height: 16,
-//                                getClass: function(v,metadata,rec) {
-//                                    
-//                                    if (rec.get('type')!='topiclayer') {
-//                                        return 'invisible'
-//                                    }
-//                                },
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('showmetadata',me,record)
-//                                }
-//                            }
-//                            ,{
-//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
-//                                tooltip: 'Configure', 
-//                                width: 15,
-//                                height: 20,
-//                                getClass: function(v,metadata,rec) {
-//                                    
-//                                    if (rec.get('type')!='chartlayer') {
-//                                        return 'invisible'
-//                                    }
-//                                },
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('choroplethreconfigure',me,record)
-//                                }
-//                            }
-                             {
-                                icon: 'images/icons/up.png', // Use a URL in the icon config
-                                tooltip: 'Up', 
+                            {
+                                icon: 'images/icons/opacity.png', // Use a URL in the icon config
+                                tooltip: 'Opacity', 
                                 width: 16,
                                 height: 16,
-                                getClass: function(v,metadata,rec) {
-                                    
-                                    if (rec.parentNode && rec.parentNode.get('type')=='basegroup') {
-                                        return 'invisible'
-                                    }
-                                },
-                               handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('layerup',me,record)
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layeropacity',me,record)
                                 }
                             },{
-                                icon: 'images/icons/down.png', // Use a URL in the icon config
-                                tooltip: 'Down', 
+                                icon: 'images/icons/info.png', // Use a URL in the icon config
+                                tooltip: 'Metadata', 
                                 width: 16,
                                 height: 16,
                                 getClass: function(v,metadata,rec) {
                                     
-                                    if (rec.parentNode && rec.parentNode.get('type')=='basegroup') {
+                                    if (rec.get('type')!='topiclayer') {
                                         return 'invisible'
                                     }
                                 },
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
-                                    me.fireEvent('layerdown',me,record)
+                                    me.fireEvent('showmetadata',me,record)
                                 }
                             }
-//                            ,{
-//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
-//                                tooltip: 'Remove', 
-//                                width: 15,
-//                                height: 20,
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('layerremove',me,record)
-//                                }
-//                            }
+                            ,{
+                                icon: 'images/icons/legend.png', // Use a URL in the icon config
+                                tooltip: 'Open Legend', 
+                                width: 16,
+                                height: 16,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.get('type')!='chartlayer' && rec.get('type')!='topiclayer') {
+                                        return 'invisible'
+                                    }
+                                    if (rec.get('legend')) {
+                                        return 'invisiblecomplete';
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layerlegend',me,record,true)
+                                }
+                            }
+                            
+                            ,{
+                                icon: 'images/icons/info.png', // Use a URL in the icon config
+                                tooltip: 'Close legend', 
+                                width: 16,
+                                height: 16,
+                                getClass: function(v,metadata,rec) {
+                                    
+                                    if (rec.get('type')!='chartlayer' && rec.get('type')!='topiclayer') {
+                                        return 'invisible'
+                                    }
+                                    if (!rec.get('legend')) {
+                                        return 'invisiblecomplete';
+                                    }
+                                },
+                                handler: function(grid, rowIndex, colIndex,item,e,record) {
+                                    me.fireEvent('layerlegend',me,record,false)
+                                }
+                            }
                         ]
                     }
                     ],
                 style: {
-                    borderRadius: '0px',
-                    //overflow: 'hidden'
-                    //backgroundColor: '#ffffee'
+                    borderRadius: '0px'
                 }
             },{
                 xtype: 'treepanel',
                 itemId: 'layerpanel',
-//                                viewConfig: {
-//                                    plugins: {ptype: 'treeviewdragdrop'}
-//                                },
                 store: Ext.StoreMgr.lookup('layers'),
-                //frame: true,
                 title: 'Layers available',
                 displayField: 'name',
                 rootVisible: false,
                 border: true,
+                viewConfig: {
+                    getRowClass: function(rec) {
+                        return rec.get('type')=='topiclayer' ? 'has-metadata' : '';
+                    }
+                },
                 columns: [{
                         xtype: 'treecolumn',
                         dataIndex: 'name',
                         flex: 1,
                         header: 'Name'
                     }
-//                    ,
-//                    {
-//                        xtype: 'actioncolumn',
-//                        width: 45,
-//                        items: [{
-//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=CF', // Use a URL in the icon config
-//                                tooltip: 'Configure', 
-//                                width: 15,
-//                                height: 20,
-//                                getClass: function(v,metadata,rec) {
-//                                    
-//                                    if (rec.get('type')!='chartlayer') {
-//                                        return 'invisible'
-//                                    }
-//                                },
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('choroplethreconfigure',me,record)
-//                                }
-//                            }, {
-//                                icon: 'http://dummyimage.com/15x15/fdd/000&text=RE', // Use a URL in the icon config
-//                                tooltip: 'Remove', 
-//                                width: 15,
-//                                height: 20,
-//                                getClass: function(v,metadata,rec) {
-//                                    
-//                                    if (rec.get('type')!='chartlayer') {
-//                                        return 'invisible'
-//                                    }
-//                                },
-//                                handler: function(grid, rowIndex, colIndex,item,e,record) {
-//                                    me.fireEvent('choroplethremove',me,record)
-//                                }
-//                            }]
-//                    }
                 ],
                 style: {
                     borderRadius: '0px'

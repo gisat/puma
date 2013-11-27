@@ -66,6 +66,9 @@ div .olControlAttribution {
 img.invisible {
     visibility: hidden
 }
+img.invisiblecomplete {
+    display: none;
+}
 
 .x-boundlist li {
     font-size: 11px;

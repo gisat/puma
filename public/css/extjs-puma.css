@@ -298,6 +298,15 @@
 	background-image     : url("../images/icons/tree-node-item.png");
 	background-repeat     : no-repeat;
 }
+.layerpanel .x-tree-icon-leaf {
+	background-image     : url("../images/icons/info.png");
+	background-repeat     : no-repeat;
+        visibility: hidden
+}
+.layerpanel .has-metadata .x-tree-icon-leaf {
+	visibility: visible;
+}
+
 .x-tree-lines .x-tree-elbow-plus, .x-tree-lines .x-tree-elbow-end-plus,
 .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-plus, .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-end-plus,
 .x-tree-lines .x-tree-elbow, .x-tree-lines .x-tree-elbow-end, .x-tree-lines .x-tree-elbow-line {

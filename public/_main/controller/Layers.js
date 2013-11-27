@@ -51,8 +51,7 @@ Ext.define('PumaMain.controller.Layers', {
             
         })
     },
-    onLayerLegend: function(panel, rec, el) {
-        var checked = el.hasCls('checked');
+    onLayerLegend: function(panel, rec, checked) {
         if (checked) {
             var img = Ext.widget('image',{
                 src: rec.get('src')
@@ -67,23 +66,24 @@ Ext.define('PumaMain.controller.Layers', {
             })
             img.on('resize',function(i) {
                 i.el.on('load',function(a, dom) {
-                    this.setSize(dom.clientWidth+26,dom.clientHeight+50);
+                    this.setSize(dom.clientWidth+32,dom.clientHeight+48);
                     var leftPanel = Ext.ComponentQuery.query('toolspanel')[0];
                     var factor = Ext.ComponentQuery.query('window[islegend=1]').length-1;
                     this.showBy(leftPanel,'bl-br',[30*factor,-30*factor]);
-                    this.el.setOpacity(0.8)
+                    this.el.setOpacity(0.85)
                 },this)
             },window,{single:true})
             window.showAt(1,1);
             
-            window.elem = el;
+            window.rec = rec;
             window.on('close', function(win) {
-                win.elem.removeCls('checked')
+                win.rec.set('legend',null);
             })
-            el.legend = window;
+            rec.set('legend',window);
         }
-        if (!checked && el.legend) {
-            el.legend.close();
+        if (!checked && rec.get('legend')) {
+            rec.get('legend').close();
+            rec.set('legend',null);
         }
     },
             
