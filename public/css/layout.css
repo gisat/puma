@@ -3,7 +3,7 @@ html, body {
 	height               : 100%;
 	width                : 100%;
 }
-body {
+body, body.x-body {
 	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 	background           : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
@@ -230,7 +230,9 @@ strong {
 			vertical-align   : middle;
 			padding-right    : 10px;
 			color            : #c8bfc7;
+			font-family      : "Open sans";
 			font-weight      : bold;
+			font-size        : 12px;
 			width            : 70px;
 		}
 		.fields-holder .field > .widget {
@@ -332,7 +334,7 @@ strong {
 				left     : -250px;
 			}
 		#app-tools-actions {
-			height       : 35px;
+			height       : 30px;
 		}
 		
 		/* Sidebar reports */
@@ -354,10 +356,10 @@ strong {
 		#sidebar-reports-toggle {
 			display             : block;
 			width               : 21px;
-			height              : 35px;
+			height              : 30px;
 			background-image    : url("../images/sidebar-toggle-sprite.png");
 			background-repeat   : no-repeat;
-			background-position : 0 0;
+			background-position : 0 -2px;
 			position            : absolute;
 			left                : -21px;
 			top                 : 0;
@@ -366,7 +368,7 @@ strong {
 		#sidebar-tools-toggle {
 			left                : auto;
 			right               : -21px;
-			background-position : -21px 0;
+			background-position : -21px -2px;
 		}
 		#sidebar-reports.hidden #sidebar-reports-toggle {
 			background-position : -21px 0;
@@ -377,6 +379,7 @@ strong {
 		
 	/* Footer */
 	#footer {
+		font-family      : "Open sans";
 		height           : 40px;
 		line-height      : 40px;
 		background-color : #333;

@@ -197,10 +197,10 @@
 	background           : none;
 }
 .x-border-box .x-tab-bar-top .x-tab-bar-body {
-	height               : 35px;
+	height               : 30px;
 }
 .x-border-box .x-tab-default-top {
-	height               : 35px;
+	height               : 30px;
 	background           : #f4f0ec url("../images/tab-bg.png") repeat-x 0 0;
 	border               : none;
 	-webkit-border-radius: 0;

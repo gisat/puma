@@ -18,10 +18,10 @@
 }
 .field.level {
 	padding-right        : 3px;
-	margin-right         : 16px;
+	margin-right         : 10px;
 }
 .field.level .label {
-	width                : 90px;
+	width                : 94px;
 }
 .field.level .widget {
 	width                : 90px;
@@ -190,11 +190,11 @@
 
 /* Reports */
 #app-reports-paging {
-	height               : 35px;
+	height               : 30px;
 }
 #app-reports-paging .paging-toolbar {
-	padding              : 6px 10px;
-	height               : 35px;
+	padding              : 4px 10px;
+	height               : 30px;
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
 }
@@ -402,13 +402,13 @@
 }
 
 #sidebar-tools-colors .label {
-	background-color: #dddddd;
-	padding: 5px 10px;
+	background: #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0;
+	padding: 7px 10px;
 	font-weight: bold;
 }
 #sidebar-tools-colors .contents {
 	background-color: #fff;
-	padding: 10px;
+	padding: 5px 10px;
 	position: relative;
 }
 #sidebar-tools-colors #app-tools-colors {
@@ -416,14 +416,14 @@
 	width: 170px;
 }
 #app-tools-colors-unselect {
-	
+	font-family: "Open sans";
 	line-height: 20px;
 	font-weight: bold;
 	cursor: pointer;
 	color: #666;
 	text-decoration: underline;
 }
-#sidebar-tools-colors #app-tools-colors-unselect:hover {
+#app-tools-colors-unselect:hover {
 	text-decoration: none;
 }
 
