@@ -4,7 +4,7 @@ Ext.define('PumaMain.controller.Render', {
     requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer','Ext.slider.Multi'],
     init: function() {
         this.control({
-            'toolspanel tool[type=gear]': {
+            'toolspanel tool[type=detach]': {
                 click: this.undockPanel
             },
             'window[isdetached=1]': {

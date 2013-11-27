@@ -274,6 +274,9 @@
 .x-panel-header .x-tool-gear {
 	background-image     : url("../images/icons/settings.png") !important;
 }
+.x-panel-header .x-tool-detach {
+	background-image     : url("../images/icons/detach.png") !important;
+}
 .x-panel-header .x-tool-close {
 	background-image     : url("../images/icons/close.png") !important;
 }
