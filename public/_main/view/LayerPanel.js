@@ -100,7 +100,7 @@ Ext.define('PumaMain.view.LayerPanel', {
                             }
                             
                             ,{
-                                icon: 'images/icons/info.png', // Use a URL in the icon config
+                                icon: 'images/icons/legend-active.png', // Use a URL in the icon config
                                 tooltip: 'Close legend', 
                                 width: 16,
                                 height: 16,
