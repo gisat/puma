@@ -11,11 +11,15 @@ Ext.define('PumaMain.view.Tools', {
             fill: false,
             multi: true
         }   
+        this.defaults = {
+            hideCollapseTool: true
+        }
         this.items = [
          {
             xtype: 'panel',
             title: 'Selection color',
             itemId: 'selcolor',
+            header: {height: 60},
             collapseRight: true,
             tools: [{
                type: 'gear',
@@ -65,11 +69,12 @@ Ext.define('PumaMain.view.Tools', {
             }],
             rootVisible: false,
             displayField: 'name',
-            maxHeight: 500
+            height: 340
+            //,maxHeight: 500
         }, {
             xtype: 'layerpanel',
             collapsed: true,
-            maxHeight: 500,
+            //maxHeight: 500,
             itemId: 'layerpanel',
             collapseRight: true,
             tools: [{
@@ -77,6 +82,7 @@ Ext.define('PumaMain.view.Tools', {
                cls: 'detach',
                itemId: 'undock'
             }],
+            height: 300,
             title: 'Layers'
         },{
             xtype: 'maptools',
