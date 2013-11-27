@@ -224,18 +224,17 @@ Ext.define('PumaMain.controller.Layers', {
                     html+= '<p class="title">Abstract</p>';
                     html+= '<p>' + r.abstract + '</p>';
                     
-                    html+= '<p class="title">Date type</p>';
-                    html+= '<p>' + r.date_type + '</p>';
+                    html+= '<p class="title">Temporal extent</p>';
+                    html+= '<p>' + r.temporal + '</p>';
                     
-                    html+= '<p class="title">Date</p>';
-                    html+= '<p>' + Ext.util.Format.date(Ext.Date.parse(r.date,'c'),'Y-m-d') + '</p>';
+                    html+= '<p class="title">Keywords</p>';
+                    html+= '<p>' + r.keywords + '</p>';
                     
-                    if (r.temporal_extent_start && r.temporal_extent_end) {
-                        html+= '<p class="title">Time extent</p>';
-                        html+= '<p>' + Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_start,'c'),'Y-m-d') +' - '+Ext.util.Format.date(Ext.Date.parse(r.temporal_extent_end,'c'),'Y-m-d') + '</p>';
-                    }
+                    html+= '<p class="title">Producer</p>';
+                    html+= '<p>' + r.producer + '<br/>';
+                    html+= '<a target="_top" href="mailto:' + r.mail + '">' + r.mail + '</a></p>'
                     
-                    html+= '<p>For more details see <a target="_blank" href="'+r.distribution_url+'">Complete Metadata</a></p>';
+                    html+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
                     
                     html+= '</div>';
                 }
