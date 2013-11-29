@@ -25,6 +25,7 @@ Ext.define('PumaMain.controller.Select', {
         this.colorMap = {};
         this.hoverMap = [];
         this.actualColor = 'ff4c39';
+        this.defaultColor = 'ff4c39';
     },
     onAfterUnselectRender: function() {
         Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
@@ -32,7 +33,11 @@ Ext.define('PumaMain.controller.Select', {
 
         
     select: function(areas,add,hover) {
+        
         if (!this.actualColor) return;
+        if (hover) {
+            this.fromChart = null;
+        }
         if (this.task) {
             this.task.cancel();
         }
@@ -185,8 +190,9 @@ Ext.define('PumaMain.controller.Select', {
             
             Ext.StoreMgr.lookup('paging').setCount(count);
             
-            var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect) || onlySel;
-            
+            var outer = !this.fromChart || this.outerSelect || (!this.outerSelect && this.prevOuterSelect) || onlySel;
+            this.fromChart = null;
+            console.log(outer);
             this.getController('Chart').reconfigure(outer  ? 'outer' : 'inner');    
         }
         this.prevOuterSelect = this.outerSelect

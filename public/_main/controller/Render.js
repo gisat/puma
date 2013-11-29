@@ -9,8 +9,16 @@ Ext.define('PumaMain.controller.Render', {
             },
             'window[isdetached=1]': {
                 close: this.dockPanel
+            },
+            'window[isdetached=1] panel': {
+                collapse: this.onFloatingCollapse
             }
         })
+    },
+    onFloatingCollapse: function(panel) {
+        window.setTimeout(function() {
+            panel.up('window').setHeight(null);
+        },100)
     },
     
     dockPanel: function(win) {
@@ -29,6 +37,8 @@ Ext.define('PumaMain.controller.Render', {
         
         
         var container = Ext.ComponentQuery.query('toolspanel')[0];
+        
+        panel.collapse();
         container.insert(idx,panel);
 
     },
@@ -36,7 +46,6 @@ Ext.define('PumaMain.controller.Render', {
     undockPanel: function(tool) {
         var panel = tool.up('panel');
         panel.up('container').remove(panel,false);
-        
         panel.el.setTop(0);
         var win = Ext.widget('window',{
             layout: 'fit',
@@ -48,7 +57,12 @@ Ext.define('PumaMain.controller.Render', {
             ,
             items: [panel]
         }).show();
-        win.el.setOpacity(0.9)
+        win.el.setOpacity(0.9);
+        if (panel.itemId=='advancedfilters') {
+            this.getController('Filter').afterAccordionLayout();
+        }
+        panel.expand();
+        panel.doLayout();
     },
     
     

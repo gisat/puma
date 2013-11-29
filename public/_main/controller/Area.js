@@ -96,7 +96,6 @@ Ext.define('PumaMain.controller.Area', {
         }
         else if (needChange) {
             this.scanTree();
-            this.getController('Filter').reconfigureFiltersCall(true,true);
             this.getController('DomManipulation').deactivateLoadingMask();
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
@@ -140,7 +139,6 @@ Ext.define('PumaMain.controller.Area', {
         if (nodesToCollapse.length) {
             tree.view.refresh();
             this.scanTree();
-            this.getController('Filter').reconfigureFiltersCall(false,true);
             var selController = this.getController('Select');
             this.colourTree(selController.colorMap)
             this.getController('Layers').colourMap(selController.colorMap); 
@@ -233,6 +231,9 @@ Ext.define('PumaMain.controller.Area', {
         var selected = [{at:rec.get('at'),gid:rec.get('gid'),loc:rec.get('loc')}];
         var add = evt.ctrlKey;
         var hover = false;
+        if (tree.xtype=='gridview') {
+            this.getController('Select').fromChart = true;
+        }
         this.getController('Select').select(selected,add,hover);
     },
     onItemMouseEnter: function(tree,rec,item,index,evt) {
@@ -306,7 +307,6 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
-        this.getController('Filter').reconfigureFiltersCall(true,true);
         var locThemeController = this.getController('LocationTheme');
         if (locThemeController.locationChanged) {
             this.zoomToLocation();
@@ -326,7 +326,6 @@ Ext.define('PumaMain.controller.Area', {
             return;
         }
         this.scanTree();
-        this.getController('Filter').reconfigureFiltersCall(false,true);
         var selController = this.getController('Select');
         this.colourTree(selController.colorMap)
         this.getController('Layers').colourMap(selController.colorMap); 
@@ -423,22 +422,22 @@ Ext.define('PumaMain.controller.Area', {
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;
         var overallCount = 0;
+        
         for (var color in selMap) {
+            var objsToRemove = [];
             for (var i=0;i<selMap[color].length;i++) {
                 var obj = selMap[color][i];
                 overallCount++;
-                if (allMap[obj.loc] && allMap[obj.loc][obj.at] && Ext.Array.contains(allMap[obj.loc][obj.at],obj.gid)) {}
-                else {
-                    selMap[color] = Ext.Array.difference(selMap[color],[obj])
-                }
+                
                 if (lowestMap[obj.loc] && lowestMap[obj.loc][obj.at] && Ext.Array.contains(lowestMap[obj.loc][obj.at],obj.gid)) {}
                 else if (allMap[obj.loc] && allMap[obj.loc][obj.at] && Ext.Array.contains(allMap[obj.loc][obj.at],obj.gid)) {
                     outerCount++;
                 }
                 else {
-                    selMap[color] = Ext.Array.difference(selMap[color],[obj]);
+                    Ext.Array.include(objsToRemove,obj);
                 }
             }
+            selMap[color] = Ext.Array.difference(selMap[color],objsToRemove)
         }
         this.getController('Select').prepareColorMap();
         this.getController('Select').overallCount = overallCount;
@@ -449,6 +448,7 @@ Ext.define('PumaMain.controller.Area', {
         Ext.StoreMgr.lookup('paging').setCount(count);
         
         this.getController('Layers').refreshOutlines();
+        this.getController('Filter').reconfigureFiltersCall();
         //this.getController('Layers').checkVisibilityAndStyles(true,false);
         
     },

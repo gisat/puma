@@ -142,6 +142,7 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             
             this.getController('Filter').reconfigureFilters(values);
         }
+        form.up('window').close();
     },
         
     onConfigureClick: function(cmp) {

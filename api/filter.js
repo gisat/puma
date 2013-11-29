@@ -17,7 +17,29 @@ function filter(params, req, res, callback) {
     params.filter = null;
     params2.bypassLeafs = true;
     params2.refreshAreas = true;
-
+    params2.allAreaTemplates = true;
+    params2.justAreas = true;
+    
+    if (params['expanded']) {
+        require('./theme').getThemeYearConf(params2,req,res,function() {
+            var newData = [];
+            for (var i=0;i<res.data.length;i++) {
+                var row = res.data[i];
+                var obj = {
+                    loc: row.loc,
+                    at: row.at,
+                    gid: row.gid
+                }
+                newData.push(obj);
+                
+            }
+            res.data = newData;
+            callback(null)
+        });
+        return;
+    }
+    
+    
     var opts = {
         attrConf: function(asyncCallback) {
             if (!params['areas']) {
@@ -32,7 +54,8 @@ function filter(params, req, res, callback) {
         },
         metaData: ['attrConf', function(asyncCallback, results) {
                 if (!results.attrConf) {
-                    return asyncCallback(null);
+                    
+                    return callback(null);
                 }
 
                 params.attrMap = results.attrConf.prevAttrMap;
@@ -83,10 +106,11 @@ function filter(params, req, res, callback) {
                                 break;
                             }
                         }
-                        console.log(min);
-                        console.log(max)
-                        min = (Math.abs(min-Math.round(min))<0.0001) ? Math.round(min) : min;
-                        max = (Math.abs(max-Math.round(max))<0.0001) ? Math.round(max) : max;
+                        if (max>100) {
+                            console.log(max)
+                        }
+                        min = (Math.abs(min-Math.round(min))<0.001) ? Math.round(min) : min;
+                        max = (Math.abs(max-Math.round(max))<0.001) ? Math.round(max) : max;
                         min = Math.floor(min*Math.pow(10,-k))/Math.pow(10,-k)
                         max = Math.ceil(max*Math.pow(10,-k))/Math.pow(10,-k)
                         
@@ -98,23 +122,11 @@ function filter(params, req, res, callback) {
                             units: resl.units
                         }
                     }
-                    return asyncCallback(null,attrMetaMap);
+                    res.data = {metaData: attrMetaMap}
+                    return callback(null);
                     
                 })
 
-            }],
-        data: function(asyncCallback) {
-            if (!params['expanded']) {
-                return asyncCallback(null);
-            }
-
-        },
-        result: ['data', 'metaData', function(asyncCallback, results) {
-                res.data = {
-                    data: results.data,
-                    metaData: results.metaData
-                }
-                return callback(null);
             }]
     }
     async.auto(opts)
@@ -197,6 +209,7 @@ function getFilterConfig(params, req, res, callback) {
                         min = min==null ? minVal : Math.min(min,minVal);
                         max = max==null ? maxVal : Math.max(max,maxVal);
                     }
+                    
                     var diff = max-min;
                     var inc = 1;
                     for (var x=1;x<10;x++) {

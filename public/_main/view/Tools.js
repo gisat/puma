@@ -23,6 +23,7 @@ Ext.define('PumaMain.view.Tools', {
             collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             layout: {
@@ -63,6 +64,7 @@ Ext.define('PumaMain.view.Tools', {
             collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             rootVisible: false,
@@ -77,6 +79,7 @@ Ext.define('PumaMain.view.Tools', {
             collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             height: 300,
@@ -88,6 +91,7 @@ Ext.define('PumaMain.view.Tools', {
             collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             title: 'Map tools'
@@ -97,6 +101,7 @@ Ext.define('PumaMain.view.Tools', {
             collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             layout: {

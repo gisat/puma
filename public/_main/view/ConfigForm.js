@@ -47,7 +47,8 @@ Ext.define('PumaMain.view.ConfigForm', {
             }, {
                 xtype: 'addattributegrid'
             }, {
-                xtype: 'normalizeform'
+                xtype: 'normalizeform',
+                formType: this.formType
             }, {
                 xtype: 'form',
                 bodyStyle:{

@@ -10,6 +10,7 @@ function getData(params, callback) {
 
     var areas = JSON.parse(params['areas']);
     var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
+    var defSelectedArea = params['defSelectedArea'] ? JSON.parse(params['defSelectedArea']) : null;
     var attrs = JSON.parse(params['attrs']);
     if (attrs[0].normType=='select') {
         params['normalization'] = 'select'
@@ -65,7 +66,6 @@ function getData(params, callback) {
     var topLoc = params['aggregate'] == 'toptree' || params['normalization'] == 'toptree' || params['toptree'];
     var aggSelect =  params['aggregate'] == 'select' || params['normalization'] == 'select';
     
-    console.log(aggSelect)
     var layerRefMap = {};
 
     var select = "SELECT "
@@ -104,8 +104,6 @@ function getData(params, callback) {
             topAllSql += 'SELECT -1 as gid,\'All\' as name,area';
             
         }
-        console.log(attrs.length);
-        console.log(attrsWithSort.length)
         for (var j = 0; j < attrsWithSort.length; j++) {
             var attr = attrsWithSort[j];
             var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
@@ -222,6 +220,7 @@ function getData(params, callback) {
             originalAreas[locationId][areaId] = us.clone(areas[locationId][areaId]);
         }
     }
+    
     for (var i = 0; i < selectedAreas.length; i++) {
         var selectedArea = selectedAreas[i];
         for (var locationId in selectedArea) {
@@ -240,12 +239,12 @@ function getData(params, callback) {
             }
         }
     }
+    console.log(originalSelected)
     areaIds = us.uniq(areaIds);
     locationIds = us.uniq(locationIds);
 
     var allMap = selectedAreas;
     allMap.push(areas);
-    console.log(allMap)
     var opts = {
         dataset: function(asyncCallback) {
 
@@ -373,7 +372,9 @@ function getData(params, callback) {
                                 gidSql = 'x_' + years[0] + '."gid"';
                                 nameSql = 'x_' + years[0] + '."name"';
                             }
-                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',i);
+                            var prIdx = (sort && sortProperty!='name') ? 1 : i;
+                            prIdx = ((aggSelect || (params['sortNorm'] && JSON.parse(params['sortNorm']).normType=='select')) && i==0) ? i : prIdx;
+                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',prIdx);
 
                             var baseLayerRef = null;
                             var baseYear = null;
@@ -442,24 +443,22 @@ function getData(params, callback) {
                     if (!moreYears && sortProperty.search('y')>=0) {
                         sortProperty = sortProperty.split('_y_')[0];
                     }
-                    dataSql += sortProperty + '_sort ' + sort[0].direction+','+nameSort;
+                    dataSql += 'pr ASC,' + sortProperty + '_sort ' + sort[0].direction+','+nameSort;
                 }
                 else {
                     dataSql += 'pr ASC,'+nameSort;
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);
-                    console.log(resls)
                     var aggData = [];
                     var normalData = [];
                     var locAggDataMap = {};
                     
                     if (topLoc || topAll || aggSelect) {
-                        
+                        var aggColorPassed = false;
                             //console.log(originalSelected);
                         for (var i = 0; i < resls.rows.length; i++) {
                             var row = resls.rows[i];
@@ -481,14 +480,15 @@ function getData(params, callback) {
                                 locAggDataMap[row.loc] = aggRow;
 
                             }
-                            else if (aggSelect && originalSelected[row.loc] && originalSelected[row.loc][row.at] && originalSelected[row.loc][row.at].indexOf(row.gid)>=0) {
-                               
-                                if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
+                            else if (aggSelect && defSelectedArea && defSelectedArea.at==row.at && defSelectedArea.loc==row.loc && defSelectedArea.gid==row.gid) {
+                                //if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
                                     normalData.push(row);
-                                }
+                                //}
+                                console.log('test')
                                 var aggRow = us.clone(row)
                                 aggData.push(aggRow)
                                 locAggDataMap['select'] = aggRow;
+                                   
                             }
                             else {
                                 normalData.push(row);
@@ -530,7 +530,8 @@ function getData(params, callback) {
                     else {
                         normalData = resls.rows;
                     }
-
+                    console.log(normalData.length);
+                    if (!normalData.length) return callback(new Error('nodata'));
                     return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
                 })
             }],
@@ -691,6 +692,9 @@ function getAttrConf(params, callback) {
                     }
                     if (normType == 'year') {
                         normUnits = units
+                    }
+                    if (normType == 'select') {
+                        normUnits = units;
                     }
                     if (normType == 'attribute') {
                         var normAttr = attrRec.normAttr || params['normalizationAttribute'];

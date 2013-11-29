@@ -90,13 +90,15 @@ Ext.define('PumaMain.controller.LocationTheme', {
             themeCombo.setValue(first)
         }
         if (cnt.initial) {
-            locationCombo.emptyText = 'Select location...';
+            locationCombo.emptyText = 'Select place...';
             locationCombo.setValue(null);
             if (themeCombo && themeCombo.isVisible()) {
                 themeCombo.emptyText = 'Select theme...';
                 themeCombo.setValue(null);
             }
         }
+        this.getController('Filter').clearFilters();
+        
         locationCombo.resumeEvents();
         locationComboAlt.resumeEvents();
         themeComboAlt.resumeEvents();
@@ -737,7 +739,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         else if (response.request.options.yearChanged){
             this.getController('Layers').refreshOutlines();
+            this.getController('Filter').reconfigureFiltersCall();
         }
+    
         if (conf.attrSets) {
             this.checkFeatureLayers();
             this.checkAttrSets(conf.attrSets);

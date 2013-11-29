@@ -513,10 +513,12 @@ Ext.define('PumaMain.controller.Store', {
             {
                 name: 'Average',
                 type: 'avg'
-            },{
-                name: 'Tree top',
-                type: 'toptree'
-            },{
+            },
+//            {
+//                name: 'Tree top',
+//                type: 'toptree'
+//            },
+            {
                 name: 'All',
                 type: 'topall'
             },{
@@ -564,13 +566,15 @@ Ext.define('PumaMain.controller.Store', {
 //                type: 'topall'
 //            },
             {
-                name: 'Select',
+                name: 'First selected',
                 type: 'select'
-            },
-            {
-                name: 'Year',
-                type: 'year'
-            }]
+            }
+//            ,
+//            {
+//                name: 'Year',
+//                type: 'year'
+//            }
+        ]
         })
         Ext.create('Ext.data.Store',{
             storeId: 'normalization4chartlimited',
