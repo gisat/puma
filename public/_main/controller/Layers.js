@@ -67,15 +67,18 @@ Ext.define('PumaMain.controller.Layers', {
             })
             img.on('resize',function(i) {
                 i.el.on('load',function(a, dom) {
+                    this.show();
                     this.setSize(dom.clientWidth+32,dom.clientHeight+52);
                     var leftPanel = Ext.ComponentQuery.query('toolspanel')[0];
                     var factor = Ext.ComponentQuery.query('window[islegend=1]').length-1;
-                    this.showBy(leftPanel,'bl-br',[30*factor,-30*factor]);
+                    var heightDiff = Ext.get('app-map').getBox().bottom - Ext.get('sidebar-tools').getBox().bottom;
+                    
+                    this.showBy(leftPanel,'bl-br',[50*factor+21,-50*factor+heightDiff]);
                     this.el.setOpacity(0.85)
                 },this)
             },window,{single:true})
             window.showAt(1,1);
-            
+            window.hide();
             window.rec = rec;
             window.on('close', function(win) {
                 win.rec.set('legend',null);

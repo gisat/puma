@@ -63,6 +63,9 @@ Ext.define('PumaMain.controller.Render', {
         }
         panel.expand();
         panel.doLayout();
+        var el = Ext.get('sidebar-tools-toggle');
+        var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
+        win.alignTo(el,'tl-tr',[50*factor,50*factor]);
     },
     
     
