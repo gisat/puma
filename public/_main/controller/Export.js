@@ -7,7 +7,8 @@ Ext.define('PumaMain.controller.Export', {
     },
 
     initConf: function() {
-        var id = window.location.search.split('?')[1].split('=')[1];
+        var id = window.location.search.split('?')[1].split('&')[0].split('=')[1];
+        this.forDownload = window.location.search.search('fordownload')>-1;
         Ext.Ajax.request({
             url: Config.url + '/api/urlview/getChart',
             params: {_id: id},
@@ -145,37 +146,17 @@ Ext.define('PumaMain.controller.Export', {
                 layers.push(layer);
             }
         }
-        console.log(layers);
         
-        if (legends.length) {
-            debugger;
-            var legendItems = [];
+        if (legends.length && this.forDownload) {
+            
+            var html = '';
             for (var i=0;i<legends.length;i++) {
                 var legend = legends[i];
-                var cnt = {
-                    xtype: 'container',
-             
-                    flex: 1,
-                    items: [{
-                        xtype: 'component',
-                        html: legend.name
-                    },{
-                        xtype: 'image',
-                        src: legend.src
-                    }]        
-                }
-                legendItems.push(cnt);
+                html += '<div class="legend-container"><div class="legend-text" >'+legend.name+'</div><img src="'+legend.src+'"/></div>'
             }
-            
-            var cnt = Ext.widget('container',{
-                items: legendItems,
-                width: this.mapWidth,
-                layout: {
-                    type: 'hbox'
-                }
-                        
-            })
-            cnt.render('legend')
+            var legendEl = Ext.get('legend');
+            legendEl.setStyle({maxWidth:this.mapWidth});
+            legendEl.update(html);
         }
         
         

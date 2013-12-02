@@ -353,7 +353,7 @@ Ext.define('PumaMain.controller.Area', {
         var parent = null;
         var lowestCount = 0;
         var containsLower = false;
-        var lowestNoLeafs = false;
+        var lowestNoLeafs = true;
         var locObj = this.getLocationObj();
         var changeLocToCustom = false;
         var atLeastOneLoc = false;
@@ -430,7 +430,7 @@ Ext.define('PumaMain.controller.Area', {
                 lowestMap[loc] = lowestMap[loc] || {};
                 lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
                 if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
-                    lowestNoLeafs = true;
+                    lowestNoLeafs = false;
                 }
             }
         }
@@ -440,11 +440,9 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestMap = lowestMap;
         this.highestMap = highestMap;
         this.lastMap = lastMap;
-        
         var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
-        var showLess = Ext.ComponentQuery.query('#arealessdetails')[0]
-        
-        showMore.setDisabled(lowestCount>100 || !lowestNoLeafs);
+        var showLess = Ext.ComponentQuery.query('#arealessdetails')[0];
+        showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1));
         showLess.setDisabled(!containsLower)
   
         var selMap = this.getController('Select').selMap;

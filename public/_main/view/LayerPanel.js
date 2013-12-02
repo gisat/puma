@@ -8,14 +8,14 @@ Ext.define('PumaMain.view.LayerPanel', {
         var me = this;
         this.buttons = [{
             text: 'Configure',
-            helpId: 'xhelp43',
+            helpId: 'Modyfingchoropleths',
             itemId: 'configurelayers'
         }]
         this.items = [
             {
                 xtype: 'grid',
                 itemId: 'layerselectedpanel',
-                helpId: 'xhelp38',
+                helpId: 'Selectedlayers',
                 id: 'layerselectedpanel',
                 store: Ext.StoreMgr.lookup('selectedlayers'),
                 viewConfig: {
@@ -55,6 +55,10 @@ Ext.define('PumaMain.view.LayerPanel', {
                         flex: 1,
                         sortable: false,
                         menuDisabled: true,
+                        renderer : function(value, metadata) {
+                            metadata.tdAttr = 'data-qtip="' + value + '"';
+                            return value;
+                        },
                         header: 'Name'
                     }
                     , {
@@ -66,7 +70,7 @@ Ext.define('PumaMain.view.LayerPanel', {
                             {
                                 icon: 'images/icons/opacity.png', // Use a URL in the icon config
                                 tooltip: 'Opacity',
-                                helpId: 'xhelp44',
+                                helpId: 'Settinglayersopacity',
                                 width: 16,
                                 height: 16,
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
@@ -133,7 +137,7 @@ Ext.define('PumaMain.view.LayerPanel', {
             },{
                 xtype: 'treepanel',
                 itemId: 'layerpanel',
-                helpId: 'xhelp37',
+                helpId: 'Availablelayers',
                 store: Ext.StoreMgr.lookup('layers'),
                 title: 'Layers available',
                 displayField: 'name',
@@ -150,6 +154,10 @@ Ext.define('PumaMain.view.LayerPanel', {
                         sortable: false,
                         menuDisabled: true,
                         flex: 1,
+                        renderer : function(value, metadata) {
+                            metadata.tdAttr = 'data-qtip="' + value + '"';
+                            return value;
+                        },
                         header: 'Name'
                     }
                 ],

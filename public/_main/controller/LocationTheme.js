@@ -97,7 +97,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 themeCombo.setValue(null);
             }
         }
-        this.getController('Filter').clearFilters();
+        else {
+            this.getController('Filter').clearFilters();
+            
+        }
         
         locationCombo.resumeEvents();
         locationComboAlt.resumeEvents();

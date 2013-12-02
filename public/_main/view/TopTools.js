@@ -17,7 +17,7 @@ Ext.define('PumaMain.view.TopTools', {
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'selectinmapbtn',
-            helpId: 'xhelp20',
+            helpId: 'Selectingunitsinmap',
             text: 'Select in map',
             icon: 'images/icons/map-select.png',
             cls: 'custom-button btn-map-select',
@@ -39,7 +39,7 @@ Ext.define('PumaMain.view.TopTools', {
             text: 'Snapshot',
             icon: 'images/icons/snapshot.png',
             itemId: 'mapsnapshotbtn',
-            helpId: 'xhelp26',
+            helpId: 'Creatingsnapshots',
             cls: 'custom-button btn-snapshot'
         }]
         

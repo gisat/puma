@@ -12,23 +12,23 @@ Ext.define('PumaMain.view.ChartPanel', {
         this.toolMap = {
             gear: {
                 type: 'gear',
-                helpId: 'xhelp16',
+                helpId: 'Modifyingcharts',
                 tooltip: 'Settings'
             },
             close: {
                 type: 'close',
-                helpId: 'xhelp14',
+                helpId: 'Removingcharts',
                 tooltip: 'Remove',
                 cls: 'tool-chart-close'
             },
             help: {
                 type: 'help',
-                helpId: 'xhelp19',
+                helpId: 'Displayingchartlegend',
                 tooltip: 'Legend'
             },
             collapse: {
                 type: 'collapse',
-                helpId: 'xhelp17',
+                helpId: 'Exportingchartsastables',
                 tooltip: 'Export CSV'
             },
             search: {
@@ -39,12 +39,12 @@ Ext.define('PumaMain.view.ChartPanel', {
             },
             print: {
                 type: 'print',
-                helpId: 'xhelp18',
+                helpId: 'Exportingchartsasgraphics',
                 tooltip: 'Export PNG'
             },
             save: {
                 type: 'save',
-                helpId: 'xhelp15',
+                helpId: 'Snapshots',
                 tooltip: 'Snapshot'
             }
         }

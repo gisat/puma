@@ -74,7 +74,7 @@ Ext.define('PumaMain.controller.Render', {
     renderApp: function() {
         Ext.widget('pumacombo',{
             store: 'dataset',
-            helpId: 'scopeMenu',
+            helpId: 'Selectingscopeofanalysis',
             itemId: 'seldataset',
             cls: 'custom-combo',
             listConfig: {
@@ -85,7 +85,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'location4init',
             itemId: 'sellocation',
-            helpId: 'xhelp7',
+            helpId: 'Selectingterritory ',
             valueField: 'id',
             cls: 'custom-combo',
             listConfig: {
@@ -96,7 +96,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'theme4sel',
             itemId: 'seltheme',
-            helpId: 'xhelp6',
+            helpId: 'Selectingtheme',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -108,14 +108,14 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('year4sel'),
             forceSelection: true,
             itemId: 'selyear',
-            helpId: 'xhelp9',
+            helpId: 'Switchingbetweenyears',
             multiCtrl: true,
             multi: true
             ,type: 'checkbox'
         })
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
-            helpId: 'xhelp11',
+            helpId: 'Selectingthevisualisation',
             itemId: 'selvisualization',
             cls: 'custom-combo',
             listConfig: {
@@ -136,7 +136,7 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-share',
             text: 'Share data view',
             itemId: 'sharedataview',
-            helpId: 'xhelp29',
+            helpId: 'Sharingdataviews',
             width: '100%',
             height: '100%',
             hidden: !Config.auth,
@@ -192,7 +192,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
             itemId: 'areamoredetails',
-            helpId: 'xhelp10',
+            helpId: 'Settingthelevelofdetail',
             text: '+',
             width: '100%',
             height: '100%',
@@ -201,7 +201,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-less',
             itemId: 'arealessdetails',
-            helpId: 'xhelp10',
+            helpId: 'Settingthelevelofdetail',
             text: '-',
             width: '100%',
             height: '100%',
@@ -211,7 +211,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-manage',
             itemId: 'managedataview',
-            helpId: 'xhelp31',
+            helpId: 'Managingdataviews',
             hidden: !Config.auth,
             icon: 'images/icons/settings.png',
             width: '100%',
@@ -230,7 +230,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-save',
             itemId: 'savedataview',
-            helpId: 'xhelp30',
+            helpId: 'Savingdataviews',
             hidden: !Config.auth,
             text: 'Save view',
             icon: 'images/icons/save.png',
@@ -256,7 +256,7 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('chartbar',{
             renderTo: 'app-reports-accordeon',
-            helpId: 'xhelp12'
+            helpId: 'Modifyingchartpanel'
         })
         Ext.widget('pagingtoolbar',{
             renderTo: 'app-reports-paging',

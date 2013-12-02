@@ -1,3 +1,10 @@
+#legend .legend-container {
+    float: left
+}
+#legend .legend-text {
+    margin: 6px 6px 6px 6px;
+}
+
 div.olControlZoom {
     top: auto ! important;
     left: auto ! important;

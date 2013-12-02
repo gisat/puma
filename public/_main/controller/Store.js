@@ -382,23 +382,23 @@ Ext.define('PumaMain.controller.Store', {
             root: {
                 expanded: true,
                 children: [{
-                    name: 'System',
+                    name: 'Analytical units',
                     type: 'systemgroup',
                     expanded: true,
                     checked: null
                 },{
-                    name: 'Choropleth',
+                    name: 'Thematic maps',
                     type: 'choroplethgroup',
                     expanded: true,
                     children: [],
                     checked: null
                 },{
-                    name: 'Thematic',
+                    name: 'Information layers',
                     type: 'thematicgroup',
                     expanded: true,
                     checked: null
                 },{
-                    name: 'Base',
+                    name: 'Background layers',
                     type: 'basegroup',
                     expanded: true,
                     checked: null

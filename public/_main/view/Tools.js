@@ -20,7 +20,7 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'panel',
             title: 'Selection color',
             itemId: 'selcolor',
-            helpId: 'xhelp21',
+            helpId: 'Multipleselectionshighlightedbyc',
             header: {height: 60},
             tools: [{
                type: 'detach',
@@ -58,7 +58,7 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
-            helpId: 'xhelp22',
+            helpId: 'TreeofanalyticalunitsAREAS',
             store: Ext.StoreMgr.lookup('area'),
             selModel: {
                 mode: 'MULTI'
@@ -77,7 +77,7 @@ Ext.define('PumaMain.view.Tools', {
             collapsed: true,
             //maxHeight: 500,
             itemId: 'layerpanel',
-            helpId: 'xhelp23',
+            helpId: 'Layers',
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -89,7 +89,7 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'maptools',
             collapsed: false,
             itemId: 'maptools',
-            helpId: 'xhelp24',
+            helpId: 'Maptools',
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -110,7 +110,7 @@ Ext.define('PumaMain.view.Tools', {
                 
             },
             itemId: 'advancedfilters',
-            helpId: 'xhelp25',
+            helpId: 'Filteringanalyticalunits',
             buttons: [{
                 text: 'Configure',
                 itemId: 'configurefilters'
