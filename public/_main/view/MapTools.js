@@ -16,6 +16,7 @@ Ext.define('PumaMain.view.MapTools', {
             xtype: 'button',
             enableToggle: true,
             itemId: 'hoverbtn',
+            helpId: 'xhelp31',
             text: 'Hover',
             iconAlign: 'top',
             icon: 'images/icons/tools-hover.png',
@@ -23,6 +24,7 @@ Ext.define('PumaMain.view.MapTools', {
         },{
             xtype: 'button',
             itemId: 'zoomselectedbtn',
+            helpId: 'xhelp32',
             text: 'Zoom selected',
             iconAlign: 'top',
             icon: 'images/icons/tools-zoom.png',
@@ -30,7 +32,7 @@ Ext.define('PumaMain.view.MapTools', {
         },{
             xtype: 'button',
             enableToggle: true,
-            helpId: 'Measuringdistance',
+            helpId: 'xhelp33',
             toggleGroup: 'mapmodal',
             itemId: 'measurelinebtn',
             text: 'Measure line',
@@ -42,6 +44,7 @@ Ext.define('PumaMain.view.MapTools', {
             enableToggle: true,
             toggleGroup: 'mapmodal',
             itemId: 'measurepolygonbtn',
+            helpId: 'xhelp34',
             text: 'Measure polygon',
             iconAlign: 'top',
             icon: 'images/icons/tools-measure-polygon.png',
@@ -49,6 +52,7 @@ Ext.define('PumaMain.view.MapTools', {
         },{
             xtype: 'button',
             itemId: 'multiplemapsbtn',
+            helpId: 'xhelp35',
             enableToggle: true,
             disabled: true,
             //hidden: true,
@@ -60,6 +64,7 @@ Ext.define('PumaMain.view.MapTools', {
             xtype: 'button',
             text: 'Save as image',
             itemId: 'savemapbtn',
+            helpId: 'xhelp36',
             icon: 'images/icons/tools-save.png',
             iconAlign: 'top',
             cls: 'custom-button btn-map-tool btn-tool-save-image'

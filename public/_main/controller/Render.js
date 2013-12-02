@@ -58,20 +58,23 @@ Ext.define('PumaMain.controller.Render', {
             items: [panel]
         }).show();
         win.el.setOpacity(0.9);
-        if (panel.itemId=='advancedfilters') {
-            this.getController('Filter').afterAccordionLayout();
-        }
-        panel.expand();
-        panel.doLayout();
+        
         var el = Ext.get('sidebar-tools-toggle');
         var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
         win.alignTo(el,'tl-tr',[50*factor,50*factor]);
+        
+        panel.expand();
+        panel.doLayout();
+        if (panel.itemId=='advancedfilters') {
+            this.getController('Filter').afterAccordionLayout();
+        }
     },
     
     
     renderApp: function() {
         Ext.widget('pumacombo',{
             store: 'dataset',
+            helpId: 'scopeMenu',
             itemId: 'seldataset',
             cls: 'custom-combo',
             listConfig: {
@@ -82,6 +85,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'location4init',
             itemId: 'sellocation',
+            helpId: 'xhelp7',
             valueField: 'id',
             cls: 'custom-combo',
             listConfig: {
@@ -92,6 +96,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'theme4sel',
             itemId: 'seltheme',
+            helpId: 'xhelp6',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -103,13 +108,14 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('year4sel'),
             forceSelection: true,
             itemId: 'selyear',
+            helpId: 'xhelp9',
             multiCtrl: true,
             multi: true
             ,type: 'checkbox'
         })
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
-            helpId: 'Selectingthevisualisation',
+            helpId: 'xhelp11',
             itemId: 'selvisualization',
             cls: 'custom-combo',
             listConfig: {
@@ -130,6 +136,7 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-share',
             text: 'Share data view',
             itemId: 'sharedataview',
+            helpId: 'xhelp29',
             width: '100%',
             height: '100%',
             hidden: !Config.auth,
@@ -185,7 +192,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
             itemId: 'areamoredetails',
-            helpId: 'Settingthelevelofdetail',
+            helpId: 'xhelp10',
             text: '+',
             width: '100%',
             height: '100%',
@@ -194,7 +201,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-less',
             itemId: 'arealessdetails',
-            helpId: 'Settingthelevelofdetail',
+            helpId: 'xhelp10',
             text: '-',
             width: '100%',
             height: '100%',
@@ -204,6 +211,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-manage',
             itemId: 'managedataview',
+            helpId: 'xhelp31',
             hidden: !Config.auth,
             icon: 'images/icons/settings.png',
             width: '100%',
@@ -222,6 +230,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-save',
             itemId: 'savedataview',
+            helpId: 'xhelp30',
             hidden: !Config.auth,
             text: 'Save view',
             icon: 'images/icons/save.png',
@@ -246,7 +255,8 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-tools-accordeon'
         })
         Ext.widget('chartbar',{
-            renderTo: 'app-reports-accordeon'
+            renderTo: 'app-reports-accordeon',
+            helpId: 'xhelp12'
         })
         Ext.widget('pagingtoolbar',{
             renderTo: 'app-reports-paging',

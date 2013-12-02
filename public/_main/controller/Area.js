@@ -43,7 +43,8 @@ Ext.define('PumaMain.controller.Area', {
         return {
             location: rec.get('location'),
             locGid: rec.get('locGid'),
-            at: rec.get('at')
+            at: rec.get('at'),
+            obj: rec
         }
     },
     
@@ -140,7 +141,7 @@ Ext.define('PumaMain.controller.Area', {
             tree.view.refresh();
             this.scanTree();
             var selController = this.getController('Select');
-            this.colourTree(selController.colorMap)
+            this.colourTree(selController.colorMap);
             this.getController('Layers').colourMap(selController.colorMap); 
             this.getController('Chart').reconfigureAll();
             this.getController('Layers').reconfigureAll();
@@ -353,7 +354,9 @@ Ext.define('PumaMain.controller.Area', {
         var lowestCount = 0;
         var containsLower = false;
         var lowestNoLeafs = false;
-        
+        var locObj = this.getLocationObj();
+        var changeLocToCustom = false;
+        var atLeastOneLoc = false;
         root.cascadeBy(function(node) {
             var at = node.get('at');
             var loc = node.get('loc')
@@ -368,6 +371,21 @@ Ext.define('PumaMain.controller.Area', {
                     highestMap[loc][at] = highestMap[loc][at] || [];
                     highestMap[loc][at].push(gid);
                 }
+                if (node.isExpanded()) {
+                    if ((at!=locObj.at || loc!=locObj.location || node.get('gid')!=locObj.locGid)) {
+                        if (locObj.obj.get('dataset')) {
+                            changeLocToCustom = true;
+                            
+                        }
+                    }
+                    else {
+                        atLeastOneLoc = true;
+                    }
+                    
+                }
+                
+               
+                
             }
             else {
                 containsLower = true;
@@ -392,6 +410,16 @@ Ext.define('PumaMain.controller.Area', {
                 leafMap[loc][at] = true;
             }
         })
+        if (changeLocToCustom || !atLeastOneLoc) {
+            var locStore = Ext.StoreMgr.lookup('location4init');
+            var customRec = locStore.getById('custom');
+            if (!customRec) {
+                customRec = new (locStore.model)({id:'custom',name:'Custom'});
+                locStore.add(customRec)
+            }
+            Ext.ComponentQuery.query('#sellocation')[0].setValue('custom')
+            
+        }
         this.areaTemplates = areaTemplates;
         if (areaTemplates.length) 
         {

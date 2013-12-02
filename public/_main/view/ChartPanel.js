@@ -12,19 +12,23 @@ Ext.define('PumaMain.view.ChartPanel', {
         this.toolMap = {
             gear: {
                 type: 'gear',
+                helpId: 'xhelp16',
                 tooltip: 'Settings'
             },
             close: {
                 type: 'close',
+                helpId: 'xhelp14',
                 tooltip: 'Remove',
                 cls: 'tool-chart-close'
             },
             help: {
                 type: 'help',
+                helpId: 'xhelp19',
                 tooltip: 'Legend'
             },
             collapse: {
                 type: 'collapse',
+                helpId: 'xhelp17',
                 tooltip: 'Export CSV'
             },
             search: {
@@ -35,10 +39,12 @@ Ext.define('PumaMain.view.ChartPanel', {
             },
             print: {
                 type: 'print',
+                helpId: 'xhelp18',
                 tooltip: 'Export PNG'
             },
             save: {
                 type: 'save',
+                helpId: 'xhelp15',
                 tooltip: 'Snapshot'
             }
         }
@@ -48,7 +54,6 @@ Ext.define('PumaMain.view.ChartPanel', {
         for (var i=0;i<toolNames.length;i++) {
             this.tools.push(this.toolMap[toolNames[i]]);
         }
-        
         this.callParent();
         this.updateToolVisibility();
     },
@@ -71,6 +76,9 @@ Ext.define('PumaMain.view.ChartPanel', {
         }
         for (var i=0;i<this.tools.length;i++) {
             var tool = this.tools[i];
+            if (tool.type=='collapse-top' || tool.type=='expand-bottom') {
+                    continue;
+                }
             var vis = Ext.Array.contains(toolNames,tool.type);
             if (tool.rendered) {
                 tool.setVisible(vis);

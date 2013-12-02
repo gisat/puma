@@ -67,7 +67,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var locCount = locStore.query('dataset',val).getCount();
         locStore.filter([
             function(rec) {
-                return rec.get('dataset')==val || (!rec.get('dataset') && locCount>1);
+                return rec.get('id') == 'custom' || rec.get('dataset')==val || (!rec.get('dataset') && locCount>1);
             }
         ]); 
         locationCombo.show();
@@ -105,7 +105,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onLocationChange: function(cnt,val) {
-        if (cnt.eventsSuspended || cnt.initial) {
+        if (cnt.eventsSuspended || cnt.initial || val=='custom') {
             return;
         }
         var locObj = this.getController('Area').getLocationObj();

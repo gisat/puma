@@ -120,9 +120,37 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         this.setActiveCard(btn,0);
     },
     
+    
+    
     onConfigureFinish: function(cmp) {
         var form = cmp.up('configform');
         var values = form.getForm().getValues();
+        var attrs = values.attrs;
+        var attrMap = {};
+        var isSelect = null
+        for (var i=0;i<attrs.length;i++) {
+            var attr = attrs[i];
+            var attrName = 'as_'+attr.as+'_attr_'+attr.attr;
+            if (attrMap[attrName]) {
+                Puma.util.Msg.msg('Duplicate attributes not allowed','','l');
+                return;
+            }
+            
+            attrMap[attrName] = true;
+            var type = attr.normType;
+            if (isSelect === true && type!='select') {
+                Puma.util.Msg.msg('All attributes have to be normalized to "First selected"','','l');
+                return;
+            }
+            if (isSelect === false && type=='select') {
+                Puma.util.Msg.msg('All attributes have to be normalized to "First selected"','','l');
+                return;
+            }
+            isSelect = type == 'select';
+        }
+        
+        
+        
         delete values['normType'];
         delete values['normYear'];
         delete values['normAttribute'];

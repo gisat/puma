@@ -12,15 +12,16 @@ Ext.define('PumaMain.view.Tools', {
             multi: true
         }   
         this.defaults = {
-            hideCollapseTool: true
+            //hideCollapseTool: true
+            collapseLeft: true
         }
         this.items = [
          {
             xtype: 'panel',
             title: 'Selection color',
             itemId: 'selcolor',
+            helpId: 'xhelp21',
             header: {height: 60},
-            collapseRight: true,
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -57,11 +58,11 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
+            helpId: 'xhelp22',
             store: Ext.StoreMgr.lookup('area'),
             selModel: {
                 mode: 'MULTI'
             },
-            collapseRight: true,
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -76,7 +77,7 @@ Ext.define('PumaMain.view.Tools', {
             collapsed: true,
             //maxHeight: 500,
             itemId: 'layerpanel',
-            collapseRight: true,
+            helpId: 'xhelp23',
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -88,7 +89,7 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'maptools',
             collapsed: false,
             itemId: 'maptools',
-            collapseRight: true,
+            helpId: 'xhelp24',
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -98,7 +99,6 @@ Ext.define('PumaMain.view.Tools', {
         },{
             xtype: 'panel',
             collapsed: true,
-            collapseRight: true,
             tools: [{
                type: 'detach',
                cls: 'detach',
@@ -110,6 +110,7 @@ Ext.define('PumaMain.view.Tools', {
                 
             },
             itemId: 'advancedfilters',
+            helpId: 'xhelp25',
             buttons: [{
                 text: 'Configure',
                 itemId: 'configurefilters'

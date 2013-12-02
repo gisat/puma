@@ -59,6 +59,8 @@ Ext.define('PumaMain.controller.Map', {
                 type: rec.get('type'),
                 opacity: layer.opacity || 1,
                 sldId: sldId,
+                name: rec.get('name'),
+                legendSrc: rec.get('src'),
                 layersParam: layersParam,
                 stylesParam: stylesParam
             }

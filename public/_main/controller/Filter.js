@@ -20,10 +20,22 @@ Ext.define('PumaMain.controller.Filter', {
                     '#advancedfilters' : {
                         resize: this.afterAccordionLayout
                     },
+                    '#advancedfilters #minValue' : {
+                        afterrender: this.onAfterValueRender
+                    },
+                    '#advancedfilters #maxValue' : {
+                        afterrender: this.onAfterValueRender
+                    },
                     'toolspanel': {
                         afterlayout: this.afterAccordionLayout
                     }
                 })
+    },
+        
+    onAfterValueRender: function(obj) {
+        if (obj.cfgVal) {
+            obj.el.setHTML(obj.cfgVal);
+        }
     },
         
     afterAccordionLayout: function(slider) {
@@ -66,14 +78,28 @@ Ext.define('PumaMain.controller.Filter', {
             var value = slider.getValue();
             var diff = slider.maxValue-slider.minValue;
             var inc = diff/points.length;
-            
+            var sum = 0;
+            var approx = 0;
             for (var i=0;i<points.length;i++) {
                 var point = points[i];
+                
                 var hypoMin = slider.minValue + i*inc;
                 var hypoMax = slider.minValue + i*inc + inc;
                 var toSelect = (hypoMax>value[0] && hypoMin<value[1]);
+                sum += point.y;
+                if (toSelect) {
+                    approx += point.y;
+                }
                 
                 point.select(toSelect,true);
+            }
+            var span = Ext.query('svg .highcharts-axis tspan',slider.chart.renderTo)[0];
+            var text = 'approx. '+approx+'/'+sum;
+            if (span.textContent!=null) {
+                span.textContent = text;
+            }
+            else {
+                span.innerText = text;
             }
         }
         
@@ -88,8 +114,8 @@ Ext.define('PumaMain.controller.Filter', {
         if (slider.chartEl) {
             
             slider.chartEl.setDisplayed('');
-            slider.chartEl.setStyle({visibility:'visible'})
-            console.log(slider.chartEl)
+            slider.chartEl.setStyle({visibility:'visible',zIndex:100000});
+            
         }
         
         
@@ -143,27 +169,27 @@ Ext.define('PumaMain.controller.Filter', {
             obj.max = val[1]==slider.maxValue ? val[1]+0.1 : val[1];
             filters.push(obj);
         }
-      
+        this.reconfigureFiltersCall(filters);
         
-        var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
-        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
-        var params = {
-                years: JSON.stringify(years),
-                dataset: dataset
-            }
-        var expandedAndFids = this.getController('Area').getExpandedAndFids();
-        params['expanded'] = JSON.stringify(expandedAndFids.expanded);
-        params['filter'] = JSON.stringify({
-            filters: filters,
-            areaTemplates: []
-        })
-        Ext.Ajax.request({
-            url: Config.url + '/api/filter/filter',
-            params: params,
-            scope: this,
-            method: 'GET',
-            success: this.applyFiltersCallback
-        })
+//        var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+//        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+//        var params = {
+//                years: JSON.stringify(years),
+//                dataset: dataset
+//            }
+//        var expandedAndFids = this.getController('Area').getExpandedAndFids();
+//        params['expanded'] = JSON.stringify(expandedAndFids.expanded);
+//        params['filter'] = JSON.stringify({
+//            filters: filters,
+//            areaTemplates: []
+//        })
+//        Ext.Ajax.request({
+//            url: Config.url + '/api/filter/filter',
+//            params: params,
+//            scope: this,
+//            method: 'GET',
+//            success: this.applyFiltersCallback
+//        })
         
         this.getController('DomManipulation').activateLoadingMask();
 //        var featureLayers = dataset.get('featureLayers');
@@ -250,7 +276,8 @@ Ext.define('PumaMain.controller.Filter', {
             style: {
                 borderColor: '#ddd',
                 zIndex: 100000,
-                borderRadius: '8px',
+                backgroundColor: '#fff',
+                //borderRadius: '8px',
                 borderStyle: 'solid'
             },
             floating: true
@@ -273,6 +300,16 @@ Ext.define('PumaMain.controller.Filter', {
             xAxis: {
                 labels: {
                     enabled: false
+                },
+                title: {
+                    text: 'approx. 100/120',
+                    
+                    offset: -120,
+                    style: {
+                        fontSize: 10,
+                        fontWeight: 'normal',
+                        color: '#222'
+                    }
                 },
                 tickLength: 0
             },
@@ -311,7 +348,7 @@ Ext.define('PumaMain.controller.Filter', {
     },
     
         
-    reconfigureFiltersCall: function() {
+    reconfigureFiltersCall: function(filters) {
         if (!this.attrs || !this.attrs.length) return;
         var areas = this.getController('Area').allMap;
         var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
@@ -322,13 +359,18 @@ Ext.define('PumaMain.controller.Filter', {
             attrs: JSON.stringify(this.attrs),
             areas: JSON.stringify(areas)
         }
-  
+    
+        if (filters) {
+            params['filters'] = JSON.stringify(filters);
+        }
+        
+    
         Ext.Ajax.request({
             url: Config.url + '/api/filter/filter',
             params: params,
             scope: this,
             method: 'GET',
-            success: this.reconfigureFiltersCallback
+            success: filters ? this.applyFiltersCallback : this.reconfigureFiltersCallback
         })
     },    
         
@@ -422,8 +464,8 @@ Ext.define('PumaMain.controller.Filter', {
         
         
         container.down('#attrName').setValue(attrName);
-        container.down('#minValue').el.setHTML(String(cfg.min))
-        container.down('#maxValue').el.setHTML(String(cfg.max))
+        container.down('#minValue').el ? container.down('#minValue').el.setHTML(String(cfg.min)) : container.down('#minValue').cfgVal = String(cfg.min);
+        container.down('#maxValue').el ? container.down('#maxValue').el.setHTML(String(cfg.max)) : container.down('#maxValue').cfgVal = String(cfg.max);
         if (newValue) {
             slider.setValue(newValue,false);
             this.afterAccordionLayout(slider);

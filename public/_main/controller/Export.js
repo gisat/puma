@@ -23,7 +23,6 @@ Ext.define('PumaMain.controller.Export', {
             height: 400,
             width: 575
         };
-        debugger;
         if (cfg.type=='extentoutline') {
             opts.layout = 'absolute'
             var selAreas = JSON.parse(cfg.selectedAreas);
@@ -40,6 +39,7 @@ Ext.define('PumaMain.controller.Export', {
                 height: cfg.size.h,
                 width: cfg.size.w
             }
+            this.mapWidth = cfg.size.w;
         }
         var chart = Ext.widget('chartcmp', opts);
         chart.render('rendering');
@@ -72,7 +72,6 @@ Ext.define('PumaMain.controller.Export', {
     
         
     loadMap: function(cmp) {
-        debugger;
         var options = {
             projection: new OpenLayers.Projection("EPSG:900913"),
             displayProjection: new OpenLayers.Projection("EPSG:4326"),
@@ -89,7 +88,8 @@ Ext.define('PumaMain.controller.Export', {
         var layers = [];
         var gLayer = null;
         
-        var counterObj = {cnt: 0,desired: 0}
+        var counterObj = {cnt: 0,desired: 0};
+        var legends = [];
         for (var i=0;i<cfg.layers.length;i++) {
             var layerCfg = cfg.layers[i];
             var layer = null;
@@ -130,6 +130,12 @@ Ext.define('PumaMain.controller.Export', {
                 if (layerCfg.stylesParam) {
                     params['styles'] = layerCfg.stylesParam
                 }
+                if (layerCfg.legendSrc) {
+                    legends.push({
+                        src: layerCfg.legendSrc,
+                        name: layerCfg.name
+                    })
+                }
                 layer = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', params, layerParams);
                 counterObj.desired++;
                 
@@ -139,7 +145,38 @@ Ext.define('PumaMain.controller.Export', {
                 layers.push(layer);
             }
         }
-        //console.log(layers);
+        console.log(layers);
+        
+        if (legends.length) {
+            debugger;
+            var legendItems = [];
+            for (var i=0;i<legends.length;i++) {
+                var legend = legends[i];
+                var cnt = {
+                    xtype: 'container',
+             
+                    flex: 1,
+                    items: [{
+                        xtype: 'component',
+                        html: legend.name
+                    },{
+                        xtype: 'image',
+                        src: legend.src
+                    }]        
+                }
+                legendItems.push(cnt);
+            }
+            
+            var cnt = Ext.widget('container',{
+                items: legendItems,
+                width: this.mapWidth,
+                layout: {
+                    type: 'hbox'
+                }
+                        
+            })
+            cnt.render('legend')
+        }
         
         
         

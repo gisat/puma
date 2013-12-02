@@ -8,12 +8,14 @@ Ext.define('PumaMain.view.LayerPanel', {
         var me = this;
         this.buttons = [{
             text: 'Configure',
+            helpId: 'xhelp43',
             itemId: 'configurelayers'
         }]
         this.items = [
             {
                 xtype: 'grid',
                 itemId: 'layerselectedpanel',
+                helpId: 'xhelp38',
                 id: 'layerselectedpanel',
                 store: Ext.StoreMgr.lookup('selectedlayers'),
                 viewConfig: {
@@ -51,15 +53,20 @@ Ext.define('PumaMain.view.LayerPanel', {
                     {
                         dataIndex: 'name',
                         flex: 1,
+                        sortable: false,
+                        menuDisabled: true,
                         header: 'Name'
                     }
                     , {
                         xtype: 'actioncolumn',
+                        sortable: false,
+                        menuDisabled: true,
                         width: 65,
                         items: [
                             {
                                 icon: 'images/icons/opacity.png', // Use a URL in the icon config
-                                tooltip: 'Opacity', 
+                                tooltip: 'Opacity',
+                                helpId: 'xhelp44',
                                 width: 16,
                                 height: 16,
                                 handler: function(grid, rowIndex, colIndex,item,e,record) {
@@ -126,6 +133,7 @@ Ext.define('PumaMain.view.LayerPanel', {
             },{
                 xtype: 'treepanel',
                 itemId: 'layerpanel',
+                helpId: 'xhelp37',
                 store: Ext.StoreMgr.lookup('layers'),
                 title: 'Layers available',
                 displayField: 'name',
@@ -139,6 +147,8 @@ Ext.define('PumaMain.view.LayerPanel', {
                 columns: [{
                         xtype: 'treecolumn',
                         dataIndex: 'name',
+                        sortable: false,
+                        menuDisabled: true,
                         flex: 1,
                         header: 'Name'
                     }

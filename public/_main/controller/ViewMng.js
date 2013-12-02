@@ -204,6 +204,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         onlySel.toggle(Config.cfg.pagingUseSelected)
         onlySel.resumeEvents();
         
+        this.getController('AttributeConfig').filterConfig = Config.cfg.filterAttrs;
         this.getController('Filter').attrs = Config.cfg.filterAttrs;
         this.getController('Filter').initialValues = Config.cfg.filterMap;
         var locationTheme = this.getController('LocationTheme');

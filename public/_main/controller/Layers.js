@@ -415,11 +415,11 @@ Ext.define('PumaMain.controller.Layers', {
         var namedLayersFilled1 = [];
         var namedLayersFilled2 = [];
         selectMap = selectMap || {};
-
+        var noSelect = true;
         for (var loc in selectMap) {
 
             for (var at in selectMap[loc]) {
-
+                noSelect = false;
                 for (var i = 0; i < Math.max(2, years.length); i++) {
                     if (i == 0 && map1NoChange)
                         continue;
@@ -487,7 +487,13 @@ Ext.define('PumaMain.controller.Layers', {
 
         }
 
-
+        if (noSelect) {
+            layer1.setVisibility(false);
+            layer1.initialized = false;
+            layer2.setVisibility(false);
+            layer2.initialized = false;
+            return;
+        }
         var namedLayersGroup = [namedLayers1, namedLayers2,namedLayersFilled1,namedLayersFilled2];
         for (var i = 0; i < namedLayersGroup.length; i++) {
             var namedLayer = namedLayersGroup[i];
