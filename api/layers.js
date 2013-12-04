@@ -543,6 +543,7 @@ function getMetadata(params, req, res, callback) {
             if (!organisation) obj.producer = name;
             var keywords = parsed.descendantWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:descriptiveKeywords.gmd:MD_Keywords');
             var keywordsVal = '';
+            keywords = keywords || {children:[]};
             for (var j=0;j<keywords.children.length;j++) {
                 var keyword = keywords.children[j];
                 var val = keyword.valueWithPath('gco:CharacterString');
