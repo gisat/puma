@@ -383,6 +383,9 @@ Ext.define('PumaMain.controller.Area', {
                     }
                     
                 }
+                if (node.isLeaf() && (at==locObj.at && loc==locObj.location && node.get('gid')==locObj.locGid)) {
+                    atLeastOneLoc = true;
+                }
                 
                
                 

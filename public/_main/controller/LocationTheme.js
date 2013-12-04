@@ -142,7 +142,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         
         if (nodeToExpand) {
-            var loaded = nodeToExpand.get('loaded')
+            var loaded = nodeToExpand.get('loaded') || nodeToExpand.isLeaf();
             if (!loaded) {
                 this.locationChanged = true;
             }
@@ -495,10 +495,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
          var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
          var map1Year = mapController.map1.year;
          var map2Year = mapController.map2.year;
-         var map1Change = (map1Year!=years[0]) ? true : false;
-         var map2Change = (years.length>1 && map2Year!=years[1]) ? true : false;
-         mapController.map1.year = years[0];
-         mapController.map2.year = years.length>1 ? years[1] : null;
+         var map1Change = (map1Year!=years[years.length-1]) ? true : false;
+         var map2Change = (years.length>1 && map2Year!=years[years.length-2]) ? true : false;
+         mapController.map1.year = years[years.length-1];
+         mapController.map2.year = years.length>1 ? years[years.length-2] : null;
          var yearStore = Ext.StoreMgr.lookup('year');
          Ext.get('app-map-map-label').setHTML(yearStore.getById(mapController.map1.year).get('name'));
          Ext.get('app-map-map2-label').setHTML(mapController.map2.year ? yearStore.getById(mapController.map2.year).get('name') : '');
@@ -515,10 +515,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
             var layer1 = node.get('layer1');
             var layer2 = node.get('layer2');
             if (!layer1.initialized || map1Change) {
-                me.initializeLayer(node,layer1,years[0],cfg)
+                me.initializeLayer(node,layer1,years[years.length-1],cfg)
             }
             if ((!layer2.initialized || map2Change)&&years.length>1) {
-                me.initializeLayer(node,layer2,years[1],cfg)
+                me.initializeLayer(node,layer2,years[years.length-2],cfg)
             }
         })
     },
@@ -711,13 +711,19 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (conf.areas) {
             this.addAreas(conf.areas);
             if (!this.initialAdd) {
+                
+
                 Ext.ComponentQuery.query('#areatree')[0].getView().refresh();
                 this.initialAdd = true;
             }
         }
+        
         if (conf.add || conf.remove) {
             
             var changed = this.refreshAreas(conf.add,conf.remove);
+        }
+        if (response.request.options.datasetChanged){
+            Ext.StoreMgr.lookup('area').sort()
         }
         if (Config.cfg) {
             Ext.StoreMgr.lookup('paging').currentPage = Config.cfg.page;

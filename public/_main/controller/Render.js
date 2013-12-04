@@ -50,7 +50,8 @@ Ext.define('PumaMain.controller.Render', {
         var win = Ext.widget('window',{
             layout: 'fit',
             width: 260,
-            maxHeight: 500,
+            maxHeight: 600,
+            resizable: true,
             cls: 'detached-window',
             isdetached: 1,
             constrainHeader: true

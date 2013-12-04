@@ -71,6 +71,7 @@ Ext.define('PumaMain.controller.Map', {
         mapCfg = {
             layers: layers,
             type: 'map',
+            trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
             year: map.year,
             center: map.center,
             size: map.size,
@@ -154,6 +155,7 @@ Ext.define('PumaMain.controller.Map', {
                     closable: false,
                     maxWidth: 220,
                     bodyPadding: 5,
+                    title: 'Measure',
                     closeAction: 'hide',
                     html: (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":",
                     id: 'measureWindow'
@@ -206,6 +208,7 @@ Ext.define('PumaMain.controller.Map', {
     
     createBaseNodes: function() {
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
+        var liveNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
         var hybridNode = Ext.create('Puma.model.MapLayer',{
             name: 'Google hybrid',
             checked: false,
@@ -242,10 +245,18 @@ Ext.define('PumaMain.controller.Map', {
             sortIndex: 10000,
             type: 'osm'
         });
-        
+        var trafficNode = Ext.create('Puma.model.MapLayer',{
+            name: 'Google traffic',
+            initialized: true,
+            allowDrag: true,
+            checked: false,
+            leaf: true,
+            sortIndex: 0,
+            type: 'traffic'
+        });
         Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
         baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
-        
+        liveNode.appendChild([trafficNode])
     },
     
     onMapMove: function(map) {
@@ -479,7 +490,6 @@ Ext.define('PumaMain.controller.Map', {
             this.map2 = map;
             this.cursor2 = Ext.get('app-map2').down('img')
         }
-        
         var hybridLayer = new OpenLayers.Layer.Google(
                 'Google',
                 {
@@ -509,14 +519,21 @@ Ext.define('PumaMain.controller.Map', {
                 }
                     
         );
+            
+            
         var osmLayer = new OpenLayers.Layer.OSM('OSM',null,{
             initialized: true,
             visibility: false
         });
+        var trafficLayer = new google.maps.TrafficLayer()
+       
+        
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
+        var trafficNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
+        var baseNodes = Ext.Array.merge(baseNode.childNodes,trafficNode.childNodes)
         var nodes = [];
-        for (var i=0;i<baseNode.childNodes.length;i++) {
-            var node = baseNode.childNodes[i];
+        for (var i=0;i<baseNodes.length;i++) {
+            var node = baseNodes[i];
             var layer = null;
             var type = node.get('type');
             switch(type) {
@@ -524,6 +541,7 @@ Ext.define('PumaMain.controller.Map', {
                 case 'roadmap': layer = streetLayer; break;
                 case 'terrain': layer = terrainLayer; break;
                 case 'osm': layer = osmLayer; break;
+                case 'traffic': layer = trafficLayer; break;
             }
             var nodeProp = cmp.itemId=='map' ? 'layer1':'layer2';
             node.set(nodeProp,layer);
@@ -544,7 +562,8 @@ Ext.define('PumaMain.controller.Map', {
         //debugger;
         map.size = map.getCurrentSize();
         map.addLayers([terrainLayer,streetLayer,hybridLayer,osmLayer]);
-        
+        //trafficLayer.setMap(streetLayer.mapObject);
+        trafficLayer.oldMapObj = streetLayer.mapObject;
         if (cmp.id=='map') {
             Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
         }

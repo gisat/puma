@@ -195,10 +195,21 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         var fls = Ext.StoreMgr.lookup('layertemplate').queryBy(function(rec) {
             return Ext.Array.contains(levels,rec.get('_id'));
         }).getRange();
+        var title = 'Chart configuration';
+        switch (cmp.xtype=='tool' ? 'tool' : cmp.itemId) {
+            case 'configurelayers':
+                title = 'Thematic maps configuration'; break;
+            case 'configurefilters':
+                title = 'Filters configuration'; break;
+            case 'tool':
+                title += ' - '+cfg.title
+            
+        }
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 700,
             y: 200,
+            title: title,
             items: [{
                 xtype: 'configform',
                 featureLayers: fls,

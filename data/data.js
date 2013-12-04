@@ -123,21 +123,25 @@ function getData(params, callback) {
                 attr.normType = null;
             }
             var currentNorm = attr.normType || normalization;
-            var currentNormAttr = attr.normAttr || normalizationAttribute;
+            var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
             var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
             var normAttrName = null;
             var norm = '';
-            
             var attrUnits = null;
             var normAttrUnits = null;
             var factor = 1;
-            var attrMap = params.attrMap
+            var attrMap = params.attrMap;
+            //var prevAttrMap = params.prevAttrMap;
+            
+            
             if (attrMap && attrMap[attr.as] && attrMap[attr.as][attr.attr]) {
+                
                 attrUnits = attrMap[attr.as][attr.attr].units;
             }
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
+            console.log(attrUnits,normAttrUnits)
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
@@ -204,7 +208,7 @@ function getData(params, callback) {
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
-
+    console.log(select);
     var sql = '';
 
     var locationIds = [];
@@ -239,7 +243,6 @@ function getData(params, callback) {
             }
         }
     }
-    console.log(originalSelected)
     areaIds = us.uniq(areaIds);
     locationIds = us.uniq(locationIds);
 
@@ -484,7 +487,6 @@ function getData(params, callback) {
                                 //if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
                                     normalData.push(row);
                                 //}
-                                console.log('test')
                                 var aggRow = us.clone(row)
                                 aggData.push(aggRow)
                                 locAggDataMap['select'] = aggRow;
@@ -530,7 +532,6 @@ function getData(params, callback) {
                     else {
                         normalData = resls.rows;
                     }
-                    console.log(normalData.length);
                     if (!normalData.length) return callback(new Error('nodata'));
                     return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
                 })
@@ -673,22 +674,15 @@ function getAttrConf(params, callback) {
                 for (var i = 0; i < attrs.length; i++) {
                     var attrRec = attrs[i];
                     attrMap[attrRec.as] = attrMap[attrRec.as] || {};
-                    attrMap[attrRec.as][attrRec.attr] = results.attr[attrRec.attr];
+                    attrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
                     prevAttrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     var normType = attrRec.normType || params['normalization'];
                     var units = results.attr[attrRec.attr].units || '';
                     var normUnits = null;
                     
-                    
-                    
-                    
-                    
                     if (normType == 'area') {
                         normUnits = 'm2'
-                    }
-                    if (normType == 'attributeset') {
-                        normUnits = units
                     }
                     if (normType == 'year') {
                         normUnits = units
@@ -696,9 +690,10 @@ function getAttrConf(params, callback) {
                     if (normType == 'select') {
                         normUnits = units;
                     }
-                    if (normType == 'attribute') {
-                        var normAttr = attrRec.normAttr || params['normalizationAttribute'];
+                    if (normType == 'attribute' || normType == 'attributeset') {
+                        var normAttr = attrRec.normAttr || attrRec.attr || params['normalizationAttribute'];
                         var normAttrSet = attrRec.normAs || params['normalizationAttributeSet']
+                        console.log(normAttrSet,normAttr)
                         if (normAttr && normAttrSet) {
                             var normAttrRec = results.attr[normAttr]
                             normUnits = normAttrRec.units || '';
@@ -740,7 +735,6 @@ function getAttrConf(params, callback) {
                     attrMap.units = unitsArr[0];
 
                 }
-
                 callback(null, {attrMap: attrMap, attrSetMap: results.attrSet, prevAttrMap: prevAttrMap});
             }]
     }

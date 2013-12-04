@@ -163,6 +163,12 @@ Ext.define('PumaMain.controller.Export', {
         
         layers.reverse();
         map.addLayers(layers);
+        if (cfg.trafficLayer&&gLayer) {
+            var trafficLayer = new google.maps.TrafficLayer()
+            trafficLayer.setMap(gLayer.mapObject);
+            
+        }
+        
         for (var i = 0; i < layers.length; i++) {
             var layer = layers[i];
             if (layer.mapObject) {

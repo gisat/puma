@@ -35,6 +35,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id');
         var win = Ext.widget('window',{
                 bodyCls: 'urlwindow',
+                title: 'Data view URL',
                 items: [{
                         xtype: 'displayfield',
                         value: url
@@ -88,6 +89,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id')
             var win = Ext.widget('window',{
                 bodyCls: 'urlwindow',
+                title: 'Data view URL',
                 items: [{
                         xtype: 'displayfield',
                         value: url
@@ -101,6 +103,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 300,
+            title: btn.itemId == 'managevisualization' ? 'Manage visualizations' : 'Manage data views',
             height: 400,
             y: 200,
             bodyCls: 'manageDwWindow',
@@ -265,8 +268,8 @@ Ext.define('PumaMain.controller.ViewMng', {
                 symbologyId: layer.get('symbologyId')
             })
         }
-        cfg.layers = layerCfg
-        
+        cfg.layers = layerCfg;
+        cfg.trafficLayer = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked');
         var store =  Ext.StoreMgr.lookup('paging');
         cfg.page = store.currentPage;
         
@@ -329,7 +332,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 300,
-            height: 400,
+            title: 'Save visualization',
             y: 200,
             bodyCls: 'saveaswindow',
             items: [{
@@ -344,7 +347,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 300,
-            height: 400,
+            title: 'Save data view',
             y: 200,
             bodyCls: 'saveaswindow',
             items: [{

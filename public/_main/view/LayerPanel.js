@@ -137,6 +137,7 @@ Ext.define('PumaMain.view.LayerPanel', {
             },{
                 xtype: 'treepanel',
                 itemId: 'layerpanel',
+                id: 'layeravailablepanel',
                 helpId: 'Availablelayers',
                 store: Ext.StoreMgr.lookup('layers'),
                 title: 'Layers available',
@@ -188,6 +189,19 @@ Ext.define('PumaMain.view.LayerPanel', {
                 this.fireEvent(name,this,rec,el);
                 
             },this,{delegate:'.layertool'})
+        
+          
+            
+            
+        },this)
+        this.query('#layerpanel')[0].on('afterrender',function() {
+              Ext.get('layeravailablepanel').on('click',function(e,dom) {
+                var el = Ext.get(dom);
+                var panel = Ext.ComponentQuery.query('#layerpanel')[0]
+                var rec = panel.getView().getRecord(el.up('.x-grid-row'))
+                this.fireEvent('showmetadata',this,rec,el);
+                
+            },this,{delegate:'.x-tree-icon-leaf'})    
         },this)
         
         this.addEvents('choroplethreconfigure','choroplethremove','layerremove','layeropacity','layerup','layerdown','checkchange','showmetadata','layerlegend');

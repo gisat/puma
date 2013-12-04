@@ -191,9 +191,13 @@ Ext.define('PumaMain.controller.Select', {
             Ext.StoreMgr.lookup('paging').setCount(count);
             
             var outer = !this.fromChart || this.outerSelect || (!this.outerSelect && this.prevOuterSelect) || onlySel;
+            var type = outer  ? 'outer' : 'inner';
+            if (outer && this.fromScatterChart && !this.fromChart) type = 'outerscatter';
+            
+            this.getController('Chart').reconfigure(type);  
+            
             this.fromChart = null;
-            console.log(outer);
-            this.getController('Chart').reconfigure(outer  ? 'outer' : 'inner');    
+            this.fromScatterChart = null;
         }
         this.prevOuterSelect = this.outerSelect
         this.outerSelect = false;

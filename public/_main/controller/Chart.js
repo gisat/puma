@@ -935,7 +935,7 @@ Ext.define('PumaMain.controller.Chart', {
         var areas = [{at: at, gid: gid, loc: loc}]
         var add = evt.originalEvent ? evt.originalEvent.ctrlKey : evt.ctrlKey;
         var fromChart = cmp.cfg.type=='grid' || cmp.cfg.type=='piechart' || cmp.cfg.type=='columnchart';
-        
+        //this.
         if (!Config.exportPage) {
             this.getController('Select').fromChart = fromChart;
             this.getController('Select').select(areas, add, hovering);
@@ -976,6 +976,8 @@ Ext.define('PumaMain.controller.Chart', {
         }
         var add = evt.originalEvent.ctrlKey;
         if (!Config.exportPage) {
+            
+            this.getController('Select').fromScatterChart = true;
             this.getController('Select').select(areas, add, false);
         }
         evt.preventDefault();
@@ -1198,7 +1200,11 @@ Ext.define('PumaMain.controller.Chart', {
             else if (Ext.Array.contains(['expand'],type)) {
                 this.reconfigureChart(chart);
             }
-            else if (Ext.Array.contains(['outer'],type) && chart.cfg.type != 'scatterchart') {
+            
+            else if (Ext.Array.contains(['outerscatter'],type) && chart.cfg.type!='scatterchart') {
+                this.reconfigureChart(chart);
+            }
+            else if (Ext.Array.contains(['outer'],type)) {
                 this.reconfigureChart(chart);
             }
             else if (chart.cfg.attrs && chart.cfg.attrs.length && chart.cfg.attrs[0].normType=='select' && selCtrl.actualColor==selCtrl.defaultColor) {

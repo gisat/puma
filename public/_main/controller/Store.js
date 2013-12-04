@@ -402,6 +402,11 @@ Ext.define('PumaMain.controller.Store', {
                     type: 'basegroup',
                     expanded: true,
                     checked: null
+                },{
+                    name: 'Live data',
+                    type: 'livegroup',
+                    expanded: true,
+                    checked: null
                 }]
             }
         })
@@ -601,6 +606,18 @@ Ext.define('PumaMain.controller.Store', {
     
         Ext.create('Ext.data.Store',{
             storeId: 'location4init',
+            sorters: [{
+                sorterFn: function(r1,r2) {
+                    var d1 = r1.get('dataset');
+                    var d2 = r2.get('dataset');
+                    if (!d1) return 1;
+                    if (!d2) return -1;
+                    return 0;
+                }
+            },{
+                property: 'name',
+                direction: 'ASC'
+            }],
             fields: ['name','locGid','location','dataset','at'],
             filters: [function(rec) {
                 return false;
