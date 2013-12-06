@@ -51,30 +51,36 @@ Ext.define('PumaMain.controller.Layers', {
             
         })
     },
-    onLayerLegend: function(panel, rec, checked) {
+    onLayerLegend: function(panel, rec, checked,legendCount) {
         if (checked) {
             var img = Ext.widget('image',{
-                src: rec.get('src')
+                src: rec.get('src'),
+                margin: '5 0 0 0'
             })
-            
             var window = Ext.widget('window', {
                 autoScroll: true,
                 islegend: 1,
                 items: [img],
+                factor: Ext.ComponentQuery.query('window[islegend=1]').length,
                 title: rec.get('name')
 
             })
             img.on('resize',function(i) {
                 i.el.on('load',function(a, dom) {
-                    this.setSize(dom.clientWidth+32,dom.clientHeight+48);
+                    this.show();
+                    this.setSize(dom.clientWidth+32,dom.clientHeight+52);
+//                    this.setStyle({
+//                        zIndex: 100000+this.factor
+//                    })
                     var leftPanel = Ext.ComponentQuery.query('toolspanel')[0];
-                    var factor = Ext.ComponentQuery.query('window[islegend=1]').length-1;
-                    this.showBy(leftPanel,'bl-br',[30*factor,-30*factor]);
+                    var heightDiff = Ext.get('app-map').getBox().bottom - Ext.get('sidebar-tools').getBox().bottom;
+                    
+                    this.showBy(leftPanel,'bl-br',[50*this.factor+21,-50*this.factor+heightDiff]);
                     this.el.setOpacity(0.85)
                 },this)
             },window,{single:true})
             window.showAt(1,1);
-            
+            window.hide();
             window.rec = rec;
             window.on('close', function(win) {
                 win.rec.set('legend',null);
@@ -82,7 +88,7 @@ Ext.define('PumaMain.controller.Layers', {
             rec.set('legend',window);
         }
         if (!checked && rec.get('legend')) {
-            rec.get('legend').close();
+            rec.get('legend').destroy();
             rec.set('legend',null);
         }
     },
@@ -411,11 +417,11 @@ Ext.define('PumaMain.controller.Layers', {
         var namedLayersFilled1 = [];
         var namedLayersFilled2 = [];
         selectMap = selectMap || {};
-
+        var noSelect = true;
         for (var loc in selectMap) {
 
             for (var at in selectMap[loc]) {
-
+                noSelect = false;
                 for (var i = 0; i < Math.max(2, years.length); i++) {
                     if (i == 0 && map1NoChange)
                         continue;
@@ -483,7 +489,17 @@ Ext.define('PumaMain.controller.Layers', {
 
         }
 
-
+        if (noSelect) {
+            layer1.setVisibility(false);
+            layer1.initialized = false;
+            layer2.setVisibility(false);
+            layer2.initialized = false;
+            filledLayer1.setVisibility(false);
+            filledLayer1.initialized = false;
+            filledLayer2.setVisibility(false);
+            filledLayer2.initialized = false;
+            return;
+        }
         var namedLayersGroup = [namedLayers1, namedLayers2,namedLayersFilled1,namedLayersFilled2];
         for (var i = 0; i < namedLayersGroup.length; i++) {
             var namedLayer = namedLayersGroup[i];
@@ -546,7 +562,13 @@ Ext.define('PumaMain.controller.Layers', {
                 node.initialized = true;
                 if (legendLayer) {
                     node.set('src',me.getLegendUrl(id,legendLayer))
-                    
+                    var panel = Ext.ComponentQuery.query('layerpanel')[0];
+                    if (!node.get('legend') && node.get('checked') && node.needLegend) {
+                        node.needLegend = null;
+                        panel.fireEvent('layerlegend', panel, node, true);
+                        
+                    }
+           
                 }
                 if (node.get('checked')) {
                     me.onCheckChange(node,true)
@@ -594,7 +616,7 @@ Ext.define('PumaMain.controller.Layers', {
             var layer = i == 0 ? layer1 : layer2;
             this.saveSld(node, namedLayers, layer);
         }
-
+        
     },
     getTreeFilters: function(year) {
         var allAreas = this.getController('Area').lowestMap;
@@ -621,7 +643,6 @@ Ext.define('PumaMain.controller.Layers', {
         return filterMap;
     },
     getSymObj: function(params) {
-
         
         var symbolizer = null;
         if (true) {
@@ -848,8 +869,8 @@ Ext.define('PumaMain.controller.Layers', {
     },
     
     onLayerClick: function(panel,rec) {
-        if (rec.get('type')!='addchoropleth') return;
-        this.getController('Chart').onChartBtnClick(panel);
+//        if (rec.get('type')!='addchoropleth') return;
+//        this.getController('Chart').onChartBtnClick(panel);
         
     },
             
@@ -1004,11 +1025,26 @@ Ext.define('PumaMain.controller.Layers', {
         }
     },
     onCheckChange: function(node, checked) {
+        if (node.get('type')=='traffic') {
+            var layer1 = node.get('layer1');
+            var layer2 = node.get('layer2');
+            if (layer1) {
+                layer1.setMap(checked ? layer1.oldMapObj : null);
+            }
+            if (layer2) {
+                layer2.setMap(checked ? layer2.oldMapObj : null);
+            }
+            return;
+        }
+        if (!checked && node.get('legend')) {
+            node.get('legend').destroy();
+        }
         var view = Ext.ComponentQuery.query('#layerpanel')[0].view
         var multi = false;
         if (view.lastE && view.lastE.ctrlKey) {
             multi = true;
         }
+        
         view.lastE = null;
         Ext.StoreMgr.lookup('selectedlayers').filter();
         var layer1 = node.get('layer1');
@@ -1023,7 +1059,7 @@ Ext.define('PumaMain.controller.Layers', {
             return;
         }
         var parentNode = node.parentNode;
-        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup'],parentNode.get('type')) && checked && !multi) {
+        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup'],parentNode.get('type')) && checked && !multi && node.get('type')!='traffic') {
             for (var i=0;i<parentNode.childNodes.length;i++) {
                 var childNode = parentNode.childNodes[i];
                 if (node!=childNode) {
@@ -1109,10 +1145,43 @@ Ext.define('PumaMain.controller.Layers', {
                 me.onCheckChange(node,false,null,true);
             }
         })
+        if (Config.cfg && Config.cfg.trafficLayer) {
+            var node = root.findChild('type','livegroup').childNodes[0]
+            node.set('checked',true);
+            me.onCheckChange(node,true,null,true);
+        }
         store = Ext.StoreMgr.lookup('selectedlayers')
         store.sorters = new Ext.util.MixedCollection();
         
         store.sort('sortIndex','ASC');
+        
+        var panel = Ext.ComponentQuery.query('layerpanel')[0];
+        var recsForLegend = [];
+        store.each(function(rec) {
+            if (rec.get('type') == 'chartlayer' || rec.get('type') == 'topiclayer') {
+                recsForLegend.push(rec);
+            }
+        })
+        var windows = Ext.ComponentQuery.query('window[islegend=1]');
+        for (var i = 0; i < windows.length; i++) {
+            var win = windows[i];
+            if (Ext.Array.contains(recsForLegend, win.rec)) {
+                Ext.Array.remove(recsForLegend, win.rec);
+            }
+            else if (win.rec) {
+                panel.fireEvent('layerlegend', panel, win.rec, false)
+            }
+        }
+        for (var i = 0; i < recsForLegend.length; i++) {
+            var rec = recsForLegend[i];
+            if (rec.get('type')=='topiclayer') {
+                panel.fireEvent('layerlegend', panel, rec, true)
+            }
+            else {
+                rec.needLegend = true;
+            }
+        }
+        
         //Ext.ComponentQuery.query('#legendpanel')[0].refresh();
 
     }

@@ -5,10 +5,18 @@ module.exports = {
     credits: {
         enabled: false
     },
+    colors: [
+    '#71A3CB',
+    '#CC716C',
+    '#6EC78F',
+    '#F2DE7E',
+    '#8D97A2'
+    ],
     tooltip: {
         borderRadius: 0,
         itemStyle: {
             fontSize: '12px',
+             
             fontFamily: '"Open Sans", sans-serif'
         },
         style: {

@@ -17,6 +17,7 @@ Ext.define('PumaMng.view.tab.LayerLink' ,{
             columns: [{
                 dataIndex: 'value',
                 width: 250,
+                maxWidth: 1500,
                 header: 'Layer'
             },{
                 dataIndex: 'value2',

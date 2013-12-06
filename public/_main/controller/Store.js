@@ -382,24 +382,29 @@ Ext.define('PumaMain.controller.Store', {
             root: {
                 expanded: true,
                 children: [{
-                    name: 'System',
+                    name: 'Analytical units',
                     type: 'systemgroup',
                     expanded: true,
                     checked: null
                 },{
-                    name: 'Choropleth',
+                    name: 'Thematic maps',
                     type: 'choroplethgroup',
                     expanded: true,
                     children: [],
                     checked: null
                 },{
-                    name: 'Thematic',
+                    name: 'Information layers',
                     type: 'thematicgroup',
                     expanded: true,
                     checked: null
                 },{
-                    name: 'Base',
+                    name: 'Background layers',
                     type: 'basegroup',
+                    expanded: true,
+                    checked: null
+                },{
+                    name: 'Live data',
+                    type: 'livegroup',
                     expanded: true,
                     checked: null
                 }]
@@ -513,10 +518,12 @@ Ext.define('PumaMain.controller.Store', {
             {
                 name: 'Average',
                 type: 'avg'
-            },{
-                name: 'Tree top',
-                type: 'toptree'
-            },{
+            },
+//            {
+//                name: 'Tree top',
+//                type: 'toptree'
+//            },
+            {
                 name: 'All',
                 type: 'topall'
             },{
@@ -564,13 +571,15 @@ Ext.define('PumaMain.controller.Store', {
 //                type: 'topall'
 //            },
             {
-                name: 'Select',
+                name: 'First selected',
                 type: 'select'
-            },
-            {
-                name: 'Year',
-                type: 'year'
-            }]
+            }
+//            ,
+//            {
+//                name: 'Year',
+//                type: 'year'
+//            }
+        ]
         })
         Ext.create('Ext.data.Store',{
             storeId: 'normalization4chartlimited',
@@ -597,6 +606,18 @@ Ext.define('PumaMain.controller.Store', {
     
         Ext.create('Ext.data.Store',{
             storeId: 'location4init',
+            sorters: [{
+                sorterFn: function(r1,r2) {
+                    var d1 = r1.get('dataset');
+                    var d2 = r2.get('dataset');
+                    if (!d1) return 1;
+                    if (!d2) return -1;
+                    return 0;
+                }
+            },{
+                property: 'name',
+                direction: 'ASC'
+            }],
             fields: ['name','locGid','location','dataset','at'],
             filters: [function(rec) {
                 return false;

@@ -6,7 +6,7 @@ Ext.define('Puma.util.Msg', {
                 this.msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
             }
         },
-        msg: function(title,format) {
+        msg: function(title,format,align) {
             if(!this.msgCt){
                 this.msgCt = Ext.DomHelper.insertFirst(document.body, {id:'msg-div'}, true);
             }
@@ -16,7 +16,7 @@ Ext.define('Puma.util.Msg', {
             var s = Ext.String.format.apply(String, Array.prototype.slice.call(arguments, 1));
             var m = Ext.core.DomHelper.append(this.msgCt, createBox(title, s), true);
             m.hide();
-            m.slideIn('r').ghost("r", { delay: 3000, remove: true});
+            m.slideIn(align || 'r').ghost(align || "r", { delay: 3000, remove: true});
         }
     
     }

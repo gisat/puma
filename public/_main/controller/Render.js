@@ -9,8 +9,16 @@ Ext.define('PumaMain.controller.Render', {
             },
             'window[isdetached=1]': {
                 close: this.dockPanel
+            },
+            'window[isdetached=1] panel': {
+                collapse: this.onFloatingCollapse
             }
         })
+    },
+    onFloatingCollapse: function(panel) {
+        window.setTimeout(function() {
+            panel.up('window').setHeight(null);
+        },100)
     },
     
     dockPanel: function(win) {
@@ -29,6 +37,8 @@ Ext.define('PumaMain.controller.Render', {
         
         
         var container = Ext.ComponentQuery.query('toolspanel')[0];
+        
+        panel.collapse();
         container.insert(idx,panel);
 
     },
@@ -36,25 +46,36 @@ Ext.define('PumaMain.controller.Render', {
     undockPanel: function(tool) {
         var panel = tool.up('panel');
         panel.up('container').remove(panel,false);
-        
         panel.el.setTop(0);
         var win = Ext.widget('window',{
             layout: 'fit',
             width: 260,
-            maxHeight: 500,
+            maxHeight: 600,
+            resizable: true,
             cls: 'detached-window',
             isdetached: 1,
             constrainHeader: true
             ,
             items: [panel]
         }).show();
-        win.el.setOpacity(0.9)
+        win.el.setOpacity(0.9);
+        
+        var el = Ext.get('sidebar-tools-toggle');
+        var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
+        win.alignTo(el,'tl-tr',[50*factor,50*factor]);
+        
+        panel.expand();
+        panel.doLayout();
+        if (panel.itemId=='advancedfilters') {
+            this.getController('Filter').afterAccordionLayout();
+        }
     },
     
     
     renderApp: function() {
         Ext.widget('pumacombo',{
             store: 'dataset',
+            helpId: 'Selectingscopeofanalysis',
             itemId: 'seldataset',
             cls: 'custom-combo',
             listConfig: {
@@ -65,6 +86,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'location4init',
             itemId: 'sellocation',
+            helpId: 'Selectingterritory ',
             valueField: 'id',
             cls: 'custom-combo',
             listConfig: {
@@ -75,6 +97,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'theme4sel',
             itemId: 'seltheme',
+            helpId: 'Selectingtheme',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -86,6 +109,7 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('year4sel'),
             forceSelection: true,
             itemId: 'selyear',
+            helpId: 'Switchingbetweenyears',
             multiCtrl: true,
             multi: true
             ,type: 'checkbox'
@@ -113,6 +137,7 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-share',
             text: 'Share data view',
             itemId: 'sharedataview',
+            helpId: 'Sharingdataviews',
             width: '100%',
             height: '100%',
             hidden: !Config.auth,
@@ -187,6 +212,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-manage',
             itemId: 'managedataview',
+            helpId: 'Managingdataviews',
             hidden: !Config.auth,
             icon: 'images/icons/settings.png',
             width: '100%',
@@ -205,6 +231,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-save',
             itemId: 'savedataview',
+            helpId: 'Savingdataviews',
             hidden: !Config.auth,
             text: 'Save view',
             icon: 'images/icons/save.png',
@@ -229,7 +256,8 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-tools-accordeon'
         })
         Ext.widget('chartbar',{
-            renderTo: 'app-reports-accordeon'
+            renderTo: 'app-reports-accordeon',
+            helpId: 'Modifyingchartpanel'
         })
         Ext.widget('pagingtoolbar',{
             renderTo: 'app-reports-paging',

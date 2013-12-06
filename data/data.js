@@ -10,6 +10,7 @@ function getData(params, callback) {
 
     var areas = JSON.parse(params['areas']);
     var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
+    var defSelectedArea = params['defSelectedArea'] ? JSON.parse(params['defSelectedArea']) : null;
     var attrs = JSON.parse(params['attrs']);
     if (attrs[0].normType=='select') {
         params['normalization'] = 'select'
@@ -65,7 +66,6 @@ function getData(params, callback) {
     var topLoc = params['aggregate'] == 'toptree' || params['normalization'] == 'toptree' || params['toptree'];
     var aggSelect =  params['aggregate'] == 'select' || params['normalization'] == 'select';
     
-    console.log(aggSelect)
     var layerRefMap = {};
 
     var select = "SELECT "
@@ -104,8 +104,6 @@ function getData(params, callback) {
             topAllSql += 'SELECT -1 as gid,\'All\' as name,area';
             
         }
-        console.log(attrs.length);
-        console.log(attrsWithSort.length)
         for (var j = 0; j < attrsWithSort.length; j++) {
             var attr = attrsWithSort[j];
             var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
@@ -125,21 +123,25 @@ function getData(params, callback) {
                 attr.normType = null;
             }
             var currentNorm = attr.normType || normalization;
-            var currentNormAttr = attr.normAttr || normalizationAttribute;
+            var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
             var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
             var normAttrName = null;
             var norm = '';
-            
             var attrUnits = null;
             var normAttrUnits = null;
             var factor = 1;
-            var attrMap = params.attrMap
+            var attrMap = params.attrMap;
+            //var prevAttrMap = params.prevAttrMap;
+            
+            
             if (attrMap && attrMap[attr.as] && attrMap[attr.as][attr.attr]) {
+                
                 attrUnits = attrMap[attr.as][attr.attr].units;
             }
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
+            console.log(attrUnits,normAttrUnits)
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
@@ -206,7 +208,7 @@ function getData(params, callback) {
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
-
+    console.log(select);
     var sql = '';
 
     var locationIds = [];
@@ -222,6 +224,7 @@ function getData(params, callback) {
             originalAreas[locationId][areaId] = us.clone(areas[locationId][areaId]);
         }
     }
+    
     for (var i = 0; i < selectedAreas.length; i++) {
         var selectedArea = selectedAreas[i];
         for (var locationId in selectedArea) {
@@ -245,7 +248,6 @@ function getData(params, callback) {
 
     var allMap = selectedAreas;
     allMap.push(areas);
-    console.log(allMap)
     var opts = {
         dataset: function(asyncCallback) {
 
@@ -373,7 +375,9 @@ function getData(params, callback) {
                                 gidSql = 'x_' + years[0] + '."gid"';
                                 nameSql = 'x_' + years[0] + '."name"';
                             }
-                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',i);
+                            var prIdx = (sort && sortProperty!='name') ? 1 : i;
+                            prIdx = ((aggSelect || (params['sortNorm'] && JSON.parse(params['sortNorm']).normType=='select')) && i==0) ? i : prIdx;
+                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',prIdx);
 
                             var baseLayerRef = null;
                             var baseYear = null;
@@ -442,24 +446,22 @@ function getData(params, callback) {
                     if (!moreYears && sortProperty.search('y')>=0) {
                         sortProperty = sortProperty.split('_y_')[0];
                     }
-                    dataSql += sortProperty + '_sort ' + sort[0].direction+','+nameSort;
+                    dataSql += 'pr ASC,' + sortProperty + '_sort ' + sort[0].direction+','+nameSort;
                 }
                 else {
                     dataSql += 'pr ASC,'+nameSort;
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);
-                    console.log(resls)
                     var aggData = [];
                     var normalData = [];
                     var locAggDataMap = {};
                     
                     if (topLoc || topAll || aggSelect) {
-                        
+                        var aggColorPassed = false;
                             //console.log(originalSelected);
                         for (var i = 0; i < resls.rows.length; i++) {
                             var row = resls.rows[i];
@@ -481,14 +483,14 @@ function getData(params, callback) {
                                 locAggDataMap[row.loc] = aggRow;
 
                             }
-                            else if (aggSelect && originalSelected[row.loc] && originalSelected[row.loc][row.at] && originalSelected[row.loc][row.at].indexOf(row.gid)>=0) {
-                               
-                                if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
+                            else if (aggSelect && defSelectedArea && defSelectedArea.at==row.at && defSelectedArea.loc==row.loc && defSelectedArea.gid==row.gid) {
+                                //if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
                                     normalData.push(row);
-                                }
+                                //}
                                 var aggRow = us.clone(row)
                                 aggData.push(aggRow)
                                 locAggDataMap['select'] = aggRow;
+                                   
                             }
                             else {
                                 normalData.push(row);
@@ -530,7 +532,7 @@ function getData(params, callback) {
                     else {
                         normalData = resls.rows;
                     }
-
+                    if (!normalData.length) return callback(new Error('nodata'));
                     return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
                 })
             }],
@@ -672,29 +674,26 @@ function getAttrConf(params, callback) {
                 for (var i = 0; i < attrs.length; i++) {
                     var attrRec = attrs[i];
                     attrMap[attrRec.as] = attrMap[attrRec.as] || {};
-                    attrMap[attrRec.as][attrRec.attr] = results.attr[attrRec.attr];
+                    attrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
                     prevAttrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     var normType = attrRec.normType || params['normalization'];
                     var units = results.attr[attrRec.attr].units || '';
                     var normUnits = null;
                     
-                    
-                    
-                    
-                    
                     if (normType == 'area') {
                         normUnits = 'm2'
-                    }
-                    if (normType == 'attributeset') {
-                        normUnits = units
                     }
                     if (normType == 'year') {
                         normUnits = units
                     }
-                    if (normType == 'attribute') {
-                        var normAttr = attrRec.normAttr || params['normalizationAttribute'];
+                    if (normType == 'select') {
+                        normUnits = units;
+                    }
+                    if (normType == 'attribute' || normType == 'attributeset') {
+                        var normAttr = attrRec.normAttr || attrRec.attr || params['normalizationAttribute'];
                         var normAttrSet = attrRec.normAs || params['normalizationAttributeSet']
+                        console.log(normAttrSet,normAttr)
                         if (normAttr && normAttrSet) {
                             var normAttrRec = results.attr[normAttr]
                             normUnits = normAttrRec.units || '';
@@ -736,7 +735,6 @@ function getAttrConf(params, callback) {
                     attrMap.units = unitsArr[0];
 
                 }
-
                 callback(null, {attrMap: attrMap, attrSetMap: results.attrSet, prevAttrMap: prevAttrMap});
             }]
     }

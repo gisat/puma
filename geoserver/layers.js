@@ -92,6 +92,7 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
         sql += 'ALTER TABLE views.'+viewName+' ADD CONSTRAINT '+viewName+'_unique UNIQUE(gid);'
     }
     
+    
     sql += 'CREATE VIEW '+layerName+' AS SELECT ';
     // select z uzemni vrstvy
     sql += 'a."'+areaLayerRef.fidColumn+'" AS gid,';
@@ -138,9 +139,10 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 
     sql += '; COMMIT;'; 
     //console.log(sql);
-    
+    console.log('start '+sql);
     var client = conn.getPgDb();
     client.query(sql,function(err,results) {
+        console.log('finish')
         if (err) return callback(err);
         callback(null,areaLayerRef);
     })

@@ -81,6 +81,7 @@ function getChart(params, callback) {
                         
                         var obj = {
                             name: attrRec.name,
+                            units: attrRec.units,
                             as: attr.as,
                             visible: visible,
                             attr: attr.attr,

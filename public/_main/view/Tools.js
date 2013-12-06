@@ -12,17 +12,19 @@ Ext.define('PumaMain.view.Tools', {
             multi: true
         }   
         this.defaults = {
-            hideCollapseTool: true
+            //hideCollapseTool: true
+            collapseLeft: true
         }
         this.items = [
          {
             xtype: 'panel',
             title: 'Selection color',
             itemId: 'selcolor',
+            helpId: 'Multipleselectionshighlightedbyc',
             header: {height: 60},
-            collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             layout: {
@@ -56,13 +58,14 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
+            helpId: 'TreeofanalyticalunitsAREAS',
             store: Ext.StoreMgr.lookup('area'),
             selModel: {
                 mode: 'MULTI'
             },
-            collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             rootVisible: false,
@@ -74,9 +77,10 @@ Ext.define('PumaMain.view.Tools', {
             collapsed: true,
             //maxHeight: 500,
             itemId: 'layerpanel',
-            collapseRight: true,
+            helpId: 'Layers',
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             height: 300,
@@ -85,18 +89,19 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'maptools',
             collapsed: false,
             itemId: 'maptools',
-            collapseRight: true,
+            helpId: 'Maptools',
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             title: 'Map tools'
         },{
             xtype: 'panel',
             collapsed: true,
-            collapseRight: true,
             tools: [{
                type: 'detach',
+               cls: 'detach',
                itemId: 'undock'
             }],
             layout: {
@@ -105,6 +110,7 @@ Ext.define('PumaMain.view.Tools', {
                 
             },
             itemId: 'advancedfilters',
+            helpId: 'Filteringanalyticalunits',
             buttons: [{
                 text: 'Configure',
                 itemId: 'configurefilters'

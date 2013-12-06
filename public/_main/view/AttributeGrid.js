@@ -93,7 +93,7 @@ Ext.define('PumaMain.view.AttributeGrid', {
             text: 'Remove'
         },{
             xtype: 'button',
-            disabled: this.formType=='filters',
+            //disabled: this.formType=='filters',
             itemId: 'normalize',
             text: 'Normalize'
         },{

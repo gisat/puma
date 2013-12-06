@@ -12,12 +12,34 @@ var us = require('underscore')
 function filter(params, req, res, callback) {
 
 
-    var params2 = us.clone(params);
+//    var params2 = us.clone(params);
 
     params.filter = null;
-    params2.bypassLeafs = true;
-    params2.refreshAreas = true;
-
+//    params2.bypassLeafs = true;
+//    params2.refreshAreas = true;
+//    params2.allAreaTemplates = true;
+//    params2.justAreas = true;
+    
+//    if (params['expanded']) {
+//        require('./theme').getThemeYearConf(params2,req,res,function() {
+//            var newData = [];
+//            for (var i=0;i<res.data.length;i++) {
+//                var row = res.data[i];
+//                var obj = {
+//                    loc: row.loc,
+//                    at: row.at,
+//                    gid: row.gid
+//                }
+//                newData.push(obj);
+//                
+//            }
+//            res.data = newData;
+//            callback(null)
+//        });
+//        return;
+//    }
+    
+    
     var opts = {
         attrConf: function(asyncCallback) {
             if (!params['areas']) {
@@ -30,9 +52,49 @@ function filter(params, req, res, callback) {
                 return asyncCallback(null, attrConf);
             })
         },
+        data: ['attrConf',function(asyncCallback, results) {
+            if (!results.attrConf) {
+
+                return callback(null);
+            }
+            params.attrMap = results.attrConf.prevAttrMap;
+            var filters = JSON.parse(params['filters'])
+            var filterParam = [];
+            for (var i=0;i<filters.length;i++) {
+                var filter = filters[i];
+                var obj1 = {
+                    field: 'as_'+filter.as+'_attr_'+filter.attr,
+                    comparison: 'gt',
+                    value: filter.min
+                }
+                var obj2 = {
+                    field: 'as_'+filter.as+'_attr_'+filter.attr,
+                    comparison: 'lt',
+                    value: filter.max
+                }
+                filterParam.push(obj1);
+                filterParam.push(obj2);
+            }
+            params['filter'] = JSON.stringify(filterParam);
+            data.getData(params, function(err, dataObj) {
+                var newData = [];
+                for (var i=0;i<dataObj.data.length;i++) {
+                    var row = dataObj.data[i];
+                    var obj = {
+                        loc: row.loc,
+                        at: row.at,
+                        gid: row.gid
+                    }
+                    newData.push(obj);
+                }
+                res.data = newData;
+                callback(null)
+            })
+        }],
         metaData: ['attrConf', function(asyncCallback, results) {
                 if (!results.attrConf) {
-                    return asyncCallback(null);
+                    
+                    return callback(null);
                 }
 
                 params.attrMap = results.attrConf.prevAttrMap;
@@ -50,7 +112,8 @@ function filter(params, req, res, callback) {
                     data.getData(newParams, function(err, dataObj) {
                         if (err)
                             return callback(err)
-                        dataObj.units = results.attrConf.attrMap.units
+                        dataObj.units = results.attrConf.attrMap[attr.as][attr.attr].units
+                        //dataObj.units = results.attrConf.attrMap[attr.attr].units
                         return mapCallback(null, dataObj)
                     })
 
@@ -83,12 +146,16 @@ function filter(params, req, res, callback) {
                                 break;
                             }
                         }
-                        console.log(min);
-                        console.log(max)
-                        min = (Math.abs(min-Math.round(min))<0.0001) ? Math.round(min) : min;
-                        max = (Math.abs(max-Math.round(max))<0.0001) ? Math.round(max) : max;
+                        if (max>100) {
+                            console.log(max)
+                        }
+                        min = (Math.abs(min-Math.round(min))<0.001) ? Math.round(min) : min;
+                        max = (Math.abs(max-Math.round(max))<0.001) ? Math.round(max) : max;
                         min = Math.floor(min*Math.pow(10,-k))/Math.pow(10,-k)
                         max = Math.ceil(max*Math.pow(10,-k))/Math.pow(10,-k)
+                        min = k>0 ? parseInt(min.toFixed(0)) : min;
+                        max = k>0 ? parseInt(max.toFixed(0)) : max;
+                              
                         
                         attrMetaMap['as_'+attr.as+'_attr_'+attr.attr] = {
                             dist: dist,
@@ -98,25 +165,20 @@ function filter(params, req, res, callback) {
                             units: resl.units
                         }
                     }
-                    return asyncCallback(null,attrMetaMap);
+                    res.data = {metaData: attrMetaMap}
+                    return callback(null);
                     
                 })
 
-            }],
-        data: function(asyncCallback) {
-            if (!params['expanded']) {
-                return asyncCallback(null);
-            }
-
-        },
-        result: ['data', 'metaData', function(asyncCallback, results) {
-                res.data = {
-                    data: results.data,
-                    metaData: results.metaData
-                }
-                return callback(null);
             }]
     }
+    if (params['filters']) {
+        delete opts['metaData'];
+    }
+    else {
+        delete opts['data'];
+    }
+
     async.auto(opts)
 
 
@@ -197,6 +259,7 @@ function getFilterConfig(params, req, res, callback) {
                         min = min==null ? minVal : Math.min(min,minVal);
                         max = max==null ? maxVal : Math.max(max,maxVal);
                     }
+                    
                     var diff = max-min;
                     var inc = 1;
                     for (var x=1;x<10;x++) {

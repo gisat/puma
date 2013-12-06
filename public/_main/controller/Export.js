@@ -7,7 +7,8 @@ Ext.define('PumaMain.controller.Export', {
     },
 
     initConf: function() {
-        var id = window.location.search.split('?')[1].split('=')[1];
+        var id = window.location.search.split('?')[1].split('&')[0].split('=')[1];
+        this.forDownload = window.location.search.search('fordownload')>-1;
         Ext.Ajax.request({
             url: Config.url + '/api/urlview/getChart',
             params: {_id: id},
@@ -23,7 +24,6 @@ Ext.define('PumaMain.controller.Export', {
             height: 400,
             width: 575
         };
-        debugger;
         if (cfg.type=='extentoutline') {
             opts.layout = 'absolute'
             var selAreas = JSON.parse(cfg.selectedAreas);
@@ -40,6 +40,7 @@ Ext.define('PumaMain.controller.Export', {
                 height: cfg.size.h,
                 width: cfg.size.w
             }
+            this.mapWidth = cfg.size.w;
         }
         var chart = Ext.widget('chartcmp', opts);
         chart.render('rendering');
@@ -72,7 +73,6 @@ Ext.define('PumaMain.controller.Export', {
     
         
     loadMap: function(cmp) {
-        debugger;
         var options = {
             projection: new OpenLayers.Projection("EPSG:900913"),
             displayProjection: new OpenLayers.Projection("EPSG:4326"),
@@ -89,7 +89,8 @@ Ext.define('PumaMain.controller.Export', {
         var layers = [];
         var gLayer = null;
         
-        var counterObj = {cnt: 0,desired: 0}
+        var counterObj = {cnt: 0,desired: 0};
+        var legends = [];
         for (var i=0;i<cfg.layers.length;i++) {
             var layerCfg = cfg.layers[i];
             var layer = null;
@@ -130,6 +131,12 @@ Ext.define('PumaMain.controller.Export', {
                 if (layerCfg.stylesParam) {
                     params['styles'] = layerCfg.stylesParam
                 }
+                if (layerCfg.legendSrc) {
+                    legends.push({
+                        src: layerCfg.legendSrc,
+                        name: layerCfg.name
+                    })
+                }
                 layer = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', params, layerParams);
                 counterObj.desired++;
                 
@@ -139,12 +146,29 @@ Ext.define('PumaMain.controller.Export', {
                 layers.push(layer);
             }
         }
-        //console.log(layers);
+        
+        if (legends.length && this.forDownload) {
+            
+            var html = '';
+            for (var i=0;i<legends.length;i++) {
+                var legend = legends[i];
+                html += '<div class="legend-container"><div class="legend-text" >'+legend.name+'</div><img src="'+legend.src+'"/></div>'
+            }
+            var legendEl = Ext.get('legend');
+            legendEl.setStyle({maxWidth:this.mapWidth});
+            legendEl.update(html);
+        }
         
         
         
         layers.reverse();
         map.addLayers(layers);
+        if (cfg.trafficLayer&&gLayer) {
+            var trafficLayer = new google.maps.TrafficLayer()
+            trafficLayer.setMap(gLayer.mapObject);
+            
+        }
+        
         for (var i = 0; i < layers.length; i++) {
             var layer = layers[i];
             if (layer.mapObject) {

@@ -73,6 +73,15 @@ Ext.define('PumaMain.controller.Chart', {
         Highcharts.setOptions({
             lang: {
                 thousandsSep: ''
+            },
+            chart: {
+                style: {
+                    fontSize: '12px',
+                    fontFamily: '"Open Sans", sans-serif',
+                    color: '#000',
+                    fontWeight: 'normal'
+                    
+                }
             }
         })
     },
@@ -88,6 +97,7 @@ Ext.define('PumaMain.controller.Chart', {
     
     onToggleLegend: function(btn) {
         var chart = btn.up('panel').chart;
+        $(btn.el.dom).toggleClass('tool-active');
         chart.legendOn = chart.legendOn ? false : true;
         this.toggleLegendState(chart.chart, chart.legendOn);
     },
@@ -434,8 +444,10 @@ Ext.define('PumaMain.controller.Chart', {
             delete queryCfg['start'];
             delete queryCfg['limit'];
         }
-        if (cfg.type=='extentoutline') {
-            queryCfg.selectedAreas = JSON.stringify(this.getSelectedAreas());
+        if (cfg.type=='extentoutline' || cfg.type == 'scatterchart') {
+            var selectedAreas = this.getSelectedAreas()
+            queryCfg.selectedAreas = JSON.stringify(selectedAreas.selectedAreas);
+            queryCfg.defSelectedArea = JSON.stringify(selectedAreas.defArea);
         }
         var params = this.getParams(queryCfg);
         chartCmp.queryCfg = queryCfg;
@@ -464,26 +476,34 @@ Ext.define('PumaMain.controller.Chart', {
         
     getSelectedAreas: function() {
         var selectedAreas = [];
-        var selMap = this.getController('Select').selMap
+        var selMap = this.getController('Select').selMap;
+        var defColor = this.getController('Select').defaultColor;
         var colors = [];
-        var picker = Ext.ComponentQuery.query('#useselectedcolorpicker')[0]
+        var picker = Ext.ComponentQuery.query('#useselectedcolorpicker')[0];
+        var onlySelected = Ext.ComponentQuery.query('#onlySelected')[0].pressed;
         var selectColors = picker.xValue || picker.value;
         selectColors = Ext.isArray(selectColors) ? selectColors : [selectColors]
         for (var color in selMap) {
-            if (!Ext.Array.contains(selectColors,color)) {
+            if (!Ext.Array.contains(selectColors,color) && onlySelected) {
                 continue;
             }
             colors.push(color);
         }
         var selMaps = [];
         var map = {};
+        var defMap = null;
         for (var i = 0; i < colors.length; i++) {
+            
             var actualMap = selMap[colors[i]];
             if (actualMap && actualMap.length) {
                 selMaps.push(actualMap);
+                if (colors[i]==defColor) {
+                    defMap = actualMap;
+                }
             }
-
+            
         }
+        var defArea = null;
         for (var i = 0; i < selMaps.length; i++) {
             var selMap = selMaps[i];
             var map = {};
@@ -494,10 +514,18 @@ Ext.define('PumaMain.controller.Chart', {
                 map[loc] = map[loc] || {};
                 map[loc][at] = map[loc][at] || [];
                 map[loc][at].push(gid);
+                if (selMap==defMap && !defArea) {
+                    defArea = {
+                        loc: loc,
+                        at: at,
+                        gid: gid
+                    }
+                    
+                }
             }
             selectedAreas.push(map);
         }
-        return selectedAreas;
+        return {selectedAreas:selectedAreas,defArea:defArea};
     },
     
     handleExport: function(chartCmp, params) {
@@ -591,6 +619,35 @@ Ext.define('PumaMain.controller.Chart', {
 
     },
     
+    createNoDataChart: function(cmp) {
+
+        var cfg = {
+            chart: {
+                renderTo: cmp.el.dom
+            },
+            title: {
+                text: null
+            },
+            credits: {
+                enabled: false
+            },
+            labels: {items: [{
+                        html: 'No data',
+                        style: {
+                            left: '210px',
+                            top: '180px',
+                            fontSize: 34,
+                            fontFamily: '"Open Sans", sans-serif',
+                            color: '#777777'
+
+                        }
+                    }]}};
+        
+        var chart = new Highcharts.Chart(cfg);
+        cmp.chart = chart;
+        chart.cmp = cmp;
+    },
+    
     onChartReceived: function(response) {
         var cmp = response.cmp || response.request.options.cmp;
         
@@ -602,32 +659,24 @@ Ext.define('PumaMain.controller.Chart', {
             catch (e) {
             }
         }
-        // nebyla k dispozici zadna uzemi
-        if (response.cmp) {
-            return;
-        }
         
-        var singlePage = response.request.options.singlePage
-        var legendBtn = singlePage ? Ext.widget('button') : Ext.ComponentQuery.query('#legendbtn', cmp.ownerCt)[0];
+        
         var data = response.responseText ? JSON.parse(response.responseText).data : null;
         if (cmp.queryCfg.type == 'filter') {
             //this.onFilterReceived(data, cmp)
             return;
         }
-        if (!data) {
-            //legendBtn.hide();
+       
+        
+        
+        if (!data || data.noData) {
+            this.createNoDataChart(cmp);
             return;
         }
         
-        if (data.noData) {
-            data.chart.renderTo = cmp.el.dom;
-            var chart = new Highcharts.Chart(data);
-            cmp.chart = chart;
-            chart.cmp = cmp;
-            cmp.noData = true;
-            //legendBtn.hide();
-            return;
-        }
+        var singlePage = response.request.options.singlePage
+        //var legendBtn = singlePage ? Ext.widget('button') : Ext.ComponentQuery.query('#legendbtn', cmp.ownerCt)[0];
+        
         cmp.noData = false;
         if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
             this.onOutlineReceived(data, cmp);
@@ -655,11 +704,11 @@ Ext.define('PumaMain.controller.Chart', {
             var areaName = '';
             if (type=='column') {
                 areaName = obj.x;
-                yearName = obj.point.yearName
+                yearName = obj.point.yearName;
                 attrConf.push({
                     name: obj.series.name,
                     val: obj.y,
-                    units: obj.series.tooltipOptions.valueSuffix.split(' ')[1]
+                    units: obj.point.units
                 })
             }
             else if (type=='pie') {
@@ -668,7 +717,7 @@ Ext.define('PumaMain.controller.Chart', {
                 attrConf.push({
                     name: obj.key,
                     val: obj.y,
-                    units: obj.series.tooltipOptions.valueSuffix.split(' ')[1]
+                    units: obj.point.units
                 })
             }
             else {
@@ -885,7 +934,10 @@ Ext.define('PumaMain.controller.Chart', {
         }
         var areas = [{at: at, gid: gid, loc: loc}]
         var add = evt.originalEvent ? evt.originalEvent.ctrlKey : evt.ctrlKey;
+        var fromChart = cmp.cfg.type=='grid' || cmp.cfg.type=='piechart' || cmp.cfg.type=='columnchart';
+        //this.
         if (!Config.exportPage) {
+            this.getController('Select').fromChart = fromChart;
             this.getController('Select').select(areas, add, hovering);
         }
         evt.preventDefault();
@@ -924,6 +976,8 @@ Ext.define('PumaMain.controller.Chart', {
         }
         var add = evt.originalEvent.ctrlKey;
         if (!Config.exportPage) {
+            
+            this.getController('Select').fromScatterChart = true;
             this.getController('Select').select(areas, add, false);
         }
         evt.preventDefault();
@@ -962,7 +1016,8 @@ Ext.define('PumaMain.controller.Chart', {
         
         
         var selectedAreas = this.getSelectedAreas();
-        params['selectedAreas'] = JSON.stringify(selectedAreas);
+        params['selectedAreas'] = JSON.stringify(selectedAreas.selectedAreas);
+        params['defSelectedArea'] = JSON.stringify(selectedAreas.defArea);
         return params;
     },
         
@@ -1009,6 +1064,7 @@ Ext.define('PumaMain.controller.Chart', {
         var store = Ext.create('Ext.data.Store', {
             fields: data.fields,
             autoLoad: false,
+            cmp: cmp,
             // vypnuto defaultni sortovani, rizeno pouze extraParams
             doSort: function() {},
             sorters: sorters,
@@ -1022,7 +1078,11 @@ Ext.define('PumaMain.controller.Chart', {
                 extraParams: response.request.options.params
             }
         });
-
+        store.on('load',function(st,records,successful) {
+            if (!successful || !records || !records.length) {
+                this.onChartReceived({cmp:st.cmp});
+            }
+        },this)
         var selectController = this.getController('Select');
         var me = this;
         for (var i=0;i<data.columns.length;i++) {
@@ -1131,12 +1191,23 @@ Ext.define('PumaMain.controller.Chart', {
     
     reconfigure: function(type) {
         var charts = Ext.ComponentQuery.query('chartcmp');
+        var selCtrl = this.getController('Select')
         for (var i = 0; i < charts.length; i++) {
             var chart = charts[i];
             if (type=='immediate') {
                 this.colourChart(chart);
             }
-            else if (Ext.Array.contains(['outer','expand'],type)) {
+            else if (Ext.Array.contains(['expand'],type)) {
+                this.reconfigureChart(chart);
+            }
+            
+            else if (Ext.Array.contains(['outerscatter'],type) && chart.cfg.type!='scatterchart') {
+                this.reconfigureChart(chart);
+            }
+            else if (Ext.Array.contains(['outer'],type)) {
+                this.reconfigureChart(chart);
+            }
+            else if (chart.cfg.attrs && chart.cfg.attrs.length && chart.cfg.attrs[0].normType=='select' && selCtrl.actualColor==selCtrl.defaultColor) {
                 this.reconfigureChart(chart);
             }
             else if (type=='inner' && chart.cfg.type == 'extentoutline') {
@@ -1170,7 +1241,7 @@ Ext.define('PumaMain.controller.Chart', {
             catch(err) {}
             return;
         }
-        if (!chart.chart.hasRendered) {
+        if (!chart.chart.hasRendered || !chart.chart.series.length) {
             return;
         }
         var colorMap = chart.cfg.colorMap || this.getController('Select').colorMap;

@@ -1,3 +1,10 @@
+#legend .legend-container {
+    float: left
+}
+#legend .legend-text {
+    margin: 6px 6px 6px 6px;
+}
+
 div.olControlZoom {
     top: auto ! important;
     left: auto ! important;
@@ -84,7 +91,7 @@ img.invisiblecomplete {
 #msg-div {
     position:absolute;
     top:30%;
-    right:10px;
+    left:10px;
     width:400px;
     margin-bottom: 50px;
     z-index:20000;
@@ -101,7 +108,8 @@ img.invisiblecomplete {
 #msg-div .msg h3 {
     margin: 0 0 8px;
     font-weight: bold;
-    font-size: 15px;
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;
 }
 #msg-div .msg p {
     margin: 0;

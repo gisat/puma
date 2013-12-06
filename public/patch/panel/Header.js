@@ -83,6 +83,7 @@ Ext.define('Puma.patch.panel.Header', {
             for (var i=0;i<me.items.length;i++) {
                 var item = me.items[i];
                 if (item.type=='collapse-top' || item.type=='expand-bottom') {
+                  
                     collapseTool = item;
                     break;
                 }
