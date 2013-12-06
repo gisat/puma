@@ -7,7 +7,7 @@
 }
 .field.year .widget .x-field .x-form-item-body {
 	padding-left         : 10px;
-	color                : #807e87;
+	color                : #fff;
 	font-weight          : bold;
 }
 .field.year .widget .x-form-cb-checked .x-form-item-body {
@@ -36,7 +36,7 @@
 	margin-left          : 0;
 }
 .field.level .x-btn {
-	background           : #807e87;
+	background           : #ddd;
 	border               : none;
 }
 .field.level .x-btn .x-btn-inner {

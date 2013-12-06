@@ -48,13 +48,19 @@
 }
 /* Red button */
 .x-btn.custom-button.btn-confirm {
-	background           : #c92d42;
+	background           : #bbb;
 }
 .x-btn.custom-button.btn-confirm .x-btn-inner {
-	color                : #fff;
+	color                : #003399;
+        text-shadow: 1px 1px white;
+        font-size: 13px;
 }
 .x-btn.custom-button.btn-confirm:hover, .x-btn.btn-confirm:focus {
-	background           : #ad2738;
+	background           : #999;
+}
+
+.btn-map-select.x-btn-pressed span {
+    color: #bb0000;
 }
 
 /* FIELDSET */
@@ -103,12 +109,13 @@
 
 
 .x-border-box .custom-combo .x-form-text {
-	color                : #fff;
-	background           : #666470;
+	color                : #003399;
+        font-weight: bold;
+	background           : #fff;
 	border-color         : transparent;
 }
 .x-border-box .custom-combo .x-form-trigger {
-	background-color     : #7f7c85;
+	background-color     : #ddd;
 	border-color         : transparent;
 }
 
@@ -131,12 +138,18 @@
 	border               : none;
 }
 .x-boundlist.custom-combo-list .x-boundlist-item {
-	background           : #b7b5bb;
+	background           : #fff;
 	color                : #424451;
 }
 .x-boundlist.custom-combo-list .x-boundlist-item:hover,
 .x-boundlist.custom-combo-list .x-boundlist-item-over {
-	background           : #a4a0a9;
+	background           : #bbccff;
+}
+.x-boundlist .x-boundlist-item {
+    border-top: 1px solid #ddd;
+}
+.x-boundlist-list-ct {
+    border-top: 1px solid #ddd;
 }
 
 .x-form-item {

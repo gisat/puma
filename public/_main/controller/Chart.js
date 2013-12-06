@@ -489,7 +489,7 @@ Ext.define('PumaMain.controller.Chart', {
         
     getSelectedAreas: function() {
         var selectedAreas = [];
-        var selMap = this.getController('Select').selMap
+        var selMap = this.getController('Select').selMap;
         var colors = [];
         for (var color in selMap) {
             colors.push(color);

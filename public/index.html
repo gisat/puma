@@ -37,17 +37,10 @@
 </head>
 <body class="intro">
 	<div id="main">
-		<div id="header">
-			<a class="home">ETMS</a>
+		<div id="header">European Territorial Monitoring System
 			<ul class="menu">
-<!--				<li><a class="active">Data exploration</a></li>
-				<li><a href="http://puma.gisat.cz/administration">Administration</a></li>
-				<li><a href="http://puma.gisat.cz/documents">Documents</a></li>
-				<li><a href="http://puma.gisat.cz/downloads">Downloads</a></li>
-				<li><a href="http://puma.gisat.cz/news">News</a></li>
-				<li><a href="http://puma.gisat.cz/about">About</a></li>-->
 			</ul>
-			<div class="user">
+			<div id="login-widget" class="user" style="display:none">
 				<a href="#" class="login">Login</a>
 				<span class="sep"></span>
 				<a href="#" class="signup">Sign up</a>
@@ -67,11 +60,11 @@
 				<div class="fields">
 					<div class="group">
 						<div class="field scope">
-							<div class="label">Scope</div>
+							<div class="label">Region type</div>
 							<div id="app-intro-scope" class="widget"></div>
 						</div>
 						<div class="field teritory">
-							<div class="label">Dataset</div>
+							<div class="label">Region subtype</div>
 							<div id="app-intro-teritory" class="widget"></div>
 						</div>
 					</div>
@@ -87,33 +80,27 @@
 					</div>
 				</div>
 			</div>
-<!--			<div id="content-intro-guide">
-				<h2>Selection guide</h2>
-				<h3>Scope</h3>
-				<p>Different data address different scope level of analysis. Please choose you scope of interest.</p>
-				<h3>Territory</h3>
-				<p>Data for different analysis scopes can be available for different territories. Please select territory covered / prepared for exploration and analysis according to region, country or city of your interest.</p>
-				<h3>Theme</h3>
-				<p>Standard views on data are focused on different thematic information. Please select theme according your thematic interests.</p>
-			</div>-->
+			<div id="content-intro-guide">
+				<a href="http://www.espon.eu" target="_blank"> <img  src="images/espon_logo_aftodioikisi.png" height="70"></a>
+			</div>
 			<div id="content-application">
 				<div id="toolbar" class="fields-holder">
 					<div class="label">Data Exploration</div>
 					<div class="fields">
 						<div class="group">
 							<div class="field scope">
-								<div class="label">Scope</div>
+								<div class="label">Region type</div>
 								<div id="app-toolbar-scope" class="widget"></div>
 							</div>
 							<div class="field teritory">
-								<div class="label">Dataset</div>
+								<div class="label">Region subtype</div>
 								<div id="app-toolbar-teritory" class="widget"></div>
 							</div>
 							<div class="field theme">
 								<div class="label">Theme</div>
 								<div id="app-toolbar-theme" class="widget"></div>
 							</div>
-							<div class="field help">
+							<div class="field help" style="display:none">
 								<div class="widget"><a>Help</a></div>
 							</div>
 						</div>
@@ -137,6 +124,7 @@
 						</div>
 					</div>
 					<div class="dataview field">
+                                            <a href="http://www.espon.eu" target="_blank" id="toolbar-logo"> <img  src="images/espon_logo_aftodioikisi.png" height="70"></a>
 						<div id="app-toolbar-share" class="widget"></div>
 						<div id="app-toolbar-save" class="widget"></div>
 						<div id="app-toolbar-manage" class="widget"></div>
@@ -155,10 +143,8 @@
 		</div>
 		<div id="footer">
 			<a href="http://www.gisat.cz/" class="logo"><img src="images/gisat-logo.png" width="76" height="20"></a>
-<!--			<span class="contact"><strong>Contact:</strong> <a href="mailto:tomas.soukup@gisat.cz">tomas.soukup@gisat.cz</a></span>
-			<a href="http://puma.astraleus.net/about" class="contact">More information</a>
-			<span class="copyright">&copy; 2013 The World Bank Group, All Rights Reserved.</span>-->
-		</div>
+                        
+                        <img class="copyright" src="images/bc2d7_espon-logo2.png" height="32"></div>
 	</div>
 	<div id="loading-mask-shim"></div>
 	<div id="loading-mask"></div>

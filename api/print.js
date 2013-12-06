@@ -20,7 +20,8 @@ function exporter(params, req, res, callback) {
     cp.execFile(phantomName, ['rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
         console.log(err);
         console.log(stdout);
-        console.log(stderr)
+        console.log(stderr);
+        
         if (params['download']) {
             res.downFile = [outFile, imgId]
             return callback(err);
