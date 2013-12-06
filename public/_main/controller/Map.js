@@ -96,23 +96,33 @@ Ext.define('PumaMain.controller.Map', {
         else {
             domController.deactivateMapSplit();
         }
+        this.multiMap = pressed;
         this.map1.multiMap = pressed;
         this.map2.multiMap = pressed;
+        //var gmapNoPrint = Ext.select('#app-map .gmnoprint');
+        var controlZoom = Ext.select('#app-map .olControlZoom');
+        //gmapNoPrint.setVisible(!pressed);
+        controlZoom.setVisible(!pressed);
+        
         this.switchMap(pressed);
     },
     
     switchMap: function(both,second) {
         var map1 = Ext.ComponentQuery.query('#map')[0];
         var map2 = Ext.ComponentQuery.query('#map2')[0];
+        
         if (both) {
+            map2.map.noSync = true;
             map1.show();
             map2.show();
+            map2.map.noSync = false;
+            this.onMapMove(map1.map);
         }
-        else if (second) {
-            
-            map1.hide();
-            map2.show();
-        }
+//        else if (second) {
+//            
+//            map1.hide();
+//            map2.show();
+//        }
         else {
             map2.hide();
             map1.show();
@@ -221,14 +231,23 @@ Ext.define('PumaMain.controller.Map', {
             sortIndex: 10000,
             type: 'terrain'
         });
+        var osmNode = Ext.create('Puma.model.MapLayer',{
+            name: 'OSM',
+            initialized: true,
+            allowDrag: false,
+            checked: false,
+            leaf: true,
+            sortIndex: 10000,
+            type: 'osm'
+        });
         
-        Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode],true);
-        baseNode.appendChild([hybridNode,streetNode,terrainNode]);
+        Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
+        baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
         
     },
     
     onMapMove: function(map) {
-        if (!map.multiMap) {
+        if (!map.multiMap || map.noSync) {
             return;
         }
         var mapMoved = map;
@@ -241,6 +260,31 @@ Ext.define('PumaMain.controller.Map', {
         mapAlt.artifZoom = true;
         mapAlt.setCenter(mapMoved.getCenter(),mapMoved.getZoom());
         mapAlt.artifZoom = false;
+    },
+    
+    onMouseMove: function(e) {
+        if (!this.multiMap) {
+            this.cursor1.hide();
+            this.cursor2.hide();
+            return;
+        }
+        var cursor = this.cursor1;
+        var offsetX = this.map1.div.offsetLeft;
+        if (e.object==this.map1) {
+            cursor = this.cursor2;
+            offsetX = this.map2.div.offsetLeft;
+        }
+        var x = e.x - e.element.offsetParent.offsetLeft + offsetX;
+        var y = e.y - e.element.offsetParent.offsetTop;
+        cursor.setStyle({
+            top: y + 'px',
+            left: x + 'px'
+        });
+        cursor.show();
+    },
+    onMouseOut: function(e) {
+        this.cursor1.hide();
+        this.cursor2.hide();
     },
     
     afterExtentOutlineRender: function(cmp) {
@@ -305,13 +349,34 @@ Ext.define('PumaMain.controller.Map', {
         var filter = filters.length < 2 ? filters[0] : new OpenLayers.Filter.Logical({type: '||', filters: filters});
         var style = new OpenLayers.Style();
         var layerName = 'puma:layer_' + layerRefs.areaRef._id;
-
         var rule = new OpenLayers.Rule({
-            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#ff0000'}),
+            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color}),
             "Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})},
             filter: filter
         });
         style.addRules([rule]);
+        var rasterStyle = new OpenLayers.Style();
+        var rasterRule = new OpenLayers.Rule({
+            symbolizer: {
+                "Raster": new OpenLayers.Symbolizer.Raster({colorMap:[{color:'#00ff00',quantity:-100},{color:'#0000ff',quantity:100}]})
+            }
+        });
+        rasterStyle.addRules([rasterRule]);
+        var rasternamedLayers = [{
+                name: layerRefs.layerRef.layer,
+                userStyles: [rasterStyle]
+            }];
+        var rastersldObject = {
+            name: 'style',
+            title: 'Style',
+            namedLayers: rasternamedLayers
+        }
+        var rasterformat = new OpenLayers.Format.SLD.Geoserver23();
+        var rastersldNode = rasterformat.write(rastersldObject);
+        var rasterxmlFormat = new OpenLayers.Format.XML();
+        var rastersldText = rasterxmlFormat.write(rastersldNode);
+        
+        
         var namedLayers = [{
                 name: layerName,
                 userStyles: [style]
@@ -342,6 +407,9 @@ Ext.define('PumaMain.controller.Map', {
         }
         
         map.layer1.mergeNewParams(layer1Conf)
+//        map.layer1.mergeNewParams({
+//            "SLD_BODY": rastersldText
+//        })
         map.layer2.mergeNewParams({
             "USE_SECOND": true,
             "SLD_BODY": sldText
@@ -403,10 +471,11 @@ Ext.define('PumaMain.controller.Map', {
         if (cmp.itemId=='map') {
             this.createBaseNodes();
             this.map1 = map;
-            
+            this.cursor1 = Ext.get('app-map').down('img')
         }
         else {
             this.map2 = map;
+            this.cursor2 = Ext.get('app-map2').down('img')
         }
         
         var hybridLayer = new OpenLayers.Layer.Google(
@@ -438,6 +507,10 @@ Ext.define('PumaMain.controller.Map', {
                 }
                     
         );
+        var osmLayer = new OpenLayers.Layer.OSM('OSM',null,{
+            initialized: true,
+            visibility: false
+        });
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
         var nodes = [];
         for (var i=0;i<baseNode.childNodes.length;i++) {
@@ -448,6 +521,7 @@ Ext.define('PumaMain.controller.Map', {
                 case 'hybrid': layer = hybridLayer; break;
                 case 'roadmap': layer = streetLayer; break;
                 case 'terrain': layer = terrainLayer; break;
+                case 'osm': layer = osmLayer; break;
             }
             var nodeProp = cmp.itemId=='map' ? 'layer1':'layer2';
             node.set(nodeProp,layer);
@@ -467,14 +541,20 @@ Ext.define('PumaMain.controller.Map', {
         //bbox: 112.337169,-7.954641,112.977462,-7.029791
         //debugger;
         map.size = map.getCurrentSize();
-        map.addLayers([terrainLayer,streetLayer,hybridLayer]);
+        map.addLayers([terrainLayer,streetLayer,hybridLayer,osmLayer]);
         
         if (cmp.id=='map') {
             Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
         }
         
-        map.events.register('moveend',this,function(a) {
-            this.onMapMove(a.object);
+        map.events.register('moveend',this,function(e) {
+            this.onMapMove(e.object);
+        })
+        map.events.register('mousemove',this,function(e) {
+            this.onMouseMove(e);
+        })
+        map.events.register('mouseout',this,function(e) {
+            this.onMouseOut(e);
         })
         
         map.updateSize();

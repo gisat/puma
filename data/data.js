@@ -19,7 +19,7 @@ function getData(params, callback) {
     var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) : null;
     var normalizationAttributeSet = params['normalizationAttributeSet'] ? parseInt(params['normalizationAttributeSet']) : null;
     var normalizationAttribute = params['normalizationAttribute'] ? parseInt(params['normalizationAttribute']) : null;
-
+    
 
 //    var userAggregates = {
 //        276: {
@@ -140,8 +140,6 @@ function getData(params, callback) {
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
-            console.log(attrUnits);
-            console.log(normAttrUnits);
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
@@ -247,7 +245,7 @@ function getData(params, callback) {
 
     var allMap = selectedAreas;
     allMap.push(areas);
-
+    console.log(allMap)
     var opts = {
         dataset: function(asyncCallback) {
 
@@ -346,6 +344,7 @@ function getData(params, callback) {
 
 
                             var gids = partailAreas[locationId][areaId];
+                            if (!gids.length && gids !== true) continue;
                             var oneSql = sql ? ' UNION (' : '(';
                             var gidSql = '';
                             var nameSql = '';
@@ -388,9 +387,7 @@ function getData(params, callback) {
                                 catch (e) {
                                 }
                                 if (!layerRef && locationId!=-1) {
-                                    
                                     continue;
-                                    
                                 }
                                 atLeastOne = true;
                                 //var layerName = areaId != -1 ? 'layer_' + layerRef['_id'] : ('layer_user_' + params['userId'] + '_loc_' + locationId + '_y_' + year);
@@ -456,10 +453,11 @@ function getData(params, callback) {
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);
+                    console.log(resls)
                     var aggData = [];
                     var normalData = [];
                     var locAggDataMap = {};
-
+                    
                     if (topLoc || topAll || aggSelect) {
                         
                             //console.log(originalSelected);

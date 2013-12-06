@@ -346,7 +346,7 @@ function getThemeYearConf(params, req, res, callback) {
 
             }],
         leafs: ['sql', function(asyncCallback, results) {
-                if (!params['refreshAreas'] || params['refreshAreas']=='false') {
+                if (!params['refreshAreas'] || params['refreshAreas']=='false' || params['bypassLeafs']) {
                     return asyncCallback(null, {});
                 }
                 var atMap = {};

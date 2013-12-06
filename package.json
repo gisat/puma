@@ -12,6 +12,7 @@
     "jsdom" : "0.3.4",
     "xmldom" : "0.1.13",
     "properties" : "0.3.3",
-    "underscore":"1.4.x"
+    "underscore":"1.4.x",
+    "xml2json":"0.3.2"
   }
 }

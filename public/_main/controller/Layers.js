@@ -15,7 +15,9 @@ Ext.define('PumaMain.controller.Layers', {
                 layerup: this.onLayerUp,
                 layerdown: this.onLayerDown,
                 layerremove: this.onLayerRemove,
-                layeropacity: this.openOpacityWindow
+                layeropacity: this.openOpacityWindow,
+                layerlegend: this.onLayerLegend,
+                showmetadata: this.onShowMetadata
             },
 //            'layermenu #opacity': {
 //                click: this.openOpacityWindow
@@ -49,7 +51,42 @@ Ext.define('PumaMain.controller.Layers', {
             
         })
     },
-        
+    onLayerLegend: function(panel, rec, checked) {
+        if (checked) {
+            var img = Ext.widget('image',{
+                src: rec.get('src')
+            })
+            
+            var window = Ext.widget('window', {
+                autoScroll: true,
+                islegend: 1,
+                items: [img],
+                title: rec.get('name')
+
+            })
+            img.on('resize',function(i) {
+                i.el.on('load',function(a, dom) {
+                    this.setSize(dom.clientWidth+32,dom.clientHeight+48);
+                    var leftPanel = Ext.ComponentQuery.query('toolspanel')[0];
+                    var factor = Ext.ComponentQuery.query('window[islegend=1]').length-1;
+                    this.showBy(leftPanel,'bl-br',[30*factor,-30*factor]);
+                    this.el.setOpacity(0.85)
+                },this)
+            },window,{single:true})
+            window.showAt(1,1);
+            
+            window.rec = rec;
+            window.on('close', function(win) {
+                win.rec.set('legend',null);
+            })
+            rec.set('legend',window);
+        }
+        if (!checked && rec.get('legend')) {
+            rec.get('legend').close();
+            rec.set('legend',null);
+        }
+    },
+            
     reconfigureChoropleths: function(cfg) {
         this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
@@ -160,12 +197,66 @@ Ext.define('PumaMain.controller.Layers', {
 
     },
     
+    onShowMetadata: function(panel, rec) {
+        var layer1 = rec.get('layer1');
+        var layer2 = rec.get('layer2');
+        var layers = layer1.params.LAYERS.split(',');
+        if (layer2 && layer2.params.LAYERS) {
+            layers = Ext.Array.merge(layers, layer2.params.LAYERS.split(','))
+        }
+        Ext.Ajax.request({
+            url: Config.url + '/api/layers/getMetadata',
+            rec: rec,
+            params: {
+                layers: JSON.stringify(layers)
+            },
+            success: function(response) {
+                var name = response.request.options.rec.get('name');
+                response = JSON.parse(response.responseText).data;
+                var html = '';
+                for (var i=0;i<response.length;i++) {
+                    var r = response[i];
+                    html+= '<div class="metadata">';
+                    
+                    html+= '<p class="title">Title</p>';
+                    html+= '<p>' + r.title + '</p>';
+                    
+                    html+= '<p class="title">Abstract</p>';
+                    html+= '<p>' + r.abstract + '</p>';
+                    
+                    html+= '<p class="title">Temporal extent</p>';
+                    html+= '<p>' + r.temporal + '</p>';
+                    
+                    html+= '<p class="title">Keywords</p>';
+                    html+= '<p>' + r.keywords + '</p>';
+                    
+                    html+= '<p class="title">Producer</p>';
+                    html+= '<p>' + r.producer + '<br/>';
+                    html+= '<a target="_top" href="mailto:' + r.mail + '">' + r.mail + '</a></p>'
+                    
+                    html+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
+                    
+                    html+= '</div>';
+                }
+                Ext.widget('window',{
+                    height: 600,
+                    title: name,
+                    width: 500,
+                    autoScroll: true,
+                    html: html
+                }).show();
+            }
+
+        })
+    },
+    
+    
     onBeforeLayerDrop: function(row,obj,dropPos) {
         var type = obj.records[0].get('type');
-        if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas'],type)) {
+        if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas','selectedareasfilled'],type)) {
             return false;
         }
-        else if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas'],dropPos.get('type'))) {
+        else if (!Ext.Array.contains(['topiclayer','chartlayer','areaoutlines','selectedareas','selectedareasfilled'],dropPos.get('type'))) {
             return false;
         }
     },
@@ -209,7 +300,7 @@ Ext.define('PumaMain.controller.Layers', {
         for (var i=0;i<layers.length;i++) {
             var layer = layers[i];
             var type = layer.get('type');
-            if (type!='topiclayer' && type!='chartlayer' && type!='selectedareas' && type!='areaoutlines') {
+            if (type!='topiclayer' && type!='chartlayer' && type!='selectedareas' && type!='selectedareasfilled' && type!='areaoutlines') {
                 continue;
             }
             layer.set('sortIndex',i);
@@ -303,15 +394,22 @@ Ext.define('PumaMain.controller.Layers', {
     colourMap: function(selectMap, map1NoChange, map2NoChange) {
         var store = Ext.StoreMgr.lookup('layers');
         var node = store.getRootNode().findChild('type', 'selectedareas', true);
+        var filledNode = store.getRootNode().findChild('type', 'selectedareasfilled', true);
+     
         if (!node)
             return;
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
-
+        var filledLayer1 = filledNode.get('layer1');
+        var filledLayer2 = filledNode.get('layer2');
+        
+        
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
         var areaTemplates = this.getController('Area').areaTemplateMap;
         var namedLayers1 = [];
         var namedLayers2 = [];
+        var namedLayersFilled1 = [];
+        var namedLayersFilled2 = [];
         selectMap = selectMap || {};
 
         for (var loc in selectMap) {
@@ -327,6 +425,7 @@ Ext.define('PumaMain.controller.Layers', {
                     if (!lr && at != -1)
                         continue;
                     var style = new OpenLayers.Style();
+                    var filledStyle = new OpenLayers.Style();
                     //var layerId = at == -1 ? '#userlocation#_y_' + year : lr._id;
                     var layerId = lr._id;
                     var layerName = 'puma:layer_' + layerId
@@ -336,7 +435,7 @@ Ext.define('PumaMain.controller.Layers', {
                         )}
                     });
                     style.addRules([defRule]);
-
+                    filledStyle.addRules([defRule]);
                     var recode = ['${gid}'];
                     var filters = [];
                     for (var gid in selectMap[loc][at]) {
@@ -355,17 +454,29 @@ Ext.define('PumaMain.controller.Layers', {
                         symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: recodeFc, strokeWidth: 1, fillOpacity: 0})
                         ,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:12,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
                     }}
+                    var objFilled = {
+                        filter: filterFc,
+                        symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillColor: recodeFc, strokeWidth: 1, fillOpacity: 1})
+                        ,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:12,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
+                    }}
 //                    var rule1 = new OpenLayers.Rule({
 //                        filter: filterFc,
 //                        minScaleDenominator: 5000000,
 //                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({strokeColor: '#888888', strokeWidth: 1, graphicName: 'circle', pointRadius: 8, fillColor: recodeFc})}
 //                    });
-                    var rule2 = new OpenLayers.Rule(obj);
-                    style.addRules([ rule2]);
+                    var rule = new OpenLayers.Rule(obj);
+                    style.addRules([rule]);
+                    var ruleFilled = new OpenLayers.Rule(objFilled);
+                    filledStyle.addRules([ruleFilled]);
                     var namedLayers = i == 0 ? namedLayers1 : namedLayers2;
+                    var namedLayersFilled = i == 0 ? namedLayersFilled1 : namedLayersFilled2;
                     namedLayers.push({
                         name: layerName,
                         userStyles: [style]
+                    })
+                    namedLayersFilled.push({
+                        name: layerName,
+                        userStyles: [filledStyle]
                     })
                 }
             }
@@ -373,20 +484,22 @@ Ext.define('PumaMain.controller.Layers', {
         }
 
 
-        var namedLayersGroup = [namedLayers1, namedLayers2];
+        var namedLayersGroup = [namedLayers1, namedLayers2,namedLayersFilled1,namedLayersFilled2];
         for (var i = 0; i < namedLayersGroup.length; i++) {
             var namedLayer = namedLayersGroup[i];
-            var layer = i == 0 ? layer1 : layer2;
-            var change = i == 0 ? map1NoChange : map2NoChange;
+            var isFilled = i>1;
+            var layer = !isFilled ? (i%2 == 0 ? layer1 : layer2) : (i%2 == 0 ? filledLayer1 : filledLayer2);
+            var noChange = i%2 == 0 == 0 ? map1NoChange : map2NoChange;
             if (!namedLayer.length) {
-                if (!change) {
+                if (noChange) {
                     layer.setVisibility(false);
                     layer.initialized = false;
                 }
 
                 continue;
             }
-            this.saveSld(node, namedLayer, layer);
+            var changedNode = isFilled ? filledNode : node;
+            this.saveSld(changedNode, namedLayer, layer);
         }
     },
     saveSld: function(node, namedLayers, layer, params, legendNamedLayers) {
@@ -411,7 +524,6 @@ Ext.define('PumaMain.controller.Layers', {
             legendSld = xmlFormat.write(legendSldNode);
         }
         var me = this;
-        
         Ext.Ajax.request({
             url: Config.url + '/api/proxy/saveSld',
             params: Ext.apply({
@@ -457,7 +569,7 @@ Ext.define('PumaMain.controller.Layers', {
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
 
-        var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         for (var i = 0; i < Math.max(2, years.length); i++) {
             var year = years[i];
             var filterMap = this.getTreeFilters(year);
@@ -879,7 +991,8 @@ Ext.define('PumaMain.controller.Layers', {
                 node.get('params')['altYears'] = JSON.stringify([years[1]]);
             }
             else if (i == 1) {
-                node.get('params')['altYears'] = JSON.stringify([years[0]]);
+                node.get('params')['altYears'] = JSON.stringify([years[1]]);
+                node.get('params')['years'] = JSON.stringify([years[0]]);
             }
             else {
                 delete node.get('params')['altYears'];

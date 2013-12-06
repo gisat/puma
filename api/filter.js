@@ -5,9 +5,134 @@ var async = require('async')
 var crud = require('../rest/crud');
 var us = require('underscore')
 
-function getFilterConfig(params,req,res,callback) {
+
+
+
+
+function filter(params, req, res, callback) {
+
+
+    var params2 = us.clone(params);
+
+    params.filter = null;
+    params2.bypassLeafs = true;
+    params2.refreshAreas = true;
+
+    var opts = {
+        attrConf: function(asyncCallback) {
+            if (!params['areas']) {
+                return asyncCallback(null);
+            }
+            data.getAttrConf(params, function(err, attrConf) {
+                if (err)
+                    return callback(err);
+
+                return asyncCallback(null, attrConf);
+            })
+        },
+        metaData: ['attrConf', function(asyncCallback, results) {
+                if (!results.attrConf) {
+                    return asyncCallback(null);
+                }
+
+                params.attrMap = results.attrConf.prevAttrMap;
+                var attrMetaMap = {};
+                var attrs = JSON.parse(params['attrs']);
+                async.map(attrs, function(attr, mapCallback) {
+                    var newParams = us.clone(params);
+                    newParams.attrs = JSON.stringify([attr]);
+                    newParams.sort = JSON.stringify([{property: 'as_' + attr.as + '_attr_' + attr.attr, direction: 'ASC'}])
+                    newParams.sortNorm = JSON.stringify({
+                        normType: attr.normType,
+                        normAttr: attr.normAttr,
+                        normAs: attr.normAs
+                    })
+                    data.getData(newParams, function(err, dataObj) {
+                        if (err)
+                            return callback(err)
+                        dataObj.units = results.attrConf.attrMap.units
+                        return mapCallback(null, dataObj)
+                    })
+
+                }, function(err, resls) {
+                    for (var i=0;i<resls.length;i++) {
+                        var resl = resls[i];
+                        
+                        var attr = attrs[i];
+                        var attrName = 'as_' + attr.as + '_attr_' + attr.attr;
+                        
+                        var min = resl.data[0][attrName];
+                        var max = resl.data[resl.data.length-1][attrName];
+                        var diff = max-min;
+                        var classes = 20;
+                        var fraction = diff!=0 ? diff/classes : 1;
+                        var dist = [];
+                        for (var j=0;j<classes;j++) {
+                            dist[j] = 0;
+                        }
+                        for (var j=0;j<resl.data.length;j++) {
+                            var row = resl.data[j];
+                            var val = row[attrName];
+                            var classNum = Math.floor((val-min)/fraction);
+                            classNum = classNum==classes ? classNum-1 : classNum;
+                            dist[classNum]++;
+                        }
+                        for (var k=-3;k<100;k++) {
+                            var num = diff/Math.pow(10,k);
+                            if (num<400) {
+                                break;
+                            }
+                        }
+                        console.log(min);
+                        console.log(max)
+                        min = (Math.abs(min-Math.round(min))<0.0001) ? Math.round(min) : min;
+                        max = (Math.abs(max-Math.round(max))<0.0001) ? Math.round(max) : max;
+                        min = Math.floor(min*Math.pow(10,-k))/Math.pow(10,-k)
+                        max = Math.ceil(max*Math.pow(10,-k))/Math.pow(10,-k)
+                        
+                        attrMetaMap['as_'+attr.as+'_attr_'+attr.attr] = {
+                            dist: dist,
+                            decimal: k,        
+                            min: min,
+                            max: max,
+                            units: resl.units
+                        }
+                    }
+                    return asyncCallback(null,attrMetaMap);
+                    
+                })
+
+            }],
+        data: function(asyncCallback) {
+            if (!params['expanded']) {
+                return asyncCallback(null);
+            }
+
+        },
+        result: ['data', 'metaData', function(asyncCallback, results) {
+                res.data = {
+                    data: results.data,
+                    metaData: results.metaData
+                }
+                return callback(null);
+            }]
+    }
+    async.auto(opts)
+
+
+}
+
+function getFilterConfig(params, req, res, callback) {
+    var year = JSON.parse(params['years'])[0];
+    var areas = JSON.parse(params['areas']);
     var attrs = JSON.parse(params['attrs']);
-    var fl = JSON.parse(params['featureLayers']);
+    var returnMeta = JSON.parse(params['returnMeta']);
+    var returnData = JSON.parse(params['returnData'])
+
+
+    
+    
+    
     var years = JSON.parse(params['years']);
     
     var opts = {
@@ -99,5 +224,6 @@ function getFilterConfig(params,req,res,callback) {
     
 }
 module.exports = {
-    getFilterConfig: getFilterConfig
+    getFilterConfig: getFilterConfig,
+    filter: filter
 }

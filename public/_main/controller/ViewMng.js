@@ -102,6 +102,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            y: 200,
             bodyCls: 'manageDwWindow',
             items: [{
                 xtype: 'commonmnggrid',
@@ -178,13 +179,38 @@ Ext.define('PumaMain.controller.ViewMng', {
             filterController.applyFilters(true);
         }
         
+        var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0];
+        onlySel.suspendEvents();
+        onlySel.toggle(Config.cfg.pagingUseSelected);
+        onlySel.resumeEvents();
+        
+        var selColors = Ext.ComponentQuery.query('#useselectedcolorpicker')[0];
+        selColors.suspendEvents();
+        if (Config.cfg.pagingSelectedColors) {
+            selColors.select(Config.cfg.pagingSelectedColors);
+
+        }
+        selColors.resumeEvents();
+        
+        if (Config.cfg.filterUseSelected) {
+            var instantFilter = Ext.ComponentQuery.query('#instantfilter')[0];
+            var selectFilter = Ext.ComponentQuery.query('#filterselect')[0];
+            instantFilter.suspendEvents();
+            instantFilter.toggle(false);
+            instantFilter.resumeEvents();
+            selectFilter.enable();
+        }
+        onlySel.suspendEvents();
+        onlySel.toggle(Config.cfg.pagingUseSelected)
+        onlySel.resumeEvents();
+        
         var locationTheme = this.getController('LocationTheme');
         locationTheme.datasetChanged = true;
         locationTheme.visChanged = true;
         locationTheme.themeChanged = true;
         locationTheme.yearChanged = true;
         locationTheme.locationChanged = true;
-        locationTheme.onYearChange({cntId:'dataview'});
+        locationTheme.onYearChange({itemId:'dataview'});
         
     },
      
@@ -199,6 +225,11 @@ Ext.define('PumaMain.controller.ViewMng', {
         cfg.expanded = this.getController('Area').getExpandedAndFids().expanded;
         cfg.selMap = this.getController('Select').selMap;
         cfg.choroplethCfg = this.getController('AttributeConfig').layerConfig
+        
+        cfg.pagingUseSelected = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+        cfg.pagingSelectedColors = Ext.ComponentQuery.query('#useselectedcolorpicker')[0].getValue()
+        
+        //cfg.filterUseSelected = !Ext.ComponentQuery.query('#instantfilter')[0].pressed
         
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var filters = [];
@@ -301,6 +332,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            y: 200,
             bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',
@@ -315,6 +347,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             layout: 'fit',
             width: 300,
             height: 400,
+            y: 200,
             bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',

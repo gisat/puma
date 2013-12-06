@@ -12,13 +12,24 @@ Ext.define('PumaMain.controller.Select', {
             },
             '#selectcolorpicker': {
                 select: this.onChangeColor
+            },
+            '#useselectedcolorpicker': {
+                select: this.onChangeChartColor
+            },
+            '#unselectbtn': {
+                afterrender: this.onAfterUnselectRender
             }
+            
         })
-        this.selMap = {'ff0000':[]};
+        this.selMap = {'ff4c39':[]};
         this.colorMap = {};
         this.hoverMap = [];
-        this.actualColor = 'ff0000';
+        this.actualColor = 'ff4c39';
     },
+    onAfterUnselectRender: function() {
+        Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
+    },
+
         
     select: function(areas,add,hover) {
         if (!this.actualColor) return;
@@ -30,12 +41,11 @@ Ext.define('PumaMain.controller.Select', {
     },
         
     onToggleHover: function(btn,value) {
-        var selectInMap = Ext.ComponentQuery.query('#selectinmapbtn')[0];
         var infoControls1 = this.getController('Map').map1.infoControls;
         var infoControls2 = this.getController('Map').map2.infoControls;
         this.getController('Area').hovering = value;
         this.getController('Chart').hovering = value;
-        if (selectInMap.pressed && value) {
+        if (value) {
             infoControls1.hover.activate();
             infoControls2.hover.activate();
         }
@@ -58,16 +68,19 @@ Ext.define('PumaMain.controller.Select', {
         fn1.call(infoControls1.click);
         var fn2 = value ? infoControls2.click.activate : infoControls2.click.deactivate;
         fn2.call(infoControls2.click);
-        if (hoverBtn.pressed && value) {
-            infoControls1.hover.activate();
-            infoControls2.hover.activate();
-        }
-        else {
-            infoControls1.hover.deactivate();
-            infoControls2.hover.deactivate();
-        }
+//        if (hoverBtn.pressed && value) {
+//            infoControls1.hover.activate();
+//            infoControls2.hover.activate();
+//        }
+//        else {
+//            infoControls1.hover.deactivate();
+//            infoControls2.hover.deactivate();
+//        }
     },
-    
+    onChangeChartColor: function(picker, value) {
+        this.updateCounts();
+        this.selectDelayed(null,null,null,true);
+    },
     onChangeColor: function(picker,value) {
         this.actualColor = value;
         this.selMap[value] = this.selMap[value] || [];
@@ -77,7 +90,7 @@ Ext.define('PumaMain.controller.Select', {
         }
     },
     
-    selectInternal: function(areas,add,hover) {
+    selectInternal: function(areas,add,hover,delay) {
         if (!hover) {
             var sel = this.selMap[this.actualColor];
         }
@@ -108,6 +121,11 @@ Ext.define('PumaMain.controller.Select', {
         
         if (!hover) {
             this.selMap[this.actualColor] = newSel;
+            for (var col in this.selMap) {
+                if (col==this.actualColor) continue;
+                var diff = this.arrDifference(this.selMap[col],newSel);
+                this.selMap[col] = diff;
+            }
         }
         else {
             this.hoverMap = newSel;
@@ -115,11 +133,35 @@ Ext.define('PumaMain.controller.Select', {
         
         this.colorMap = this.prepareColorMap();
         
+        
+        
+        this.getController('Area').colourTree(this.colorMap); 
+        this.getController('Chart').reconfigure('immediate'); 
+        
+        this.updateCounts();
+        
+        if (this.selectTask) {
+            this.selectTask.cancel();
+        }
+        this.selectTask = new Ext.util.DelayedTask();
+        this.selectTask.delay(delay || 500,this.selectDelayed,this,arguments);
+        
+    },
+    
+    updateCounts: function() {
         var lowestMap = this.getController('Area').lowestMap;
         var outerCount = 0;
+        var overallCount = 0;
+        var picker = Ext.ComponentQuery.query('#useselectedcolorpicker')[0]
+        var selectColors = picker.xValue || picker.value;
+        selectColors = Ext.isArray(selectColors) ? selectColors : [selectColors]
         for (var color in this.selMap) {
+            if (!Ext.Array.contains(selectColors,color)) {
+                continue;
+            }
             for (var i=0;i<this.selMap[color].length;i++) {
                 var obj = this.selMap[color][i];
+                overallCount++;
                 if (lowestMap[obj.loc] && lowestMap[obj.loc][obj.at] && Ext.Array.contains(lowestMap[obj.loc][obj.at],obj.gid)) {}
                 else {
                     this.outerSelect = true;
@@ -127,31 +169,25 @@ Ext.define('PumaMain.controller.Select', {
                 }
             }
         }
-        this.outerCount = outerCount
-       
-        
-        this.getController('Area').colourTree(this.colorMap); 
-        this.getController('Chart').reconfigure('immediate'); 
-        
-        
-        
-        if (this.selectTask) {
-            this.selectTask.cancel();
-        }
-        this.selectTask = new Ext.util.DelayedTask();
-        this.selectTask.delay(500,this.selectDelayed,this,arguments);
-        
+        this.outerCount = outerCount;
+        this.overallCount = overallCount;
     },
         
-    selectDelayed: function(areas,add,hover) {
-        this.getController('Layers').colourMap(this.colorMap); 
+    selectDelayed: function(areas,add,hover,bypassMapColor) {
+        if (!bypassMapColor) {
+            this.getController('Layers').colourMap(this.colorMap); 
+        }
         
         if (!hover) {
             var lowestCount = this.getController('Area').lowestCount;
-            Ext.StoreMgr.lookup('paging').setCount(lowestCount+this.outerCount);
+            var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+            var count = onlySel ? (this.overallCount) : (lowestCount+this.outerCount)
             
-            var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect)
-            this.getController('Chart').reconfigure(outer ? 'outer' : 'inner');    
+            Ext.StoreMgr.lookup('paging').setCount(count);
+            
+            var outer = this.outerSelect || (!this.outerSelect && this.prevOuterSelect) || onlySel;
+            
+            this.getController('Chart').reconfigure(outer  ? 'outer' : 'inner');    
         }
         this.prevOuterSelect = this.outerSelect
         this.outerSelect = false;
@@ -180,12 +216,22 @@ Ext.define('PumaMain.controller.Select', {
         return clone;
     },
         
-    clearSelections: function() {
-        this.selMap = {'FF0000':[]};
+    clearSelectionsAll: function() {
+        this.selMap = {'ff4c39':[]};
         this.hoverMap = [];
         this.colorMap = {};
-        this.callControllers();
+        this.getController('Area').colourTree(this.colorMap); 
+        this.updateCounts();
+        this.selectDelayed();
     },
+    clearSelections: function() {
+        this.selMap[this.actualColor] = [];
+        this.prepareColorMap();
+        this.getController('Area').colourTree(this.colorMap); 
+        this.getController('Chart').reconfigure('immediate'); 
+        this.updateCounts();
+        this.selectDelayed();
+    },    
     
     prepareColorMap: function() {
         var resultMap = {};

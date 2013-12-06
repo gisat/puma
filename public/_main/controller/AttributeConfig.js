@@ -169,6 +169,7 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 700,
+            y: 200,
             items: [{
                 xtype: 'configform',
                 featureLayers: fls,
@@ -201,6 +202,10 @@ Ext.define('PumaMain.controller.AttributeConfig', {
     
     onAddAttribute: function(btn) {
         this.setActiveCard(btn,1);
+        var store = btn.up('[itemId=attributecontainer]').down('addattributegrid').store
+        store.each(function(rec) {
+            rec.set('checked',false)
+        })
     },
     onNormalizeAttribute: function(btn) {
         

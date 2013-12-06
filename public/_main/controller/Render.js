@@ -2,7 +2,56 @@ Ext.define('PumaMain.controller.Render', {
     extend: 'Ext.app.Controller',
     views: [],
     requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer','Ext.slider.Multi'],
-    init: function() {},
+    init: function() {
+        this.control({
+            'toolspanel tool[type=detach]': {
+                click: this.undockPanel
+            },
+            'window[isdetached=1]': {
+                close: this.dockPanel
+            }
+        })
+    },
+    
+    dockPanel: function(win) {
+        var panel = win.down('panel');
+        win.remove(panel,false);
+        var order = ['selcolor','areatree','layerpanel','maptools','advancedfilters'];
+        var idx = 0;
+        for (var i=0;i<order.length;i++) {
+            var name = order[i];
+            if (name==panel.itemId) break;
+            var cmp = Ext.ComponentQuery.query('toolspanel #'+name);
+            if (cmp.length) {
+                idx++;
+            }
+        }
+        
+        
+        var container = Ext.ComponentQuery.query('toolspanel')[0];
+        container.insert(idx,panel);
+
+    },
+    
+    undockPanel: function(tool) {
+        var panel = tool.up('panel');
+        panel.up('container').remove(panel,false);
+        
+        panel.el.setTop(0);
+        var win = Ext.widget('window',{
+            layout: 'fit',
+            width: 260,
+            maxHeight: 500,
+            cls: 'detached-window',
+            isdetached: 1,
+            constrainHeader: true
+            ,
+            items: [panel]
+        }).show();
+        win.el.setOpacity(0.9)
+    },
+    
+    
     renderApp: function() {
         Ext.widget('pumacombo',{
             store: 'dataset',
@@ -43,6 +92,7 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
+            helpId: 'Selectingthevisualisation',
             itemId: 'selvisualization',
             cls: 'custom-combo',
             listConfig: {
@@ -81,10 +131,44 @@ Ext.define('PumaMain.controller.Render', {
 //        })
         
      
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-contexthelp',
+            itemId: 'contexthelp',
+            tooltip: 'Context help',
+            tooltipType: 'title',
+            icon: 'images/icons/help-context.png',
+            enableToggle: true,
+            width: 30,
+            height: 30,
+            listeners : {
+                toggle : {
+                    fn : function(btn, active) {
+                        if (active) {
+                            btn.addCls("toggle-active");
+                        }
+                        else {
+                            btn.removeCls("toggle-active");
+                        }
+                    }
+                }
+            }
+        })
+        
+        Ext.widget('button',{
+            renderTo: 'app-toolbar-webhelp',
+            itemId: 'webhelp',
+            tooltip: 'PUMA WebTool help',
+            tooltipType: 'title',
+            icon: 'images/icons/help-web.png',
+            width: 30,
+            height: 30,
+            href: 'help/PUMA webtool help.html'
+        })
         
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
             itemId: 'areamoredetails',
+            helpId: 'Settingthelevelofdetail',
             text: '+',
             width: '100%',
             height: '100%',
@@ -93,6 +177,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-less',
             itemId: 'arealessdetails',
+            helpId: 'Settingthelevelofdetail',
             text: '-',
             width: '100%',
             height: '100%',
@@ -127,7 +212,16 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button btn-save'
         })
-        
+//        Ext.widget('colorpicker',{
+//                    xtype: 'colorpicker',
+//                    fieldLabel: 'CP',
+//                    value: 'ff4c39',
+//                    itemId: 'selectcolorpicker',
+//                    height: 16,
+//                    width: 120,
+//                    renderTo: 'app-tools-colors',
+//                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
+//                })
         Ext.widget('toptoolspanel',{
             renderTo: 'app-tools-actions'
         })
@@ -142,9 +236,32 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'areapager',
             displayInfo: true,
             cls: 'paging-toolbar',
+            
+            buttons: ['-',{
+                xtype: 'splitbutton',
+                menu: {
+                    items:[{
+                    xtype: 'colorpicker',
+                    allowToggle: true,
+                    fieldLabel: 'CP',
+                    itemId: 'useselectedcolorpicker',
+                    padding: '2 5',
+                    height: 24,
+                    width: 132,
+                    //value: ['ff0000', '00ff00', '0000ff', 'ffff00', '00ffff', 'ff00ff'],
+                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
+                }],
+                showSeparator: false
+                },
+                itemId: 'onlySelected',
+                text: 'Only selected',
+                enableToggle: true,
+                icon: 'images/icons/colors.png'
+            }],
             store: Ext.StoreMgr.lookup('paging')
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
+        Ext.ComponentQuery.query('#areapager #useselectedcolorpicker')[0].select(['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']);
         
     },
     
@@ -169,7 +286,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
             initial: true,
-            blankText: 'Select scope...',
+            emptyText: 'Select scope...',
             allowBlank: false,
             store: Ext.StoreMgr.lookup('dataset'),
             cls: 'custom-combo',
