@@ -54,42 +54,6 @@ Ext.define('PumaMain.view.ChartPanel', {
         for (var i=0;i<toolNames.length;i++) {
             this.tools.push(this.toolMap[toolNames[i]]);
         }
-        this.callParent();
-        this.updateToolVisibility();
-    },
-        
-    updateToolVisibility: function() {
-        var toolNames = [];
-        switch (this.cfgType) {
-            case 'grid':
-                toolNames = ['collapse','print','save']; break;
-            case 'piechart':
-                toolNames = ['help','collapse','print','save']; break;
-            case 'columnchart':
-                toolNames = ['help','collapse','print','save']; break;
-            case 'scatterchart':
-                toolNames = ['help','collapse','print','save','search']; break;
-            case 'extentoutline':
-                toolNames = ['gear','print','save','close']; break;
-            case 'filter':
-                toolNames = ['close']; break;
-        }
-        for (var i=0;i<this.tools.length;i++) {
-            var tool = this.tools[i];
-            if (tool.type=='collapse-top' || tool.type=='expand-bottom') {
-                    continue;
-                }
-            var vis = Ext.Array.contains(toolNames,tool.type);
-            if (tool.rendered) {
-                tool.setVisible(vis);
-            }
-            else if (!vis) {
-                tool.hidden = true;
-            }
-        }
-        
-        
-        
         var items = [{
             xtype: 'pumacombo',
             store: Ext.StoreMgr.lookup('attribute4set'),
@@ -135,10 +99,44 @@ Ext.define('PumaMain.view.ChartPanel', {
         if (this.cfgType!='grid') {
             this.tbar = items
         }
-        
-        
-        
         this.callParent();
+        this.updateToolVisibility();
+    },
+        
+    updateToolVisibility: function() {
+        var toolNames = [];
+        switch (this.cfgType) {
+            case 'grid':
+                toolNames = ['collapse','print','save']; break;
+            case 'piechart':
+                toolNames = ['help','collapse','print','save']; break;
+            case 'columnchart':
+                toolNames = ['help','collapse','print','save']; break;
+            case 'scatterchart':
+                toolNames = ['help','collapse','print','save','search']; break;
+            case 'extentoutline':
+                toolNames = ['gear','print','save','close']; break;
+            case 'filter':
+                toolNames = ['close']; break;
+        }
+        for (var i=0;i<this.tools.length;i++) {
+            var tool = this.tools[i];
+            if (tool.type=='collapse-top' || tool.type=='expand-bottom') {
+                    continue;
+                }
+            var vis = Ext.Array.contains(toolNames,tool.type);
+            if (tool.rendered) {
+                tool.setVisible(vis);
+            }
+            else if (!vis) {
+                tool.hidden = true;
+            }
+        }
+        
+        
+        
+        
+        
 
     }
 })

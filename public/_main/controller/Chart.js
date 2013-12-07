@@ -64,6 +64,9 @@ Ext.define('PumaMain.controller.Chart', {
             },
             '#areapager #onlySelected': {
                 toggle: this.onToggleShowSelected
+            },
+            'pumacombo[attributeCombo=1]': {
+                change: this.onAttrChange
             }
         }
 
@@ -85,7 +88,10 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
-        
+    onAttrChange: function(combo,val) {
+        var chartCmp = combo.up('chartpanel').down('chartcmp');
+        this.reconfigureChart(chartCmp);
+    },    
     onToggleShowSelected: function(btn) {
         var selCtrl = this.getController('Select');
         var areaCtrl = this.getController('Area');
@@ -407,6 +413,16 @@ Ext.define('PumaMain.controller.Chart', {
         chartPanel.updateToolVisibility();
         if (cfg.type=='piechart') {
             //debugger;
+        }
+        if (!this.attrSet) return;
+        var attrsFailed = false;
+        if (cfg.type=='grid' && !forExport) {
+             var attributes = this.attrSet.get('attributes');
+             chartCmp.cfg.attrs = [];
+             for (var i=0;i<attributes.length;i++) {
+                 var attr = {as:this.attrSetId,attr:attributes[i]};
+                 chartCmp.cfg.attrs.push(attr);
+             }
         }
         if (cfg.type=='scatterchart' && !forExport) {
             var combos = Ext.ComponentQuery.query('pumacombo',chartCmp.up('chartpanel'));

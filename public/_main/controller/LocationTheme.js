@@ -44,10 +44,39 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 click: this.onConfirm
             }
         })
+        
+        Ext.Ajax.request({
+                url: Config.url + '/api/theme/getAttrConf',
+                scope: this,
+                method: 'POST',
+                success: function(response) {
+                    this.attrConf = JSON.parse(response.responseText).data;
+                }
+                
+            })
+
     },
     onDatasetChange: function(cnt,val) {
-        if (cnt.eventsSuspended || cnt.initial) {
+        if (cnt.eventsSuspended) {
             return;
+        }
+        var themeStore = Ext.StoreMgr.lookup('theme4sel');
+        var themes = this.attrConf[val] || [];
+        
+        themeStore.clearFilter();
+        themeStore.filter([function(rec) {
+            return Ext.Array.contains(themes,rec.get('_id'))
+        }])
+        if (cnt.initial) {
+            return;
+        }
+        var themeCombo = Ext.ComponentQuery.query('#seltheme')[0]
+        var themeVal = themeCombo.getValue();
+        if (!themeVal) {
+            themeCombo.suspendEvents();
+            themeCombo.setValue(themeStore.getAt(0).get('_id'))
+            themeCombo.resumeEvents();
+            this.themeChanged = true;
         }
         this.datasetChanged = true;
         this.onYearChange(cnt)
@@ -248,6 +277,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
     addAreas: function(areasToAdd) {
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
         areaRoot.removeAll();
+        
+        var tree = Ext.ComponentQuery.query('#areatree')[0];
+        tree.suspendEvents();
+        tree.view.dontRefreshSize = true;
+        
         var data = [];
         var currentLevel = [];
         var parentLevel = null;
@@ -289,7 +323,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }
         areaRoot.removeAll();
         areaRoot.appendChild(data);
-        
+        tree.resumeEvents();
+        tree.view.dontRefreshSize = false;
+        tree.view.refresh();
     },
         
     addAreasToAreaMap: function(addedAreas) {

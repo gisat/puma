@@ -93,7 +93,7 @@ Ext.define('PumaMain.controller.Layers', {
         }
     },
             
-    reconfigureChoropleths: function(cfg) {
+    reconfigureChoropleths: function(cfg,visualization) {
         this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
         var chartNodes = [];

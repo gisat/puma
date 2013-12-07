@@ -4,6 +4,53 @@ var us = require('underscore')
 
 var conn = require('../common/conn');
 
+
+
+function getAttrConf(params, req, res ,callback) {
+    var opts = {
+        topicMap: function(asyncCallback) {
+            var topicMap = {};
+            crud.read('theme', {}, function(err, results) {
+                if (err)
+                    return callback(err);
+                for (var i=0;i<results.length;i++) {
+                    var result = results[i];
+                    for (var j=0;j<result.topics.length;j++) {
+                        var topic = result.topics[j];
+                        topicMap[topic] = topicMap[topic] || [];
+                        topicMap[topic].push(result._id);
+                    }
+                }
+                
+                asyncCallback(null, topicMap);
+            });
+        },
+        attrSets: ['topicMap',function(asyncCallback,results) {
+            var datasetMap = {};
+            crud.read('attributeset', {}, function(err, resls) {
+                if (err)
+                    return callback(err);
+                for (var i=0;i<resls.length;i++) {
+                    var result = resls[i];
+                    var dataset = result.dataset;
+                    var topic = result.topic;
+                    var themes = results.topicMap[topic] || [];
+                    if (!themes.length) continue;
+                    datasetMap[dataset] = datasetMap[dataset] || [];
+                    datasetMap[dataset] = us.union(datasetMap[dataset],themes);
+                    
+                }
+                res.data = datasetMap;
+                return callback(null);
+            });
+        }]        
+        
+    }
+    async.auto(opts)
+    
+    
+}
+
 function getLocationConf(params, req, res, callback) {
     var opts = {
         dataset: function(asyncCallback) {
@@ -622,5 +669,6 @@ var getFilterSql = function(atFilter, prefix) {
 
 module.exports = {
     getThemeYearConf: getThemeYearConf,
+    getAttrConf: getAttrConf,
     getLocationConf: getLocationConf
 }

@@ -182,7 +182,10 @@ var cfg = function() {
 //                }
 //            },
         plotOptions: {
-            
+            scatter: {
+                
+                turboThreshold: 10000
+            },
             series: {
                 events: {},
                 point: {
