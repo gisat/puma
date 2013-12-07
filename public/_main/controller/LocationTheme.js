@@ -748,11 +748,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
             choroAttrs.push({
                 attr: attr,
                 as: attrSetId,
+                attrName: store.getById(attr).get('name'),
                 numCategories: 5,
                 classType: 'quantiles'
             })
         }
-        this.getController('Layers').reconfigureChoropleths({attrs:choroAttrs},visualization)
+        this.getController('Layers').reconfigureChoropleths({attrs:choroAttrs},visualization);
+        this.getController('Filter').reconfigureFilters({attrs:choroAttrs})
         
     },
         
