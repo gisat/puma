@@ -904,7 +904,9 @@ Ext.define('PumaMain.controller.Map', {
             if (!cmp.initialZoom) {
                 //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(6960977, -434794.06241276, 20071456.585033, 7059703.685849));
+                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(0, 5000000, 3500000, 8000000));
+
+                //cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(6960977, -434794.06241276, 20071456.585033, 7059703.685849));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))
                 cmp.initialZoom = true;
             }
