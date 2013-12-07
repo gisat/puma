@@ -8,6 +8,11 @@
     "pg": "0.8.x",
     "mongodb": "1.2.x",
     "async": "0.1.x",
-    "underscore":"1.4.x"
+    "openlayers": "3.0.0",
+    "jsdom" : "0.3.4",
+    "xmldom" : "0.1.13",
+    "properties" : "0.3.3",
+    "underscore":"1.4.x",
+    "xml2json":"0.3.2"
   }
 }

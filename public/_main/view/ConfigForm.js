@@ -47,7 +47,8 @@ Ext.define('PumaMain.view.ConfigForm', {
             }, {
                 xtype: 'addattributegrid'
             }, {
-                xtype: 'normalizeform'
+                xtype: 'normalizeform',
+                formType: this.formType
             }, {
                 xtype: 'form',
                 bodyStyle:{
@@ -77,7 +78,8 @@ Ext.define('PumaMain.view.ConfigForm', {
             itemId: 'constrainFl',
             name: 'constrainFl',
             values: [0, this.featureLayers.length-1],
-            hidden: this.formType!='filters',
+            //hidden: this.formType!='filters',
+            hidden: true,
             width: 672,
             useTips: {
                 getText: function(thumb) {

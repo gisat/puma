@@ -102,7 +102,7 @@ function getChart(params, callback) {
                 }
                 conf.chart.type = zAttrName ? 'bubble' : 'scatter'
                 //conf.title.text = params['title'];
-                var colors = ['rgba(128,128,255,0.7)','rgba(255,128,128,0.7)']
+                var colors = ['rgba(113,163,203,0.7)','rgba(204,113,108,0.7)','rgba(110,199,143,0.7)','rgba(242,222,126,0.7)','rgba(141,151,162,0.7)']
                 for (var i=0;i<years.length;i++) {
                     conf.series.push({
                         color: colors[i] || null,
@@ -114,6 +114,8 @@ function getChart(params, callback) {
                 }
                 conf.xAxis.title.text = xName+' (' +unitsX+')';
                 conf.yAxis.title.text = yName+' (' +unitsY+')';
+                conf.xAxis.title.text = conf.xAxis.title.text.length > 78 ? (conf.xAxis.title.text.substring(0,76)+'...') : conf.xAxis.title.text;
+                conf.yAxis.title.text = conf.yAxis.title.text.length > 58 ? (conf.yAxis.title.text.substring(0,56)+'...') : conf.yAxis.title.text;
                 return callback(null, conf);
 
             }]
@@ -142,6 +144,10 @@ var cfg = function() {
             title: {
                 enabled: true,
                 useHTML: true,
+                style: {
+                    color: '#222',
+                    fontWeight: 'normal'
+                },
                 text: 'Height (cm)'
             },
             startOnTick: true,
@@ -162,6 +168,10 @@ var cfg = function() {
             minPadding: 0.001,
             title: {
                 useHTML: true,
+                style: {
+                    color: '#222',
+                    fontWeight: 'normal'
+                },
                 text: 'Weight (kg)'
             }
         },

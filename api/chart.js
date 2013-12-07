@@ -35,7 +35,7 @@ function exporter(params, req, res, callback) {
     cp.exec('phantomjs rasterize.js http://'+conn.getLocalAddress()+'/public/index3.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
         console.log(stdout);
         console.log(stderr);
-        return callback(err)
+        return callback(err);
     })
     
 }
@@ -52,7 +52,7 @@ function getChart(params, req, res, callback) {
                 },
                 noData: true,
                 title: {
-                    text: params['title']
+                    text: null
                 },
                 credits: {
                                 enabled: false

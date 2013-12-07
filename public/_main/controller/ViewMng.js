@@ -35,6 +35,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id');
         var win = Ext.widget('window',{
                 bodyCls: 'urlwindow',
+                title: 'Data view URL',
                 items: [{
                         xtype: 'displayfield',
                         value: url
@@ -88,6 +89,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             var url = window.location.origin+window.location.pathname+'?id='+rec.get('_id')
             var win = Ext.widget('window',{
                 bodyCls: 'urlwindow',
+                title: 'Data view URL',
                 items: [{
                         xtype: 'displayfield',
                         value: url
@@ -101,7 +103,9 @@ Ext.define('PumaMain.controller.ViewMng', {
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 300,
+            title: btn.itemId == 'managevisualization' ? 'Manage visualizations' : 'Manage data views',
             height: 400,
+            y: 200,
             bodyCls: 'manageDwWindow',
             items: [{
                 xtype: 'commonmnggrid',
@@ -167,24 +171,52 @@ Ext.define('PumaMain.controller.ViewMng', {
         visualizationCombo.resumeEvents();
         locationCombo.resumeEvents();
         
-        var filters = Config.cfg.filters || [];
-        var items = this.getController('Filter').getFilterItems(filters);
-        if (items.length) {
-            var filterPanel =  Ext.ComponentQuery.query('#advancedfilters')[0];
-            filterPanel.add(items);
-            var filterController = this.getController('Filter');
-            filterController.minFl = Config.cfg.minFilterFl;
-            filterController.maxFl = Config.cfg.maxFilterFl;
-            filterController.applyFilters(true);
-        }
+//        var filters = Config.cfg.filters || [];
+//        var items = this.getController('Filter').getFilterItems(filters);
+//        if (items.length) {
+//            var filterPanel =  Ext.ComponentQuery.query('#advancedfilters')[0];
+//            filterPanel.add(items);
+//            var filterController = this.getController('Filter');
+//            filterController.minFl = Config.cfg.minFilterFl;
+//            filterController.maxFl = Config.cfg.maxFilterFl;
+//            filterController.applyFilters(true);
+//        }
         
+        var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0];
+        onlySel.suspendEvents();
+        onlySel.toggle(Config.cfg.pagingUseSelected);
+        onlySel.resumeEvents();
+        
+        var selColors = Ext.ComponentQuery.query('#useselectedcolorpicker')[0];
+        selColors.suspendEvents();
+        if (Config.cfg.pagingSelectedColors) {
+            selColors.select(Config.cfg.pagingSelectedColors);
+
+        }
+        selColors.resumeEvents();
+        
+//        if (Config.cfg.filterUseSelected) {
+//            var instantFilter = Ext.ComponentQuery.query('#instantfilter')[0];
+//            var selectFilter = Ext.ComponentQuery.query('#filterselect')[0];
+//            instantFilter.suspendEvents();
+//            instantFilter.toggle(false);
+//            instantFilter.resumeEvents();
+//            selectFilter.enable();
+//        }
+        onlySel.suspendEvents();
+        onlySel.toggle(Config.cfg.pagingUseSelected)
+        onlySel.resumeEvents();
+        
+        this.getController('AttributeConfig').filterConfig = Config.cfg.filterAttrs;
+        this.getController('Filter').attrs = Config.cfg.filterAttrs;
+        this.getController('Filter').initialValues = Config.cfg.filterMap;
         var locationTheme = this.getController('LocationTheme');
         locationTheme.datasetChanged = true;
         locationTheme.visChanged = true;
         locationTheme.themeChanged = true;
         locationTheme.yearChanged = true;
         locationTheme.locationChanged = true;
-        locationTheme.onYearChange({cntId:'dataview'});
+        locationTheme.onYearChange({itemId:'dataview'});
         
     },
      
@@ -200,24 +232,24 @@ Ext.define('PumaMain.controller.ViewMng', {
         cfg.selMap = this.getController('Select').selMap;
         cfg.choroplethCfg = this.getController('AttributeConfig').layerConfig
         
+        cfg.pagingUseSelected = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+        var pagingPicker = Ext.ComponentQuery.query('#useselectedcolorpicker')[0]
+        cfg.pagingSelectedColors = pagingPicker.xValue || pagingPicker.value;
+        
+        //cfg.filterUseSelected = !Ext.ComponentQuery.query('#instantfilter')[0].pressed
+        
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
-        var filters = [];
+        var filterMap = {};
+        var filterAttrs = this.getController('Filter').attrs
         for (var i=0;i<sliders.length;i++) {
             var slider = sliders[i];
             var val = slider.getValue();
-            val[0] = val[0]/slider.multiplier;
-            val[1] = val[1]/slider.multiplier;
-            filters.push({
-                attrObj: slider.attrObj,
-                multiplier: slider.multiplier,
-                min: slider.minValue/slider.multiplier,
-                units: slider.units,
-                max: slider.maxValue/slider.multiplier,
-                inc: slider.increment,
-                value: val
-            })
+            var attrName = slider.attrname;
+            filterMap[attrName] = val;
+            
         }
-        cfg.filters = filters;
+        cfg.filterMap = filterMap;
+        cfg.filterAttrs = filterAttrs;
         cfg.minFilterFl = this.getController('Filter').minFl
         cfg.maxFilterFl = this.getController('Filter').maxFl
         
@@ -236,8 +268,8 @@ Ext.define('PumaMain.controller.ViewMng', {
                 symbologyId: layer.get('symbologyId')
             })
         }
-        cfg.layers = layerCfg
-        
+        cfg.layers = layerCfg;
+        cfg.trafficLayer = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked');
         var store =  Ext.StoreMgr.lookup('paging');
         cfg.page = store.currentPage;
         
@@ -305,21 +337,33 @@ Ext.define('PumaMain.controller.ViewMng', {
         Ext.StoreMgr.lookup('visualization').addWithSlaves(visualization)
         visualization.save();
         
-        var win = Ext.widget('window',{
-                bodyCls: 'urlwindow',
-                items: [{
-                        xtype: 'displayfield',
-                        value: 'Visualization saved'
-                }]
-            })
-            win.show();
+        
+        var vis = Ext.create('Puma.model.Visualization',{
+            theme: theme,
+            cfg: cfgs,
+            choroplethCfg: layerCfgs,
+            visibleLayers: visibleLayers
+        });
+        var window = Ext.widget('window',{
+            layout: 'fit',
+            width: 300,
+            title: 'Save visualization',
+            y: 200,
+            bodyCls: 'saveaswindow',
+            items: [{
+                xtype: 'commonsaveform',
+                rec: vis
+            }]
+        })
+        window.show();
     },
     onViewSave: function() {
         var view = Ext.create('Puma.model.DataView',this.gatherViewConfig());
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 300,
-            height: 400,
+            title: 'Save data view',
+            y: 200,
             bodyCls: 'saveaswindow',
             items: [{
                 xtype: 'commonsaveform',

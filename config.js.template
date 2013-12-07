@@ -4,5 +4,6 @@ module.exports = {
 	localAddress    : "192.168.2.196:3000",
 	baseServer      : "192.168.2.8",
 	geonodeServer   : "192.168.2.8",
+        geonetworkServer: "http://192.168.2.8/geonetwork",
 	port            : 8080
 };

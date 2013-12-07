@@ -30,7 +30,6 @@
 	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
 }
-
 .x-btn.custom-button {
 	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
 	border               : none;
@@ -38,6 +37,12 @@
 }
 .x-btn.custom-button:hover, .x-btn.custom-button:focus {
 	background           : #eee url("../images/btn-bg-hover.png") repeat-x 0 0;
+}
+.x-btn.custom-button.toggle-active {
+	background           : #fff;
+}
+.x-btn.custom-button.toggle-active .x-btn-inner {
+	color                : #c92d42;
 }
 .x-btn.custom-button em {
 	font-style           : normal;
@@ -178,6 +183,9 @@
 	border               : none;
 	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;
 }
+.x-accordion-hd:hover {
+	background: #d7d0c8 !important;
+}
 .x-accordion-hd, .x-accordion-hd .x-panel-header-text {
 	cursor               : pointer;
 }
@@ -205,10 +213,10 @@
 	background           : none;
 }
 .x-border-box .x-tab-bar-top .x-tab-bar-body {
-	height               : 35px;
+	height               : 30px;
 }
 .x-border-box .x-tab-default-top {
-	height               : 35px;
+	height               : 30px;
 	background           : #f4f0ec url("../images/tab-bg.png") repeat-x 0 0;
 	border               : none;
 	-webkit-border-radius: 0;
@@ -306,6 +314,15 @@
 	background-image     : url("../images/icons/tree-node-item.png");
 	background-repeat     : no-repeat;
 }
+.layerpanel .x-tree-icon-leaf {
+	background-image     : url("../images/icons/info.png");
+	background-repeat     : no-repeat;
+        visibility: hidden
+}
+.layerpanel .has-metadata .x-tree-icon-leaf {
+	visibility: visible;
+}
+
 .x-tree-lines .x-tree-elbow-plus, .x-tree-lines .x-tree-elbow-end-plus,
 .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-plus, .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-end-plus,
 .x-tree-lines .x-tree-elbow, .x-tree-lines .x-tree-elbow-end, .x-tree-lines .x-tree-elbow-line {

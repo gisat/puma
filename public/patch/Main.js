@@ -9,11 +9,13 @@ Ext.define('Puma.patch.Main',{
         ,'Puma.patch.dd.DropZone'
         ,'Puma.patch.picker.Color'
         ,'Puma.patch.Component'
+        ,'Puma.patch.EventManager'
         ,'Puma.patch.view.Table'
         ,'Puma.patch.panel.Panel'
         ,'Puma.patch.panel.Tool'
         ,'Puma.patch.panel.Header'
         ,'Puma.patch.tree.View'
+        ,'Puma.patch.button.Button'
     ]
 })
 

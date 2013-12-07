@@ -147,8 +147,8 @@ Ext.define('PumaMain.view.InitialBar', {
                     itemId: 'selectcolorpicker',
                     height: 20,
                     width: 120,
-                    value: 'ff0000',
-                    colors: ['ff0000','00ff00','0000ff','ffff00','00ffff','ff00ff']
+                    value: 'ff4c39',
+                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
                 },{
                         xtype: 'button',
                         itemId: 'selectinmapbtn',

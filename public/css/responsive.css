@@ -3,3 +3,15 @@
 		top              : 140px;
 	}
 }
+@media screen and (max-width: 1100px) {
+	#toolbar > .label {
+		width            : 70px;
+		padding-left     : 70px;
+		overflow         : hidden;
+	}
+}
+@media screen and (max-width: 950px) {
+	#toolbar > .label {
+		display          : none;
+	}
+}

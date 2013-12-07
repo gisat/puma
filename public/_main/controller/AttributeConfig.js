@@ -120,9 +120,37 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         this.setActiveCard(btn,0);
     },
     
+    
+    
     onConfigureFinish: function(cmp) {
         var form = cmp.up('configform');
         var values = form.getForm().getValues();
+        var attrs = values.attrs;
+        var attrMap = {};
+        var isSelect = null
+        for (var i=0;i<attrs.length;i++) {
+            var attr = attrs[i];
+            var attrName = 'as_'+attr.as+'_attr_'+attr.attr;
+            if (attrMap[attrName]) {
+                Puma.util.Msg.msg('Duplicate attributes not allowed','','l');
+                return;
+            }
+            
+            attrMap[attrName] = true;
+            var type = attr.normType;
+            if (isSelect === true && type!='select') {
+                Puma.util.Msg.msg('All attributes have to be normalized to "First selected"','','l');
+                return;
+            }
+            if (isSelect === false && type=='select') {
+                Puma.util.Msg.msg('All attributes have to be normalized to "First selected"','','l');
+                return;
+            }
+            isSelect = type == 'select';
+        }
+        
+        
+        
         delete values['normType'];
         delete values['normYear'];
         delete values['normAttribute'];
@@ -142,6 +170,7 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             
             this.getController('Filter').reconfigureFilters(values);
         }
+        form.up('window').close();
     },
         
     onConfigureClick: function(cmp) {
@@ -166,9 +195,21 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         var fls = Ext.StoreMgr.lookup('layertemplate').queryBy(function(rec) {
             return Ext.Array.contains(levels,rec.get('_id'));
         }).getRange();
+        var title = 'Chart configuration';
+        switch (cmp.xtype=='tool' ? 'tool' : cmp.itemId) {
+            case 'configurelayers':
+                title = 'Thematic maps configuration'; break;
+            case 'configurefilters':
+                title = 'Filters configuration'; break;
+            case 'tool':
+                title += ' - '+cfg.title
+            
+        }
         var window = Ext.widget('window',{
             layout: 'fit',
             width: 700,
+            y: 200,
+            title: title,
             items: [{
                 xtype: 'configform',
                 featureLayers: fls,
@@ -201,6 +242,10 @@ Ext.define('PumaMain.controller.AttributeConfig', {
     
     onAddAttribute: function(btn) {
         this.setActiveCard(btn,1);
+        var store = btn.up('[itemId=attributecontainer]').down('addattributegrid').store
+        store.each(function(rec) {
+            rec.set('checked',false)
+        })
     },
     onNormalizeAttribute: function(btn) {
         

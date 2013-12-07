@@ -22,7 +22,7 @@
 	<script type="text/javascript" src="lib/OpenLayers_212.js"></script>
 <!--        <script type="text/javascript" src="devlib/OpenLayers.js"></script>-->
 	
-<!--	<script type="text/javascript" src="gisatlib/OpenLayers/Geoserver23.js"></script>-->
+	<script type="text/javascript" src="gisatlib/OpenLayers/Geoserver23.js"></script>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 	<script src="lib/Highcharts-3.0.0/js/highcharts.src.js"></script>
 	<script src="lib/Highcharts-3.0.0/js/highcharts-more.js"></script>
@@ -54,8 +54,8 @@
 		</div>
 		<div id="content">
 			<div id="map-holder">
-				<div class="map" id="app-map"></div>
-				<div class="map" id="app-map2"></div>
+				<div class="map" id="app-map"><div id="app-map-map-label" class="map-label">1</div><img src="images/cursor_all.png" class="cursor" style="visibility:hidden"></div>
+				<div class="map" id="app-map2"><div id="app-map-map2-label" class="map-label">2</div><img src="images/cursor_all.png" class="cursor" style="visibility:hidden"></div>
 			</div>
 			<div id="content-intro" class="fields-holder">
 				<div class="label">Data Exploration</div>
@@ -66,7 +66,7 @@
 							<div id="app-intro-scope" class="widget"></div>
 						</div>
 						<div class="field teritory">
-							<div class="label">Territory</div>
+							<div class="label">Place</div>
 							<div id="app-intro-teritory" class="widget"></div>
 						</div>
 					</div>
@@ -86,8 +86,8 @@
 				<h2>Selection guide</h2>
 				<h3>Scope</h3>
 				<p>Different data address different scope level of analysis. Please choose you scope of interest.</p>
-				<h3>Territory</h3>
-				<p>Data for different analysis scopes can be available for different territories. Please select territory covered / prepared for exploration and analysis according to region, country or city of your interest.</p>
+				<h3>Place</h3>
+				<p>Data for different analysis scopes can be available for different places. Please select place covered / prepared for exploration and analysis according to region, country or city of your interest.</p>
 				<h3>Theme</h3>
 				<p>Standard views on data are focused on different thematic information. Please select theme according your thematic interests.</p>
 			</div>
@@ -101,7 +101,7 @@
 								<div id="app-toolbar-scope" class="widget"></div>
 							</div>
 							<div class="field teritory">
-								<div class="label">Territory</div>
+								<div class="label">Place</div>
 								<div id="app-toolbar-teritory" class="widget"></div>
 							</div>
 							<div class="field theme">
@@ -109,10 +109,14 @@
 								<div id="app-toolbar-theme" class="widget"></div>
 							</div>
 							<div class="field help">
-								<div class="widget"><a href="help/PUMA webtool help.html" target="_blank">Help</a></div>
+								<div class="widget">
+									<div id="app-toolbar-contexthelp" class="help-btn"></div>
+									<div id="app-toolbar-webhelp" class="help-btn"></div>
+									<!-- <a id="app-toolbar-webhelp" href="help/PUMA webtool help.html" target="_blank" title="PUMA WebTool help"></a> -->
+								</div>
 							</div>
 						</div>
-                                            <div class="group">
+						<div class="group">
 							<div class="field with-sep year">
 								<div class="label">Year</div>
 								<div id="app-toolbar-year" class="widget"></div>
@@ -139,7 +143,9 @@
 					</div>
 				</div>
 				<div id="sidebar-tools">
+					<span id="sidebar-tools-toggle" title="Tools"></span>
 					<div id="app-tools-actions"></div>
+					
 					<div id="app-tools-accordeon"></div>
 				</div>
 				<div id="sidebar-reports">

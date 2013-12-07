@@ -20,6 +20,7 @@ Ext.define('PumaMain.view.ChartBar', {
                 iconCls: 'cmptype-snapshot',
                 collapseLeft: true,
                 itemId: 'screenshotpanel',
+                helpId: 'Snapshots',
                 items: [{
                     xtype: 'screenshotview'
                 }],
