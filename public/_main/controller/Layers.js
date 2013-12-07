@@ -561,12 +561,16 @@ Ext.define('PumaMain.controller.Layers', {
                 layer.initialized = true;
                 node.initialized = true;
                 if (legendLayer) {
-                    node.set('src',me.getLegendUrl(id,legendLayer))
+                    node.set('src',me.getLegendUrl(id,legendLayer));
                     var panel = Ext.ComponentQuery.query('layerpanel')[0];
-                    if (!node.get('legend') && node.get('checked') && node.needLegend) {
+                    var legend = node.get('legend');
+                    if (!legend && node.get('checked') && node.needLegend) {
                         node.needLegend = null;
                         panel.fireEvent('layerlegend', panel, node, true);
                         
+                    }
+                    if (legend) {
+                        legend.down('image').el.set({src: node.get('src')});
                     }
            
                 }

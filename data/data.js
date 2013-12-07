@@ -141,7 +141,7 @@ function getData(params, callback) {
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
-            console.log(attrUnits,normAttrUnits)
+            //console.log(attrUnits,normAttrUnits)
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
@@ -208,7 +208,7 @@ function getData(params, callback) {
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
-    console.log(select);
+    //console.log(select);
     var sql = '';
 
     var locationIds = [];
@@ -693,7 +693,7 @@ function getAttrConf(params, callback) {
                     if (normType == 'attribute' || normType == 'attributeset') {
                         var normAttr = attrRec.normAttr || attrRec.attr || params['normalizationAttribute'];
                         var normAttrSet = attrRec.normAs || params['normalizationAttributeSet']
-                        console.log(normAttrSet,normAttr)
+                        //console.log(normAttrSet,normAttr)
                         if (normAttr && normAttrSet) {
                             var normAttrRec = results.attr[normAttr]
                             normUnits = normAttrRec.units || '';

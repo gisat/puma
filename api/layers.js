@@ -47,7 +47,7 @@ function gatherLayerData(featureInfo, callback) {
         data: function(asyncCallback) {
             async.map(confs, function(item, eachCallback) {
                 var sql = 'SELECT * FROM views.' + item.layerName + ' WHERE gid=' + item.gid;
-                console.log(sql)
+                //console.log(sql)
                 var client = conn.getPgDb();
                 client.query(sql, [], function(err, resls) {
                     if (err)
@@ -111,7 +111,7 @@ function gatherLayerData(featureInfo, callback) {
         result: ['attrs','attrSets','data',function(asyncCallback, results) {
             var rows = results.data.rows;
             var data = [];
-            console.log(results.data)
+            //console.log(results.data)
             for (var i=0;i<rows.length;i++) {
                 var row = rows[i];
                 var rowParent = {
@@ -523,7 +523,7 @@ function getMetadata(params, req, res, callback) {
     var client = conn.getPgDb();
     var layers = "'" + JSON.parse(params['layers']).join("','") + "'";
     var sql = 'SELECT m.data,m.id,l.temporal_extent_start,l.temporal_extent_end FROM maps_layer l,metadata m WHERE l.uuid = m.uuid AND l.typename IN (' + layers + ')'
-    console.log(sql);
+    //console.log(sql);
     client.query(sql, function(err, resls) {
         if (err)
             return callback(err);
@@ -558,7 +558,7 @@ function getMetadata(params, req, res, callback) {
             if (temporalTo) temporal += ' - '+temporalTo.getFullYear();
             obj.temporal = temporal;
             
-            obj.address = config.geonetworkServer+'/srv/en/iso19139.xml?id='+resls.rows[i].id;
+            obj.address = config.geonetworkServer+'/srv/en/metadata.show?id='+resls.rows[i].id+'&currTab=ISOAll';
             retData.push(obj);
             
         }
@@ -595,7 +595,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
                 if (err)
                     return callback(err);
                 var styles = JSON.parse(output).styles.style;
-                console.log(styles)
+                //console.log(styles)
                 var names = [];
                 for (var i = 0; i < styles.length; i++) {
                     names.push(styles[i].name)

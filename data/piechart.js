@@ -17,6 +17,7 @@ function getChart(params, callback) {
         var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
         invisibleAttrsMap[dataIndex] = true;
     }
+    var isSingle = attrs.length == 1;
     var opts = {
         data: ['attrConf',function(asyncCallback,results) {
             params.attrMap = results.attrConf.prevAttrMap;
@@ -86,9 +87,17 @@ function getChart(params, callback) {
                             visible: visible,
                             attr: attr.attr,
                             y: row[columnName],
-                            color: attrRec.color
+                            color: isSingle ? '#dd2222' : attrRec.color
                         }
+                        
                         serieData.push(obj)
+                        if (isSingle) {
+                            var secondObj = us.clone(obj);
+                            secondObj.color = '#ddcccc';
+                            secondObj.y = 100-obj.y;
+                            secondObj.swap = true;
+                            serieData.push(secondObj);
+                        }
                     }
                     var center = {
                         x: (width / numCols) * (rj + 0.5),
@@ -113,6 +122,32 @@ function getChart(params, callback) {
                     }
                     if (!forMap) {
                         serie.center = [center.x, center.y]
+                    }
+                    if (isSingle) {
+                        if (numRecs>8) {
+                            serie.innerSize = '17%'
+                            serie.pieFontShift = 8;
+                            serie.pieFontSize = 21;
+                        }
+                        else if (numRecs>6) {
+                            serie.innerSize = '23%'
+                            serie.pieFontShift = 10;
+                            serie.pieFontSize = 28;
+                        }
+                        else if (numRecs>2) {
+                            serie.innerSize = '28%';
+                            serie.pieFontShift = 11;
+                            serie.pieFontSize = 32;
+                        }
+                        else {
+                            serie.innerSize = '50%';
+                            serie.pieFontShift = 15;
+                            serie.pieFontSize = 50;
+                        }
+                        
+                        serie.pieFontColor = '#dd2222';
+                        var y = Math.round(serie.data[0].y);
+                        serie.pieText = y+'%';
                     }
                     series.push(serie);
                     if (data.length <= 15 || year) {
@@ -170,6 +205,9 @@ function getChart(params, callback) {
                     //conf.chart.width = years.length>1 ? width+24 : null;
                     conf.chart.height = years.length>1 ? 382 : null;
                     conf.chart.spacingBottom = years.length>1 ? 1 : 10;
+                    if (isSingle) {
+                        conf.chart.isPieSingle = true;
+                    }
                     //conf.title.text = params['title']
                     if (data.length <= 15) {
                         conf.labels = {

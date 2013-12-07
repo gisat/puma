@@ -464,7 +464,7 @@ Ext.define('PumaMain.controller.Chart', {
             url: Config.url + '/api/chart/getChart',
             params: params,
             scope: this,
-            method: 'GET',
+            //method: 'GET',
             cmp: chartCmp,
             success: forExport ? null : this.onChartReceived,
             failure: forExport ? null : this.onChartReceived
@@ -715,7 +715,7 @@ Ext.define('PumaMain.controller.Chart', {
                 areaName = obj.series.name;
                 yearName = obj.series.userOptions.yearName
                 attrConf.push({
-                    name: obj.key,
+                    name: obj.point.swap ? 'Others' : obj.key,
                     val: obj.y,
                     units: obj.point.units
                 })
@@ -775,6 +775,17 @@ Ext.define('PumaMain.controller.Chart', {
         }
         data.chart.renderTo = cmp.el.dom;
         data.chart.events.load = function() {
+            if (this.options.chart.isPieSingle) {
+                var chart = this;
+                var rend = chart.renderer;
+                for (var i=0;i<chart.series.length;i++) {
+                    var serie = chart.series[i];
+                    var left = chart.plotLeft + serie.center[0];
+                    var top = chart.plotTop + serie.center[1]+serie.options.pieFontShift;
+                    var text = rend.text(serie.options.pieText, left,  top).attr({ 'style':'','text-anchor': 'middle','font-size':serie.options.pieFontSize,'fill':serie.options.pieFontColor}).add();
+                }
+                                          
+            }
             if (singlePage) {
                 console.log('loadingdone')
             }
@@ -1075,6 +1086,9 @@ Ext.define('PumaMain.controller.Chart', {
                     root: 'data'
                 },
                 url: Config.url + '/api/chart/getGridData',
+                getMethod: function() {
+                    return 'POST'
+                },
                 extraParams: response.request.options.params
             }
         });

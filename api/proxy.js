@@ -339,7 +339,8 @@ function saveSld(params, req, res, callback) {
             }
             //console.log(sld)
             if (results.attrConf) {
-                legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units);
+                console.log(results.attrConf.attrMap.units)
+                legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');
                 
             }
             sldMap[id] = {

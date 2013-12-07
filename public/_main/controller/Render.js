@@ -86,7 +86,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             store: 'location4init',
             itemId: 'sellocation',
-            helpId: 'Selectingterritory ',
+            helpId: 'Selectingterritory',
             valueField: 'id',
             cls: 'custom-combo',
             listConfig: {

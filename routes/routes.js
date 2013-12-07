@@ -14,8 +14,7 @@ var api = {
 }
 
 module.exports = function(app) {
-    
-    
+   
     
     app.post('/rest/:objType', crud.ensureCollection);
     app.post('/rest/:objType/*', crud.ensureCollection)

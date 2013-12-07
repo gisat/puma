@@ -1,4 +1,4 @@
-
+    
 var express = require('express');
 var app = express();
 var staticFn = express['static'];
@@ -10,7 +10,9 @@ function initServer() {
     
     // Order is important
     var oneDay = 60*60*24*1000;
-    app.use('/public/extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay}));
+    //app.use(express.favicon());
+    //app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
+    app.use('/public/extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7}));
     app.use('/public',staticFn(__dirname + '/public'));
     app.use(express.cookieParser());
     app.use(express.bodyParser());

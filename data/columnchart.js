@@ -213,7 +213,7 @@ function getChart(params, callback) {
                 }
                 var areasNum = data.length;
                 if (!data) {
-                    console.log('nodata')
+                    //console.log('nodata')
                 }
                 var stacking = params['stacking']
                 var columnNum = (!stacking || stacking == 'none' || stacking == 'double') ? areasNum * attrs.length * years.length : areasNum * years.length;

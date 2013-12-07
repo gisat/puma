@@ -115,12 +115,14 @@ Ext.define('PumaMain.controller.Filter', {
             
             slider.chartEl.setDisplayed('');
             slider.chartEl.setStyle({visibility:'visible',zIndex:100000});
-            
+            slider.chartEl.down('text').setStyle({visibility:'visible'})
         }
         
         
         
     },
+    
+    
     
     onFilterDragEnd: function(slider,value,thumb) {
         var label1 = slider.up('container').down('#thumb1');
@@ -133,6 +135,8 @@ Ext.define('PumaMain.controller.Filter', {
         if (slider.chartEl) {
             
             slider.chartEl.setDisplayed('none');
+            slider.chartEl.setStyle({visibility:'hidden'});
+            slider.chartEl.down('text').setStyle({visibility:'hidden'})
         }
     },
     
@@ -302,7 +306,7 @@ Ext.define('PumaMain.controller.Filter', {
                     enabled: false
                 },
                 title: {
-                    text: 'approx. 100/120',
+                    text: 'approx.',
                     
                     offset: -120,
                     style: {
@@ -322,6 +326,9 @@ Ext.define('PumaMain.controller.Filter', {
             legend: {
                 enabled: false
             },
+            tooltip: {
+                enabled: false
+            },
             title: {
                 text: null
             },
@@ -337,13 +344,15 @@ Ext.define('PumaMain.controller.Filter', {
                 color: '#ccc',
                 states: {
                     select: {
-                        color: '#aaaaff'
+                        color: '#f09999'
                     }
                 }
             }]
         
         });
         slider.chartEl = cmp.el;
+        slider.chartEl.down('text').setStyle({visibility:'hidden'});
+        
         slider.chart = chart;
     },
     
