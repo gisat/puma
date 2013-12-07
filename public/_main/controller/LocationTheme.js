@@ -149,7 +149,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             
             var chartController = this.getController('Chart');
             chartController.addChart({type:'grid',title:'Grid'},true);
-            chartController.addChart({type:'columnchart',title:'Column'},true);
+            chartController.addChart({type:'columnchart',title:'Column',aggregate:'avg'},true);
             chartController.addChart({type:'scatterchart',title:'Scatter'},true);
         }
         themeCombo = themeCombo || Ext.ComponentQuery.query('#seltheme')[0];
