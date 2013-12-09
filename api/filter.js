@@ -78,6 +78,10 @@ function filter(params, req, res, callback) {
             params['filter'] = JSON.stringify(filterParam);
             data.getData(params, function(err, dataObj) {
                 var newData = [];
+                if (err) {
+                    res.data = [];
+                    return callback(null);
+                }
                 for (var i=0;i<dataObj.data.length;i++) {
                     var row = dataObj.data[i];
                     var obj = {
@@ -147,7 +151,7 @@ function filter(params, req, res, callback) {
                             }
                         }
                         if (max>100) {
-                            console.log(max)
+                            //console.log(max)
                         }
                         min = (Math.abs(min-Math.round(min))<0.001) ? Math.round(min) : min;
                         max = (Math.abs(max-Math.round(max))<0.001) ? Math.round(max) : max;

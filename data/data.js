@@ -57,8 +57,6 @@ function getData(params, callback) {
             case 'eq':
                 compOperator = '=';
                 break;
-            case 'neq':
-                compOperator = '<>'
         }
         filterSql += ' AND ' + f.field + compOperator + f.value + (f.comparison ? '' : '%\'')
     }
@@ -143,8 +141,7 @@ function getData(params, callback) {
             if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
                 normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
             }
-            //console.log(attrUnits);
-            //console.log(normAttrUnits);
+            //console.log(attrUnits,normAttrUnits)
             if (currentNorm=='area') {
                 normAttrUnits = 'm2'
             }
@@ -211,7 +208,7 @@ function getData(params, callback) {
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
-    console.log(select);
+    //console.log(select);
     var sql = '';
 
     var locationIds = [];
@@ -456,7 +453,6 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                //console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);
@@ -697,7 +693,7 @@ function getAttrConf(params, callback) {
                     if (normType == 'attribute' || normType == 'attributeset') {
                         var normAttr = attrRec.normAttr || attrRec.attr || params['normalizationAttribute'];
                         var normAttrSet = attrRec.normAs || params['normalizationAttributeSet']
-                        console.log(normAttrSet,normAttr)
+                        //console.log(normAttrSet,normAttr)
                         if (normAttr && normAttrSet) {
                             var normAttrRec = results.attr[normAttr]
                             normUnits = normAttrRec.units || '';

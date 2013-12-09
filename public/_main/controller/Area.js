@@ -35,6 +35,7 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestAreas = {};
         this.highestAreas = {};
         this.oldSliderVal = 0;
+        
     },
     
     getLocationObj: function() {

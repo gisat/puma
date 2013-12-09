@@ -93,7 +93,7 @@ Ext.define('PumaMain.controller.Layers', {
         }
     },
             
-    reconfigureChoropleths: function(cfg,visualization) {
+    reconfigureChoropleths: function(cfg) {
         this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
         var chartNodes = [];
@@ -105,12 +105,10 @@ Ext.define('PumaMain.controller.Layers', {
         })
         var nodesToRemove = [];
         var attrs = Ext.clone(cfg.attrs);
-        var checkedAttrs = [];
         for (var i=0;i<chartNodes.length;i++) {
             var node = chartNodes[i];
             var attr = node.get('attribute');
             var as = node.get('attributeSet');
-            
             var cfgAttr = node.get('cfg').attrs[0];
             var normType = cfgAttr.normType
             var normAs = cfgAttr.normAs
@@ -128,9 +126,6 @@ Ext.define('PumaMain.controller.Layers', {
                 nodesToRemove.push(node)
             }
             else {
-                if (node.get('checked')) {
-                    checkedAttrs.push(attr);
-                }
                 Ext.Array.remove(attrs,attrObj);
                 node.initialized = false;
                 var oneCfg = {attrs:[attrObj]};
@@ -152,8 +147,7 @@ Ext.define('PumaMain.controller.Layers', {
             var node = nodesToRemove[i];
             this.onChoroplethRemove(null,node);
         }
-        var autoActivated = false;
-        var visAttr = visualization ? visualization.get('choroAttr') : null
+        
         for (var i=0;i<attrs.length;i++) {
             var attr = attrs[i];
             var oneCfg = Ext.clone(cfg);
@@ -162,17 +156,7 @@ Ext.define('PumaMain.controller.Layers', {
             oneCfg.classType = attr.classType || 'quantiles';
             oneCfg.zeroesAsNull = attr.zeroesAsNull || true;
             oneCfg.useAttributeColors = true;
-            var autoActivate = Ext.Array.contains(checkedAttrs,attr.attr);
-            if (!checkedAttrs.length && attr.attr==visAttr) {
-                autoActivate = true;
-            }
-            if (autoActivate) {
-                autoActivated = true;
-            }
-            if (i==attrs.length-1 && !autoActivated) {
-                autoActivate = true;
-            }
-            this.addChoropleth(oneCfg,autoActivate);
+            this.addChoropleth(oneCfg);
         }
     },
         
@@ -577,12 +561,16 @@ Ext.define('PumaMain.controller.Layers', {
                 layer.initialized = true;
                 node.initialized = true;
                 if (legendLayer) {
-                    node.set('src',me.getLegendUrl(id,legendLayer))
+                    node.set('src',me.getLegendUrl(id,legendLayer));
                     var panel = Ext.ComponentQuery.query('layerpanel')[0];
-                    if (!node.get('legend') && node.get('checked') && node.needLegend) {
+                    var legend = node.get('legend');
+                    if (!legend && node.get('checked') && node.needLegend) {
                         node.needLegend = null;
                         panel.fireEvent('layerlegend', panel, node, true);
                         
+                    }
+                    if (legend) {
+                        legend.down('image').el.set({src: node.get('src')});
                     }
            
                 }
@@ -909,7 +897,7 @@ Ext.define('PumaMain.controller.Layers', {
         mapController.map1.addLayers([layer1]);
         mapController.map2.addLayers([layer2]);
         var node = Ext.create('Puma.model.MapLayer', {
-            name: attr.name || (attrObj.get('name')),
+            name: attr.name || (attrObj.get('name')+' - '+attrSetObj.get('name')),
             attribute: attr.attr,
             attributeSet: attr.as,
             type: 'chartlayer',
