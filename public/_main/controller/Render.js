@@ -74,9 +74,8 @@ Ext.define('PumaMain.controller.Render', {
     
     renderApp: function() {
         Ext.widget('pumacombo',{
-            store: 'dataset',
-            helpId: 'Selectingscopeofanalysis',
-            itemId: 'seldataset',
+            store: 'scope',
+            itemId: 'selscope',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -84,10 +83,9 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-scope'
         })
         Ext.widget('pumacombo',{
-            store: 'location4init',
-            itemId: 'sellocation',
-            helpId: 'Selectingterritory',
-            valueField: 'id',
+            store: Ext.StoreMgr.lookup('dataset4sel'),
+            itemId: 'seldataset',
+            valueField: '_id',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -95,7 +93,7 @@ Ext.define('PumaMain.controller.Render', {
             renderTo: 'app-toolbar-teritory'
         })
         Ext.widget('pumacombo',{
-            store: 'theme4sel',
+            store: Ext.StoreMgr.lookup('theme4sel'),
             itemId: 'seltheme',
             helpId: 'Selectingtheme',
             cls: 'custom-combo',
@@ -106,7 +104,7 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('storecontainer',{
             renderTo: 'app-toolbar-year',
-            store: Ext.StoreMgr.lookup('year4sel'),
+            store: Ext.StoreMgr.lookup('year'),
             forceSelection: true,
             itemId: 'selyear',
             helpId: 'Switchingbetweenyears',
@@ -114,19 +112,18 @@ Ext.define('PumaMain.controller.Render', {
             multi: true
             ,type: 'checkbox'
         })
-        Ext.widget('pumacombo',{
-            store: 'visualization4sel',
-            helpId: 'Selectingthevisualisation',
-            itemId: 'selvisualization',
-            cls: 'custom-combo',
-            listConfig: {
-                cls: 'custom-combo-list',
-            },
-            renderTo: 'app-toolbar-visualization'
-        })
+//        Ext.widget('pumacombo',{
+//            store: 'visualization4sel',
+//            itemId: 'selvisualization',
+//            cls: 'custom-combo',
+//            listConfig: {
+//                cls: 'custom-combo-list',
+//            },
+//            renderTo: 'app-toolbar-visualization'
+//        })
         Ext.widget('button',{
             renderTo: 'app-toolbar-visualization-save',
-            text: 'Save as',
+            text: 'Save',
             itemId: 'savevisualization',
             width: '100%',
             height: '100%',
@@ -156,39 +153,39 @@ Ext.define('PumaMain.controller.Render', {
 //        })
         
      
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-contexthelp',
-            itemId: 'contexthelp',
-            tooltip: 'Context help',
-            tooltipType: 'title',
-            icon: 'images/icons/help-context.png',
-            enableToggle: true,
-            width: 30,
-            height: 30,
-            listeners : {
-                toggle : {
-                    fn : function(btn, active) {
-                        if (active) {
-                            btn.addCls("toggle-active");
-                        }
-                        else {
-                            btn.removeCls("toggle-active");
-                        }
-                    }
-                }
-            }
-        })
-        
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-webhelp',
-            itemId: 'webhelp',
-            tooltip: 'PUMA WebTool help',
-            tooltipType: 'title',
-            icon: 'images/icons/help-web.png',
-            width: 30,
-            height: 30,
-            href: 'help/PUMA webtool help.html'
-        })
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-contexthelp',
+//            itemId: 'contexthelp',
+//            tooltip: 'Context help',
+//            tooltipType: 'title',
+//            icon: 'images/icons/help-context.png',
+//            enableToggle: true,
+//            width: 30,
+//            height: 30,
+//            listeners : {
+//                toggle : {
+//                    fn : function(btn, active) {
+//                        if (active) {
+//                            btn.addCls("toggle-active");
+//                        }
+//                        else {
+//                            btn.removeCls("toggle-active");
+//                        }
+//                    }
+//                }
+//            }
+//        })
+//        
+//        Ext.widget('button',{
+//            renderTo: 'app-toolbar-webhelp',
+//            itemId: 'webhelp',
+//            tooltip: 'PUMA WebTool help',
+//            tooltipType: 'title',
+//            icon: 'images/icons/help-web.png',
+//            width: 30,
+//            height: 30,
+//            href: 'help/PUMA webtool help.html'
+//        })
         
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
@@ -218,15 +215,6 @@ Ext.define('PumaMain.controller.Render', {
             width: '100%',
             height: '100%',
             cls: 'custom-button btn-manage'
-        })
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-visualization-manage',
-            itemId: 'managevisualization',
-            hidden: !Config.auth || !Config.auth.isAdmin,
-            icon: 'images/icons/settings.png',
-            width: '100%',
-            height: '100%',
-            cls: 'custom-button btn-visualization-manage'
         })
         Ext.widget('button',{
             renderTo: 'app-toolbar-save',
@@ -314,26 +302,24 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-scope',
             initial: true,
-            emptyText: 'Select scope...',
             allowBlank: false,
-            store: Ext.StoreMgr.lookup('dataset'),
+            store: Ext.StoreMgr.lookup('scope'),
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
             },
-            itemId: 'initialdataset'
+            itemId: 'initialscope'
         })
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-teritory',
             initial: true,
             //hidden: true,
-            valueField: 'id',
-            store: Ext.StoreMgr.lookup('location4init'),
+            store: Ext.StoreMgr.lookup('dataset4sel'),
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
             },
-            itemId: 'initiallocation'
+            itemId: 'initialdataset'
         })
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-theme',

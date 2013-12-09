@@ -57,6 +57,8 @@ function getData(params, callback) {
             case 'eq':
                 compOperator = '=';
                 break;
+            case 'neq':
+                compOperator = '<>'
         }
         filterSql += ' AND ' + f.field + compOperator + f.value + (f.comparison ? '' : '%\'')
     }

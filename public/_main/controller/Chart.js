@@ -64,6 +64,9 @@ Ext.define('PumaMain.controller.Chart', {
             },
             '#areapager #onlySelected': {
                 toggle: this.onToggleShowSelected
+            },
+            'pumacombo[attributeCombo=1]': {
+                change: this.onAttrChange
             }
         }
 
@@ -85,7 +88,10 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
-        
+    onAttrChange: function(combo,val) {
+        var chartCmp = combo.up('chartpanel').down('chartcmp');
+        this.reconfigureChart(chartCmp);
+    },    
     onToggleShowSelected: function(btn) {
         var selCtrl = this.getController('Select');
         var areaCtrl = this.getController('Area');
@@ -408,6 +414,50 @@ Ext.define('PumaMain.controller.Chart', {
         if (cfg.type=='piechart') {
             //debugger;
         }
+        if (!this.attrSet) return;
+        var attrsFailed = false;
+        if (cfg.type=='grid' && !forExport) {
+             var attributes = this.attrSet.get('attributes');
+             chartCmp.cfg.attrs = [];
+             for (var i=0;i<attributes.length;i++) {
+                 var attr = {as:this.attrSetId,attr:attributes[i]};
+                 chartCmp.cfg.attrs.push(attr);
+             }
+        }
+        if (cfg.type=='scatterchart' && !forExport) {
+            var combos = Ext.ComponentQuery.query('pumacombo',chartCmp.up('chartpanel'));
+            chartCmp.cfg.attrs = [];
+            var val1 = combos[0].getValue();
+            var val2 = combos[1].getValue();
+            if (!val1 || !val2) {
+                attrsFailed = true;
+            }
+            else {
+                 var attr1 = {as:this.attrSetId,attr:val1};
+                 var attr2 = {as:this.attrSetId,attr:val2};
+                 chartCmp.cfg.attrs = [attr1,attr2];
+            }
+        }
+        if (cfg.type=='columnchart' && !forExport) {
+            var combo = Ext.ComponentQuery.query('pumacombo',chartCmp.up('chartpanel'))[0];
+            chartCmp.cfg.attrs = [];
+            var val = combo.getValue();
+            if (!val || !val.length) {
+                attrsFailed = true;
+            }
+            else {
+                for (var i=0;i<val.length;i++) {
+                    var attr = {as:this.attrSetId,attr:val[i]};
+                    chartCmp.cfg.attrs.push(attr);
+                }
+            }
+        }
+        if (attrsFailed) {
+            this.onChartReceived({cmp:chartCmp});
+            return;
+        }
+        
+        
         var queryCfg = Ext.apply(chartCmp.queryCfg || {},chartCmp.cfg,this.gatherChartCfg(chartCmp,true));
         var areas = {};
         if (cfg.type != 'extentoutline') {
@@ -464,7 +514,7 @@ Ext.define('PumaMain.controller.Chart', {
             url: Config.url + '/api/chart/getChart',
             params: params,
             scope: this,
-            //method: 'GET',
+            method: 'GET',
             cmp: chartCmp,
             success: forExport ? null : this.onChartReceived,
             failure: forExport ? null : this.onChartReceived
@@ -1050,12 +1100,17 @@ Ext.define('PumaMain.controller.Chart', {
                 }
             })
             if (sortAs) {
+                var found = false;
                 for (var i=0;i<cfg.attrs.length;i++) {
                     var attr = cfg.attrs[i];
                     if (attr.as == sortAs && attr.attr == sortAttr) {
+                        found = true;
                         params['sortNorm'] = dontStringify ? attr : JSON.stringify(attr);
                     }
                 }
+                if (!found) {
+                    sortProps = [];
+            }
             }
             
             if (sortProps.length) {
