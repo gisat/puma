@@ -349,7 +349,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('button',{
             renderTo: 'app-intro-confirm',
             itemId: 'initialconfirm',
-            text: 'Confirm',
+            text: 'Explore',
             width: '100%',
             height: '100%',
             cls: 'custom-button btn-confirm'

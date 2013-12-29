@@ -624,7 +624,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     type: 'selectedareasfilled',
                     name: 'Selected areas filled',
                     sortIndex: 0,
-                    checked: false,
+                    checked: true,
                     leaf: true
                 }
                 areaLayerNode = {

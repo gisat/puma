@@ -605,7 +605,7 @@ Ext.define('PumaMain.controller.Layers', {
                 var style = new OpenLayers.Style();
                 var obj = {
                     filter: filterMap[layerName],
-                    symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: '#333333', strokeWidth: 2, fillOpacity: 0.1})}
+                    symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: '#333333', strokeWidth: 1, fillOpacity: 0.1})}
                 }
                 var rule1 = new OpenLayers.Rule(obj);
                 style.addRules([rule1]);

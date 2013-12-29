@@ -237,7 +237,7 @@ Ext.define('PumaMain.controller.Map', {
             type: 'terrain'
         });
         var osmNode = Ext.create('Puma.model.MapLayer',{
-            name: 'OSM',
+            name: 'OpenStreetMap',
             initialized: true,
             allowDrag: false,
             checked: false,

@@ -53,12 +53,25 @@ Ext.define('PumaMain.view.Tools', {
              
          },   
             
-            
+         {
+            xtype: 'layerpanel',
+            //maxHeight: 500,
+            itemId: 'layerpanel',
+            helpId: 'Layers',
+            tools: [{
+               type: 'detach',
+               cls: 'detach',
+               itemId: 'undock'
+            }],
+            height: 300,
+            title: 'Layers'
+        },   
         {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
             helpId: 'TreeofanalyticalunitsAREAS',
+            collapsed: true,
             store: Ext.StoreMgr.lookup('area'),
             selModel: {
                 mode: 'MULTI'
@@ -73,19 +86,6 @@ Ext.define('PumaMain.view.Tools', {
             height: 340
             //,maxHeight: 500
         }, {
-            xtype: 'layerpanel',
-            collapsed: true,
-            //maxHeight: 500,
-            itemId: 'layerpanel',
-            helpId: 'Layers',
-            tools: [{
-               type: 'detach',
-               cls: 'detach',
-               itemId: 'undock'
-            }],
-            height: 300,
-            title: 'Layers'
-        },{
             xtype: 'maptools',
             collapsed: false,
             itemId: 'maptools',
