@@ -8,9 +8,28 @@
 div.olControlZoom {
     top: auto ! important;
     left: auto ! important;
-    bottom: 8px ! important;
+    bottom: 18px ! important;
     right: 8px ! important;
 }
+div .olLayerGoogleV3.olLayerGoogleCopyright {
+    right: 0px ! important;
+    left: auto ! important;
+    
+}
+div .olLayerGoogleV3.olLayerGooglePoweredBy {
+    right: 32px ! important;
+    left: auto ! important;
+}
+div .olControlAttribution {
+    right: 3px;
+    bottom: 5px;
+}
+div.noattrib .olLayerGoogleV3.olLayerGoogleCopyright,div.noattrib .olLayerGoogleV3.olLayerGooglePoweredBy,div.noattrib .olControlAttribution {
+    display: none;
+}
+
+
+
 div .x-grid-dirty-cell {
     background-image: none;
 }
@@ -30,16 +49,13 @@ div .x-grid-dirty-cell {
     border-color: red ! important;
     cursor: help;
 }
-#app-map2 .olLayerGooglePoweredBy,#app-map2 .olLayerGoogleCopyright {
+/*#app-map2 .olLayerGooglePoweredBy,#app-map2 .olLayerGoogleCopyright {
     display: none;
-}
+}*/
 .extentoutline-notfirst .olLayerGooglePoweredBy {
     display: none;
 }
-div .olControlAttribution {
-    left: 3px;
-    bottom: 5px;
-}
+
 /*.screenshot, .screenshot div {
     width: 175px; 
     height: 120px;
@@ -91,11 +107,19 @@ img.invisiblecomplete {
 #msg-div {
     position:absolute;
     top:30%;
-    left:10px;
     width:400px;
     margin-bottom: 50px;
     z-index:20000;
 }
+#msg-div.right{
+    right:10px;
+    
+}
+#msg-div.left{
+    left:10px;
+    
+}
+
 #msg-div .msg {
     border-radius: 8px;
     -moz-border-radius: 8px;

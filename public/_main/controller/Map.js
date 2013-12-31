@@ -92,6 +92,30 @@ Ext.define('PumaMain.controller.Map', {
     },
     
     onMultipleYearsToggle: function(btn,pressed) {
+        if (!btn.leftYearsUnchanged) {
+            var yearCnt = Ext.ComponentQuery.query('#selyear')[0]
+            var years = yearCnt.getValue();
+            if (years.length<2 && pressed) {
+                var newYears = [years[0]];
+                var yearsInStore = Ext.StoreMgr.lookup('year4sel').getRange();
+                for (var i=yearsInStore.length-1;i>=0;i--) {
+                    var year = yearsInStore[i].get('_id');
+                    if (Ext.Array.contains(years,year)) {
+                        continue;
+                    }
+                    if (newYears.length<2) {
+                        Ext.Array.insert(newYears,i==yearsInStore.length-1 ? 1 : 0,[year])
+                    }
+                }
+                yearCnt.setValue(newYears)
+            }
+            if (years.length>1 && !pressed) {
+                yearCnt.setValue([years[years.length-1]])
+            }
+            btn.toBeChanged = true;
+            return;
+        }
+        btn.toBeChanged = false;
         var domController = this.getController('DomManipulation');
         if (pressed) {
             domController.activateMapSplit();
@@ -102,6 +126,8 @@ Ext.define('PumaMain.controller.Map', {
         this.multiMap = pressed;
         this.map1.multiMap = pressed;
         this.map2.multiMap = pressed;
+        var method = pressed ? 'addCls':'removeCls';
+        Ext.get(this.map1.div)[method]('noattrib');
         //var gmapNoPrint = Ext.select('#app-map .gmnoprint');
         var controlZoom = Ext.select('#app-map .olControlZoom');
         //gmapNoPrint.setVisible(!pressed);
@@ -148,21 +174,38 @@ Ext.define('PumaMain.controller.Map', {
         
         var window = Ext.WindowManager.get('measureWindow');
         if (val) {
+            var title = 'Measure '+(btn.itemId == 'measurelinebtn' ? 'line' : 'polygon');
+            var helpText = btn.itemId == 'measurelinebtn' ? 'Click to define line shape, double-click to complete.' : 'Click to define polygon shape, double-click to complete.';
+            var initialText = (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":";
             if (!window) {
+                
                 window = Ext.widget('window',{
                     padding: 5,
                     minWidth: 140,
                     closable: false,
-                    maxWidth: 220,
+                    maxWidth: 260,
                     bodyPadding: 5,
-                    title: 'Measure',
+                    title: title,
                     closeAction: 'hide',
-                    html: (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":",
+                    items: [{
+                        xtype: 'component',
+                        itemId: 'help',
+                        margin: '0 0 10 0',
+                        html: helpText
+                    },{
+                        xtype: 'component',
+                        itemId: 'measure',
+                        html: initialText
+                    }],
                     id: 'measureWindow'
                 })
             }
+            else {
+                window.setTitle(title);
+                window.down('#help').update(helpText);
+                window.down('#measure').update(initialText);
+            }
             window.show();
-            window.body.dom.innerHTML = (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":",
             control1.activate();
             control2.activate();
         }
@@ -712,8 +755,8 @@ Ext.define('PumaMain.controller.Map', {
         html += ' ';
         html += evt.units;
         html += evt.order == 2 ? '<sup>2</sup>' : '';
-        var window = Ext.WindowManager.get('measureWindow');
-        window.body.dom.innerHTML = html;
+        var cmp = Ext.WindowManager.get('measureWindow').down('#measure');
+        cmp.el.update(html)
     },
         
     onFeatureInfo: function(response) {

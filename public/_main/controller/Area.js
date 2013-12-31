@@ -12,6 +12,9 @@ Ext.define('PumaMain.controller.Area', {
                     itemexpand: this.onNodeExpanded,
                     itemcollapse: this.onNodeCollapsed
                 },
+                '#areatree #areacollapse': {
+                    click: this.onCollapseAll
+                },
                 "chartbar chartcmp": {
                     beforeselect: this.onBeforeSelect,
                     itemclick: this.onItemClick,
@@ -139,13 +142,7 @@ Ext.define('PumaMain.controller.Area', {
         }
         tree.resumeEvents();
         if (nodesToCollapse.length) {
-            tree.view.refresh();
-            this.scanTree();
-            var selController = this.getController('Select');
-            this.colourTree(selController.colorMap);
-            this.getController('Layers').colourMap(selController.colorMap); 
-            this.getController('Chart').reconfigureAll();
-            this.getController('Layers').reconfigureAll();
+            this.afterCollapse(tree);
             this.getController('DomManipulation').deactivateLoadingMask();
         }
         else {
@@ -153,6 +150,31 @@ Ext.define('PumaMain.controller.Area', {
         }
     },
     
+    
+    
+    onCollapseAll: function() {
+        var tree = Ext.ComponentQuery.query('#areatree')[0];
+        tree.suspendEvents();
+        var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
+        var nodes = areaRoot.childNodes;
+        for (var i=0;i<nodes.length;i++) {
+            nodes[i].suppress = true;
+            nodes[i].collapse();
+            nodes[i].suppress = false
+        }
+        tree.resumeEvents();
+        this.afterCollapse(tree);
+    },
+    
+    afterCollapse: function(tree) {
+        tree.view.refresh();
+        this.scanTree();
+        var selController = this.getController('Select');
+        this.colourTree(selController.colorMap);
+        this.getController('Layers').colourMap(selController.colorMap);
+        this.getController('Chart').reconfigureAll();
+        this.getController('Layers').reconfigureAll();
+    },
     
     applyTestFilter: function(from,to) {
         
@@ -344,6 +366,10 @@ Ext.define('PumaMain.controller.Area', {
         return locations;
     },
     scanTree: function() {
+
+        
+        var me = this;
+        
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         var areaTemplates = [];
         var leafMap = {};
@@ -358,11 +384,16 @@ Ext.define('PumaMain.controller.Area', {
         var locObj = this.getLocationObj();
         var changeLocToCustom = false;
         var atLeastOneLoc = false;
+        var maxDepth = 0;
+        this.placeNode = null;
         root.cascadeBy(function(node) {
             var at = node.get('at');
-            var loc = node.get('loc')
+            var loc = node.get('loc');
             if (!at || !loc || !node.isVisible() || node==root)
                 return;
+            
+            var depth = node.getDepth();
+            maxDepth = Math.max(depth,maxDepth);
             if (node.parentNode==root) {
                 if (root.childNodes.length==1) {
                     parent = node;
@@ -380,11 +411,13 @@ Ext.define('PumaMain.controller.Area', {
                         }
                     }
                     else {
+                        me.placeNode = node;
                         atLeastOneLoc = true;
                     }
                     
                 }
                 if (node.isLeaf() && (at==locObj.at && loc==locObj.location && node.get('gid')==locObj.locGid)) {
+                    me.placeNode = node;
                     atLeastOneLoc = true;
                 }
                 
@@ -410,8 +443,11 @@ Ext.define('PumaMain.controller.Area', {
             allMap[loc][at] = allMap[loc][at] || [];
             allMap[loc][at].push(gid);
             if (node.isLeaf()) {
+                
+            }
+            else {
                 leafMap[loc] = leafMap[loc] || {}
-                leafMap[loc][at] = true;
+                leafMap[loc][at] = false;
             }
         })
         if (changeLocToCustom || !atLeastOneLoc) {
@@ -433,7 +469,7 @@ Ext.define('PumaMain.controller.Area', {
                 lowestCount += allMap[loc][lastAreaTemplate].length;
                 lowestMap[loc] = lowestMap[loc] || {};
                 lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
-                if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
+                if (leafMap[loc] && leafMap[loc][lastAreaTemplate]===false) {
                     lowestNoLeafs = false;
                 }
             }
@@ -444,10 +480,12 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestMap = lowestMap;
         this.highestMap = highestMap;
         this.lastMap = lastMap;
+        var selPlace = this.getLocationObj().obj.get('id');
         var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
         var showLess = Ext.ComponentQuery.query('#arealessdetails')[0];
+        
         showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1));
-        showLess.setDisabled(!containsLower)
+        showLess.setDisabled(!containsLower || (selPlace!='custom' && maxDepth<3))
   
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;

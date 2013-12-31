@@ -661,7 +661,6 @@ function getSymbologiesFromServer(params, req, res, callback) {
 
 
 
-
 module.exports = {
     getLayers: getLayers,
     getMetadata: getMetadata,

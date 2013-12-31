@@ -71,7 +71,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
         ]); 
         locationCombo.show();
-        var first = locStore.getAt(0);
+        var first = locStore.getById('2450_1') || locStore.getAt(0);
         if (first && !cnt.initial) {
             locationCombo.setValue(first);
             
@@ -216,18 +216,16 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }]);
 
         var vis = visCnt.getValue();
-        if (!vis) {
-            this.visChanged = true;
-            var first = visStore.getAt(0);
-            if (first) {
-                visCnt.setValue(first.get('_id'))
-            }
+        var first = visStore.getAt(0);
+        if (first && first.get('_id')!=vis) {
+                visCnt.setValue(first.get('_id'));
+                this.visChanged = true;
         }
-        
         var years = yearCnt.getValue();
         if (!years.length) {
             this.yearChanged = true;
-            yearCnt.setValue([yearStore.getAt(0).get('_id')])
+            var yearCount = yearStore.getCount();
+            yearCnt.setValue([yearStore.getAt(yearCount-1).get('_id')])
         }
         yearCnt.resumeEvents();
         visCnt.resumeEvents();
@@ -339,7 +337,15 @@ Ext.define('PumaMain.controller.LocationTheme', {
         //this.getController('Layers').reconfigureAll();
         this.getController('Layers').checkVisibilityAndStyles();
     },
-        
+    
+    refreshVisualization: function() {
+        this.onVisChange({});
+    },
+    refreshTheme: function() {
+        var val = Ext.ComponentQuery.query('#seltheme')[0].getValue()
+        this.onThemeChange({},val);
+    },
+            
     onFilter: function() {
         var filterCmp = null;
         this.onYearChange(filterCmp)
@@ -495,10 +501,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
          var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
          var map1Year = mapController.map1.year;
          var map2Year = mapController.map2.year;
-         var map1Change = (map1Year!=years[years.length-1]) ? true : false;
-         var map2Change = (years.length>1 && map2Year!=years[years.length-2]) ? true : false;
-         mapController.map1.year = years[years.length-1];
-         mapController.map2.year = years.length>1 ? years[years.length-2] : null;
+         mapController.map1.year = years.length>1 ? years[years.length-2] : years[years.length-1];
+         mapController.map2.year = years.length>1 ? years[years.length-1] : null;
+         var map1Change = map1Year != mapController.map1.year ? true : false;
+         var map2Change = (map2Year != mapController.map2.year && mapController.map2.year) ? true : false
+         
          var yearStore = Ext.StoreMgr.lookup('year');
          Ext.get('app-map-map-label').setHTML(yearStore.getById(mapController.map1.year).get('name'));
          Ext.get('app-map-map2-label').setHTML(mapController.map2.year ? yearStore.getById(mapController.map2.year).get('name') : '');
@@ -695,11 +702,14 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var multiMapBtn = Ext.ComponentQuery.query('maptools #multiplemapsbtn')[0];
-        if (years.length<2 && multiMapBtn.pressed) {
-            multiMapBtn.toggle(false);
+        multiMapBtn.leftYearsUnchanged = true;
+        var multiMapPressed = multiMapBtn.pressed;
+        multiMapBtn.toggle(years.length>1);
+        // manually fire change handler, because nothing has changed
+        if (multiMapPressed == years.length>1 && multiMapBtn.toBeChanged) {
+            this.getController('Map').onMultipleYearsToggle(multiMapBtn,multiMapPressed);
         }
-        multiMapBtn.setDisabled(years.length<2);
-        
+        multiMapBtn.leftYearsUnchanged = false;
         if (!conf.layerRefMap) {
             conf = {
                 add: conf

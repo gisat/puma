@@ -73,6 +73,7 @@ Ext.define('PumaMain.controller.Render', {
     
     
     renderApp: function() {
+        var me = this;
         Ext.widget('pumacombo',{
             store: 'dataset',
             helpId: 'Selectingscopeofanalysis',
@@ -98,6 +99,11 @@ Ext.define('PumaMain.controller.Render', {
             store: 'theme4sel',
             itemId: 'seltheme',
             helpId: 'Selectingtheme',
+            width: 180,
+            trigger2Cls: 'x-form-refresh-trigger',
+            onTrigger2Click: function() {
+                me.getController('LocationTheme').refreshTheme();
+            },
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
@@ -107,7 +113,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('storecontainer',{
             renderTo: 'app-toolbar-year',
             store: Ext.StoreMgr.lookup('year4sel'),
-            forceSelection: true,
+            //forceSelection: true,
             itemId: 'selyear',
             helpId: 'Switchingbetweenyears',
             multiCtrl: true,
@@ -119,6 +125,11 @@ Ext.define('PumaMain.controller.Render', {
             helpId: 'Selectingthevisualisation',
             itemId: 'selvisualization',
             cls: 'custom-combo',
+            width: 180,
+            trigger2Cls: 'x-form-refresh-trigger',
+            onTrigger2Click: function() {
+                me.getController('LocationTheme').refreshVisualization();
+            },
             listConfig: {
                 cls: 'custom-combo-list',
             },

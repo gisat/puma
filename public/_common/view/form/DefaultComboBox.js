@@ -34,7 +34,7 @@ Ext.define('Puma.view.form.DefaultComboBox',{
 //        me.on('select', function (me, rec) {
 //            me.onShowClearTrigger(true); 
 //        }, me);
-        me.on('afterrender', function () { me.onShowClearTrigger(false); }, me);
+        //me.on('afterrender', function () { me.onShowClearTrigger(false); }, me);
     },
 
     /**
@@ -82,7 +82,7 @@ Ext.define('Puma.view.form.DefaultComboBox',{
     * eventhandler
     */
     onTrigger2Click: function (args) {
-        this.clear();
+        //this.clear();
     },
 
     /**

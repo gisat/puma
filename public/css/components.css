@@ -3,7 +3,10 @@
 	margin-right         : 20px;
 }
 .field.year .widget {
-	width                : 135px;
+	width                : 170px;
+}
+#content-application .field.teritory {
+    margin-right: 35px;
 }
 .field.year .widget .x-field .x-form-item-body {
 	padding-left         : 10px;
@@ -45,7 +48,7 @@
 	font-family          : "Courier new", monospace;
 }
 .field.help .widget {
-	width                : 106px;
+	width                : 108px;
 	line-height          : 30px;
 }
 .field.help .help-btn {
@@ -56,6 +59,9 @@
 }
 #app-toolbar-contexthelp {
 	margin-left      : 42px;
+}
+#app-toolbar-webhelp {
+        margin-left: 2px;
 }
 .field.help .help-btn .x-btn {
 	background       : #807e87;
@@ -270,6 +276,9 @@
 	height               : 20px;
 	background-repeat    : no-repeat;
 	background-position  : 50% 50%;
+}
+.x-panel-header .x-tool-areacollapse {
+	background-image     : url("../images/icons/collapse.png") !important;
 }
 .x-panel-header .x-tool-gear {
 	background-image     : url("../images/icons/settings.png") !important;

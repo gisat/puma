@@ -11,6 +11,9 @@ Ext.define('PumaMain.controller.Screenshot', {
                         screenshotexport: this.onScreenshotExport
                     },
                 })
+        $(document).on('load','.screenshotimg', function() {
+            debugger;
+        })
     },
     onScreenshotRemove: function(view, rec) {
         if (rec.get('large')) return;

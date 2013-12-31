@@ -73,8 +73,12 @@ Ext.define('Puma.controller.Form',{
                         if (creating) {
                             rec.destroy();
                         }
+                        if (op.error.response.timedout) {
+                            Ext.Msg.alert('Warning','Timed out, process can still be running on server');
+                            return;
+                        }
                         if (!op.error.response.responseText) {
-                            Ext.Msg.alert('Error','Undefined');
+                            Ext.Msg.alert('Error','Undefined error');
                             return;
                         }
                         var message = JSON.parse(op.error.response.responseText).message

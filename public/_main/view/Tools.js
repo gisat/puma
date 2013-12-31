@@ -77,6 +77,10 @@ Ext.define('PumaMain.view.Tools', {
                 mode: 'MULTI'
             },
             tools: [{
+                type: 'areacollapse',
+                cls: 'areacollapse',
+                itemId: 'areacollapse'
+            },{
                type: 'detach',
                cls: 'detach',
                itemId: 'undock'

@@ -97,6 +97,11 @@
 	border-left          : none;
 }
 
+.x-border-box .x-form-trigger.x-form-refresh-trigger {
+	background           : #ddd url("../images/icons/paging-refresh.png") no-repeat 50% 50%;
+        background-size: 16px 16px;
+}
+
 .x-border-box .x-form-trigger.x-form-spinner-down, .x-border-box .x-form-trigger.x-form-spinner-up{
     height: 15px ! important;
     width: 30px ! important;

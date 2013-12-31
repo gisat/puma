@@ -359,7 +359,26 @@ Ext.define('PumaMain.controller.Filter', {
         
     reconfigureFiltersCall: function(filters) {
         if (!this.attrs || !this.attrs.length) return;
-        var areas = this.getController('Area').allMap;
+        var areas = {};
+        var placeNode = this.getController('Area').placeNode;
+        if (placeNode) {
+            placeNode.cascadeBy(function(node) {
+                var at = node.get('at');
+                var loc = node.get('loc');
+                if (!at || !loc || !node.isVisible())
+                    return;
+                var gid = node.get('gid');
+                areas[loc] = areas[loc] || {}
+                areas[loc][at] = areas[loc][at] || [];
+                areas[loc][at].push(gid);
+            })
+            
+        }
+        else {
+            areas = this.getController('Area').allMap;
+        }
+        
+        
         var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
         var years = [Ext.ComponentQuery.query('#selyear')[0].getValue()[0]];
         var params = {

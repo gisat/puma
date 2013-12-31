@@ -98,6 +98,7 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Ext.data.Store',{
             storeId: 'year',
             autoLoad: true,
+            sorters:[{property:'name',direction:'ASC'}],
             model: 'Puma.model.Year'
         })
         

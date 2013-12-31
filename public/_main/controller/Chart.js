@@ -859,7 +859,11 @@ Ext.define('PumaMain.controller.Chart', {
                 src: url,
                 visible: rec ? 0 : 1
             })
-            Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true)
+            Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true);
+            var img = Ext.DomQuery.select('img[src="'+url+'"]');
+            Ext.get(img[0]).on('load',function() {
+                Puma.util.Msg.msg('Snapshot loaded','','r');
+            })
         }
     },
     

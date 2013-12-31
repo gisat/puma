@@ -242,6 +242,9 @@ strong {
 			height           : 30px;
 			line-height      : 30px;
 		}
+                .fields-holder .field > #app-toolbar-visualization, .fields-holder .field > #app-toolbar-theme {
+                    width: 180px;
+                }
 		.fields-holder .field > .widget .x-btn,
 		.fields-holder .field > .widget .x-field {
 			vertical-align   : top;
@@ -304,7 +307,7 @@ strong {
 		}
 		#toolbar .group {
 			float            : none;
-			width            : 820px;
+			width            : 850px;
 			margin           : 0;
 		}
 		#toolbar .group .field {
@@ -315,6 +318,11 @@ strong {
 			background       : url("../images/toolbar-group-border.png") repeat-y 100% 0;
 		}
 		
+                
+                
+                
+                
+                
 		#toolbar .dataview {
 			position         : absolute;
 			top              : 10px;

@@ -164,6 +164,9 @@ function remove(collName,filter,params,callback) {
                         return callback(null, result);
                     });
                 }
+                else {
+                    return callback(null,results.remove);
+                }
             }]
     }
     

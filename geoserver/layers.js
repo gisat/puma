@@ -86,8 +86,15 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
         sql += 'CREATE TABLE views.'+viewName+' AS (SELECT ';
         sql += '"'+areaLayerRef.fidColumn+'" AS gid,';
         sql += 'ST_Centroid(ST_Transform(the_geom,4326)) as centroid,';
-        sql += 'ST_Area(ST_Transform(the_geom,4326)::geography) as area,';
-        sql += 'ST_Length(ST_Transform(the_geom,4326)::geography) as length,';
+        
+        sql += "CASE WHEN ST_Contains(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),the_geom)";
+        sql += "THEN ST_Area(ST_Transform(the_geom,4326)::geography)"
+        sql += "ELSE ST_Area(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as area,"
+        
+        sql += "CASE WHEN ST_Contains(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),the_geom)";
+        sql += "THEN ST_Length(ST_Transform(the_geom,4326)::geography)"
+        sql += "ELSE ST_Length(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as length,"
+        
         sql += 'ST_Box2D(ST_Transform(the_geom,4326)) as extent FROM '+areaLayerRef.layer.split(':')[1]+');';
         sql += 'ALTER TABLE views.'+viewName+' ADD CONSTRAINT '+viewName+'_unique UNIQUE(gid);'
     }
@@ -142,9 +149,15 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
     console.log('start '+sql);
     var client = conn.getPgDb();
     client.query(sql,function(err,results) {
-        console.log('finish')
-        if (err) return callback(err);
-        callback(null,areaLayerRef);
+        if (err) {
+            client.query('ROLLBACK;',function() {
+                return callback(err);
+            })
+        }
+        else {
+            callback(null,areaLayerRef);
+            
+            }
     })
         
 }
@@ -196,6 +209,8 @@ function changeLayerGeoserver(layerId, method, callback) {
     })
 
 }
+
+
 
 
 module.exports = {
