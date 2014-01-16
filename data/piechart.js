@@ -8,8 +8,8 @@ function getChart(params, callback) {
     var height = params['height'] || 320;
     var years = JSON.parse(params['years']);
     var pastYears = years;
-    years = [years[0]];
-    params.years = JSON.stringify(pastYears);
+    years = [years[years.length-1]];
+    params.years = JSON.stringify(years);
     var invisibleAttrs = params['invisibleAttrs'] ? JSON.parse(params['invisibleAttrs']) : [];
     var invisibleAttrsMap = {};
     for (var i=0;i<invisibleAttrs.length;i++) {
@@ -26,6 +26,23 @@ function getChart(params, callback) {
                     return callback(err);
                 return asyncCallback(null, dataObj.data);
             })
+        }],
+        data2: ['data',function(asyncCallback,results) {
+            var data = results.data;
+            
+            if (data.length>5 || pastYears.length<2) {
+                return asyncCallback(null,[]);
+            }
+            var newParams = us.clone(params);
+            newParams.years = JSON.stringify([pastYears[pastYears.length-2]]);
+            years.push(pastYears[pastYears.length-2]);
+            years.reverse();
+            dataMod.getData(newParams, function(err, dataObj) {
+                if (err)
+                    return callback(err);
+                return asyncCallback(null, dataObj.data);
+            })
+            
         }],
         years: function(asyncCallback) {
             crud.read('year', {}, function(err, resls) {
@@ -47,14 +64,14 @@ function getChart(params, callback) {
                 return asyncCallback(null, attrConf);
             })
         },
-        res: ['data', 'attrConf','years', function(asyncCallback, results) {
+        res: ['data2', 'attrConf','years', function(asyncCallback, results) {
                 var forMap = params['forMap']
                 var attrConf = results.attrConf.attrMap;
-                var data = results.data;
+                var data = us.union(results.data2,results.data);
                 var numRecs = data.length;
-                var numRows = years.length>1 ? years.length : Math.round(Math.sqrt(numRecs * height / width))
-                var numCols = years.length>1 ? numRecs : Math.ceil(numRecs / numRows);
-                width = years.length>1 ? Math.max(width,numRecs*(height/years.length)) : width;
+                var numRows = Math.round(Math.sqrt(numRecs * height / width))
+                var numCols = Math.ceil(numRecs / numRows);
+                //width = years.length>1 ? Math.max(width,numRecs*(height/years.length)) : width;
                 var minusHeight = numRecs > 15 ? 5 : 20;
                 var minusHeight = numRecs > 40 ? 0 : minusHeight;
                 var size = Math.min(width / numCols, (height / numRows) - minusHeight);
@@ -75,9 +92,9 @@ function getChart(params, callback) {
                         if (params['forExport'] && !visible) {
                             continue;
                         }
-                        if (year) {
-                            columnName += '_y_'+year;
-                        }
+//                        if (year) {
+//                            columnName += '_y_'+year;
+//                        }
                         var attrRec = attrConf[attr.as][attr.attr];
                         
                         var obj = {
@@ -166,13 +183,14 @@ function getChart(params, callback) {
 
                 var year = null;
                 for (var ri = 0; ri < numRows; ri++) {
-                    if (pastYears.length>1) {
-                        //i = 0;
-                        year = years[0];
-                    }
-                    var yearId = year || years[0];
+                  
                     for (var rj = 0; rj < numCols; rj++) {
                         var row = data[i];
+                        year = years[0];
+                        if (years.length>1 && i>=data.length/2) {
+                            year = years[1];
+                        }
+                        var yearId = year;
                         if (!row)
                             break;
                         chartIteration(row,ri,rj,year,yearId);              

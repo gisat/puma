@@ -361,6 +361,7 @@ strong {
 		
 		/* Sidebar toggles */
 		#sidebar-tools-toggle,
+                #sidebar-reports-add,
 		#sidebar-reports-toggle {
 			display             : block;
 			width               : 21px;
@@ -373,6 +374,16 @@ strong {
 			top                 : 0;
 			cursor              : pointer;
 		}
+                #sidebar-reports-add {
+                    width               : 21px;
+                    left                : -21px;
+                    height              : 21px;
+		    background-image    : url("../images/icons/add.png");
+                    top                 : 30px;
+                    background-position : 0 0;
+                    background-color: #eee;
+                    background-size: 100% 100%;
+                }
 		#sidebar-tools-toggle {
 			left                : auto;
 			right               : -21px;
@@ -380,6 +391,9 @@ strong {
 		}
 		#sidebar-reports.hidden #sidebar-reports-toggle {
 			background-position : -21px 0;
+		}
+                #sidebar-reports.hidden #sidebar-reports-add {
+			display: none
 		}
 		#sidebar-tools.hidden #sidebar-tools-toggle {
 			background-position : 0 0;

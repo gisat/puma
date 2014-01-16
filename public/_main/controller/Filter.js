@@ -26,6 +26,15 @@ Ext.define('PumaMain.controller.Filter', {
                     '#advancedfilters #maxValue' : {
                         afterrender: this.onAfterValueRender
                     },
+                    '#advancedfilters tool[type=poweron]': {
+                        click: this.changeActiveState
+                    },
+                    '#advancedfilters tool[type=refresh]': {
+                        click: this.onResetFilters
+                    },
+                    '#advancedfilters tool[type=gear]': {
+                        click: this.onConfigure
+                    },
                     'toolspanel': {
                         afterlayout: this.afterAccordionLayout
                     }
@@ -36,6 +45,20 @@ Ext.define('PumaMain.controller.Filter', {
         if (obj.cfgVal) {
             obj.el.setHTML(obj.cfgVal);
         }
+    },
+        
+    onResetFilters: function(btn) {
+        var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
+        for (var i=0;i<sliders.length;i++) {
+            var slider = sliders[i];
+            slider.setValue([slider.minValue,slider.maxValue]);
+            
+        }
+        
+        
+    },
+    onConfigure: function() {
+        this.getController('AttributeConfig').onConfigureClick({itemId:'configurefilters'});
     },
         
     afterAccordionLayout: function(slider) {
@@ -68,8 +91,7 @@ Ext.define('PumaMain.controller.Filter', {
             offset = -(labelEl.dom.offsetLeft+labelEl.dom.offsetWidth-labelEl.dom.offsetParent.offsetWidth+2);
         }
         if (offset) {
-            labelEl.alignTo(thumb.el,"b-t",[offset,0]);
-            
+            labelEl.alignTo(thumb.el,"b-t",[offset,0]);   
         }
         if (slider.chartEl) {
             
@@ -159,8 +181,8 @@ Ext.define('PumaMain.controller.Filter', {
         this.applyFilters(null,true,true)
     },
     
-    applyFilters: function(withoutRefresh,bypassInstant,bySelectFilter) {
-        
+    applyFilters: function() {
+        if (!this.filterActive) return;
 //        var instantFilter = Ext.ComponentQuery.query('#instantfilter')[0].pressed
 //        if (!instantFilter && bypassInstant!==true) return;
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
@@ -225,7 +247,8 @@ Ext.define('PumaMain.controller.Filter', {
     },
     
     reconfigureFilters: function(cfg) {
-        var attrs = Ext.clone(cfg.attrs);
+        var attrs = Ext.Array.clone(cfg.attrs);
+        var oldAttrs = Ext.Array.clone(cfg.attrs);
         this.cfg = cfg;
         var filterPanel = Ext.ComponentQuery.query('#advancedfilters')[0];
         var sliders = Ext.ComponentQuery.query('multislider',filterPanel);
@@ -236,7 +259,8 @@ Ext.define('PumaMain.controller.Filter', {
             var attr = null;
             for (var j = 0; j < attrs.length; j++) {
                 attr = attrs[j];
-                if (slider.attrObj.as == attr.as && slider.attrObj.attr == attr.attr) {
+                
+                if (slider.attrObj.as == attr.as && slider.attrObj.attr == attr.attr && slider.attrObj.normType==attr.normType && slider.attrObj.normAs == attr.normAs && slider.attrObj.normAttr == attr.normAttr) {
                     found = true;
                     break;
                 }
@@ -262,8 +286,10 @@ Ext.define('PumaMain.controller.Filter', {
         attrs = Ext.Array.difference(attrs,attrsToRemove);
         this.attrs = cfg.attrs;
         if (!attrs.length) {
+            this.changeActiveState(false);
             return;
         }
+        this.changeActiveState(true);
         this.reconfigureFiltersCall(false,true);
         
         
@@ -356,7 +382,26 @@ Ext.define('PumaMain.controller.Filter', {
         slider.chart = chart;
     },
     
+    changeActiveState: function(btn) {
+        if (btn.xtype!='tool') {
+            var active = btn;
+            btn = Ext.ComponentQuery.query('#advancedfilters tool[type=poweron]')[0];
+            if (active) {
+                $(btn.el.dom).addClass('tool-active');
+            }
+            else {
+                $(btn.el.dom).removeClass('tool-active');
+            }
+            this.filterActive = $(btn.el.dom).hasClass('tool-active');
+        }
+        else {
+            $(btn.el.dom).toggleClass('tool-active');
+            this.filterActive = $(btn.el.dom).hasClass('tool-active');
+            this.applyFilters();
+        }
         
+    },
+            
     reconfigureFiltersCall: function(filters) {
         if (!this.attrs || !this.attrs.length) return;
         var areas = {};
@@ -408,6 +453,7 @@ Ext.define('PumaMain.controller.Filter', {
         if (attrMap) {
             this.updateDistributions(attrMap);
             if (this.initialValues) {
+                this.changeActiveState(true);
                 for (var key in this.initialValues) {
                     var slider = Ext.ComponentQuery.query('multislider[attrname='+key+']')[0];
                     if (!slider) continue;
@@ -456,7 +502,6 @@ Ext.define('PumaMain.controller.Filter', {
                 this.createChart(slider,attrCfg.dist);
             }
             else {
-                
                 var cnt = this.getFilterItems([attrCfg])[0]
                 filterPanel.insert(idx, cnt);
                 slider = Ext.ComponentQuery.query('multislider[attrname='+attrName+']')[0];

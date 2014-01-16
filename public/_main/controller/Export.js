@@ -7,6 +7,7 @@ Ext.define('PumaMain.controller.Export', {
     },
 
     initConf: function() {
+        console.log('Init')
         var id = window.location.search.split('?')[1].split('&')[0].split('=')[1];
         this.forDownload = window.location.search.search('fordownload')>-1;
         Ext.Ajax.request({
@@ -94,7 +95,8 @@ Ext.define('PumaMain.controller.Export', {
         for (var i=0;i<cfg.layers.length;i++) {
             var layerCfg = cfg.layers[i];
             var layer = null;
-            if (!layerCfg.sldId && !layerCfg.layersParam && layerCfg.type!='selectedareas') {
+            var disallowedTypes = {selectedareas:1,selectedareasfilled:1,areaoutlines:1}
+            if (!layerCfg.sldId && !layerCfg.layersParam && !disallowedTypes[layerCfg.type]) {
                 layer = layerCfg.type=='osm' ? new OpenLayers.Layer.OSM() : new OpenLayers.Layer.Google(
                 'Google',
                 {

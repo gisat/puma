@@ -10,7 +10,7 @@
 }
 .field.year .widget .x-field .x-form-item-body {
 	padding-left         : 10px;
-	color                : #807e87;
+	color                : #c8bfc7;
 	font-weight          : bold;
 }
 .field.year .widget .x-form-cb-checked .x-form-item-body {
@@ -277,8 +277,14 @@
 	background-repeat    : no-repeat;
 	background-position  : 50% 50%;
 }
+.x-panel-header .x-tool-poweron {
+	background-image     : url("../images/icons/power2.png") !important;
+}
+.x-panel-header .x-tool-refresh {
+	background-image     : url("../images/icons/paging-refresh.png") !important;
+}
 .x-panel-header .x-tool-areacollapse {
-	background-image     : url("../images/icons/collapse.png") !important;
+	background-image     : url("../images/icons/paging-first.png") !important;
 }
 .x-panel-header .x-tool-gear {
 	background-image     : url("../images/icons/settings.png") !important;

@@ -450,7 +450,7 @@ Ext.define('PumaMain.controller.Area', {
                 leafMap[loc][at] = false;
             }
         })
-        if (changeLocToCustom || !atLeastOneLoc) {
+        if (this.initialized && (changeLocToCustom || !atLeastOneLoc)) {
             var locStore = Ext.StoreMgr.lookup('location4init');
             var customRec = locStore.getById('custom');
             if (!customRec) {
@@ -460,6 +460,7 @@ Ext.define('PumaMain.controller.Area', {
             Ext.ComponentQuery.query('#sellocation')[0].setValue('custom')
             
         }
+        this.initialized = true;
         this.areaTemplates = areaTemplates;
         if (areaTemplates.length) 
         {

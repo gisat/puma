@@ -539,8 +539,9 @@ function getMetadata(params, req, res, callback) {
             
             var name = parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:individualName.gco:CharacterString')
             var organisation = parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:organisationName.gco:CharacterString')
-            obj.producer = name ? (name+', '+organisation) : organisation
+            obj.producer = organisation;
             if (!organisation) obj.producer = name;
+            obj.contact = name;
             var keywords = parsed.descendantWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:descriptiveKeywords.gmd:MD_Keywords');
             var keywordsVal = '';
             keywords = keywords || {children:[]};

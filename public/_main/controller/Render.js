@@ -1,7 +1,7 @@
 Ext.define('PumaMain.controller.Render', {
     extend: 'Ext.app.Controller',
     views: [],
-    requires: ['Puma.view.form.DefaultComboBox','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer','Ext.slider.Multi'],
+    requires: ['Puma.view.form.DefaultComboBox','Gisatlib.slider.DiscreteTimeline','Ext.form.CheckboxGroup','PumaMain.view.TopTools','PumaMain.view.Tools','PumaMain.view.ChartBar','Gisatlib.container.StoreContainer','Ext.slider.Multi'],
     init: function() {
         this.control({
             'toolspanel tool[type=detach]': {
@@ -39,6 +39,7 @@ Ext.define('PumaMain.controller.Render', {
         var container = Ext.ComponentQuery.query('toolspanel')[0];
         
         panel.collapse();
+        panel.header.items.getByKey('undock').show();
         container.insert(idx,panel);
 
     },
@@ -66,6 +67,7 @@ Ext.define('PumaMain.controller.Render', {
         
         panel.expand();
         panel.doLayout();
+        panel.header.items.getByKey('undock').hide();
         if (panel.itemId=='advancedfilters') {
             this.getController('Filter').afterAccordionLayout();
         }
@@ -74,6 +76,9 @@ Ext.define('PumaMain.controller.Render', {
     
     renderApp: function() {
         var me = this;
+        var locStore = Ext.StoreMgr.lookup('location4init');
+        var customRec = locStore.getById('custom');
+        //customRec.set('name','Custom')
         Ext.widget('pumacombo',{
             store: 'dataset',
             helpId: 'Selectingscopeofanalysis',
@@ -110,15 +115,14 @@ Ext.define('PumaMain.controller.Render', {
             },
             renderTo: 'app-toolbar-theme'
         })
-        Ext.widget('storecontainer',{
+        Ext.widget('discretetimeline',{
             renderTo: 'app-toolbar-year',
+            width: 148,
             store: Ext.StoreMgr.lookup('year4sel'),
             //forceSelection: true,
             itemId: 'selyear',
             helpId: 'Switchingbetweenyears',
-            multiCtrl: true,
-            multi: true
-            ,type: 'checkbox'
+            
         })
         Ext.widget('pumacombo',{
             store: 'visualization4sel',

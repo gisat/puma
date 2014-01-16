@@ -48,6 +48,7 @@ Ext.define('PumaMain.controller.Map', {
         var mapCfg = {};
         var layers = [];
         var me = this;
+        Puma.util.Msg.msg('Snapshot creation started','','r');
         layerStore.each(function(rec) {
             
             var layer = rec.get(useFirst ? 'layer1' : 'layer2');
@@ -406,31 +407,33 @@ Ext.define('PumaMain.controller.Map', {
         var style = new OpenLayers.Style();
         var layerName = 'puma:layer_' + layerRefs.areaRef._id;
         var rule = new OpenLayers.Rule({
-            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color}),
-            "Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})},
+            symbolizer: {
+                "Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color})
+                //,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
+            },
             filter: filter
         });
         style.addRules([rule]);
-        var rasterStyle = new OpenLayers.Style();
-        var rasterRule = new OpenLayers.Rule({
-            symbolizer: {
-                "Raster": new OpenLayers.Symbolizer.Raster({colorMap:[{color:'#00ff00',quantity:-100},{color:'#0000ff',quantity:100}]})
-            }
-        });
-        rasterStyle.addRules([rasterRule]);
-        var rasternamedLayers = [{
-                name: layerRefs.layerRef.layer,
-                userStyles: [rasterStyle]
-            }];
-        var rastersldObject = {
-            name: 'style',
-            title: 'Style',
-            namedLayers: rasternamedLayers
-        }
-        var rasterformat = new OpenLayers.Format.SLD.Geoserver23();
-        var rastersldNode = rasterformat.write(rastersldObject);
-        var rasterxmlFormat = new OpenLayers.Format.XML();
-        var rastersldText = rasterxmlFormat.write(rastersldNode);
+//        var rasterStyle = new OpenLayers.Style();
+//        var rasterRule = new OpenLayers.Rule({
+//            symbolizer: {
+//                "Raster": new OpenLayers.Symbolizer.Raster({colorMap:[{color:'#00ff00',quantity:-100},{color:'#0000ff',quantity:100}]})
+//            }
+//        });
+//        rasterStyle.addRules([rasterRule]);
+//        var rasternamedLayers = [{
+//                name: layerRefs.layerRef.layer,
+//                userStyles: [rasterStyle]
+//            }];
+//        var rastersldObject = {
+//            name: 'style',
+//            title: 'Style',
+//            namedLayers: rasternamedLayers
+//        }
+//        var rasterformat = new OpenLayers.Format.SLD.Geoserver23();
+//        var rastersldNode = rasterformat.write(rastersldObject);
+//        var rasterxmlFormat = new OpenLayers.Format.XML();
+//        var rastersldText = rasterxmlFormat.write(rastersldNode);
         
         
         var namedLayers = [{
@@ -455,11 +458,19 @@ Ext.define('PumaMain.controller.Map', {
             symbologyId = splitted.slice(1).join('_');
             symbologyId = symbologyId == '#blank#' ? null : symbologyId
         }
+        var layers = Ext.Array.map(layerRefs.layerRef ? [layerRefs.layerRef] : layerRefs.layerRefs,function(item) {
+            return item.layer;
+        })
         var layer1Conf = {
-            layers: layerRefs.layerRef.layer
+            layers: layers.join(',')
         }
+        var numLayers = layers.length;
         if (symbologyId) {
-            layer1Conf.styles = symbologyId;
+            layer1Conf.styles = '';
+            for (var i=0;i<numLayers;i++) {
+                layer1Conf.styles += layer1Conf.styles ? ',' : '';
+                layer1Conf.styles += symbologyId;
+            }
         }
         
         map.layer1.mergeNewParams(layer1Conf)
@@ -947,7 +958,7 @@ Ext.define('PumaMain.controller.Map', {
             if (!cmp.initialZoom) {
                 //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(12490000, -900000, 12530000, -800000));
+                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(10000000, -1000000, 14000000, 5000000));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))
                 cmp.initialZoom = true;
             }

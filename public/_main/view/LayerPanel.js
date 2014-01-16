@@ -6,23 +6,38 @@ Ext.define('PumaMain.view.LayerPanel', {
     initComponent: function() {
 
         var me = this;
-        this.buttons = [{
-            text: 'Configure',
-            helpId: 'Modyfingchoropleths',
-            itemId: 'configurelayers'
-        }]
+//        this.buttons = [{
+//            text: 'Configure',
+//            helpId: 'Modyfingchoropleths',
+//            itemId: 'configurelayers'
+//        }]
+//        this.layout = {
+//            type: 'card'
+//        }
+        this.tabBar = {
+            layout: {
+                type: 'hbox',
+                align: 'stretch'
+            },
+            defaults: {flex: 1}
+        },
         this.items = [
             {
                 xtype: 'treepanel',
                 itemId: 'layerpanel',
                 id: 'layeravailablepanel',
                 helpId: 'Availablelayers',
+                hideHeaders: true,
                 store: Ext.StoreMgr.lookup('layers'),
-                title: 'Layers available',
+                //title: 'Layers available',
                 displayField: 'name',
                 rootVisible: false,
+                title: 'Layers available',
                 border: true,
+                //header: false,
                 viewConfig: {
+                    autoScroll: false,
+                    overflowY: 'auto',
                     getRowClass: function(rec) {
                         return rec.get('type')=='topiclayer' ? 'has-metadata' : '';
                     }
@@ -47,13 +62,16 @@ Ext.define('PumaMain.view.LayerPanel', {
                 xtype: 'grid',
                 itemId: 'layerselectedpanel',
                 helpId: 'Selectedlayers',
+                hideHeaders: true,
                 id: 'layerselectedpanel',
+                //header: false,
                 store: Ext.StoreMgr.lookup('selectedlayers'),
                 viewConfig: {
                     plugins: {ptype: 'gridviewdragdrop'}
                 },
-                title: 'Layers selected',
+                //title: 'Layers selected',
                 displayField: 'name',
+                title: 'Layers selected',
                 bodyCls: 'layers-selected',
                 border: true,
 //                plugins: [{

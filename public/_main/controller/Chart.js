@@ -65,10 +65,11 @@ Ext.define('PumaMain.controller.Chart', {
             '#areapager #onlySelected': {
                 toggle: this.onToggleShowSelected
             }
-        }
-
-
-        )
+        })
+        var me = this;
+        $('#sidebar-reports-add').click(function() {
+            me.getController('AttributeConfig').onConfigureClick({})
+        })
 
         Highcharts.setOptions({
             lang: {
@@ -337,7 +338,7 @@ Ext.define('PumaMain.controller.Chart', {
             },
             items: items
         })
-        container.add(container.items.length - 2, cnt);
+        container.add(container.items.length, cnt);
         chart.cfg = cfg;
         chart.queryCfg = queryCfg;
         chart.cnt = cnt;
@@ -570,7 +571,10 @@ Ext.define('PumaMain.controller.Chart', {
     },
     onOutlineReceived: function(data, cmp) {
         cmp.removeAll();
-        
+        cmp.layout = {
+            type: 'absolute'
+        }
+        cmp.getLayout();
         data.layerRefs = data.layerRefs || [];
         var l = data.layerRefs.length
         //var anchor = data.layerRefs.length==1 ? '100% 100%' : '45% 100%';
@@ -682,7 +686,11 @@ Ext.define('PumaMain.controller.Chart', {
             this.onOutlineReceived(data, cmp);
             return;
         }
-
+        cmp.layout = {
+            type: 'fit'
+        }
+        cmp.getLayout();
+        
         if (!Ext.Array.contains(['grid', 'featurecount'], cmp.cfg.type)) {
             //legendBtn.show();
         }
@@ -813,6 +821,7 @@ Ext.define('PumaMain.controller.Chart', {
         if (chart.noData) {
             return;
         }
+        Puma.util.Msg.msg('Snapshot creation started','','r');
         Ext.Ajax.request({
             url: Config.url + '/api/urlview/saveChart',
             params: {
@@ -862,7 +871,9 @@ Ext.define('PumaMain.controller.Chart', {
             Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true);
             var img = Ext.DomQuery.select('img[src="'+url+'"]');
             Ext.get(img[0]).on('load',function() {
-                Puma.util.Msg.msg('Snapshot loaded','','r');
+                Puma.util.Msg.msg('Snapshot done','','r');
+                var snapshotPanel = Ext.ComponentQuery.query('chartbar #screenshotpanel')[0];
+                snapshotPanel.show();
             })
         }
     },
@@ -1156,6 +1167,12 @@ Ext.define('PumaMain.controller.Chart', {
             columns: data.columns
         })
         store.load();
+        store.on('load',function() {
+            
+            window.setTimeout(function() {
+                console.log('loadingdone');
+            }, 200)
+        })
         cmp.chart = grid;
         grid.cmp = cmp;
         cmp.relayEvents(grid, ['beforeselect', 'itemclick', 'itemmouseenter']);
@@ -1169,9 +1186,6 @@ Ext.define('PumaMain.controller.Chart', {
                 grid.view.el.setStyle ({
                     overflow: 'hidden'
                 })  
-            window.setTimeout(function() {
-                console.log('loadingdone');
-            }, 100)
         })
 
     },

@@ -21,6 +21,13 @@ Ext.define('PumaMng.view.form.LayerTemplate', {
                     allowBlank: false,
                     itemId: 'topic'
                 },{
+                    xtype: 'pumacombo',
+                    store: Ext.StoreMgr.lookup('layergroup'),
+                    fieldLabel: 'Layer group',
+                    name: 'layerGroup',
+                    allowBlank: true,
+                    itemId: 'layerGroup'
+                },{
                     xtype: 'itemselector',
                     store: Ext.StoreMgr.lookup('activesymbology'),
                     fieldLabel: 'Symbologies',

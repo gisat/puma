@@ -19,6 +19,7 @@ Ext.define('PumaMain.view.ChartBar', {
                 layout: 'fit',
                 iconCls: 'cmptype-snapshot',
                 collapseLeft: true,
+                //hidden: true,
                 itemId: 'screenshotpanel',
                 helpId: 'Snapshots',
                 items: [{
@@ -27,17 +28,18 @@ Ext.define('PumaMain.view.ChartBar', {
                 cfgType: 'screenshots',  
                 height: 400,
                 title: 'Snapshots'
-            },
-            {
-                xtype: 'panel',
-                collapsed: true,
-                cfgType: 'add',
-                helpId: 'Addingnewcharts',
-                iconCls: 'cmptype-addchart',
-                leftSpace: 25,
-                hideCollapseTool: true,
-                title: 'Add chart'
             }
+//            ,
+//            {
+//                xtype: 'panel',
+//                collapsed: true,
+//                cfgType: 'add',
+//                helpId: 'Addingnewcharts',
+//                iconCls: 'cmptype-addchart',
+//                leftSpace: 25,
+//                hideCollapseTool: true,
+//                title: 'Add chart'
+//            }
         ]
         this.callParent();
     }
