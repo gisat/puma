@@ -23,6 +23,16 @@ Ext.define('PumaMain.view.Tools', {
             helpId: 'Multipleselectionshighlightedbyc',
             header: {height: 60},
             tools: [{
+               type: 'unselect',
+               cls: 'unselect',
+               tooltip: 'Unselect',
+               itemId: 'unselect'
+            },{
+               type: 'unselectall',
+               cls: 'unselectall',
+               tooltip: 'Unselect all',
+               itemId: 'unselectall'
+            },{
                type: 'detach',
                cls: 'detach',
                tooltip: 'Detach',
@@ -44,11 +54,6 @@ Ext.define('PumaMain.view.Tools', {
                     //width: 120,
                     colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
                 
-            },{
-                xtype: 'component',
-                margin: '0 10',
-                itemId: 'unselectbtn',
-                html: '<span id="app-tools-colors-unselect">unselect</span>'
             }]
              
              

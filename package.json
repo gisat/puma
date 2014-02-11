@@ -13,6 +13,7 @@
     "xmldom" : "0.1.13",
     "properties" : "0.3.3",
     "underscore":"1.4.x",
-    "xml2json":"0.3.2"
+    "xml2json":"0.3.2",
+    "onecolor":"2.3.4"
   }
 }

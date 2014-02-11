@@ -12,9 +12,26 @@ var async = require('async')
 var crud = require('../rest/crud');
 var layers = require('./layers')
 var us = require('underscore')
+var jsid = null;
+var cacheStyleMap = null;
+var layerGroupMap = null;
+
 
 function wms(params, req, res, callback) {
-
+    
+    if (!layerGroupMap) {
+        crud.read('layergroupgs',{},function(err,items) {
+            items = items || [];
+            layerGroupMap = {};
+            for (var i=0;i<items.length;i++) {
+                var item = items[i];
+                layerGroupMap[item.layers] = layerGroupMap[item.layers] || {};
+                layerGroupMap[item.layers][item.style] = item.name;
+            }  
+        })
+        
+        
+    }
     var sldId = params['SLD_ID']
     var useFirst = true;
     if (params['LAYERS'] && params['LAYERS'].indexOf('#userpolygon#')>-1) {
@@ -66,38 +83,102 @@ function wms(params, req, res, callback) {
         params['EXCEPTIONS'] = 'application/json'
     }
     if (params['LAYERS']) {
-        params['LAYER'] = params['LAYERS'].split(',')[0]
+        params['LAYER'] = params['LAYERS'].split(',')[0];
+    }
+    var path = useFirst ? '/geoserver/geonode/wms' : '/geoserver_i2/puma/wms';
+    var port = conn.getPort();
+    var method = 'POST';
+    var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
+    var layers = params['LAYERS'];
+    var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[layers]) ? layerGroupMap[layers][style || 'def'] : '';
+    
+    if (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroup!=1) {
+        
+        delete params['TILED'];
+        //delete params['TRANSPARENT'];
+        delete params['LAYER'];
+        // single layer
+        if (layers.search(',')<0) {
+            if (style && !layerGroup) {
+                console.log('Add style '+layers+' '+style)
+                createLayerGroup(layers,style,true);
+            }
+            else {
+                //console.log('Single layer '+layers+' '+style)
+                path = '/geoserver/gwc/service/wms'
+            }
+        }
+        // found layer group
+        else if (layerGroup) {
+            //console.log('Layer group found '+layerGroup+' '+style)
+            params['LAYERS'] = layerGroup;
+            params['STYLES'] = style;
+            path = '/geoserver/gwc/service/wms'
+        }
+        // layer group to be created
+        else {
+            console.log('Creating group, styles: '+style)
+            createLayerGroup(layers,style)
+        }
+        method = 'GET';
+        port = null;
+        
     }
     var username = useFirst ? 'gnode' : 'tomasl84';
     var password = useFirst ? 'geonode' : 'lou840102';
     
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
-    var headers = {
-        'Authorization': auth,
-        'Content-Type': 'application/x-www-form-urlencoded'
-    };
+    var headers = {};
+    var data = null;
+    if (useFirst && jsid) {
+        headers['Cookie'] = 'JSESSIONID='+jsid;
+    }
+    if (!useFirst) {
+        headers['Authorization'] = auth;
+        console.log(new Date())
+    }
+    if (method=='GET') {
+        var queryParams = '?'+querystring.stringify(params);
+        path += queryParams;
+    }
+
+    else {
+        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        
+        data = querystring.stringify(params)
+    }
     var options = {
         host: conn.getBaseServer(),
-        port: conn.getPort(),
+        port: port,
         timeout: 60000,
         //path: '/geoserver/geonode/wms?'+querystring.stringify(params),
-        path: useFirst ? '/geoserver/geonode/wms' : '/geoserver_i2/puma/wms',
+        path: path,
         headers: headers,
-        method: 'POST'
+        method: method
 
     };
     
     
-
-    var data = querystring.stringify(params)
     if (params['REQUEST'] == 'GetMap' || params['REQUEST']=='GetLegendGraphic') {
         options.resEncoding = 'binary';
     }
     if (params['REQUEST'] == 'GetLegendGraphic') {
     }
-    conn.request(options, data, function(err, output, resl) {
-        if (err)
+    var time = new Date().getTime();;
+    conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
+        if (err) {
+            console.log(err)
             return callback(err);
+        }
+        //console.log(new Date().getTime()-time);
+        if (useFirst) {
+            //console.log(req.originalUrl);
+            //console.log(output.length);
+            
+        }
+        if (output.length<10000) {
+            //console.log(output)
+        }
         res.data = output;
         if (params['REQUEST'] == 'GetFeatureInfo') {
             if (params['COMPLETELAYER']) {
@@ -118,6 +199,10 @@ function wms(params, req, res, callback) {
         }
         return callback(null);
     })
+//    setTimeout(function() {
+//        reqs.abort();
+//    },5000);
+    
 }
 
 function saveSld(params, req, res, callback) {
@@ -373,6 +458,71 @@ function saveSld(params, req, res, callback) {
 
 
 }
+function createLayerGroup(layers,style,addStyle) {
+    var username = 'gnode';
+    var password = 'geonode';
+    layerGroupMap[layers] = layerGroupMap[layers] || {};
+    layerGroupMap[layers][style || 'def'] = 1;
+    var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+    var headers = {
+        'Content-type': 'application/json',
+        'Authorization': auth
+    };
+    
+    if (addStyle) {
+        var path = '/geoserver/rest/layers/' + layers + '/styles.json'
+        var obj = {
+            style: {
+                name: style
+            }
+        }
+        var name = 2;
+    }
+    else {
+        var path = '/geoserver/rest/layergroups.json'
+        var name = layers.substring(0, 17) + '_' + require('crypto').randomBytes(5).toString('hex')
+        var obj = {
+            layerGroup: {
+                name: name,
+                layers: {
+                    layer: []
+                },
+                styles: {
+                    style: []
+                }
+            }
+
+        }
+        var layersArr = layers.split(',');
+        for (var i = 0; i < layersArr.length; i++) {
+            var layer = layersArr[i];
+            obj.layerGroup.layers.layer.push({name: layer})
+            obj.layerGroup.styles.style.push({name: style})
+        }
+        if (!style) {
+            delete obj.layerGroup.styles;
+        }
+    }
+    var data = JSON.stringify(obj);
+
+    var options = {
+        host: conn.getBaseServer(),
+        path: path,
+        headers: headers,
+        port: conn.getPort(),
+        method: 'POST'
+    };
+    conn.request(options, data, function(err, output, resl) {
+        
+        layerGroupMap[layers][style || 'def'] = name;
+        crud.create('layergroupgs',{name:name,layers:layers,style:style || 'def'},function(){});
+    })
+    
+}
+function setJsid(newJsid) {
+    jsid = newJsid;
+}
+
 
 function getSld(params, req, res, callback) {
     res.data = sldMap[params['id']];
@@ -400,6 +550,7 @@ var generateId = function() {
 
 module.exports = {
     wms: wms,
+    setJsid: setJsid,
     saveSld: saveSld,
     getSld: getSld,
     getSldSync: getSldSync,

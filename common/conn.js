@@ -40,44 +40,84 @@ function getPort() {
 
 
 function request(options,dataToWrite,callback) {
+    var time = new Date().getTime();
+    
     var reqs = http.request(options, function(resl)
     {
         var output = '';
         resl.setEncoding(options.resEncoding || 'utf8' ) ;
+        //console.log(resl.headers['geowebcache-cache-result'] || 'none');
         resl.on('data', function (chunk) {
             output += chunk;
         });
-        resl.on('end', function() {
-            
+        resl.once('end', function() {
             return callback(null,output,resl);
        
         });
     });
-    reqs.on('socket', function (socket) {
-        socket.setTimeout(options.timeout || 60000); 
-        socket.on('timeout', function() {
-            reqs.abort();
-            return callback(new Error('sockettimeout'))
-        });
-    })
+    reqs.setMaxListeners(0);
+//    reqs.once('socket', function (socket) {
+//        socket.setMaxListeners(0);
+//        socket.setTimeout(options.timeout || 60000); 
+//        socket.once('timeout', function() {
+//            reqs.abort();
+//            return callback(new Error('sockettimeout'))
+//        });
+//    })
     
-    reqs.on('error',function(error) {
+    reqs.once('error',function(error) {
         return callback(error)
     })
     if (dataToWrite) {
         reqs.write(dataToWrite);
     }
     reqs.end();   
+    return reqs;
 }
 
 
-
+function initGeoserver() {
+    var username = 'gnode';
+    var password = 'geonode';
+    var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+    var headers = {
+        'Authorization': auth
+    };
+    var options = {
+        host: getBaseServer(),
+        path: '/geoserver/web',
+        headers: headers,
+        port: getPort(),
+        method: 'GET'
+    };
+    var jsid = null;
+    request(options, null, function(err, output, resl) {
+        if (err) {
+            console.log(err);
+            return;
+        }
+        var cookies = resl.headers['set-cookie'];
+        for (var i=0;i<cookies.length;i++) {
+            var cookie = cookies[i];
+            if (cookie.search('JSESSIONID')>-1) {
+                jsid = cookie.split(';')[0].split('=')[1];
+                break;
+            }
+        }
+        require('../api/proxy').setJsid(jsid);
+    })
+}
 
 function init(app,callback) {
    
     pgdb = new pg.Client(connString);
     pgdb.connect();
     var reconnectCommand = null;
+    
+    setInterval(function() {
+        initGeoserver();
+    },590000);
+    initGeoserver();
     // keeping connection alive
     setInterval(function() {    
         if (reconnectCommand) {
@@ -97,12 +137,12 @@ function init(app,callback) {
         },2000)
     },Math.round(1000*60*60*5.9))
     MongoClient.connect(mongoConnString, function(err, dbs) {
-        if (err) callback(err)
+        if (err) return callback(err)
         mongodb=dbs;
         var mongoSettings = mongodb.collection('settings');
         mongoSettings.findOne({_id:1},function(err,result) {
-            objectId = result ? result.objectId : 10;
-            if (err) callback(err)
+            objectId = result ? result.objectId : null;
+            if (err || !objectId) return callback(err)
             callback();
         })
     });

@@ -1,10 +1,20 @@
+body.rendering {
+    background: none ! important
+}
+.rendering div .olControlZoom {
+    display: none
+}
+
+
 #legend .legend-container {
     float: left
 }
 #legend .legend-text {
     margin: 6px 6px 6px 6px;
 }
-
+div .olImageLoadError {
+    background-color: transparent;
+}
 div.olControlZoom {
     top: auto ! important;
     left: auto ! important;
@@ -13,13 +23,17 @@ div.olControlZoom {
 }
 div .olLayerGoogleV3.olLayerGoogleCopyright {
     right: 0px ! important;
-    left: auto ! important;
-    
+    left: auto ! important;   
 }
 div .olLayerGoogleV3.olLayerGooglePoweredBy {
     right: 32px ! important;
     left: auto ! important;
 }
+.rendering .olLayerGoogleV3.olLayerGooglePoweredBy,#app-reports-accordeon .olLayerGoogleV3.olLayerGooglePoweredBy {
+    right: 0px ! important;
+}
+
+
 div .olControlAttribution {
     right: 3px;
     bottom: 5px;

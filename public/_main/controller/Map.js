@@ -41,42 +41,52 @@ Ext.define('PumaMain.controller.Map', {
     },
         
     onExportMapUrl: function(btn) {
-        var map = Ext.ComponentQuery.query('#map')[0].map;
+        var map1 = Ext.ComponentQuery.query('#map')[0].map;
+        var map2 = Ext.ComponentQuery.query('#map2')[0].map;
         var layerStore = Ext.StoreMgr.lookup('selectedlayers');
-        var useFirst = true;
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var maps = years.length>1 ? [map1,map2] : [map1]
         //var useFirst = layerStore.getAt(0).get('layer1').map == map;
         var mapCfg = {};
-        var layers = [];
+        var layers1 = [];
+        var layers2 = [];
         var me = this;
         Puma.util.Msg.msg('Snapshot creation started','','r');
         layerStore.each(function(rec) {
             
-            var layer = rec.get(useFirst ? 'layer1' : 'layer2');
-            
-            var sldId = layer.params ? layer.params['SLD_ID'] : null;
-            var layersParam = layer.params ? layer.params['LAYERS'] : null;
-            var stylesParam = layer.params ? layer.params['STYLES'] : null;
-            var obj = {
-                type: rec.get('type'),
-                opacity: layer.opacity || 1,
-                sldId: sldId,
-                name: rec.get('name'),
-                legendSrc: rec.get('src'),
-                layersParam: layersParam,
-                stylesParam: stylesParam
-            }
-            
-            layers.push(obj);
+            for (var i = 0; i < maps.length; i++) {
+                var map = maps[i];
+                var layer = rec.get(i == 0 ? 'layer1' : 'layer2');
+                var layers = i==0 ? layers1 : layers2;
+                var sldId = layer.params ? layer.params['SLD_ID'] : null;
+                var layersParam = layer.params ? layer.params['LAYERS'] : null;
+                var stylesParam = layer.params ? layer.params['STYLES'] : null;
+                var obj = {
+                    type: rec.get('type'),
+                    opacity: layer.opacity || 1,
+                    sldId: sldId,
+                    name: rec.get('name'),
+                    legendSrc: rec.get('src'),
+                    layersParam: layersParam,
+                    stylesParam: stylesParam
+                }
+
+                layers.push(obj);
+            }      
         })
-        
+        var store = Ext.StoreMgr.lookup('year');
         mapCfg = {
-            layers: layers,
+            layers: layers1,
+            layers2: years.length>1 ? layers2 : null,
             type: 'map',
             trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
-            year: map.year,
-            center: map.center,
-            size: map.size,
-            zoom: map.zoom
+            year: map1.year,
+            yearName: store.getById(map1.year).get('name'),
+            year2: years.length>1 ? map2.year : null,
+            year2Name: years.length>1 ? store.getById(map2.year).get('name') : null,
+            center: map1.center,
+            size: map1.size,
+            zoom: map1.zoom
         }
         Ext.Ajax.request({
             url: Config.url + '/api/urlview/saveChart',
@@ -360,7 +370,14 @@ Ext.define('PumaMain.controller.Map', {
                 }
         );
         var layerDefaults = this.getController('Layers').getWmsLayerDefaults();
-        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.apply(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        var layerDefaultsTiled = this.getController('Layers').getWmsLayerDefaults();
+
+        layerDefaultsTiled.params.tiled = true;
+        delete layerDefaultsTiled.layerParams.singleTile;
+        layerDefaultsTiled.layerParams.tileSize = new OpenLayers.Size(256,256)
+        layerDefaultsTiled.layerParams.removeBackBufferDelay = 0;
+        layerDefaultsTiled.layerParams.transitionEffect = null;
+        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.apply(layerDefaultsTiled.params), Ext.clone(layerDefaultsTiled.layerParams));
         map.layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         map.layer1.opacity = cmp.opacity;
         map.addLayers([hybridLayer, map.layer1, map.layer2]);
@@ -483,10 +500,39 @@ Ext.define('PumaMain.controller.Map', {
         })
         map.updateSize();
         
+        
+        
+        
+        
+        
+        
+        map.outlineExtent = overallExtent;
         map.layer1.setVisibility(true);
         map.layer2.setVisibility(true);
-        map.zoomToExtent(overallExtent);
-        map.outlineExtent = overallExtent;
+        map.zoomToExtent(map.outlineExtent);
+        if (cmp.ownerCt.items.getCount()==cmp.ownerCt.mapNum){
+            var minZoom = 10000;
+            cmp.ownerCt.items.each(function(mapCmp) {
+                var zoom = mapCmp.map.getZoom()
+                if (zoom<minZoom) {
+                    minZoom = zoom
+                }
+            });
+            cmp.ownerCt.items.each(function(mapCmp) {
+                var curMap = mapCmp.map;
+                if (curMap==map) {
+                    setTimeout(function() {
+                        curMap.zoomTo(minZoom);
+                    },100)
+                }
+                else {
+                    
+                    curMap.zoomTo(minZoom);
+                }
+                
+            });
+        }
+        
     },
         
     onExtentOutlineComplete: function(cmp) {
@@ -502,7 +548,10 @@ Ext.define('PumaMain.controller.Map', {
             }
         })
         if (loaded) {
-            console.log('loadingdone');
+            setTimeout(function() {
+                
+                console.log('loadingdone');
+            },150)
         }
     },
         

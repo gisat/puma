@@ -581,7 +581,8 @@ Ext.define('PumaMain.controller.Chart', {
         //anchor = data.layerRefs.length<3 ? anchor : '45% 45%'
         var width = l==1 ? 550 : 264;
         var height = l<3 ? 300 : 140;
-        var colorMap = this.getController('Select').colorMap;
+        var colorMap = data.colorMap || this.getController('Select').colorMap;
+        cmp.mapNum = data.layerRefs.length;
         for (var i = 0; i < data.layerRefs.length; i++) {
             
             var layerRefs = data.layerRefs[i];
@@ -636,9 +637,9 @@ Ext.define('PumaMain.controller.Chart', {
                 enabled: false
             },
             labels: {items: [{
-                        html: 'No data',
+                        html: 'Please select areas...',
                         style: {
-                            left: '210px',
+                            left: '125px',
                             top: '180px',
                             fontSize: 34,
                             fontFamily: '"Open Sans", sans-serif',
@@ -683,6 +684,9 @@ Ext.define('PumaMain.controller.Chart', {
         
         cmp.noData = false;
         if (Ext.Array.contains(['extentoutline'], cmp.cfg.type)) {
+            if (singlePage) {
+                data.colorMap = JSON.parse(response.request.options.params.colorMap)
+            }
             this.onOutlineReceived(data, cmp);
             return;
         }
@@ -723,7 +727,7 @@ Ext.define('PumaMain.controller.Chart', {
                 areaName = obj.series.name;
                 yearName = obj.series.userOptions.yearName
                 attrConf.push({
-                    name: obj.point.swap ? 'Others' : obj.key,
+                    name: obj.point.swap ? 'Other' : obj.key,
                     val: obj.y,
                     units: obj.point.units
                 })
@@ -775,7 +779,11 @@ Ext.define('PumaMain.controller.Chart', {
         if (cmp.cfg.type == 'piechart') {
             data.plotOptions.pie.point.events.legendItemClick = function(evt) {
                 evt.preventDefault();
-                me.onLegendToggle(this)
+                var isSingle = this.series.chart.options.chart.isPieSingle;
+                if (!isSingle) {
+                    me.onLegendToggle(this);
+                    
+                }
             }
         }
         data.exporting = {

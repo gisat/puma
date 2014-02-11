@@ -122,7 +122,7 @@ function getData(params, callback) {
             if (params['normalization'] == 'toptree' || params['normalization'] == 'topall' || attr.normType == 'toptree' || attr.normType == 'topall') {
                 attr.normType = null;
             }
-            var currentNorm = attr.normType || normalization;
+            var currentNorm = attr.normType;
             var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
             var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
             var normAttrName = null;
@@ -205,6 +205,7 @@ function getData(params, callback) {
             
         }
     }
+    console.log(select);
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
@@ -453,9 +454,10 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
+                console.log(dataSql);
                 client.query(dataSql, function(err, resls) {
                     if (err)
-                        return callback(err);
+                        console.log(dataSql)
                     var aggData = [];
                     var normalData = [];
                     var locAggDataMap = {};
@@ -677,7 +679,7 @@ function getAttrConf(params, callback) {
                     attrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
                     prevAttrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
-                    var normType = attrRec.normType || params['normalization'];
+                    var normType = attrRec.normType;
                     var units = results.attr[attrRec.attr].units || '';
                     var normUnits = null;
                     

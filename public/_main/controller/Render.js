@@ -77,7 +77,7 @@ Ext.define('PumaMain.controller.Render', {
     renderApp: function() {
         var me = this;
         var locStore = Ext.StoreMgr.lookup('location4init');
-        var customRec = locStore.getById('custom');
+        //var customRec = locStore.getById('custom');
         //customRec.set('name','Custom')
         Ext.widget('pumacombo',{
             store: 'dataset',
@@ -297,9 +297,11 @@ Ext.define('PumaMain.controller.Render', {
                 showSeparator: false
                 },
                 itemId: 'onlySelected',
-                text: 'Only selected',
+                
+                //text: 'Only selected',
                 enableToggle: true,
-                icon: 'images/icons/colors.png'
+                tooltip: 'Only selected',
+                icon: 'images/icons/switchsel.gif'
             }],
             store: Ext.StoreMgr.lookup('paging')
         })

@@ -210,6 +210,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         this.getController('AttributeConfig').filterConfig = Config.cfg.filterAttrs;
         this.getController('Filter').attrs = Config.cfg.filterAttrs;
         this.getController('Filter').initialValues = Config.cfg.filterMap;
+        this.getController('Filter').changeActiveState(Config.cfg.filterActive);
         var locationTheme = this.getController('LocationTheme');
         locationTheme.datasetChanged = true;
         locationTheme.visChanged = true;
@@ -240,7 +241,6 @@ Ext.define('PumaMain.controller.ViewMng', {
         
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var filterMap = {};
-        var filterAttrs = this.getController('Filter').attrs
         for (var i=0;i<sliders.length;i++) {
             var slider = sliders[i];
             var val = slider.getValue();
@@ -248,10 +248,13 @@ Ext.define('PumaMain.controller.ViewMng', {
             filterMap[attrName] = val;
             
         }
+        
         cfg.filterMap = filterMap;
-        cfg.filterAttrs = filterAttrs;
-        cfg.minFilterFl = this.getController('Filter').minFl
-        cfg.maxFilterFl = this.getController('Filter').maxFl
+        cfg.filterData = this.getController('Filter').filterData;
+        cfg.filterAttrs = this.getController('Filter').attrs;
+        cfg.filterActive = $(Ext.ComponentQuery.query('#advancedfilters tool[type=poweron]')[0].el.dom).hasClass('tool-active');
+        //cfg.minFilterFl = this.getController('Filter').minFl
+        //cfg.maxFilterFl = this.getController('Filter').maxFl
         
         var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
         this.getController('Layers').resetIndexes();

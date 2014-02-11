@@ -1,7 +1,8 @@
 var dataMod = require('./data');
 var async = require('async')
 var crud = require('../rest/crud');
-var us = require('underscore')
+var us = require('underscore');
+var onecolor = require('onecolor');
 function getChart(params, callback) {
     var attrs = JSON.parse(params['attrs']);
     var width = params['width'] || 535;
@@ -104,13 +105,18 @@ function getChart(params, callback) {
                             visible: visible,
                             attr: attr.attr,
                             y: row[columnName],
-                            color: isSingle ? '#dd2222' : attrRec.color
+                            color: attrRec.color
                         }
                         
                         serieData.push(obj)
                         if (isSingle) {
+                            var c1 = onecolor(attrRec.color).saturation(0.1).hex();
+                            console.log(c1)
+                            var c2 = onecolor(attrRec.color).saturation(.3).lightness(.95).hex();
+                            console.log(c2)
                             var secondObj = us.clone(obj);
-                            secondObj.color = '#ddcccc';
+                            secondObj.color = onecolor(attrRec.color).saturation(0.1).lightness(.96).hex();
+                            secondObj.name = 'Other'
                             secondObj.y = 100-obj.y;
                             secondObj.swap = true;
                             serieData.push(secondObj);
@@ -141,6 +147,7 @@ function getChart(params, callback) {
                         serie.center = [center.x, center.y]
                     }
                     if (isSingle) {
+                        var attrRec = attrConf[attrs[0].as][attrs[0].attr];
                         if (numRecs>8) {
                             serie.innerSize = '17%'
                             serie.pieFontShift = 8;
@@ -162,7 +169,7 @@ function getChart(params, callback) {
                             serie.pieFontSize = 50;
                         }
                         
-                        serie.pieFontColor = '#dd2222';
+                        serie.pieFontColor = attrRec.color;
                         var y = Math.round(serie.data[0].y);
                         serie.pieText = y+'%';
                     }

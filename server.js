@@ -6,8 +6,11 @@ var staticFn = express['static'];
 var async = require('async');
 var loc = require('./common/loc');
 
-function initServer() {
-    
+function initServer(err) {
+    if (err) {
+        console.log(err);
+        return;
+    }
     // Order is important
     var oneDay = 60*60*24*1000;
     //app.use(express.favicon());

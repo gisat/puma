@@ -284,13 +284,19 @@
 	background-image     : url("../images/icons/paging-refresh.png") !important;
 }
 .x-panel-header .x-tool-areacollapse {
-	background-image     : url("../images/icons/paging-first.png") !important;
+	background-image     : url("../images/icons/collapse.gif") !important;
 }
 .x-panel-header .x-tool-gear {
 	background-image     : url("../images/icons/settings.png") !important;
 }
 .x-panel-header .x-tool-detach {
-	background-image     : url("../images/icons/detach.png") !important;
+	background-image     : url("../images/icons/detach.gif") !important;
+}
+.x-panel-header .x-tool-unselect {
+	background-image     : url("../images/icons/unselect.gif") !important;
+}
+.x-panel-header .x-tool-unselectall {
+	background-image     : url("../images/icons/unselect_all.gif") !important;
 }
 .x-panel-header .x-tool-close {
 	background-image     : url("../images/icons/close.png") !important;

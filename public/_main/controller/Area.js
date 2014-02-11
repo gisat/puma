@@ -45,9 +45,9 @@ Ext.define('PumaMain.controller.Area', {
         var locObjId =  Ext.ComponentQuery.query('#sellocation')[0].getValue();
         var rec = Ext.StoreMgr.lookup('location4init').getById(locObjId);
         return {
-            location: rec.get('location'),
-            locGid: rec.get('locGid'),
-            at: rec.get('at'),
+            location: rec ? rec.get('location') : null,
+            locGid: rec ? rec.get('locGid') : null,
+            at: rec ? rec.get('at') : null,
             obj: rec
         }
     },
@@ -405,7 +405,7 @@ Ext.define('PumaMain.controller.Area', {
                 }
                 if (node.isExpanded()) {
                     if ((at!=locObj.at || loc!=locObj.location || node.get('gid')!=locObj.locGid)) {
-                        if (locObj.obj.get('dataset')) {
+                        if (locObj.obj && locObj.obj.get('dataset')) {
                             changeLocToCustom = true;
                             
                         }
@@ -454,10 +454,10 @@ Ext.define('PumaMain.controller.Area', {
             var locStore = Ext.StoreMgr.lookup('location4init');
             var customRec = locStore.getById('custom');
             if (!customRec) {
-                customRec = new (locStore.model)({id:'custom',name:'Custom'});
-                locStore.add(customRec)
+                //customRec = new (locStore.model)({id:'custom',name:'Custom'});
+                //locStore.add(customRec)
             }
-            Ext.ComponentQuery.query('#sellocation')[0].setValue('custom')
+            Ext.ComponentQuery.query('#sellocation')[0].setValue('Custom')
             
         }
         this.initialized = true;
@@ -481,17 +481,17 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestMap = lowestMap;
         this.highestMap = highestMap;
         this.lastMap = lastMap;
-        var selPlace = this.getLocationObj().obj.get('id');
+        var selPlaceObj = this.getLocationObj().obj
+        var selPlace = selPlaceObj ? selPlaceObj.get('id') : null;
         var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
         var showLess = Ext.ComponentQuery.query('#arealessdetails')[0];
         
         showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1));
-        showLess.setDisabled(!containsLower || (selPlace!='custom' && maxDepth<3))
+        showLess.setDisabled(!containsLower || (selPlace && maxDepth<3))
   
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;
         var overallCount = 0;
-        
         for (var color in selMap) {
             var objsToRemove = [];
             for (var i=0;i<selMap[color].length;i++) {
@@ -511,13 +511,16 @@ Ext.define('PumaMain.controller.Area', {
         this.getController('Select').prepareColorMap();
         this.getController('Select').overallCount = overallCount;
         this.getController('Select').outerCount = outerCount;
-                
+        if (overallCount==0) {
+            this.getController('Select').switchToAllAreas();
+        }        
         var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
         var count = onlySel ? (overallCount) : (lowestCount+outerCount)
         Ext.StoreMgr.lookup('paging').setCount(count);
         
         this.getController('Layers').refreshOutlines();
         this.getController('Filter').reconfigureFiltersCall();
+        
         //this.getController('Layers').checkVisibilityAndStyles(true,false);
         
     },

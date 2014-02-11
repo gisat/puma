@@ -54,6 +54,7 @@ Ext.define('PumaMain.controller.Layers', {
             },
             
         })
+        this.scaleBorderCnst = 10000000;
         this.scaleBorder = 10000000;
     },
     onConfigure: function() {
@@ -242,7 +243,7 @@ Ext.define('PumaMain.controller.Layers', {
                 var searchTitle = null;
                 if (locStore.collect('location').length<2 && locStore.getCount()>2) {
                     var locObj = this.getController('Area').getLocationObj();
-                    if (locObj.obj.get('id')!='custom') {
+                    if (locObj.obj) {
                         searchTitle = locObj.obj.get('name');
                     }
                 }
@@ -829,12 +830,14 @@ Ext.define('PumaMain.controller.Layers', {
             symbolizer['Polygon'] = new OpenLayers.Symbolizer.Polygon({fillColor: fillColor, strokeColor: '#000000', strokeWidth: 1});
             var rule1 = {
                 filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
-                maxScaleDenominator: this.scaleBorder,
+                //maxScaleDenominator: this.scaleBorder,
+                maxScaleDenominator: 100000000,
                 symbolizer: symbolizer
             };
             var rule2 = {
                         filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
-                        minScaleDenominator: this.scaleBorder,
+                        //minScaleDenominator: this.scaleBorder,
+                        minScaleDenominator: 100000000,
                         symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'square', pointRadius: 18, strokeColor: '#222222',fillColor: fillColor, fillOpacity: 1})}
                     };
             var nullColor = params['nullColor'] || '#bbbbbb';
@@ -1136,7 +1139,28 @@ Ext.define('PumaMain.controller.Layers', {
             return;
         }
         var parentNode = node.parentNode;
-        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup'],parentNode.get('type')) && checked && !multi && node.get('type')!='traffic') {
+        var parentType = parentNode.get('type')
+        var nodeType = node.get('type');
+        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup','systemgroup'],parentType) && checked && !multi && nodeType!='traffic') {
+            
+            // switching off choropleths
+            if (nodeType=='areaoutlines') {
+                parentNode = parentNode.parentNode.findChild('type','choroplethgroup')
+            }
+            // just one selected selected areas layer
+            if (nodeType=='selectedareas' || nodeType=='selectedareasfilled') {
+                var anotherNode = parentNode.findChild('type',nodeType=='selectedareas' ? 'selectedareasfilled' : 'selectedareas')
+                anotherNode.set('checked',false);
+                me.onCheckChange(anotherNode,false);
+                parentNode = {childNodes:[]};
+            }
+            if (parentType=='choroplethgroup') {
+                var anotherNode = parentNode.parentNode.findChild('type','systemgroup').findChild('type','areaoutlines');
+                anotherNode.set('checked',false);
+                me.onCheckChange(anotherNode,false);
+            }
+            
+            
             for (var i=0;i<parentNode.childNodes.length;i++) {
                 var childNode = parentNode.childNodes[i];
                 if (node!=childNode) {
