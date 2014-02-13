@@ -66,6 +66,7 @@ Ext.define('PumaMain.view.Tools', {
             helpId: 'Layers',
             tools: [{
                 type: 'gear',
+                hidden: true,
                 tooltip: 'Configure thematic maps',
                 itemId: 'gear'
             },{

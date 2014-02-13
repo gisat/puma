@@ -151,7 +151,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                                 columnMap: columnMap[attrSet].slice(0),
                                 layer: 'analysis:an_' + performedAnalysisObj['_id'] + '_' + nextFl,
                                 analysis: performedAnalysisObj['_id']
-                            }, function(err, res) {
+                            }, {userId:req.userId},function(err, res) {
                                 if (err) {
                                     return callback(err);
                                 }
@@ -172,7 +172,8 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                         return callback(null);
                     }
                     performedAnalysisObj.finished = new Date();
-                    crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId}, function(err) {
+                    crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId,isAdmin:true}, function(err) {
+                        console.log('cb');
                         return callback(err);
                     });
                 })

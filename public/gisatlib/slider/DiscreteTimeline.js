@@ -33,7 +33,7 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
         var presentValues = this.store.collect(this.valueField);
         var newValues = Ext.Array.intersect(value,presentValues);
         if (!newValues.length && !this.allowBlank) {
-            newValues.push(presentValues[presentValues.length-1]);
+            newValues.push(presentValues[0]);
         }
         var years = this.store.collect(this.displayField);
         years = Ext.Array.map(years,function(v) {

@@ -135,7 +135,6 @@ function wms(params, req, res, callback) {
     }
     if (!useFirst) {
         headers['Authorization'] = auth;
-        console.log(new Date())
     }
     if (method=='GET') {
         var queryParams = '?'+querystring.stringify(params);
@@ -273,8 +272,10 @@ function saveSld(params, req, res, callback) {
             dataParams['sortNorm'] = JSON.stringify(attrs[attrIndex]);
             dataParams.attrMap = results.attrConf.prevAttrMap;
             data.getData(dataParams, function(err, dataObj) {
+               
                 if (err)
                     return callback(err);
+                //console.log(dataObj)
                 if (params['altYears']) {
                     dataParams['years'] = params['altYears'];
                     data.getData(dataParams, function(err, dataObj2) {
@@ -341,7 +342,6 @@ function saveSld(params, req, res, callback) {
         }],
         result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
             
-            
             var topTreeNorm = params['normalization'] == 'toptree';
             if (params['showMapChart']) {
                 var urlParams = '${gid}/' + id;
@@ -390,7 +390,6 @@ function saveSld(params, req, res, callback) {
                     var newRest = restSize;
                     var catIdx = 0;
                     var val = 0;
-                    console.log(dataLength)
                     for (var i=1;i<dataLength;i++) {
                         var idx = i;
                         var diff = catSize + ((newRest>0) ? 1 : 0);
@@ -399,7 +398,6 @@ function saveSld(params, req, res, callback) {
                             catIdx++;
                             var item = results.data.data[idx];
                             var current = results.data.data[idx][attrName];
-                            console.log(current);
                             var prev = results.data.data[idx - 1][attrName];
                             if (prev!=null && dataLength!=1) {
                                 val = prev+(current-prev)/2;

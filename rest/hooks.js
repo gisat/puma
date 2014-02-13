@@ -17,7 +17,8 @@ function precreateLayerRef(result, callback, params) {
 
 function createLayerRef(result, callback, params) {
     var apiLayers = require('../api/layers')
-    console.log('moretimes')
+    console.log('what');
+    console.log(result)
     var async = require('async')
     async.waterfall([
         

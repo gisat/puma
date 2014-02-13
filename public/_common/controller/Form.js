@@ -67,6 +67,10 @@ Ext.define('Puma.controller.Form',{
             if (formCmp.showPrecreateMsg) {
                 Puma.util.Msg.msg('Record '+rec.get('name')+' '+(creating?'start creating':'start updating'),'');
             }
+            if (rec.modelName == 'Puma.model.PerformedAnalysis') {
+                var analysis = Ext.StoreMgr.lookup('analysis').getById(rec.get('analysis'));
+                Puma.util.Msg.msg('Analysis '+analysis.get('name')+' started','');
+            }
             rec.save({
                 callback: function(record,op) {
                     if (!op.success) {
@@ -86,11 +90,11 @@ Ext.define('Puma.controller.Form',{
                         Ext.Msg.alert('Error',message);
                         return;
                     }
-                    
+                    debugger;
                     formCmp.fireEvent('aftersave',formCmp,record,op);
                     if (rec.modelName == 'Puma.model.PerformedAnalysis') {
                         var analysis = Ext.StoreMgr.lookup('analysis').getById(rec.get('analysis'));
-                        Puma.util.Msg.msg('Analysis '+analysis.get('name')+' started','');
+                        Puma.util.Msg.msg('Analysis '+analysis.get('name')+' finished','');
                     }
                     else {
                         Puma.util.Msg.msg('Record '+rec.get('name')+' '+(creating?'created':'updated'),'');

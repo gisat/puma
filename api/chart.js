@@ -91,7 +91,6 @@ function drawChart(params, req, res, callback) {
     var svgFile = 'tmp/' + confId + '_%gid%.svg';
 
     var nullTime = new Date().getTime();
-    console.log(nullTime)
     var intervalFc = null;
     function testConf() {
         if (confMap[confId]) {

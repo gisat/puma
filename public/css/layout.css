@@ -60,7 +60,7 @@ strong {
 	#map-holder .map .map-label {
 		display          : none;
 	}
-	#app-map2 {
+	#map-holder #app-map2 {
 		display          : none;
 	}
 	#map-holder.split .map {

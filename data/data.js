@@ -7,7 +7,6 @@ var us = require('underscore')
 function getData(params, callback) {
 
     var client = conn.getPgDb();
-
     var areas = JSON.parse(params['areas']);
     var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
     var defSelectedArea = params['defSelectedArea'] ? JSON.parse(params['defSelectedArea']) : null;
@@ -56,6 +55,9 @@ function getData(params, callback) {
                 break;
             case 'eq':
                 compOperator = '=';
+                break;
+            case 'neq':
+                compOperator = '<>';
                 break;
         }
         filterSql += ' AND ' + f.field + compOperator + f.value + (f.comparison ? '' : '%\'')
@@ -205,7 +207,6 @@ function getData(params, callback) {
             
         }
     }
-    console.log(select);
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
@@ -454,10 +455,9 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                console.log(dataSql);
                 client.query(dataSql, function(err, resls) {
                     if (err)
-                        console.log(dataSql)
+                        return callback(err);
                     var aggData = [];
                     var normalData = [];
                     var locAggDataMap = {};

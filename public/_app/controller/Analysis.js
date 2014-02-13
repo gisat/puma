@@ -14,6 +14,9 @@ Ext.define('PumaMng.controller.Analysis',{
             'performedanalysisform #dataset': {
                 change: this.onPerformedDatasetChanged
             },
+            performedanalysisform: {
+                aftersave: this.onPerformedAnalysisReload
+            },
             'spatialaggform #topics': {
                 change: this.onSpatialTopicsChanged
             },

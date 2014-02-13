@@ -58,6 +58,9 @@ function create(collName,obj,params,callback) {
             if (params['bypassHooks']) {
                 return callback(null,results.create);
             }
+            
+                
+   
             doHooks("create",collName,results.create,params,function(err,result) {
                 if (err) return callback(err);
                 
@@ -84,6 +87,7 @@ function read(collName,filter,params,callback) {
 }
 
 function update(collName, obj, params, callback,bypassHooks) {
+    
     if (typeof(params) === 'function')
         callback = params;
     var db = conn.getMongoDb();
@@ -91,6 +95,7 @@ function update(collName, obj, params, callback,bypassHooks) {
         return callback(new Error('cannotupdate'));
     }
     var collection = db.collection(collName);
+    debugger;
     var filter = {
         "_id": obj['_id']
     }
@@ -108,7 +113,7 @@ function update(collName, obj, params, callback,bypassHooks) {
             delete obj['_id']
             obj['changed'] = new Date();
             obj['changedBy'] = params.userId;
-            
+            console.log(filter);
             collection.update(filter, {'$set': obj}, {}, function(err) {
                 if (err)
                     return callback(err);
@@ -326,6 +331,7 @@ var checkDeleteRefs = function(id,collName,callback) {
 
 var doHooks = function(opType,collName,result,params,callback) {   
     var hook = hooks[collName] ? hooks[collName][opType] : null;
+    console.log(opType,collName,result);
     
     if (hook) {
         hookLib[hook](result,callback,params);

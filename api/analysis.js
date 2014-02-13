@@ -25,7 +25,7 @@ function remove(params,req,res,callback) {
         layers: ['layerRefs',function(asyncCallback,results) {
             async.map(results.layerRefs,function(item,mapCallback) {
                 var layerName = item.layer;
-                crud.remove('layerref',{_id:item['_id']},{},function(err,resls) {
+                crud.remove('layerref',{_id:item['_id']},{isAdmin:true,userId:req.userId},function(err,resls) {
                     if (err) return callback(err);
                     return mapCallback(null,layerName);
                 });
@@ -86,24 +86,25 @@ function create(params,req,res,callback) {
             var type = analysisObj.type;
             analysis[type].check(analysisObj,performedAnalysisObj,function(err,resls) {
                 //console.log(resls)
+                console.log('checked')
                 if (err) return callback(err);
                 return asyncCallback(null,resls)
             })
         }],
         create: ['layerRef','analysis',function(asyncCallback,results) {
             crud.create('performedanalysis',performedAnalysisObj,function(err,result) {
-                
+                console.log('created');
                 var analysisObj = results.analysis;
                 var type = analysisObj.type;
                 res.data = result;
                 
-                callback(null);
+                
                 analysis[type].perform(analysisObj,result,results.layerRef,req,function(err) {
                     if (err) {
-                        conn.getIo().sockets.emit('analysis','Analysis '+analysisObj.name+' error');
+                        callback(err);
                     }
                     else {
-                        conn.getIo().sockets.emit('analysis','Analysis '+analysisObj.name+' finished');
+                        callback(null);
                     }
                     
                 });

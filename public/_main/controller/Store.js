@@ -417,6 +417,11 @@ Ext.define('PumaMain.controller.Store', {
                     children: [],
                     checked: null
                 },{
+                    name: 'Information layers',
+                    type: 'thematicgroup',
+                    expanded: true,
+                    checked: null
+                },{
                     name: 'Background layers',
                     type: 'basegroup',
                     expanded: true,

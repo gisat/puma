@@ -301,11 +301,26 @@ Ext.define('PumaMain.controller.ViewMng', {
     
     
     onVisSave: function() {
-        var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+        var chartCtrl  = this.getController('Chart')
+        var attrSet = chartCtrl.attrSetId;
+        if (!attrSet) return;
+        var visualization = chartCtrl.visualization || Ext.create('Puma.model.Visualization',{
+            attrSet: attrSet
+        })
         var cfgs = this.getController('Chart').gatherCfg();
-        var layerCfgs = this.getController('AttributeConfig').layerConfig
         var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
         var visibleLayers = [];
+        
+        for (var i=0;i<cfgs.length;i++) {
+            var cfg = cfgs[i];
+            if (cfg.type=='scatterchart') {
+                visualization.set('scatterAttrs',Ext.Array.pluck(cfg.attrs,'attr'))
+            }
+            if (cfg.type=='columnchart') {
+                visualization.set('columnAttrs',Ext.Array.pluck(cfg.attrs,'attr'))
+            }
+        }
+        
         for (var i=0;i<layers.length;i++) {
             var layer = layers[i];
             var type = layer.get('type')
@@ -317,33 +332,22 @@ Ext.define('PumaMain.controller.ViewMng', {
                 })
             }
             if (type=='chartlayer') {
-                visibleLayers.push({
-                    attributeSet: layer.get('attributeSet'),
-                    attribute: layer.get('attribute')
-                })
+                visualization.set('choroAttr',layer.get('attribute'))
             }
         }
         
+        visualization.set('layers',visibleLayers);
+        Ext.StoreMgr.lookup('visualization').addWithSlaves(visualization)
+        visualization.save();
         
-        
-        var vis = Ext.create('Puma.model.Visualization',{
-            theme: theme,
-            cfg: cfgs,
-            choroplethCfg: layerCfgs,
-            visibleLayers: visibleLayers
-        });
-        var window = Ext.widget('window',{
-            layout: 'fit',
-            width: 300,
-            title: 'Save visualization',
-            y: 200,
-            bodyCls: 'saveaswindow',
+        var win = Ext.widget('window',{
+                bodyCls: 'urlwindow',
             items: [{
-                xtype: 'commonsaveform',
-                rec: vis
+                        xtype: 'displayfield',
+                        value: 'Visualization saved'
             }]
         })
-        window.show();
+            win.show();
     },
     onViewSave: function() {
         var view = Ext.create('Puma.model.DataView',this.gatherViewConfig());

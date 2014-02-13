@@ -221,7 +221,8 @@ function activateLayerRef(params, req, res, callback) {
                 }
                    
                 var id = layerRef._id;
-                crud.update('layerref', layerRef, {userId: req.userId}, function(err) {
+                console.log('UPDATE',layerRef,req.userId);
+                crud.update('layerref', layerRef, {userId: req.userId,isAdmin:true}, function(err) {
                     if (err)
                         return callback(err);
                     layerRef._id = id;
@@ -261,7 +262,7 @@ function activateLayerRef(params, req, res, callback) {
                         item.active = false;
                     }
 
-                    crud.update('layerref', item, {userId: req.userId}, function(err) {
+                    crud.update('layerref', item, {userId: req.userId,isAdmin:true}, function(err) {
                         if (err)
                             return callback(err);
                         eachCallback(null)

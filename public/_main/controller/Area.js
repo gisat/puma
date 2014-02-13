@@ -41,8 +41,10 @@ Ext.define('PumaMain.controller.Area', {
     },
     
     getLocationObj: function() {
-        var locObjId =  Ext.ComponentQuery.query('#sellocation')[0].getValue();
-        var rec = Ext.StoreMgr.lookup('location4init').getById(locObjId);
+        
+        //var locObjId =  Ext.ComponentQuery.query('#sellocation')[0].getValue();
+        //var rec = Ext.StoreMgr.lookup('location4init').getById(locObjId);
+        var rec = null;
         return {
             location: rec ? rec.get('location') : null,
             locGid: rec ? rec.get('locGid') : null,
@@ -380,7 +382,6 @@ Ext.define('PumaMain.controller.Area', {
         var lowestCount = 0;
         var containsLower = false;
         var lowestNoLeafs = true;
-        var locObj = this.getLocationObj();
         var changeLocToCustom = false;
         var atLeastOneLoc = false;
         var maxDepth = 0;
@@ -402,28 +403,8 @@ Ext.define('PumaMain.controller.Area', {
                     highestMap[loc][at] = highestMap[loc][at] || [];
                     highestMap[loc][at].push(gid);
                 }
-                if (node.isExpanded()) {
-                    if ((at!=locObj.at || loc!=locObj.location || node.get('gid')!=locObj.locGid)) {
-                        if (locObj.obj && locObj.obj.get('dataset')) {
-                            changeLocToCustom = true;
-                            
                         }
-                    }
                     else {
-                        me.placeNode = node;
-                        atLeastOneLoc = true;
-                    }
-                    
-                }
-                if (node.isLeaf() && (at==locObj.at && loc==locObj.location && node.get('gid')==locObj.locGid)) {
-                    me.placeNode = node;
-                    atLeastOneLoc = true;
-                }
-                
-               
-                
-            }
-            else {
                 containsLower = true;
             }
             if (parent && node.parentNode==parent) {
@@ -442,24 +423,10 @@ Ext.define('PumaMain.controller.Area', {
             allMap[loc][at] = allMap[loc][at] || [];
             allMap[loc][at].push(gid);
             if (node.isLeaf()) {
-                
-            }
-            else {
                 leafMap[loc] = leafMap[loc] || {}
-                leafMap[loc][at] = false;
+                leafMap[loc][at] = true;
             }
         })
-        if (this.initialized && (changeLocToCustom || !atLeastOneLoc)) {
-            var locStore = Ext.StoreMgr.lookup('location4init');
-            var customRec = locStore.getById('custom');
-            if (!customRec) {
-                //customRec = new (locStore.model)({id:'custom',name:'Custom'});
-                //locStore.add(customRec)
-            }
-            Ext.ComponentQuery.query('#sellocation')[0].setValue('Custom')
-            
-        }
-        this.initialized = true;
         this.areaTemplates = areaTemplates;
         if (areaTemplates.length) 
         {
@@ -469,7 +436,7 @@ Ext.define('PumaMain.controller.Area', {
                 lowestCount += allMap[loc][lastAreaTemplate].length;
                 lowestMap[loc] = lowestMap[loc] || {};
                 lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
-                if (leafMap[loc] && leafMap[loc][lastAreaTemplate]===false) {
+                if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
                     lowestNoLeafs = false;
                 }
             }
@@ -484,9 +451,8 @@ Ext.define('PumaMain.controller.Area', {
         var selPlace = selPlaceObj ? selPlaceObj.get('id') : null;
         var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
         var showLess = Ext.ComponentQuery.query('#arealessdetails')[0];
-        
         showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1));
-        showLess.setDisabled(!containsLower || (selPlace && maxDepth<3))
+        showLess.setDisabled(!containsLower)
   
         var selMap = this.getController('Select').selMap;
         var outerCount = 0;

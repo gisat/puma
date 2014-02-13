@@ -534,6 +534,7 @@ function getThemeYearConf(params, req, res, callback) {
             })
         },
         layers: ['theme', 'locations', 'topicMap', 'symbologies', 'layerRefs', function(asyncCallback, results) {
+                
                 if (!results.theme) {
                     return asyncCallback(null);
                 }
@@ -544,8 +545,11 @@ function getThemeYearConf(params, req, res, callback) {
                     crud.read('areatemplate', {topic: item}, function(err, resls) {
                         if (err)
                             return callback(err);
+                        
                         async.forEach(resls, function(at, eachCallback) {
-                            crud.read('layerref', {$and: [{areaTemplate: at._id}, {year: {$in: years}}, {location: {$in: results.locations}}, {isData: false}]}, function(err, resls2) {
+                            var search = {$and: [{areaTemplate: at._id}, {year: {$in: years}}, {location: {$in: results.locations}}, {isData: false}]}
+                            
+                            crud.read('layerref', search, function(err, resls2) {
                                 if (err)
                                     return callback(err);
                                 layerRefMap[at._id] = {};
@@ -579,6 +583,7 @@ function getThemeYearConf(params, req, res, callback) {
                         if (queryTopics && queryTopics.indexOf(topic) < 0) {
                             continue;
                         }
+                        
                         var layers = map[i];
 //                        var node = {
 //                            name: results.topicMap[topic].name,
@@ -590,6 +595,9 @@ function getThemeYearConf(params, req, res, callback) {
 //                        }
                         for (var j = 0; j < layers.length; j++) {
                             var layer = layers[j];
+                            if (!layerRefMap[layer._id] || !layerRefMap[layer._id][results.locations[0]]) {
+                                continue;
+                            }
                             var symbologies = layer.symbologies || [];
                             if (!symbologies.length) {
                                 symbologies = [-1];

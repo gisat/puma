@@ -108,16 +108,20 @@ Ext.define('PumaMng.controller.Store',{
             storeId: 'analysistype',
             fields: ['name','type'],
             idProperty: 'type',
-            data: [{
-                name: 'Spatial',
-                type: 'spatialagg'
-            },{
+            data: [
+//            {
+//                name: 'Spatial',
+//                type: 'spatialagg'
+//            },
+            {
                 name: 'FID',
                 type: 'fidagg'
-            },{
-                name: 'Math',
-                type: 'math'
-            }]
+            }
+//            ,{
+//                name: 'Math',
+//                type: 'math'
+//            }
+        ]
         })
     
         Ext.create('Ext.data.Store',{
