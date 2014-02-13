@@ -210,6 +210,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         this.getController('AttributeConfig').filterConfig = Config.cfg.filterAttrs;
         this.getController('Filter').attrs = Config.cfg.filterAttrs;
         this.getController('Filter').initialValues = Config.cfg.filterMap;
+        this.getController('Filter').changeActiveState(Config.cfg.filterActive);
         var locationTheme = this.getController('LocationTheme');
         locationTheme.datasetChanged = true;
         locationTheme.visChanged = true;
@@ -240,7 +241,6 @@ Ext.define('PumaMain.controller.ViewMng', {
         
         var sliders = Ext.ComponentQuery.query('#advancedfilters multislider');
         var filterMap = {};
-        var filterAttrs = this.getController('Filter').attrs
         for (var i=0;i<sliders.length;i++) {
             var slider = sliders[i];
             var val = slider.getValue();
@@ -248,10 +248,13 @@ Ext.define('PumaMain.controller.ViewMng', {
             filterMap[attrName] = val;
             
         }
+        
         cfg.filterMap = filterMap;
-        cfg.filterAttrs = filterAttrs;
-        cfg.minFilterFl = this.getController('Filter').minFl
-        cfg.maxFilterFl = this.getController('Filter').maxFl
+        cfg.filterData = this.getController('Filter').filterData;
+        cfg.filterAttrs = this.getController('Filter').attrs;
+        cfg.filterActive = $(Ext.ComponentQuery.query('#advancedfilters tool[type=poweron]')[0].el.dom).hasClass('tool-active');
+        //cfg.minFilterFl = this.getController('Filter').minFl
+        //cfg.maxFilterFl = this.getController('Filter').maxFl
         
         var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
         this.getController('Layers').resetIndexes();
@@ -298,26 +301,11 @@ Ext.define('PumaMain.controller.ViewMng', {
     
     
     onVisSave: function() {
-        var chartCtrl  = this.getController('Chart')
-        var attrSet = chartCtrl.attrSetId;
-        if (!attrSet) return;
-        var visualization = chartCtrl.visualization || Ext.create('Puma.model.Visualization',{
-            attrSet: attrSet
-        })
+        var theme = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var cfgs = this.getController('Chart').gatherCfg();
+        var layerCfgs = this.getController('AttributeConfig').layerConfig
         var layers = Ext.StoreMgr.lookup('selectedlayers').getRange();
         var visibleLayers = [];
-        
-        for (var i=0;i<cfgs.length;i++) {
-            var cfg = cfgs[i];
-            if (cfg.type=='scatterchart') {
-                visualization.set('scatterAttrs',Ext.Array.pluck(cfg.attrs,'attr'))
-            }
-            if (cfg.type=='columnchart') {
-                visualization.set('columnAttrs',Ext.Array.pluck(cfg.attrs,'attr'))
-            }
-        }
-        
         for (var i=0;i<layers.length;i++) {
             var layer = layers[i];
             var type = layer.get('type')
@@ -329,13 +317,13 @@ Ext.define('PumaMain.controller.ViewMng', {
                 })
             }
             if (type=='chartlayer') {
-                visualization.set('choroAttr',layer.get('attribute'))
+                visibleLayers.push({
+                    attributeSet: layer.get('attributeSet'),
+                    attribute: layer.get('attribute')
+                })
             }
         }
         
-        visualization.set('layers',visibleLayers);
-        Ext.StoreMgr.lookup('visualization').addWithSlaves(visualization)
-        visualization.save();
         
         
         var vis = Ext.create('Puma.model.Visualization',{

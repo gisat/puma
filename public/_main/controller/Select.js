@@ -16,8 +16,11 @@ Ext.define('PumaMain.controller.Select', {
             '#useselectedcolorpicker': {
                 select: this.onChangeChartColor
             },
-            '#unselectbtn': {
-                afterrender: this.onAfterUnselectRender
+            'tool[type=unselect]': {
+                click: this.clearSelections
+            },
+            'tool[type=unselectall]': {
+                click: this.clearSelectionsAll
             }
             
         })
@@ -28,7 +31,7 @@ Ext.define('PumaMain.controller.Select', {
         this.defaultColor = 'ff4c39';
     },
     onAfterUnselectRender: function() {
-        Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
+        //Ext.get('app-tools-colors-unselect').on('click',this.clearSelections,this);
     },
 
         
@@ -176,6 +179,15 @@ Ext.define('PumaMain.controller.Select', {
         }
         this.outerCount = outerCount;
         this.overallCount = overallCount;
+        if (overallCount==0) {
+            this.switchToAllAreas();
+        }
+    },
+    switchToAllAreas: function() {
+        var cmp = Ext.ComponentQuery.query('#areapager #onlySelected')[0];
+        cmp.suspendEvents();
+        cmp.toggle(false);
+        cmp.resumeEvents();
     },
         
     selectDelayed: function(areas,add,hover,bypassMapColor) {

@@ -7,6 +7,7 @@ Ext.define('PumaMain.controller.Export', {
     },
 
     initConf: function() {
+        console.log('Init')
         var id = window.location.search.split('?')[1].split('&')[0].split('=')[1];
         this.forDownload = window.location.search.search('fordownload')>-1;
         Ext.Ajax.request({
@@ -36,13 +37,30 @@ Ext.define('PumaMain.controller.Export', {
             //opts.height = 300*Math.min(4,count)+10;
         }
         if (cfg.type=='map') {
+            var size = cfg.layers2 ? {h:cfg.size.h,w:cfg.size.w*2} : {h:cfg.size.h,w:cfg.size.w}
             opts = {
-                height: cfg.size.h,
-                width: cfg.size.w
+                height: this.forDownload ? size.h : 800,
+                width: this.forDownload ? size.w : 1150,
+                items: [{xtype:'component',flex:1,margin:'0 2 0 0',first:true,id:'app-map',cls:'map'}]
             }
-            this.mapWidth = cfg.size.w;
+            if (cfg.layers2) {
+                opts.items.push({xtype:'component',flex:1,id:'app-map2',cls:'map'})
+                opts.layout = {
+                    type: 'hbox',
+                    align: 'stretch'
+                }
+            }
+            this.mapWidth = opts.width
+        }
+        if (cfg.type=='extentoutline') {
+            opts = {
+                height: 402,
+                width: 565
+            }
         }
         var chart = Ext.widget('chartcmp', opts);
+        
+        
         chart.render('rendering');
         
         chart.cfg = Ext.clone(cfg);
@@ -63,7 +81,7 @@ Ext.define('PumaMain.controller.Export', {
             params: params,
             singlePage: true,
             scope: chartController,
-            method: 'GET',
+            method: 'POST',
             cmp: chart,
             success: chartController.onChartReceived,
             failure: chartController.onChartReceived
@@ -73,104 +91,118 @@ Ext.define('PumaMain.controller.Export', {
     
         
     loadMap: function(cmp) {
-        var options = {
-            projection: new OpenLayers.Projection("EPSG:900913"),
-            displayProjection: new OpenLayers.Projection("EPSG:4326"),
-            units: "m",
-            numZoomLevels: 22,
-            maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
-            featureEvents: true,
-            allOverlays: true,
-            div: cmp.el.dom
-        };
-        var map = new OpenLayers.Map(options);
-        
-        var cfg = cmp.cfg;
-        var layers = [];
-        var gLayer = null;
         
         var counterObj = {cnt: 0,desired: 0};
-        var legends = [];
-        for (var i=0;i<cfg.layers.length;i++) {
-            var layerCfg = cfg.layers[i];
-            var layer = null;
-            if (!layerCfg.sldId && !layerCfg.layersParam && layerCfg.type!='selectedareas') {
-                layer = layerCfg.type=='osm' ? new OpenLayers.Layer.OSM() : new OpenLayers.Layer.Google(
-                'Google',
-                {
-                    type: layerCfg.type,
-                    animationEnabled: true,
-                    initialized: true,
-                    visibility: true
-                    // zajimavy issues pri tisku pokud opacita neni 1
-                    //,
-                    //opacity: layerCfg.opacity
-                }
+        var maps = [];
+        var overallLayers = [];
+        var me = this;
+        cmp.items.each(function(item) {
+            var options = {
+                projection: new OpenLayers.Projection("EPSG:900913"),
+                displayProjection: new OpenLayers.Projection("EPSG:4326"),
+                units: "m",
+                numZoomLevels: 22,
+                maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
+                featureEvents: true,
+                allOverlays: true,
+                div: item.el.dom
+            };
+            var map = new OpenLayers.Map(options);
+            maps.push(map);
+            var cfg = cmp.cfg;
+            var layers = [];
+            var gLayer = null;
+            var legends = [];
+            var cfgLayers = item.first ? cfg.layers: cfg.layers2;
+            for (var i = 0; i < cfgLayers.length; i++) {
+                var layerCfg = cfgLayers[i];
+                var layer = null;
+                var disallowedTypes = {selectedareas: 1, selectedareasfilled: 1, areaoutlines: 1}
+                if (!layerCfg.sldId && !layerCfg.layersParam && !disallowedTypes[layerCfg.type]) {
+                    layer = layerCfg.type == 'osm' ? new OpenLayers.Layer.OSM() : new OpenLayers.Layer.Google(
+                            'Google',
+                            {
+                                type: layerCfg.type,
+                                animationEnabled: true,
+                                initialized: true,
+                                visibility: true
+                                        // zajimavy issues pri tisku pokud opacita neni 1
+                                        //,
+                                        //opacity: layerCfg.opacity
+                            }
 
-                );
-                gLayer = layer;
-                counterObj.desired++;
+                    );
+                    gLayer = layer;
+                    counterObj.desired++;
+                }
+                else if (layerCfg.sldId || layerCfg.layersParam) {
+                    var layerParams = {
+                        singleTile: true,
+                        visibility: true,
+                        opacity: layerCfg.opacity,
+                        ratio: 1.02
+                    }
+                    var params = {
+                        transparent: true,
+                        format: 'image/png'
+                    }
+                    if (layerCfg.layersParam) {
+                        params['layers'] = layerCfg.layersParam;
+                        delete layerParams.singleTile;
+                        layerParams.tileSize = new OpenLayers.Size(256,256)
+                        layerParams.removeBackBufferDelay = 0;
+                        layerParams.transitionEffect = null;
+                    }
+                    if (layerCfg.sldId) {
+                        params['sld_id'] = layerCfg.sldId
+                    }
+                    if (layerCfg.stylesParam) {
+                        params['styles'] = layerCfg.stylesParam
+                    }
+                    if (layerCfg.legendSrc) {
+                        legends.push({
+                            src: layerCfg.legendSrc,
+                            name: layerCfg.name
+                        })
+                    }
+                    layer = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', params, layerParams);
+                    counterObj.desired++;
+
+                }
+                if (layer) {
+
+                    layers.push(layer);
+                }
             }
-            else if (layerCfg.sldId || layerCfg.layersParam){
-                var layerParams = {
-                    singleTile: true,
-                    visibility: true,
-                    opacity: layerCfg.opacity,
-                    ratio: 1.02
+
+            if (item.first && legends.length && me.forDownload) {
+                var html = '';
+                for (var i = 0; i < legends.length; i++) {
+                    var legend = legends[i];
+                    html += '<div class="legend-container"><div class="legend-text" >' + legend.name + '</div><img src="' + legend.src + '"/></div>'
                 }
-                var params = {
-                    transparent: true,
-                    format: 'image/png'
-                }
-                if (layerCfg.layersParam) {
-                    params['layers'] = layerCfg.layersParam
-                }
-                if (layerCfg.sldId) {
-                    params['sld_id'] = layerCfg.sldId
-                }
-                if (layerCfg.stylesParam) {
-                    params['styles'] = layerCfg.stylesParam
-                }
-                if (layerCfg.legendSrc) {
-                    legends.push({
-                        src: layerCfg.legendSrc,
-                        name: layerCfg.name
-                    })
-                }
-                layer = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', params, layerParams);
-                counterObj.desired++;
-                
+                var legendEl = Ext.get('legend');
+                legendEl.setStyle({maxWidth: this.mapWidth});
+                legendEl.update(html);
             }
-            if (layer) {
-                
-                layers.push(layer);
+            if (cfg.layers2) {
+                var blob = Ext.DomHelper.createDom({cls:"map-label",html:item.first ? cfg.yearName : cfg.year2Name});
+                var yearEl = new Ext.dom.Element(blob);
+                item.el.appendChild(yearEl);
             }
-        }
-        
-        if (legends.length && this.forDownload) {
-            
-            var html = '';
-            for (var i=0;i<legends.length;i++) {
-                var legend = legends[i];
-                html += '<div class="legend-container"><div class="legend-text" >'+legend.name+'</div><img src="'+legend.src+'"/></div>'
+            layers.reverse();
+            map.addLayers(layers);
+            if (cfg.trafficLayer && gLayer) {
+                var trafficLayer = new google.maps.TrafficLayer()
+                trafficLayer.setMap(gLayer.mapObject);
+
             }
-            var legendEl = Ext.get('legend');
-            legendEl.setStyle({maxWidth:this.mapWidth});
-            legendEl.update(html);
-        }
+            overallLayers = Ext.Array.merge(overallLayers,layers);
+        })
         
         
-        
-        layers.reverse();
-        map.addLayers(layers);
-        if (cfg.trafficLayer&&gLayer) {
-            var trafficLayer = new google.maps.TrafficLayer()
-            trafficLayer.setMap(gLayer.mapObject);
-            
-        }
-        
-        for (var i = 0; i < layers.length; i++) {
-            var layer = layers[i];
+        for (var i = 0; i < overallLayers.length; i++) {
+            var layer = overallLayers[i];
             if (layer.mapObject) {
                 google.maps.event.addListener(layer.mapObject, 'tilesloaded', function() {
                     counterObj.cnt++;
@@ -194,7 +226,10 @@ Ext.define('PumaMain.controller.Export', {
                 });
             }
         }
-        map.setCenter([cfg.center.lon, cfg.center.lat], cfg.zoom);
+        for (var i=0;i<maps.length;i++) {
+            maps[i].setCenter([cmp.cfg.center.lon, cmp.cfg.center.lat], cmp.cfg.zoom);
+        }
+        Ext.ComponentQuery.query('chartcmp')[0].el.setStyle({backgroundColor:'#444'});
 
     }
 });

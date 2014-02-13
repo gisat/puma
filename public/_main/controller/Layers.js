@@ -8,6 +8,9 @@ Ext.define('PumaMain.controller.Layers', {
                 itemclick: this.onLayerClick,
                 checkchange: this.onCheckChange,
             },
+            '#layerpanel tool[type=gear]': {
+                        click: this.onConfigure
+                    },
             'layerpanel' : {
                 choroplethreconfigure: this.onChoroplethReconfigureBtnClick,
                 choroplethremove: this.onChoroplethRemove,
@@ -19,6 +22,7 @@ Ext.define('PumaMain.controller.Layers', {
                 layerlegend: this.onLayerLegend,
                 showmetadata: this.onShowMetadata
             },
+            
 //            'layermenu #opacity': {
 //                click: this.openOpacityWindow
 //            },
@@ -50,15 +54,25 @@ Ext.define('PumaMain.controller.Layers', {
             },
             
         })
+        this.scaleBorderCnst = 10000000;
+        this.scaleBorder = 10000000;
     },
-    onLayerLegend: function(panel, rec, checked,legendCount) {
-        if (checked) {
+    onConfigure: function() {
+        this.getController('AttributeConfig').onConfigureClick({itemId:'configurelayers'});
+    },
+    onLayerLegend: function(panel, rec, checked) {
+        if (checked && !rec.get('legend')) {
             var img = Ext.widget('image',{
                 src: rec.get('src'),
                 margin: '5 0 0 0'
             })
             var window = Ext.widget('window', {
                 autoScroll: true,
+                collapsible: true,
+                collapseLeft: true,
+                minWidth: 260,
+                leftMargin: 1,
+                titleCollapse: true,
                 islegend: 1,
                 items: [img],
                 factor: Ext.ComponentQuery.query('window[islegend=1]').length,
@@ -93,7 +107,7 @@ Ext.define('PumaMain.controller.Layers', {
         }
     },
             
-    reconfigureChoropleths: function(cfg,visualization) {
+    reconfigureChoropleths: function(cfg) {
         this.getController('AttributeConfig').layerConfig = cfg.attrs;
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
         var chartNodes = [];
@@ -104,13 +118,12 @@ Ext.define('PumaMain.controller.Layers', {
             
         })
         var nodesToRemove = [];
-        var attrs = Ext.clone(cfg.attrs);
-        var checkedAttrs = [];
+        var attrs = Ext.Array.clone(cfg.attrs);
+        var oldAttrs = Ext.Array.clone(cfg.attrs);
         for (var i=0;i<chartNodes.length;i++) {
             var node = chartNodes[i];
             var attr = node.get('attribute');
             var as = node.get('attributeSet');
-            
             var cfgAttr = node.get('cfg').attrs[0];
             var normType = cfgAttr.normType
             var normAs = cfgAttr.normAs
@@ -128,9 +141,6 @@ Ext.define('PumaMain.controller.Layers', {
                 nodesToRemove.push(node)
             }
             else {
-                if (node.get('checked')) {
-                    checkedAttrs.push(attr);
-                }
                 Ext.Array.remove(attrs,attrObj);
                 node.initialized = false;
                 var oneCfg = {attrs:[attrObj]};
@@ -152,27 +162,18 @@ Ext.define('PumaMain.controller.Layers', {
             var node = nodesToRemove[i];
             this.onChoroplethRemove(null,node);
         }
-        var autoActivated = false;
-        var visAttr = visualization ? visualization.get('choroAttr') : null
+        
         for (var i=0;i<attrs.length;i++) {
+            
             var attr = attrs[i];
+            var idx = Ext.Array.indexOf(oldAttrs,attr);
             var oneCfg = Ext.clone(cfg);
             oneCfg.attrs = [attr];
             oneCfg.numCategories = attr.numCategories || 5;
             oneCfg.classType = attr.classType || 'quantiles';
             oneCfg.zeroesAsNull = attr.zeroesAsNull || true;
             oneCfg.useAttributeColors = true;
-            var autoActivate = Ext.Array.contains(checkedAttrs,attr.attr);
-            if (!checkedAttrs.length && attr.attr==visAttr) {
-                autoActivate = true;
-        }
-            if (autoActivate) {
-                autoActivated = true;
-            }
-            if (i==attrs.length-1 && !autoActivated) {
-                autoActivate = true;
-            }
-            this.addChoropleth(oneCfg,autoActivate);
+            this.addChoropleth(oneCfg,false,idx);
         }
     },
         
@@ -226,18 +227,32 @@ Ext.define('PumaMain.controller.Layers', {
         if (layer2 && layer2.params.LAYERS) {
             layers = Ext.Array.merge(layers, layer2.params.LAYERS.split(','))
         }
+        Puma.util.Msg.msg('Search for metadata has started. Please wait.','','l');
         Ext.Ajax.request({
             url: Config.url + '/api/layers/getMetadata',
             rec: rec,
             params: {
                 layers: JSON.stringify(layers)
             },
+            scope: this,
             success: function(response) {
                 var name = response.request.options.rec.get('name');
                 response = JSON.parse(response.responseText).data;
                 var html = '';
+                var locStore = Ext.StoreMgr.lookup('location4init');
+                var searchTitle = null;
+                if (locStore.collect('location').length<2 && locStore.getCount()>2) {
+                    var locObj = this.getController('Area').getLocationObj();
+                    if (locObj.obj) {
+                        searchTitle = locObj.obj.get('name');
+                    }
+                }
+                
                 for (var i=0;i<response.length;i++) {
                     var r = response[i];
+                    if (searchTitle && r.title.toLowerCase().search(searchTitle.toLowerCase())<0) {
+                        continue;
+                    }
                     html+= '<div class="metadata">';
                     
                     html+= '<p class="title">Title</p>';
@@ -253,7 +268,10 @@ Ext.define('PumaMain.controller.Layers', {
                     html+= '<p>' + r.keywords + '</p>';
                     
                     html+= '<p class="title">Producer</p>';
-                    html+= '<p>' + r.producer + '<br/>';
+                    if (r.producer!=r.contact) {
+                        html+= '<p>' + r.producer + '<br/>';    
+                    }
+                    html += r.contact + '<br/>';
                     html+= '<a target="_top" href="mailto:' + r.mail + '">' + r.mail + '</a></p>'
                     
                     html+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
@@ -473,23 +491,30 @@ Ext.define('PumaMain.controller.Layers', {
 
                     var obj = {
                         filter: filterFc,
+                        maxScaleDenominator: this.scaleBorder,
                         symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: recodeFc, strokeWidth: 1, fillOpacity: 0})
                         ,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:12,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
                     }}
                     var objFilled = {
                         filter: filterFc,
+                        maxScaleDenominator: this.scaleBorder,
                         symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillColor: recodeFc, strokeWidth: 1, fillOpacity: 1})
                         ,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:12,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
                     }}
-//                    var rule1 = new OpenLayers.Rule({
-//                        filter: filterFc,
-//                        minScaleDenominator: 5000000,
-//                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({strokeColor: '#888888', strokeWidth: 1, graphicName: 'circle', pointRadius: 8, fillColor: recodeFc})}
-//                    });
+                    var rule2 = new OpenLayers.Rule({
+                        filter: filterFc,
+                        minScaleDenominator: this.scaleBorder,
+                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'},strokeColor: recodeFc, strokeWidth: 3, graphicName: 'circle', pointRadius: 8, fillOpacity: 0})}
+                    });
+                    var rule2Filled = new OpenLayers.Rule({
+                        filter: filterFc,
+                        minScaleDenominator: this.scaleBorder,
+                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, strokeColor: '#000000', graphicName: 'circle', pointRadius: 8, fillColor: recodeFc, fillOpacity: 1})}
+                    });
                     var rule = new OpenLayers.Rule(obj);
-                    style.addRules([rule]);
+                    style.addRules([rule,rule2]);
                     var ruleFilled = new OpenLayers.Rule(objFilled);
-                    filledStyle.addRules([ruleFilled]);
+                    filledStyle.addRules([ruleFilled,rule2Filled]);
                     var namedLayers = i == 0 ? namedLayers1 : namedLayers2;
                     var namedLayersFilled = i == 0 ? namedLayersFilled1 : namedLayersFilled2;
                     namedLayers.push({
@@ -621,10 +646,16 @@ Ext.define('PumaMain.controller.Layers', {
                 var style = new OpenLayers.Style();
                 var obj = {
                     filter: filterMap[layerName],
-                    symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: '#333333', strokeWidth: 2, fillOpacity: 0.1})}
+                    maxScaleDenominator: this.scaleBorder,        
+                    symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({strokeColor: '#333333', strokeWidth: 1, fillOpacity: 0.1})}
                 }
                 var rule1 = new OpenLayers.Rule(obj);
-                style.addRules([rule1]);
+                var rule2 = new OpenLayers.Rule({
+                        filter: filterMap[layerName],
+                        minScaleDenominator: this.scaleBorder,
+                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'}, strokeWidth: 2, strokeOpacity: 1, graphicName: 'circle', pointRadius: 6, strokeColor: '#000000', fillColor: '#000000'})}
+                    });
+                style.addRules([rule1,rule2]);
                 namedLayers.push({
                     name: layerName,
                     userStyles: [style]
@@ -799,18 +830,26 @@ Ext.define('PumaMain.controller.Layers', {
             symbolizer['Polygon'] = new OpenLayers.Symbolizer.Polygon({fillColor: fillColor, strokeColor: '#000000', strokeWidth: 1});
             var rule1 = {
                 filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
+                //maxScaleDenominator: this.scaleBorder,
+                maxScaleDenominator: 100000000,
                 symbolizer: symbolizer
             };
+            var rule2 = {
+                        filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
+                        //minScaleDenominator: this.scaleBorder,
+                        minScaleDenominator: 100000000,
+                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'square', pointRadius: 18, strokeColor: '#222222',fillColor: fillColor, fillOpacity: 1})}
+                    };
             var nullColor = params['nullColor'] || '#bbbbbb';
             var nullSymbolizer = {
                 'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: nullColor, strokeColor: '#000000', strokeWidth: 1})
             }
-            var rule2 = {
+            var rule3 = {
                 filter: filtersNull.length > 1 ? new OpenLayers.Filter.Logical({type: '||', filters: filtersNull}) : filtersNull[0],
                 symbolizer: nullSymbolizer
             };
             return {
-                rules: [rule1, rule2],
+                rules: [rule1, rule2, rule3],
                 legend: legendRules
             };
         }
@@ -869,6 +908,12 @@ Ext.define('PumaMain.controller.Layers', {
                 else if (!forLegend) {
                     newRuleObj.filter = filter;
                 }
+                if (ruleObj.minScaleDenominator) {
+                    newRuleObj.minScaleDenominator = ruleObj.minScaleDenominator
+                }
+                if (ruleObj.maxScaleDenominator) {
+                    newRuleObj.maxScaleDenominator = ruleObj.maxScaleDenominator
+                }
                 if (forLegend) {
                     newRuleObj.name = ruleObj.name;
                 }
@@ -894,7 +939,7 @@ Ext.define('PumaMain.controller.Layers', {
         
     },
             
-    addChoropleth: function(cfg,autoActivate) {
+    addChoropleth: function(cfg,autoActivate,index) {
         var layerStore = Ext.StoreMgr.lookup('layers');
         var choroplethNode = layerStore.getRootNode().findChild('type','choroplethgroup');
         
@@ -910,10 +955,14 @@ Ext.define('PumaMain.controller.Layers', {
         
         var layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         var layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        layer1.events.register('visibilitychanged',{layer:layer1,me:this},function(a,b,c) {
+            this.me.onLayerLegend(null,this.layer.nodeRec,this.layer.visibility);
+        })
         mapController.map1.addLayers([layer1]);
         mapController.map2.addLayers([layer2]);
+        
         var node = Ext.create('Puma.model.MapLayer', {
-            name: attr.name || (attrObj.get('name')),
+            name: attr.name || (attrObj.get('name')+' - '+attrSetObj.get('name')),
             attribute: attr.attr,
             attributeSet: attr.as,
             type: 'chartlayer',
@@ -925,7 +974,16 @@ Ext.define('PumaMain.controller.Layers', {
             layer2: layer2,
             checked: autoActivate ? true : false
         });
-        choroplethNode.appendChild(node);
+        layer1.nodeRec = node;
+        layer2.nodeRec = node;
+        if (index || index===0) {
+            
+            choroplethNode.insertChild(index,node);
+        }
+        else {
+            
+            choroplethNode.appendChild(node);
+        }
         Ext.StoreMgr.lookup('selectedlayers').loadData([node],true);
         if (autoActivate) {
             this.initChartLayer(node);
@@ -941,6 +999,8 @@ Ext.define('PumaMain.controller.Layers', {
     
     onChoroplethRemove: function(panel,record) {
         var mapController = this.getController('Map');
+        record.get('layer1').setVisibility(false);
+        record.get('layer2').setVisibility(false);
         mapController.map1.removeLayer(record.get('layer1'));
         mapController.map2.removeLayer(record.get('layer2'));
         record.destroy();
@@ -1079,7 +1139,28 @@ Ext.define('PumaMain.controller.Layers', {
             return;
         }
         var parentNode = node.parentNode;
-        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup'],parentNode.get('type')) && checked && !multi && node.get('type')!='traffic') {
+        var parentType = parentNode.get('type')
+        var nodeType = node.get('type');
+        if (Ext.Array.contains(['basegroup','choroplethgroup','thematicgroup','systemgroup'],parentType) && checked && !multi && nodeType!='traffic') {
+            
+            // switching off choropleths
+            if (nodeType=='areaoutlines') {
+                parentNode = parentNode.parentNode.findChild('type','choroplethgroup')
+            }
+            // just one selected selected areas layer
+            if (nodeType=='selectedareas' || nodeType=='selectedareasfilled') {
+                var anotherNode = parentNode.findChild('type',nodeType=='selectedareas' ? 'selectedareasfilled' : 'selectedareas')
+                anotherNode.set('checked',false);
+                me.onCheckChange(anotherNode,false);
+                parentNode = {childNodes:[]};
+            }
+            if (parentType=='choroplethgroup') {
+                var anotherNode = parentNode.parentNode.findChild('type','systemgroup').findChild('type','areaoutlines');
+                anotherNode.set('checked',false);
+                me.onCheckChange(anotherNode,false);
+            }
+            
+            
             for (var i=0;i<parentNode.childNodes.length;i++) {
                 var childNode = parentNode.childNodes[i];
                 if (node!=childNode) {
@@ -1174,33 +1255,7 @@ Ext.define('PumaMain.controller.Layers', {
         store.sorters = new Ext.util.MixedCollection();
         
         store.sort('sortIndex','ASC');
-        
-        var panel = Ext.ComponentQuery.query('layerpanel')[0];
-        var recsForLegend = [];
-        store.each(function(rec) {
-            if (rec.get('type') == 'chartlayer' || rec.get('type') == 'topiclayer') {
-                recsForLegend.push(rec);
-            }
-        })
-        var windows = Ext.ComponentQuery.query('window[islegend=1]');
-        for (var i = 0; i < windows.length; i++) {
-            var win = windows[i];
-            if (Ext.Array.contains(recsForLegend, win.rec)) {
-                Ext.Array.remove(recsForLegend, win.rec);
-            }
-            else if (win.rec) {
-                panel.fireEvent('layerlegend', panel, win.rec, false)
-            }
-        }
-        for (var i = 0; i < recsForLegend.length; i++) {
-            var rec = recsForLegend[i];
-            if (rec.get('type')=='topiclayer') {
-                panel.fireEvent('layerlegend', panel, rec, true)
-            }
-            else {
-                rec.needLegend = true;
-            }
-        }
+
         
         //Ext.ComponentQuery.query('#legendpanel')[0].refresh();
 

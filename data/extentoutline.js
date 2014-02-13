@@ -47,7 +47,7 @@ function getChart(params, callback) {
                     if (err)
                             return callback(err);
                             
-                    var layerRef = null;
+                    var layerRefs = [];
                     var areaRef = null;
                     for (var i = 0; i < resls.length; i++) {
                         var lr = resls[i];
@@ -55,14 +55,14 @@ function getChart(params, callback) {
                             areaRef = lr;
                         }
                         if (lr.areaTemplate == layerTemplate) {
-                            layerRef = lr;
+                            layerRefs.push(lr);
                         }
                     }
-                    if (!layerRef || !areaRef) {
+                    if (!layerRefs.length || !areaRef) {
                         
                         return callback(new Error('Missing reference'));
                     }
-                    return eachCallback(null, {layerRef: layerRef, areaRef: areaRef, item: item})
+                    return eachCallback(null, {layerRefs: layerRefs, areaRef: areaRef, item: item})
                 })
             }, asyncCallback);
         },

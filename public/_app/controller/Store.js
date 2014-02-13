@@ -21,6 +21,7 @@ Ext.define('PumaMng.controller.Store',{
         'Puma.model.Aggregated',
         'Puma.model.Scope',
         'Puma.model.Column',
+        'Puma.model.LayerGroup',
         'Puma.model.ColumnMap',
         'Puma.model.MappedAttribute',
         'Ext.data.Store',
@@ -156,6 +157,10 @@ Ext.define('PumaMng.controller.Store',{
                 type: 'theme'
             },
             {
+                name: 'Layer group',
+                type: 'layergroup'
+            },
+            {
                 name: 'Symbology',
                 type: 'symbology'
             }]
@@ -276,7 +281,11 @@ Ext.define('PumaMng.controller.Store',{
             autoLoad: true,
             model: 'Puma.model.Location'
         })
-    
+        Ext.create('Ext.data.Store',{
+            storeId: 'layergroup',
+            autoLoad: true,
+            model: 'Puma.model.LayerGroup'
+        })
         Ext.create('Ext.data.Store',{
             storeId: 'theme',
             autoLoad: true,
@@ -445,7 +454,11 @@ Ext.define('PumaMng.controller.Store',{
             storeId: 'thememng',
             model: 'Puma.model.Theme'
         })
-        
+         Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'layergroupmng',
+            model: 'Puma.model.LayerGroup'
+        })
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
             storeId: 'analysismng',

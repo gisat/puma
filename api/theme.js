@@ -118,7 +118,7 @@ function getLocationConf(params, req, res, callback) {
                 })
             },function() {
                 if (resultArr.length>1) {
-                    resultArr.push({name:'All',id: 0})
+                    resultArr.push({name:'All places',id: 'custom'})
                 }
                 res.data = resultArr;
                 return callback();
@@ -597,7 +597,7 @@ function getThemeYearConf(params, req, res, callback) {
                             for (var k = 0; k < symbologies.length; k++) {
                                 var symbology = symbologies[k] != -1 ? results.symbologies[symbologies[k]] : null;
                                 if (symbology && symbology.topic && topics.indexOf(symbology.topic)<0) {
-                                    continue
+                                    continue;
                                 }
                                 else {
                                     //console.log('found')
@@ -607,6 +607,7 @@ function getThemeYearConf(params, req, res, callback) {
                                     symbologyId: symbology ? symbology.symbologyName : '#blank#',
                                     leaf: true,
                                     at: layer._id,
+                                    layerGroup: layer.layerGroup,
                                     topic: topic,
                                     sortIndex: 2.5,
                                     type: 'topiclayer',

@@ -17,7 +17,7 @@ function precreateLayerRef(result, callback, params) {
 
 function createLayerRef(result, callback, params) {
     var apiLayers = require('../api/layers')
-    
+    console.log('moretimes')
     var async = require('async')
     async.waterfall([
         
@@ -36,14 +36,18 @@ function createLayerRef(result, callback, params) {
             var crud = require('./crud')
             geoserverLayers.recreateLayerDb(result, false, function(err,baseLayerRef) {
                 if (err) {
-                    crud.remove('layerref',result,{bypassHooks:true},function(err2) {
+                    crud.remove('layerref',{_id:result._id},{bypassHooks:true,userId: params.userId,isAdmin:params.isAdmin},function(err2,res) {
+                        
                         if (err2) return callback(err2);
+                        
                         return callback(err);
                     })
                     return;
                 }
-                //console.log(baseLayerRef)
-                asyncCallback(null,baseLayerRef);
+                else {
+                    asyncCallback(null,baseLayerRef);
+                    
+                    }
             })
         },
         function(baseLayerRef,asyncCallback) {

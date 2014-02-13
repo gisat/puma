@@ -26,7 +26,6 @@ Ext.application({
         
         
         
-        
         this.getController('Puma.controller.Form');
         this.getController('Puma.controller.Login');
         Puma.util.Msg.init();

@@ -25,7 +25,8 @@ var refs = {
     },
     'areatemplate':{
         'symbologies': {coll:'symbology', canUpdate: true},
-        'topic': {coll:'topic', canUpdate: true}
+        'topic': {coll:'topic', canUpdate: true},
+        'layerGroup': {coll:'layergroup', canUpdate: true},
     },
     'symbology':{
     },
@@ -72,7 +73,7 @@ var refs = {
     }
 }
 
-var collections = ['dataview','chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
+var collections = ['layergroup','layergroupgs','dataview','chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
 
 module.exports = {
     ensureIds: ensureIds,

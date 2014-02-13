@@ -4,7 +4,7 @@ Ext.define('PumaMain.view.Tools', {
     // to be removed
     width: '100%',
     autoScroll: true,
-    requires: ['PumaMain.view.LayerPanel','PumaMain.view.MapTools'],
+    requires: ['PumaMain.view.LayerPanel','PumaMain.view.MapTools','Gisatlib.slider.DiscreteTimeline'],
     initComponent: function() {
         this.layout = {
             type: 'accordion',
@@ -23,8 +23,19 @@ Ext.define('PumaMain.view.Tools', {
             helpId: 'Multipleselectionshighlightedbyc',
             header: {height: 60},
             tools: [{
+               type: 'unselect',
+               cls: 'unselect',
+               tooltip: 'Unselect',
+               itemId: 'unselect'
+            },{
+               type: 'unselectall',
+               cls: 'unselectall',
+               tooltip: 'Unselect all',
+               itemId: 'unselectall'
+            },{
                type: 'detach',
                cls: 'detach',
+               tooltip: 'Detach',
                itemId: 'undock'
             }],
             layout: {
@@ -43,29 +54,48 @@ Ext.define('PumaMain.view.Tools', {
                     //width: 120,
                     colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
                 
-            },{
-                xtype: 'component',
-                margin: '0 10',
-                itemId: 'unselectbtn',
-                html: '<span id="app-tools-colors-unselect">unselect</span>'
             }]
              
              
          },   
             
-            
+         {
+            xtype: 'layerpanel',
+            //maxHeight: 500,
+            itemId: 'layerpanel',
+            helpId: 'Layers',
+            tools: [{
+                type: 'gear',
+                tooltip: 'Configure thematic maps',
+                itemId: 'gear'
+            },{
+               type: 'detach',
+               cls: 'detach',
+               tooltip: 'Detach',
+               itemId: 'undock'
+            }],
+            height: 300,
+            title: 'Layers'
+        },   
         {
             xtype: 'treepanel',
             title: 'Areas',
             itemId: 'areatree',
             helpId: 'TreeofanalyticalunitsAREAS',
+            collapsed: true,
             store: Ext.StoreMgr.lookup('area'),
             selModel: {
                 mode: 'MULTI'
             },
             tools: [{
+                type: 'areacollapse',
+                cls: 'areacollapse',
+                tooltip: 'Collapse all',
+                itemId: 'areacollapse'
+            },{
                type: 'detach',
                cls: 'detach',
+               tooltip: 'Detach',
                itemId: 'undock'
             }],
             rootVisible: false,
@@ -73,19 +103,6 @@ Ext.define('PumaMain.view.Tools', {
             height: 340
             //,maxHeight: 500
         }, {
-            xtype: 'layerpanel',
-            collapsed: true,
-            //maxHeight: 500,
-            itemId: 'layerpanel',
-            helpId: 'Layers',
-            tools: [{
-               type: 'detach',
-               cls: 'detach',
-               itemId: 'undock'
-            }],
-            height: 300,
-            title: 'Layers'
-        },{
             xtype: 'maptools',
             collapsed: false,
             itemId: 'maptools',
@@ -93,6 +110,7 @@ Ext.define('PumaMain.view.Tools', {
             tools: [{
                type: 'detach',
                cls: 'detach',
+               tooltip: 'Detach',
                itemId: 'undock'
             }],
             title: 'Map tools'
@@ -100,7 +118,20 @@ Ext.define('PumaMain.view.Tools', {
             xtype: 'panel',
             collapsed: true,
             tools: [{
+                type: 'poweron',
+                tooltip: 'Activate/deactivate',
+                itemId: 'poweron'
+            },{
+                type: 'refresh',
+                tooltip: 'Reset',
+                itemId: 'refresh'
+            },{
+                type: 'gear',
+                tooltip: 'Configure filters',
+                itemId: 'gear'
+            },{
                type: 'detach',
+               tooltip: 'Detach',
                cls: 'detach',
                itemId: 'undock'
             }],
@@ -111,20 +142,21 @@ Ext.define('PumaMain.view.Tools', {
             },
             itemId: 'advancedfilters',
             helpId: 'Filteringanalyticalunits',
-            buttons: [{
-                text: 'Configure',
-                itemId: 'configurefilters'
-            },{
-                text: 'Instant',
-                hidden: true,
-                itemId: 'instantfilter',
-                enableToggle: true
-            },{
-                text: 'Select',
-                hidden: true,
-                disabled: true,
-                itemId: 'filterselect'
-            }],
+//            buttons: [{
+//                text: 'Configure',
+//                hidden: true,
+//                itemId: 'configurefilters'
+//            },{
+//                text: 'Instant',
+//                hidden: true,
+//                itemId: 'instantfilter',
+//                enableToggle: true
+//            },{
+//                text: 'Select',
+//                hidden: true,
+//                disabled: true,
+//                itemId: 'filterselect'
+//            }],
             title: 'Advanced filters',
             bodyCls: 'tools-filters-list'
         }]

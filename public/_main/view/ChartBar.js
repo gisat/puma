@@ -3,7 +3,7 @@ Ext.define('PumaMain.view.ChartBar', {
     alias: 'widget.chartbar',
     requires: ['PumaMain.view.ScreenshotView'],
     autoScroll: true,
-    
+    //overflowY: 'scroll',
     height:"100%",
     initComponent: function() {
 
@@ -19,6 +19,7 @@ Ext.define('PumaMain.view.ChartBar', {
                 layout: 'fit',
                 iconCls: 'cmptype-snapshot',
                 collapseLeft: true,
+                //hidden: true,
                 itemId: 'screenshotpanel',
                 helpId: 'Snapshots',
                 items: [{
@@ -33,6 +34,7 @@ Ext.define('PumaMain.view.ChartBar', {
 //                xtype: 'panel',
 //                collapsed: true,
 //                cfgType: 'add',
+//                helpId: 'Addingnewcharts',
 //                iconCls: 'cmptype-addchart',
 //                leftSpace: 25,
 //                hideCollapseTool: true,

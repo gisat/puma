@@ -45,7 +45,6 @@ OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1_0_
                 else if (!node) {
                     node = this.createElementNSPlus(nodeName);
                 }
-
                 var tokens = typeof value == "string" ?
                         value.split("${") :
                         [value];
@@ -64,6 +63,15 @@ OpenLayers.Format.SLD.Geoserver23 = OpenLayers.Class(OpenLayers.Format.SLD.v1_0_
                         node.appendChild(this.createElementNSPlus("ogc:Literal", {value: value}));
                 }
                 return node;
+            },
+            "PointSymbolizer": function(obj) {
+                 var node = this.createElementNSPlus("sld:PointSymbolizer");
+                 this.writeNode("Graphic", obj, node);
+                 if (obj.geometry) {
+                    this.writeNode("Geometry", obj.geometry, node);
+                    
+                 }
+                 return node;
             },
             "CssParameter": function(obj) {
                 // not handling ogc:expressions for now

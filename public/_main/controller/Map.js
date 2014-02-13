@@ -41,41 +41,52 @@ Ext.define('PumaMain.controller.Map', {
     },
         
     onExportMapUrl: function(btn) {
-        var map = Ext.ComponentQuery.query('#map')[0].map;
+        var map1 = Ext.ComponentQuery.query('#map')[0].map;
+        var map2 = Ext.ComponentQuery.query('#map2')[0].map;
         var layerStore = Ext.StoreMgr.lookup('selectedlayers');
-        var useFirst = true;
+        var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var maps = years.length>1 ? [map1,map2] : [map1]
         //var useFirst = layerStore.getAt(0).get('layer1').map == map;
         var mapCfg = {};
-        var layers = [];
+        var layers1 = [];
+        var layers2 = [];
         var me = this;
+        Puma.util.Msg.msg('Snapshot creation started','','r');
         layerStore.each(function(rec) {
             
-            var layer = rec.get(useFirst ? 'layer1' : 'layer2');
-            
-            var sldId = layer.params ? layer.params['SLD_ID'] : null;
-            var layersParam = layer.params ? layer.params['LAYERS'] : null;
-            var stylesParam = layer.params ? layer.params['STYLES'] : null;
-            var obj = {
-                type: rec.get('type'),
-                opacity: layer.opacity || 1,
-                sldId: sldId,
-                name: rec.get('name'),
-                legendSrc: rec.get('src'),
-                layersParam: layersParam,
-                stylesParam: stylesParam
-            }
-            
-            layers.push(obj);
+            for (var i = 0; i < maps.length; i++) {
+                var map = maps[i];
+                var layer = rec.get(i == 0 ? 'layer1' : 'layer2');
+                var layers = i==0 ? layers1 : layers2;
+                var sldId = layer.params ? layer.params['SLD_ID'] : null;
+                var layersParam = layer.params ? layer.params['LAYERS'] : null;
+                var stylesParam = layer.params ? layer.params['STYLES'] : null;
+                var obj = {
+                    type: rec.get('type'),
+                    opacity: layer.opacity || 1,
+                    sldId: sldId,
+                    name: rec.get('name'),
+                    legendSrc: rec.get('src'),
+                    layersParam: layersParam,
+                    stylesParam: stylesParam
+                }
+
+                layers.push(obj);
+            }      
         })
-        
+        var store = Ext.StoreMgr.lookup('year');
         mapCfg = {
-            layers: layers,
+            layers: layers1,
+            layers2: years.length>1 ? layers2 : null,
             type: 'map',
             trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
-            year: map.year,
-            center: map.center,
-            size: map.size,
-            zoom: map.zoom
+            year: map1.year,
+            yearName: store.getById(map1.year).get('name'),
+            year2: years.length>1 ? map2.year : null,
+            year2Name: years.length>1 ? store.getById(map2.year).get('name') : null,
+            center: map1.center,
+            size: map1.size,
+            zoom: map1.zoom
         }
         Ext.Ajax.request({
             url: Config.url + '/api/urlview/saveChart',
@@ -92,6 +103,30 @@ Ext.define('PumaMain.controller.Map', {
     },
     
     onMultipleYearsToggle: function(btn,pressed) {
+        if (!btn.leftYearsUnchanged) {
+            var yearCnt = Ext.ComponentQuery.query('#selyear')[0]
+            var years = yearCnt.getValue();
+            if (years.length<2 && pressed) {
+                var newYears = [years[0]];
+                var yearsInStore = Ext.StoreMgr.lookup('year4sel').getRange();
+                for (var i=yearsInStore.length-1;i>=0;i--) {
+                    var year = yearsInStore[i].get('_id');
+                    if (Ext.Array.contains(years,year)) {
+                        continue;
+                    }
+                    if (newYears.length<2) {
+                        Ext.Array.insert(newYears,i==yearsInStore.length-1 ? 1 : 0,[year])
+                    }
+                }
+                yearCnt.setValue(newYears)
+            }
+            if (years.length>1 && !pressed) {
+                yearCnt.setValue([years[years.length-1]])
+            }
+            btn.toBeChanged = true;
+            return;
+        }
+        btn.toBeChanged = false;
         var domController = this.getController('DomManipulation');
         if (pressed) {
             domController.activateMapSplit();
@@ -102,6 +137,8 @@ Ext.define('PumaMain.controller.Map', {
         this.multiMap = pressed;
         this.map1.multiMap = pressed;
         this.map2.multiMap = pressed;
+        var method = pressed ? 'addCls':'removeCls';
+        Ext.get(this.map1.div)[method]('noattrib');
         //var gmapNoPrint = Ext.select('#app-map .gmnoprint');
         var controlZoom = Ext.select('#app-map .olControlZoom');
         //gmapNoPrint.setVisible(!pressed);
@@ -148,21 +185,38 @@ Ext.define('PumaMain.controller.Map', {
         
         var window = Ext.WindowManager.get('measureWindow');
         if (val) {
+            var title = 'Measure '+(btn.itemId == 'measurelinebtn' ? 'line' : 'polygon');
+            var helpText = btn.itemId == 'measurelinebtn' ? 'Click to define line shape, double-click to complete.' : 'Click to define polygon shape, double-click to complete.';
+            var initialText = (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":";
             if (!window) {
+                
                 window = Ext.widget('window',{
                     padding: 5,
                     minWidth: 140,
                     closable: false,
-                    maxWidth: 220,
+                    maxWidth: 260,
                     bodyPadding: 5,
-                    title: 'Measure',
+                    title: title,
                     closeAction: 'hide',
-                    html: (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":",
+                    items: [{
+                        xtype: 'component',
+                        itemId: 'help',
+                        margin: '0 0 10 0',
+                        html: helpText
+                    },{
+                        xtype: 'component',
+                        itemId: 'measure',
+                        html: initialText
+                    }],
                     id: 'measureWindow'
                 })
             }
+            else {
+                window.setTitle(title);
+                window.down('#help').update(helpText);
+                window.down('#measure').update(initialText);
+            }
             window.show();
-            window.body.dom.innerHTML = (btn.itemId == 'measurelinebtn' ? 'Length' : 'Area') + ":",
             control1.activate();
             control2.activate();
         }
@@ -237,7 +291,7 @@ Ext.define('PumaMain.controller.Map', {
             type: 'terrain'
         });
         var osmNode = Ext.create('Puma.model.MapLayer',{
-            name: 'OSM',
+            name: 'OpenStreetMap',
             initialized: true,
             allowDrag: false,
             checked: false,
@@ -316,7 +370,14 @@ Ext.define('PumaMain.controller.Map', {
                 }
         );
         var layerDefaults = this.getController('Layers').getWmsLayerDefaults();
-        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.apply(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+        var layerDefaultsTiled = this.getController('Layers').getWmsLayerDefaults();
+
+        layerDefaultsTiled.params.tiled = true;
+        delete layerDefaultsTiled.layerParams.singleTile;
+        layerDefaultsTiled.layerParams.tileSize = new OpenLayers.Size(256,256)
+        layerDefaultsTiled.layerParams.removeBackBufferDelay = 0;
+        layerDefaultsTiled.layerParams.transitionEffect = null;
+        map.layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.apply(layerDefaultsTiled.params), Ext.clone(layerDefaultsTiled.layerParams));
         map.layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         map.layer1.opacity = cmp.opacity;
         map.addLayers([hybridLayer, map.layer1, map.layer2]);
@@ -363,31 +424,33 @@ Ext.define('PumaMain.controller.Map', {
         var style = new OpenLayers.Style();
         var layerName = 'puma:layer_' + layerRefs.areaRef._id;
         var rule = new OpenLayers.Rule({
-            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color}),
-            "Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})},
+            symbolizer: {
+                "Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color})
+                //,"Text":new OpenLayers.Symbolizer.Text({label:'${name}',fontFamily:'DejaVu Sans Condensed Bold',fontSize:14,fontWeight:'bold',labelAnchorPointX:0.5,labelAnchorPointY:0.5})
+            },
             filter: filter
         });
         style.addRules([rule]);
-        var rasterStyle = new OpenLayers.Style();
-        var rasterRule = new OpenLayers.Rule({
-            symbolizer: {
-                "Raster": new OpenLayers.Symbolizer.Raster({colorMap:[{color:'#00ff00',quantity:-100},{color:'#0000ff',quantity:100}]})
-            }
-        });
-        rasterStyle.addRules([rasterRule]);
-        var rasternamedLayers = [{
-                name: layerRefs.layerRef.layer,
-                userStyles: [rasterStyle]
-            }];
-        var rastersldObject = {
-            name: 'style',
-            title: 'Style',
-            namedLayers: rasternamedLayers
-        }
-        var rasterformat = new OpenLayers.Format.SLD.Geoserver23();
-        var rastersldNode = rasterformat.write(rastersldObject);
-        var rasterxmlFormat = new OpenLayers.Format.XML();
-        var rastersldText = rasterxmlFormat.write(rastersldNode);
+//        var rasterStyle = new OpenLayers.Style();
+//        var rasterRule = new OpenLayers.Rule({
+//            symbolizer: {
+//                "Raster": new OpenLayers.Symbolizer.Raster({colorMap:[{color:'#00ff00',quantity:-100},{color:'#0000ff',quantity:100}]})
+//            }
+//        });
+//        rasterStyle.addRules([rasterRule]);
+//        var rasternamedLayers = [{
+//                name: layerRefs.layerRef.layer,
+//                userStyles: [rasterStyle]
+//            }];
+//        var rastersldObject = {
+//            name: 'style',
+//            title: 'Style',
+//            namedLayers: rasternamedLayers
+//        }
+//        var rasterformat = new OpenLayers.Format.SLD.Geoserver23();
+//        var rastersldNode = rasterformat.write(rastersldObject);
+//        var rasterxmlFormat = new OpenLayers.Format.XML();
+//        var rastersldText = rasterxmlFormat.write(rastersldNode);
         
         
         var namedLayers = [{
@@ -412,11 +475,19 @@ Ext.define('PumaMain.controller.Map', {
             symbologyId = splitted.slice(1).join('_');
             symbologyId = symbologyId == '#blank#' ? null : symbologyId
         }
+        var layers = Ext.Array.map(layerRefs.layerRef ? [layerRefs.layerRef] : layerRefs.layerRefs,function(item) {
+            return item.layer;
+        })
         var layer1Conf = {
-            layers: layerRefs.layerRef.layer
+            layers: layers.join(',')
         }
+        var numLayers = layers.length;
         if (symbologyId) {
-            layer1Conf.styles = symbologyId;
+            layer1Conf.styles = '';
+            for (var i=0;i<numLayers;i++) {
+                layer1Conf.styles += layer1Conf.styles ? ',' : '';
+                layer1Conf.styles += symbologyId;
+            }
         }
         
         map.layer1.mergeNewParams(layer1Conf)
@@ -429,10 +500,39 @@ Ext.define('PumaMain.controller.Map', {
         })
         map.updateSize();
         
+        
+        
+        
+        
+        
+        
+        map.outlineExtent = overallExtent;
         map.layer1.setVisibility(true);
         map.layer2.setVisibility(true);
-        map.zoomToExtent(overallExtent);
-        map.outlineExtent = overallExtent;
+        map.zoomToExtent(map.outlineExtent);
+        if (cmp.ownerCt.items.getCount()==cmp.ownerCt.mapNum){
+            var minZoom = 10000;
+            cmp.ownerCt.items.each(function(mapCmp) {
+                var zoom = mapCmp.map.getZoom()
+                if (zoom<minZoom) {
+                    minZoom = zoom
+                }
+            });
+            cmp.ownerCt.items.each(function(mapCmp) {
+                var curMap = mapCmp.map;
+                if (curMap==map) {
+                    setTimeout(function() {
+                        curMap.zoomTo(minZoom);
+                    },100)
+                }
+                else {
+                    
+                    curMap.zoomTo(minZoom);
+                }
+                
+            });
+        }
+        
     },
         
     onExtentOutlineComplete: function(cmp) {
@@ -448,7 +548,10 @@ Ext.define('PumaMain.controller.Map', {
             }
         })
         if (loaded) {
-            console.log('loadingdone');
+            setTimeout(function() {
+                
+                console.log('loadingdone');
+            },150)
         }
     },
         
@@ -712,8 +815,8 @@ Ext.define('PumaMain.controller.Map', {
         html += ' ';
         html += evt.units;
         html += evt.order == 2 ? '<sup>2</sup>' : '';
-        var window = Ext.WindowManager.get('measureWindow');
-        window.body.dom.innerHTML = html;
+        var cmp = Ext.WindowManager.get('measureWindow').down('#measure');
+        cmp.el.update(html)
     },
         
     onFeatureInfo: function(response) {
@@ -904,9 +1007,7 @@ Ext.define('PumaMain.controller.Map', {
             if (!cmp.initialZoom) {
                 //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(0, 5000000, 3500000, 8000000));
-
-                //cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(6960977, -434794.06241276, 20071456.585033, 7059703.685849));
+                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(10000000, -1000000, 14000000, 5000000));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))
                 cmp.initialZoom = true;
             }

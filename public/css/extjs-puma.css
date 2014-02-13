@@ -103,6 +103,11 @@
 	border-left          : none;
 }
 
+.x-border-box .x-form-trigger.x-form-refresh-trigger {
+	background           : #ddd url("../images/icons/paging-refresh2.png") no-repeat 50% 50%;
+        background-size: 16px 16px;
+}
+
 .x-border-box .x-form-trigger.x-form-spinner-down, .x-border-box .x-form-trigger.x-form-spinner-up{
     height: 15px ! important;
     width: 30px ! important;
@@ -178,8 +183,8 @@
 
 /* ACCORDEON */
 .x-accordion-hd {
-	padding-left         : 10px;
-	padding-right        : 10px;
+	padding-left         : 6px;
+	padding-right        : 6px;
 	border               : none;
 	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;
 }
@@ -195,16 +200,22 @@
 	font-weight          : bold;
 }
 
-.x-accordion-hd .x-tool-expand-top, .x-accordion-hd .x-tool-expand-right, .x-accordion-hd .x-tool-expand-bottom, .x-accordion-hd .x-tool-expand-left {
+div .x-tool-expand-top, div .x-tool-expand-right, div .x-tool-expand-bottom, div .x-tool-expand-left {
 	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
 }
-.x-accordion-hd .x-tool-over .x-tool-expand-top, .x-accordion-hd .x-tool-over .x-tool-expand-right, .x-accordion-hd .x-tool-over .x-tool-expand-bottom, .x-accordion-hd .x-tool-over .x-tool-expand-left {
+div .x-tool-over .x-tool-expand-top, div .x-tool-over .x-tool-expand-right, div .x-tool-over .x-tool-expand-bottom, div .x-tool-over .x-tool-expand-left {
 	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
 }
-.x-accordion-hd .x-tool-collapse-top, .x-accordion-hd .x-tool-collapse-right, .x-accordion-hd .x-tool-collapse-bottom, .x-accordion-hd .x-tool-collapse-left {
+div .x-tool-collapse-top, div .x-tool-collapse-right, div .x-tool-collapse-bottom, div .x-tool-collapse-left {
 	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
 }
-.x-accordion-hd .x-tool-over .x-tool-collapse-top, .x-accordion-hd .x-tool-over .x-tool-collapse-right, .x-accordion-hd .x-tool-over .x-tool-collapse-bottom, .x-accordion-hd .x-tool-over .x-tool-collapse-left {
+div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, div .x-tool-over .x-tool-collapse-bottom, div .x-tool-over .x-tool-collapse-left {
+	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+}
+div .x-tool-collapse-top, div .x-tool-collapse-right, div .x-tool-collapse-bottom, div .x-tool-collapse-left {
+	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+}
+div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, div .x-tool-over .x-tool-collapse-bottom, div .x-tool-over .x-tool-collapse-left {
 	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
 }
 
@@ -344,6 +355,13 @@
 .x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow-line {
 	width: 12px;
 }
+.layerpanel .x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow,
+.layerpanel .x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow-end,
+.layerpanel .x-tree-lines .x-grid-tree-node-leaf .x-tree-elbow-line {
+	width: 6px;
+}
+
+
 .x-grid-row-over .x-grid-cell, .x-grid-row-over .x-grid-rowwrap-div,
 .x-grid-row-focused .x-grid-cell, .x-grid-row-focused .x-grid-rowwrap-div {
 	background-color     : #ddd;

@@ -91,7 +91,7 @@ Ext.define('Puma.patch.panel.Header', {
             if (collapseTool && me.collapseLeft) {
                 Ext.Array.remove(me.items,collapseTool)
                 Ext.Array.insert(me.items,0,[collapseTool])
-                collapseTool.margin = '0 10 0 -5';
+                collapseTool.margin = (me.topMargin || '0') + ' 10 0 '+(me.leftMargin || '-5');
             }
             if (collapseTool && me.collapseRight) {
                 Ext.Array.remove(me.items,collapseTool)

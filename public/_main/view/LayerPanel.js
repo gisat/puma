@@ -8,21 +8,70 @@ Ext.define('PumaMain.view.LayerPanel', {
         var me = this;
 //        this.buttons = [{
 //            text: 'Configure',
-//            hidden: true,
+//            helpId: 'Modyfingchoropleths',
 //            itemId: 'configurelayers'
 //        }]
+//        this.layout = {
+//            type: 'card'
+//        }
+        this.tabBar = {
+            layout: {
+                type: 'hbox',
+                align: 'stretch'
+            },
+            defaults: {flex: 1}
+        },
         this.items = [
             {
+                xtype: 'treepanel',
+                itemId: 'layerpanel',
+                id: 'layeravailablepanel',
+                helpId: 'Availablelayers',
+                hideHeaders: true,
+                store: Ext.StoreMgr.lookup('layers'),
+                //title: 'Layers available',
+                displayField: 'name',
+                rootVisible: false,
+                title: 'Layers available',
+                border: true,
+                //header: false,
+                viewConfig: {
+                    autoScroll: false,
+                    overflowY: 'auto',
+                    getRowClass: function(rec) {
+                        return rec.get('type')=='topiclayer' ? 'has-metadata' : '';
+                    }
+                },
+                columns: [{
+                        xtype: 'treecolumn',
+                        dataIndex: 'name',
+                        sortable: false,
+                        menuDisabled: true,
+                        flex: 1,
+                        renderer : function(value, metadata) {
+                            metadata.tdAttr = 'data-qtip="' + value + '"';
+                            return value;
+                        },
+                        header: 'Name'
+                    }
+                ],
+                style: {
+                    borderRadius: '0px'
+                }
+            },{
                 xtype: 'grid',
                 itemId: 'layerselectedpanel',
                 helpId: 'Selectedlayers',
+                hideHeaders: true,
                 id: 'layerselectedpanel',
+                //header: false,
                 store: Ext.StoreMgr.lookup('selectedlayers'),
                 viewConfig: {
                     plugins: {ptype: 'gridviewdragdrop'}
                 },
-                title: 'Layers selected',
+                //title: 'Layers selected',
                 displayField: 'name',
+                title: 'Layers selected',
                 bodyCls: 'layers-selected',
                 border: true,
 //                plugins: [{
@@ -134,37 +183,6 @@ Ext.define('PumaMain.view.LayerPanel', {
                 style: {
                     borderRadius: '0px'
                 }
-            },{
-                xtype: 'treepanel',
-                itemId: 'layerpanel',
-                id: 'layeravailablepanel',
-                helpId: 'Availablelayers',
-                store: Ext.StoreMgr.lookup('layers'),
-                title: 'Layers available',
-                displayField: 'name',
-                rootVisible: false,
-                border: true,
-                viewConfig: {
-                    getRowClass: function(rec) {
-                        return rec.get('type')=='topiclayer' ? 'has-metadata' : '';
-                    }
-                },
-                columns: [{
-                        xtype: 'treecolumn',
-                        dataIndex: 'name',
-                        sortable: false,
-                        menuDisabled: true,
-                        flex: 1,
-                        renderer : function(value, metadata) {
-                            metadata.tdAttr = 'data-qtip="' + value + '"';
-                            return value;
-                        },
-                        header: 'Name'
-                    }
-                ],
-                style: {
-                    borderRadius: '0px'
-                }
             }
         ]
         
@@ -172,7 +190,7 @@ Ext.define('PumaMain.view.LayerPanel', {
         
         
         this.callParent();
-        this.on('afterrender',function() {
+        this.query('#layerselectedpanel')[0].on('afterrender',function() {
             Ext.get('layerselectedpanel').on('click',function(e,dom) {
                 var el = Ext.get(dom);
                 var panel = Ext.ComponentQuery.query('#layerselectedpanel')[0]

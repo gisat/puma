@@ -1,13 +1,13 @@
-Ext.define('Puma.model.AreaTemplate', {
+Ext.define('Puma.model.LayerGroup', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','justVisualization','active','symbologies','topic','layerGroup'
+    '_id','name','active','priority'
     ],
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Config.url+'/rest/areatemplate',
+        url : Config.url+'/rest/layergroup',
         reader: {
             type: 'json',
             root: 'data'

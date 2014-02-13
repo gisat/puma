@@ -10,7 +10,7 @@ Ext.define('Gisatlib.container.StoreContainer', {
             type: 'hbox'
         }
         this.defaults = {
-            margin: '0 8 0 0'
+            margin: '0 2 0 0'
         }
         this.displayField = this.displayField || 'name';
         this.valueField = this.valueField || '_id';
@@ -51,16 +51,16 @@ Ext.define('Gisatlib.container.StoreContainer', {
             }
         
         })
-        this.store.each(function(rec) {
-            if (!Ext.Array.contains(presentRecs,rec)) {
-                var cmp = me.createCmp(rec);
-                cmpsToAdd.push(cmp);
-            }
-        })
         for (var i=0;i<cmpsToDelete.length;i++) {
             this.remove(cmpsToDelete[i])
         }
-        this.add(cmpsToAdd);
+        this.store.each(function(rec,i) {
+            if (!Ext.Array.contains(presentRecs,rec)) {
+                var cmp = me.createCmp(rec);
+                me.insert(i,cmp)
+            }
+        })
+        
         if (this.forceSelection && !containsPressed) {
             var cmp = this.items.getAt(0);
             if (cmp) {

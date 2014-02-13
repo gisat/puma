@@ -11,7 +11,7 @@ var us = require('underscore')
 
 function filter(params, req, res, callback) {
 
-
+    
 //    var params2 = us.clone(params);
 
     params.filter = null;
@@ -19,7 +19,7 @@ function filter(params, req, res, callback) {
 //    params2.refreshAreas = true;
 //    params2.allAreaTemplates = true;
 //    params2.justAreas = true;
-    
+
 //    if (params['expanded']) {
 //        require('./theme').getThemeYearConf(params2,req,res,function() {
 //            var newData = [];
@@ -38,8 +38,8 @@ function filter(params, req, res, callback) {
 //        });
 //        return;
 //    }
-    
-    
+
+
     var opts = {
         attrConf: function(asyncCallback) {
             if (!params['areas']) {
@@ -52,67 +52,96 @@ function filter(params, req, res, callback) {
                 return asyncCallback(null, attrConf);
             })
         },
-        data: ['attrConf',function(asyncCallback, results) {
-            if (!results.attrConf) {
-
-                return callback(null);
-            }
-            params.attrMap = results.attrConf.prevAttrMap;
-            var filters = JSON.parse(params['filters'])
-            var filterParam = [];
-            for (var i=0;i<filters.length;i++) {
-                var filter = filters[i];
-                var obj1 = {
-                    field: 'as_'+filter.as+'_attr_'+filter.attr,
-                    comparison: 'gt',
-                    value: filter.min
-                }
-                var obj2 = {
-                    field: 'as_'+filter.as+'_attr_'+filter.attr,
-                    comparison: 'lt',
-                    value: filter.max
-                }
-                filterParam.push(obj1);
-                filterParam.push(obj2);
-            }
-            params['filter'] = JSON.stringify(filterParam);
-            data.getData(params, function(err, dataObj) {
-                var newData = [];
-                if (err) {
-                    res.data = [];
-                    return callback(null);
-                }
-                for (var i=0;i<dataObj.data.length;i++) {
-                    var row = dataObj.data[i];
-                    var obj = {
-                        loc: row.loc,
-                        at: row.at,
-                        gid: row.gid
-                    }
-                    newData.push(obj);
-                }
-                res.data = newData;
-                callback(null)
-            })
-        }],
-        metaData: ['attrConf', function(asyncCallback, results) {
+        data: ['attrConf', function(asyncCallback, results) {
                 if (!results.attrConf) {
-                    
+
                     return callback(null);
                 }
-
+                if (!params['requireData']) {
+                    return asyncCallback();
+                }
+                params.attrMap = results.attrConf.prevAttrMap;
+                var filters = JSON.parse(params['filters'])
+                var filterParam = [];
+                for (var i = 0; i < filters.length; i++) {
+                    var filter = filters[i];
+                    if (filter.inactive) continue;
+                    var obj1 = {
+                        field: 'as_' + filter.as + '_attr_' + filter.attr,
+                        comparison: 'gt',
+                        value: filter.min
+                    }
+                    var obj2 = {
+                        field: 'as_' + filter.as + '_attr_' + filter.attr,
+                        comparison: 'lt',
+                        value: filter.max
+                    }
+                    filterParam.push(obj1);
+                    filterParam.push(obj2);
+                }
+                
+                params['filter'] = JSON.stringify(filterParam);
+                data.getData(params, function(err, dataObj) {
+                    var newData = [];
+                    if (err) {
+                        res.data = [];
+                        return callback(null);
+                    }
+                    for (var i = 0; i < dataObj.data.length; i++) {
+                        var row = dataObj.data[i];
+                        var obj = {
+                            loc: row.loc,
+                            at: row.at,
+                            gid: row.gid
+                        }
+                        newData.push(obj);
+                    }
+                    return asyncCallback(null,newData)
+                })
+            }],
+        dist: ['attrConf','metaData', function(asyncCallback,results) {
                 params.attrMap = results.attrConf.prevAttrMap;
                 var attrMetaMap = {};
                 var attrs = JSON.parse(params['attrs']);
                 async.map(attrs, function(attr, mapCallback) {
                     var newParams = us.clone(params);
-                    newParams.attrs = JSON.stringify([attr]);
+                    //newParams.attrs = JSON.stringify([attr]);
                     newParams.sort = JSON.stringify([{property: 'as_' + attr.as + '_attr_' + attr.attr, direction: 'ASC'}])
                     newParams.sortNorm = JSON.stringify({
                         normType: attr.normType,
                         normAttr: attr.normAttr,
                         normAs: attr.normAs
                     })
+                    var filters = JSON.parse(params['filters'])
+                    var filterParam = [];
+                    
+                    for (var i = 0; i < filters.length; i++) {
+                        var filter = filters[i];
+                        if (filter.as==attr.as && filter.attr==attr.attr) {
+                            continue;
+                        }
+                        if (filter.inactive) continue;
+                        var attrName = 'as_'+filter.as+'_attr_'+filter.attr;
+                        console.log(filter);
+                        if (filter.maxOrig>results.metaData[attrName].max || filter.minOrig<results.metaData[attrName].min) {
+                            filter.min = results.metaData[attrName].min-0.1;
+                            filter.max = results.metaData[attrName].max+0.1;
+                        }
+                        var obj1 = {
+                            field: attrName,
+                            comparison: 'gt',
+                            value: filter.min
+                        }
+                        var obj2 = {
+                            field: attrName,
+                            comparison: 'lt',
+                            value: filter.max
+                        }
+                        filterParam.push(obj1);
+                        filterParam.push(obj2);
+                    }
+                    console.log(filterParam)
+                    newParams.filter = JSON.stringify(filterParam);
                     data.getData(newParams, function(err, dataObj) {
                         if (err)
                             return callback(err)
@@ -122,66 +151,97 @@ function filter(params, req, res, callback) {
                     })
 
                 }, function(err, resls) {
-                    for (var i=0;i<resls.length;i++) {
+                    for (var i = 0; i < resls.length; i++) {
                         var resl = resls[i];
-                        
+
                         var attr = attrs[i];
                         var attrName = 'as_' + attr.as + '_attr_' + attr.attr;
-                        
-                        var min = resl.data[0][attrName];
-                        var max = resl.data[resl.data.length-1][attrName];
-                        var diff = max-min;
+                        var attrMeta = results.metaData[attrName]
+                        var min = attrMeta['min'];
+                        var max = attrMeta['max'];
+                        var diff = max - min;
                         var classes = 20;
-                        var fraction = diff!=0 ? diff/classes : 1;
+                        var fraction = diff != 0 ? diff / classes : 1;
                         var dist = [];
-                        for (var j=0;j<classes;j++) {
+                        for (var j = 0; j < classes; j++) {
                             dist[j] = 0;
                         }
-                        for (var j=0;j<resl.data.length;j++) {
+                        for (var j = 0; j < resl.data.length; j++) {
                             var row = resl.data[j];
                             var val = row[attrName];
-                            var classNum = Math.floor((val-min)/fraction);
-                            classNum = classNum==classes ? classNum-1 : classNum;
+                            var classNum = Math.floor((val - min) / fraction);
+                            classNum = classNum == classes ? classNum - 1 : classNum;
                             dist[classNum]++;
                         }
-                        for (var k=-3;k<100;k++) {
-                            var num = diff/Math.pow(10,k);
-                            if (num<400) {
+
+
+                        attrMetaMap['as_' + attr.as + '_attr_' + attr.attr] = dist
+                    }
+                    return asyncCallback(null,attrMetaMap)
+
+                })
+            }],
+        metaData: ['attrConf', function(asyncCallback, results) {
+                if (!results.attrConf) {
+
+                    return callback(null);
+                }
+                if (params['requireData']) {
+                    //return asyncCallback(null);
+                }
+                
+                params.attrMap = results.attrConf.prevAttrMap;
+                var attrMetaMap = {};
+                var newParams = us.clone(params);
+                newParams.aggregate = 'min,max';
+                data.getData(newParams, function(err, dataObj) {
+                    if (err)
+                        return callback(err)
+                    var attrs = JSON.parse(params['attrs']);
+                    var data = {};
+                    for (var i=0;i<attrs.length;i++) {
+                        var attr = attrs[i];
+                        var min = dataObj.aggregate['min_as_'+attr.as+'_attr_'+attr.attr];
+                        var max = dataObj.aggregate['max_as_'+attr.as+'_attr_'+attr.attr];
+                        var attrName = 'as_' + attr.as + '_attr_' + attr.attr;
+                        var diff = max - min;
+                        for (var k = -3; k < 100; k++) {
+                            var num = diff / Math.pow(10, k);
+                            if (num < 400) {
                                 break;
                             }
                         }
-                        if (max>100) {
-                            //console.log(max)
-                        }
-                        min = (Math.abs(min-Math.round(min))<0.001) ? Math.round(min) : min;
-                        max = (Math.abs(max-Math.round(max))<0.001) ? Math.round(max) : max;
-                        min = Math.floor(min*Math.pow(10,-k))/Math.pow(10,-k)
-                        max = Math.ceil(max*Math.pow(10,-k))/Math.pow(10,-k)
-                        min = k>0 ? parseInt(min.toFixed(0)) : min;
-                        max = k>0 ? parseInt(max.toFixed(0)) : max;
-                              
-                        
-                        attrMetaMap['as_'+attr.as+'_attr_'+attr.attr] = {
-                            dist: dist,
-                            decimal: k,        
+                        min = (Math.abs(min - Math.round(min)) < 0.001) ? Math.round(min) : min;
+                        max = (Math.abs(max - Math.round(max)) < 0.001) ? Math.round(max) : max;
+                        min = Math.floor(min * Math.pow(10, -k)) / Math.pow(10, -k)
+                        max = Math.ceil(max * Math.pow(10, -k)) / Math.pow(10, -k)
+                        min = k > 0 ? parseInt(min.toFixed(0)) : min;
+                        max = k > 0 ? parseInt(max.toFixed(0)) : max;
+                        data[attrName] = {
                             min: min,
                             max: max,
-                            units: resl.units
+                            units: results.attrConf.attrMap[attr.as][attr.attr].units,
+                            decimal: k
                         }
                     }
-                    res.data = {metaData: attrMetaMap}
-                    return callback(null);
                     
+                    //dataObj.units = results.attrConf.attrMap[attr.attr].units
+                    return asyncCallback(null, data)
                 })
 
+
+
+            }],
+        result: ['metaData','data','dist', function(asyncCallback, results) {
+                 res.data = {
+                     metaData: results.metaData,
+                     data: results.data,
+                     dist: results.dist
+                 }
+                 return callback();
             }]
     }
-    if (params['filters']) {
-        delete opts['metaData'];
-    }
-    else {
-        delete opts['data'];
-    }
+
 
     async.auto(opts)
 

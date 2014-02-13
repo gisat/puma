@@ -20,6 +20,7 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.ColumnMap',
         'Puma.model.Column',
         'Puma.model.MapLayer',
+        'Puma.model.LayerGroup',
         'Puma.model.MappedAttribute',
         'Puma.model.Visualization',
         'Puma.model.Screenshot',
@@ -74,7 +75,11 @@ Ext.define('PumaMain.controller.Store', {
             autoLoad: true,
             model: 'Puma.model.Theme'
         })
-        
+        Ext.create('Ext.data.Store',{
+            storeId: 'layergroup',
+            autoLoad: true,
+            model: 'Puma.model.LayerGroup'
+        })
     
         Ext.create('Ext.data.Store',{
             storeId: 'attributeset',
@@ -98,6 +103,7 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Ext.data.Store',{
             storeId: 'year',
             autoLoad: true,
+            sorters:[{property:'name',direction:'ASC'}],
             model: 'Puma.model.Year'
         })
         
@@ -409,11 +415,6 @@ Ext.define('PumaMain.controller.Store', {
                     type: 'choroplethgroup',
                     expanded: true,
                     children: [],
-                    checked: null
-                },{
-                    name: 'Information layers',
-                    type: 'thematicgroup',
-                    expanded: true,
                     checked: null
                 },{
                     name: 'Background layers',

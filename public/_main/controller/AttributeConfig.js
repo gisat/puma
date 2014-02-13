@@ -167,7 +167,7 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         }
         else if (form.formType=='filters') {
             this.filterConfig = values.attrs;
-            
+            debugger;
             this.getController('Filter').reconfigureFilters(values);
         }
         form.up('window').close();
@@ -181,11 +181,11 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             formType = 'layers'
             cfg = {attrs:this.layerConfig || []} ;
         }
-        if (cmp.itemId == 'configurefilters') {
+        else if (cmp.itemId == 'configurefilters') {
             formType = 'filters';
             cfg = {attrs:this.filterConfig || []} ;
         }
-        if (cmp.xtype == 'tool') {
+        else if (cmp.xtype == 'tool') {
             chart = cmp.up('chartpanel').chart
             cfg = chart.cfg;
         }

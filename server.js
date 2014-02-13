@@ -5,9 +5,12 @@ var staticFn = express['static'];
 
 var async = require('async');
 var loc = require('./common/loc');
-console.log('init')
-function initServer() {
-    
+
+function initServer(err) {
+    if (err) {
+        console.log(err);
+        return;
+    }
     // Order is important
     var oneDay = 60*60*24*1000;
     app.use('/public/extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay}));
