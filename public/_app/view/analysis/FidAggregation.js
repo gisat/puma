@@ -161,8 +161,9 @@ Ext.define('PumaMng.view.analysis.FidAggregation', {
     getEditor: function(rec,form,column) {
         var attrSetFieldName = (column && column.dataIndex == 'calcAttribute') ? 'calcAttributeSet' : 'normAttributeSet'
         var attrSetId = rec.get(attrSetFieldName);
-        
-        var attributes = attrSetId ? Ext.StoreMgr.lookup('attributeset').getById(attrSetId).get('attributes') : [];
+        var attrSet = attrSetId ? Ext.StoreMgr.lookup('attributeset').getById(attrSetId) : null
+        var attributes = attrSetId ? attrSet.get('attributes') : [];
+        attributes = Ext.Array.merge(attributes,(attrSetId && attrSet.get('otherAttributes')) ? attrSet.get('otherAttributes') : [])
         //debugger;
         var store = Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,

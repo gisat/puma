@@ -86,14 +86,12 @@ function create(params,req,res,callback) {
             var type = analysisObj.type;
             analysis[type].check(analysisObj,performedAnalysisObj,function(err,resls) {
                 //console.log(resls)
-                console.log('checked')
                 if (err) return callback(err);
                 return asyncCallback(null,resls)
             })
         }],
         create: ['layerRef','analysis',function(asyncCallback,results) {
             crud.create('performedanalysis',performedAnalysisObj,function(err,result) {
-                console.log('created');
                 var analysisObj = results.analysis;
                 var type = analysisObj.type;
                 res.data = result;

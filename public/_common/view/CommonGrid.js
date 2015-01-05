@@ -20,6 +20,10 @@ Ext.define('Puma.view.CommonGrid', {
             this.features = [filtersCfg];
         }
         this.columns = this.columns || [{
+                dataIndex: '_id',
+                width: 50,
+                header: 'ID'
+            },{
             dataIndex: 'name',
             header: 'Name',
             flex: 1

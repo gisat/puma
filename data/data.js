@@ -97,6 +97,7 @@ function getData(params, callback) {
         var normPre = (normalization && normalizationYear) ? ('x_' + normalizationYear + '.') : pre;
         select += i == 0 ? ('%%gid%% AS gid') : '';
         select += i == 0 ? (',%%name%% AS name') : '';
+        select += i == 0 ? (',%%code%% AS code') : '';
         select += i == 0 ? (',%%at%% AS at') : '';
         select += i == 0 ? (',%%loc%% AS loc') : '';
         select += i == 0 ? (',%%pr%% AS pr') : '';
@@ -352,6 +353,7 @@ function getData(params, callback) {
                             var oneSql = sql ? ' UNION (' : '(';
                             var gidSql = '';
                             var nameSql = '';
+                            var codeSql = '';
                             if ((params['useAggregation'] && userAggregates[locationId] && userAggregates[locationId][areaId])) {
                                 var x = 0;
                                 for (var aggGid in userAggregates[locationId][areaId]) {
@@ -364,6 +366,7 @@ function getData(params, callback) {
                                 }
                                 gidSql += 'x_' + years[0] + '."gid"';
                                 nameSql += 'x_' + years[0] + '."name"';
+                                
                                 if (gidSql) {
                                     for (var j = 0; j < x; j++) {
                                         gidSql += ' END';
@@ -372,14 +375,15 @@ function getData(params, callback) {
                                 }
 
                             }
-
+                            
                             if (!gidSql) {
                                 gidSql = 'x_' + years[0] + '."gid"';
                                 nameSql = 'x_' + years[0] + '."name"';
+                                codeSql = 'x_' + years[0] + '."code"';
                             }
                             var prIdx = (sort && sortProperty!='name') ? 1 : i;
                             prIdx = ((aggSelect || (params['sortNorm'] && JSON.parse(params['sortNorm']).normType=='select')) && i==0) ? i : prIdx;
-                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%pr%%',prIdx);
+                            oneSql += select.replace('%%at%%', areaId).replace('%%loc%%', locationId).replace('%%gid%%', gidSql).replace('%%name%%', nameSql).replace('%%code%%', codeSql).replace('%%pr%%',prIdx);
 
                             var baseLayerRef = null;
                             var baseYear = null;
@@ -399,7 +403,7 @@ function getData(params, callback) {
                                 //var layerName = areaId != -1 ? 'layer_' + layerRef['_id'] : ('layer_user_' + params['userId'] + '_loc_' + locationId + '_y_' + year);
                                 var tableSql = locationId == -1 ? getTopAllSql(topAllSql, results.layerRefMap, results.dataset, locationIds, year) : 'views.layer_' + layerRef['_id'];
                                 if (!baseLayerRef) {
-
+                                    
                                     oneSql += ' FROM ' + tableSql + ' x_' + year;
                                     baseYear = year;
                                     baseLayerRef = layerRef;
@@ -431,7 +435,7 @@ function getData(params, callback) {
 
             }],
         data: ['sql', function(asyncCallback, results) {
-                var dataSql = 'SELECT gid,name,loc,at,pr,'
+                var dataSql = 'SELECT gid,name,loc,at,pr,code,'
                 dataSql += aliases.join(',')
                 dataSql += ' FROM (' + results.sql + ') as a';
                 dataSql += ' WHERE 1=1';
@@ -455,6 +459,7 @@ function getData(params, callback) {
                 }
                 dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
                 dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
+                //console.log(dataSql)
                 client.query(dataSql, function(err, resls) {
                     if (err)
                         return callback(err);
@@ -643,7 +648,6 @@ function getAttrConf(params, callback) {
         attrIds.push(parseInt(params['normalizationAttribute']));
     }
 
-
     var opts = {
         attrSet: function(asyncCallback) {
             crud.read('attributeset', {_id: {$in: attrSetIds}}, function(err, resls) {
@@ -673,6 +677,7 @@ function getAttrConf(params, callback) {
                 var attrMap = {};
                 var prevAttrMap = {};
                 var unitsArr = [];
+                
                 for (var i = 0; i < attrs.length; i++) {
                     var attrRec = attrs[i];
                     attrMap[attrRec.as] = attrMap[attrRec.as] || {};
@@ -680,7 +685,7 @@ function getAttrConf(params, callback) {
                     prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
                     prevAttrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
                     var normType = attrRec.normType;
-                    var units = results.attr[attrRec.attr].units || '';
+                    var units = results.attr[attrRec.attr] ? (results.attr[attrRec.attr].units || ''):'';
                     var normUnits = null;
                     
                     if (normType == 'area') {
@@ -716,7 +721,10 @@ function getAttrConf(params, callback) {
                     if (units == normUnits) {
                         unitsTotal = '%'
                     }
-                    attrMap[attrRec.as][attrRec.attr].units = unitsTotal;
+                    if (attrMap[attrRec.as] && attrMap[attrRec.as][attrRec.attr]) {
+                        attrMap[attrRec.as][attrRec.attr].units = unitsTotal;
+                        
+                    }
                     unitsArr.push(unitsTotal)
                 }
 

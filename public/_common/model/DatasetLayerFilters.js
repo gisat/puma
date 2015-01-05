@@ -1,14 +1,13 @@
-
-Ext.define('Puma.model.Attribute', {
+Ext.define('Puma.model.DatasetLayerFilters', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','color','code','type','units','active','description','layerMode'
+    '_id','name','dataset','featureLayer','filters'
     ],
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Config.url+'/rest/attribute',
+        url : Config.url+'/rest/datasetlayerfilters',
         reader: {
             type: 'json',
             root: 'data'
@@ -20,5 +19,6 @@ Ext.define('Puma.model.Attribute', {
         }
     }
 });
+
 
 

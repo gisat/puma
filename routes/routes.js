@@ -10,6 +10,7 @@ var api = {
     userpolygon: require('../api/userpolygon'),
     urlview: require('../api/urlview'),
     filter: require('../api/filter'),
+    upload: require('../api/upload'),
     print: require('../api/print')
 }
 

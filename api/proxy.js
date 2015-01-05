@@ -126,7 +126,9 @@ function wms(params, req, res, callback) {
     }
     var username = useFirst ? 'gnode' : 'tomasl84';
     var password = useFirst ? 'geonode' : 'lou840102';
-    
+    if (params['REQUEST'] == 'GetLegendGraphic') {
+        //params['HEIGHT'] = 55;
+    }
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {};
     var data = null;
@@ -161,13 +163,14 @@ function wms(params, req, res, callback) {
     if (params['REQUEST'] == 'GetMap' || params['REQUEST']=='GetLegendGraphic') {
         options.resEncoding = 'binary';
     }
-    if (params['REQUEST'] == 'GetLegendGraphic') {
-    }
     var time = new Date().getTime();;
     conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
         if (err) {
             console.log(err)
             return callback(err);
+        }
+        if (output.search('<?xml')>-1) {
+            //console.log(output)
         }
         //console.log(new Date().getTime()-time);
         if (useFirst) {
@@ -274,13 +277,13 @@ function saveSld(params, req, res, callback) {
             data.getData(dataParams, function(err, dataObj) {
                
                 if (err)
-                    return callback(err);
+                    return asyncCallback(null,null);
                 //console.log(dataObj)
                 if (params['altYears']) {
                     dataParams['years'] = params['altYears'];
                     data.getData(dataParams, function(err, dataObj2) {
                         if (err)
-                            return callback(err);
+                            return asyncCallback(null,null);
                         dataObj.altAggregate = dataObj2.aggregate;
                         return asyncCallback(null, dataObj);
                     })
@@ -306,6 +309,7 @@ function saveSld(params, req, res, callback) {
                 }
                 break;
             }
+            
             var query = {
             $and: [
                 {location: parseInt(loc)},
@@ -316,6 +320,7 @@ function saveSld(params, req, res, callback) {
             ]}
             crud.read('layerref',query,function(err,resls) {
                 if (err) return callback(err);
+                
                 var layerName = resls[0] ? resls[0]._id : ('user_'+req.userId+'_loc_'+params['location']+'_y_'+year);
                 //console.log(layerName)
                 //console.log(params['location'])
@@ -351,18 +356,34 @@ function saveSld(params, req, res, callback) {
                 if (min==max) {
                     max = min+1;
                 }
+                
+                
                 sld = sld.replace(new RegExp('#attr#','g'), normAttrName);
                 sld = sld.replace(new RegExp('#minval#','g'), min);
                 sld = sld.replace(new RegExp('#maxval#','g'), max);
+                
                 sld = sld.replace(new RegExp('#url#','g'), urlParams);
             }
             if (params['showChoropleth']) {
-                sld = sld.replace(new RegExp('#toptree#','g'),results.data.aggData.length ? results.data.aggData[0][attrName] : 1);
+                try {
+                    sld = sld.replace(new RegExp('#toptree#','g'),results.data.aggData.length ? results.data.aggData[0][attrName] : 1);
+                   
+                }
+                catch(e) {}
                 sld = sld.replace(new RegExp('#attr#','g'),attrName);
+                
                 sld = sld.replace(new RegExp('#attrid#','g'),attrs[attrIndex].attr);
-                var min = results.data.altAggregate ? Math.min(results.data.aggregate['min_'+attrName],results.data.altAggregate['min_'+attrName]) : results.data.aggregate['min_'+attrName];
-                var max = results.data.altAggregate ? Math.max(results.data.aggregate['max_'+attrName],results.data.altAggregate['max_'+attrName]) : results.data.aggregate['max_'+attrName];
-               
+                var min = 0;
+                var max = 1;
+                try {
+                    min = results.data.altAggregate ? Math.min(results.data.aggregate['min_'+attrName],results.data.altAggregate['min_'+attrName]) : results.data.aggregate['min_'+attrName];
+                    max = results.data.altAggregate ? Math.max(results.data.aggregate['max_'+attrName],results.data.altAggregate['max_'+attrName]) : results.data.aggregate['max_'+attrName];
+                }
+                catch (e) {}
+                sld = sld.replace(new RegExp('#minval#','g'), min);
+                sld = sld.replace(new RegExp('#maxval#','g'), max);
+                sld = sld.replace(new RegExp('#avgval#','g'), min + (max-min)/2);
+                console.log(max,min);
                 var fixNum = 0;
                 if (max<100000 || diff<10000) {
                     fixNum = 1;
@@ -383,7 +404,9 @@ function saveSld(params, req, res, callback) {
                 }
                 
                 else if (params['classType']=='quantiles') {
-                    var dataLength = results.data.data.length
+                    
+                    var dataLength = results.data ? results.data.data.length : 0;
+                    var prevNumCat = numCat;
                     numCat = Math.min(numCat,dataLength)
                     var catSize = Math.floor(dataLength/numCat);
                     var restSize = dataLength - catSize * numCat;
@@ -393,21 +416,42 @@ function saveSld(params, req, res, callback) {
                     for (var i=1;i<dataLength;i++) {
                         var idx = i;
                         var diff = catSize + ((newRest>0) ? 1 : 0);
-                        if (idx % diff == 0) {
+                        //console.log(diff,idx,catIdx,newRest);
+                        if (idx % diff == 0 || idx==dataLength-1) {
                             newRest--;
                             catIdx++;
+                            
+                            
                             var item = results.data.data[idx];
                             var current = results.data.data[idx][attrName];
                             var prev = results.data.data[idx - 1][attrName];
+                            
                             if (prev!=null && dataLength!=1) {
                                 val = prev+(current-prev)/2;
                                 val = val.toFixed(fixNum);
                                 sld = sld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
                                 legendSld = legendSld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
+                                legendSld = legendSld.replace(new RegExp('#ms_'+catIdx+'#','g'),100000);
+                            }
+                            if (catIdx-1<prevNumCat && idx==dataLength-1) {
+                                val = prev+(current-prev)/2;
+                                val = val.toFixed(fixNum);
+                                sld = sld.replace(new RegExp('#val_'+prevNumCat+'#','g'),val);
+                                legendSld = legendSld.replace(new RegExp('#val_'+prevNumCat+'#','g'),val);
+                                legendSld = legendSld.replace(new RegExp('#ms_'+prevNumCat+'#','g'),100000);
                             }
                         }
+                        
                     }
-                    sld = sld.replace(new RegExp('#val_[0-9]+#','g'),val);
+                    if (dataLength==1) {
+                        sld = sld.replace(new RegExp('#val_1#','g'),results.data.data[0][attrName]+1);
+                    }
+                    
+                    
+                    sld = sld.replace(new RegExp('#val_[0-9]+#','g'),dataLength!=1 ? val : val+1);
+                    //legendSld = legendSld.replace(new RegExp('#ms_'+(catIdx+1)+'#','g'),100000);
+                    legendSld = legendSld.replace(new RegExp('#ms_999#','g'),dataLength == 1 ? 100000 : 10);
+                    legendSld = legendSld.replace(new RegExp('#ms_[0-9]+#','g'),10);
                     legendSld = legendSld.replace(new RegExp('#val_[0-9]+#','g'),val);
                     if (dataLength==1) {
                         //console.log(sld);
@@ -422,7 +466,6 @@ function saveSld(params, req, res, callback) {
                     }
                 }
             }
-            //console.log(sld)
             if (results.attrConf) {
                 //console.log(results.attrConf.attrMap.units)
                 legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');

@@ -27,6 +27,13 @@ Ext.define('PumaMng.view.form.Attribute', {
                     store: Ext.StoreMgr.lookup('attributetype'),
                     allowBlank: false,
                     fieldLabel: 'Type'
+                }, {
+                    xtype: 'pumacombo',
+                    name: 'layerMode',
+                    valueField: 'type',
+                    store: Ext.StoreMgr.lookup('layermode'),
+                    allowBlank: false,
+                    fieldLabel: 'Layer mode'
                 }];
 
         this.callParent();

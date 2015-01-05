@@ -69,6 +69,17 @@ Ext.define('PumaMng.view.form.LayerRef', {
                 fieldLabel: 'FID column'
             }, {
                 xtype: 'pumacombo',
+                name: 'joinFidColumn',
+                allowBlank: true,
+                hidden: true,
+                disabled: true,
+                itemId: 'joinFidColumn',
+                store: Ext.StoreMgr.lookup('columnstring'),
+                displayField: 'column',
+                valueField: 'column',
+                fieldLabel: 'Join column'
+            },{
+                xtype: 'pumacombo',
                 name: 'nameColumn',
                 hidden: true,
                 allowBlank: true,
@@ -77,6 +88,17 @@ Ext.define('PumaMng.view.form.LayerRef', {
                 displayField: 'column',
                 valueField: 'column',
                 fieldLabel: 'Name column'
+            },
+            {
+                xtype: 'pumacombo',
+                name: 'codeColumn',
+                hidden: true,
+                allowBlank: true,
+                itemId: 'codeColumn',
+                store: Ext.StoreMgr.lookup('columnstring'),
+                displayField: 'column',
+                valueField: 'column',
+                fieldLabel: 'Code column'
             },
             {
                 xtype: 'pumacombo',
@@ -89,6 +111,16 @@ Ext.define('PumaMng.view.form.LayerRef', {
                 valueField: 'column',
                 fieldLabel: 'Parent column'
             }, {
+                xtype: 'pumacombo',
+                name: 'joinParentColumn',
+                hidden: true,
+                allowBlank: true,
+                itemId: 'joinParentColumn',
+                store: Ext.StoreMgr.lookup('columnstring'),
+                displayField: 'column',
+                valueField: 'column',
+                fieldLabel: 'Join parent column'
+            },{
                 xtype: 'textfield',
                 name: 'wmsAddress',
                 disabled: true,
@@ -104,7 +136,15 @@ Ext.define('PumaMng.view.form.LayerRef', {
                 hidden: false,
                 itemId: 'wmsLayers',
                 fieldLabel: 'WMS Layers'
-            }, {
+            },  {
+                xtype: 'checkboxfield',
+                name: 'reuseYears',
+                disabled: false,
+                allowBlank: false,
+                hidden: true,
+                itemId: 'reuseYears',
+                fieldLabel: 'Reuse years'
+            },{
                 xtype: 'storefield',
                 validator: function(val) {
                     var valid = true;

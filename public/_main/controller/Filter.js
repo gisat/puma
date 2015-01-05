@@ -224,6 +224,7 @@ Ext.define('PumaMain.controller.Filter', {
     },
     
     reconfigureFilters: function(cfg) {
+        return;
         var attrs = Ext.Array.clone(cfg.attrs);
         var oldAttrs = Ext.Array.clone(cfg.attrs);
         this.cfg = cfg;
@@ -385,6 +386,7 @@ Ext.define('PumaMain.controller.Filter', {
     },
             
     reconfigureFiltersCall: function(requireData) {
+        return;
         if (!this.attrs || !this.attrs.length) return;
         if (Config.cfg) {
             this.reconfigureFiltersCallback({filterData:Config.cfg.filterData});
@@ -450,6 +452,7 @@ Ext.define('PumaMain.controller.Filter', {
     },    
         
     reconfigureFiltersCallback: function(response) {
+        return;
         var data = response.filterData || JSON.parse(response.responseText).data;
         this.filterData = data;
         if (data) {
@@ -540,7 +543,7 @@ Ext.define('PumaMain.controller.Filter', {
             }
             else if (val[0]<cfg.min || val[1]>cfg.max) {
                 newValue = [cfg.min,cfg.max];
-                Puma.util.Msg.msg('Filter '+slider.attrObj.attrName+' was reset','','l');
+                //Puma.util.Msg.msg('Filter '+slider.attrObj.attrName+' was reset','','l');
             }
         }
         
@@ -643,7 +646,7 @@ Ext.define('PumaMain.controller.Filter', {
             items.push(cnt)
         }
         return items;
-
+        
 
     }
     

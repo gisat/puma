@@ -12,7 +12,7 @@ function getChart(params, callback) {
     for (var i = 0; i < filters.length; i++) {
         filterMap[filters[i].dataIndex] = filters[i].value
     }
-
+    console.log(attrs);
     var moreYears = years.length > 1;
     var opts = {
         years: function(asyncCallback) {
@@ -69,7 +69,7 @@ function getChart(params, callback) {
                                 units: attrConf.units,
                                 xtype: 'numbercolumn',
                                 tooltip: attrConf.name + ' '+results.years[year],
-                                text: attrName,
+                                text: results.years[year],
                                 yearName: results.years[year],
                                 fullName: fullName,
                                 minWidth: 100,

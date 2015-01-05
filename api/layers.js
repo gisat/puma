@@ -168,8 +168,11 @@ function getLayers(params, req, res, callback) {
         headers: headers,
         method: 'GET'
     };
-
-    conn.request(options, null, function(err, output, resl) {
+    
+    var client = conn.getPgDb();
+    var opts = {
+        geonodeLayers: function(asyncCallback) {
+            conn.request(options, null, function(err, output, resl) {
         if (err)
             return callback(err);
         var layers = JSON.parse(output).rw;
@@ -194,11 +197,36 @@ function getLayers(params, req, res, callback) {
                 objs.push(obj);
             }
             objs.push({name: 'WMS', referenced: false, isWms: true})
-            res.data = objs;
-            return callback();
+            return asyncCallback(null,objs);
+            //res.data = objs;
+            //return callback();
         })
 
     })
+        },
+        importedLayers: function(asyncCallback) {
+            var sql = 'SELECT ($1 || table_name) AS name,FALSE AS referenced FROM information_schema.tables WHERE table_schema = $2';
+            client.query(sql, ['import:','import'], function(err, resls) {
+                if (err) return resls;
+                var tables = [];
+                return asyncCallback(null,resls.rows)
+            })
+        },
+        result: ['geonodeLayers','importedLayers',function(asyncCallback,results) {
+            
+            var finalized = us.union(results.geonodeLayers,results.importedLayers);
+            res.data = finalized;
+            return callback();
+            
+        }]
+         
+    }
+    
+    async.auto(opts);
+    
+    
+    
+    
 }
 
 
@@ -282,7 +310,19 @@ function activateLayerRef(params, req, res, callback) {
 
 
 function getLayerDetails(params, req, res, callback) {
-
+    
+    
+    if (params.layer.search('import:')>-1) {
+        var client = conn.getPgDb();
+        var sql = 'SELECT column_name AS column FROM information_schema.columns WHERE table_schema = $1 AND table_name = $2';
+        client.query(sql,['import',params.layer.split(':')[1]],function(err,results) {
+            if (err) return callback(err);
+            res.data = results.rows;
+            return callback();
+        })
+    }
+    
+    
     var postData = {
         SERVICE: 'wfs',
         REQUEST: 'DescribeFeatureType',

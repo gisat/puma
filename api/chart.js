@@ -3,6 +3,7 @@ var charts = {
     grid: require('../data/grid'),
     data: require('../data/data'),
     columnchart: require('../data/columnchart'),
+    boxplotchart: require('../data/boxplotchart'),
     piechart: require('../data/piechart'),
     featurecount: require('../data/featurecount'),
     extentoutline: require('../data/extentoutline'),

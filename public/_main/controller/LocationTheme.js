@@ -1,3 +1,4 @@
+
 Ext.define('PumaMain.controller.LocationTheme', {
     extend: 'Ext.app.Controller',
     views: [],
@@ -37,6 +38,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
             '#selyear': {
                 change: this.onYearChange
             },
+            '#selindicator': {
+                change: this.onIndicatorChange
+            },
             '#selvisualization': {
                 change: this.onVisChange
             },
@@ -57,6 +61,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 }
                 
             })
+        this.wasMulti = false;
 
     },
     testTimeline: function(slider,value) {
@@ -66,6 +71,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (cnt.eventsSuspended) {
             return;
         }
+        
         var themeStore = Ext.StoreMgr.lookup('theme4sel');
         var themes = this.attrConf[val] || [];
         
@@ -73,19 +79,114 @@ Ext.define('PumaMain.controller.LocationTheme', {
         themeStore.filter([function(rec) {
             return Ext.Array.contains(themes,rec.get('_id'))
         }])
-        if (cnt.initial) {
-            return;
-        }
-        var themeCombo = Ext.ComponentQuery.query('#seltheme')[0]
+        
+        var themeComboId = cnt.initial ? '#initialtheme' : '#seltheme'
+        var themeCombo = Ext.ComponentQuery.query(themeComboId)[0];
         var themeVal = themeCombo.getValue();
         if (!themeVal) {
             themeCombo.suspendEvents();
-            themeCombo.setValue(themeStore.getAt(0).get('_id'))
+            var themeFirst = themeStore.getAt(0);
+            if (!themeFirst) {
+                Ext.ComponentQuery.query('#initialindicator')[0].setValue(null);
+                return;
+            }
+            themeVal = themeFirst.get('_id')
+            themeCombo.setValue(themeVal)
             themeCombo.resumeEvents();
             this.themeChanged = true;
         }
+        var theme = Ext.StoreMgr.lookup('theme').getById(themeVal);
+        var topic = theme.get('topics')[0];
+        
+        var attrStore = Ext.StoreMgr.lookup('attribute4sel');
+        var attrSet = Ext.StoreMgr.lookup('attributeset').queryBy(function(rec) {
+            return rec.get('topic')==topic && rec.get('dataset')==val;
+        }).first();
+        
+        this.attrSet = attrSet.get('_id');
+        var attributes = attrSet.get('attributes');
+        if (!cnt.initial) {
+            var attrCombo = Ext.ComponentQuery.query('#selindicator')[0]
+            attrCombo.suspendEvents();
+        }
+        
+        attrStore.clearFilter();
+        attrStore.filter([function(rec) {
+            return Ext.Array.contains(attributes,rec.get('_id'))
+        }])
+        attrStore.sorters.clear();
+//        
+        attrStore.sort([function(a,b) {
+            var arr = [407,406,408,409,410];
+            arr.reverse();
+                    var idx1 = Ext.Array.indexOf(arr,a.get('_id'))
+                    var idx2 = Ext.Array.indexOf(arr,b.get('_id'))
+                    if (idx1 == idx2) {
+                        var i1 = Ext.Array.indexOf(attributes,a.get('_id'));
+                        var i2 = Ext.Array.indexOf(attributes,b.get('_id'));
+                        return i1 > i2 ? 1 : -1;
+                    }
+                    return idx1<idx2 ? 1 : -1;
+        }
+        ]
+        )
+        
+        if (cnt.initial) {
+            return;
+        }
+        
+        
+        var attrVal = attrCombo.getValue();
+        if (!attrVal) {
+            attrVal = attrStore.getAt(0).get('_id')
+            attrCombo.setValue(attrVal)
+            
+            this.indicatorChanged = true;
+        }
+        
+        attrCombo.resumeEvents();
+        
+        this.getController('DomManipulation').activateLoadingMask();
         this.datasetChanged = true;
+        var changed = this.changeYears(themeVal,val);
+        if (changed) return;
         this.onYearChange(cnt)
+        
+    },
+    changeYears: function(themeVal,datasetVal) {
+        var theme = Ext.StoreMgr.lookup('theme').getById(themeVal);
+        var topics = theme.get('topics');
+        var attrSet = Ext.StoreMgr.lookup('attributeset').queryBy(function(rec) {
+            return Ext.Array.contains(topics,rec.get('topic')) && rec.get('dataset')==datasetVal && rec.get('attributes') && rec.get('attributes').length;
+        }).getAt(0);
+        var years = attrSet.get('years');
+        var year = attrSet.get('year');
+        
+        var yearStore = Ext.StoreMgr.lookup('year');
+        yearStore.clearFilter();
+        var yearCombo = Ext.ComponentQuery.query('#selyear')[0]
+        var currentYears = yearCombo.getValue();
+        var changed = false;
+        
+        if (year && currentYears && currentYears.length && !Ext.Array.contains(currentYears,year)) {
+            changed = true;
+            yearCombo.setValue(year);
+        }
+        else if (years && years.length && currentYears && currentYears.length && !Ext.Array.intersect(years,currentYears)) {
+            changed = true;
+        }
+        else if (year && (!currentYears || !currentYears.length)) {
+            changed = true;
+            yearCombo.setValue(year);
+        }
+        if (years && years.length) {
+            yearStore.filter([function(rec) {
+                return Ext.Array.contains(years,rec.get('_id'))
+            }])
+        }
+        return changed;
+        
+        
         
     },
     onScopeChange: function(cnt,val) {
@@ -105,6 +206,26 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var first = datasetStore.getAt(0);
         if (cnt.initial || !first) return;
         datasetCombo.setValue(parseInt(first.get('_id')));
+        
+    },
+        
+    onIndicatorChange: function(cnt,val) {
+        if (cnt.eventsSuspended) {
+            return;
+        }
+        this.reconfigureChartComboValues(this.attrSet)
+        this.getController('Chart').reconfigureAll();
+        var layerStore = Ext.StoreMgr.lookup('layers');
+        var nodes = layerStore.getRootNode().findChild('type','choroplethgroup').childNodes;
+        
+        for (var i=0;i<nodes.length;i++) {
+            var node = nodes[i];
+            if (node.get('attribute')==val) {
+                node.set('checked',true);
+                this.getController('Layers').onCheckChange(node,true);
+            }
+        }
+        
         
     },
     onLocationChange: function(cnt,val) {
@@ -193,7 +314,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         this.onThemeChange({switching:true},val)
     },
     
- onThemeChange: function(cnt,val) {
+    onThemeChange: function(cnt,val) {
         if (cnt.eventsSuspended || cnt.initial || !val) {
             return;
         }
@@ -202,6 +323,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         var themeCombo = null;
         if (cnt.switching) {
+            Ext.suspendLayouts();
             this.getController('DomManipulation').activateLoadingMask();
             this.getController('DomManipulation').renderApp();
             this.getController('Render').renderApp();
@@ -210,31 +332,38 @@ Ext.define('PumaMain.controller.LocationTheme', {
             var datasetCombo = Ext.ComponentQuery.query('#seldataset')[0];
             var scopeVal = Ext.ComponentQuery.query('#initialscope')[0].getValue();
             var scopeCombo = Ext.ComponentQuery.query('#selscope')[0];
-            
+            var indicatorVal = Ext.ComponentQuery.query('#initialindicator')[0].getValue();
+            var indicatorCombo = Ext.ComponentQuery.query('#selindicator')[0];
             var yearCombo = Ext.ComponentQuery.query('#selyear')[0];
             datasetCombo.suspendEvents();
             scopeCombo.suspendEvents();
             themeCombo.suspendEvents();
             yearCombo.suspendEvents();
+            indicatorCombo.suspendEvents();
             datasetCombo.setValue(datasetVal);
             scopeCombo.setValue(scopeVal);
             themeCombo.setValue(val);
-            
+            indicatorCombo.setValue(indicatorVal);
             yearCombo.refresh();
             
             datasetCombo.resumeEvents();
             scopeCombo.resumeEvents();
             themeCombo.resumeEvents();
-            
+            indicatorCombo.resumeEvents();
             yearCombo.resumeEvents();
             
             var chartController = this.getController('Chart');
             chartController.addChart({type:'grid',title:'Grid'},true);
             chartController.addChart({type:'columnchart',title:'Column',aggregate:'avg'},true);
             chartController.addChart({type:'scatterchart',title:'Scatter'},true);
+            //chartController.addChart({type:'boxplotchart',title:'Box plot'},true);
+            //Ext.resumeLayouts();
         }
         themeCombo = themeCombo || Ext.ComponentQuery.query('#seltheme')[0];
         yearCombo = yearCombo || Ext.ComponentQuery.query('#selyear')[0];
+        
+        var changed = this.changeYears(val,datasetVal || Ext.ComponentQuery.query('#seldataset')[0].getValue());
+        if (changed) return;
         var yearVal = yearCombo.getValue();
         if (!yearVal || !yearVal.length) {
             yearCombo.setValue([Ext.StoreMgr.lookup('year').getAt(0)]);
@@ -371,21 +500,32 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
     addAreas: function(areasToAdd) {
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
+        var tree = Ext.ComponentQuery.query('#areatree')[0];
+        tree.view.dontRefreshSize = true;
         areaRoot.removeAll();
+        tree.view.dontRefreshSize = false;
         var data = [];
         var currentLevel = [];
         var parentLevel = null;
         var level = null;
         this.addAreasToAreaMap(areasToAdd);
         var leafMap = {};
+        this.lastLevel = areasToAdd.length ? areasToAdd[0].at : null;
         for (var i=0;i<areasToAdd.length;i++) {
             var area = areasToAdd[i];
             level = level || area.at;
             //area.children = [];
             if (area.at!=level) {
                 level = area.at;
+                this.lastLevel = area.at;
                 parentLevel = currentLevel;
                 currentLevel = [];
+            }
+            area.filterAttrs = {};
+            for (var key in area) {
+                if (key.search('as_')>-1 && area[key]) {
+                    area.filterAttrs[key] = area[key].split(',');
+                }
             }
             if (!area.leaf) {
                 area.expandable = true;
@@ -397,13 +537,18 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 leafMap[area.loc][area.at].push(area.gid)
             }
             area.id = area.at+'_'+area.gid;
+            area.expandable = false;
+            
             var node = Ext.create('Puma.model.Area',area);
+            node.updateInfo = function() {
+                
+            }
             if (!area.parentgid) {
                 data.push(node);
             }
             else {
                 for (var j=0;j<parentLevel.length;j++) {
-                    if (parentLevel[j].get('gid') == area.parentgid) {
+                    if (parentLevel[j].get('joingid') == area.parentgid) {
                         parentLevel[j].set('expanded',true);
                         parentLevel[j].appendChild(node)
                     }
@@ -411,8 +556,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
             currentLevel.push(node);
         }
-        areaRoot.removeAll();
-        areaRoot.appendChild(data);
+        
+        for (var i=0;i<data.length;i++) {
+            areaRoot.appendChild(data[i],true);
+        }
         
     },
         
@@ -471,7 +618,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     return false;
                 }
                 if (node==root) return;
-                if (node.get('loc')==loc && node.get('at')==prevAt && node.get('gid')==parentgid) {
+                if (node.get('loc')==loc && node.get('at')==prevAt && (node.get('gid')==parentgid || node.get('joingid')==parentgid)) {
                     foundNode = node;
                     return false;
                 }
@@ -519,7 +666,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
             var layer1 = node.get('layer1');
             var layer2 = node.get('layer2');
             me.initializeLayer(node,layer1,mapController.map1.year,cfg)
-
             me.initializeLayer(node,layer2,mapController.map2.year,cfg)
             
         })
@@ -540,15 +686,39 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
             
         }
-        layer.initialized = true;
+        layer.initialized = layers.length>0
+            
         layers.sort();
-        layer.mergeNewParams({
-            layers: layers.join(','),
-            styles: symbologies.join(',')
-        })
+        if (layers.length>0) {
+            layer.mergeNewParams({
+                layers: layers.join(','),
+                styles: symbologies.join(',')
+            })
+        }
         var src = this.getController('Layers').getLegendUrl(layers[0],null,symbologyId);
         node.set('src',src)
-        if (node.get('checked')) {
+        var distantLayers = node.get('layer1')==layer ? node.get('distantLayers') : [];
+        for (var i=0;i<distantLayers.length;i++) {
+            var distantLayer = distantLayers[i];
+            distantLayer.initialized = layers.length>0;
+            if (layers.length>0) {
+                distantLayer.mergeNewParams({
+                    layers: layers.join(','),
+                    styles: symbologies.join(',')
+                })
+            }
+            if (!layers.length) {
+                distantLayer.setVisibility(false);
+            }
+            if (node.get('checked') && layers.length) {
+                distantLayer.setVisibility(true);
+            }
+        }
+        
+        if (!layers.length) {
+            layer.setVisibility(false);
+        }
+        if (node.get('checked') && layers.length) {
             layer.setVisibility(true);
         }
     },
@@ -567,6 +737,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
             if (topic && !Ext.Array.contains(topics,parseInt(topic))) {
                     mapController.map1.removeLayer(node.get('layer1'))
                     mapController.map2.removeLayer(node.get('layer2'))
+                    var distantLayers = node.get('distantLayers')
+                    for (var k=0;k<distantLayers.length;k++) {
+                        var distantLayer = distantLayers[k];
+                        distantLayer.map.removeLayer(distantLayer);
+                    }
                     nodesToDestroy.push(node);
                 }
             }
@@ -588,7 +763,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             if (Ext.Array.contains(this.topics, topic)) {
                 continue;
             }
-
+            
             nodesToAdd.push(layerNodes[i])
         }
 
@@ -600,7 +775,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var selectedLayerNode = null;
         var systemNode = null;
         var thematicNode = null;
-            for (var i=0;i<childNodes.length;i++) {
+        var treeView = Ext.ComponentQuery.query('layerpanel')[0].view;
+        if (treeView) {
+            treeView.dontRefreshSize = true;
+            
+        }
+        for (var i=0;i<childNodes.length;i++) {
             var node = childNodes[i];
             var type = node.get('type');
 
@@ -680,10 +860,25 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     layerNode.set('layer2', layer2);
                     layer1.nodeRec = layerNode;
                     layer2.nodeRec = layerNode;
+                    var distantRegionsCmps = Ext.ComponentQuery.query('[type=distantregion]');
+                    for (var k=0;k<distantRegionsCmps.length;k++) {
+                        var distantMap = distantRegionsCmps[k].map;
+                        var layerDistant = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(params), Ext.clone(layerParams));
+                        distantMap.addLayers([layerDistant]);
+                        layerDistant.nodeRec = layerNode;
+                        var distantLayers = layerNode.get('distantLayers') || [];
+                        distantLayers.push(layerDistant);
+                        layerNode.set('distantLayers',distantLayers);
+                    }
                 }
             }
         }
         Ext.StoreMgr.lookup('selectedlayers').loadData(layersToAdd, true);
+        if (treeView) {
+        treeView.dontRefreshSize = false;
+        treeView.refreshSize();
+        
+        }
         var layerController = this.getController('Layers');
         layerController.resetIndexes();
         layerController.onLayerDrop();
@@ -704,23 +899,129 @@ Ext.define('PumaMain.controller.LocationTheme', {
         })
 
     },
+        
+    refreshFilters: function() {
+        var filtersPanel = Ext.ComponentQuery.query('#codefilters')[0];
+        if (this.initialized) {
+            Ext.suspendLayouts();
+            
+        }
+        
+        var dataset = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var layer = this.lastLevel;
+        var filtersObj = Ext.StoreMgr.lookup('datasetlayerfilters').queryBy(function(rec) {
+            if (rec.get('featureLayer')==layer && rec.get('dataset')==dataset) return true;
+        }).first();
+        var attrs = [];
+        if (filtersObj) {
+            attrs = filtersObj.get('filters')
+        }
+//        else {
+//            attrs = this.filterAttributes
+//        }
+        //filtersPanel.removeAll();
+        var presentAttrs = [];
+        var itemsToRemove = [];
+       
+        filtersPanel.items.each(function(cont) {
+            
+            if (!Ext.Array.contains(attrs,cont.attrId)) {
+                itemsToRemove.push(cont);
+            }
+            else {
+                presentAttrs.push(cont.attrId);
+            }
+        })
+        for (var i=0;i<itemsToRemove.length;i++) {
+            filtersPanel.remove(itemsToRemove[i]);
+        }
+        
+        var attrStore = Ext.StoreMgr.lookup('attribute');
+        var attrMap = {};
+        for (var i=0;i<attrs.length;i++) {
+            var code = 'as_'+this.filterAttrSet+'_attr_'+attrs[i];
+            attrMap[code] = [];
+        }
+        if (attrs.length) {
+            Ext.StoreMgr.lookup('area').getRootNode().cascadeBy(function(rec) {
+                var filterAttrs = rec.get('filterAttrs');
+                
+                for (var code in filterAttrs) {
+                    attrMap[code] = Ext.Array.merge(attrMap[code],filterAttrs[code]);
+                }
+            })
+        }
+        else {
+            attrs.push('no');
+        }
+        console.log(attrMap)
+        for (var i=0;i<attrs.length;i++) {
+            var attr = attrs[i];
+            if (Ext.Array.contains(presentAttrs,attr)) {
+                continue;
+            }
+            var attrRec = attrStore.getById(attr);
+            var code = 'as_'+this.filterAttrSet+'_attr_'+attr;
+            var values = attrMap[code] || [];
+            values.sort();
+            var cont = {
+//                layout: {
+//                    type: 'vbox',
+//                },
+                defaults: {
+                    margin: 2
+                },
+                xtype: 'container',
+                attrId: attr,
+                //values: values,
+                attrCode: code,
+                margin: (i==attrs.length-1) ? '8 8 36 8' : 8,
+                //padding: 8,
+                items: [{
+                    xtype: 'component',
+                    html: '<b>'+(attrRec ? attrRec.get('name') : 'No filters available')+'</b>'
+                }]  
+            }
+            
+            for (var j=0;j<values.length;j++) {
+                
+                var value = values[j];
+                
+                cont.items.push({
+                    xtype: 'button',
+                    tooltip: value,
+                    maxWidth: 214,
+                    text: value,
+                    enableToggle: true
+                })
+            }
+            filtersPanel.insert(i,cont);
+        }
+        if (this.initialized) {
+            Ext.resumeLayouts(true);   
+        }
+        
+        
+        
+    },
     onThemeLocationConfReceived: function(response) {
         var conf = JSON.parse(response.responseText).data;
         if (response.request.options.originatingCnt.itemId == 'selectfilter') {
             this.getController('Select').selectInternal(conf.areas, false, false, 1);
             return;
         }
-
+    
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var multiMapBtn = Ext.ComponentQuery.query('maptools #multiplemapsbtn')[0];
         multiMapBtn.leftYearsUnchanged = true;
         var multiMapPressed = multiMapBtn.pressed;
-        multiMapBtn.toggle(years.length > 1);
+        //multiMapBtn.toggle(years.length > 1);
         // manually fire change handler, because nothing has changed
-        if (multiMapPressed == years.length > 1 && multiMapBtn.toBeChanged) {
-            this.getController('Map').onMultipleYearsToggle(multiMapBtn, multiMapPressed);
+        if (years.length > 1 != this.wasMulti) {
+            
+            this.getController('Map').onMultipleYearsToggle(multiMapBtn, years.length>1);
         }
-        multiMapBtn.leftYearsUnchanged = false;
+        this.wasMulti = years.length>1;
         if (!conf.layerRefMap) {
             conf = {
                 add: conf
@@ -730,22 +1031,28 @@ Ext.define('PumaMain.controller.LocationTheme', {
             this.getController('Area').areaTemplateMap = conf.auRefMap;
         }
         if (conf.areas) {
+            
+            
             this.addAreas(conf.areas);
             if (!this.initialAdd) {
-
-
-                Ext.ComponentQuery.query('#areatree')[0].getView().refresh();
-               
+                
+                //Ext.ComponentQuery.query('#areatree')[0].getView().refresh();
+                
                 this.initialAdd = true;
             }
         }
-
         if (conf.add || conf.remove) {
-            
             var changed = this.refreshAreas(conf.add,conf.remove);
         }
-        if (response.request.options.datasetChanged){
-            Ext.StoreMgr.lookup('area').sort()
+        
+        if (response.request.options.datasetChanged || this.treeChanged){
+            
+            //Ext.StoreMgr.lookup('area').sort();
+            
+            //Ext.ComponentQuery.query('#areatree')[0].getView().refresh();
+            this.filterAttributes = conf.filterAttributes;
+            this.filterAttrSet = conf.filterAttrSet;
+            this.refreshFilters(conf);
         }
         if (Config.cfg) {
             Ext.StoreMgr.lookup('paging').currentPage = Config.cfg.page;
@@ -791,6 +1098,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (Config.cfg && Config.cfg.multipleMaps) {
             multiMapBtn.toggle(true);
         }
+        this.treeChanged = false;
+        if (!this.initialized) {
+            Ext.resumeLayouts(true);
+            this.initialized = true;
+        }
         
         this.getController('DomManipulation').deactivateLoadingMask();
         delete Config.cfg;
@@ -807,47 +1119,65 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }]);
     },
     
+    
+    
+    reconfigureChartComboValues: function(attrSetId) {
+        var combos = Ext.ComponentQuery.query('pumacombo[attributeCombo=1]');
+        
+        var attr = Ext.ComponentQuery.query('#selindicator')[0].getValue();
+        for (var i=0;i<combos.length;i++) {
+            var combo = combos[i];
+            var val = combo.getValue();
+            //if (val && (!Ext.isArray(val) || val.length)) continue;
+           
+                if (combo.cfgType=='columnchart') {
+                    combo.setValue(attr);
+                }
+                if (combo.cfgType=='scatterchart' && !combo.alternative) {
+                    combo.setValue(attr)
+                }
+                if (combo.cfgType=='scatterchart' && combo.alternative) {
+                    combo.setValue(attr)
+                }
+                if (combo.cfgType!='boxplotchart') {
+                    continue;
+                    
+                }
+            
+            var first = combo.store.getAt(0);
+            var second = combo.store.getAt(1);
+            if (!combo.alternative) {
+                combo.setValue(attr);
+            }
+            if (combo.alternative) {
+                combo.setValue(attr);
+            }
+        }
+    },
+    
     checkAttrSets: function(attrSets) {
         var chartController = this.getController('Chart')
         chartController.attrSet = null;
         chartController.attrSetId = null;
-        var attrSetId = attrSets[0];
-        var attrSet = Ext.StoreMgr.lookup('attributeset').getById(attrSetId);
+        var attrSetStore = Ext.StoreMgr.lookup('attributeset')
+        var attrSetId = null;
+        var attrSet = null;
+        for (var i=0;i<attrSets.length;i++) {
+            var attrSet = attrSetStore.getById(attrSets[i])
+            if (attrSet.get('attributes') && attrSet.get('attributes').length) {
+                attrSetId = attrSets[i];
+                break;
+            }
+        }
+        var visualization = Ext.StoreMgr.lookup('visualization').findRecord('attrSet',attrSetId);
         var attributes = attrSet.get('attributes');
         var store = Ext.StoreMgr.lookup('attribute4set');
         store.clearFilter(true);
         store.filter([function(rec) {
             return Ext.Array.contains(attributes,rec.get('_id'));
         }])
-        var combos = Ext.ComponentQuery.query('pumacombo[attributeCombo=1]');
-        var visualization = Ext.StoreMgr.lookup('visualization').findRecord('attrSet',attrSetId);
         
-        for (var i=0;i<combos.length;i++) {
-            var combo = combos[i];
-            var val = combo.getValue();
-            if (val && (!Ext.isArray(val) || val.length)) continue;
-            if (visualization) {
-                if (combo.cfgType=='columnchart') {
-                    combo.setValue(visualization.get('columnAttrs'));
-            }
-                if (combo.cfgType=='scatterchart' && !combo.alternative) {
-                    combo.setValue(visualization.get('scatterAttrs')[0])
-        }
-                if (combo.cfgType=='scatterchart' && combo.alternative) {
-                    combo.setValue(visualization.get('scatterAttrs')[1])
-                }
-                continue;
-            }
-            var first = combo.store.getAt(0);
-            var second = combo.store.getAt(1);
-            if (!combo.alternative) {
-                combo.setValue(first.get(combo.valueField));
-            }
-            if (combo.alternative) {
-                combo.setValue(second ? second.get(combo.valueField) : first.get(combo.valueField));
-            }
-        }
-        
+        this.reconfigureChartComboValues(attrSetId);
         
         chartController.visualization = visualization;
         chartController.attrSet = attrSet;
@@ -863,6 +1193,22 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 numCategories: 5,
                 classType: 'quantiles'
             })
+        }
+        var me = this;
+        var layers = visualization ? visualization.get('layers') : null;
+        if (layers) {
+            var topicLayerGroup = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','thematicgroup');
+            for (var i=0;i<layers.length;i++) {
+                var atSymb = layers[i].at+'_'+layers[i].symbologyId;
+                var layer = topicLayerGroup.findChild('atWithSymbology',atSymb);
+                if (layer) {
+                    window.setTimeout(function() {
+                        layer.set('checked',true);
+                        me.getController('Layers').onCheckChange(layer,true);
+                    },1000)
+                    
+                }
+            }
         }
         this.getController('Layers').reconfigureChoropleths({attrs:choroAttrs},visualization);
         this.getController('Filter').reconfigureFilters({attrs:choroAttrs})

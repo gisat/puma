@@ -7,7 +7,7 @@ Ext.define('PumaMain.controller.Select', {
             '#hoverbtn': {
                 toggle: this.onToggleHover
             },
-            '#selectinmapbtn': {
+            'toptoolspanel #selectinmapbtn': {
                 toggle: this.onToggleSelectInMap
             },
             '#selectcolorpicker': {
@@ -76,6 +76,9 @@ Ext.define('PumaMain.controller.Select', {
         fn1.call(infoControls1.click);
         var fn2 = value ? infoControls2.click.activate : infoControls2.click.deactivate;
         fn2.call(infoControls2.click);
+        if (value) {
+            Puma.util.Msg.msg('Hold CTRL button for mutliple selection','','l');
+        }
 //        if (hoverBtn.pressed && value) {
 //            infoControls1.hover.activate();
 //            infoControls2.hover.activate();

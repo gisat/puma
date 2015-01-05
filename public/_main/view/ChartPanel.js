@@ -112,6 +112,8 @@ Ext.define('PumaMain.view.ChartPanel', {
                 toolNames = ['help','collapse','print','save']; break;
             case 'columnchart':
                 toolNames = ['help','collapse','print','save']; break;
+            case 'boxplotchart':
+                toolNames = ['help','collapse','print','save']; break;
             case 'scatterchart':
                 toolNames = ['help','collapse','print','save','search']; break;
             case 'extentoutline':

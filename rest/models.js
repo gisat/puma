@@ -20,6 +20,8 @@ var hooks = {
 var refs = {
     'attributeset':{
         'attributes': {coll: 'attribute', canUpdate: true},
+        'filterAttributes': {coll: 'attribute', canUpdate: true},
+        'otherAttributes': {coll: 'attribute', canUpdate: true},
         'topic': {coll:'topic', canUpdate: true},
         'dataset': {coll:'dataset', canUpdate: true}
     },
@@ -70,10 +72,15 @@ var refs = {
         'topics': {coll:'topic', canUpdate: true},
         'visualizations': {coll:'visualization', canUpdate: true}
         
+    },
+    'datasetlayerfilters': {
+        'filters': {coll:'attribute', canUpdate: true},
+        'featureLayer': {coll:'areatemplate', canUpdate: true},
+        'dataset': {coll:'dataset', canUpdate: true}
     }
 }
 
-var collections = ['layergroup','layergroupgs','dataview','chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
+var collections = ['datasetlayerfilters','layergroup','layergroupgs','dataview','chartcfg','viewcfg','userpolygon','dataset','scope','topic','analysis','performedanalysis','visualization','location','attributeset','attribute','symbology','layerref','theme','areatemplate','year'];
 
 module.exports = {
     ensureIds: ensureIds,

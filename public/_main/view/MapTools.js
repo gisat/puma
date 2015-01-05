@@ -15,6 +15,16 @@ Ext.define('PumaMain.view.MapTools', {
         this.items = [{
             xtype: 'button',
             enableToggle: true,
+            hidden: true,
+            itemId: 'selectinmap',
+            helpId: 'Selectingunitsinmap',
+            text: 'Select in map',
+            iconAlign: 'top',
+            icon: 'images/icons/map-select.png',
+            cls: 'custom-button btn-map-tool btn-tool-select'
+        },{
+            xtype: 'button',
+            enableToggle: true,
             itemId: 'hoverbtn',
             helpId: 'Selectiononhover',
             text: 'Hover',
@@ -53,9 +63,9 @@ Ext.define('PumaMain.view.MapTools', {
             xtype: 'button',
             itemId: 'multiplemapsbtn',
             helpId: 'Multiplemaps',
-            enableToggle: true,
+            enableToggle: false,
             //hidden: true,
-            text: 'Multiple maps',
+            text: 'Zoom to full',
             iconAlign: 'top',
             icon: 'images/icons/tools-maps-multiple.png',
             cls: 'custom-button btn-map-tool btn-tool-multiple-maps'
@@ -67,6 +77,15 @@ Ext.define('PumaMain.view.MapTools', {
             icon: 'images/icons/tools-save.png',
             iconAlign: 'top',
             cls: 'custom-button btn-map-tool btn-tool-save-image'
+        },{
+            xtype: 'button',
+            enableToggle: false,
+            itemId: 'snapshot',
+            helpId: 'Creatingsnapshots',
+            text: 'Snapshot',
+            iconAlign: 'top',
+            icon: 'images/icons/snapshot.png',
+            cls: 'custom-button btn-map-tool btn-tool-snapshot'
         }]
         
         this.callParent();

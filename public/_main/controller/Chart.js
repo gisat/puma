@@ -59,6 +59,9 @@ Ext.define('PumaMain.controller.Chart', {
             'chartpanel tool[type=save]': {
                 click: this.onUrlClick
             },
+            'chartpanel':{
+                expand: this.onChartPanelExpand
+            },
             '#areapager' : {
                 beforechange: this.onPageChange
             },
@@ -88,8 +91,18 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
+        
+    onChartPanelExpand: function(panel) {
+        if (panel.cfgType!='columnchart') return;
+        var series = panel.chart.chart.series;
+        for (var i=0;i<series.length;i++) {
+            series[i].show();
+        }
+    },
+    
     onAttrChange: function(combo,val) {
         var chartCmp = combo.up('chartpanel').down('chartcmp');
+        
         this.reconfigureChart(chartCmp);
     },    
     onToggleShowSelected: function(btn) {
@@ -343,7 +356,7 @@ Ext.define('PumaMain.controller.Chart', {
             },
             items: items
         })
-        container.add(container.items.length, cnt);
+        container.insert(container.items.length-1, cnt);
         chart.cfg = cfg;
         chart.queryCfg = queryCfg;
         chart.cnt = cnt;
@@ -414,15 +427,18 @@ Ext.define('PumaMain.controller.Chart', {
         if (cfg.type=='piechart') {
             //debugger;
         }
+        
         if (!this.attrSet) return;
         var attrsFailed = false;
+        var selAttr = Ext.ComponentQuery.query('#selindicator')[0].getValue();
         if (cfg.type=='grid' && !forExport) {
-             var attributes = this.attrSet.get('attributes');
-             chartCmp.cfg.attrs = [];
-             for (var i=0;i<attributes.length;i++) {
-                 var attr = {as:this.attrSetId,attr:attributes[i]};
-                 chartCmp.cfg.attrs.push(attr);
-             }
+             //var attributes = this.attrSet.get('attributes');
+             
+             chartCmp.cfg.attrs = [{as:this.attrSetId,attr:selAttr}];
+//             for (var i=0;i<attributes.length;i++) {
+//                 var attr = {as:this.attrSetId,attr:attributes[i]};
+//                 chartCmp.cfg.attrs.push(attr);
+//             }
         }
         if (cfg.type=='scatterchart' && !forExport) {
             var combos = Ext.ComponentQuery.query('pumacombo',chartCmp.up('chartpanel'));
@@ -438,7 +454,7 @@ Ext.define('PumaMain.controller.Chart', {
                  chartCmp.cfg.attrs = [attr1,attr2];
             }
         }
-        if (cfg.type=='columnchart' && !forExport) {
+        if (Ext.Array.contains(['columnchart'],cfg.type) && !forExport) {
             var combo = Ext.ComponentQuery.query('pumacombo',chartCmp.up('chartpanel'))[0];
             chartCmp.cfg.attrs = [];
             var val = combo.getValue();
@@ -452,7 +468,20 @@ Ext.define('PumaMain.controller.Chart', {
                 }
             }
         }
+        if (Ext.Array.contains(['boxplotchart'],cfg.type) && !forExport) {
+            var combo = Ext.ComponentQuery.query('pumacombo',chartCmp.up('chartpanel'))[0];
+            chartCmp.cfg.attrs = [];
+            var val = combo.getValue();
+            if (!val) {
+                attrsFailed = true;
+            }
+            else {
+                chartCmp.cfg.attrs.push(val);
+                
+            }
+        }
         if (attrsFailed) {
+            
             this.onChartReceived({cmp:chartCmp});
             return;
         }
@@ -472,10 +501,13 @@ Ext.define('PumaMain.controller.Chart', {
         queryCfg.areas = areas;
 
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
+        var allYears = Ext.ComponentQuery.query('#selyear')[0].store.collect('_id');
         if (!years.length)
             return;
         queryCfg.years = years;
-
+        if (cfg.type == 'grid') {
+            queryCfg.years = allYears;
+        }
         if (!queryCfg.years) {
             queryCfg.years = [];
         }
@@ -490,7 +522,7 @@ Ext.define('PumaMain.controller.Chart', {
             }
             Ext.apply(queryCfg,this.getPagingParams());
         }
-        if (cfg.type=='scatterchart') {
+        if (cfg.type=='scatterchart' || cfg.type=='boxplotchart') {
             delete queryCfg['start'];
             delete queryCfg['limit'];
         }
@@ -667,7 +699,7 @@ Ext.define('PumaMain.controller.Chart', {
                 y = 200;
             }
             cmp.add({
-                xtype: 'component', color: color, type: 'extentoutline', cls:i==0 ? 'extentoutline-first' : 'extentoutline-notfirst' ,opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
+                xtype: 'component', areaItem: item, color: color, type: 'extentoutline', cls:i==0 ? 'extentoutline-first' : 'extentoutline-notfirst' ,opacity: data.opacity, width: width, height: height, anchor: anchor, x: x, y: y, layerRefs: layerRefs, rows: rows, colSpan: data.layerRefs==1 ? 2 : 1
             })
         }
 
@@ -686,9 +718,9 @@ Ext.define('PumaMain.controller.Chart', {
                 enabled: false
             },
             labels: {items: [{
-                        html: 'Please select areas...',
+                        html: 'No data',
                         style: {
-                            left: '125px',
+                            left: '210px',
                             top: '180px',
                             fontSize: 34,
                             fontFamily: '"Open Sans", sans-serif',
@@ -716,11 +748,11 @@ Ext.define('PumaMain.controller.Chart', {
         
         
         var data = response.responseText ? JSON.parse(response.responseText).data : null;
-        if (cmp.queryCfg.type == 'filter') {
+        if (cmp.queryCfg && cmp.queryCfg.type == 'filter') {
             //this.onFilterReceived(data, cmp)
             return;
         }
-       
+        
         
         
         if (!data || data.noData) {
@@ -757,52 +789,56 @@ Ext.define('PumaMain.controller.Chart', {
         data.chart.events.selection = function(evt) {
             me.onScatterSelected(evt);
         }
-        data.tooltip.formatter = function() {
-            var obj = this;
-            var type = obj.series.type;
-            var attrConf = [];
-            var yearName = '';
-            var areaName = '';
-            if (type=='column') {
-                areaName = obj.x;
-                yearName = obj.point.yearName;
-                attrConf.push({
-                    name: obj.series.name,
-                    val: obj.y,
-                    units: obj.point.units
-                })
-            }
-            else if (type=='pie') {
-                areaName = obj.series.name;
-                yearName = obj.series.userOptions.yearName
-                attrConf.push({
-                    name: obj.point.swap ? 'Other' : obj.key,
-                    val: obj.y,
-                    units: obj.point.units
-                })
-            }
-            else {
-                areaName = obj.key;
-                yearName = obj.series.name;
-                attrConf.push ({
-                    name: obj.point.yName,
-                    val: obj.point.y,
-                    units: obj.point.yUnits
-                })
-                attrConf.push ({
-                    name: obj.point.xName,
-                    val: obj.point.x,
-                    units: obj.point.xUnits
-                })
-                if (obj.point.zName) {
+        if (cmp.queryCfg.type != 'boxplotchart') {
+            data.tooltip.formatter = function() {
+                var obj = this;
+                
+                var type = obj.series.type;
+                var attrConf = [];
+                var yearName = '';
+                var areaName = '';
+                if (type == 'column') {
+                    areaName = obj.point.a;
+                    yearName = obj.point.yearName;
                     attrConf.push({
-                        name: obj.point.zName,
-                        val: obj.point.z,
-                        units: obj.point.zUnits
+                        name: obj.series.name,
+                        val: obj.y,
+                        units: obj.point.units
                     })
                 }
+                else if (type == 'pie') {
+                    areaName = obj.series.name;
+                    yearName = obj.series.userOptions.yearName
+                    attrConf.push({
+                        name: obj.point.swap ? 'Other' : obj.key,
+                        val: obj.y,
+                        units: obj.point.units
+                    })
+                }
+                else {
+                    areaName = obj.key;
+                    yearName = obj.series.name;
+                    attrConf.push({
+                        name: obj.point.yName,
+                        val: obj.point.y,
+                        units: obj.point.yUnits
+                    })
+                    attrConf.push({
+                        name: obj.point.xName,
+                        val: obj.point.x,
+                        units: obj.point.xUnits
+                    })
+                    if (obj.point.zName) {
+                        attrConf.push({
+                            name: obj.point.zName,
+                            val: obj.point.z,
+                            units: obj.point.zUnits
+                        })
+                    }
+                }
+                return me.getTooltipHtml(areaName, yearName, attrConf)
             }
-            return me.getTooltipHtml(areaName,yearName,attrConf)
+        
         }
         data.plotOptions = data.plotOptions || {series: {events: {}}}
 
@@ -814,7 +850,8 @@ Ext.define('PumaMain.controller.Chart', {
                 me.onPointClick(this.chart.cmp, evt, true)
             }
         }
-        else if (cmp.cfg.type != 'featurecount') {
+        
+        else if (cmp.cfg.type != 'featurecount' && cmp.cfg.type != 'boxplotchart') {
             data.plotOptions.series.point.events.mouseOver = function(evt) {
                 me.onPointClick(this.series.chart.cmp, evt, true)
             }
@@ -931,6 +968,11 @@ Ext.define('PumaMain.controller.Chart', {
                 Puma.util.Msg.msg('Snapshot done','','r');
                 var snapshotPanel = Ext.ComponentQuery.query('chartbar #screenshotpanel')[0];
                 snapshotPanel.show();
+                window.setTimeout(function() {
+                    snapshotPanel.expand();
+                    
+                },100)
+                
             })
         }
     },
@@ -1320,7 +1362,7 @@ Ext.define('PumaMain.controller.Chart', {
         }
     },
     colourChart: function(chart) {
-        if (!chart.chart || chart.cfg.type == 'featurecount')
+        if (!chart.chart || chart.cfg.type == 'featurecount' || chart.cfg.typr == 'boxplotchart')
             return;
         if (chart.cfg.type == 'grid') {
             try {
@@ -1409,8 +1451,10 @@ Ext.define('PumaMain.controller.Chart', {
         for (var i = 0; i < chart.chart.series.length; i++) {
             points = Ext.Array.merge(points, chart.chart.series[i].points);
         }
-
+        //debugger;
+        //return;
         var updated = false;
+        var pointSeries = [];
         for (var i = 0; i < points.length; i++) {
             var point = points[i];
             var at = point.at;
@@ -1424,14 +1468,21 @@ Ext.define('PumaMain.controller.Chart', {
             else {
                 color = '#dddddd';
             }
+            Ext.Array.include(pointSeries,point.series);
             if (color != actualColor) {
                 updated = true;
                 point.series.state = '';
+                point.series.origGetAttribs = point.series.getAttribs;
+                
                 point.update({
                     lineColor: color,
                     lineWidth: color == '#dddddd' ? 1 : 3
                 }, false)
+                point.series.getAttribs = point.series.origGetAttribs;
             }
+        }
+        for (var i=0;i<pointSeries.length;i++) {
+            pointSeries[i].getAttribs();
         }
         if (updated) {
             chart.chart.redraw();

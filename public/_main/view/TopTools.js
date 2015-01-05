@@ -2,6 +2,7 @@ Ext.define('PumaMain.view.TopTools', {
     extend: 'Ext.container.Container',
     alias: 'widget.toptoolspanel',
     height: '100%',
+    //hidden: true,
     // to be removed
     width: '100%',
     initComponent: function() {
@@ -36,6 +37,7 @@ Ext.define('PumaMain.view.TopTools', {
         },{
             xtype: 'button',
             flex: 1,
+            hidden: true,
             text: 'Snapshot',
             icon: 'images/icons/snapshot.png',
             itemId: 'mapsnapshotbtn',

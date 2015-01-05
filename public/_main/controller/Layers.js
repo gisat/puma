@@ -54,8 +54,8 @@ Ext.define('PumaMain.controller.Layers', {
             },
             
         })
-        this.scaleBorderCnst = 10000000;
-        this.scaleBorder = 10000000;
+        this.scaleBorderCnst = 100000000;
+        this.scaleBorder = 100000000;
     },
     onConfigure: function() {
         this.getController('AttributeConfig').onConfigureClick({itemId:'configurelayers'});
@@ -119,6 +119,8 @@ Ext.define('PumaMain.controller.Layers', {
         })
         var nodesToRemove = [];
         var attrs = Ext.clone(cfg.attrs);
+        var attrs2 = Ext.Array.clone(attrs);
+        var attrStore = Ext.StoreMgr.lookup('attribute');
         var checkedAttrs = [];
         for (var i=0;i<chartNodes.length;i++) {
             var node = chartNodes[i];
@@ -131,8 +133,8 @@ Ext.define('PumaMain.controller.Layers', {
             var normAttr = cfgAttr.normAttr
             var attrObj = null;
             var found = false;
-            for (var j=0;j<attrs.length;j++) {
-                attrObj = attrs[j];
+            for (var j=0;j<attrs2.length;j++) {
+                attrObj = attrs2[j];
                 if (attrObj.as==as && attrObj.attr == attr && attrObj.normType==normType && attrObj.normAs == normAs && attrObj.normAttr == normAttr) {
                     found = true;
                     break;
@@ -153,6 +155,7 @@ Ext.define('PumaMain.controller.Layers', {
                 oneCfg.zeroesAsNull = attrObj.zeroesAsNull!==false;
                 oneCfg.useAttributeColors = true;
                 var params = this.getController('Chart').getParams(oneCfg);
+                params.dotChart = node.get('dotChart');
                 node.set('params',params);
                 node.set('cfg',oneCfg);
                 if (attrObj.name) {
@@ -167,26 +170,49 @@ Ext.define('PumaMain.controller.Layers', {
             this.onChoroplethRemove(null,node);
         }
         var autoActivated = false;
-        var visAttr = visualization ? visualization.get('choroAttr') : null
+        var visAttr = visualization ? visualization.get('choroAttr') : null;
+        if (this.getController('LocationTheme').initialized) {
+            Ext.suspendLayouts();    
+        }
+        var treeView = Ext.ComponentQuery.query('layerpanel')[0].view;
+        
+            if (treeView) {
+                treeView.dontRefreshSize = true;
+        
+            }
+        var selAttr = Ext.ComponentQuery.query('#selindicator')[0].getValue();
         for (var i=0;i<attrs.length;i++) {
             var attr = attrs[i];
+            
             var oneCfg = Ext.clone(cfg);
+            var attrRec = attrStore.getById(attr.attr);
             oneCfg.attrs = [attr];
             oneCfg.numCategories = attr.numCategories || 5;
             oneCfg.classType = attr.classType || 'quantiles';
             oneCfg.zeroesAsNull = attr.zeroesAsNull || true;
             oneCfg.useAttributeColors = true;
-            var autoActivate = Ext.Array.contains(checkedAttrs,attr.attr);
-            if (!checkedAttrs.length && attr.attr==visAttr) {
-                autoActivate = true;
-        }
-            if (autoActivate) {
-                autoActivated = true;
-            }
-            if (i==attrs.length-1 && !autoActivated) {
-                autoActivate = true;
-            }
+            //oneCfg.visDotChart = visualization ? visualization.get('dotChart') : false;
+            oneCfg.visDotChart = attrRec.get('layerMode')=='circle';
+            var autoActivate = selAttr == attr.attr;
+//            if (!checkedAttrs.length && attr.attr==visAttr) {
+//                autoActivate = true;
+//            }
+//            if (autoActivate) {
+//                autoActivated = true;
+//            }
+//            if (i==attrs.length-1 && !autoActivated) {
+//                autoActivate = true;
+//            }
             this.addChoropleth(oneCfg,autoActivate);
+        }
+        if (this.getController('LocationTheme').initialized) {
+            Ext.resumeLayouts(true); 
+        }
+        
+        if (treeView) {
+            treeView.dontRefreshSize = false;
+            treeView.refreshSize();
+            
         }
     },
         
@@ -366,19 +392,27 @@ Ext.define('PumaMain.controller.Layers', {
     onLayerDrop: function() {
         var store = Ext.StoreMgr.lookup('selectedlayers');
         var layers = store.getRange();
-       
         var map1 = Ext.ComponentQuery.query('#map')[0].map;
         var map2 = Ext.ComponentQuery.query('#map2')[0].map;
         layers.reverse();
         var layers1 = [];
         var layers2 = [];
+        var newDistantLayers = [];
         for (var i = 0; i < layers.length; i++) {
+            newDistantLayers[i] = [];
             if (layers[i].get('layer1')) {
                 layers1.push(layers[i].get('layer1'))
             }
             if (layers[i].get('layer2')) {
                 layers2.push(layers[i].get('layer2'))
             }
+            var distantLayers = layers[i].get('distantLayers');
+            for (var j=0;j<distantLayers.length;j++) {
+                var distantLayer = distantLayers[j];
+                newDistantLayers[i].push(distantLayer)
+            }
+            
+            
         }
         for (var i = 0; i < layers.length; i++) {
             if (map1 && layers1[i]) {
@@ -393,6 +427,15 @@ Ext.define('PumaMain.controller.Layers', {
                 }
                 map2.setLayerIndex(layers2[i],i);
             }
+            var distantLayers = newDistantLayers[i];
+            for (var j=0;j<distantLayers.length;j++) {
+                var distantLayer = distantLayers[j];
+                var map = distantLayer.map;
+                if (i==0) {
+                    map.setBaseLayer(distantLayer);
+                }
+                map.setLayerIndex(distantLayer,i);
+            }
         }
     },
     onOpacityChange: function(slider, value) {
@@ -400,10 +443,14 @@ Ext.define('PumaMain.controller.Layers', {
         if (slider.layer2) {
             slider.layer2.setOpacity(value / 100);
         }
+        for (var i=0;i<slider.distantLayers.length;i++) {
+            slider.distantLayers[i].setOpacity(value / 100);
+        }
     },
     openOpacityWindow: function(panel,rec) {
         var layer1 = rec.get('layer1');
         var layer2 = rec.get('layer2');
+        var distantLayers = rec.get('distantLayers') || [];
         var window = Ext.widget('window', {
             layout: 'fit',
             title: rec.get('name'),
@@ -412,6 +459,7 @@ Ext.define('PumaMain.controller.Layers', {
                     itemId: 'opacity',
                     layer1: layer1,
                     layer2: layer2,
+                    distantLayers: distantLayers,
                     width: 200,
                     value: layer1.opacity * 100
 
@@ -628,10 +676,21 @@ Ext.define('PumaMain.controller.Layers', {
                     }
            
                 }
+                if (node.get('layer1')==layer) {
+                    var distantLayers = node.get('distantLayers') || [];
+                    for (var i=0;i<distantLayers.length;i++) {
+                        var distantLayer = distantLayers[i];
+                        distantLayer.initialized = true;
+                        distantLayer.mergeNewParams({
+                            "SLD_ID": id
+                        })
+                    }
+                }
                 if (node.get('checked')) {
                     me.onCheckChange(node,true)
                     //Ext.ComponentQuery.query('#legendpanel')[0].refresh();
                 }
+                
                 
             },
             failure: function(response) {
@@ -648,7 +707,7 @@ Ext.define('PumaMain.controller.Layers', {
             return;
         var layer1 = node.get('layer1');
         var layer2 = node.get('layer2');
-
+        
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         for (var i = 0; i < Math.max(2, years.length); i++) {
             var year = years[i];
@@ -685,14 +744,18 @@ Ext.define('PumaMain.controller.Layers', {
     getTreeFilters: function(year) {
         var allAreas = this.getController('Area').lowestMap;
         var areaTemplates = this.getController('Area').areaTemplateMap;
+        var lowestAt = this.getController('Area').lastAt;
         var filterMap = {};
+        var filterActive = this.getController('Area').filterActive && Ext.ComponentQuery.query('#codefilters button[pressed=true]').length;
+        
         for (var loc in allAreas) {
             for (var at in allAreas[loc]) {
                 var lr = (areaTemplates[loc] && areaTemplates[loc][at]) ? areaTemplates[loc][at][year] : null;
-                if (!lr || !allAreas[loc][at].length)
+                if (!lr || !allAreas[loc][at].length || at!=lowestAt)
                     continue;
                 var layerName = 'puma:layer_' + lr._id
                 var filters = [];
+                
                 for (var i = 0; i < allAreas[loc][at].length; i++) {
                     var gid = allAreas[loc][at][i];
                     var filter = new OpenLayers.Filter.Comparison({type: '==', property: 'gid', value: gid});
@@ -701,9 +764,15 @@ Ext.define('PumaMain.controller.Layers', {
                 if (filters.length == 0)
                     continue;
                 var filterFc = filters.length > 1 ? new OpenLayers.Filter.Logical({type: '||', filters: filters}) : filters[0];
-                filterMap[layerName] = filterFc;
+                if (filterActive) {
+                    filterMap[layerName] = filterFc;    
+                }
+                else {
+                    filterMap[layerName] = null;
+                }
             }
         }
+        
         return filterMap;
     },
     getSymObj: function(params) {
@@ -822,18 +891,39 @@ Ext.define('PumaMain.controller.Layers', {
                     else {
                         legendName = '#val_'+i+'#'+' - '+'#val_'+(i+1)+'#'
                     }
-                    
-                    
+    
                 }
+                
+                
+                
+                
                 
                 var legendRule = new OpenLayers.Rule({
                     name: legendName,
+                    maxScaleDenominator: '#ms_'+(i+1)+'#',
                     symbolizer: {
                         'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: color, strokeColor: '#000000', strokeWidth: 1})
                     }
                 })
-                legendRules.push(legendRule)
+                legendRules.push(legendRule);
+                if (i==0) {
+                    var legendRule = new OpenLayers.Rule({
+                    name: '#val_1#',
+                    maxScaleDenominator: '#ms_999#',
+                    symbolizer: {
+                        'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: color, strokeColor: '#000000', strokeWidth: 1})
+                    }
+                    })
+                    legendRules.push(legendRule);
+                }
+                
+            
+            
+            
+            
             }
+           
+            
             if (params['classType'] == 'continuous') {
                 fcParams.push('color');
             }
@@ -841,18 +931,79 @@ Ext.define('PumaMain.controller.Layers', {
             var fillColor = new OpenLayers.Filter.Function({name: fcName, params: fcParams});
 
             symbolizer['Polygon'] = new OpenLayers.Symbolizer.Polygon({fillColor: fillColor, strokeColor: '#000000', strokeWidth: 1});
+            if (params['dotChart']) {
+                delete symbolizer['Polygon'];
+                legendRules = [legendRules[0]];
+                legendRules.push(new OpenLayers.Rule({
+                    name: 'Positive',
+                    symbolizer: {
+                        'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: '#ff0000', strokeColor: '#000000', strokeWidth: 1})
+                    }
+                }))
+                legendRules.push(new OpenLayers.Rule({
+                    name: 'Negative',
+                    symbolizer: {
+                        'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: '#0000ff', strokeColor: '#000000', strokeWidth: 1})
+                    }
+                }))
+                var max = 50;
+                var min = 5;
+                var sizeRange = 45;
+                var valRange = new OpenLayers.Filter.Function({name: 'Sub', params: ['#maxval#', 0]})
+                var valAbs = new OpenLayers.Filter.Function({name: 'abs_3', params: ['${#attr#}']})
+                //var valFactor = new OpenLayers.Filter.Function({name: 'Sub', params: [valAbs, 0]})
+
+                var factor = new OpenLayers.Filter.Function({name: 'Div', params: [valAbs, valRange]});
+                var sizeAdd = new OpenLayers.Filter.Function({name: 'Mul', params: [sizeRange, factor]});
+                var size = new OpenLayers.Filter.Function({name: 'Add', params: [min, sizeAdd]});
+                var sizeSqrt = new OpenLayers.Filter.Function({name: 'pow', params: [size, 1]})
+                var sizeAbs = new OpenLayers.Filter.Function({name: 'abs_3', params: [sizeSqrt]})
+                fillColor = new OpenLayers.Filter.Function({name: 'Categorize', params: [fcParams[0],'#0000ff',0,'#ff0000']});
+                symbolizer['Point'] = {geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'circle', pointRadius: sizeAbs, strokeColor: '#222222',fillColor: fillColor, fillOpacity: 1}
+//                legendRules.push(new OpenLayers.Rule({
+//                    name: '#minval#',
+//                    symbolizer: {
+//                        'Point': {geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'circle', pointRadius: 5, strokeColor: '#000000',fillColor: '#ffffff', fillOpacity: 0}
+//                    }
+//                }))
+//                legendRules.push(new OpenLayers.Rule({
+//                    name: '#avgval#',
+//                    symbolizer: {
+//                        'Point': {geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'circle', pointRadius: 27.5, strokeColor: '#000000',fillColor: '#ffffff', fillOpacity: 0}
+//                    }
+//                }))
+//                legendRules.push(new OpenLayers.Rule({
+//                    name: '#maxval#',
+//                    symbolizer: {
+//                        'Point': {geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'circle', pointRadius: 50, strokeColor: '#000000',fillColor: '#ffffff', fillOpacity: 0}
+//                    }
+//                }))
+                
+                
+                //symbolizer['Point'] = {strokeWidth: 1, strokeOpacity: 1, graphicName: 'circle', pointRadius: sizeSqrt, strokeColor: '#222222',fillColor: fillColor, fillOpacity: 1}
+            }
+            else {
+                legendRules.push(new OpenLayers.Rule({
+                    name: 'No data',
+                    symbolizer: {
+                        'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: '#bbbbbb', strokeColor: '#000000', strokeWidth: 1})
+                    }
+                }))
+            }
             var rule1 = {
                 filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
                 //maxScaleDenominator: this.scaleBorder,
-                maxScaleDenominator: 100000000,
+                maxScaleDenominator: 1000000000,
                 symbolizer: symbolizer
             };
-            var rule2 = {
-                        filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
-                        //minScaleDenominator: this.scaleBorder,
-                        minScaleDenominator: 100000000,
-                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'square', pointRadius: 18, strokeColor: '#222222',fillColor: fillColor, fillOpacity: 1})}
-                    };
+            
+            
+//            var rule2 = {
+//                        filter: filtersNotNull.length > 1 ? new OpenLayers.Filter.Logical({type: '&&', filters: filtersNotNull}) : filtersNotNull[0],
+//                        //minScaleDenominator: this.scaleBorder,
+//                        minScaleDenominator: 100000000,
+//                        symbolizer: {"Point": new OpenLayers.Symbolizer.Point({geometry: {property:'centroid'},strokeWidth: 1, strokeOpacity: 1, graphicName: 'square', pointRadius: 18, strokeColor: '#222222',fillColor: fillColor, fillOpacity: 1})}
+//                    };
             var nullColor = params['nullColor'] || '#bbbbbb';
             var nullSymbolizer = {
                 'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: nullColor, strokeColor: '#000000', strokeWidth: 1})
@@ -862,7 +1013,8 @@ Ext.define('PumaMain.controller.Layers', {
                 symbolizer: nullSymbolizer
             };
             return {
-                rules: [rule1, rule2, rule3],
+                //rules: [rule1, rule2, rule3],
+                rules: [rule1,rule3],
                 legend: legendRules
             };
         }
@@ -916,9 +1068,10 @@ Ext.define('PumaMain.controller.Layers', {
                     symbolizer: ruleObj.symbolizer
                 }
                 if (ruleObj.filter) {
-                    newRuleObj.filter = new OpenLayers.Filter.Logical({type: '&&', filters: [filter, ruleObj.filter]})
+                    newRuleObj.filter = filter ? new OpenLayers.Filter.Logical({type: '&&', filters: [filter, ruleObj.filter]}) : ruleObj.filter
                 }
-                else if (!forLegend) {
+                else if (!forLegend && filter) {
+                    
                     newRuleObj.filter = filter;
                 }
                 if (ruleObj.minScaleDenominator) {
@@ -963,43 +1116,68 @@ Ext.define('PumaMain.controller.Layers', {
         var mapController = this.getController('Map');
         
         var params = this.getController('Chart').getParams(cfg);
-        
-        
+            
+            
+            
+        var newParams = Ext.clone(params);
+        newParams.dotChart = cfg.visDotChart==true;            
         var layer1 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         var layer2 = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
         layer1.events.register('visibilitychanged',{layer:layer1,me:this},function(a,b,c) {
             this.me.onLayerLegend(null,this.layer.nodeRec,this.layer.visibility);
         })
+
+
+
         mapController.map1.addLayers([layer1]);
         mapController.map2.addLayers([layer2]);
-        
+
+
+
+        var autoActivateComplete = autoActivate;
+        var nameExt = '';
         var node = Ext.create('Puma.model.MapLayer', {
-            name: attr.name || (attrObj.get('name')),
+            name: (attr.name || (attrObj.get('name')))+ nameExt,
             attribute: attr.attr,
             attributeSet: attr.as,
             type: 'chartlayer',
             leaf: true,
-            params: params,
+            params: newParams,
             cfg: cfg,
+            cls: 'invisiblecomplete',
+            dotChart: newParams.dotChart,
             sortIndex: 1.5,
             layer1: layer1,
             layer2: layer2,
-            checked: autoActivate ? true : false
+            checked: autoActivateComplete ? true : false
         });
         layer1.nodeRec = node;
         layer2.nodeRec = node;
+
+        var distantRegionsCmps = Ext.ComponentQuery.query('[type=distantregion]');
+        var distantLayers = [];
+        for (var k=0;k<distantRegionsCmps.length;k++) {
+            var distantMap = distantRegionsCmps[k].map;
+            var layerDistant = new OpenLayers.Layer.WMS('WMS', Config.url + '/api/proxy/wms', Ext.clone(layerDefaults.params), Ext.clone(layerDefaults.layerParams));
+            distantMap.addLayers([layerDistant]);
+            layerDistant.nodeRec = node;
+            distantLayers.push(layerDistant);
+        }
+        node.set('distantLayers',distantLayers);
+
         if (index || index===0) {
-            
+
             choroplethNode.insertChild(index,node);
         }
         else {
-            
+
             choroplethNode.appendChild(node);
         }
         Ext.StoreMgr.lookup('selectedlayers').loadData([node],true);
-        if (autoActivate) {
+        if (autoActivateComplete) {
             this.initChartLayer(node);
         }
+        
     },
         
     onChoroplethAdd: function(btn) {
@@ -1015,6 +1193,12 @@ Ext.define('PumaMain.controller.Layers', {
         record.get('layer2').setVisibility(false);
         mapController.map1.removeLayer(record.get('layer1'));
         mapController.map2.removeLayer(record.get('layer2'));
+        var distantLayers = record.get('distantLayers') || [];
+        for (var i=0;i<distantLayers.length;i++) {
+            var distantLayer = distantLayers[i];
+            distantLayer.map.removeLayer(distantLayer);
+        }
+        
         record.destroy();
     },    
         
@@ -1070,6 +1254,7 @@ Ext.define('PumaMain.controller.Layers', {
             "LAYERS": layersOrSldId,
             "REQUEST": 'GetLegendGraphic',
             "FORMAT": 'image/png',
+            "SCALE": 10000,
             "WIDTH": 50
         };
         if (legendLayerName) {
@@ -1092,12 +1277,15 @@ Ext.define('PumaMain.controller.Layers', {
         var params = node.get('params');
         params['areas'] = JSON.stringify(this.getController('Area').lowestMap);
         params['showChoropleth'] = 'true';
+       
         var symObjs = this.getSymObj(node.get('params'));
         var ruleObjs = symObjs.rules;
         var legendRules = symObjs.legend;
+        
         for (var i = 0; i < Math.max(2, years.length); i++) {
             var year = years[i];
             var namedLayers = this.getChartNamedLayers(ruleObjs, year);
+            var layerIndex = i==0 ? 'layer1' : 'layer2';
             var legendNamedLayers = this.getChartNamedLayers(legendRules, year, true);
             node.get('params')['years'] = JSON.stringify([year]);
             if (i == 0 && years.length > 1) {
@@ -1110,8 +1298,16 @@ Ext.define('PumaMain.controller.Layers', {
             else {
                 delete node.get('params')['altYears'];
             }
-            if (!namedLayers || !namedLayers.length)
+            if (!namedLayers || !namedLayers.length) {
+                node.get(layerIndex).setVisibility(false);
+                var distantLayers = node.get('distantLayers') || [];
+                for (var i=0;i<distantLayers.length;i++) {
+                    var distantLayer = distantLayers[i];
+                    distantLayer.setVisibility(false);
+                    
+                }
                 continue;
+            }
             var layer = i == 0 ? node.get('layer1') : node.get('layer2');
             this.saveSld(node, namedLayers, layer, node.get('params'), legendNamedLayers);
         }
@@ -1136,7 +1332,6 @@ Ext.define('PumaMain.controller.Layers', {
         if (view.lastE && view.lastE.ctrlKey) {
             multi = true;
         }
-        
         view.lastE = null;
         Ext.StoreMgr.lookup('selectedlayers').filter();
         var layer1 = node.get('layer1');
@@ -1157,7 +1352,8 @@ Ext.define('PumaMain.controller.Layers', {
             
             // switching off choropleths
             if (nodeType=='areaoutlines') {
-                parentNode = parentNode.parentNode.findChild('type','choroplethgroup')
+                //parentNode = parentNode.parentNode.findChild('type','choroplethgroup')
+                parentNode = {childNodes:[]}
             }
             // just one selected selected areas layer
             if (nodeType=='selectedareas' || nodeType=='selectedareasfilled') {
@@ -1167,9 +1363,9 @@ Ext.define('PumaMain.controller.Layers', {
                 parentNode = {childNodes:[]};
             }
             if (parentType=='choroplethgroup') {
-                var anotherNode = parentNode.parentNode.findChild('type','systemgroup').findChild('type','areaoutlines');
-                anotherNode.set('checked',false);
-                me.onCheckChange(anotherNode,false);
+//                var anotherNode = parentNode.parentNode.findChild('type','systemgroup').findChild('type','areaoutlines');
+//                anotherNode.set('checked',false);
+//                me.onCheckChange(anotherNode,false);
             }
             
             
@@ -1185,6 +1381,14 @@ Ext.define('PumaMain.controller.Layers', {
             layer1.setVisibility(checked);
         if (layer2.initialized)
             layer2.setVisibility(checked);
+        var distantLayers = node.get('distantLayers') || [];
+        for (var i=0;i<distantLayers.length;i++) {
+            var distantLayer = distantLayers[i];
+            if (distantLayer.initialized)
+                distantLayer.setVisibility(checked);
+        }
+        
+        
         
         me.resetIndexes();
         me.onLayerDrop();

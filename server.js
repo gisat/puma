@@ -16,7 +16,7 @@ function initServer(err) {
     app.use('/public/extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay}));
     app.use('/public',staticFn(__dirname + '/public'));
     app.use(express.cookieParser());
-    app.use(express.bodyParser());
+    app.use(express.bodyParser({limit:'4000mb'}));
     app.use(loc.langParser);
     require('./routes/security')(app);
     require('./routes/routes')(app);

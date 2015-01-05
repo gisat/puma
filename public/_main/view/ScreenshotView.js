@@ -6,6 +6,7 @@ Ext.define('PumaMain.view.ScreenshotView', {
     initComponent: function() {
         this.store = Ext.StoreMgr.lookup('screenshot');
         this.itemSelector = 'div.screenshot';
+        //this.height = 200;
         this.style = {
             overflowY: 'auto'
         }

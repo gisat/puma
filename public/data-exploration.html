@@ -27,29 +27,21 @@
 	<script src="lib/Highcharts-3.0.0/js/highcharts.src.js"></script>
 	<script src="lib/Highcharts-3.0.0/js/highcharts-more.js"></script>
 <!--	<script src="lib/Highcharts-3.0.0/js/modules/exporting.js"></script>-->
-      <script type="text/javascript" src="gisatlib/OpenLayers/Geoserver23.js"></script>
+<!--      <script type="text/javascript" src="gisatlib/OpenLayers/Geoserver23.js"></script>
         <script type="text/javascript" src="extjs-4.1.3/ext-debug.js"></script>
-        <script src="appde.js"></script>     
+        <script src="appde.js"></script>     -->
         
-<!--        <script type="text/javascript" src="extjs-4.1.3/ext.js"></script>
-	<script src="appmin.js"></script>-->
+        <script type="text/javascript" src="extjs-4.1.3/ext.js"></script>
+	<script src="appmin.js"></script>
 </head>
 <body class="intro">
-	<script>
-		(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-		(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-		m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-		})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-		
-		ga('create', 'UA-43870130-1', 'gisat.cz');
-		ga('send', 'pageview');
-	</script>
+	
 	<div id="main">
 		<div id="header">European Territorial Monitoring System
 			<ul class="menu">
 				
 			</ul>
-			<div class="user" >
+			<div class="user" style="display:none" >
 				<a href="#" class="login">Login</a>
 				<span class="sep"></span>
 				<a href="#" class="signup">Sign up</a>
@@ -73,9 +65,9 @@
 							<div id="app-intro-teritory" class="widget"></div>
 						</div>
 					</div>
-					<div class="group">
+					<div class="group groupsecond">
 						<div class="field theme">
-							<div class="label">Theme</div>
+							<div class="label">Indicator</div>
 							<div id="app-intro-theme" class="widget"></div>
 						</div>
 						<div class="field confirm">
@@ -85,9 +77,9 @@
 					</div>
 				</div>
 			</div>
-			<div id="content-intro-guide">
+<!--			<div id="content-intro-guide">
 				<a href="http://www.espon.eu" target="_blank"> <img  src="images/espon_logo_aftodioikisi.png" height="70"></a>
-			</div>
+			</div>-->
 			<div id="content-application">
 				<div id="toolbar" class="fields-holder">
 					<div class="label">Data Exploration</div>
@@ -102,7 +94,7 @@
 								<div id="app-toolbar-teritory" class="widget"></div>
 							</div>
 							<div class="field theme">
-								<div class="label">Theme</div>
+								<div class="label">Indicator</div>
 								<div id="app-toolbar-theme" class="widget"></div>
 							</div>
 							<div class="field help" style="display:none">
@@ -116,7 +108,7 @@
 								<div id="app-toolbar-year" class="widget"></div>
 							</div>
 							<div class="field with-sep level">
-								<div class="label">Analysis level</div>
+								<div class="label">Change geographical level</div>
 								<div id="app-toolbar-level" class="widget">
 									<div id="app-toolbar-level-less" class="button"></div>
 									<div id="app-toolbar-level-more" class="button"></div>
@@ -130,7 +122,7 @@
 						</div>
 					</div>
 					<div class="dataview field">
-                                            <a href="http://www.espon.eu" target="_blank" id="toolbar-logo"> <img  src="images/espon_logo_aftodioikisi.png" height="70"></a>
+<!--                                            <a href="http://www.espon.eu" target="_blank" id="toolbar-logo"> <img  src="images/espon_logo_aftodioikisi.png" height="70"></a>-->
 						<div id="app-toolbar-share" class="widget"></div>
 						<div id="app-toolbar-save" class="widget"></div>
 						<div id="app-toolbar-manage" class="widget"></div>
@@ -142,7 +134,8 @@
 					
 					<div id="app-tools-accordeon"></div>
 				</div>
-				<div id="sidebar-reports">
+<!--                                <div id="sidebar-reports" >-->
+				<div id="sidebar-reports" class="hidden">
 					<span id="sidebar-reports-toggle" title="Reports"></span>
 					<div id="app-reports-paging"></div>
 					<div id="app-reports-accordeon"></div>
@@ -151,8 +144,11 @@
 		</div>
 		<div id="footer">
 			<a href="http://www.gisat.cz/" class="logo"><img src="images/gisat-logo.png" width="76" height="20"></a>
+                        <a href="http://www.espon.eu" target="_blank" id="toolbar-logo"> <img  src="images/espon_logo_aftodioikisi.png" height="28"></a>
+                        <img class="copyright" src="images/bc2d7_espon-logo2.png" height="32">
                         
-                        <img class="copyright" src="images/bc2d7_espon-logo2.png" height="32"></div>
+<!--                         <a style="float:right;margin-right:20px" href="https://etcsdi.uab.es/alfresco/n/browse/workspace/SpacesStore/5f38d8c0-ad05-48a2-a401-ed01129bfeb1" target="_blank">ETMS Alfresco</a>-->
+                </div>
 		</div>
 	<div id="loading-mask-shim"></div>
 	<div id="loading-mask"></div>

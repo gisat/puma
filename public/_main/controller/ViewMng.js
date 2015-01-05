@@ -333,6 +333,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             }
             if (type=='chartlayer') {
                 visualization.set('choroAttr',layer.get('attribute'))
+                visualization.set('dotChart',layer.get('dotChart'));
             }
         }
         

@@ -7,7 +7,7 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
     initComponent: function() {
         this.fieldSubTpl[0] = '<div class="timeline-labels"></div>'+this.fieldSubTpl[0];
         
-        
+        this.sortField = this.sortField || 'name';
         this.displayField = this.displayField || 'name';
         this.valueField = this.valueField || '_id';
         
@@ -35,7 +35,7 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
         if (!newValues.length && !this.allowBlank) {
             newValues.push(presentValues[0]);
         }
-        var years = this.store.collect(this.displayField);
+        var years = this.store.collect(this.sortField);
         years = Ext.Array.map(years,function(v) {
             return parseInt(v);
         })
@@ -90,8 +90,9 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
             return;
         }
         
-        var rec = this.store.findRecord(this.displayField,value);
+        var rec = this.store.findRecord(this.sortField,value);
         var recValue = rec ? rec.get(this.valueField) : null;
+        var displayValue = rec ? rec.get(this.displayField) : null;
         
         var me = this,
             thumb = new Gisatlib.slider.DiscreteThumb({
@@ -99,6 +100,7 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
                 ownerLayout : me.getComponentLayout(),
                 value       : value,
                 recValue    : recValue,
+                displayValue   : displayValue,
                 slider      : me,
                 index       : me.thumbs.length,
                 constrain   : me.constrainThumbs,
@@ -119,7 +121,7 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
         cont.update('');
         for (var i=0;i<this.thumbs.length;i++) {
             var thumb = this.thumbs[i];
-            var labelEl = Ext.get(Ext.DomHelper.createDom({cls:'timeline-label',tag:'span',html:thumb.value}));
+            var labelEl = Ext.get(Ext.DomHelper.createDom({cls:'timeline-label',tag:'span',html:thumb.displayValue}));
             cont.appendChild(labelEl);
             var offset = 0;
         

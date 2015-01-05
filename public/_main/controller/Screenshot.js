@@ -15,13 +15,14 @@ Ext.define('PumaMain.controller.Screenshot', {
                     }
                 })
         $(document).on('load','.screenshotimg', function() {
-            debugger;
+            //debugger;
         })
     },
     onPanelReady: function(panel) {
         //panel.expand();
         window.setTimeout(function() {
-            panel.hide()
+            //panel.collapse();
+            panel.hide();
         },100);
         
     },
@@ -33,6 +34,7 @@ Ext.define('PumaMain.controller.Screenshot', {
         var count = Ext.StoreMgr.lookup('screenshot').getCount();
         if (count<1) {
             var snapshotPanel = Ext.ComponentQuery.query('chartbar #screenshotpanel')[0];
+            snapshotPanel.collapse();
             snapshotPanel.hide();
         }
     },

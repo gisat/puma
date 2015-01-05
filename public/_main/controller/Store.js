@@ -21,6 +21,7 @@ Ext.define('PumaMain.controller.Store', {
         'Puma.model.Column',
         'Puma.model.MapLayer',
         'Puma.model.LayerGroup',
+        'Puma.model.DatasetLayerFilters',
         'Puma.model.MappedAttribute',
         'Puma.model.Visualization',
         'Puma.model.Screenshot',
@@ -80,7 +81,11 @@ Ext.define('PumaMain.controller.Store', {
             autoLoad: true,
             model: 'Puma.model.LayerGroup'
         })
-    
+        Ext.create('Ext.data.Store',{
+            storeId: 'datasetlayerfilters',
+            autoLoad: true,
+            model: 'Puma.model.DatasetLayerFilters'
+        })
         Ext.create('Ext.data.Store',{
             storeId: 'attributeset',
             autoLoad: true,
@@ -112,6 +117,15 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Ext.data.Store',{
             storeId: 'scope',
             autoLoad: true,
+            sorters:[{sorterFn: function(r1,r2) {
+                var map = {
+                    387: 4,
+                    1199: 3,
+                    236: 1,
+                    1140: 2
+                }
+                return (map[r1.get('_id')] || 10) - (map[r2.get('_id') ] || 10);
+            }}],
             model: 'Puma.model.Scope'
         })
     
@@ -235,12 +249,38 @@ Ext.define('PumaMain.controller.Store', {
         })
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,
+            storeId: 'attribute4sel',
+            filters: [function(rec) {
+                    return false;
+            }],
+//            sorters: [{
+//                sorterFn: function(o1,o2) {
+//                    var arr = [407,406,408,409,410];
+//                    var idx1 = Ext.Array.indexOf(arr,o1.get('_id'))
+//                    var idx2 = Ext.Array.indexOf(arr,o2.get('_id'))
+//                    
+//                    if (idx1>-1 || idx2>-1) {
+//                        console.log(o1,o2);
+//                    }
+//                    return idx1<idx2 ? 1 : -1;
+//                    
+//                }
+//            },{
+//                property:'_id'
+//            }]
+            
+            model: 'Puma.model.Attribute'
+        })
+        Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
             storeId: 'visualization4sel',
             filters: [function(rec) {
                     return false;
             }],
+        
             sorters: [{
                 sorterFn: function(o1,o2) {
+                    
                     var activeThemeCombo = Ext.ComponentQuery.query('#seltheme')[0];
                     var activeThemeId = activeThemeCombo ? activeThemeCombo.getValue() : null;
                     var theme = activeThemeId ? Ext.StoreMgr.lookup('theme').getById(activeThemeId) : null;
@@ -413,6 +453,7 @@ Ext.define('PumaMain.controller.Store', {
                 },{
                     name: 'Thematic maps',
                     type: 'choroplethgroup',
+                    cls: 'invisiblecomplete',
                     expanded: true,
                     children: [],
                     checked: null
@@ -424,11 +465,6 @@ Ext.define('PumaMain.controller.Store', {
                 },{
                     name: 'Background layers',
                     type: 'basegroup',
-                    expanded: true,
-                    checked: null
-                },{
-                    name: 'Live data',
-                    type: 'livegroup',
                     expanded: true,
                     checked: null
                 }]

@@ -168,6 +168,8 @@ Ext.define('PumaMng.controller.Analysis',{
         for (var i = 0; i < attrSetsToAdd.length; i++) {
             var attributeSet = attrSetStore.getById(attrSetsToAdd[i]);
             var attributes = attributeSet.get('attributes');
+            var otherAttributes = attributeSet.get('otherAttributes') || [];
+            attributes = Ext.Array.merge(attributes,otherAttributes);
             for (var j = 0; j < attributes.length; j++) {
                 var attr = attributes[j];
                 var rec = Ext.create('Puma.model.AggregationMap', {

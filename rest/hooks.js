@@ -17,8 +17,6 @@ function precreateLayerRef(result, callback, params) {
 
 function createLayerRef(result, callback, params) {
     var apiLayers = require('../api/layers')
-    console.log('what');
-    console.log(result)
     var async = require('async')
     async.waterfall([
         
@@ -30,7 +28,6 @@ function createLayerRef(result, callback, params) {
             });
         },
         function(asyncCallback) {
-            console.log('start recreating')
             if (!result.fidColumn) {
                 return callback(null, result);
             }
@@ -103,7 +100,6 @@ function removeLayerRef(result, callback, params) {
             })
         },
         function(baseLayerRef,asyncCallback) {
-            console.log(baseLayerRef)
             geoserverLayers.changeLayerGeoserver(result.isData ? baseLayerRef['_id'] : result['_id'], result.isData ? 'PUT' : 'DELETE', function(err) {
                 if (err)
                     return callback(err);

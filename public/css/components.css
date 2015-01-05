@@ -1,9 +1,11 @@
+
+
 .field.year {
 	padding-right        : 0;
 	margin-right         : 20px;
 }
 .field.year .widget {
-	width                : 170px;
+	width                : 364px;
 }
 #content-application .field.teritory {
     margin-right: 35px;
@@ -22,9 +24,10 @@
 .field.level {
 	padding-right        : 3px;
 	margin-right         : 10px;
+        margin-left          : 110px;
 }
 .field.level .label {
-	width                : 94px;
+	width                : 179px;
 }
 .field.level .widget {
 	width                : 90px;
@@ -97,6 +100,7 @@
 .field.dataview, .field.dataview > .widget {
 	display              : block;
 	width                : 150px;
+        z-index:-1;
 }
 .x-btn.btn-share button .x-btn-icon {
 	left                 : 10px;
@@ -159,6 +163,23 @@
 	.x-btn-pressed.btn-tool-hover button .x-btn-icon {
 		background-image : url("../images/icons/tools-hover-pressed.png") !important;
 	}
+.x-btn.btn-tool-zoom-selected button .x-btn-icon {
+	width                : 35px;
+	height               : 35px;
+	margin-left          : -17px;
+}
+.x-btn.btn-tool-select button .x-btn-icon {
+	width                : 35px;
+	height               : 35px;
+	margin-left          : -17px;
+        background-size: 100% 100%;
+}
+.x-btn.btn-tool-snapshot button .x-btn-icon {
+	width                : 42px;
+	height               : 32px;
+	margin-left          : -21px;
+        background-size: 100% 100%;
+}
 .x-btn.btn-tool-zoom-selected button .x-btn-icon {
 	width                : 35px;
 	height               : 35px;
@@ -279,6 +300,9 @@
 }
 .x-panel-header .x-tool-poweron {
 	background-image     : url("../images/icons/power2.png") !important;
+}
+.x-panel-header .x-tool-add {
+	background-image     : url("../images/icons/add.png") !important;
 }
 .x-panel-header .x-tool-refresh {
 	background-image     : url("../images/icons/paging-refresh.png") !important;

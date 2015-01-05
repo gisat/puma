@@ -17,6 +17,7 @@ Ext.define('PumaMng.controller.Store',{
         'Puma.model.LayerMap',
         'Puma.model.LayerServer',
         'Puma.model.Theme',
+        'Puma.model.DatasetLayerFilters',
         'Puma.model.Visualization',
         'Puma.model.Aggregated',
         'Puma.model.Scope',
@@ -154,6 +155,9 @@ Ext.define('PumaMng.controller.Store',{
             },{
                 name: 'Attribute set',
                 type: 'attributeset'
+            },{
+                name: 'Filters',
+                type: 'datasetlayerfilters'
             }
             ,
             {
@@ -179,6 +183,17 @@ Ext.define('PumaMng.controller.Store',{
             },{
                 name: 'Text',
                 type: 'text'
+            }]
+        })
+        Ext.create('Ext.data.Store',{
+            storeId: 'layermode',
+            fields: ['name','type'],
+            data: [{
+                name: 'Polygon',
+                type: 'polygon'
+            },{
+                name: 'Circle',
+                type: 'circle'
             }]
         })
     
@@ -296,6 +311,11 @@ Ext.define('PumaMng.controller.Store',{
             model: 'Puma.model.Theme'
         })
         Ext.create('Ext.data.Store',{
+            storeId: 'datasetlayerfilters',
+            autoLoad: true,
+            model: 'Puma.model.DatasetLayerFilters'
+        })
+        Ext.create('Ext.data.Store',{
             storeId: 'visualization',
             autoLoad: true,
             model: 'Puma.model.Visualization'
@@ -410,6 +430,11 @@ Ext.define('PumaMng.controller.Store',{
             slave: true,
             storeId: 'topicmng',
             model: 'Puma.model.Topic'
+        })
+          Ext.create('Gisatlib.data.SlaveStore',{
+            slave: true,
+            storeId: 'datasetlayerfiltersmng',
+            model: 'Puma.model.DatasetLayerFilters'
         })
         Ext.create('Gisatlib.data.SlaveStore',{
             slave: true,

@@ -1,7 +1,7 @@
 Ext.define('PumaMng.view.MainTabPanel' ,{
     extend: 'Ext.tab.Panel',
     alias : 'widget.maintabpanel',
-    requires: ['Ext.container.Container','PumaMng.view.tab.Analysis','PumaMng.view.tab.PerformedAnalysis','PumaMng.view.tab.Management','PumaMng.view.tab.LayerLink'],
+    requires: ['Ext.container.Container','PumaMng.view.tab.Analysis','PumaMng.view.tab.Upload','PumaMng.view.tab.UploadRef','PumaMng.view.tab.PerformedAnalysis','PumaMng.view.tab.Management','PumaMng.view.tab.LayerLink'],
 
     initComponent: function() {
         this.items = [{
@@ -26,6 +26,16 @@ Ext.define('PumaMng.view.MainTabPanel' ,{
             disabled: true,
             //hidden: true,
             title: 'Performed Analysis'
+        }, {
+            xtype: 'uploadview',
+            disabled: true,
+            //hidden: true,
+            title: 'Upload'
+        }, {
+            xtype: 'uploadrefview',
+            disabled: true,
+            //hidden: true,
+            title: 'Upload ref'
         }
 //        ,
 //        {

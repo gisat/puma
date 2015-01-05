@@ -32,6 +32,7 @@ Ext.define('PumaMng.controller.LayerLink', {
         })
         var me = this;
         $('a.noref,a.ref,a.cannotref').live('click',function() {
+            
             me.onAnchorClicked(this);
             
             return false;
@@ -172,27 +173,44 @@ Ext.define('PumaMng.controller.LayerLink', {
             data = JSON.parse(response.responseText).data;
         }
         catch (e) {}
-        var format = new OpenLayers.Format.WFSDescribeFeatureType();
-        data = format.read(data);
-        
-        if (!data || !data.featureTypes) {
-            Ext.StoreMgr.lookup('columnnumber').loadData([]);
-            Ext.StoreMgr.lookup('columnstring').loadData([]);
-            return;
+        try {
+            if (!Ext.isArray(data)) {
+                var format = new OpenLayers.Format.WFSDescribeFeatureType();
+                data = format.read(data);
+                
+            }
+            
         }
-        var props = data.featureTypes[0].properties;
+        catch (e) {}
+        
+        
         var numberData = [];
         var stringData = [];
-        var numTypes = ['int','bigint','float','double','real','long']
-        for (var i=0;i<props.length;i++) {
-            if (props[i].type.split(':')[0]=='gml') {
-                continue;
+        
+        if (Ext.isArray(data)) {
+            numberData = Ext.clone(data);
+            stringData = Ext.clone(data);
+        }
+        
+        else if (!data || !data.featureTypes) {
+            Ext.StoreMgr.lookup('columnnumber').loadData([]);
+            Ext.StoreMgr.lookup('columnstring').loadData([]);
+
+        }
+        else {
+            var props = data.featureTypes[0].properties;
+            var numTypes = ['int', 'bigint', 'float', 'double', 'real', 'long']
+            for (var i = 0; i < props.length; i++) {
+                if (props[i].type.split(':')[0] == 'gml') {
+                    continue;
+                }
+                var isNumType = Ext.Array.contains(numTypes, props[i].localType)
+                var storeData = isNumType ? numberData : stringData;
+                storeData.push({
+                    column: props[i].name
+                })
             }
-            var isNumType = Ext.Array.contains(numTypes,props[i].localType)
-            var storeData = isNumType ? numberData : stringData;
-            storeData.push({
-                column: props[i].name
-            })
+
         }
         Ext.StoreMgr.lookup('columnnumber').loadData(numberData);
         Ext.StoreMgr.lookup('columnstring').loadData(stringData);
@@ -250,7 +268,7 @@ Ext.define('PumaMng.controller.LayerLink', {
             var recs = columnStore.getRange();
             var presentAttrs = columnStore.collect('attribute');
             var attributeSet = Ext.StoreMgr.lookup('attributeset').getById(attributeSet);
-            var attributes = attributeSet.get('attributes');
+            var attributes = Ext.Array.clean(Ext.Array.merge(attributeSet.get('attributes'),attributeSet.get('filterAttributes') || [],attributeSet.get('otherAttributes') || []));
             var attrsToAdd = Ext.Array.difference(attributes,presentAttrs);
             var attrsToRemove = Ext.Array.difference(presentAttrs,attributes);
             var recsToAdd = [];
@@ -279,25 +297,37 @@ Ext.define('PumaMng.controller.LayerLink', {
         
     onRefTypeChange: function(refType) {
         var fidColumn = Ext.ComponentQuery.query('layerrefform #fidColumn')[0];
+        var joinFidColumn = Ext.ComponentQuery.query('layerrefform #joinFidColumn')[0];
         var nameColumn = Ext.ComponentQuery.query('layerrefform #nameColumn')[0];
+        var codeColumn = Ext.ComponentQuery.query('layerrefform #codeColumn')[0];
         var parentColumn = Ext.ComponentQuery.query('layerrefform #parentColumn')[0];
+        var joinParentColumn = Ext.ComponentQuery.query('layerrefform #joinParentColumn')[0];
         var columnGrid = Ext.ComponentQuery.query('layerrefform #columngrid')[0];
         var wmsAddress = Ext.ComponentQuery.query('layerrefform #wmsAddress')[0];
         var wmsLayers = Ext.ComponentQuery.query('layerrefform #wmsLayers')[0];
+        var reuseYears = Ext.ComponentQuery.query('layerrefform #reuseYears')[0];
         fidColumn.setVisible(refType!='layer');
+        joinFidColumn.setVisible(refType!='layer');
         nameColumn.setVisible(refType=='featurelayer');
+        codeColumn.setVisible(refType=='featurelayer');
         parentColumn.setVisible(refType=='featurelayer');
+        joinParentColumn.setVisible(refType=='featurelayer');
         columnGrid.setVisible(refType=='table');
+        reuseYears.setVisible(refType=='table');
         wmsAddress.setVisible(refType=='layer');
         wmsLayers.setVisible(refType=='layer');
         fidColumn.setDisabled(refType=='layer');
+        joinFidColumn.setDisabled(refType=='layer');
         fidColumn.validate();
         if (refType=='layer') {
             fidColumn.setValue(null);
+            joinColumn.setValue(null);
         }
         if (refType!='featurelayer') {
             nameColumn.setValue(null);
+            codeColumn.setValue(null);
             parentColumn.setValue(null);
+            joinParentColumn.setValue(null);
         }
         if (refType!='layer') {
             wmsAddress.setValue(null);

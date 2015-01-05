@@ -27,8 +27,20 @@ Ext.define('PumaMain.controller.Area', {
                 '#areamoredetails':{
                     click: this.onShowMoreDetailed
                 },
+                '#codefilters button':{
+                    toggle: this.onFilterChange
+                },
                 '#arealessdetails':{
                     click: this.onShowLessDetailed
+                },
+                '#codefilters tool[type=poweron]':{
+                    click: this.changeFilterState
+                },
+                '#codefilters tool[type=add]':{
+                    click: this.onAddAllFilters
+                },
+                '#codefilters tool[type=unselectall]':{
+                    click: this.onClearAllFilters
                 }
                 })
         this.areaMap = {};
@@ -38,7 +50,55 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestAreas = {};
         this.highestAreas = {};
         this.oldSliderVal = 0;
+        
+        this.filterActive = true;
+        
     },
+    
+     changeFilterState: function(btn) {
+        
+        if (!btn || !btn.xtype || btn.xtype!='tool') {
+            var active = btn;
+            btn = Ext.ComponentQuery.query('#codefilters tool[type=poweron]')[0];
+            if (active) {
+                $(btn.el.dom).addClass('tool-active');
+            }
+            else {
+                $(btn.el.dom).removeClass('tool-active');
+            }
+            this.filterActive = $(btn.el.dom).hasClass('tool-active');
+        }
+        else {
+            $(btn.el.dom).toggleClass('tool-active');
+            
+        }
+        
+        this.filterActive = $(btn.el.dom).hasClass('tool-active');
+        if (this.filterActive) {
+            this.scanTree({xtype:'button'});
+        }
+        
+    },
+    onAddAllFilters: function() {
+        this.onAllFilters(true);
+    },
+    onClearAllFilters: function() {
+        this.onAllFilters(false);
+    },
+    onAllFilters: function(add) {
+        var btns = Ext.ComponentQuery.query('#codefilters button');
+        for (var i=0;i<btns.length;i++) {
+            btns[i].toggle(add,true);
+        }
+        this.onFilterChange();
+    },
+    onFilterChange: function() {
+        if (this.filterActive) {
+            this.scanTree({xtype:'button'});
+        }
+    },
+    
+    
     
     getLocationObj: function() {
         
@@ -61,7 +121,7 @@ Ext.define('PumaMain.controller.Area', {
         var tree = Ext.ComponentQuery.query('#areatree')[0];
         tree.suspendEvents();
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
-        
+      
         var lastAt = null;
         for (var loc in this.lowestMap) {
             for (var at in this.lowestMap[loc]) {
@@ -74,6 +134,8 @@ Ext.define('PumaMain.controller.Area', {
             this.getController('DomManipulation').deactivateLoadingMask();
             return;
         }
+        
+        tree.view.dontRefreshSize = true;
         areaRoot.cascadeBy(function(node) {
             var at = node.get('at')
             if (node.get('leaf') || at!=lastAt || !node.parentNode.get('expanded')) return;
@@ -81,7 +143,7 @@ Ext.define('PumaMain.controller.Area', {
             if (!node.get('loaded')) {
                 node.set('loaded',true);
                 var loc = node.get('loc');
-                var gid = node.get('gid');
+                var gid = node.get('joingid');
                 toExpand[loc] = toExpand[loc] || {};
                 toExpand[loc][at] = toExpand[loc][at] || [];
                 toExpand[loc][at].push(gid);
@@ -92,15 +154,28 @@ Ext.define('PumaMain.controller.Area', {
             node.suppress = false
             
         });
+        
+        tree.view.dontRefreshSize = false;
         tree.resumeEvents();
+        
+        
+        if (needQuery || needChange) {
+            var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+            var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
+            var layers = dataset.get('featureLayers');
+            var lastIndex = Ext.Array.indexOf(layers,parseInt(lastAt));
+            this.getController('LocationTheme').lastLevel = layers[lastIndex+1];
+        }
         
         if (needQuery) {
             this.detailLevelParents = toExpand;
+            this.getController('LocationTheme').treeChanged = true;
             this.getController('LocationTheme').onYearChange({itemId:'detaillevel'});
             this.detailLevelParents = null;
             
         }
         else if (needChange) {
+            this.getController('LocationTheme').refreshFilters();
             this.scanTree();
             this.getController('DomManipulation').deactivateLoadingMask();
             this.getController('Chart').reconfigureAll();
@@ -115,7 +190,6 @@ Ext.define('PumaMain.controller.Area', {
    
         
     onShowLessDetailed: function() {
-        
         var nodesToCollapse = []
         var tree = Ext.ComponentQuery.query('#areatree')[0];
         tree.suspendEvents();
@@ -129,26 +203,40 @@ Ext.define('PumaMain.controller.Area', {
             break;
         }
         if (!lastAt) return;
-        
+        this.getController('LocationTheme').treeChanged = true;
         this.getController('DomManipulation').activateLoadingMask();
         areaRoot.cascadeBy(function(node) {
             var at = node.get('at')
             if (at!=lastAt || !node.parentNode.get('expanded') || !node.parentNode.get('gid')) return;
             nodesToCollapse.push(node.parentNode);
         });
+        tree.view.dontRefreshSize = true;
         for (var i=0;i<nodesToCollapse.length;i++) {
             nodesToCollapse[i].suppress = true;
             nodesToCollapse[i].collapse();
             nodesToCollapse[i].suppress = false
         }
+        tree.view.dontRefreshSize = false;
+        
         tree.resumeEvents();
+        
+        
         if (nodesToCollapse.length) {
+            
+            var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+            var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
+            var layers = dataset.get('featureLayers');
+            var lastIndex = Ext.Array.indexOf(layers,parseInt(lastAt));
+            this.getController('LocationTheme').lastLevel = layers[lastIndex-1];
+            
+            this.getController('LocationTheme').refreshFilters();
             this.afterCollapse(tree);
             this.getController('DomManipulation').deactivateLoadingMask();
         }
         else {
             this.getController('DomManipulation').activateLoadingMask();
         }
+        
     },
     
     
@@ -276,18 +364,22 @@ Ext.define('PumaMain.controller.Area', {
         var view = areaTree.getView();
         areaTree.getRootNode().cascadeBy(function(node) {
             var oldCls = node.get('cls');
+            var notPassed = '';
+            if (oldCls.search('notpassed')>-1) {
+                notPassed = 'notpassed'
+            }
             var at = node.get('at');
             var loc = node.get('loc')
             if (!at || !loc) return;
             var gid = node.get('gid');
             var hasColor = selectMap[loc] && selectMap[loc][at] && selectMap[loc][at][gid];
             if (!hasColor && oldCls!='') {
-                node.data['cls'] = '';
+                node.data['cls'] = notPassed;
                 view.onUpdate(node.store,node);
             }
             
             if (hasColor && oldCls!='select_'+selectMap[loc][at][gid]) {
-                node.data['cls'] = 'select_'+selectMap[loc][at][gid];
+                node.data['cls'] = 'select_'+selectMap[loc][at][gid]+(notPassed ? ',notpassed' : '');
                 view.onUpdate(node.store,node);
             }
         })
@@ -304,7 +396,7 @@ Ext.define('PumaMain.controller.Area', {
             options.params['filter'] = JSON.stringify(this.areaFilter);
         }
         
-        var gid = node.get('gid');
+        var gid = node.get('joingid');
         var loc = node.get('loc');
         var at = node.get('at')
         var parentGids = {};
@@ -366,7 +458,10 @@ Ext.define('PumaMain.controller.Area', {
         }
         return locations;
     },
-    scanTree: function() {
+        
+        
+    
+    scanTree: function(src) {
 
         
         var me = this;
@@ -386,11 +481,58 @@ Ext.define('PumaMain.controller.Area', {
         var atLeastOneLoc = false;
         var maxDepth = 0;
         this.placeNode = null;
+        var datasetId = Ext.ComponentQuery.query('#seldataset')[0].getValue();
+        var dataset = Ext.StoreMgr.lookup('dataset').getById(datasetId);
+        var featureLayers = dataset.get('featureLayers');
+        var lastDatasetTemplate = featureLayers[featureLayers.length-1];
+        
+        var filterMap = {};
+        var pressed = this.filterActive ? Ext.ComponentQuery.query('#codefilters button[pressed=true]') : [];
+        var canShowMore = true;
+        for (var i=0;i<pressed.length;i++) {
+            var btn = pressed[i];
+            var code = btn.ownerCt.attrCode;
+            var attr = code.split('_attr_')[1];
+            filterMap[attr] = filterMap[attr] || [];
+            Ext.Array.include(filterMap[attr],btn.text);
+            
+        }
+        var attrSet = this.getController('LocationTheme').filterAttrSet
         root.cascadeBy(function(node) {
             var at = node.get('at');
             var loc = node.get('loc');
             if (!at || !loc || !node.isVisible() || node==root)
                 return;
+            var passed = true;
+            if (pressed.length) {
+                
+                var filterAttrs=  node.get('filterAttrs');
+                for (var code in filterMap) {
+                    var fullCode = 'as_'+attrSet+'_attr_'+code;
+                    var intersection = Ext.Array.intersect(filterMap[code],filterAttrs[fullCode] || [])
+                    if (!intersection.length) {
+                        passed = false;
+                        break;
+                    }
+                }
+                if (!passed) {
+                    //node.set('cls','notpassed');
+                    //return;
+                }
+                else {
+//                    var oldCls = node.get('cls');
+//                    var classes = oldCls.split(',');
+//                    var newClasses = [];
+//                    for (var i=0;i<classes.length;i++) {
+//                        if (classes[i].search('notpassed')<0) {
+//                            newClasses.push(classes[i]);
+//                        }
+//                    }
+//                    node.set('cls',newClasses.join(','));
+                }
+            }
+            
+            
             
             var depth = node.getDepth();
             maxDepth = Math.max(depth,maxDepth);
@@ -415,9 +557,16 @@ Ext.define('PumaMain.controller.Area', {
             Ext.Array.include(areaTemplates,at);
             var gid = node.get('gid');
             if (!node.isExpanded() || !node.hasChildNodes()) {
+            //if (at == lastDatasetTemplate)
                 lastMap[loc] = lastMap[loc] || {}
                 lastMap[loc][at] = lastMap[loc][at] || [];
-                lastMap[loc][at].push(gid);
+                if (passed) {
+                    lastMap[loc][at].push(gid);  
+                    lowestCount++;
+                }
+            }
+            if (canShowMore && at==lastDatasetTemplate && node.isVisible()) {
+                canShowMore = false;
             }
             allMap[loc] = allMap[loc] || {}
             allMap[loc][at] = allMap[loc][at] || [];
@@ -428,30 +577,47 @@ Ext.define('PumaMain.controller.Area', {
             }
         })
         this.areaTemplates = areaTemplates;
-        if (areaTemplates.length) 
-        {
-            var lastAreaTemplate = areaTemplates[areaTemplates.length-1];
-            for (var loc in allMap) {
-                if (!allMap[loc][lastAreaTemplate]) continue;
-                lowestCount += allMap[loc][lastAreaTemplate].length;
-                lowestMap[loc] = lowestMap[loc] || {};
-                lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
-                if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
-                    lowestNoLeafs = false;
-                }
-            }
-        }
+        this.lastAt = areaTemplates[areaTemplates.length-1];
+//        if (areaTemplates.length) 
+//        {
+//            var lastAreaTemplate = areaTemplates[areaTemplates.length-1];
+//            for (var loc in allMap) {
+//                if (!allMap[loc][lastAreaTemplate]) continue;
+//                lowestCount += allMap[loc][lastAreaTemplate].length;
+//                lowestMap[loc] = lowestMap[loc] || {};
+//                lowestMap[loc][lastAreaTemplate] = Ext.Array.clone(allMap[loc][lastAreaTemplate]);
+//                if (!leafMap[loc] || !leafMap[loc][lastAreaTemplate]) {
+//                    lowestNoLeafs = false;
+//                }
+//            }
+//        }
+        lowestMap = Ext.clone(lastMap);
         this.getController('Map').updateGetFeatureControl();
         this.lowestCount = lowestCount;
         this.allMap = allMap;
         this.lowestMap = lowestMap;
+        for (var loc in lowestMap) {
+            for (var at in lowestMap[loc]) {
+                if (at!=this.lastAt) {
+                    delete lowestMap[loc][at]
+                }
+            }
+        }
         this.highestMap = highestMap;
         this.lastMap = lastMap;
         var selPlaceObj = this.getLocationObj().obj
         var selPlace = selPlaceObj ? selPlaceObj.get('id') : null;
+        
+        for (var loc in lastMap) {
+            for (var layerTemplate in lastMap[loc]) {
+                this.lastTemplate = layerTemplate;
+            }
+        }
+        
         var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
         var showLess = Ext.ComponentQuery.query('#arealessdetails')[0];
-        showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1));
+        showMore.setDisabled(!canShowMore);
+        
         showLess.setDisabled(!containsLower)
   
         var selMap = this.getController('Select').selMap;
@@ -479,12 +645,22 @@ Ext.define('PumaMain.controller.Area', {
         if (overallCount==0) {
             this.getController('Select').switchToAllAreas();
         }        
-        var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+        //var onlySel = Ext.ComponentQuery.query('#areapager #onlySelected')[0].pressed;
+        var onlySel = false;
         var count = onlySel ? (overallCount) : (lowestCount+outerCount)
         Ext.StoreMgr.lookup('paging').setCount(count);
         
         this.getController('Layers').refreshOutlines();
-        this.getController('Filter').reconfigureFiltersCall();
+        if (src && src.xtype=='button') {
+            this.getController('Chart').reconfigureAll();
+            this.getController('Layers').reconfigureAll();
+            var selController = this.getController('Select');
+            //this.colourTree(selController.colorMap);
+            this.getController('Layers').colourMap(selController.colorMap);
+            
+            
+        }
+        //this.getController('Filter').reconfigureFiltersCall();
         
         //this.getController('Layers').checkVisibilityAndStyles(true,false);
         

@@ -24,7 +24,7 @@ Ext.define('PumaMain.controller.Render', {
     dockPanel: function(win) {
         var panel = win.down('panel');
         win.remove(panel,false);
-        var order = ['selcolor','areatree','layerpanel','maptools','advancedfilters'];
+        var order = ['advancedfilters','codefilters','layerpanel','areatree','selcolor','maptools'];
         var idx = 0;
         for (var i=0;i<order.length;i++) {
             var name = order[i];
@@ -50,7 +50,7 @@ Ext.define('PumaMain.controller.Render', {
         var win = Ext.widget('window',{
             layout: 'fit',
             width: 260,
-            maxHeight: 600,
+            maxHeight: 700,
             resizable: true,
             cls: 'detached-window',
             isdetached: 1,
@@ -73,6 +73,8 @@ Ext.define('PumaMain.controller.Render', {
     
     
     renderApp: function() {
+
+        
         Ext.widget('pumacombo',{
             store: 'scope',
             itemId: 'selscope',
@@ -96,7 +98,20 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('theme4sel'),
             itemId: 'seltheme',
             helpId: 'Selectingtheme',
+            hidden: true,
             cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
+            renderTo: 'app-toolbar-theme'
+        })
+        Ext.widget('pumacombo',{
+            store: Ext.StoreMgr.lookup('attribute4sel'),
+            itemId: 'selindicator',
+            //helpId: 'Selectingtheme',
+            //hidden: true,
+            cls: 'custom-combo',
+            width: 260,
             listConfig: {
                 cls: 'custom-combo-list',
             },
@@ -104,8 +119,9 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('discretetimeline',{
             renderTo: 'app-toolbar-year',
-            width: 148,
+            width: 335,
             store: Ext.StoreMgr.lookup('year'),
+            displayField: 'shortName',
             //forceSelection: true,
             itemId: 'selyear',
             helpId: 'Switchingbetweenyears',
@@ -270,12 +286,16 @@ Ext.define('PumaMain.controller.Render', {
                 },
                 itemId: 'onlySelected',
                 text: 'Only selected',
+                hidden: false,
                 enableToggle: true,
                 icon: 'images/icons/colors.png'
             }],
             store: Ext.StoreMgr.lookup('paging')
         })
-        Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
+        window.setTimeout(function() {
+           Ext.ComponentQuery.query('#regionspanel')[0].collapse(); 
+        },1)
+        
         Ext.ComponentQuery.query('#areapager #useselectedcolorpicker')[0].select(['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']);
         
     },
@@ -323,13 +343,25 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('pumacombo',{
             renderTo: 'app-intro-theme',
             initial: true,
-            //hidden: true,
+            hidden: true,
             itemId: 'initialtheme',
             cls: 'custom-combo',
             listConfig: {
                 cls: 'custom-combo-list',
             },
             store: Ext.StoreMgr.lookup('theme4sel')
+        })
+        Ext.widget('pumacombo',{
+            renderTo: 'app-intro-theme',
+            initial: true,
+            width: 210,
+            //hidden: true,
+            itemId: 'initialindicator',
+            cls: 'custom-combo',
+            listConfig: {
+                cls: 'custom-combo-list',
+            },
+            store: Ext.StoreMgr.lookup('attribute4sel')
         })
         Ext.widget('button',{
             renderTo: 'app-intro-confirm',

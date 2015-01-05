@@ -3,12 +3,19 @@ Ext.define('PumaMain.controller.Map', {
     views: [],
     requires: [],
     init: function() {
+        
+        this.initialExtent = new OpenLayers.Bounds(-32,33,46,72).transform(new OpenLayers.Projection("EPSG:4326"),new OpenLayers.Projection("EPSG:900913"))
+        
         this.control({
             '#map': {
                 afterrender: this.afterRender,
                 resize: this.onResize,
             },
             '#map2': {
+                afterrender: this.afterRender,
+                resize: this.onResize
+            },
+            'component[type=distantregion]': {
                 afterrender: this.afterRender,
                 resize: this.onResize
             },
@@ -29,17 +36,26 @@ Ext.define('PumaMain.controller.Map', {
                 toggle: this.onMeasureActivated
             },
             '#multiplemapsbtn': {
-                toggle: this.onMultipleYearsToggle
+                click: this.onZoomToFull
             },
             '#savemapbtn': {
                 click: this.onExportMapUrl
             },
-            '#mapsnapshotbtn': {
+            'maptools #snapshot': {
                 click: this.onExportMapUrl
             }
         })
+        var me = this;
+//        $('#app-reports-accordeon .olMap').live('click',function() {
+//            var cmp = Ext.ComponentManager.get(this.id);
+//            me.onOutlineClick(cmp);
+//        })
     },
+    
+    onOutlineClick: function(cmp) {
         
+    },        
+            
     onExportMapUrl: function(btn) {
         var map1 = Ext.ComponentQuery.query('#map')[0].map;
         var map2 = Ext.ComponentQuery.query('#map2')[0].map;
@@ -79,7 +95,7 @@ Ext.define('PumaMain.controller.Map', {
             layers: layers1,
             layers2: years.length>1 ? layers2 : null,
             type: 'map',
-            trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
+            //trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
             year: map1.year,
             yearName: store.getById(map1.year).get('name'),
             year2: years.length>1 ? map2.year : null,
@@ -102,8 +118,13 @@ Ext.define('PumaMain.controller.Map', {
         })
     },
     
+    
+    onZoomToFull: function() {
+        this.map1.zoomToExtent(this.initialExtent);
+    },
+    
     onMultipleYearsToggle: function(btn,pressed) {
-        if (!btn.leftYearsUnchanged) {
+        
             var yearCnt = Ext.ComponentQuery.query('#selyear')[0]
             var years = yearCnt.getValue();
             if (years.length<2 && pressed) {
@@ -123,10 +144,6 @@ Ext.define('PumaMain.controller.Map', {
             if (years.length>1 && !pressed) {
                 yearCnt.setValue([years[years.length-1]])
             }
-            btn.toBeChanged = true;
-            return;
-        }
-        btn.toBeChanged = false;
         var domController = this.getController('DomManipulation');
         if (pressed) {
             domController.activateMapSplit();
@@ -262,7 +279,7 @@ Ext.define('PumaMain.controller.Map', {
     
     createBaseNodes: function() {
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
-        var liveNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
+        //var liveNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
         var hybridNode = Ext.create('Puma.model.MapLayer',{
             name: 'Google hybrid',
             checked: false,
@@ -282,7 +299,7 @@ Ext.define('PumaMain.controller.Map', {
             type: 'roadmap'
         });
         var terrainNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google terain',
+            name: 'Google terrain',
             initialized: true,
             allowDrag: false,
             checked: true,
@@ -299,18 +316,18 @@ Ext.define('PumaMain.controller.Map', {
             sortIndex: 10000,
             type: 'osm'
         });
-        var trafficNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google traffic',
-            initialized: true,
-            allowDrag: true,
-            checked: false,
-            leaf: true,
-            sortIndex: 0,
-            type: 'traffic'
-        });
+//        var trafficNode = Ext.create('Puma.model.MapLayer',{
+//            name: 'Google traffic',
+//            initialized: true,
+//            allowDrag: true,
+//            checked: false,
+//            leaf: true,
+//            sortIndex: 0,
+//            type: 'traffic'
+//        });
         Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
         baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
-        liveNode.appendChild([trafficNode])
+        //liveNode.appendChild([trafficNode])
     },
     
     onMapMove: function(map) {
@@ -532,7 +549,6 @@ Ext.define('PumaMain.controller.Map', {
                 
             });
         }
-        
     },
         
     onExtentOutlineComplete: function(cmp) {
@@ -571,6 +587,13 @@ Ext.define('PumaMain.controller.Map', {
     
     afterRender: function(cmp) {
         var options = this.getOptions(cmp);
+        if (cmp.type=='distantregion') {
+            options.controls = [];
+            if (!this.initialized) {
+                this.initialized = true;
+                Ext.ComponentQuery.query('#regionspanel')[0].expand();
+            }
+        }
         var map = new OpenLayers.Map(options);
         cmp.map = map;
         var el = Ext.get(cmp.id);
@@ -589,7 +612,7 @@ Ext.define('PumaMain.controller.Map', {
             this.map1 = map;
             this.cursor1 = Ext.get('app-map').down('img')
         }
-        else {
+        else if (cmp.itemId=='map2') {
             this.map2 = map;
             this.cursor2 = Ext.get('app-map2').down('img')
         }
@@ -628,12 +651,12 @@ Ext.define('PumaMain.controller.Map', {
             initialized: true,
             visibility: false
         });
-        var trafficLayer = new google.maps.TrafficLayer()
+        //var trafficLayer = new google.maps.TrafficLayer()
        
         
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
-        var trafficNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
-        var baseNodes = Ext.Array.merge(baseNode.childNodes,trafficNode.childNodes)
+        //var trafficNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
+        var baseNodes = baseNode.childNodes
         var nodes = [];
         for (var i=0;i<baseNodes.length;i++) {
             var node = baseNodes[i];
@@ -644,9 +667,14 @@ Ext.define('PumaMain.controller.Map', {
                 case 'roadmap': layer = streetLayer; break;
                 case 'terrain': layer = terrainLayer; break;
                 case 'osm': layer = osmLayer; break;
-                case 'traffic': layer = trafficLayer; break;
             }
             var nodeProp = cmp.itemId=='map' ? 'layer1':'layer2';
+            if (cmp.type=='distantregion') {
+                var distantLayers = node.get('distantLayers') || [];
+                distantLayers.push(layer);
+                node.set('distantLayers',distantLayers);
+                continue;
+            }
             node.set(nodeProp,layer);
         }
         
@@ -666,7 +694,7 @@ Ext.define('PumaMain.controller.Map', {
         map.size = map.getCurrentSize();
         map.addLayers([terrainLayer,streetLayer,hybridLayer,osmLayer]);
         //trafficLayer.setMap(streetLayer.mapObject);
-        trafficLayer.oldMapObj = streetLayer.mapObject;
+        //trafficLayer.oldMapObj = streetLayer.mapObject;
         if (cmp.id=='map') {
             Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
         }
@@ -684,6 +712,10 @@ Ext.define('PumaMain.controller.Map', {
         map.updateSize();
         //map.zoomToExtent(new OpenLayers.Bounds(-675736.2753,9187051.894,704022.2164,9204621.9448))
         
+        if (cmp.type=='distantregion') {
+            //return;
+        }
+        
         var params = {
             transparent: true,
             format: 'image/png',
@@ -691,7 +723,7 @@ Ext.define('PumaMain.controller.Map', {
         }
         //params.layers = 'puma:layer_260,puma:layer_266'
         
-
+        
         map.selectInMapLayer = new OpenLayers.Layer.WMS('WMS', Config.url+'/api/proxy/wms', params, {
             visibility: true
         });
@@ -776,7 +808,7 @@ Ext.define('PumaMain.controller.Map', {
         
         
         map.addControls([map.drawPolygonControl,map.drawPointControl,map.selectControl,map.dragControl,map.featureInfoControl,map.measurePolyControl,map.measureLineControl]);
-        map.dragControl.activate();
+        //map.dragControl.activate();
         map.dragControl.onComplete = function(feature) {
             me.getController('UserPolygon').onFeatureDragged(feature);
         }
@@ -785,7 +817,9 @@ Ext.define('PumaMain.controller.Map', {
             infoControls[i].events.register("getfeatureinfo", this, this.onFeatureSelected);
             map.addControl(infoControls[i]); 
         }
-        
+        if (cmp.type=='distantregion') {
+            infoControls.click.activate();
+        }
         map.featureInfoControl.events.register('beforegetfeatureinfo',this,function() {
             return this.updateFeatureInfoControl()
         });
@@ -821,6 +855,7 @@ Ext.define('PumaMain.controller.Map', {
         
     onFeatureInfo: function(response) {
         var data = JSON.parse(response.text).data;
+        
         if (!data || !data.length) {
             return;
         }
@@ -941,6 +976,13 @@ Ext.define('PumaMain.controller.Map', {
         this.lrMap = lrMap;
         this.map1.selectInMapLayer.params['LAYERS'] = layers1.join(',');
         this.map2.selectInMapLayer.params['LAYERS'] = layers2.join(',');
+        var distantRegions = Ext.ComponentQuery.query('component[type=distantregion]')
+        for (var i=0;i<distantRegions.length;i++) {
+            var distantRegion = distantRegions[i];
+            distantRegion.map.selectInMapLayer.params['LAYERS'] = layers1.join(',');
+        }
+        
+        
     },
         
     onFeatureSelected: function(evt) {
@@ -1001,13 +1043,23 @@ Ext.define('PumaMain.controller.Map', {
     
     onResize: function(cmp) {
         if (cmp.map) {
-            cmp.setWidth(cmp.container.getWidth());
-            cmp.setHeight(cmp.container.getHeight());
+            if (cmp.type!='distantregion') {
+                cmp.setWidth(cmp.container.getWidth());
+                cmp.setHeight(cmp.container.getHeight());
+            
+            }
             cmp.map.updateSize();
             if (!cmp.initialZoom) {
+                if (cmp.zoomTo) {
+                    var bounds84 = new OpenLayers.Bounds(cmp.zoomTo);
+                    var bounds = bounds84.transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913"));
+                    cmp.map.zoomToExtent(bounds);
+                    cmp.initialZoom = true;
+                    return;
+                }
                 //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(0, 5000000, 3500000, 8000000));
+                cmp.map.zoomToExtent(cmp.map.outlineExtent || this.initialExtent);
 
                 //cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(6960977, -434794.06241276, 20071456.585033, 7059703.685849));
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))

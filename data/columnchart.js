@@ -1,4 +1,5 @@
 var dataMod = require('./data');
+var conn = require('../common/conn');
 var async = require('async')
 var crud = require('../rest/crud');
 
@@ -59,7 +60,33 @@ function getChart(params, callback) {
                 return asyncCallback(null,map)
             })
         },
-        res: ['years','data', 'attrConf',  function(asyncCallback, results) {
+        refGroups: function(asyncCallback) {
+            var client = conn.getPgDb();
+            var parsedAttrs = [];
+            for (var i=0;i<attrs.length;i++) {
+                var attr = attrs[i];
+                parsedAttrs.push(attr.attr)
+                
+            }
+            var sql = 'SELECT * FROM refimport.ref WHERE attcode::integer IN ('+parsedAttrs.join(',')+') AND year::integer IN ('+ years.join(',')+')';
+            console.log(sql)
+            client.query(sql,  function(err, resls) {
+                if (err) {
+                    console.log(err);
+                    return asyncCallback(null,{});
+                }
+                var rows = resls.rows;
+                var refMap = {};
+                for (var i=0;i<rows.length;i++) {
+                    var row = rows[i];
+                    refMap[row.attcode] = refMap[row.attcode] || {};
+                    refMap[row.attcode][row.year] = row;
+                }
+                
+                return asyncCallback(null,refMap);
+            })
+        },
+        res: ['years','data', 'attrConf', 'refGroups', function(asyncCallback, results) {
                 var data = results.data.data;
                 var attrConf = results.attrConf.attrMap;
                 for (var i = 0; i < attrs.length; i++) {
@@ -115,22 +142,28 @@ function getChart(params, callback) {
                             }
                             
                             
+//                            if (results.refGroups[attr.attr] && results.refGroups[attr.attr][years[k]] && results.refGroups[attr.attr][years[k]]['espon']) {
+//                                attr.plotValues.push(parseFloat(results.refGroups[attr.attr][years[k]]['espon']))
+//                                attr.plotNames.push('ESPON')
+//                            }
+                            
                             if (aggregate && aggregate in {min: true, avg: true, max: true}) {
                                 attr.plotValues.push(results.data.aggregate[aggregate + '_' + yearAttrName]);
                                 attr.plotNames.push(aggregate);
                             }
                             
                             if (params['stacking'] != 'double' || j < (attrs.length / 2)) {
-                                attr.series[k].push({y: row[yearAttrName], units: attr.units, loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
+                                attr.series[k].push({a: row['name'],y: row[yearAttrName], units: attr.units, loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
                             }
                             else {
-                                attr.series[k].push({y: -row[yearAttrName], units: attr.units, loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
+                                attr.series[k].push({a: row['name'],y: -row[yearAttrName], units: attr.units, loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
                             }
                         }
 
 
                     }
-                    categories.push(row['name']);
+                    
+                    categories.push(row['code']);
                 }
                 var series = [];
                 var plotLines = [];

@@ -42,7 +42,7 @@ Ext.define('PumaMain.controller.Dataview', {
             Ext.Ajax.request({
                 url: Config.url + '/rest/dataview/'+Config.dataviewId,
                 scope: this,
-                method: 'GET',
+                //method: 'GET',
                 success: function(response) {
                     var respText = response.responseText
                     for (var oldColor in this.colorBackComp) {
@@ -78,7 +78,7 @@ Ext.define('PumaMain.controller.Dataview', {
             url: Config.url + '/api/urlview/getView',
             params: {_id: id},
             scope: this,
-            method: 'GET',
+            //method: 'GET',
             success: function(response) {
                 var cfg = JSON.parse(response.responseText).data;
                 Config.cfg = cfg;
@@ -90,6 +90,7 @@ Ext.define('PumaMain.controller.Dataview', {
         }
     },
     onThemeLoad: function() {
+        
     }
         
 });

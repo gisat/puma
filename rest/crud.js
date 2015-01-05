@@ -2,6 +2,7 @@
 
 
 var async = require('async');
+var us = require('underscore');
 var hookLib = require('./hooks');
 var hooks = require('./models').hooks;
 var ensureObj = require('./models').ensureIds;
@@ -81,7 +82,15 @@ function read(collName,filter,params,callback) {
     if (params['justMine']) {
         filter['createdBy'] = params['userId']
     }
+    
     collection.find(filter).toArray(function(err,items) {
+        if (collName=='attribute') {
+            var sorter = [429,1125];
+            items = us.sortBy(items,function(item) {
+                var idx = us.indexOf(sorter,item._id)
+                return idx>-1 ? idx : 99999;
+            })
+        }
         callback(err,items)
     });
 }
@@ -113,7 +122,6 @@ function update(collName, obj, params, callback,bypassHooks) {
             delete obj['_id']
             obj['changed'] = new Date();
             obj['changedBy'] = params.userId;
-            console.log(filter);
             collection.update(filter, {'$set': obj}, {}, function(err) {
                 if (err)
                     return callback(err);
@@ -331,7 +339,7 @@ var checkDeleteRefs = function(id,collName,callback) {
 
 var doHooks = function(opType,collName,result,params,callback) {   
     var hook = hooks[collName] ? hooks[collName][opType] : null;
-    console.log(opType,collName,result);
+    //console.log(opType,collName,result);
     
     if (hook) {
         hookLib[hook](result,callback,params);

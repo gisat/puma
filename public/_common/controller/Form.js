@@ -181,6 +181,7 @@ Ext.define('Puma.controller.Form',{
         var form = grid.nextSibling('commonform')
         var deleteBtn = Ext.ComponentQuery.query('#deletebtn',grid)[0];
         var copyBtn = Ext.ComponentQuery.query('#copybtn',grid)[0];
+        
         if (selection.length) {
             form = form.getForm();
             form.loadRecord(selection[0]);

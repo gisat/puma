@@ -133,6 +133,7 @@ function getThemeYearConf(params, req, res, callback) {
         res.data = [];
         return callback(null);
     }
+    console.log(params);
     var years = JSON.parse(params['years']);
     var fids = params['fids'] ? JSON.parse(params['fids']) : null;
     var filter = params['filter'] ? JSON.parse(params['filter']) : null;
@@ -154,6 +155,18 @@ function getThemeYearConf(params, req, res, callback) {
                 asyncCallback(null, results[0]);
             });
         },
+        attributeSet: ['dataset','theme',function(asyncCallback,results) {
+            crud.read('attributeset', {dataset: parseInt(params['dataset']),topic:results.theme.topics[0]}, function(err, resls) {
+                if (err)
+                    return callback(err);
+                for (var i=0;i<resls.length;i++) {
+                    if (resls[i].filterAttributes && resls[i].filterAttributes.length) {
+                        return asyncCallback(null, resls[i]);
+                    }
+                }
+                asyncCallback(null, resls[0]);
+            });
+        }],
         locations: function(asyncCallback, results) {
             
             var locations = params['locations'] ? JSON.parse(params['locations']) : null;
@@ -245,6 +258,7 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                 }
                 async.forEach(confs, function(item, eachCallback) {
+                    console.log(item)
                     crud.read('layerref', item, function(err, resls) {
                         if (err)
                             return callback(err);
@@ -295,38 +309,45 @@ function getThemeYearConf(params, req, res, callback) {
                     })
                 })
             }],
-        sql: ['layerRefs', function(asyncCallback, results) {
+        sql: ['layerRefs','attributeSet', function(asyncCallback, results) {
                 if (!params['refreshAreas'] || params['refreshAreas']=='false') {
                     return asyncCallback(null, {});
                 }
+                console.log(results.attributeSet)
                 var locations = results.locations;
                 var featureLayers = results.dataset.featureLayers;
                 var layerRefMap = results.layerRefs;
                 var opened = params['parentgids'] ? JSON.parse(params['parentgids']) : null;
                 opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
                 var sql = '';
+                var overallFilterAttributes = [];
+                var filterAttributes = results.attributeSet.filterAttributes || []
                 for (var i = 0; i < locations.length; i++) {
                     var loc = locations[i];
-                    var locFeatureLayers = params['parentgids'] ? [] : [featureLayers[0]];
+                    var locFeatureLayers = params['parentgids'] ? [] : featureLayers;
                     var locOpened = opened[loc];
                     for (var key in locOpened) {
                         var idx = featureLayers.indexOf(parseInt(key));
                         locFeatureLayers.push(featureLayers[idx + 1])
                     }
+                    
                     locFeatureLayers.sort(function(a, b) {
                         return featureLayers.indexOf(a) > featureLayers.indexOf(b);
                     })
-
+                    console.log(locFeatureLayers)
                     for (var j = 0; j < locFeatureLayers.length; j++) {
                         var fl = locFeatureLayers[j];
+                        var isLast = (featureLayers.indexOf(fl)==featureLayers.length-1)
                         var layerRef = null;
                         try {
                             layerRef = layerRefMap[loc][fl][years[0]];
                         }
                         catch (e) {
                         }
-                        if (!layerRef)
+                        if (!layerRef) {
+                            console.log('notfound')
                             continue;
+                        }
                         var flIdx = featureLayers.indexOf(fl);
                         var prevFl = flIdx > 0 ? featureLayers[flIdx - 1] : null;
                         var leaf = 'FALSE';
@@ -341,8 +362,12 @@ function getThemeYearConf(params, req, res, callback) {
                         if (!cont)
                             continue;
                         sql += sql ? ' UNION ' : '';
-                        sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + loc + ' AS loc,' + layerRef._id + ' AS lr, a.name, ST_AsText(a.extent) as extent';
-
+                        sql += '(SELECT a.gid,a.joingid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + loc + ' AS loc,' + layerRef._id + ' AS lr, a.name,a.code, ST_AsText(a.extent) as extent';
+                        
+                        for (var k=0; k<filterAttributes.length;k++) {
+                            var filterAttr = filterAttributes[k];
+                            sql += ',as_'+results.attributeSet._id+'_attr_'+filterAttr
+                        }
                         sql += ' FROM views.layer_' + layerRef._id + ' a';
                         for (var k = 1; k < years.length; k++) {
                             var yearLayerRef = layerRefMap[loc][fl][years[k]];
@@ -354,14 +379,17 @@ function getThemeYearConf(params, req, res, callback) {
                         }
                         sql += ' WHERE 1=1'
                         if (locOpened && prevFl && locOpened[prevFl]) {
-                            sql += ' AND a.parentgid IN (' + locOpened[prevFl].join(',') + ')';
+                            sql += " AND a.parentgid IN ('" + locOpened[prevFl].join("','") + "')";
                         }
                         if (filter && (filter.areaTemplates[fl] || params.allAreaTemplates)) {
                             sql += getFilterSql(filter.filters, 'a.');
                         }
+                        //sql += ')'
+                        sql += ' LIMIT 2000)';
                     }
                 }
-                sql += ' ORDER BY idx ASC'
+                sql += ' ORDER BY idx ASC';
+                console.log(sql);
                 var client = conn.getPgDb();
                 client.query(sql, {}, function(err, resls) {
 
@@ -373,6 +401,8 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                     else {
                         var newRows = [];
+                        console.log(fids);
+                        console.log(rows)
                         for (var i = 0; i < resls.rows.length; i++) {
                             var row = resls.rows[i];
                             if (fids[row.loc] && fids[row.loc][row.at] && fids[row.loc][row.at].indexOf(row.gid) > -1) {
@@ -385,6 +415,8 @@ function getThemeYearConf(params, req, res, callback) {
                         obj.add = newRows;
                         obj.remove = fids;
                     }
+                    
+                    obj.filterAttributes = filterAttributes;
                     return asyncCallback(null, obj)
                 })
 
@@ -465,7 +497,7 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                     var sql = 'SELECT a.gid,COUNT(b.gid) as cnt FROM views.layer_' + item.layerRef._id + ' a';
                     sql += ' LEFT JOIN views.layer_' + item.nextLayerRef._id + ' b';
-                    sql += ' ON a.gid = b.parentgid';
+                    sql += ' ON a.joingid = b.parentgid';
                     if (filter && filter.areaTemplates[item.nextAt]) {
                         sql += getFilterSql(filter.filters, 'b.');
                     }
@@ -617,7 +649,7 @@ function getThemeYearConf(params, req, res, callback) {
                                     at: layer._id,
                                     layerGroup: layer.layerGroup,
                                     topic: topic,
-                                    sortIndex: 2.5,
+                                    sortIndex: 15.5,
                                     type: 'topiclayer',
                                     checked: false
                                 }
@@ -640,6 +672,8 @@ function getThemeYearConf(params, req, res, callback) {
                     leafMap: results.leafs ? results.leafs.leafMap : null,
                     auRefMap: results.layerRefs,
                     remove: results.sql.remove,
+                    filterAttributes: results.sql.filterAttributes,
+                    filterAttrSet: results.attributeSet._id,
                     attrSets: results.requiredAttrSets,
                     areas: results.leafs ? results.leafs.areas : results.sql.areas,
                     layerRefMap: results.layers ? results.layers.layerRefMap : null,

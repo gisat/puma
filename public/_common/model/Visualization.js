@@ -2,7 +2,7 @@ Ext.define('Puma.model.Visualization', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','attrSet','columnAttrs','scatterAttrs','choroAttr','layers'
+    '_id','attrSet','columnAttrs','scatterAttrs','choroAttr','layers','dotChart'
     ],
     idProperty: '_id',
     proxy: {

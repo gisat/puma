@@ -111,8 +111,8 @@ Ext.define('PumaMain.controller.DomManipulation', {
 	
 	getContentAvailableSize: function() {
 		var w  = $(window).width();
-		var h  = $(window).height() - $("#header").outerHeight(true) - $("#footer").outerHeight(true);
-		
+		//var h  = $(window).height() - $("#header").outerHeight(true) - $("#footer").outerHeight(true);
+		var h  = $(window).height() - $("#footer").outerHeight(true);
 		if ($("body").hasClass("application")) {
 			h -= $("#toolbar").outerHeight(true);
 		}

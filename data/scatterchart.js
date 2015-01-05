@@ -76,7 +76,11 @@ function getChart(params, callback) {
                     for (var j=0;j<years.length;j++) {
                         var year = years.length>1 ? years[j] : null;
                         var yearSuffix = year ? '_y_'+year : '';
+                        
                         var obj = {x: row[xAttrName+yearSuffix], y: row[yAttrName+yearSuffix], name: row['name'], loc: row['loc'], at: row['at'], gid: row['gid']}
+                        if (obj.x == null || obj.y == null) {
+                            continue;
+                        }
                         obj.z = zAttrName ? row[zAttrName+yearSuffix] : 1;
 //                        obj.xTooltip = xName+': '+(obj.x!=null ? obj.x.toFixed(2) : '')+' '+unitsX;
 //                        obj.yTooltip = yName+': '+(obj.y!=null ? obj.y.toFixed(2) : '')+' '+unitsY;

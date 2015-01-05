@@ -35,7 +35,8 @@ function check(analysisObj, performedAnalysisObj, callback) {
                         
                         return callback(new Error('missinglayerrefbase'))
                     }
-                    if (flTemplates.indexOf(flTemplate)!=0 && !resls[0].parentColumn) {
+                    var parentColumn = resls[0].joinParentColumn || resls[0].parentColumn;
+                    if (flTemplates.indexOf(flTemplate)!=0 && !parentColumn) {
                         return callback(new Error('missingparent'))
                     }
                     return mapCallback(null, resls[0]);
@@ -102,10 +103,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                             text = 'SUM(&ATTR&)';
                             break;
                         case 'avgarea':
-                            text = 'AVG(&ATTR& * &AREA&) / SUM(&AREA&)';
+                            text = 'SUM(&ATTR& * &AREA&) / SUM(&AREA&)';
                             break;
                         case 'avgattr':
-                            text = 'AVG(&ATTR& * &ATTR2&) / SUM(&ATTR2&)';
+                            text = 'SUM(&ATTR& * &ATTR2&) / SUM(&ATTR2&)';
                             break;
                     }
                     var attrName = 'as_' + obj.attributeSet + '_attr_' + obj.attribute;
@@ -124,7 +125,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                 }
 
                 select += ' FROM views.layer_$LAYERREF$ a GROUP BY a.parentgid';
-
+                
                 var sql = 'CREATE TABLE analysis.an_' + performedAnalysisObj['_id'] + '_$INDEX$ AS (';
                 sql += select;
                 sql += ')';
@@ -136,6 +137,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                     var nextFl = flTemplates[i+1];
                     var currentSql = sql.replace('$INDEX$', nextFl);
                     currentSql = currentSql.replace('$LAYERREF$', layerRef);
+                    console.log(currentSql);
                     client.query(currentSql, function(err, results) {
                         if (err)
                             return callback(err);
@@ -147,6 +149,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                                 areaTemplate: nextFl,
                                 isData: true,
                                 fidColumn: 'gid',
+                                joinFidColumn: 'gid',
                                 attributeSet: attrSet,
                                 columnMap: columnMap[attrSet].slice(0),
                                 layer: 'analysis:an_' + performedAnalysisObj['_id'] + '_' + nextFl,

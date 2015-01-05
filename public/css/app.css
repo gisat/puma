@@ -4,6 +4,13 @@ body.rendering {
 .rendering div .olControlZoom {
     display: none
 }
+.invisiblecomplete {
+    display: none;
+}
+
+td.notpassed {
+    display: none
+}
 
 
 #legend .legend-container {
@@ -24,6 +31,9 @@ div.olControlZoom {
 div .olLayerGoogleV3.olLayerGoogleCopyright {
     right: 0px ! important;
     left: auto ! important;   
+}
+#app-reports-accordeon div .olLayerGooglePoweredBy {
+    display: none;
 }
 div .olLayerGoogleV3.olLayerGooglePoweredBy {
     right: 32px ! important;
