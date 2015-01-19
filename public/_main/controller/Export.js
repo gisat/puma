@@ -14,7 +14,7 @@ Ext.define('PumaMain.controller.Export', {
             url: Config.url + '/api/urlview/getChart',
             params: {_id: id},
             scope: this,
-            method: 'GET',
+            //method: 'GET',
             success: this.onConfLoaded
         })
     },

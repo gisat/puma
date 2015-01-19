@@ -9,7 +9,7 @@ function exporter(params, req, res, callback) {
     //var fullUrl = req.protocol + "://" + req.get('host') + req.url;
 
     var fullUrl = require('../common/conn').getLocalAddress()+req.url;
-    var url = fullUrl.replace(params.download ? 'print' : 'image', 'public');
+    var url = fullUrl.replace(params.download ? 'print' : 'image', 'printpublic');
     url += params.download ? '&fordownload=1' : '';
     console.log(url)
     var imgId = 'snap_' + generateId() + '.png'

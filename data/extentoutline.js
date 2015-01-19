@@ -67,7 +67,7 @@ function getChart(params, callback) {
             }, asyncCallback);
         },
         areas: ['layerRefs', function(asyncCallback, results) {
-                console.log('Lr '+results.layerRefs)
+                //console.log('Lr '+results.layerRefs)
                 async.map(results.layerRefs, function(item, eachCallback) {
                     var areaRef = item.areaRef;
                     var layerId = areaRef['_id'];

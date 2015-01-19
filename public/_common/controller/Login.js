@@ -18,7 +18,7 @@ Ext.define('Puma.controller.Login', {
             me.onLoginClicked();
         })
         $('.signup').click(function() {
-            if ($(this).html()=='Logout') {
+            if ($(this).html()=='Log out') {
                 me.onLogoutClicked();
             }
             else {
@@ -59,6 +59,7 @@ Ext.define('Puma.controller.Login', {
         var me = this;
         Ext.Ajax.request({
             url: Config.url+'/api/login/logout',
+            method: 'POST',
             success: function(response) {
                 Config.auth = null;
                 me.onChangeLoginState(false);
@@ -69,6 +70,7 @@ Ext.define('Puma.controller.Login', {
         var me = this;
         Ext.Ajax.request({
             url: Config.url+'/api/login/getLoginInfo',
+            method: 'POST',
             success: function(response) {
                 var response = JSON.parse(response.responseText);
                 if (fromLogin && !response.data) {
@@ -89,8 +91,8 @@ Ext.define('Puma.controller.Login', {
             if (window) {
                 window.close();
             }
-            $('.login').html(Config.auth ? Config.auth.userName : 'Login')
-            $('.signup').html(Config.auth ? 'Logout' : 'Sign up')
+            $('.login').html(Config.auth ? Config.auth.userName : 'Log in')
+            $('.signup').html(Config.auth ? 'Log out' : 'Sign up')
             this.application.fireEvent('login', loggedIn);
             return;
         }

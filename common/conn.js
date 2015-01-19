@@ -41,7 +41,15 @@ function getPort() {
 
 function request(options,dataToWrite,callback) {
     var time = new Date().getTime();
-    
+//    if (!options.headers || !options.headers['Authorization']) {
+//        console.log('no auth',options.host);
+//        if (options.host == config.geonodeServer || options.host == config.baseServer) {
+//            options.headers = options.headers || {};
+//            var auth = 'Basic ' + new Buffer(config.authUser + ':' + config.authPass).toString('base64');
+//            options.headers['Authorization'] = auth;
+//            console.log('auth set');
+//        }
+//    }
     var reqs = http.request(options, function(resl)
     {
         var output = '';
@@ -96,7 +104,7 @@ function initGeoserver() {
             console.log(err);
             return;
         }
-        var cookies = resl.headers['set-cookie'];
+        var cookies = resl.headers['set-cookie'] || [];
         for (var i=0;i<cookies.length;i++) {
             var cookie = cookies[i];
             if (cookie.search('JSESSIONID')>-1) {
@@ -184,5 +192,4 @@ module.exports = {
     getBaseServer: getBaseServer,
     getGeonodeServer: getGeonodeServer,
     getPort: getPort
-    
 }

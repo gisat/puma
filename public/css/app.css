@@ -1,10 +1,19 @@
+
+#agreement-detail ol li {
+    list-style:decimal;
+    margin-bottom: 16px;}
+#agreement-detail ul, #agreement-detail ol {
+    padding-left: 2em;}
+
 body.rendering {
     background: none ! important
 }
 .rendering div .olControlZoom {
     display: none
 }
-
+.intro .olControlZoom {
+    display: none;
+}
 
 #legend .legend-container {
     float: left

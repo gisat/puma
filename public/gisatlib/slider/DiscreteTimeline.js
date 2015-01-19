@@ -42,9 +42,11 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
         years = Ext.Array.sort(years);
         //this.setVisible(years.length>0);
         if (years.length<1) return;
-        
-        this.setMinValue(years.length>1 ? years[0] : years[0]-1);
-        this.setMaxValue(years.length>1 ? years[years.length-1] : years[0]+1);
+        var min = years[0];
+        var max = years[years.length-1];
+        var valOffset = (max-min)*0.09;
+        this.setMinValue(years.length>1 ? years[0]-valOffset : years[0]-1);
+        this.setMaxValue(years.length>1 ? years[years.length-1]+valOffset : years[0]+1);
         this.syncThumbCount(years);
         
         var valueChanged = Ext.Array.difference(value,newValues).length || Ext.Array.difference(newValues,value).length
@@ -131,7 +133,7 @@ Ext.define('Gisatlib.slider.DiscreteTimeline', {
                 offset = -(labelEl.dom.offsetLeft+labelEl.dom.offsetWidth-labelEl.dom.offsetParent.offsetWidth+2);
             }
             if (offset) {
-                labelEl.alignTo(thumb.el,"b-t",[offset,0]);   
+                labelEl.alignTo(thumb.el,"b-t",[0,0]);   
             }
             thumb.labelEl = labelEl;
         }

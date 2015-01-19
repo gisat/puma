@@ -38,7 +38,7 @@ Ext.define('PumaMain.controller.Help', {
             
             var res = PumaMain.controller.Help.getHelpId(el);
             if (res.helpId) {
-                window.open('http://geonode.gisat.cz/app/public/help/'+res.helpId+'.html', "_blank");
+                window.open('https://geonode.gisat.cz/app/public/help/'+res.helpId+'.html', "_blank");
                 //window.open('help/'+res.helpId+'.html', "_blank")
             }
             else {

@@ -49,7 +49,7 @@ Ext.define('PumaMain.controller.Store', {
         Ext.Ajax.request({
             url: Config.url + '/api/theme/getLocationConf',
             scope: this,
-            method: 'GET',
+            method: 'POST',
             success: function(response) {
                 var data = JSON.parse(response.responseText).data;
                 

@@ -282,7 +282,7 @@ Ext.define('PumaMain.controller.Map', {
             type: 'roadmap'
         });
         var terrainNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google terain',
+            name: 'Google terrain',
             initialized: true,
             allowDrag: false,
             checked: true,
@@ -357,6 +357,8 @@ Ext.define('PumaMain.controller.Map', {
     afterExtentOutlineRender: function(cmp) {
         var options = this.getOptions(cmp);
         options.controls = [];
+        options.numZoomLevels = 22;
+        options.allOverlays = true;
         //options.maxExtent=  new OpenLayers.Bounds(-2037508, -2037508, 2037508, 2037508.34)
         var map = new OpenLayers.Map(options);
         
@@ -452,7 +454,6 @@ Ext.define('PumaMain.controller.Map', {
 //        var rasterxmlFormat = new OpenLayers.Format.XML();
 //        var rastersldText = rasterxmlFormat.write(rastersldNode);
         
-        
         var namedLayers = [{
                 name: layerName,
                 userStyles: [style]
@@ -504,12 +505,17 @@ Ext.define('PumaMain.controller.Map', {
         
         
         
-        
+        console.log(overallExtent)
         
         map.outlineExtent = overallExtent;
         map.layer1.setVisibility(true);
         map.layer2.setVisibility(true);
         map.zoomToExtent(map.outlineExtent);
+        window.setTimeout(function() {
+             map.zoomToExtent(map.outlineExtent);
+        },1
+        )
+        //map.zoomToExtent(map.outlineExtent);
         if (cmp.ownerCt.items.getCount()==cmp.ownerCt.mapNum){
             var minZoom = 10000;
             cmp.ownerCt.items.each(function(mapCmp) {
@@ -518,19 +524,22 @@ Ext.define('PumaMain.controller.Map', {
                     minZoom = zoom
                 }
             });
-            cmp.ownerCt.items.each(function(mapCmp) {
-                var curMap = mapCmp.map;
-                if (curMap==map) {
-                    setTimeout(function() {
-                        curMap.zoomTo(minZoom);
-                    },100)
-                }
-                else {
-                    
-                    curMap.zoomTo(minZoom);
-                }
-                
-            });
+            //debugger;
+//            cmp.ownerCt.items.each(function(mapCmp) {
+//                var curMap = mapCmp.map;
+//                var mapToZoom = null;
+//                if (curMap==map) {
+//                    mapToZoom = map;
+//                    setTimeout(function() {
+//                        mapToZoom.zoomTo(minZoom);
+//                    },1000)
+//                }
+//                else {
+//                    
+//                    curMap.zoomTo(minZoom);
+//                }
+//                
+//            });
         }
         
     },
@@ -560,10 +569,10 @@ Ext.define('PumaMain.controller.Map', {
             projection: new OpenLayers.Projection("EPSG:900913"),
             displayProjection: new OpenLayers.Projection("EPSG:4326"),
             units: "m",
-            numZoomLevels: 22,
+            //numZoomLevels: 22,
             maxExtent: new OpenLayers.Bounds(-20037508, -20037508, 20037508, 20037508.34),
             featureEvents: true,
-            allOverlays: true,
+            //allOverlays: true,
             div: cmp.id
         };
         return options;
@@ -599,7 +608,9 @@ Ext.define('PumaMain.controller.Map', {
                     type: 'hybrid',
                     initialized: true,
                     animationEnabled: true,
-                    visibility: false
+                    visibility: false,
+                    numZoomLevels: 19,
+                    MAX_ZOOM_LEVEL: 18
                 }
         );
         map.defaultLayer = layer;
@@ -609,7 +620,9 @@ Ext.define('PumaMain.controller.Map', {
                     type: 'roadmap',
                     animationEnabled: true,
                     initialized: true,
-                    visibility: false
+                    visibility: false,
+                    numZoomLevels: 19,
+                    MAX_ZOOM_LEVEL: 18
                 }
         );
         var terrainLayer = new OpenLayers.Layer.Google(
@@ -802,7 +815,11 @@ Ext.define('PumaMain.controller.Map', {
         
         //infoControls.hover.activate();
         //infoControls.click.activate();
-        map.infoControls = infoControls
+        map.infoControls = infoControls;
+        if (cmp.itemId == 'map') {
+            map.controls[0].deactivate();
+            
+        }
     },
         
     onMeasurePartial: function(evt) {
@@ -1007,8 +1024,8 @@ Ext.define('PumaMain.controller.Map', {
             if (!cmp.initialZoom) {
                 //console.log('resized')
                 //cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-                cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(10000000, -1000000, 14000000, 5000000));
-                //cmp.map.zoomToExtent(new OpenLayers.Bounds(675736.2753,9187051.894,704022.2164,9204621.9448))
+                //cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(10000000, -1000000, 14000000, 5000000));
+                cmp.map.zoomToExtent(new OpenLayers.Bounds(12505423.107734384,-888123.2263567317,12576501.051026525,-784677.6168449755))
                 cmp.initialZoom = true;
             }
             
@@ -1024,7 +1041,7 @@ Ext.define('PumaMain.controller.Map', {
             geometry.addPoint(point);
         }
         OpenLayers.Control.Measure.prototype.measure.apply(control,[geometry,'measurepartial']);
-    },
+    }
 });
 
 

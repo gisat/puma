@@ -15,8 +15,15 @@ function initServer(err) {
     var oneDay = 60*60*24*1000;
     //app.use(express.favicon());
     //app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
+    app.use('/printpublic',function(req,res,next) {
+        if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
+            return next(new Error('unauthorized'))
+        }
+        return next(null);
+    })
     app.use('/public/extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7}));
     app.use('/public',staticFn(__dirname + '/public'));
+    app.use('/printpublic',staticFn(__dirname + '/public'));
     app.use(express.cookieParser());
     app.use(express.bodyParser());
     app.use(loc.langParser);

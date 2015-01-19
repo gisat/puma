@@ -38,9 +38,11 @@ Ext.define('PumaMain.controller.Area', {
         this.lowestAreas = {};
         this.highestAreas = {};
         this.oldSliderVal = 0;
-        
+        //this.filterActive = true;
     },
-    
+   
+        
+        
     getLocationObj: function() {
         var locObjId =  Ext.ComponentQuery.query('#sellocation')[0].getValue();
         var rec = Ext.StoreMgr.lookup('location4init').getById(locObjId);
@@ -465,6 +467,7 @@ Ext.define('PumaMain.controller.Area', {
         if (areaTemplates.length) 
         {
             var lastAreaTemplate = areaTemplates[areaTemplates.length-1];
+            
             for (var loc in allMap) {
                 if (!allMap[loc][lastAreaTemplate]) continue;
                 lowestCount += allMap[loc][lastAreaTemplate].length;

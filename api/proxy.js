@@ -72,7 +72,7 @@ function wms(params, req, res, callback) {
             if (averageArea<200) {
                 maxSize = 1;
             }
-            console.log(maxSize);
+            //console.log(maxSize);
             params['env'] = 'maxsize:'+maxSize
         }
     }
@@ -100,7 +100,7 @@ function wms(params, req, res, callback) {
         // single layer
         if (layers.search(',')<0) {
             if (style && !layerGroup) {
-                console.log('Add style '+layers+' '+style)
+                //console.log('Add style '+layers+' '+style)
                 createLayerGroup(layers,style,true);
             }
             else {
@@ -117,7 +117,7 @@ function wms(params, req, res, callback) {
         }
         // layer group to be created
         else {
-            console.log('Creating group, styles: '+style)
+            //console.log('Creating group, styles: '+style)
             createLayerGroup(layers,style)
         }
         method = 'GET';
@@ -135,7 +135,7 @@ function wms(params, req, res, callback) {
     }
     if (!useFirst) {
         headers['Authorization'] = auth;
-        console.log(new Date())
+        //console.log(new Date())
     }
     if (method=='GET') {
         var queryParams = '?'+querystring.stringify(params);
@@ -334,7 +334,7 @@ function saveSld(params, req, res, callback) {
                     return callback(err);
                 var obj = resls.rows[0];
                 var density = obj.width*obj.height/obj.count;
-                console.log(density)
+                //console.log(density)
                 densityMap[id] = density;
                 asyncCallback(null);
             })
@@ -424,7 +424,7 @@ function saveSld(params, req, res, callback) {
             }
             //console.log(sld)
             if (results.attrConf) {
-                console.log(results.attrConf.attrMap.units)
+                //console.log(results.attrConf.attrMap.units)
                 legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');
                 
             }
@@ -449,7 +449,7 @@ function saveSld(params, req, res, callback) {
             }
             
             //console.log(sld);
-
+            
             res.data = id;
             return callback(null);
             }]

@@ -25,7 +25,7 @@ Ext.application({
         //Ext.tip.QuickTipManager.init();
         
         
-        
+        Ext.Ajax.method = 'POST';
         this.getController('Puma.controller.Form');
         this.getController('Puma.controller.Login');
         Puma.util.Msg.init();

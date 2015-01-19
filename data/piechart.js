@@ -111,9 +111,9 @@ function getChart(params, callback) {
                         serieData.push(obj)
                         if (isSingle) {
                             var c1 = onecolor(attrRec.color).saturation(0.1).hex();
-                            console.log(c1)
+                            //console.log(c1)
                             var c2 = onecolor(attrRec.color).saturation(.3).lightness(.95).hex();
-                            console.log(c2)
+                            //console.log(c2)
                             var secondObj = us.clone(obj);
                             secondObj.color = onecolor(attrRec.color).saturation(0.1).lightness(.96).hex();
                             secondObj.name = 'Other'

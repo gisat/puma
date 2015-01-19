@@ -122,7 +122,7 @@ function filter(params, req, res, callback) {
                         }
                         if (filter.inactive) continue;
                         var attrName = 'as_'+filter.as+'_attr_'+filter.attr;
-                        console.log(filter);
+                        //console.log(filter);
                         if (filter.maxOrig>results.metaData[attrName].max || filter.minOrig<results.metaData[attrName].min) {
                             filter.min = results.metaData[attrName].min-0.1;
                             filter.max = results.metaData[attrName].max+0.1;
@@ -140,7 +140,7 @@ function filter(params, req, res, callback) {
                         filterParam.push(obj1);
                         filterParam.push(obj2);
                     }
-                    console.log(filterParam)
+                    //console.log(filterParam)
                     newParams.filter = JSON.stringify(filterParam);
                     data.getData(newParams, function(err, dataObj) {
                         if (err)

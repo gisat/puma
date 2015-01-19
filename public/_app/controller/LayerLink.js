@@ -195,6 +195,9 @@ Ext.define('PumaMng.controller.LayerLink', {
                 column: props[i].name
             })
         }
+        stringData.push({
+            column: 'name'
+        })
         Ext.StoreMgr.lookup('columnnumber').loadData(numberData);
         Ext.StoreMgr.lookup('columnstring').loadData(stringData);
         this.refreshColumnGrid();

@@ -22,12 +22,13 @@
 .field.level {
 	padding-right        : 3px;
 	margin-right         : 10px;
+        margin-left          : 21px;   
 }
 .field.level .label {
 	width                : 94px;
 }
 .field.level .widget {
-	width                : 90px;
+	width                : 69px;
 }
 .field.level .widget .button {
 	width                : 30px;
@@ -479,6 +480,9 @@
 .x-slider-horz, .x-slider-horz .x-slider-end, .x-slider-horz .x-slider-inner {
 	background-image: url("../images/puma-slider-bg.png");
 }
+.yearselector .x-slider-horz,.yearselector .x-slider-horz .x-slider-end,.yearselector .x-slider-horz .x-slider-inner {
+	background-image: url("../images/puma-slider-bg-2.png");
+}
 .x-slider-horz {
 	background-position: 0 -24px;
 }
@@ -490,6 +494,9 @@
 }
 .x-slider-horz .x-slider-thumb {
 	background-image: url("../images/puma-slider-thumb.png");
+}
+.yearselector .x-slider-horz .x-slider-thumb {
+	background-image: url("../images/puma-slider-thumb-2.png");
 }
 .slider-thumb-label,
 .slider-constraints {

@@ -68,7 +68,7 @@ module.exports = function(app) {
     })
     
     
-    app.all('/print/*',function(req,res,next) {
+    app.post('/print/*',function(req,res,next) {
         try {
             api.print.exporter({download:true},req,res,next);
         }
@@ -85,16 +85,17 @@ module.exports = function(app) {
         }
     })
     
-    app.get('/api/:module/:method',function(req,res,next) {
-        var mod = api[req.params.module];
-        var fn = mod[req.params.method];
-        try {
-            fn(req.query,req,res,next)       
-        }
-        catch (err) {
-            next(err);
-        }
-    })
+//    app.get('/api/:module/:method',function(req,res,next) {
+//        var mod = api[req.params.module];
+//        var fn = mod[req.params.method];
+//        console.log(fn)
+//        try {
+//            fn(req.query,req,res,next)       
+//        }
+//        catch (err) {
+//            next(err);
+//        }
+//    })
     
     app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
         var fn = api['chart']['drawChart'];
@@ -110,6 +111,16 @@ module.exports = function(app) {
         }
     })
 
+    app.get('/api/proxy/wms',function(req,res,next) {
+        var mod = api['proxy'];
+        var fn = mod['wms'];
+        try {
+            fn(req.query,req,res,next);
+        }
+        catch (err) {
+            next(err);
+        }
+    })
     app.post('/api/:module/:method',function(req,res,next) {
         var mod = api[req.params.module];
         var fn = mod[req.params.method];

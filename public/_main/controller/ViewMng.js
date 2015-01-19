@@ -217,6 +217,7 @@ Ext.define('PumaMain.controller.ViewMng', {
         locationTheme.themeChanged = true;
         locationTheme.yearChanged = true;
         locationTheme.locationChanged = true;
+        this.getController('Map').map1.controls[0].activate();
         locationTheme.onYearChange({itemId:'dataview'});
         
     },

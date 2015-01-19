@@ -39,7 +39,6 @@ Ext.define('Gisatlib.form.HiddenStoreField', {
     onStoreChanged: function(store,remove) {
         var form = this.up('form');
         var record = form.getRecord();
-        debugger;
         // pro draggovani chceme obslouzit pouze udalost "add"
         if (record && (remove!==true || !store.dragging)) {
             var base = form.getForm();

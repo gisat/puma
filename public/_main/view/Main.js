@@ -133,15 +133,9 @@ Ext.define('PumaMain.view.Main', {
                         items: [{
                                 xtype: 'component',
                                 flex: 1,
-                                //width: 1,
-                                //height: 1,
-                                //hidden: true,
                                 id: 'map'
                             }, {xtype: 'component',
                                 flex: 1,
-                                //width: 1,
-                                //height: 1,
-                                //html: 'Ahoj',
                                 hidden: true,
                                 id: 'map2'}]
                     }

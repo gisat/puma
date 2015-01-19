@@ -102,10 +102,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                             text = 'SUM(&ATTR&)';
                             break;
                         case 'avgarea':
-                            text = 'AVG(&ATTR& * &AREA&) / SUM(&AREA&)';
+                            text = 'SUM(&ATTR& * &AREA&) / SUM(&AREA&)';
                             break;
                         case 'avgattr':
-                            text = 'AVG(&ATTR& * &ATTR2&) / SUM(&ATTR2&)';
+                            text = 'SUM(&ATTR& * &ATTR2&) / SUM(&ATTR2&)';
                             break;
                     }
                     var attrName = 'as_' + obj.attributeSet + '_attr_' + obj.attribute;

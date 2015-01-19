@@ -16,7 +16,7 @@ function getChart(params, callback) {
     for (var loc in areas) {
         for (var at in areas[loc]) {
             currentAt = at;
-            break;
+//            break;
         }
     }
     var invisibleAttrs = params['invisibleAttrs'] ? JSON.parse(params['invisibleAttrs']) : [];
@@ -99,14 +99,18 @@ function getChart(params, callback) {
                             var yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
                             if (params['aggregate'] == 'toptree' && row.loc!=-1 && !attr.topTreeAlready) {
                                 var aggRow = results.data.aggDataMap[row.loc];
-                                attr.topTreeAlready = true;
-                                attr.plotValues.push(aggRow[yearAttrName])
-                                attr.plotNames.push(aggRow['name'])
+                                if (aggRow) {
+                                    attr.topTreeAlready = true;
+                                    attr.plotValues.push(aggRow[yearAttrName])
+                                    attr.plotNames.push(aggRow['name'])
+                                }
                             }
                             if (params['aggregate'] == 'topall' && i==0) {
                                 var aggRow = results.data.aggDataMap[-1];
-                                attr.plotValues.push(aggRow[yearAttrName])
-                                attr.plotNames.push(aggRow['name'])
+                                if (aggRow) {
+                                    attr.plotValues.push(aggRow[yearAttrName])
+                                    attr.plotNames.push(aggRow['name'])
+                                }
                             }
                             if (params['aggregate'] == 'select' && i==0) {
                                 var aggRow = results.data.aggDataMap['select'];

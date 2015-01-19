@@ -48,10 +48,11 @@ strong {
 		padding          : 72px 0 108px 0;
 		position         : relative;
 	}
+
 	body.application #main {
 		padding-top      : 162px;
 	}
-	
+
 	/* Maps */
 	#map-holder .map {
 		width            : 100%;
@@ -81,7 +82,7 @@ strong {
 	#map-holder.split .map .map-label {
 		display            : block;
 	}
-	
+
 	/* WB header */
 	#wb-header {
 		font-family        : arial,verdana,sans-serif;
@@ -112,7 +113,7 @@ strong {
 	#wb-header a:hover, #wb-header a:focus {
 		text-decoration    : none;
 	}
-	
+
 	/* Header */
 	#header {
 		font-family      : arial,verdana,sans-serif;
@@ -136,7 +137,7 @@ strong {
 	#header a:hover, #header a:focus {
 		text-decoration  : underline;
 	}
-	
+
 	#header .home {
 		height           : 28px;
 		width            : 28px;
@@ -151,7 +152,7 @@ strong {
 	#header .home span {
 		display          : none;
 	}
-	
+
 	#header .menu {
 		display          : inline-block;
 		margin-left      : 45px;
@@ -173,7 +174,7 @@ strong {
 		top              : 7px;
 		background-color : #bbb;
 	}
-	
+
 	#header .user {
 		position         : absolute;
 		top              : 0;
@@ -192,7 +193,7 @@ strong {
 	#header .user .login {
 		display          : inline-block;
 	}
-	
+
 	/* Content */
 	.map {
 		width            : 100%;
@@ -224,14 +225,18 @@ strong {
 		position         : absolute;
 		z-index          : 10000;
 	}
-	#content-intro, #content-intro-guide, #content-application {
+	#content-intro, #content-intro-guide,#content-intro-terms, #content-application {
 		display          : none;
 		position         : absolute;
 		z-index          : 10000;
 	}
-	body.intro #content-intro, body.intro #content-intro-guide, body.application #content-application {
+	body.intro #content-intro, body.intro #content-intro-guide,body.intro #content-intro-terms, body.application #content-application {
 		display          : block;
 	}
+        body.dataview #content-intro-terms {
+            display: block;
+            z-index:1000000;
+        }
 		/* Fields */
 		.fields-holder {
 			background-color : #434254;
@@ -250,7 +255,7 @@ strong {
 		}
 		.fields-holder > .fields {
 			float            : left;
-			margin-left      : 10px;
+			margin-left      : 25px;
 		}
 		.fields-holder .group {
 			width            : 245px;
@@ -293,7 +298,7 @@ strong {
 		.fields-holder .field > .widget .x-field {
 			vertical-align   : top;
 		}
-		
+
 		/* Intro */
 		#content-intro {
 			background-color : #434254;
@@ -301,7 +306,7 @@ strong {
 			color            : #fff;
 			top              : 125px;
 			padding          : 20px;
-			width            : 845px;
+			width            : 860px;
 		}
 		#content-intro-guide {
 			font-family      : "Open Sans", sans-serif !important;
@@ -314,20 +319,66 @@ strong {
 			padding          : 15px 20px;
 			width            : 730px;
 		}
-		#content-intro-guide h2 {
+                #content-intro-terms {
+			font-family      : "Open Sans", sans-serif !important;
+			font-size        : 12px;
+			background-color : #fff;
+                        background-color : rgba(255,255,255, .95);
+			color            : #000;
+                        margin: 0 auto;
+			top              : 100px;
+			left            : 520px;
+			padding          : 15px 20px;
+			width            : 530px;
+                        height           : 594px; 
+                        text-align: justify;
+                        
+		}
+                #content-intro-terms #agreement-detail {
+                    height: 316px;
+                    overflow: auto;
+                    padding: 10px;
+                    border    : 1px solid #ddd;
+                }
+                #content-intro-terms #agreement-accept-chb {
+                    margin-left: 33px;
+                    height: 38px;
+                }
+                #content-intro-terms #agreement-accept-chb label {
+                    font-weight: bold;
+                    
+                }
+                #content-intro-terms #agreement-btns div {
+                    float: right;
+                    background-color: '#ff0000';
+                    height: 30px;
+                    margin-left: 20px;
+                    width: 75px;
+                }
+                
+                
+                
+                
+		#content-intro-guide h2,#content-intro-terms h2 {
 			font-size        : 24px;
 			font-weight      : 800;
 			margin-top       : 0;
 			border-bottom    : 1px solid #fff;
 			margin-bottom    : 10px;
 		}
-		#content-intro-guide h3 {
+                #content-intro-terms h2 {
+                    border-bottom    : 1px solid #000;
+                } 
+                #content-intro-terms .list-margin {
+                    margin-left: 40px;
+                }
+		#content-intro-guide h3,#content-intro-terms h3 {
 			font-size        : 14px;
 		}
 		#content-intro-guide p {
 			margin-bottom    : 10px;
 		}
-		
+
 		/* Application */
 		#content-application {
 			top              : 72px;
@@ -359,9 +410,9 @@ strong {
 			margin-top       : 10px;
 		}
 		#toolbar .group .field.with-sep {
-			background       : url("../images/toolbar-group-border.png") repeat-y 100% 0;
+/*			background       : url("../images/toolbar-group-border.png") repeat-y 100% 0;*/
 		}
-		
+
                 
                 
                 
@@ -374,7 +425,7 @@ strong {
 			width            : 150px;
 			margin-top       : 0;
 		}
-		
+
 		/* Sidebar tools */
 		#sidebar-tools {
 			position     : absolute;
@@ -388,7 +439,7 @@ strong {
 		#app-tools-actions {
 			height       : 30px;
 		}
-		
+
 		/* Sidebar reports */
 		#sidebar-reports {
 			background   : #e5e3df;
@@ -402,7 +453,7 @@ strong {
 			body.application #sidebar-reports {
 				right    : 0;
 			}
-		
+
 		/* Sidebar toggles */
 		#sidebar-tools-toggle,
                 #sidebar-reports-add,
@@ -442,7 +493,7 @@ strong {
 		#sidebar-tools.hidden #sidebar-tools-toggle {
 			background-position : 0 0;
 		}
-		
+
 	/* Footer */
 	#footer {
 		font-family      : arial,verdana,sans-serif;
@@ -537,4 +588,3 @@ strong {
 		margin-left      : 0;
 		border-left      : none;
 	}
-	

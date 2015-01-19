@@ -71,6 +71,10 @@ function getData(params, callback) {
     var select = "SELECT "
     var anotherNormYear = (normalization && normalizationYear && years.indexOf(normalizationYear) < 0);
     var moreYears = years.length > 1;
+    if (moreYears) {
+        topAll = false;
+        topLoc = false;
+    }
     var aliases = [];
     
 
@@ -205,7 +209,7 @@ function getData(params, callback) {
             
         }
     }
-    console.log(select);
+    //console.log(select);
     if (anotherNormYear) {
         years.push(normalizationYear)
     }
@@ -452,12 +456,14 @@ function getData(params, callback) {
                 else {
                     dataSql += 'pr ASC,'+nameSort;
                 }
-                dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + params['limit']) : '';
-                dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + params['start']) : '';
-                console.log(dataSql);
+                dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + parseInt(params['limit'])) : '';
+                dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
+                //console.log(dataSql);
                 client.query(dataSql, function(err, resls) {
-                    if (err)
+                    if (err) {
                         console.log(dataSql)
+                        return callback(new Error('notexistingdata'));
+                    }
                     var aggData = [];
                     var normalData = [];
                     var locAggDataMap = {};

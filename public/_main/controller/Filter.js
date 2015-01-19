@@ -444,7 +444,7 @@ Ext.define('PumaMain.controller.Filter', {
             url: Config.url + '/api/filter/filter',
             params: params,
             scope: this,
-            method: 'GET',
+            //method: 'GET',
             success: requireData ? this.applyFiltersCallback : this.reconfigureFiltersCallback
         })
     },    

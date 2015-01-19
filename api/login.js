@@ -28,7 +28,7 @@ function login(params,req,res,callback) {
         if (!ssid) {
             return callback(new Error('badLogin'))
         }
-        res.cookie('ssid',ssid)
+        res.cookie('ssid',ssid,{httpOnly: true})
         callback();
     })    
         

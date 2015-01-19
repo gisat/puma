@@ -6,7 +6,7 @@ Ext.define('PumaMain.controller.Layers', {
         this.control({
             '#layerpanel': {
                 itemclick: this.onLayerClick,
-                checkchange: this.onCheckChange,
+                checkchange: this.onCheckChange
             },
             '#layerpanel tool[type=gear]': {
                         click: this.onConfigure
@@ -77,7 +77,7 @@ Ext.define('PumaMain.controller.Layers', {
                 items: [img],
                 factor: Ext.ComponentQuery.query('window[islegend=1]').length,
                 title: rec.get('name')
-
+                
             })
             img.on('resize',function(i) {
                 i.el.on('load',function(a, dom) {
@@ -471,7 +471,7 @@ Ext.define('PumaMain.controller.Layers', {
                     var layerName = 'puma:layer_' + layerId
 
                     var defRule = new OpenLayers.Rule({
-                        symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 0}
+                            symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 0}
                         )}
                     });
                     style.addRules([defRule]);
@@ -672,11 +672,12 @@ Ext.define('PumaMain.controller.Layers', {
     getTreeFilters: function(year) {
         var allAreas = this.getController('Area').lowestMap;
         var areaTemplates = this.getController('Area').areaTemplateMap;
+        
         var filterMap = {};
         for (var loc in allAreas) {
             for (var at in allAreas[loc]) {
                 var lr = (areaTemplates[loc] && areaTemplates[loc][at]) ? areaTemplates[loc][at][year] : null;
-                if (!lr || !allAreas[loc][at].length)
+                if (!lr || !allAreas[loc][at].length )
                     continue;
                 var layerName = 'puma:layer_' + lr._id
                 var filters = [];
@@ -1070,7 +1071,7 @@ Ext.define('PumaMain.controller.Layers', {
             obj['STYLE'] = symbologyId;
         }
         var query = Ext.Object.toQueryString(obj);
-        return Config.url + '/api/proxy/wms?' + query          
+        return Config.url + '/api/proxy/wms?' + query;          
     },
     initChartLayer: function(node) {
         if (!node.get('checked')) {

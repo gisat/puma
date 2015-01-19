@@ -79,6 +79,10 @@ Ext.define('PumaMain.controller.Render', {
         var locStore = Ext.StoreMgr.lookup('location4init');
         //var customRec = locStore.getById('custom');
         //customRec.set('name','Custom')
+        if (Config.dataviewId) {
+            Ext.getBody().addCls('dataview');
+            this.renderAggreement();
+        }
         Ext.widget('pumacombo',{
             store: 'dataset',
             helpId: 'Selectingscopeofanalysis',
@@ -121,6 +125,7 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('year4sel'),
             //forceSelection: true,
             itemId: 'selyear',
+            cls: 'yearselector',
             helpId: 'Switchingbetweenyears',
             
         })
@@ -324,7 +329,29 @@ Ext.define('PumaMain.controller.Render', {
             width: 1920,
             height: 900
         })
-    },        
+    },  
+    
+    renderAggreement: function() {
+        Ext.widget('button',{
+            renderTo: 'agreement-accept',
+            itemId: 'acceptAgreement',
+            text: 'Continue',
+            width: '100%',
+            height: '100%'
+        })
+        Ext.widget('button',{
+            renderTo: 'agreement-cancel',
+            itemId: 'cancelAgreement',
+            text: 'Cancel',
+            width: '100%',
+            height: '100%'
+        })
+        Ext.widget('checkbox',{
+            renderTo: 'agreement-accept-chb',
+            itemId: 'agreementCheck',
+            boxLabel: 'I have read this User Agreement and agree to these terms and conditions.'
+        })
+    },
             
     renderIntro: function() {
         this.renderMap();
@@ -371,6 +398,7 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button btn-confirm'
         })
+        this.renderAggreement()
         
     }
     })

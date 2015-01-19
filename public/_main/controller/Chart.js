@@ -802,6 +802,10 @@ Ext.define('PumaMain.controller.Chart', {
                 }
                                           
             }
+            if (cmp.cfg.scrollLeft && singlePage) {
+                $('.x-container').scrollLeft(cmp.cfg.scrollLeft)
+                $('.x-container').css('overflow','hidden');
+            }
             if (singlePage) {
                 console.log('loadingdone')
             }
@@ -823,11 +827,22 @@ Ext.define('PumaMain.controller.Chart', {
     onUrlClick: function(btn) {
         var chart = btn.up('panel').chart;
         var cfg = Ext.apply(Ext.clone(chart.queryCfg),this.gatherChartCfg(chart, true));
+        debugger;
         cfg.oldAreas = chart.cfg.areas;
         cfg.colorMap = this.getController('Select').colorMap;
         var me = this;
         if (chart.noData) {
             return;
+        }
+        var scrollLeft = 0;
+        if (cfg.type == 'grid') {
+            scrollLeft = $(chart.chart.el.dom).find('.x-grid-with-row-lines:not(.x-grid-inner-locked)').find('.x-grid-view').scrollLeft()
+        }
+        if (cfg.type == 'columnchart') {
+            scrollLeft = $(chart.el.dom).scrollLeft()
+        }
+        if (scrollLeft) {
+            cfg.scrollLeft = scrollLeft;
         }
         Puma.util.Msg.msg('Snapshot creation started','','r');
         Ext.Ajax.request({
@@ -876,12 +891,15 @@ Ext.define('PumaMain.controller.Chart', {
                 src: url,
                 visible: rec ? 0 : 1
             })
+            var snapshotPanel = Ext.ComponentQuery.query('chartbar #screenshotpanel')[0];
+            snapshotPanel.show();
+            debugger;
             Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true);
             var img = Ext.DomQuery.select('img[src="'+url+'"]');
             Ext.get(img[0]).on('load',function() {
                 Puma.util.Msg.msg('Snapshot done','','r');
                 var snapshotPanel = Ext.ComponentQuery.query('chartbar #screenshotpanel')[0];
-                snapshotPanel.show();
+                snapshotPanel.expand();
             })
         }
     },
@@ -1175,8 +1193,12 @@ Ext.define('PumaMain.controller.Chart', {
             columns: data.columns
         })
         store.load();
+        var singlePage = response.request.options.singlePage
         store.on('load',function() {
-            
+            if (cmp.queryCfg.scrollLeft && singlePage) {
+                $('.x-grid .x-grid-with-row-lines:not(.x-grid-inner-locked) .x-grid-view').scrollLeft(cmp.queryCfg.scrollLeft);
+                $('.x-grid .x-grid-with-row-lines:not(.x-grid-inner-locked) .x-grid-view').css('overflow','hidden');
+            }
             window.setTimeout(function() {
                 console.log('loadingdone');
             }, 200)

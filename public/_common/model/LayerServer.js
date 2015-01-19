@@ -7,6 +7,7 @@ Ext.define('Puma.model.LayerServer', {
     idProperty: '_id',
     proxy: {
         type: 'ajax',
+        actionMethods: {create: 'POST', read: 'POST', update: 'POST', destroy: 'POST'},
         url : Config.url+'/api/layers/getLayers',
         reader: {
             type: 'json',

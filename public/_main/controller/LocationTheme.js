@@ -43,10 +43,29 @@ Ext.define('PumaMain.controller.LocationTheme', {
             '#initialconfirm': {
                 click: this.onConfirm
             },
+            '#acceptAgreement': {
+                click: this.onAcceptAgreement
+            },
+            '#cancelAgreement': {
+                click: this.onCancelAgreement
+            },
             'discretetimeline': {
                 change: this.testTimeline
             }
         })
+    },
+    onAcceptAgreement: function() {
+        var checked = Ext.ComponentQuery.query('#agreementCheck')[0].getValue();
+        if (!checked) {
+            this.onCancelAgreement();
+            return;
+        }
+        this.agreementAccepted = true;
+        Ext.get('content-intro-terms').hide();
+        
+    },
+    onCancelAgreement: function() {
+        window.location = 'http://puma.worldbank.org';
     },
     testTimeline: function(slider,value) {
         console.log(value);
@@ -201,6 +220,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onConfirm: function() {
+        if (!this.agreementAccepted) return;
         var val = Ext.ComponentQuery.query('#initialtheme')[0].getValue();
         this.onThemeChange({switching:true},val)
     },
@@ -233,7 +253,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             datasetCombo.resumeEvents();
             locationCombo.resumeEvents();
             themeCombo.resumeEvents();
-            
+            this.getController('Map').map1.controls[0].activate();
             
             
         }
@@ -618,7 +638,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             if (node.get('type')=='thematicgroup') {
                 thematicNodes.push(node);
             }
-        },this)
+        },this);
         for (var i = 0; i < thematicNodes.length; i++) {
             var thematicNode = thematicNodes[i];
             for (var j = 0; j < thematicNode.childNodes.length; j++) {
@@ -653,19 +673,16 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     appendLayers: function(layerNodes) {
         layerNodes = layerNodes || [];
-        this.topics = this.topics || [];
-        var topics = [];
+        var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+        var topics = Ext.StoreMgr.lookup('theme').getById(themeId).get('topics');
         var nodesToAdd = [];
         for (var i = 0; i < layerNodes.length; i++) {
             var topic = layerNodes[i].topic;
-            Ext.Array.include(topics, topic);
-            if (Ext.Array.contains(this.topics, topic)) {
+            if (Ext.Array.contains(this.topics || [], topic)) {
                 continue;
             }
-
             nodesToAdd.push(layerNodes[i])
         }
-
         this.topics = topics;
 
         var root = Ext.StoreMgr.lookup('layers').getRootNode();
@@ -907,7 +924,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (!this.placeInitialChange) {
              var locStore = Ext.StoreMgr.lookup('location4init');
                 var customRec = locStore.getById('custom');
-                customRec.destroy();
+                if (customRec) {
+                    customRec.destroy();
+                }
 //                customRec.set('name','Custom')
 //                customRec.commit();
                 this.placeInitialChange = true;

@@ -2,8 +2,8 @@
 hr { color: #000000}
 body, table, span.rvts0 /* Normal text */
 {
- font-size: 10pt;
- font-family: 'Arial', 'Helvetica', sans-serif;
+ font-size: 14px;
+ font-family: 'Open Sans', 'Helvetica', sans-serif;
  font-style: normal;
  font-weight: normal;
  color: #000000;
@@ -39,29 +39,29 @@ span.rvts6 /* Font Style */
 }
 span.rvts7
 {
- font-size: 12pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  font-weight: bold;
 }
 span.rvts8
 {
- font-size: 12pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
 }
 span.rvts9
 {
- font-size: 11pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  color: #ff0000;
 }
 a.rvts10, span.rvts10
 {
- font-size: 12pt;
- font-family: 'calibri';
- color: #0000ff;
+ font-size: 14px;
+ font-family: 'Open Sans';
+ color: #069;
  text-decoration: underline;
 }
-a.rvts10:hover { color: #0000ff; }
+a.rvts10:hover { text-decoration: none; }
 span.rvts11 /* Font Style */
 {
  font-family: 'Tahoma', 'Geneva', sans-serif;
@@ -77,46 +77,46 @@ a.rvts12, span.rvts12 /* Font Style */
 }
 span.rvts13
 {
- font-size: 11pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
 }
 span.rvts14
 {
- font-size: 11pt;
- font-family: 'Calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  font-weight: bold;
 }
 a.rvts15, span.rvts15
 {
- font-size: 11pt;
- font-family: 'calibri';
- color: #0000ff;
+ font-size: 14px;
+ font-family: 'Open Sans';
+ color: #069;
  text-decoration: underline;
 }
-a.rvts15:hover { color: #0000ff; }
+a.rvts15:hover { text-decoration: underline; }
 a.rvts16, span.rvts16
 {
- font-size: 11pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  color: #0000ff;
  text-decoration: underline;
 }
 a.rvts16:hover { color: #0000ff; }
 span.rvts17
 {
- font-size: 11pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  font-style: italic;
  font-weight: bold;
 }
 span.rvts18
 {
- font-family: 'calibri';
+ font-family: 'Open Sans';
  color: #000000;
 }
 span.rvts19
 {
- font-family: 'Calibri';
+ font-family: 'Open Sans';
  font-weight: bold;
 }
 span.rvts20
@@ -127,21 +127,20 @@ span.rvts20
 }
 span.rvts21
 {
- font-size: 11pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  font-weight: bold;
- background-color: #ffff00;
 }
 span.rvts22
 {
- font-size: 12pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  color: #ff0000;
 }
 span.rvts23
 {
- font-size: 12pt;
- font-family: 'calibri';
+ font-size: 14px;
+ font-family: 'Open Sans';
  font-weight: bold;
  color: #ff0000;
 }

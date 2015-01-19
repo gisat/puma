@@ -1,7 +1,10 @@
+@import "http://fonts.googleapis.com/css?family=Open+Sans:400,800,700";
+
 body {
 	background-color: #fff;
 	overflow: auto;
 	width: 100%;
+	font-family: "Open Sans";
 }
 
 .clear {
@@ -24,15 +27,18 @@ body {
 /* Backgrounds */
 
 #topic_header {
-	background: #fff url(../img/header-bg.png) repeat-x left top;
-	border-bottom: 1px solid #ccc;
+	background: #434254 !important;
 	margin-bottom: 15px;
+	color: #fff;
+	height: 42px;
 }
 
 #topic_footer{
-	background: #fff url(../img/footer-bg.png) repeat-x left top;
+	border-top: 1px solid #ddd;
 	margin-top: 20px;
+	font-size: 12px;
 }
+
 
 /* Topic */
 
@@ -42,7 +48,9 @@ body {
 
 #topic_header #topic_header_nav {
 	float: right;
+	margin-top: 14px;
 }
+
 
 #topic_header #topic_header_nav img {
 	margin-left: 5px;
@@ -64,12 +72,11 @@ body {
 }
 
 #topic_header  h1 {
-	color: #333;
+	color: #fff;
 	font-size: 18px;
 }
-
-#topic_footer {
-	font-size: 11px;
+#topic_header a {
+	color: #fff;
 }
 
 #topic_breadcrumb {
