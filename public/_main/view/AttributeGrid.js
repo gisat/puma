@@ -37,6 +37,38 @@ Ext.define('PumaMain.view.AttributeGrid', {
             menuDisabled: true,
             text: 'Attribute set'
         },{
+            dataIndex: 'asName',
+            flex: 3,
+            resizable: false,
+            menuDisabled: true,
+            text: 'Normalization base',
+            renderer: function(value,metadata,record) {
+                var type = record.get('normType');
+                var attrStore = Ext.StoreMgr.lookup('attribute');
+                var attrSetStore = Ext.StoreMgr.lookup('attributeset');
+                if (type=='attribute') {
+                    var normAs = attrSetStore.getById(record.get('normAs'));
+                    var normAttr = attrStore.getById(record.get('normAttr'));
+                    if (!normAs || !normAttr) {
+                        return '';
+                    }
+                    var newVal = normAs.get('name')+'-'+normAttr.get('name');
+                    metadata.tdAttr = 'data-qtip="' + newVal + '"';
+                    return newVal
+                }
+                else if (type=='attributeset') {
+                    var normAs = attrSetStore.getById(record.get('normAs'));
+                    if (!normAs) {
+                        return '';
+                    }
+                    var newVal = normAs.get('name');
+                    
+                    metadata.tdAttr = 'data-qtip="' + newVal + '"';
+                    return newVal
+                }
+                else return '';
+            }
+        },{
             dataIndex: 'normType',
             flex: 2,
             resizable: false,

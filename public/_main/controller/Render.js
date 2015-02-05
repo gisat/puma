@@ -14,6 +14,13 @@ Ext.define('PumaMain.controller.Render', {
                 collapse: this.onFloatingCollapse
             }
         })
+        
+        $('.problematichelp').live('click',function(e) {
+            
+            if (Config.contextHelp) {
+                PumaMain.controller.Help.onHelpClick(e);
+            }
+        })
     },
     onFloatingCollapse: function(panel) {
         window.setTimeout(function() {
@@ -125,7 +132,7 @@ Ext.define('PumaMain.controller.Render', {
             store: Ext.StoreMgr.lookup('year4sel'),
             //forceSelection: true,
             itemId: 'selyear',
-            cls: 'yearselector',
+            cls: 'yearselector problematichelp',
             helpId: 'Switchingbetweenyears',
             
         })
@@ -277,14 +284,15 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.widget('chartbar',{
             renderTo: 'app-reports-accordeon',
+            cls: 'problematichelp',
             helpId: 'Modifyingchartpanel'
         })
         Ext.widget('pagingtoolbar',{
             renderTo: 'app-reports-paging',
             itemId: 'areapager',
             displayInfo: true,
-            cls: 'paging-toolbar',
-            
+            cls: 'paging-toolbar problematichelp',
+            helpId: 'Paging',
             buttons: ['-',{
                 xtype: 'splitbutton',
                 menu: {

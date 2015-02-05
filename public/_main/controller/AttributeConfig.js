@@ -207,12 +207,16 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         }
         var window = Ext.widget('window',{
             layout: 'fit',
-            width: 700,
+            width: 710,
+            height: 500,
             y: 200,
+            
             title: title,
             items: [{
                 xtype: 'configform',
                 featureLayers: fls,
+                padding: 5,
+                cls: 'configform',
                 chart: chart,
                 formType: formType
             }]

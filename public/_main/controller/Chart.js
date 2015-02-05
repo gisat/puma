@@ -47,6 +47,9 @@ Ext.define('PumaMain.controller.Chart', {
             'chartpanel tool[type=help]': {
                 click: this.onToggleLegend
             },
+            'chartpanel': {
+                expand: this.onChartExpand
+            },
             'chartpanel tool[type=collapse]': {
                 click: this.onExportCsv
             },
@@ -86,7 +89,20 @@ Ext.define('PumaMain.controller.Chart', {
             }
         })
     },
+    
+    onChartExpand: function(panel) {
+        window.setTimeout(function() {
+            var series = panel.chart.chart.series;
+            if (series) {
+                
+                for (var i=0;i<series.length;i++) {
+                    series[i].show();
+                }
+            }
+        },1)
         
+    },
+    
     onToggleShowSelected: function(btn) {
         var selCtrl = this.getController('Select');
         var areaCtrl = this.getController('Area');
@@ -708,6 +724,16 @@ Ext.define('PumaMain.controller.Chart', {
         data.chart.events.selection = function(evt) {
             me.onScatterSelected(evt);
         }
+        data.chart.events.click = function(evt) {
+            
+            if (Config.contextHelp) {
+                PumaMain.controller.Help.onHelpClick({
+                    stopPropagation: function() {},
+                    preventDefault: function() {},
+                    currentTarget: cmp.el
+                });
+            }
+        }
         data.tooltip.formatter = function() {
             var obj = this;
             var type = obj.series.type;
@@ -758,6 +784,14 @@ Ext.define('PumaMain.controller.Chart', {
         data.plotOptions = data.plotOptions || {series: {events: {}}}
 
         data.plotOptions.series.events.click = function(evt) {
+            if (Config.contextHelp) {
+                PumaMain.controller.Help.onHelpClick({
+                    stopPropagation: function() {},
+                    preventDefault: function() {},
+                    currentTarget: this.chart.cmp.el
+                });
+                return;
+            }
             me.onPointClick(this.chart.cmp, evt, false)
         }
         if (cmp.cfg.type == 'piechart') {
@@ -827,7 +861,7 @@ Ext.define('PumaMain.controller.Chart', {
     onUrlClick: function(btn) {
         var chart = btn.up('panel').chart;
         var cfg = Ext.apply(Ext.clone(chart.queryCfg),this.gatherChartCfg(chart, true));
-        debugger;
+        
         cfg.oldAreas = chart.cfg.areas;
         cfg.colorMap = this.getController('Select').colorMap;
         var me = this;
