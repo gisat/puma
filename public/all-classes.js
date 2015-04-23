@@ -101576,7 +101576,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         window.location = 'http://puma.worldbank.org';
     },
     testTimeline: function(slider,value) {
-        console.log(value);
+        //console.log(value);
     },
     onDatasetChange: function(cnt,val) {
         if (cnt.eventsSuspended) {
@@ -102412,7 +102412,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
         if (conf.attrSets) {
             this.checkFeatureLayers();
-            this.checkAttrSets(conf.attrSets);
+			var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+			var theme = Ext.StoreMgr.lookup('theme').getById(themeId);
+            this.checkAttrSets(conf.attrSets, theme);
         }
         this.getController('Chart').reconfigureAll();
         this.getController('Layers').reconfigureAll();
@@ -102454,30 +102456,69 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }]);
     },
     
-    checkAttrSets: function(attrSets) {
-        var store = Ext.StoreMgr.lookup('attributes2choose');
-        var attrStore = Ext.StoreMgr.lookup('attributeset');
-        var existingAttrSets = store.collect('as');
-        var asToAdd = Ext.Array.difference(attrSets,existingAttrSets);
-        var asToRemove = Ext.Array.difference(existingAttrSets,attrSets);
-        var recsToRemove = store.queryBy(function(rec) {
-            return Ext.Array.contains(asToRemove,rec.get('as'))
-        }).getRange();
-        store.remove(recsToRemove);
-        var recsToAdd = [];
-        for (var i=0;i<asToAdd.length;i++) {
-            var as = asToAdd[i];
-            var attrs = attrStore.getById(as).get('attributes');
-            for (var j=0;j<attrs.length;j++) {
-                var attr = attrs[j];
-                var rec = Ext.create('Puma.model.MappedChartAttribute',{
-                    as: as,
-                    attr: attr
-                })
-                recsToAdd.push(rec)
-            }
-        }
-        store.add(recsToAdd);
+    checkAttrSets: function(attrSets, theme) {
+		// JJJ TODO ...........
+		// prejmenovat na neco smysluplneho
+		var topics = theme.get('topics'); // get all topics (id's) of current theme
+		var prefTopics = theme.get('prefTopics'); // get pref. topics of current theme
+        var a2chStore = Ext.StoreMgr.lookup('attributes2choose');
+        var attrSetStore = Ext.StoreMgr.lookup('attributeset');
+		var attrStore = Ext.StoreMgr.lookup('attribute');
+
+		var rootNode = a2chStore.getRootNode();
+		
+		// clear the store
+		while(rootNode.firstChild){
+			rootNode.removeChild(rootNode.firstChild);
+		}
+		
+		// populate the store
+		for(var isPref = 1; isPref >= 0; isPref--){ // iterate two bools: is preferential and isn't
+			for(var topic in topics){ // iterate topics (id's) of actual theme
+				if( isPref != Ext.Array.contains(prefTopics, topics[topic]) ) continue;
+				rootNode.appendChild(Ext.create('Puma.model.MappedChartAttribute',{
+					topic: topics[topic],
+					leaf: false,
+					expanded: isPref,
+					checked: null
+				}));
+				var topicNode = rootNode.lastChild;
+
+				attrSetStore.data.each(function(attrSet){ // iterate attrSets (objects)
+					if(attrSet.get('topic') == topics[topic]){
+						var attrSetAttributes = attrSet.get('attributes');
+
+						topicNode.appendChild(Ext.create('Puma.model.MappedChartAttribute',{
+							as: attrSet.get('_id'),
+							topic: topics[topic],
+							leaf: false,
+							expanded: true,
+							checked: false
+						}));
+						var attrSetNode = topicNode.lastChild;
+
+						attrStore.data.each(function(attribute){ // iterate attributes (objects)
+							if( Ext.Array.contains(attrSetAttributes, attribute.get('_id')) ){
+								attrSetNode.appendChild(Ext.create('Puma.model.MappedChartAttribute',{
+									attr: attribute.get('_id'),
+									as: attrSet.get('_id'),
+									topic: topics[topic],
+									leaf: true,
+									checked: false
+								}));
+							}
+						});
+						
+						if(!attrSetNode.childNodes.length) attrSetNode.remove();
+					}
+				});
+				
+				if(!topicNode.childNodes.length) topicNode.remove();
+			}
+		}
+		
+		// filter store attributeset2choose
+		// povoli ty, jejichz id je v poli attrSets
         var asStoreToFilter = Ext.StoreMgr.lookup('attributeset2choose');
         asStoreToFilter.clearFilter(true);
         asStoreToFilter.filter([function(rec){
@@ -103931,25 +103972,49 @@ Ext.define('Gisatlib.data.SlaveStore',{
 Ext.define('Puma.model.MappedChartAttribute', {
     extend: 'Ext.data.Model',
     fields: [
+		
+		// ostatni/puvodni
+		'as','attr','normType','normAs','normAttr','normYear','attrName',
+		'attrNameNormalized','asName','checked','numCategories','classType',
+		'zeroesAsNull','name',
+		{
+			name: 'attrName',
+			convert: function(value,record) {
+				var attrStore = Ext.StoreMgr.lookup('attribute');
+				var attr = attrStore.getById(record.get('attr'));
+				return attr ? attr.get('name') : "";
+			}
+		},
+		{
+			name: 'asName',
+			convert: function(value,record) {
+				var attrSetStore = Ext.StoreMgr.lookup('attributeset');
+				var attrSet = attrSetStore.getById(record.get('as'));
+				return attrSet ? attrSet.get('name') : "";
+			}
+		},
 
-    'as','attr','normType','normAs','normAttr','normYear','attrName','attrNameNormalized','asName','checked','numCategories','classType','zeroesAsNull','name',
-    {
-        name: 'attrName',
-        convert: function(value,record) {
-            var attrStore = Ext.StoreMgr.lookup('attribute');
-            var attr = attrStore.getById(record.get('attr'));
-            return attr.get('name');
-        }
-    },
-    {
-        name: 'asName',
-        convert: function(value,record) {
-            var attrSetStore = Ext.StoreMgr.lookup('attributeset');
-            var attrSet = attrSetStore.getById(record.get('as'));
-            return attrSet.get('name');
-        }
-    }
-    ],
+
+		// AddAttribute
+		'topic',
+		{
+			name: 'treeNodeText',
+			convert: function(value, record) {
+				if(record.get('attr')) return record.get('attrName');
+				else if(record.get('as')) return record.get('asName');
+				else if(record.get('topic')){
+					var topicStore = Ext.StoreMgr.lookup('topic');
+					var topic = topicStore.getById(record.get('topic'));
+					return topic ? topic.get('name') : "###";
+				}
+			}
+		}
+
+	
+	],
+//	root: {
+//		text: 'root'
+//	},
     idProperty: '_id',
     proxy: 'memory'
 });
@@ -112206,7 +112271,7 @@ Ext.define('Puma.model.Theme', {
     extend: 'Ext.data.Model',
     fields: [
 
-    '_id','name','active','years','dataset','analysis','topics','minFeatureLayer','minAttributeSets','visOrder'
+    '_id','name','active','years','dataset','analysis','prefTopics','topics','minFeatureLayer','minAttributeSets','visOrder'
     ],
     idProperty: '_id',
     proxy: {
@@ -112762,14 +112827,19 @@ Ext.define('PumaMain.controller.Store', {
         
         Ext.create('Gisatlib.paging.PhantomStore',{
             storeId: 'paging'
-        })
+        });
     
     
-        Ext.create('Ext.data.Store', {
+        Ext.create('Ext.data.TreeStore', {
+            storeId: 'attributes2choose',
+			// JJJ TODO mozna i prejmenovat ten model
             model: 'Puma.model.MappedChartAttribute',
-            data: [],
-            storeId: 'attributes2choose'
-        })
+			sorters: [],
+			root: {
+				//treeNodeText: 'Attributes to choose', //JJJ TODO ?
+				expanded: true
+			}
+        });
         
         
         Ext.create('Ext.data.TreeStore', {
@@ -112998,11 +113068,12 @@ Ext.define('PumaMain.controller.Store', {
             }]
         })
     
-        Ext.create('Ext.data.Store',{
-            storeId: 'mappedattribute4chart',
-            model: 'Puma.model.MappedChartAttribute',
-            data: []
-        })
+// JJJ Je to zbytecne?
+//        Ext.create('Ext.data.Store',{
+//            storeId: 'mappedattribute4chart',
+//            model: 'Puma.model.MappedChartAttribute',
+//            data: []
+//        })
     
         Ext.create('Ext.data.Store',{
             storeId: 'location4init',
@@ -114009,57 +114080,36 @@ Ext.define('Ext.form.CheckboxGroup', {
 });
 
 
-Ext.define('PumaMain.view.AddAttributeGrid', {
-    extend: 'Ext.grid.Panel',
-    alias: 'widget.addattributegrid',
-    colspan: 2,
-    border: 0,
-    header: false,
+Ext.define('PumaMain.view.AddAttributeTree', {
+	// JJJ TODO: prejmenovat
+	// JJJ TIP: http://www.sencha.com/forum/showthread.php?138664-Ext.ux.form.TriCheckbox&p=619810
+	//          ve stromu to bude asi slozitejsi
+    extend: 'Ext.tree.Panel',
+    alias: 'widget.addattributetree',
+    border: false,
     autoScroll: true,
+	rootVisible: false,
+	title: 'Select attributes to add',
     requires: ['Ext.ux.CheckColumn','Ext.ux.grid.filter.StringFilter'],
     initComponent: function() {
-        var filters = {
-        ftype: 'filters',
-        local: true
-        };
-        this.store = Ext.StoreMgr.lookup('attributes2choose')
+		this.hideHeaders = true;
+        this.store = Ext.StoreMgr.lookup('attributes2choose'); // store se jmenuje stejne, ale je predelan na treestore
         this.columns = [{
-            xtype: 'checkcolumnwithheader',
-            store: this.store,
-            columnHeaderCheckbox: true,
-            width: 40,
+			xtype: 'treecolumn',
+            dataIndex: 'treeNodeText',
+			sortable: false,
             menuDisabled: true,
-            filterable: false,
-            resizable: false,
-            dataIndex: 'checked'
-        },{
-            dataIndex: 'attrName',
-            flex: 1,
-            resizable: false,
-            text: 'Attribute',
-            filter: {
-                type: 'string'
-            }
-        },{
-            dataIndex: 'asName',
-            flex: 1,
-            resizable: false,
-            text: 'Attribute set',
-            filter: {
-                type: 'string'
-            }
+			flex: 1
         }]
+
         this.buttons = [{
-            text: 'Add',
-            itemId: 'add'
+            itemId: 'add',
+            text: 'Add'
         },{
             itemId: 'back',
             text: 'Back'
         }]
-        this.enableColumnHide = false;
-        this.features = [filters]
         this.callParent();
-        
     }
 })
 
@@ -116100,6 +116150,21 @@ Ext.define('PumaMain.controller.Render', {
             Ext.getBody().addCls('dataview');
             this.renderAggreement();
         }
+//		Ext.widget('button',{ // JJJ HACK čára do konzole
+//			renderTo: 'footer-legal',
+//			itemId: 'consolebreak',
+//			tooltip: 'Insert line in console',
+//			tooltipType: 'title',
+//			width: 30,
+//			height: 30,
+//			text: '=',
+//			floating: true,
+//			listeners: {
+//				click: function(){
+//					console.log("===========================================================");
+//				}
+//			}
+//		});
         Ext.widget('pumacombo',{
             store: 'dataset',
             helpId: 'Selectingscopeofanalysis',
@@ -116364,11 +116429,27 @@ Ext.define('PumaMain.controller.Render', {
             width: '100%',
             height: '100%'
         })
+		var me = this;
         Ext.widget('checkbox',{
             renderTo: 'agreement-accept-chb',
             itemId: 'agreementCheck',
             boxLabel: 'I have read this User Agreement and agree to these terms and conditions.'
-        })
+
+//			,listeners: { //JJJ HACK agreement
+//				el : {
+//			        'mouseover': function(e,t){
+//						Ext.ComponentQuery.query('#initialdataset')[0].setValue(1532);
+//						Ext.ComponentQuery.query('#initiallocation')[0].setValue('276_1');
+//						Ext.ComponentQuery.query('#initialtheme')[0].setValue(1365);
+//						Ext.ComponentQuery.query('#agreementCheck')[0].setValue(1);
+//						me.getController('LocationTheme').onAcceptAgreement();
+//						me.getController('LocationTheme').onConfirm();
+//					}
+//			    }
+//			}
+
+
+		})
     },
             
     renderIntro: function() {
@@ -117787,7 +117868,7 @@ Ext.define('PumaMain.view.ConfigForm', {
     autoScroll: true,
     frame: true,
     header: false,
-    requires: ['Ext.ux.CheckColumn', 'PumaMain.view.AddAttributeGrid','PumaMain.view.ChoroplethForm', 'PumaMain.view.AttributeGrid', 'Gisatlib.container.StoreContainer','PumaMain.view.NormalizeForm'],
+    requires: ['Ext.ux.CheckColumn', 'PumaMain.view.AddAttributeTree','PumaMain.view.ChoroplethForm', 'PumaMain.view.AttributeGrid', 'Gisatlib.container.StoreContainer','PumaMain.view.NormalizeForm'],
     initComponent: function() {
         this.attrStore = Ext.create('Ext.data.Store', {
             data: [],
@@ -117818,7 +117899,7 @@ Ext.define('PumaMain.view.ConfigForm', {
             }, {
                 xtype: 'container',
                 hidden: this.formType=='chart',
-                height: 300,
+                height: 500,
                 itemId: 'attributecontainer',
                 helpId: 'test',
                 layout: 'card',
@@ -117828,7 +117909,7 @@ Ext.define('PumaMain.view.ConfigForm', {
                 formType: this.formType,
                 store: this.attrStore
             }, {
-                xtype: 'addattributegrid'
+                xtype: 'addattributetree'
             }, {
                 xtype: 'normalizeform',
                 formType: this.formType
@@ -117931,12 +118012,19 @@ Ext.define('PumaMain.controller.AttributeConfig', {
                 'attributegrid #choroplethparams' : {
                     click: this.onConfigureChoropleth
                 },
-                'addattributegrid #add' : {
+                'addattributetree #add' : {
                     click: this.onAttributeAdded
                 },
-                'addattributegrid #back' : {
+                'addattributetree #back' : {
                     click: this.backToInitial
                 },
+				'addattributetree': {
+					checkchange: this.onAddAttrCheck,
+					itemclick: this.onAddAttrItemClick
+				},
+				//'chartConfigurationWindow': {
+				//	close: this.onChartConfWindowClose
+				//},
                 'normalizeform #normalize' : {
                     click: this.onAttributeNormalized
                 },
@@ -118116,10 +118204,11 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             
         }
         var window = Ext.widget('window',{
+			//itemId: 'chartConfigurationWindow',
+			//id: 'chartConfigurationWindow',
             layout: 'fit',
             width: 710,
-            height: 500,
-            y: 200,
+            height: 724,
             
             title: title,
             items: [{
@@ -118129,12 +118218,22 @@ Ext.define('PumaMain.controller.AttributeConfig', {
                 cls: 'configform',
                 chart: chart,
                 formType: formType
-            }]
+            }],
+			listeners: {
+				// JJJ jak se to dela, aby se listenery prirazovaly v this.control?
+				close: this.onChartConfWindowClose
+			}
         })
         window.show();
         window.down('configform').getForm().setValues(cfg);
         return false;
     },
+	
+	onChartConfWindowClose: function(){
+		Ext.StoreMgr.lookup('attributes2choose').getRootNode().cascadeBy(function(node){
+			if(node.get('checked')) node.set('checked', false);
+		});
+	},
     
     onChartBtnClick: function(parent) {
 //        var type = parent.ownerCt.itemId == 'layerpanel' ? 'choroplethpanel' : 'chartconfigpanel';
@@ -118154,12 +118253,9 @@ Ext.define('PumaMain.controller.AttributeConfig', {
 //        window.show();
     },
     
+	// triggered when AddAttributeTree opened
     onAddAttribute: function(btn) {
         this.setActiveCard(btn,1);
-        var store = btn.up('[itemId=attributecontainer]').down('addattributegrid').store
-        store.each(function(rec) {
-            rec.set('checked',false)
-        })
     },
     onNormalizeAttribute: function(btn) {
         
@@ -118186,24 +118282,57 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         var recs = this.getChecked(store);
         store.remove(recs);
     },
-  
+	
+	// triggered on change of any checkbox in AddAttributeTree
+	onAddAttrCheck: function(checkNode, checked){
+		if(checkNode.get('attr')){
+			var parentChecked = true;
+			Ext.Array.each(checkNode.parentNode.childNodes, function(node){
+				if( !node.get('checked') ) return parentChecked = false;
+			});
+			checkNode.parentNode.set('checked', parentChecked);
+			
+		}else if(checkNode.get('as')){
+			// check/uncheck all attributes of this attribute set
+			Ext.Array.each(checkNode.childNodes, function(node){
+				node.set('checked', checked);
+			});
+			if( checked ) checkNode.expand();
+		}
+		
+	},
+	
+	onAddAttrItemClick: function(view, node, item, index, e){
+		if(node.get('attr') && e.target.className != 'x-tree-checkbox'){
+			node.set('checked', !node.get('checked'));
+			this.onAddAttrCheck(node);
+		}
+	},
+	
+	// triggered when attribute addition is confirmed in AddAttributeTree
     onAttributeAdded: function(btn) {
-        var store = btn.up('grid').store;
+        var store = btn.up('addattributetree').store;
         var recs = this.getChecked(store);
         var newRecs = [];
         for (var i=0;i<recs.length;i++) {
             var rec = recs[i];
+			if(!rec.get('attr')) continue;
             var newRec = Ext.create('Puma.model.MappedChartAttribute',{
                 as: rec.get('as'),
                 attr: rec.get('attr'),
                 normType: 'area',
                 checked: true
-                
             })
             newRecs.push(newRec)
         }
         var mainStore = btn.up('configform').down('attributegrid').store;
         mainStore.add(newRecs);
+		
+		// unselect all
+		store.getRootNode().cascadeBy(function(node){
+			if(node.get('checked')) node.set('checked', false);
+		});
+
         this.setActiveCard(btn,0);
     },
     onAttributeNormalized: function(btn) {
@@ -118280,7 +118409,15 @@ Ext.define('PumaMain.controller.AttributeConfig', {
     },
     
     getChecked: function(store) {
-        return store.query('checked',true).getRange();
+		if(!store.tree){
+	        return store.query('checked',true).getRange();
+		}else{
+			var checkedNodes = [];
+			store.getRootNode().cascadeBy(function(node){
+				if(node.get('checked')) checkedNodes.push(node);
+			});
+			return checkedNodes;
+		}
     }
 });
 
@@ -119960,8 +120097,8 @@ Ext.application({
     controllers: ['Export','DomManipulation','Render','Store','Map','LocationTheme','Area','Layers','Screenshot','AttributeConfig','Help','Filter','ViewMng','Login','Select','Chart'],
     enableQuickTips: true,
     requires: [
-        //'Puma.patch.Main',
-        'Ext.data.reader.Json','Ext.util.Point','Ext.Layer','Ext.window.Window','Ext.data.ArrayStore','Ext.data.proxy.Memory','Ext.data.reader.Array','Ext.util.Grouper','Ext.PluginManager','Ext.ComponentLoader','Ext.layout.Context','Ext.resizer.Resizer','Ext.panel.Tool','Ext.util.CSS','Ext.layout.component.Body','Ext.Img','Ext.menu.Menu','Ext.data.Batch','Ext.selection.RowModel','Ext.selection.CellModel','Ext.selection.CheckboxModel','Ext.grid.PagingScroller','Ext.grid.header.Container','Ext.grid.column.Column','Ext.grid.Lockable','Ext.view.TableLayout','Ext.view.TableChunker','Ext.data.Request','Ext.grid.column.Number','Ext.layout.container.Accordion','Ext.picker.Color','Ext.tree.Panel','Ext.grid.column.Action','Ext.grid.plugin.DragDrop','Ext.layout.container.Table','Ext.form.field.Checkbox','Ext.ux.grid.FiltersFeature','PumaMain.view.Chart','PumaMain.view.VisualizationForm','Puma.view.CommonForm','Puma.view.CommonGrid','Gisatlib.form.HiddenStoreField','Ext.form.field.Hidden','PumaMain.view.ChartPanel','Ext.ux.grid.menu.ListMenu','Ext.ux.grid.menu.RangeMenu','Ext.ux.grid.filter.BooleanFilter','Ext.picker.Date','Ext.ux.grid.filter.DateTimeFilter','Ext.picker.Month','Ext.ux.grid.filter.ListFilter'],
+		//'Puma.patch.Main', // JJJ zakomentovat při buildu
+		'Ext.data.reader.Json','Ext.util.Point','Ext.Layer','Ext.window.Window','Ext.data.ArrayStore','Ext.data.proxy.Memory','Ext.data.reader.Array','Ext.util.Grouper','Ext.PluginManager','Ext.ComponentLoader','Ext.layout.Context','Ext.resizer.Resizer','Ext.panel.Tool','Ext.util.CSS','Ext.layout.component.Body','Ext.Img','Ext.menu.Menu','Ext.data.Batch','Ext.selection.RowModel','Ext.selection.CellModel','Ext.selection.CheckboxModel','Ext.grid.PagingScroller','Ext.grid.header.Container','Ext.grid.column.Column','Ext.grid.Lockable','Ext.view.TableLayout','Ext.view.TableChunker','Ext.data.Request','Ext.grid.column.Number','Ext.layout.container.Accordion','Ext.picker.Color','Ext.tree.Panel','Ext.grid.column.Action','Ext.grid.plugin.DragDrop','Ext.layout.container.Table','Ext.form.field.Checkbox','Ext.ux.grid.FiltersFeature','PumaMain.view.Chart','PumaMain.view.VisualizationForm','Puma.view.CommonForm','Puma.view.CommonGrid','Gisatlib.form.HiddenStoreField','Ext.form.field.Hidden','PumaMain.view.ChartPanel','Ext.ux.grid.menu.ListMenu','Ext.ux.grid.menu.RangeMenu','Ext.ux.grid.filter.BooleanFilter','Ext.picker.Date','Ext.ux.grid.filter.DateTimeFilter','Ext.picker.Month','Ext.ux.grid.filter.ListFilter'],
     launch: function() {
         
         window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''))

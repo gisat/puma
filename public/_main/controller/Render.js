@@ -90,6 +90,21 @@ Ext.define('PumaMain.controller.Render', {
             Ext.getBody().addCls('dataview');
             this.renderAggreement();
         }
+//		Ext.widget('button',{ // JJJ HACK čára do konzole
+//			renderTo: 'footer-legal',
+//			itemId: 'consolebreak',
+//			tooltip: 'Insert line in console',
+//			tooltipType: 'title',
+//			width: 30,
+//			height: 30,
+//			text: '=',
+//			floating: true,
+//			listeners: {
+//				click: function(){
+//					console.log("===========================================================");
+//				}
+//			}
+//		});
         Ext.widget('pumacombo',{
             store: 'dataset',
             helpId: 'Selectingscopeofanalysis',
@@ -354,11 +369,27 @@ Ext.define('PumaMain.controller.Render', {
             width: '100%',
             height: '100%'
         })
+		var me = this;
         Ext.widget('checkbox',{
             renderTo: 'agreement-accept-chb',
             itemId: 'agreementCheck',
             boxLabel: 'I have read this User Agreement and agree to these terms and conditions.'
-        })
+
+//			,listeners: { //JJJ HACK agreement
+//				el : {
+//			        'mouseover': function(e,t){
+//						Ext.ComponentQuery.query('#initialdataset')[0].setValue(1532);
+//						Ext.ComponentQuery.query('#initiallocation')[0].setValue('276_1');
+//						Ext.ComponentQuery.query('#initialtheme')[0].setValue(1365);
+//						Ext.ComponentQuery.query('#agreementCheck')[0].setValue(1);
+//						me.getController('LocationTheme').onAcceptAgreement();
+//						me.getController('LocationTheme').onConfirm();
+//					}
+//			    }
+//			}
+
+
+		})
     },
             
     renderIntro: function() {
