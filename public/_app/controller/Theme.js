@@ -8,6 +8,9 @@ Ext.define('PumaMng.controller.Theme',{
             'managementtab themeform #topics' : {
                 change: this.onTopicsChange
             },
+            'managementtab themeform #prefTopics' : {
+                change: this.onPrefTopicsChange
+            },
             'managementtab themeform #dataset' : {
                 change: this.onDatasetChange
             }
@@ -15,6 +18,11 @@ Ext.define('PumaMng.controller.Theme',{
         })
     },
         
+    onPrefTopicsChange: function(item,value) {
+        if (!value) return;
+        var topics = value;
+        var attrSetStore = Ext.StoreMgr.lookup('attributeset4theme');
+    },
     onTopicsChange: function(item,value) {
         if (!value) return;
         var topics = value;

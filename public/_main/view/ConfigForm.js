@@ -4,7 +4,7 @@ Ext.define('PumaMain.view.ConfigForm', {
     autoScroll: true,
     frame: true,
     header: false,
-    requires: ['Ext.ux.CheckColumn', 'PumaMain.view.AddAttributeGrid','PumaMain.view.ChoroplethForm', 'PumaMain.view.AttributeGrid', 'Gisatlib.container.StoreContainer','PumaMain.view.NormalizeForm'],
+    requires: ['Ext.ux.CheckColumn', 'PumaMain.view.AddAttributeTree','PumaMain.view.ChoroplethForm', 'PumaMain.view.AttributeGrid', 'Gisatlib.container.StoreContainer','PumaMain.view.NormalizeForm'],
     initComponent: function() {
         this.attrStore = Ext.create('Ext.data.Store', {
             data: [],
@@ -35,7 +35,7 @@ Ext.define('PumaMain.view.ConfigForm', {
             }, {
                 xtype: 'container',
                 hidden: this.formType=='chart',
-                height: 300,
+                height: 500,
                 itemId: 'attributecontainer',
                 helpId: 'test',
                 layout: 'card',
@@ -45,7 +45,7 @@ Ext.define('PumaMain.view.ConfigForm', {
                 formType: this.formType,
                 store: this.attrStore
             }, {
-                xtype: 'addattributegrid'
+                xtype: 'addattributetree'
             }, {
                 xtype: 'normalizeform',
                 formType: this.formType

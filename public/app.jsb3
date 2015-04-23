@@ -1680,8 +1680,8 @@
                     "path": "extjs-4.1.3/src/form/"
                 },
                 {
-                    "clsName": "PumaMain.view.AddAttributeGrid",
-                    "name": "AddAttributeGrid.js",
+                    "clsName": "PumaMain.view.AddAttributeTree",
+                    "name": "AddAttributeTree.js",
                     "path": "_main/view/"
                 },
                 {

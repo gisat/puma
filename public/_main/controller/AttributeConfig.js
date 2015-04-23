@@ -21,12 +21,19 @@ Ext.define('PumaMain.controller.AttributeConfig', {
                 'attributegrid #choroplethparams' : {
                     click: this.onConfigureChoropleth
                 },
-                'addattributegrid #add' : {
+                'addattributetree #add' : {
                     click: this.onAttributeAdded
                 },
-                'addattributegrid #back' : {
+                'addattributetree #back' : {
                     click: this.backToInitial
                 },
+				'addattributetree': {
+					checkchange: this.onAddAttrCheck,
+					itemclick: this.onAddAttrItemClick
+				},
+				//'chartConfigurationWindow': {
+				//	close: this.onChartConfWindowClose
+				//},
                 'normalizeform #normalize' : {
                     click: this.onAttributeNormalized
                 },
@@ -206,10 +213,11 @@ Ext.define('PumaMain.controller.AttributeConfig', {
             
         }
         var window = Ext.widget('window',{
+			//itemId: 'chartConfigurationWindow',
+			//id: 'chartConfigurationWindow',
             layout: 'fit',
             width: 710,
-            height: 500,
-            y: 200,
+            height: 724,
             
             title: title,
             items: [{
@@ -219,12 +227,22 @@ Ext.define('PumaMain.controller.AttributeConfig', {
                 cls: 'configform',
                 chart: chart,
                 formType: formType
-            }]
+            }],
+			listeners: {
+				// JJJ jak se to dela, aby se listenery prirazovaly v this.control?
+				close: this.onChartConfWindowClose
+			}
         })
         window.show();
         window.down('configform').getForm().setValues(cfg);
         return false;
     },
+	
+	onChartConfWindowClose: function(){
+		Ext.StoreMgr.lookup('attributes2choose').getRootNode().cascadeBy(function(node){
+			if(node.get('checked')) node.set('checked', false);
+		});
+	},
     
     onChartBtnClick: function(parent) {
 //        var type = parent.ownerCt.itemId == 'layerpanel' ? 'choroplethpanel' : 'chartconfigpanel';
@@ -244,12 +262,9 @@ Ext.define('PumaMain.controller.AttributeConfig', {
 //        window.show();
     },
     
+	// triggered when AddAttributeTree opened
     onAddAttribute: function(btn) {
         this.setActiveCard(btn,1);
-        var store = btn.up('[itemId=attributecontainer]').down('addattributegrid').store
-        store.each(function(rec) {
-            rec.set('checked',false)
-        })
     },
     onNormalizeAttribute: function(btn) {
         
@@ -276,24 +291,57 @@ Ext.define('PumaMain.controller.AttributeConfig', {
         var recs = this.getChecked(store);
         store.remove(recs);
     },
-  
+	
+	// triggered on change of any checkbox in AddAttributeTree
+	onAddAttrCheck: function(checkNode, checked){
+		if(checkNode.get('attr')){
+			var parentChecked = true;
+			Ext.Array.each(checkNode.parentNode.childNodes, function(node){
+				if( !node.get('checked') ) return parentChecked = false;
+			});
+			checkNode.parentNode.set('checked', parentChecked);
+			
+		}else if(checkNode.get('as')){
+			// check/uncheck all attributes of this attribute set
+			Ext.Array.each(checkNode.childNodes, function(node){
+				node.set('checked', checked);
+			});
+			if( checked ) checkNode.expand();
+		}
+		
+	},
+	
+	onAddAttrItemClick: function(view, node, item, index, e){
+		if(node.get('attr') && e.target.className != 'x-tree-checkbox'){
+			node.set('checked', !node.get('checked'));
+			this.onAddAttrCheck(node);
+		}
+	},
+	
+	// triggered when attribute addition is confirmed in AddAttributeTree
     onAttributeAdded: function(btn) {
-        var store = btn.up('grid').store;
+        var store = btn.up('addattributetree').store;
         var recs = this.getChecked(store);
         var newRecs = [];
         for (var i=0;i<recs.length;i++) {
             var rec = recs[i];
+			if(!rec.get('attr')) continue;
             var newRec = Ext.create('Puma.model.MappedChartAttribute',{
                 as: rec.get('as'),
                 attr: rec.get('attr'),
                 normType: 'area',
                 checked: true
-                
             })
             newRecs.push(newRec)
         }
         var mainStore = btn.up('configform').down('attributegrid').store;
         mainStore.add(newRecs);
+		
+		// unselect all
+		store.getRootNode().cascadeBy(function(node){
+			if(node.get('checked')) node.set('checked', false);
+		});
+
         this.setActiveCard(btn,0);
     },
     onAttributeNormalized: function(btn) {
@@ -370,7 +418,15 @@ Ext.define('PumaMain.controller.AttributeConfig', {
     },
     
     getChecked: function(store) {
-        return store.query('checked',true).getRange();
+		if(!store.tree){
+	        return store.query('checked',true).getRange();
+		}else{
+			var checkedNodes = [];
+			store.getRootNode().cascadeBy(function(node){
+				if(node.get('checked')) checkedNodes.push(node);
+			});
+			return checkedNodes;
+		}
     }
 });
 

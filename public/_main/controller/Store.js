@@ -363,14 +363,17 @@ Ext.define('PumaMain.controller.Store', {
         
         Ext.create('Gisatlib.paging.PhantomStore',{
             storeId: 'paging'
-        })
+        });
     
     
-        Ext.create('Ext.data.Store', {
+        Ext.create('Ext.data.TreeStore', {
+            storeId: 'attributes2choose',
+			// JJJ TODO mozna i prejmenovat ten model
             model: 'Puma.model.MappedChartAttribute',
-            data: [],
-            storeId: 'attributes2choose'
-        })
+			root: {
+				expanded: true
+			}
+        });
         
         
         Ext.create('Ext.data.TreeStore', {
@@ -599,6 +602,7 @@ Ext.define('PumaMain.controller.Store', {
             }]
         })
     
+		// JJJ Neni to zbytecne?
         Ext.create('Ext.data.Store',{
             storeId: 'mappedattribute4chart',
             model: 'Puma.model.MappedChartAttribute',

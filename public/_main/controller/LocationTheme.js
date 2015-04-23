@@ -68,7 +68,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         window.location = 'http://puma.worldbank.org';
     },
     testTimeline: function(slider,value) {
-        console.log(value);
+        //console.log(value);
     },
     onDatasetChange: function(cnt,val) {
         if (cnt.eventsSuspended) {
@@ -904,7 +904,9 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
         if (conf.attrSets) {
             this.checkFeatureLayers();
-            this.checkAttrSets(conf.attrSets);
+			var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
+			var theme = Ext.StoreMgr.lookup('theme').getById(themeId);
+            this.checkAttrSets(conf.attrSets, theme);
         }
         this.getController('Chart').reconfigureAll();
         this.getController('Layers').reconfigureAll();
@@ -946,30 +948,69 @@ Ext.define('PumaMain.controller.LocationTheme', {
         }]);
     },
     
-    checkAttrSets: function(attrSets) {
-        var store = Ext.StoreMgr.lookup('attributes2choose');
-        var attrStore = Ext.StoreMgr.lookup('attributeset');
-        var existingAttrSets = store.collect('as');
-        var asToAdd = Ext.Array.difference(attrSets,existingAttrSets);
-        var asToRemove = Ext.Array.difference(existingAttrSets,attrSets);
-        var recsToRemove = store.queryBy(function(rec) {
-            return Ext.Array.contains(asToRemove,rec.get('as'))
-        }).getRange();
-        store.remove(recsToRemove);
-        var recsToAdd = [];
-        for (var i=0;i<asToAdd.length;i++) {
-            var as = asToAdd[i];
-            var attrs = attrStore.getById(as).get('attributes');
-            for (var j=0;j<attrs.length;j++) {
-                var attr = attrs[j];
-                var rec = Ext.create('Puma.model.MappedChartAttribute',{
-                    as: as,
-                    attr: attr
-                })
-                recsToAdd.push(rec)
-            }
-        }
-        store.add(recsToAdd);
+    checkAttrSets: function(attrSets, theme) {
+		// JJJ TODO ...........
+		// prejmenovat na neco smysluplneho
+		var topics = theme.get('topics'); // get all topics (id's) of current theme
+		var prefTopics = theme.get('prefTopics'); // get pref. topics of current theme
+        var a2chStore = Ext.StoreMgr.lookup('attributes2choose');
+        var attrSetStore = Ext.StoreMgr.lookup('attributeset');
+		var attrStore = Ext.StoreMgr.lookup('attribute');
+
+		var rootNode = a2chStore.getRootNode();
+		
+		// clear the store
+		while(rootNode.firstChild){
+			rootNode.removeChild(rootNode.firstChild);
+		}
+		
+		// populate the store
+		for(var isPref = 1; isPref >= 0; isPref--){ // iterate two bools: is preferential and isn't
+			for(var topic in topics){ // iterate topics (id's) of actual theme
+				if( isPref != Ext.Array.contains(prefTopics, topics[topic]) ) continue;
+				rootNode.appendChild(Ext.create('Puma.model.MappedChartAttribute',{
+					topic: topics[topic],
+					leaf: false,
+					expanded: isPref,
+					checked: null
+				}));
+				var topicNode = rootNode.lastChild;
+
+				attrSetStore.data.each(function(attrSet){ // iterate attrSets (objects)
+					if(attrSet.get('topic') == topics[topic]){
+						var attrSetAttributes = attrSet.get('attributes');
+
+						topicNode.appendChild(Ext.create('Puma.model.MappedChartAttribute',{
+							as: attrSet.get('_id'),
+							topic: topics[topic],
+							leaf: false,
+							expanded: true,
+							checked: false
+						}));
+						var attrSetNode = topicNode.lastChild;
+
+						attrStore.data.each(function(attribute){ // iterate attributes (objects)
+							if( Ext.Array.contains(attrSetAttributes, attribute.get('_id')) ){
+								attrSetNode.appendChild(Ext.create('Puma.model.MappedChartAttribute',{
+									attr: attribute.get('_id'),
+									as: attrSet.get('_id'),
+									topic: topics[topic],
+									leaf: true,
+									checked: false
+								}));
+							}
+						});
+						
+						if(!attrSetNode.childNodes.length) attrSetNode.remove();
+					}
+				});
+				
+				if(!topicNode.childNodes.length) topicNode.remove();
+			}
+		}
+		
+		// filter store attributeset2choose
+		// povoli ty, jejichz id je v poli attrSets
         var asStoreToFilter = Ext.StoreMgr.lookup('attributeset2choose');
         asStoreToFilter.clearFilter(true);
         asStoreToFilter.filter([function(rec){
