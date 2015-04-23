@@ -984,7 +984,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
 							as: attrSet.get('_id'),
 							topic: topics[topic],
 							leaf: false,
-							expanded: true,
+							expanded: false,
 							checked: false
 						}));
 						var attrSetNode = topicNode.lastChild;
