@@ -19,7 +19,9 @@ Ext.application({
     controllers: ['Analysis','LayerLink','Store','Management','Theme','Login','Socket'],
     views: ['MainTabPanel'],
     enableQuickTips: false,
-    requires: ['Puma.patch.Main','Puma.util.Msg','Ext.container.Viewport','Ext.container.Container','Ext.tip.QuickTipManager','Ext.data.*','Puma.controller.Form','Puma.controller.Login','Puma.view.LoginHeader'],
+    requires: [
+		'Puma.patch.Main', // JJJ zakomentovat při buildu, odkomentovat při sencha create jsb a pak ho z .jsb3 vymazat
+		'Puma.util.Msg','Ext.container.Viewport','Ext.container.Container','Ext.tip.QuickTipManager','Ext.data.*','Puma.controller.Form','Puma.controller.Login','Puma.view.LoginHeader'],
 
     launch: function() {
         //Ext.tip.QuickTipManager.init();

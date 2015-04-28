@@ -1,10 +1,10 @@
 {
-    "projectName": "Project Name",
-    "licenseText": "Copyright(c) 2012 Company Name",
+    "projectName": "PUMA data-exploration",
+    "licenseText": "Copyright(c) Gisat",
     "builds": [
         {
             "name": "All Classes",
-            "target": "all-classes.js",
+            "target": "appde.all.js",
             "options": {
                 "debug": true
             },
@@ -1801,9 +1801,7 @@
                 },{
                     "name": "Geoserver23.js",
                     "path": "gisatlib/OpenLayers/"
-                }
-                ,
-                {
+                },{
                     "name": "appde.js",
                     "path": ""
                 }

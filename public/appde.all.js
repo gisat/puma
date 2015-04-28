@@ -1,5 +1,5 @@
 /*
-Copyright(c) 2012 Company Name
+Copyright(c) Gisat
 */
 /**
  * An extended {@link Ext.Element} object that supports a shadow and shim, constrain to viewport and
@@ -102492,7 +102492,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
 							as: attrSet.get('_id'),
 							topic: topics[topic],
 							leaf: false,
-							expanded: true,
+							expanded: false,
 							checked: false
 						}));
 						var attrSetNode = topicNode.lastChild;
@@ -104012,9 +104012,6 @@ Ext.define('Puma.model.MappedChartAttribute', {
 
 	
 	],
-//	root: {
-//		text: 'root'
-//	},
     idProperty: '_id',
     proxy: 'memory'
 });
@@ -112834,9 +112831,7 @@ Ext.define('PumaMain.controller.Store', {
             storeId: 'attributes2choose',
 			// JJJ TODO mozna i prejmenovat ten model
             model: 'Puma.model.MappedChartAttribute',
-			sorters: [],
 			root: {
-				//treeNodeText: 'Attributes to choose', //JJJ TODO ?
 				expanded: true
 			}
         });
@@ -113068,12 +113063,12 @@ Ext.define('PumaMain.controller.Store', {
             }]
         })
     
-// JJJ Je to zbytecne?
-//        Ext.create('Ext.data.Store',{
-//            storeId: 'mappedattribute4chart',
-//            model: 'Puma.model.MappedChartAttribute',
-//            data: []
-//        })
+		// JJJ Neni to zbytecne?
+        Ext.create('Ext.data.Store',{
+            storeId: 'mappedattribute4chart',
+            model: 'Puma.model.MappedChartAttribute',
+            data: []
+        })
     
         Ext.create('Ext.data.Store',{
             storeId: 'location4init',
@@ -114081,9 +114076,9 @@ Ext.define('Ext.form.CheckboxGroup', {
 
 
 Ext.define('PumaMain.view.AddAttributeTree', {
-	// JJJ TODO: prejmenovat
-	// JJJ TIP: http://www.sencha.com/forum/showthread.php?138664-Ext.ux.form.TriCheckbox&p=619810
-	//          ve stromu to bude asi slozitejsi
+	// JJJ TIP: tristavove checkboxy, Ext je asi neumi
+	//          http://www.sencha.com/forum/showthread.php?138664-Ext.ux.form.TriCheckbox&p=619810
+	//          ve stromu to bude asi slozitejsi, tak nic...
     extend: 'Ext.tree.Panel',
     alias: 'widget.addattributetree',
     border: false,
