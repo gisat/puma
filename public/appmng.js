@@ -21,6 +21,7 @@ Ext.application({
     enableQuickTips: false,
     requires: [
 		'Puma.patch.Main', // JJJ zakomentovat při buildu, odkomentovat při sencha create jsb a pak ho z .jsb3 vymazat
+		// 'Ext.data.reader.Json','Ext.data.reader.Reader',
 		'Puma.util.Msg','Ext.container.Viewport','Ext.container.Container','Ext.tip.QuickTipManager','Ext.data.*','Puma.controller.Form','Puma.controller.Login','Puma.view.LoginHeader'],
 
     launch: function() {
