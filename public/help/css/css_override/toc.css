@@ -1,0 +1,108 @@
+@import "http://fonts.googleapis.com/css?family=Open+Sans:400,800,700";
+
+/* -- Body -- */
+
+body {
+	overflow: hidden;
+	font-family: "Open Sans";
+}
+
+/* -- UI Tabs -- */
+
+ul.dynatree-container {
+	line-height: 1.5em;
+}
+
+.ui-tabs {
+	position: static;
+}
+
+#toc_header {
+	padding-bottom: 0;
+}
+
+#tabs .ui-tabs-nav {
+	border: 0;
+	border-bottom: 1px solid #ccc;
+	padding-top: 19px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+}
+
+#tabs .ui-widget-header{
+	background: #434254 !important;
+	border: none;
+	padding-top: 39px;
+}
+
+
+#tabs .ui-tabs-panel {
+	overflow: auto;
+	position: absolute;
+	top: 43px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+/* Search */
+
+#search_value {
+	width: 140px;
+}
+
+#search_results {
+	padding-top: 10px;
+}
+
+/* -- Tree -- */
+
+ul.dynatree-container {
+	border: 0;
+	font-family: inherit;
+	overflow: visible;
+	padding: 0;
+}
+
+/* Selection color */
+span.dynatree-node a {
+	padding-bottom: 2px;
+	border-radius: 2px;
+	font-size: 12px;
+	position: relative;
+	top: -2px;
+}
+ul.dynatree-container a:hover, ul.dynatree-container a:focus, span.dynatree-focused a:link {
+	background-color: #eee !important;
+}
+
+span.dynatree-active a, ul.dynatree-container span.dynatree-active a:hover, ul.dynatree-container span.dynatree-active a:focus {
+    background-color: #666470 !important;
+}
+
+/* Remove folder boldness */
+span.dynatree-folder a {
+	font-weight: normal;
+}
+
+
+/* PUMA CUSTOM */
+.ui-tabs .ui-tabs-nav li {
+	border-radius: 3px 2px 0 0;
+	background: #666470;
+}
+.ui-tabs .ui-tabs-nav li a {
+	color: #fff;
+}
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected {
+	background-color: #fff;
+	border-color: #fff;
+}
+.ui-tabs .ui-tabs-nav li.ui-tabs-selected a {
+	color: #333;
+}
+#tabs .ui-tabs-panel {
+	top: 62px;
+}
