@@ -45,7 +45,8 @@ function getChart(params, req, res, callback) {
     var mod = charts[type];
     params['userId'] = req.userId;
     mod.getChart(params, function(err, conf) {
-        if (err) {
+        console.log(err);
+		if (err) {
             console.log('returning nodata')
             var noDataConf = {
                 chart: {

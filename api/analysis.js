@@ -100,10 +100,10 @@ function create(params,req,res,callback) {
                 callback(null);
                 analysis[type].perform(analysisObj,result,results.layerRef,req,function(err) {
                     if (err) {
-                        conn.getIo().sockets.emit('analysis','Analysis '+analysisObj.name+' error');
+						console.error('Analysis '+analysisObj.name+' failed. Error: ', err);
                     }
                     else {
-                        conn.getIo().sockets.emit('analysis','Analysis '+analysisObj.name+' finished');
+						console.log('Analysis '+analysisObj.name+' finished');
                     }
                     
                 });

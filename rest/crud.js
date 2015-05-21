@@ -98,10 +98,12 @@ function update(collName, obj, params, callback,bypassHooks) {
     if (!params.isAdmin) {
         filter['createdBy'] = params.userId;
     }
-    var opts = {
+    async.auto({
         checkRefs: function(asyncCallback) {
             checkRefs(obj,collName,function(err) {
-                if (err) return callback(err);
+                if (err){
+					return callback(err);
+				}
                 asyncCallback(null);
             });
         },
@@ -111,15 +113,18 @@ function update(collName, obj, params, callback,bypassHooks) {
             obj['changedBy'] = params.userId;
             
             collection.update(filter, {'$set': obj}, {}, function(err) {
-                if (err)
+                if (err){
+					console.log("crud.update error");
                     return callback(err);
+				}
                 collection.findOne(filter, function(err, result) {
-                    if (err)
+                    if (err){
                         return callback(err);
-                    asyncCallback(null, result)
-                })
+					}
+                    asyncCallback(null, result);
+                });
 
-            })
+            });
         }],
         hooks: ['update', function(asyncCallback,results) {
             doHooks("update",collName,results.update,params,function(err,result) {
@@ -127,10 +132,7 @@ function update(collName, obj, params, callback,bypassHooks) {
                 return callback(null,results.update)
             });
         }]
-    }
-    
-    async.auto(opts);
-
+    });
 }
 
 function remove(collName,filter,params,callback) {
