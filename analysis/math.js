@@ -119,7 +119,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				var layerRef = layerRefMap[item]['_id'];
 				var currentSql = sql.replace('$LAYERREF$', layerRef);
 				currentSql = currentSql.replace('$INDEX$', item);
-				console.log(currentSql);
+				console.log("analysis/math.js currentSql: " + currentSql);
 				client.query(currentSql, function(err, resls) {
 					if (err)
 						return asyncCallback("SQL query error ("+err+")");

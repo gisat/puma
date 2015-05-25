@@ -12,6 +12,7 @@ var config = {
 };
 
 function init(callback) {
+	console.log('loc.init');
     cultures.push('');
     async.forEach(cultures,function(item,asyncCallback) {
         

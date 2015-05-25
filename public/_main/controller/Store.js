@@ -55,8 +55,10 @@ Ext.define('PumaMain.controller.Store', {
                 
                 store.loadData(data);
                 store.loading = false;
-            }
-
+            },
+			failure: function(response, opts) {
+				console.log('Store.initLocations AJAX request failed. Status: ' + response.status, "Response:", response);
+			}
         })
     },
     

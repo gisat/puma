@@ -27,14 +27,14 @@ function exporter(params, req, res, callback) {
     var isWin = !!process.platform.match(/^win/);
     if (isWin)
     cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+conn.getLocalAddress()+'/public/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
+        console.log("api/chart.js stdout: " + stdout);
+        console.log("api/chart.js stderr: " + stderr);
         return callback(err)
     })
     else
     cp.exec('phantomjs rasterize.js http://'+conn.getLocalAddress()+'/public/index3.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
-        console.log(stdout);
-        console.log(stderr);
+        console.log("api/chart.js stdout: " + stdout);
+        console.log("api/chart.js stderr: " + stderr);
         return callback(err);
     })
     
@@ -45,8 +45,8 @@ function getChart(params, req, res, callback) {
     var mod = charts[type];
     params['userId'] = req.userId;
     mod.getChart(params, function(err, conf) {
-        console.log(err);
 		if (err) {
+	        console.log("api/chart.js getChart error: " + err);
             console.log('returning nodata')
             var noDataConf = {
                 chart: {
@@ -92,7 +92,7 @@ function drawChart(params, req, res, callback) {
     var svgFile = 'tmp/' + confId + '_%gid%.svg';
 
     var nullTime = new Date().getTime();
-    console.log(nullTime)
+    console.log("api/chart.js drawChart nullTime: " + nullTime)
     var intervalFc = null;
     function testConf() {
         if (confMap[confId]) {

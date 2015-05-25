@@ -7,7 +7,7 @@ function recreateLayerDb(layerRef,isUpdate,callback) {
     
     var crud = require('../rest/crud');
     if (layerRef.toBeDeleted) {
-        console.log('removing');
+        console.log('geoserver/layers.js removing');
         return removeLayerDbInternal(layerRef,callback);
     }
     async.waterfall([
@@ -146,7 +146,7 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 
     sql += '; COMMIT;'; 
     //console.log(sql);
-    console.log('start '+sql);
+    console.log('geoserver/layers.js start '+sql);
     var client = conn.getPgDb();
     client.query(sql,function(err,results) {
         if (err) {
@@ -192,7 +192,7 @@ function changeLayerGeoserver(layerId, method, callback) {
         data = JSON.stringify(obj);
     }
 
-    console.log(method)
+    console.log("geoserver/layers.js method: " + method)
 
     var options = {
         host: conn.getBaseServer(),
@@ -204,7 +204,7 @@ function changeLayerGeoserver(layerId, method, callback) {
     conn.request(options, data, function(err, output, resl) {
         if (err)
             return callback(err);
-        console.log(output)
+        console.log("geoserver/layers.js output: " + output)
         return callback();
     })
 
