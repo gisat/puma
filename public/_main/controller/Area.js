@@ -445,7 +445,7 @@ Ext.define('PumaMain.controller.Area', {
             allMap[loc][at] = allMap[loc][at] || [];
             allMap[loc][at].push(gid);
             if (node.isLeaf()) {
-                
+
             }
             else {
                 leafMap[loc] = leafMap[loc] || {}
@@ -489,7 +489,7 @@ Ext.define('PumaMain.controller.Area', {
         var showMore = Ext.ComponentQuery.query('#areamoredetails')[0];
         var showLess = Ext.ComponentQuery.query('#arealessdetails')[0];
         
-        showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1));
+        showMore.setDisabled(lowestCount>100 || (lowestNoLeafs && areaTemplates.length>1) || !Object.keys(leafMap).length);
         showLess.setDisabled(!containsLower || (selPlace && maxDepth<3))
   
         var selMap = this.getController('Select').selMap;
