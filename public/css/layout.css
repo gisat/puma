@@ -120,7 +120,7 @@ strong {
 		text-transform   : uppercase;
 		height           : 30px;
 		line-height      : 30px;
-		background       : #4d5146 url("../images/menu-gradient.png") repeat-x 0 0;
+		background       : #4d5146 url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAeCAIAAABi9+OQAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC1JREFUeNpiiIkPZWJgYGD6//8/mP73/x+YhuH///7jlIfJESP+7x+KuQABBgDF4B8flBhaWQAAAABJRU5ErkJggg==) repeat-x 0 0;
 		color            : #fff;
 		font-weight      : bold;
 		position         : absolute;
@@ -144,7 +144,7 @@ strong {
 		position         : absolute;
 		left             : 7px;
 		top              : 0;
-		background       : url("../images/home-icon.png") no-repeat 50% 50%;
+		background       : url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAGhJREFUeNrEkuEKgDAIhHX42v3xxa9GBSHzlPrRgWxMvxubKgB5q1HknWbnzUk4TnlWU4FgBgyUsHoFRxDMoAOmBl1waWBXO7YjdH5+0To86zQMSWdi9N5YpygzHfJB/8FG3lme7wIMACT0O5C4xmFCAAAAAElFTkSuQmCC) no-repeat 50% 50%;
 	}
 	#header .home:hover, #header .home:focus {
 		text-decoration  : none;
@@ -179,7 +179,7 @@ strong {
 		position         : absolute;
 		top              : 0;
 		right            : 0;
-		background       : #85887b url("../images/menu-user-gradient.png") repeat-x 0 0;
+		background       : #85887b url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAAeCAIAAABi9+OQAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAC1JREFUeNpimDpjAhMDAwMK/vPnLxMLCzOYRpf7+xdTDKLnD1ZxiB4MOYAAAwCYExDOg5WI5QAAAABJRU5ErkJggg==) repeat-x 0 0;
 		text-transform   : uppercase;
 	}
 	#header .user .sep {
