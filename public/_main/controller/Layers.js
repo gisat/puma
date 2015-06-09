@@ -238,7 +238,7 @@ Ext.define('PumaMain.controller.Layers', {
             success: function(response) {
                 var name = response.request.options.rec.get('name');
                 response = JSON.parse(response.responseText).data;
-                var html = '';
+                var html = [];
                 var locStore = Ext.StoreMgr.lookup('location4init');
                 var searchTitle = null;
                 if (locStore.collect('location').length<2 && locStore.getCount()>2) {
@@ -250,40 +250,44 @@ Ext.define('PumaMain.controller.Layers', {
                 
                 for (var i=0;i<response.length;i++) {
                     var r = response[i];
-                    if (searchTitle && r.title.toLowerCase().search(searchTitle.toLowerCase())<0) {
-                        continue;
-                    }
-                    html+= '<div class="metadata">';
+
+					var oneDiv= '<div class="metadata">';
                     
-                    html+= '<p class="title">Title</p>';
-                    html+= '<p>' + r.title + '</p>';
+                    oneDiv+= '<p class="title">Title</p>';
+                    oneDiv+= '<p>' + r.title + '</p>';
                     
-                    html+= '<p class="title">Abstract</p>';
-                    html+= '<p>' + r.abstract + '</p>';
+                    oneDiv+= '<p class="title">Abstract</p>';
+                    oneDiv+= '<p>' + r.abstract + '</p>';
                     
-                    html+= '<p class="title">Temporal extent</p>';
-                    html+= '<p>' + r.temporal + '</p>';
+                    oneDiv+= '<p class="title">Temporal extent</p>';
+                    oneDiv+= '<p>' + r.temporal + '</p>';
                     
-                    html+= '<p class="title">Keywords</p>';
-                    html+= '<p>' + r.keywords + '</p>';
+                    oneDiv+= '<p class="title">Keywords</p>';
+                    oneDiv+= '<p>' + r.keywords + '</p>';
                     
-                    html+= '<p class="title">Producer</p>';
+                    oneDiv+= '<p class="title">Producer</p>';
                     if (r.producer!=r.contact) {
-                        html+= '<p>' + r.producer + '<br/>';    
+                        oneDiv+= '<p>' + r.producer + '<br/>';    
                     }
-                    html += r.contact + '<br/>';
-                    html+= '<a target="_top" href="mailto:' + r.mail + '">' + r.mail + '</a></p>'
+                    oneDiv += r.contact + '<br/>';
+                    oneDiv+= '<a target="_top" href="mailto:' + r.mail + '">' + r.mail + '</a></p>'
                     
-                    html+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
+                    oneDiv+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
                     
-                    html+= '</div>';
+                    oneDiv+= '</div>';
+
+                    if(searchTitle && r.title.toLowerCase().search(searchTitle.toLowerCase()) != -1){
+						var html = [oneDiv];
+                        break;
+                    }
+					html.push(oneDiv);
                 }
                 Ext.widget('window',{
                     height: 600,
                     title: name,
                     width: 500,
                     autoScroll: true,
-                    html: html
+                    html: html.join("")
                 }).show();
             }
 
