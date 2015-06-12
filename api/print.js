@@ -16,8 +16,7 @@ function exporter(params, req, res, callback) {
     var outFile = 'tmp/' + imgId;
     var isWin = !!process.platform.match(/^win/);
     var phantomName = isWin ? 'phantomjs.exe'  : '/home/gnode/install/phantomjs/bin/phantomjs'
-    //if (isWin)
-    cp.execFile(phantomName, ['rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
+    cp.execFile(phantomName, ['--ssl-protocol=tlsv1', 'rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) { // --debug=true
         console.log(err);
         console.log(stdout);
         console.log(stderr);
