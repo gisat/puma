@@ -961,21 +961,31 @@ Ext.define('PumaMain.controller.Map', {
     },
         
     onFeatureSelected: function(evt) {
-        var features = JSON.parse(evt.text).features;
-        if (features && features.length) {
+        var allFeatures = JSON.parse(evt.text).features;
+		console.log("AllFEATURES ",allFeatures);
+        if (allFeatures && allFeatures.length) {
              var controller = this.getController('Area')
              var areaTemplates = controller.areaTemplates;
              var areaTemplateMap = controller.areaTemplateMap;
              var lrs = [];
-             features.reverse();
+			 
+			 allFeatures.reverse();
+			 var features = [];
+			 for (var i=0;i<allFeatures.length;i++) {
+				 var layerName = allFeatures[i].id.split('.')[0];
+				 features[layerName] = allFeatures[i];
+			 }
+			 console.log("FEATURES ",features);
+			 
              var root = Ext.StoreMgr.lookup('area').getRootNode();
              var gid = null;
              var at = null;
              var loc = null;
-             for (var i=0;i<features.length;i++) {
-                 var feature = features[i];
+             //for(var i=0;i<features.length;i++) {
+			 for(var layerName in features){
+                 var feature = features[layerName];
                  gid = feature.properties.gid;
-                 var layerName = feature.id.split('.')[0];
+                 //var layerName = feature.id.split('.')[0];
                  var lr = null;
                  if (layerName.indexOf('user')>=0) {
                     at = -1; 
