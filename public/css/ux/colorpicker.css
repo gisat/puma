@@ -14,9 +14,7 @@
 	_margin: 7px 7px 7px 4px;
 	_cursor: hand;
 	_background-image: none;
-	_filter: progid :   DXImageTransform.Microsoft.AlphaImageLoader (   src
-		= 
-		 'mask.png', sizingMethod =   'scale' );
+	_filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='mask.png', sizingMethod='scale');
 }
 
 .x-cp-rgbslider {
