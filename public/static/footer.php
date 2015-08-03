@@ -15,7 +15,7 @@
 					<p>1-202-458-7677</p>
 				</div>
 				<ul>
-					<li><a href="http://geonode.gisat.cz/app/public/help/TermsAndConditions.html">Terms and Conditions</a></li>
+					<li><a href="/help/TermsAndConditions.html">Terms and Conditions</a></li>
 					<li><a href="http://go.worldbank.org/NLCQMY3UZ0">Jobs</a></li>
 					<li><a href="http://www.worldbank.org/sitemap">Site Map</a></li>
 					<li><a href="http://www.worldbank.org/contacts">Contact</a></li>

@@ -38,6 +38,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
                     if (err)
                         return callback(err);
                     if (!resls.length) {
+						console.log("LAYERREF missing 1||||| areaTemplate: "+featureLayerTemplate+" | location: "+location+" | year: "+year);
                         return callback(new Error('missinglayerref'));
                     }
                     return mapCallback(null, resls[0]);
@@ -56,6 +57,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					if (err)
 						return callback(err);
 					if (!resls.length) {
+						console.log("LAYERREF missing 2||||| areaTemplate: "+analysisObj.areaTemplate+" | location: "+location+" | year: "+year);
 						return callback(new Error('missinglayerref'));
 					}
 					return mapCallback(null, resls[0]);
@@ -70,7 +72,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) {
     //console.log(analysisObj,performedAnalysisObj)
     var refId = layerRefMap[analysisObj.areaTemplate]['_id'];
-    var client = new pg.Client(conn.getConnString());
+    var client = new pg.Client(conn.getPgDataConnString());
     client.connect();
 
 	async.auto({

@@ -56,7 +56,7 @@ function getData(params, callback) {
                     return callback(new Error('notexistingdata'));
                 }
                 var sql = 'SELECT ST_SRID(the_geom) as srid FROM ' + aggregateLayerRef.layer.split(':')[1] + ' LIMIT 1';
-                var client = conn.getPgDb();
+                var client = conn.getPgDataDb();
                 
                 client.query(sql, function(err, resls) {
                     if (err)
@@ -73,7 +73,7 @@ function getData(params, callback) {
                 }
                 var unitLayerName = areaId != -1 ? (unitLayerRef.layer.split(':')[1]) : ('up.base_user_' + params['userId'] + '_loc_' + locationId);
                 var unitLayerGid = areaId != -1 ? ('"'+unitLayerRef.fidColumn+'"') : 'gid'
-                var processClient = new pg.Client(conn.getConnString());
+                var processClient = new pg.Client(conn.getPgConnString());
                 processClient.connect();
                 var aggregateLayerRef = results.aggregateLayer.layerRef
                 var sql = 'SELECT COUNT(DISTINCT a."'+aggregateLayerRef.fidColumn+'") as cnt'

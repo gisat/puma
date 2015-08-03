@@ -8,21 +8,21 @@ var fs = require('fs');
 function exporter(params, req, res, callback) {
     //var fullUrl = req.protocol + "://" + req.get('host') + req.url;
 
-    var fullUrl = require('../common/conn').getLocalAddress()+req.url;
+    var fullUrl = "http://"+require('../common/conn').getRemoteAddress()+req.url;
     var url = fullUrl.replace(params.download ? 'print' : 'image', 'printpublic');
     url += params.download ? '&fordownload=1' : '';
-    console.log(url)
-    var imgId = 'snap_' + generateId() + '.png'
+    var imgId = 'snap_' + generateId() + '.png';
     var outFile = 'tmp/' + imgId;
     var isWin = !!process.platform.match(/^win/);
-    var phantomName = isWin ? 'phantomjs.exe'  : '/home/gnode/install/phantomjs/bin/phantomjs'
-    cp.execFile(phantomName, ['--ssl-protocol=tlsv1', 'rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) { // --debug=true
-        console.log(err);
-        console.log(stdout);
-        console.log(stderr);
+    var phantomName = isWin ? 'phantomjs.exe'  : 'phantomjs';
+    console.log("URL: ",url," outFile: ",outFile);
+    cp.execFile(phantomName, ['--ssl-protocol=tlsv1 --debug=true', 'rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
+        console.log("err: ",err);
+        console.log("stdout: -------------------------\n",stdout,"\n---------------------------------\n");
+        console.log("stderr: ",stderr);
         
         if (params['download']) {
-            res.downFile = [outFile, imgId]
+            res.downFile = [outFile, imgId];
             return callback(err);
         }
         else {

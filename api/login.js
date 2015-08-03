@@ -26,7 +26,7 @@ function login(params,req,res,callback) {
             }
         }
         if (!ssid) {
-            return callback(new Error('badLogin'))
+            return callback(new Error('badLogin'));
         }
         res.cookie('ssid',ssid,{httpOnly: true})
         callback();
@@ -45,28 +45,35 @@ function logout(params,req,res,callback) {
 var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
     
     var options1 = {
-        host: conn.getGeonodeServer(),
-        path: '/',
+        host: conn.getGeonodeHost(),
+        path: conn.getGeonodeHome()+'/',
         method: 'GET'
     };      
     
     conn.request(options1,null,function(err,output,res1) {
         if (err) return generalCallback(err);
-        var csrf = res1.headers['set-cookie'][0].split(';')[0].split('=')[1];
-        var postData = {
-                username: params.username,
-                password: params.password,
-                csrfmiddlewaretoken: csrf,
-                next: ''
-            };
-        if (isLogin) {
+		var qsVars = [];
+		res1.headers['set-cookie'][0].split(';').forEach(function(element, index, array){
+			var pair = element.split("=");
+			var key = decodeURIComponent(pair.shift()).trim();
+			var value = decodeURIComponent(pair.join("=")).trim();
+			qsVars[key] = value;
+		});
+        var csrf = qsVars['csrftoken'];
+		var postData = {
+			username: params.username,
+			password: params.password,
+			csrfmiddlewaretoken: csrf,
+			next: ''
+		};
+        if(isLogin){
             postData['username'] = params.username;
             postData['password'] = params.password;
         }
         postData = querystring.stringify(postData);
         var options2 = {
-            host: conn.getGeonodeServer(),
-            path: isLogin ? '/accounts/login/' : '/accounts/logout/',
+	        host: conn.getGeonodeHost(),
+            path: isLogin ? conn.getGeonodePath()+'/account/login/' : conn.getGeonodePath()+'/account/logout/',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -74,11 +81,11 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
                 'Cookie':'csrftoken='+csrf
             }
         };
-        conn.request(options2,postData,function(err,output,res2) {
+		conn.request(options2,postData,function(err,output,res2) {
             if (err) return generalCallback(err);
             return specificCallback(res2);
-        })
-    })
+        });
+    });
     
 }
 

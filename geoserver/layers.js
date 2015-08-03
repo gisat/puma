@@ -52,7 +52,7 @@ var removeLayerDbInternal = function(areaLayerRef,callback) {
     var tableName = 'views.base_'+areaLayerRef['_id'];
     var sql = 'DROP VIEW IF EXISTS '+viewName+';';
     sql += 'DROP TABLE IF EXISTS '+tableName+';'
-    var client = conn.getPgDb();
+    var client = conn.getPgDataDb();
     client.query(sql,function(err,results) {
         if (err) return callback(err);
         callback(null);
@@ -66,7 +66,7 @@ function checkUniqueId(layerRef,callback) {
     
     var sql = 'ALTER TABLE '+from+' DROP CONSTRAINT IF EXISTS '+fromWithoutSchema+'_unique;'
     sql += 'ALTER TABLE '+from+' ADD CONSTRAINT '+fromWithoutSchema+'_unique UNIQUE("'+layerRef.fidColumn+'");'
-    var client = conn.getPgDb();
+    var client = conn.getPgDataDb();
     //console.log(sql)
     client.query(sql,function(err) {
         if (err) return callback(new Error('IDs not unique'));
@@ -147,7 +147,7 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
     sql += '; COMMIT;'; 
     //console.log(sql);
     console.log('geoserver/layers.js start '+sql);
-    var client = conn.getPgDb();
+    var client = conn.getPgDataDb();
     client.query(sql,function(err,results) {
         if (err) {
             client.query('ROLLBACK;',function() {
@@ -163,8 +163,8 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 }
 
 function changeLayerGeoserver(layerId, method, callback) {
-    var username = 'tomasl84';
-    var password = 'lou840102';
+    var username = 'admin';
+    var password = 'GeoNodeGeoServerNr2';
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {
         'Content-type': 'application/json',
@@ -172,7 +172,7 @@ function changeLayerGeoserver(layerId, method, callback) {
     };
     var name = 'layer_' + layerId;
 
-    var path = method != 'DELETE' ? '/geoserver_i2/rest/workspaces/puma/datastores/views/featuretypes' : '/geoserver_i2/rest/layers'
+    var path = method != 'DELETE' ? conn.getGeoserver2Path()+'/rest/workspaces/puma/datastores/views/featuretypes' : conn.getGeoserver2Path()+'rest/layers'
     var data = null;
 
     if (method == 'POST') {
@@ -195,10 +195,10 @@ function changeLayerGeoserver(layerId, method, callback) {
     console.log("geoserver/layers.js method: " + method)
 
     var options = {
-        host: conn.getBaseServer(),
+        host: conn.getGeoserver2Host(),
         path: path,
         headers: headers,
-        port: conn.getPort(),
+        port: conn.getgeoserver2Port(),
         method: method
     };
     conn.request(options, data, function(err, output, resl) {

@@ -21,6 +21,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
                         if (err)
                             return callback(err);
                         if (!resls.length) {
+							console.log("LAYERREF missing 1||||| areaTemplate: "+flTemplate+" | location: "+location+" | year: "+year);
                             return callback(new Error('missinglayerref'));
                         }
                         return mapCallback(null, resls[0]);
@@ -46,8 +47,9 @@ function check(analysisObj, performedAnalysisObj, callback) {
                         for (var i = 0; i < attrSets.length; i++) {
                             var attrSet = attrSets[i];
                             if (!map[attrSet]) {
+								console.log("LAYERREF missing 2||||| areaTemplate: "+featureLayerTemplate+" | location: "+location+" | year: "+year+" | analysisObj.attributeSets: "+analysisObj.attributeSets+" | attrSet: "+attrSet);
                                 return callback(new Error('missinglayerref'))
-                            }
+                            } else console.log("ok\n");
                         }
                         return mapCallback(null, resls[0]);
                     });
@@ -64,7 +66,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 
 function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) {
     //console.log(analysisObj,performedAnalysisObj)
-    var client = new pg.Client(conn.getConnString());
+    var client = new pg.Client(conn.getPgDataConnString());
     client.connect();
 
 
@@ -123,7 +125,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				client.query(currentSql, function(err, resls) {
 					if (err)
 						return asyncCallback("SQL query error ("+err+")");
-					console.log('a');
+					console.log("analysis/math.js currentSql: a");
 					crud.create('layerref', {
 						location: location,
 						year: year,

@@ -46,7 +46,7 @@ function getLocationConf(params, req, res, callback) {
                     locToQuery.push({location: locs[i]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId})    
                 }
             }
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             async.forEach(locToQuery, function(item, eachCallback) {
                 var datasetId = item.dataset;
                 delete item.dataset;
@@ -315,7 +315,7 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                 }
                 sql += ' ORDER BY idx ASC'
-                var client = conn.getPgDb();
+                var client = conn.getPgDataDb();
                 client.query(sql, {}, function(err, resls) {
 
                     if (err)
@@ -423,7 +423,7 @@ function getThemeYearConf(params, req, res, callback) {
                         sql += getFilterSql(filter.filters, 'b.');
                     }
                     sql += ' GROUP BY (a.gid)';
-                    var client = conn.getPgDb();
+                    var client = conn.getPgDataDb();
                     client.query(sql, {}, function(err, resls) {
                         
                         if (err)

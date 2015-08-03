@@ -26,13 +26,13 @@ function shutdown(params,req,res,callback) {
 function exporter(params, req, res, callback) {
     var isWin = !!process.platform.match(/^win/);
     if (isWin)
-    cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+conn.getLocalAddress()+'/public/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+    cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+conn.getLocalAddress()+'/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
         console.log("api/chart.js stdout: " + stdout);
         console.log("api/chart.js stderr: " + stderr);
         return callback(err)
     })
     else
-    cp.exec('phantomjs rasterize.js http://'+conn.getLocalAddress()+'/public/index3.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+    cp.exec('phantomjs rasterize.js http://'+conn.getLocalAddress()+'/index3.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
         console.log("api/chart.js stdout: " + stdout);
         console.log("api/chart.js stderr: " + stderr);
         return callback(err);

@@ -31,7 +31,7 @@ function initServer(err) {
 	
 	#### /tool/* static routing
 	RedirectMatch 301 ^/tool$ /tool/
-	RedirectMatch 301 ^/catalogue/(.*)$ /geonode/catalogue/$1
+	RedirectMatch 301 ^/catalogue/(.*)$ /catalogue/$1
 
 	AliasMatch ^/tool/$ /var/www/puma-app/public/data-exploration.html
 	Alias /tool/css /var/www/puma-app/public/css

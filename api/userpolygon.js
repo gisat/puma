@@ -26,7 +26,7 @@ function userPolygon(params,req,res,callback) {
                 if (!conf) {
                     crud.create('userpolygon',{location:loc,user:userId,analysisMap:{},geometries:{},analysisCreated:{},viewsCreated:[],maxGid:0},{userId: userId},function(err,resl) {
                         var sql = 'CREATE TABLE up.base_user_'+userId+'_loc_'+loc+' (gid integer,name varchar,the_geom geometry,centroid geometry,area real,length real,extent box2d,dependingid bigint,fromdistance real);';
-                        var client = conn.getPgDb();
+                        var client = conn.getPgDataDb();
                         client.query(sql,function(err,results) {
                             if (err) return callback(err);
                             asyncCallback(null,resl);
@@ -61,7 +61,7 @@ function userPolygon(params,req,res,callback) {
                 sql += tableSql;
             }
             console.log(sql)
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             client.query(sql, function(err, results) {
                 if (err)
                     return callback(err);
@@ -133,7 +133,7 @@ function userPolygon(params,req,res,callback) {
                rowSql = rowSql.replace(new RegExp('#geom#','g'),geomSql);
                sql += rowSql;
            }
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             client.query(sql, function(err, results) {
                 if (err) return callback(err);
                 var result = {
@@ -179,7 +179,7 @@ function checkAnalysis(params,req,res,callback) {
     var years = JSON.parse(params['years']);
     var analysis = JSON.parse(params['analysis']);
     var confToCheck = [];
-    var client = conn.getPgDb();
+    //var client = conn.getPgDataDb(); /// JJJJJ nepouzito?
     for (var i=0;i<years.length;i++) {
         for (var j=0;j<analysis.length;j++){
             var year = years[i];
@@ -200,7 +200,7 @@ function checkAnalysis(params,req,res,callback) {
             })
         },
         hasBase: function(asyncCallback) {
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             var sql = 'SELECT COUNT(*) as cnt';
             sql += ' FROM up.base_user_'+userId+'_loc_'+location;
             console.log(sql)
@@ -255,7 +255,7 @@ function checkAnalysis(params,req,res,callback) {
                 return asyncCallback(null,tablesToCreate)
             }
             
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             
             client.query(sql, function(err, resls) {
                 if (err) return callback(err);
@@ -300,7 +300,7 @@ function checkAnalysis(params,req,res,callback) {
                 sql += joins;
                 sql +=');';
             }
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             client.query(sql, function(err, resls) {
                 if (err) return callback(err);
                 asyncCallback(null);

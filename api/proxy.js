@@ -51,7 +51,10 @@ function wms(params, req, res, callback) {
     }
     if (sldId) {
         var sld = sldMap[sldId] || sldMapTemp[sldId];
-        params['SLD_BODY'] = params['REQUEST'] == 'GetMap' ? sld.sld : sld.legendSld
+		if(typeof sld == 'undefined'){
+			console.log("======= SLD ERROR. sldId: ",sldId,"\n\nsldMap:",sldMap,"\n\nsldMapTemp:",sldMapTemp);
+		}
+        params['SLD_BODY'] = params['REQUEST'] == 'GetMap' ? sld.sld : sld.legendSld;
         
         useFirst = false;
         delete params['STYLES'];
@@ -78,54 +81,62 @@ function wms(params, req, res, callback) {
     }
     if (params['REQUEST'] == 'GetFeatureInfo') {
         useFirst = false;
-        params['FORMAT'] = 'application/json'
-        params['INFO_FORMAT'] = 'application/json'
-        params['EXCEPTIONS'] = 'application/json'
+        params['FORMAT'] = 'application/json';
+        params['INFO_FORMAT'] = 'application/json';
+        params['EXCEPTIONS'] = 'application/json';
+		params['FEATURE_COUNT'] = '42';
     }
     if (params['LAYERS']) {
         params['LAYER'] = params['LAYERS'].split(',')[0];
     }
-    var path = useFirst ? '/geoserver/geonode/wms' : '/geoserver_i2/puma/wms';
-    var port = conn.getPort();
+	var host = useFirst ? conn.getGeoserverHost() : conn.getGeoserver2Host();
+    var path = useFirst ? conn.getGeoserverPath()+'/geonode/wms' : conn.getGeoserver2Path()+'/puma/wms';
+    var port = useFirst ? conn.getGeoserverPort() : conn.getGeoserver2Port();
     var method = 'POST';
     var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
     var layers = params['LAYERS'];
     var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[layers]) ? layerGroupMap[layers][style || 'def'] : '';
     
-    if (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroup!=1) {
+	
+	//console.log("================layerGroup: ", layerGroup, "\n==========layerGroupMap: ",layerGroupMap);
+	
+    if (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroup!=1){
         
         delete params['TILED'];
         //delete params['TRANSPARENT'];
         delete params['LAYER'];
         // single layer
         if (layers.search(',')<0) {
-            if (style && !layerGroup) {
-                //console.log('Add style '+layers+' '+style)
+            if(style && !layerGroup){
+                console.log('Add style '+layers+' '+style)
                 createLayerGroup(layers,style,true);
-            }
-            else {
-                //console.log('Single layer '+layers+' '+style)
-                path = '/geoserver/gwc/service/wms'
+            }else{
+                console.log('Single layer '+layers+' '+style)
+                path = conn.getGeoserverPath()+'/gwc/service/wms';
             }
         }
         // found layer group
         else if (layerGroup) {
-            //console.log('Layer group found '+layerGroup+' '+style)
+            console.log('Layer group found '+layerGroup+' '+style)
             params['LAYERS'] = layerGroup;
             params['STYLES'] = style;
-            path = '/geoserver/gwc/service/wms'
+            path = conn.getGeoserverPath()+'/gwc/service/wms';
         }
         // layer group to be created
         else {
-            //console.log('Creating group, styles: '+style)
-            createLayerGroup(layers,style)
+            console.log('Creating group, styles: '+style)
+            createLayerGroup(layers,style);
         }
         method = 'GET';
-        port = null;
+        port = null; //// JJJJJ Proc to?
         
-    }
-    var username = useFirst ? 'gnode' : 'tomasl84';
-    var password = useFirst ? 'geonode' : 'lou840102';
+    }else{
+		console.log("useFirst: ", useFirst, "params[request]:",params['request']);
+	}
+	
+	
+    var username = useFirst ? 'admin' : 'admin';
+    var password = useFirst ? 'GeoNodeGeoServerNr1' : 'GeoNodeGeoServerNr2';
     
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {};
@@ -140,15 +151,13 @@ function wms(params, req, res, callback) {
     if (method=='GET') {
         var queryParams = '?'+querystring.stringify(params);
         path += queryParams;
-    }
-
-    else {
+    }else{
         headers['Content-Type'] = 'application/x-www-form-urlencoded';
         
         data = querystring.stringify(params)
     }
     var options = {
-        host: conn.getBaseServer(),
+        host: host,
         port: port,
         timeout: 60000,
         //path: '/geoserver/geonode/wms?'+querystring.stringify(params),
@@ -164,10 +173,11 @@ function wms(params, req, res, callback) {
     }
     if (params['REQUEST'] == 'GetLegendGraphic') {
     }
-    var time = new Date().getTime();;
+    var time = new Date().getTime();
+	console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
     conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
         if (err) {
-            console.log(err)
+            console.log("\nProxy error: ", err, "options: ", options);
             return callback(err);
         }
         //console.log(new Date().getTime()-time);
@@ -176,8 +186,8 @@ function wms(params, req, res, callback) {
             //console.log(output.length);
             
         }
-        if (output.length<10000) {
-            //console.log(output)
+        if (output.length<10000 && (output.indexOf("PNG") == -1 || output.indexOf("PNG") > 8)) {
+            console.log("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options,"\n\nDATA: "+data);
         }
         res.data = output;
         if (params['REQUEST'] == 'GetFeatureInfo') {
@@ -328,7 +338,7 @@ function saveSld(params, req, res, callback) {
             var year = JSON.parse(params['years'])[0];
             var sql = 'SELECT COUNT(*),ST_XMax(#bbox#)-ST_XMin(#bbox#) as width,ST_YMax(#bbox#)-ST_YMin(#bbox#) as height FROM views.layer_'+results.layerRef;
             sql = sql.replace(new RegExp('#bbox#','g'),'ST_Extent(ST_Transform(the_geom,900913))');
-            var client = conn.getPgDb();
+            var client = conn.getPgDataDb();
             client.query(sql, [], function(err, resls) {
                 if (err)
                     return callback(err);
@@ -459,8 +469,8 @@ function saveSld(params, req, res, callback) {
 
 }
 function createLayerGroup(layers,style,addStyle) {
-    var username = 'gnode';
-    var password = 'geonode';
+    var username = 'admin';
+    var password = 'GeoNodeGeoServerNr1';
     layerGroupMap[layers] = layerGroupMap[layers] || {};
     layerGroupMap[layers][style || 'def'] = 1;
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
@@ -470,16 +480,15 @@ function createLayerGroup(layers,style,addStyle) {
     };
     
     if (addStyle) {
-        var path = '/geoserver/rest/layers/' + layers + '/styles.json'
+        var path = conn.getGeoserverPath()+'/rest/layers/' + layers + '/styles.json'
         var obj = {
             style: {
                 name: style
             }
         }
         var name = 2;
-    }
-    else {
-        var path = '/geoserver/rest/layergroups.json'
+    }else{
+        var path = conn.getGeoserverPath()+'/rest/layergroups.json'
         var name = layers.substring(0, 17) + '_' + require('crypto').randomBytes(5).toString('hex')
         var obj = {
             layerGroup: {
@@ -506,17 +515,22 @@ function createLayerGroup(layers,style,addStyle) {
     var data = JSON.stringify(obj);
 
     var options = {
-        host: conn.getBaseServer(),
+        host: conn.getGeoserverHost(),
         path: path,
         headers: headers,
-        port: conn.getPort(),
+        port: conn.getGeoserverPort(),
         method: 'POST'
     };
+	console.log("################ ### ### ### ### proxy.createLayerGroup options: ",options,"\n####### data:", data);
     conn.request(options, data, function(err, output, resl) {
-        
-        layerGroupMap[layers][style || 'def'] = name;
-        crud.create('layergroupgs',{name:name,layers:layers,style:style || 'def'},function(){});
-    })
+		if(err){
+			console.log("\n\n------ LayerGroup not created! -------\n\nError:",err);
+		}else{
+			console.log("####### output: ", output);
+	        layerGroupMap[layers][style || 'def'] = name;
+	        crud.create('layergroupgs',{name:name,layers:layers,style:style || 'def'},function(){});
+		}
+    });
     
 }
 function setJsid(newJsid) {

@@ -1,12 +1,12 @@
 var page = require('webpage').create(),
     system = require('system'),
     address, output, size;
-console.log('running')
 if (system.args.length < 3 || system.args.length > 5) {
     console.log('Usage: rasterize.js URL filename [paperwidth*paperheight|paperformat] [zoom]');
     console.log('  paper (pdf output) examples: "5in*7.5in", "10cm*20cm", "A4", "Letter"');
     phantom.exit(1);
 } else {
+	console.log("\n\n======================================================\nrasterize.js...",system.args.join(" "));
     address = system.args[1];
     output = system.args[2];
     page.viewportSize = { width: 575, height: 400 };
@@ -28,23 +28,43 @@ if (system.args.length < 3 || system.args.length > 5) {
          */
        
         if (msg === 'loadingdone') {
+			console.log('loading done!');
             page.render(output);
             phantom.exit();
-        }
+        }else{
+			console.log("probubl: "+msg);
+		}
 
     };
-    console.log(address)
+	
+//	page.onResourceRequested = function (request) {
+//		console.log('~~~~~~~| ' + request.method + " " + request.url);
+//	};
+//
+//	page.onResourceReceived = function(response) {
+//		console.log('~~~~~~~~~~response~~~~~~~| '+response.url);
+//	};
+	
+	
+    console.log("ADDRESS: ",address);
     page.open(address, function (status) {
+		console.log("[STATUS:"+status+"]");
         if (status !== 'success') {
             console.log('Unable to load the address!');
             phantom.exit(1);
         } else {
+			
+			window.setInterval(function(){
+				console.log(".");
+			},1000);
+			
+			
             window.setTimeout(function () {
-                console.log('trying');
-                console.log(output)
+				//console.log("CONTENT: ",page.content);
+                console.log("OUTPUT: ",output)
                 page.render(output);
                 phantom.exit();
-            }, 5000);
+            }, 20000);
         }
     });
 }

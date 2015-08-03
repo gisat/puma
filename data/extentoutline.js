@@ -76,7 +76,7 @@ function getChart(params, callback) {
                     sql += ' WHERE a.gid = ' + item.item.gid;
                     sql += ' ORDER BY name';
 
-                    var client = conn.getPgDb();
+                    var client = conn.getPgDataDb();
                     client.query(sql, {}, function(err, results) {
 
                         if (err)

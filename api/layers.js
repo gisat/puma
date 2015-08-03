@@ -48,7 +48,7 @@ function gatherLayerData(featureInfo, callback) {
             async.map(confs, function(item, eachCallback) {
                 var sql = 'SELECT * FROM views.' + item.layerName + ' WHERE gid=' + item.gid;
                 //console.log(sql)
-                var client = conn.getPgDb();
+                var client = conn.getPgDataDb();
                 client.query(sql, [], function(err, resls) {
                     if (err)
                         return callback(err);
@@ -163,8 +163,8 @@ function getLayers(params, req, res, callback) {
     };
 
     var options = {
-        host: conn.getGeonodeServer(),
-        path: '/data/acls',
+        host: conn.getGeonodeHost(),
+        path: conn.getGeonodePath()+'/layers/acls',
         headers: headers,
         method: 'GET'
     };
@@ -289,9 +289,9 @@ function getLayerDetails(params, req, res, callback) {
     };
     postData = querystring.stringify(postData);
     var options = {
-        host: conn.getBaseServer(),
-        port: conn.getPort(),
-        path: '/geoserver/geonode/ows?' + postData,
+        host: conn.getGeoserverHost(),
+        port: conn.getGeoserverPort(),
+        path: conn.getGeoserverPath()+'/geonode/ows?' + postData,
         method: 'GET'
                 ,
         headers: {
@@ -520,9 +520,10 @@ var getCls = function(layerRef) {
 
 
 function getMetadata(params, req, res, callback) {
-    var client = conn.getPgDb();
+	/// JJJ nebude na to mít pycsw nějaké lepší API než SQL?
+    var client = conn.getPgDataDb();
     var layers = "'" + JSON.parse(params['layers']).join("','") + "'";
-    var sql = 'SELECT m.data,m.id,l.temporal_extent_start,l.temporal_extent_end FROM maps_layer l,metadata m WHERE l.uuid = m.uuid AND l.typename IN (' + layers + ')'
+    var sql = 'SELECT m.data,m.id,l.temporal_extent_start,l.temporal_extent_end,l.name FROM maps_layer l,metadata m WHERE l.uuid = m.uuid AND l.typename IN (' + layers + ')'
     //console.log(sql);
     client.query(sql, function(err, resls) {
         if (err)
@@ -559,7 +560,8 @@ function getMetadata(params, req, res, callback) {
             if (temporalTo) temporal += ' - '+temporalTo.getFullYear();
             obj.temporal = temporal;
             
-            obj.address = config.geonetworkServer+'/srv/en/metadata.show?id='+resls.rows[i].id+'&currTab=ISOAll';
+            //obj.address = config.geonetworkServer+'/srv/en/metadata.show?id='+resls.rows[i].id+'&currTab=ISOAll';
+			obj.address = '/layers/geonode%3A'+resls.rows[i].name;
             retData.push(obj);
             
         }
@@ -576,20 +578,19 @@ function getMetadata(params, req, res, callback) {
 function getSymbologiesFromServer(params, req, res, callback) {
     var opts = {
         symbologiesServer: function(asyncCallback) {
-            var username = 'gnode';
-            var password = 'geonode';
+            var username = 'admin';
+            var password = 'GeoNodeGeoServerNr1';
             var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
             var headers = {
                 'Content-type': 'application/json',
                 'Authorization': auth
             };
 
-            var path = '/geoserver/rest/styles.json'
             var options = {
-                host: conn.getBaseServer(),
-                path: path,
+                host: conn.getGeoserverHost(),
+				port: conn.getGeoserverPort(),
+				path: conn.getGeoserverPath()+'/rest/styles.json',
                 headers: headers,
-                port: conn.getPort(),
                 method: 'GET'
             };
             conn.request(options, null, function(err, output, resl) {

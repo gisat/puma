@@ -6,7 +6,7 @@ var us = require('underscore')
 
 function getData(params, callback) {
 
-    var client = conn.getPgDb();
+    var client = conn.getPgDataDb();
 
     var areas = JSON.parse(params['areas']);
     var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];

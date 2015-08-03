@@ -40,15 +40,22 @@ function auth(req, res, next) {
     };
 
     var options = {
-        host: conn.getGeonodeServer(),
-        path: '/data/acls',
+        host: conn.getGeonodeHost(),
+        path: conn.getGeonodePath()+'/layers/acls',
         headers: headers,
         method: 'GET'
     };
     conn.request(options, null, function(err, output) {
-        if (err)
+        if (err){
             return next(err);
-        var obj = JSON.parse(output);
+		}
+		try{
+	        var obj = JSON.parse(output);
+		}catch(e){
+			if(typeof obj !== 'object'){
+				throw "Failed to parse JSON <geonode>/layers/acls. Output: "+output;
+			}
+		}
         if (!obj.name) {
             return next();
         }
@@ -60,10 +67,13 @@ function auth(req, res, next) {
 
 var fetchUserInfo = function(userName, req, sessionId, next) {
     
-    var client = conn.getPgDb();
-    var sql = 'SELECT u.id, u.username, g.name FROM auth_user u'
-    sql += ' LEFT JOIN auth_user_groups ug ON ug.user_id = u.id LEFT JOIN auth_group g ON ug.group_id = g.id WHERE u.username = $1';
-    client.query(sql, [userName], function(err, result) {
+    var client = conn.getPgGeonodeDb();
+    var sql = 'SELECT p.id, p.username, g.name ';
+		sql += 'FROM people_profile p ';
+		sql += 'LEFT JOIN people_profile_groups pg ON pg.profile_id = p.id ';
+		sql += 'LEFT JOIN auth_group g ON pg.group_id = g.id ';
+		sql += 'WHERE p.username = $1';
+	client.query(sql, [userName], function(err, result) {
 
         if (err) {
             return next(err);

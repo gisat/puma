@@ -69,7 +69,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 
 function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) {
     //console.log(analysisObj,performedAnalysisObj)
-    var client = new pg.Client(conn.getConnString());
+    var client = new pg.Client(conn.getPgDataConnString());
     client.connect();
 
 

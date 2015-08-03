@@ -12,10 +12,9 @@ Ext.define('PumaMng.controller.Login',{
         
     onLogin: function() {
         var isAdmin = false;
-        if (Config.auth && Ext.Array.contains(Config.auth.groups,'admingroup')) {
-                isAdmin = true;
-        }
-        else {
+        if(Config.auth && Ext.Array.contains(Config.auth.groups,'admingroup')){
+            isAdmin = true;
+        }else{
             Ext.ComponentQuery.query('maintabpanel')[0].setActiveTab(0);
         }
         var tabs = Ext.ComponentQuery.query('maintabpanel panel')

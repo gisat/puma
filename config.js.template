@@ -1,9 +1,19 @@
 module.exports = {
-	connString      : "postgres://geonode:VQq2xbJw@192.168.2.8:5432/geonode",
+	pgConnString    : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode_data",
+	pgGNConnString  : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode",
 	mongoConnString : "mongodb://192.168.2.13:27017/test",
-	localAddress    : "192.168.2.196:3000",
-	baseServer      : "192.168.2.8",
-	geonodeServer   : "192.168.2.8",
-        geonetworkServer: "http://192.168.2.8/geonetwork",
-	port            : 8080
+
+	localAddress    : "192.168.2.196:3000/tool",
+
+	geoserverHost   : "127.0.0.1",
+	geoserverPort   : 8080,
+	geoserverPath   : "/geoserver",
+
+	geoserver2Host  : "127.0.0.1",
+	geoserver2Port  : 8080,
+	geoserver2Path  : "/geoserver_i2",
+
+	geonodeHost     : "192.168.2.8",
+	geonodePath     : "",
+    geonetworkServer: "http://192.168.2.8/geonetwork"
 };

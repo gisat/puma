@@ -34,7 +34,7 @@ function remove(params,req,res,callback) {
             })
         }],
         deleteLayers: ['layers',function(asyncCallback,results) {
-            var client = new pg.Client(conn.getConnString());
+            var client = new pg.Client(conn.getPgDataConnString());
             client.connect();
             var sql = '';
             var layerNames = [];

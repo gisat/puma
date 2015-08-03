@@ -153,7 +153,7 @@ Ext.define('PumaMain.controller.Chart', {
             method: 'POST',
             success: function(response) {
                 var id = JSON.parse(response.responseText).data;
-                var url = window.location.origin + '/public/index2.html?id=' + id;
+                var url = window.location.origin + '/index2.html?id=' + id;
                 //console.log(url);
             }
         })
@@ -895,11 +895,9 @@ Ext.define('PumaMain.controller.Chart', {
 
 
     },
-    onUrlCallback: function(id, isPrint) {
-        if (true) {
-            var url = (window.location.origin + window.location.pathname).split('public')[0];
-
-            
+    onUrlCallback: function(id, isPrint){
+        if(true){
+            var url = (window.location.origin + window.location.pathname).split('public')[0]; /// JJJJ co s tim? Public uz neni.
         }
         if (isPrint) {
             url = url + 'print/index3.html?id=' + id;
@@ -927,7 +925,6 @@ Ext.define('PumaMain.controller.Chart', {
             })
             var snapshotPanel = Ext.ComponentQuery.query('chartbar #screenshotpanel')[0];
             snapshotPanel.show();
-            debugger;
             Ext.StoreMgr.lookup('screenshot').loadData([screenshot],true);
             var img = Ext.DomQuery.select('img[src="'+url+'"]');
             Ext.get(img[0]).on('load',function() {
