@@ -37,8 +37,7 @@ Ext.define('PumaMain.controller.Help', {
             e.stopPropagation();
             var res = PumaMain.controller.Help.getHelpId(el);
             if (res && res.helpId) {
-                window.open('https://puma.worldbank.org/help/'+res.helpId+'.html', "_blank");
-                //window.open('help/'+res.helpId+'.html', "_blank")
+                window.open('/help/'+res.helpId+'.html', "_blank");
             }
             else {
                 //window.open('help/PUMA webtool help.html', "_blank")
