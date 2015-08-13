@@ -240,6 +240,10 @@ function saveSld(params, req, res, callback) {
             normAttrName = 'as_'+normObj.as+'_attr_'+normObj.attr;
         }
     }
+	
+	legendSld = legendSld.replace(/<sld\:Name>#val_(\d+)# \- #val_(\d+)#<\/sld\:Name>/g, "<sld:Name>#val_$1#—#val_$2#</sld:Name>");
+	legendSld = legendSld.replace(/<sld\:Name>#val_(\d+)# &gt;<\/sld\:Name>/g, "<sld:Name>&gt; #val_$1#</sld:Name>");
+
     var opts = {
         attrConf: function(asyncCallback) {
             if (!params['attrs']) {
