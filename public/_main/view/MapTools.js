@@ -81,6 +81,7 @@ Ext.define('PumaMain.view.MapTools', {
             xtype: 'button',
             enableToggle: false,
             itemId: 'snapshot',
+            hidden: true,
             helpId: 'Creatingsnapshots',
             text: 'Snapshot',
             iconAlign: 'top',

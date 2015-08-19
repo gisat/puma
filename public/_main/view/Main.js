@@ -141,7 +141,6 @@ Ext.define('PumaMain.view.Main', {
                                 flex: 1,
                                 //width: 1,
                                 //height: 1,
-                                //html: 'Ahoj',
                                 hidden: true,
                                 id: 'map2'}]
                     }

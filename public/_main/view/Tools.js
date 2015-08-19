@@ -18,6 +18,48 @@ Ext.define('PumaMain.view.Tools', {
         this.items = [
          {
             xtype: 'panel',
+            title: 'User selection',
+            itemId: 'selcolor',
+            helpId: 'Multipleselectionshighlightedbyc',
+            header: {height: 60},
+            collapsed: true,
+            tools: [{
+               type: 'unselect',
+               cls: 'unselect',
+               tooltip: 'Unselect',
+               itemId: 'unselect'
+            },{
+               type: 'unselectall',
+               cls: 'unselectall',
+               tooltip: 'Unselect all',
+               itemId: 'unselectall'
+            },{
+               type: 'detach',
+               cls: 'detach',
+               tooltip: 'Detach',
+               itemId: 'undock'
+            }],
+            layout: {
+                type: 'hbox',
+                align: 'middle'
+            },
+            height: 72,
+            items: [{
+                    xtype: 'colorpicker',
+                    fieldLabel: 'CP',
+                    value: 'ff4c39',
+                    itemId: 'selectcolorpicker',
+                    height: 22,
+                    margin: '0 10',
+                    flex: 1,
+                    //width: 120,
+                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
+                
+            }]
+             
+             
+         },{
+            xtype: 'panel',
             collapsed: false,
             tools: [{
                 type: 'poweron',
@@ -98,13 +140,11 @@ Ext.define('PumaMain.view.Tools', {
                itemId: 'undock'
             }],
             layout: {
-                type: 'vbox',
-                align: 'stretch'
+                type: 'auto'
                 
             },
             itemId: 'codefilters',
             border: false,
-            
             //hidden: true,
             helpId: 'Filteringanalyticalunits',
 //            buttons: [{
@@ -175,50 +215,8 @@ Ext.define('PumaMain.view.Tools', {
             displayField: 'name',
             height: 340
             //,maxHeight: 500
-        },
-        {
-            xtype: 'panel',
-            title: 'Selection color',
-            itemId: 'selcolor',
-            helpId: 'Multipleselectionshighlightedbyc',
-            header: {height: 60},
-            collapsed: true,
-            tools: [{
-               type: 'unselect',
-               cls: 'unselect',
-               tooltip: 'Unselect',
-               itemId: 'unselect'
-            },{
-               type: 'unselectall',
-               cls: 'unselectall',
-               tooltip: 'Unselect all',
-               itemId: 'unselectall'
-            },{
-               type: 'detach',
-               cls: 'detach',
-               tooltip: 'Detach',
-               itemId: 'undock'
-            }],
-            layout: {
-                type: 'hbox',
-                align: 'middle'
-            },
-            height: 72,
-            items: [{
-                    xtype: 'colorpicker',
-                    fieldLabel: 'CP',
-                    value: 'ff4c39',
-                    itemId: 'selectcolorpicker',
-                    height: 22,
-                    margin: '0 10',
-                    flex: 1,
-                    //width: 120,
-                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
-                
-            }]
-             
-             
-         },{
+        }
+        ,{
             xtype: 'maptools',
             collapsed: true,
             itemId: 'maptools',

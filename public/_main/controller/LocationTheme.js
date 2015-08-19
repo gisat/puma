@@ -117,16 +117,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
         attrStore.sorters.clear();
 //        
         attrStore.sort([function(a,b) {
-            var arr = [407,406,408,409,410];
-            arr.reverse();
-                    var idx1 = Ext.Array.indexOf(arr,a.get('_id'))
-                    var idx2 = Ext.Array.indexOf(arr,b.get('_id'))
-                    if (idx1 == idx2) {
-                        var i1 = Ext.Array.indexOf(attributes,a.get('_id'));
-                        var i2 = Ext.Array.indexOf(attributes,b.get('_id'));
-                        return i1 > i2 ? 1 : -1;
-                    }
-                    return idx1<idx2 ? 1 : -1;
+//            var arr = [407,406,408,409,410];
+//            arr.reverse();
+                    var idx1 = Ext.Array.indexOf(attributes,a.get('_id'));
+                    var idx2 = Ext.Array.indexOf(attributes,b.get('_id'));
+                    return idx1>idx2 ? 1 : -1;
         }
         ]
         )
@@ -800,6 +795,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 type: 'selectedareas',
                 name: 'Selected areas',
                 sortIndex: 0,
+                cls: 'nodehidden',
                 checked: false,
                 leaf: true
             }
@@ -807,12 +803,14 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 type: 'selectedareasfilled',
                 name: 'Selected areas filled',
                 sortIndex: 0,
+                cls: 'nodehidden',
                 checked: true,
                 leaf: true
             }
             areaLayerNode = {
                 type: 'areaoutlines',
                 sortIndex: 1,
+                cls: 'nodehidden',
                 name: 'Area outlines',
                 checked: false,
                 leaf: true
@@ -972,10 +970,11 @@ Ext.define('PumaMain.controller.LocationTheme', {
                     margin: 2
                 },
                 xtype: 'container',
+                width: 214,
                 attrId: attr,
                 //values: values,
                 attrCode: code,
-                margin: (i==attrs.length-1) ? '8 8 36 8' : 8,
+                margin: (i==attrs.length-1) ? '8 8 22 8' : 8,
                 //padding: 8,
                 items: [{
                     xtype: 'component',
@@ -1102,6 +1101,8 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (!this.initialized) {
             Ext.resumeLayouts(true);
             this.initialized = true;
+            
+            Ext.ComponentQuery.query('toolspanel #selcolor')[0].collapse();
         }
         
         this.getController('DomManipulation').deactivateLoadingMask();

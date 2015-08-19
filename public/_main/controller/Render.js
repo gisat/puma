@@ -258,6 +258,7 @@ Ext.define('PumaMain.controller.Render', {
         Ext.widget('toolspanel',{
             renderTo: 'app-tools-accordeon'
         })
+        
         Ext.widget('chartbar',{
             renderTo: 'app-reports-accordeon',
             helpId: 'Modifyingchartpanel'

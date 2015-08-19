@@ -984,7 +984,7 @@ Ext.define('PumaMain.controller.Layers', {
             }
             else {
                 legendRules.push(new OpenLayers.Rule({
-                    name: 'No data',
+                    name: 'No data (try another year, unit level)',
                     symbolizer: {
                         'Polygon': new OpenLayers.Symbolizer.Polygon({fillColor: '#bbbbbb', strokeColor: '#000000', strokeWidth: 1})
                     }

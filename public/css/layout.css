@@ -270,8 +270,7 @@ strong {
 		
 		/* Intro */
 		#content-intro {
-                        background-color : #003399;
-			background-color : rgba(0, 51, 153, .7);
+			background-color : rgba(116,184,203,.7);;
 			color            : #fff;
 			top              : 140px;
 			padding          : 20px;
@@ -311,7 +310,7 @@ strong {
 		#toolbar {
 			width            : 100%;
 			height           : 90px;
-			background-color : #003399;
+			background-color : #74B8CB;
 			position         : absolute;
 			top              : 0;
 			left             : 0;
@@ -406,7 +405,7 @@ strong {
 		font-family      : "Open sans";
 		height           : 40px;
 		line-height      : 40px;
-		background-color : #003399;
+		background-color : #74B8CB;
 		color            : #999;
 		width            : 100%;
 		position         : absolute;

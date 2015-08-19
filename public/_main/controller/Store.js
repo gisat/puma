@@ -253,22 +253,6 @@ Ext.define('PumaMain.controller.Store', {
             filters: [function(rec) {
                     return false;
             }],
-//            sorters: [{
-//                sorterFn: function(o1,o2) {
-//                    var arr = [407,406,408,409,410];
-//                    var idx1 = Ext.Array.indexOf(arr,o1.get('_id'))
-//                    var idx2 = Ext.Array.indexOf(arr,o2.get('_id'))
-//                    
-//                    if (idx1>-1 || idx2>-1) {
-//                        console.log(o1,o2);
-//                    }
-//                    return idx1<idx2 ? 1 : -1;
-//                    
-//                }
-//            },{
-//                property:'_id'
-//            }]
-            
             model: 'Puma.model.Attribute'
         })
         Ext.create('Gisatlib.data.SlaveStore',{
@@ -449,6 +433,8 @@ Ext.define('PumaMain.controller.Store', {
                     name: 'Analytical units',
                     type: 'systemgroup',
                     expanded: true,
+                    hidden: true,
+                    cls: 'nodehidden',
                     checked: null
                 },{
                     name: 'Thematic maps',
@@ -461,6 +447,7 @@ Ext.define('PumaMain.controller.Store', {
                     name: 'Information layers',
                     type: 'thematicgroup',
                     expanded: true,
+                    cls:'nodehidden',
                     checked: null
                 },{
                     name: 'Background layers',
