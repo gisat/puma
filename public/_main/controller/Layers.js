@@ -266,11 +266,17 @@ Ext.define('PumaMain.controller.Layers', {
                     oneDiv+= '<p>' + r.keywords + '</p>';
                     
                     oneDiv+= '<p class="title">Producer</p>';
-                    if (r.producer!=r.contact) {
-                        oneDiv+= '<p>' + r.producer + '<br/>';    
+					oneDiv+= '<p>'
+                    if (r.organization != r.contact && r.organization != ""){
+                        oneDiv+= r.organization + '<br>';
                     }
-                    oneDiv += r.contact + '<br/>';
-                    oneDiv+= '<a target="_top" href="mailto:' + r.mail + '">' + r.mail + '</a></p>'
+					if(r.contact != null && r.contact != "" && r.contact != " "){
+						oneDiv += r.contact + '<br>';
+					}
+					if(r.mail != ""){
+	                    oneDiv+= '<a target="_top" href="mailto:' + r.email + '">' + r.email + '</a>';
+					}
+					oneDiv+= '</p>';
                     
                     oneDiv+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
                     
