@@ -278,6 +278,10 @@ Ext.define('PumaMain.controller.Layers', {
 					}
 					oneDiv+= '</p>';
                     
+					if(r.constraints_other != null && r.constraints_other != ""){
+						oneDiv += '<p>' + r.constraints_other + '</p>';
+					}
+					
                     oneDiv+= '<p>For more details see <a target="_blank" href="'+r.address+'">Complete Metadata</a></p>';
                     
                     oneDiv+= '</div>';

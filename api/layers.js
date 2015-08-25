@@ -529,6 +529,7 @@ function getMetadata(params, req, res, callback) {
 		b.metadata_xml "data", \
 		b.id, \
 		b.abstract, \
+		b.constraints_other, \
 		b.temporal_extent_start::date "temporal_extent_start", \
 		b.temporal_extent_end::date "temporal_extent_end", \
 		p.first_name, \
