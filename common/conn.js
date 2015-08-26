@@ -29,6 +29,10 @@ var pgDataConnString = config.pgDataConnString;
 var pgGeonodeConnString = config.pgGeonodeConnString;
 var mongoConnString = config.mongoConnString;
 
+function getMongoConnString() {
+    return mongoConnString;
+}
+
 function getPgDataConnString() {
     return pgDataConnString;
 }
@@ -161,9 +165,9 @@ function initGeoserver() {
 }
 
 function init(app,callback) {
-    pgDataDB = new pg.Client(pgDataConnString);
+    pgDataDB = new pg.Client(getPgDataConnString());
     pgDataDB.connect();
-    pgGeonodeDB = new pg.Client(pgGeonodeConnString);
+    pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
     pgGeonodeDB.connect();
     var reconnectCommand = null;
     
@@ -180,11 +184,11 @@ function init(app,callback) {
             if(!pgDataDB.activeQuery){
                 clearInterval(reconnectCommand);
                 pgDataDB.end();
-                pgDataDB = new pg.Client(pgDataConnString);
+                pgDataDB = new pg.Client(getPgDataConnString());
                 pgDataDB.connect();
-                console.log('Data DB reconnected');
+                console.log('Data DB reconnected ('+ pgDataDB.database +')');
             }else{
-                console.log('Data DB waiting for reconnect');
+                console.log('Data DB waiting for reconnect ('+ pgDataDB.database +')');
             }
         },2000);
     },Math.round(1000*60*60*5.9));
@@ -197,11 +201,11 @@ function init(app,callback) {
             if(!pgGeonodeDB.activeQuery){
                 clearInterval(reconnectCommand);
                 pgGeonodeDB.end();
-                pgGeonodeDB = new pg.Client(pgGeonodeConnString);
+                pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
                 pgGeonodeDB.connect();
-                console.log('Geonode DB reconnected');
+                console.log('Geonode DB reconnected ('+ pgGeonodeDB.database +')');
             }else{
-                console.log('Geonode DB waiting for reconnect');
+                console.log('Geonode DB waiting for reconnect ('+ pgGeonodeDB.database +')');
             }
         },2000);
     },Math.round(1000*60*60*5.42));
@@ -258,7 +262,8 @@ module.exports = {
     getNextId: getNextId,
     getLocalAddress: getLocalAddress,
 	getRemoteAddress: getRemoteAddress,
-
+	
+	getMongoConnString: getMongoConnString,
 	getPgDataConnString: getPgDataConnString,
     getPgGeonodeConnString: getPgGeonodeConnString,
 
