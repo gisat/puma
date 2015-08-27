@@ -60,7 +60,7 @@ module.exports = function(app) {
         })
     })
     
-    app.del('/rest/:objType/:objId',function(req,res,next) {
+    app.delete('/rest/:objType/:objId',function(req,res,next) {
         crud.remove(req.params.objType,{_id: parseInt(req.params.objId)},{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
             if (err) return next(err);
             next();
