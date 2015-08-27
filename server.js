@@ -9,7 +9,7 @@ var loc = require('./common/loc');
 
 function initServer(err) {
     if (err) {
-        console.log(err);
+        console.log('Error: while initializing server: ', err);
         return;
     }
     // Order is important

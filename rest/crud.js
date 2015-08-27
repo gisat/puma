@@ -8,7 +8,6 @@ var ensureObj = require('./models').ensureIds;
 var refs = require('./models').refs;
 var conn = require('../common/conn');
 var collections = require('./models').collections;
-var ObjectID = require('mongodb').ObjectID;
 
 function ensureCollection(req,res,next) {
     if (collections.indexOf(req.params.objType)!=-1) {
@@ -23,7 +22,7 @@ function ensureCollection(req,res,next) {
 function create(collName,obj,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
-    var db = conn.getMongoDb();
+    var db = conn.getMongoDb().db;
     var opts = {
         checkRefs: function(asyncCallback) {
             checkRefs(obj,collName,function(err) {
@@ -73,7 +72,7 @@ function create(collName,obj,params,callback) {
 function read(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
-    var db = conn.getMongoDb();
+    var db = conn.getMongoDb().db;
     var collection = db.collection(collName);
     if (params['justMine']) {
         filter['createdBy'] = params['userId']
@@ -87,7 +86,7 @@ function read(collName,filter,params,callback) {
 function update(collName, obj, params, callback,bypassHooks) {
     if (typeof(params) === 'function')
         callback = params;
-    var db = conn.getMongoDb();
+    var db = conn.getMongoDb().db;
     if (!canUpdate(collName, obj)) {
         return callback(new Error('cannotupdate'));
     }
@@ -137,7 +136,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 
 function remove(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
-    var db = conn.getMongoDb();
+    var db = conn.getMongoDb().db;
     var collection = db.collection(collName);
     
     if (!params.isAdmin) {
@@ -227,7 +226,7 @@ var checkRefs = function(obj,collName,callback) {
     if (!refs[collName]) {
         callback(null);
     }
-    var db = conn.getMongoDb();
+    var db = conn.getMongoDb().db;
     var map = refs[collName];
     var keys = [];
     for (var key in map) {

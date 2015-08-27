@@ -13,25 +13,22 @@ var http = require('http');
 //// var https = require('http-debug').https;
 //http.debug = 2;
 ///////
-
+		
 var async = require('async')
 var collections = require('../rest/models').collections
 
-var mongodb = null;
+var mongodb = {db:null, objectId:null};
+var mongoTdb = {db:null, objectId:null};
 var pgDataDB = null;
 var pgGeonodeDB = null;
-var objectId = null;
 var io = null;
-
 
 
 var pgDataConnString = config.pgDataConnString;
 var pgGeonodeConnString = config.pgGeonodeConnString;
 var mongoConnString = config.mongoConnString;
+var mongoTempConnString = config.mongoTempConnString;
 
-function getMongoConnString() {
-    return mongoConnString;
-}
 
 function getPgDataConnString() {
     return pgDataConnString;
@@ -210,24 +207,36 @@ function init(app,callback) {
         },2000);
     },Math.round(1000*60*60*5.42));
     
-	mongoInit(callback);
+	async.parallel({
+		mongodb: function(callback){
+			mongoInit(mongoConnString, callback);
+		},
+		mongoTdb: function(callback){
+			mongoInit(mongoTempConnString, callback);
+		}
+	}, function(err, results){
+		mongodb = results.mongodb;
+		mongoTdb = results.mongoTdb;
+		//console.log('\n\n\nJak to dopadlo:\n1[', typeof mongodb, ':', mongodb, ']\n2[', typeof mongoTdb, ':', mongoTdb, ']\n\n\n');
+		callback(err);
+	});
 	
     var server = require('http').createServer(app);
     //io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
     server.listen(3100);
 }
 
-function mongoInit(callback) {
-	MongoClient.connect(getMongoConnString(), function(err, dbs) {
+function mongoInit(connString, callback) {
+	//console.log('=-=-=-=-=-=-=-=-=-=- initializing MongoClient for ',connString);
+	MongoClient.connect(connString, function(err, db) {
         if (err){
 			return callback(err);
 		}
-        mongodb=dbs;
-        var mongoSettings = mongodb.collection('settings');
+        var mongoSettings = db.collection('settings');
         mongoSettings.findOne({_id:1},function(err,result) {
-            objectId = result ? result.objectId : null;
+            var objectId = result ? result.objectId : null;
             if (err || !objectId) return callback(err);
-            callback();
+            callback(null, {db:db, objectId:objectId});
         });
     });
 }
@@ -238,13 +247,18 @@ function getIo() {
 }
 
 function getNextId() {
-    objectId++;
-    var mongoSettings = mongodb.collection('settings');
-    mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {})
-    return objectId;
+    getMongoDb().objectId++;
+    var mongoSettings = getMongoDb().db.collection('settings');
+    mongoSettings.update({_id: 1}, {_id: 1,objectId: getMongoDb().objectId}, {upsert: true}, function() {})
+    return getMongoDb().objectId;
 }
 
-function getMongoDb() {
+function getMongoDb(temp) {
+	if(temp === true){
+		console.log('getMongoDb returning mongoTdb');
+		return mongoTdb;
+	}
+	console.log('getMongoDb returning mongodb');
     return mongodb;
 }
 
@@ -268,7 +282,6 @@ module.exports = {
     getLocalAddress: getLocalAddress,
 	getRemoteAddress: getRemoteAddress,
 	
-	getMongoConnString: getMongoConnString,
 	getPgDataConnString: getPgDataConnString,
     getPgGeonodeConnString: getPgGeonodeConnString,
 
