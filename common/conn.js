@@ -210,7 +210,15 @@ function init(app,callback) {
         },2000);
     },Math.round(1000*60*60*5.42));
     
-	MongoClient.connect(mongoConnString, function(err, dbs) {
+	mongoInit(callback);
+	
+    var server = require('http').createServer(app);
+    //io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
+    server.listen(3100);
+}
+
+function mongoInit(callback) {
+	MongoClient.connect(getMongoConnString(), function(err, dbs) {
         if (err){
 			return callback(err);
 		}
@@ -222,10 +230,6 @@ function init(app,callback) {
             callback();
         });
     });
-
-    var server = require('http').createServer(app);
-    //io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
-    server.listen(3100);
 }
 
 function getIo() {
@@ -254,6 +258,7 @@ function getPgGeonodeDb() {
 
 module.exports = {
     init: init,
+	mongoInit: mongoInit,
     getIo: getIo,
     request: request,
     getMongoDb: getMongoDb,
