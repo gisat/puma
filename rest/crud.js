@@ -25,7 +25,7 @@ function create(collName,obj,params,callback) {
     var db = conn.getMongoDb().db;
     var opts = {
         checkRefs: function(asyncCallback) {
-            checkRefs(obj,collName,function(err) {
+            checkRefs(db,obj,collName,function(err) {
                 if (err) return callback(err);
                 asyncCallback(null);
             });
@@ -99,7 +99,7 @@ function update(collName, obj, params, callback,bypassHooks) {
     }
     async.auto({
         checkRefs: function(asyncCallback) {
-            checkRefs(obj,collName,function(err) {
+            checkRefs(db,obj,collName,function(err) {
                 if (err){
 					return callback(err);
 				}
@@ -152,7 +152,6 @@ function remove(collName,filter,params,callback) {
             }
         },
         remove: ['checkRef',function(asyncCallback) {
-            var collection = db.collection(collName);
             
             collection.findAndRemove(filter, [], function(err, result) {
                 if (err)
@@ -222,11 +221,10 @@ var ensureIds = function(obj,collName) {
     }     
 }
 
-var checkRefs = function(obj,collName,callback) {
+var checkRefs = function(db,obj,collName,callback) {
     if (!refs[collName]) {
         callback(null);
     }
-    var db = conn.getMongoDb().db;
     var map = refs[collName];
     var keys = [];
     for (var key in map) {
