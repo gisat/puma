@@ -22,7 +22,7 @@ function ensureCollection(req,res,next) {
 function create(collName,obj,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
-    var db = conn.getMongoDb().db;
+    var db = conn.getMongoDb();
     var opts = {
         checkRefs: function(asyncCallback) {
             checkRefs(db,obj,collName,function(err) {
@@ -72,7 +72,7 @@ function create(collName,obj,params,callback) {
 function read(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
     
-    var db = conn.getMongoDb().db;
+    var db = conn.getMongoDb();
     var collection = db.collection(collName);
     if (params['justMine']) {
         filter['createdBy'] = params['userId']
@@ -86,7 +86,7 @@ function read(collName,filter,params,callback) {
 function update(collName, obj, params, callback,bypassHooks) {
     if (typeof(params) === 'function')
         callback = params;
-    var db = conn.getMongoDb().db;
+    var db = conn.getMongoDb();
     if (!canUpdate(collName, obj)) {
         return callback(new Error('cannotupdate'));
     }
@@ -136,7 +136,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 
 function remove(collName,filter,params,callback) {
     if (typeof(params) === 'function') callback = params;
-    var db = conn.getMongoDb().db;
+    var db = conn.getMongoDb();
     var collection = db.collection(collName);
     
     if (!params.isAdmin) {

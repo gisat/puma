@@ -17,18 +17,17 @@ var http = require('http');
 var async = require('async')
 var collections = require('../rest/models').collections
 
-var mongodb = {db:null, objectId:null};
-var mongoTdb = {db:null, objectId:null};
+var mongodb = null;
 var pgDataDB = null;
 var pgGeonodeDB = null;
+var objectId = null;
 var io = null;
+
 
 
 var pgDataConnString = config.pgDataConnString;
 var pgGeonodeConnString = config.pgGeonodeConnString;
 var mongoConnString = config.mongoConnString;
-var mongoTempConnString = config.mongoTempConnString;
-
 
 function getPgDataConnString() {
     return pgDataConnString;
@@ -183,9 +182,9 @@ function init(app,callback) {
                 pgDataDB.end();
                 pgDataDB = new pg.Client(getPgDataConnString());
                 pgDataDB.connect();
-                console.log('Data DB reconnected ('+ pgDataDB.database +')');
+                console.log('Data DB reconnected');
             }else{
-                console.log('Data DB waiting for reconnect ('+ pgDataDB.database +')');
+                console.log('Data DB waiting for reconnect');
             }
         },2000);
     },Math.round(1000*60*60*5.9));
@@ -200,45 +199,29 @@ function init(app,callback) {
                 pgGeonodeDB.end();
                 pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
                 pgGeonodeDB.connect();
-                console.log('Geonode DB reconnected ('+ pgGeonodeDB.database +')');
+                console.log('Geonode DB reconnected');
             }else{
-                console.log('Geonode DB waiting for reconnect ('+ pgGeonodeDB.database +')');
+                console.log('Geonode DB waiting for reconnect');
             }
         },2000);
     },Math.round(1000*60*60*5.42));
     
-	async.parallel({
-		mongodb: function(callback){
-			mongoInit(mongoConnString, callback);
-		},
-		mongoTdb: function(callback){
-			mongoInit(mongoTempConnString, callback);
-		}
-	}, function(err, results){
-		mongodb = results.mongodb;
-		mongoTdb = results.mongoTdb;
-		//console.log('\n\n\nJak to dopadlo:\n1[', typeof mongodb, ':', mongodb, ']\n2[', typeof mongoTdb, ':', mongoTdb, ']\n\n\n');
-		callback(err);
-	});
-	
-    var server = require('http').createServer(app);
-    //io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
-    server.listen(3100);
-}
-
-function mongoInit(connString, callback) {
-	//console.log('=-=-=-=-=-=-=-=-=-=- initializing MongoClient for ',connString);
-	MongoClient.connect(connString, function(err, db) {
+	MongoClient.connect(mongoConnString, function(err, dbs) {
         if (err){
 			return callback(err);
 		}
-        var mongoSettings = db.collection('settings');
+        mongodb=dbs;
+        var mongoSettings = mongodb.collection('settings');
         mongoSettings.findOne({_id:1},function(err,result) {
-            var objectId = result ? result.objectId : null;
+            objectId = result ? result.objectId : null;
             if (err || !objectId) return callback(err);
-            callback(null, {db:db, objectId:objectId});
+            callback();
         });
     });
+
+    var server = require('http').createServer(app);
+    //io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
+    server.listen(3100);
 }
 
 function getIo() {
@@ -247,18 +230,13 @@ function getIo() {
 }
 
 function getNextId() {
-    getMongoDb().objectId++;
-    var mongoSettings = getMongoDb().db.collection('settings');
-    mongoSettings.update({_id: 1}, {_id: 1,objectId: getMongoDb().objectId}, {upsert: true}, function() {})
-    return getMongoDb().objectId;
+    objectId++;
+    var mongoSettings = getMongoDb().collection('settings');
+    mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {})
+    return objectId;
 }
 
-function getMongoDb(temp) {
-	if(temp === true){
-		console.log('getMongoDb returning mongoTdb');
-		return mongoTdb;
-	}
-	console.log('getMongoDb returning mongodb');
+function getMongoDb() {
     return mongodb;
 }
 
@@ -272,7 +250,6 @@ function getPgGeonodeDb() {
 
 module.exports = {
     init: init,
-	mongoInit: mongoInit,
     getIo: getIo,
     request: request,
     getMongoDb: getMongoDb,
