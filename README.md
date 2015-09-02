@@ -1,4 +1,4 @@
-PUMA -- Platform for Urban Management and Analysis
+PUMA – Platform for Urban Management and Analysis
 ====
 
 TODO
@@ -10,8 +10,8 @@ Mimo GitHub
 - node_modules/...
 - public/config.js
 - public/Ext...
-- public/lib/...
-- public/devlib/...
+- public/lib/... (Highcharts, OpenLayers, jQuery)
+- public/devlib/... (OpenLayers, Rico)
 
 Build
 --------
