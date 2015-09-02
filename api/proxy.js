@@ -274,7 +274,9 @@ function saveSld(params, req, res, callback) {
                             value: 0,
                             comparison: 'gt'
                         }])
-                }
+                }else{
+					console.log("ZeroesAsNull ~FALSE +*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*");
+				}
                 dataParams['normalization'] = dataParams['normalization']=='year' ? 'none' : dataParams['normalization']
                 
             }
