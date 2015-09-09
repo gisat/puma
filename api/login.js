@@ -53,6 +53,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
     conn.request(options1,null,function(err,output,res1) {
         if (err) return generalCallback(err);
 		var qsVars = [];
+		if(!('set-cookie' in res1.headers)) return generalCallback('cookies not set');
 		res1.headers['set-cookie'][0].split(';').forEach(function(element, index, array){
 			var pair = element.split("=");
 			var key = decodeURIComponent(pair.shift()).trim();
