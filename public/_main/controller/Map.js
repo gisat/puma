@@ -602,46 +602,46 @@ Ext.define('PumaMain.controller.Map', {
             this.map2 = map;
             this.cursor2 = Ext.get('app-map2').down('img')
         }
-        var hybridLayer = new OpenLayers.Layer.Google(
-                'Google',
-                {
-                    type: 'hybrid',
-                    initialized: true,
-                    animationEnabled: true,
-                    visibility: false,
-                    numZoomLevels: 19,
-                    MAX_ZOOM_LEVEL: 18
-                }
-        );
-        map.defaultLayer = layer;
-        var streetLayer = new OpenLayers.Layer.Google(
-                'Google',
-                {
-                    type: 'roadmap',
-                    animationEnabled: true,
-                    initialized: true,
-                    visibility: false,
-                    numZoomLevels: 19,
-                    MAX_ZOOM_LEVEL: 18
-                }
-        );
-        var terrainLayer = new OpenLayers.Layer.Google(
-                'Google',
-                {
-                    type: 'terrain',
-                    animationEnabled: true,
-                    initialized: true,
-                    visibility: true
-                }
-                    
-        );
-            
-            
+//        var hybridLayer = new OpenLayers.Layer.Google(
+//                'Google',
+//                {
+//                    type: 'hybrid',
+//                    initialized: true,
+//                    animationEnabled: true,
+//                    visibility: false,
+//                    numZoomLevels: 19,
+//                    MAX_ZOOM_LEVEL: 18
+//                }
+//        );
+//        map.defaultLayer = layer;
+//        var streetLayer = new OpenLayers.Layer.Google(
+//                'Google',
+//                {
+//                    type: 'roadmap',
+//                    animationEnabled: true,
+//                    initialized: true,
+//                    visibility: false,
+//                    numZoomLevels: 19,
+//                    MAX_ZOOM_LEVEL: 18
+//                }
+//        );
+//        var terrainLayer = new OpenLayers.Layer.Google(
+//                'Google',
+//                {
+//                    type: 'terrain',
+//                    animationEnabled: true,
+//                    initialized: true,
+//                    visibility: true
+//                }
+//                    
+//        );
+//            
+//            
         var osmLayer = new OpenLayers.Layer.OSM('OSM',null,{
             initialized: true,
             visibility: false
         });
-        var trafficLayer = new google.maps.TrafficLayer()
+//        var trafficLayer = new google.maps.TrafficLayer()
        
         
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
@@ -653,11 +653,11 @@ Ext.define('PumaMain.controller.Map', {
             var layer = null;
             var type = node.get('type');
             switch(type) {
-                case 'hybrid': layer = hybridLayer; break;
-                case 'roadmap': layer = streetLayer; break;
-                case 'terrain': layer = terrainLayer; break;
+//                case 'hybrid': layer = hybridLayer; break;
+//                case 'roadmap': layer = streetLayer; break;
+//                case 'terrain': layer = terrainLayer; break;
                 case 'osm': layer = osmLayer; break;
-                case 'traffic': layer = trafficLayer; break;
+//                case 'traffic': layer = trafficLayer; break;
             }
             var nodeProp = cmp.itemId=='map' ? 'layer1':'layer2';
             node.set(nodeProp,layer);
@@ -677,9 +677,10 @@ Ext.define('PumaMain.controller.Map', {
         //bbox: 112.337169,-7.954641,112.977462,-7.029791
         //debugger;
         map.size = map.getCurrentSize();
-        map.addLayers([terrainLayer,streetLayer,hybridLayer,osmLayer]);
+//        map.addLayers([terrainLayer,streetLayer,hybridLayer,osmLayer]);
+map.addLayers([osmLayer]);
         //trafficLayer.setMap(streetLayer.mapObject);
-        trafficLayer.oldMapObj = streetLayer.mapObject;
+//        trafficLayer.oldMapObj = streetLayer.mapObject;
         if (cmp.id=='map') {
             Ext.StoreMgr.lookup('selectedlayers').loadData(nodes,true);
         }
