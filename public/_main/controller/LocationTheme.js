@@ -65,7 +65,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
     },
     onCancelAgreement: function() {
-        window.location = 'http://puma.worldbank.org';
+        window.location = '/';
     },
     testTimeline: function(slider,value) {
         //console.log(value);
