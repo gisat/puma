@@ -13,7 +13,7 @@
               
               <div class="box-content-hp">
 				<p>PUMA, or Platform for Urban Management and Analysis, is a geospatial tool that allows users with no prior GIS experience to access, analyze and share urban spatial data in an interactive and customizable way. Developed by the East Asia and Pacific Urban, Transport and Disaster Risk Management Unit of the World Bank (EASIN), it adapts open-source software to the data needs of the urban development sector. Click <a href="../www/documents/PUMA Beginners Guide.pdf">here</a> for a one-page beginner’s guide to using PUMA.</p>		 
-				<a href="http://geonode.gisat.cz/app/public/data-exploration.html" class="button-hp mrgT-30">
+				<a href="/tool" class="button-hp mrgT-30">
                 	<span>Explore PUMA</span>
 				</a>
                                 <br/>
