@@ -16,7 +16,7 @@ module.exports = {
 
 	geonodeHost     : "192.168.17.128",
 	geonodePath     : "",
-	geonodeHome     : "/geonode",
+	geonodeHome     : "/",
 
 	geonetworkServer: "http://127.0.0.1/geonetwork"
 };
