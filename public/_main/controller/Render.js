@@ -354,43 +354,43 @@ Ext.define('PumaMain.controller.Render', {
         })
     },  
     
-    renderAggreement: function() {
-        Ext.widget('button',{
-            renderTo: 'agreement-accept',
-            itemId: 'acceptAgreement',
-            text: 'Continue',
-            width: '100%',
-            height: '100%'
-        })
-        Ext.widget('button',{
-            renderTo: 'agreement-cancel',
-            itemId: 'cancelAgreement',
-            text: 'Cancel',
-            width: '100%',
-            height: '100%'
-        })
-		var me = this;
-        Ext.widget('checkbox',{
-            renderTo: 'agreement-accept-chb',
-            itemId: 'agreementCheck',
-            boxLabel: 'I have read this User Agreement and agree to these terms and conditions.'
-
-//			,listeners: { //JJJ HACK agreement
-//				el : {
-//			        'mouseover': function(e,t){
-//						Ext.ComponentQuery.query('#initialdataset')[0].setValue(1532);
-//						Ext.ComponentQuery.query('#initiallocation')[0].setValue('276_1');
-//						Ext.ComponentQuery.query('#initialtheme')[0].setValue(1365);
-//						Ext.ComponentQuery.query('#agreementCheck')[0].setValue(1);
-//						me.getController('LocationTheme').onAcceptAgreement();
-//						me.getController('LocationTheme').onConfirm();
-//					}
-//			    }
-//			}
-
-
-		})
-    },
+//    renderAggreement: function() {
+//        Ext.widget('button',{
+//            renderTo: 'agreement-accept',
+//            itemId: 'acceptAgreement',
+//            text: 'Continue',
+//            width: '100%',
+//            height: '100%'
+//        })
+//        Ext.widget('button',{
+//            renderTo: 'agreement-cancel',
+//            itemId: 'cancelAgreement',
+//            text: 'Cancel',
+//            width: '100%',
+//            height: '100%'
+//        })
+//		var me = this;
+//        Ext.widget('checkbox',{
+//            renderTo: 'agreement-accept-chb',
+//            itemId: 'agreementCheck',
+//            boxLabel: 'I have read this User Agreement and agree to these terms and conditions.'
+//
+////			,listeners: { //JJJ HACK agreement
+////				el : {
+////			        'mouseover': function(e,t){
+////						Ext.ComponentQuery.query('#initialdataset')[0].setValue(1532);
+////						Ext.ComponentQuery.query('#initiallocation')[0].setValue('276_1');
+////						Ext.ComponentQuery.query('#initialtheme')[0].setValue(1365);
+////						Ext.ComponentQuery.query('#agreementCheck')[0].setValue(1);
+////						me.getController('LocationTheme').onAcceptAgreement();
+////						me.getController('LocationTheme').onConfirm();
+////					}
+////			    }
+////			}
+//
+//
+//		})
+//    },
             
     renderIntro: function() {
         this.renderMap();
@@ -437,7 +437,7 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button btn-confirm'
         })
-        this.renderAggreement()
+        //this.renderAggreement()
         
     }
     })

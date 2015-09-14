@@ -53,6 +53,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 change: this.testTimeline
             }
         })
+		this.agreementAccepted = true;
     },
     onAcceptAgreement: function() {
         var checked = Ext.ComponentQuery.query('#agreementCheck')[0].getValue();
