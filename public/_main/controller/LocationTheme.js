@@ -72,6 +72,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         //console.log(value);
     },
     onDatasetChange: function(cnt,val) {
+		console.log("LT onDatasetChange", "cnt:", cnt, "val:", val);
         if (cnt.eventsSuspended) {
             return;
         }
@@ -141,6 +142,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onLocationChange: function(cnt,val) {
+		console.log("LT onLocationChange", "cnt:", cnt, "val:", val);
         if ((val=='custom' || val=='Custom' || !val) && !cnt.initial && this.locationInitialized) {
             this.forceInit = true;
             this.updateLayerContext();
@@ -227,6 +229,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onThemeChange: function(cnt,val) {
+		console.log("LT onThemeChange", "cnt:", cnt, "val:", val);
         if (cnt.eventsSuspended || cnt.initial || !val) {
             return;
         }
@@ -297,6 +300,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onYearChange: function(cnt) {
+		console.log("LT onYearChange", "cnt:", cnt)
         var val = Ext.ComponentQuery.query('#selyear')[0].getValue();
         if (!val.length || cnt.eventsSuspended) {
             this.getController('DomManipulation').deactivateLoadingMask();
@@ -433,6 +437,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
      
         
     addAreas: function(areasToAdd) {
+		console.log("LT addAreas", "areasToAdd:", areasToAdd, "\n==================================");
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
         areaRoot.removeAll();
         var data = [];
@@ -490,6 +495,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     refreshAreas: function(add,remove) {
+		console.log("LT refreshAreas", "add:", add, "remove:", remove);
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         var changed = false;
         var nodesToDestroy = [];
@@ -557,6 +563,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         
         
     updateLayerContext: function() {
+		console.log("LT updateLayerContext");
          var cfg = this.layerRefMap;
          var mapController = this.getController('Map');
          var years = Ext.ComponentQuery.query('#selyear')[0].getValue()
@@ -673,6 +680,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     
     
     appendLayers: function(layerNodes) {
+		console.log("LT appendLayers", "layerNodes:", layerNodes)
         layerNodes = layerNodes || [];
         var themeId = Ext.ComponentQuery.query('#seltheme')[0].getValue();
         var topics = Ext.StoreMgr.lookup('theme').getById(themeId).get('topics');
@@ -828,6 +836,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
 
     },
     onThemeLocationConfReceived: function(response) {
+		console.log("LT onThemeLocationConfReceived", "response:", response)
         var conf = JSON.parse(response.responseText).data;
 
         if (response.request.options.originatingCnt.itemId == 'selectfilter') {
@@ -950,6 +959,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     checkAttrSets: function(attrSets, theme) {
+		console.log("LT checkAttrSets", "attrSets:", attrSets, "theme:", theme);
 		// JJJ TODO ...........
 		// prejmenovat na neco smysluplneho
 		var topics = theme.get('topics'); // get all topics (id's) of current theme
