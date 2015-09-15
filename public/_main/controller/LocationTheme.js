@@ -431,7 +431,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
      
         
     addAreas: function(areasToAdd) {
-		console.log("LT addAreas", "areasToAdd:", areasToAdd, "\n==================================");
+		console.log("LT addAreas", "areasToAdd:", areasToAdd, "\n================================================");
         var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
         areaRoot.removeAll();
         var data = [];
@@ -442,7 +442,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         for (var i=0;i<areasToAdd.length;i++) {
             var area = areasToAdd[i];
             level = level || area.at;
-            //area.children = [];
+			console.log("===> areasToAdd iteration ::",i,":: \narea:",area," level:",level);
             if (area.at!=level) {
                 level = area.at;
                 parentLevel = currentLevel;
@@ -459,6 +459,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
             area.id = area.at+'_'+area.gid;
             var node = Ext.create('Puma.model.Area',area);
+			debugger;
             if (!area.parentgid) {
                 data.push(node);
             }
