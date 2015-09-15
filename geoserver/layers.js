@@ -198,7 +198,7 @@ function changeLayerGeoserver(layerId, method, callback) {
         host: conn.getGeoserver2Host(),
         path: path,
         headers: headers,
-        port: conn.getgeoserver2Port(),
+        port: conn.getGeoserver2Port(),
         method: method
     };
     conn.request(options, data, function(err, output, resl) {
