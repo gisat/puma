@@ -48,9 +48,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
             },
             '#cancelAgreement': {
                 click: this.onCancelAgreement
-            },
-            'discretetimeline': {
-                change: this.testTimeline
             }
         })
 		this.agreementAccepted = true;
@@ -67,9 +64,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     onCancelAgreement: function() {
         window.location = '/';
-    },
-    testTimeline: function(slider,value) {
-        //console.log(value);
     },
     onDatasetChange: function(cnt,val) {
 		console.log("LT onDatasetChange", "cnt:", cnt, "val:", val);
@@ -444,7 +438,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var currentLevel = [];
         var parentLevel = null;
         var level = null;
-        this.addAreasToAreaMap(areasToAdd);
         var leafMap = {};
         for (var i=0;i<areasToAdd.length;i++) {
             var area = areasToAdd[i];
@@ -483,24 +476,12 @@ Ext.define('PumaMain.controller.LocationTheme', {
         areaRoot.appendChild(data);
         
     },
-        
-    addAreasToAreaMap: function(addedAreas) {
-//        var areaMap = this.getController('Area').areaMap;
-//        for (var i=0;i<addedAreas.length;i++) {
-//            var area = addedAreas[i];
-//            areaMap[area.loc] = areaMap[area.loc] || {};
-//            areaMap[area.loc][area.at] = areaMap[area.loc][area.at] || {};
-//            areaMap[area.loc][area.at][area.gid] = area;
-//        }
-    },
     
     refreshAreas: function(add,remove) {
 		console.log("LT refreshAreas", "add:", add, "remove:", remove);
         var root = Ext.StoreMgr.lookup('area').getRootNode();
         var changed = false;
-        var nodesToDestroy = [];
-        this.addAreasToAreaMap(add);
-        
+        var nodesToDestroy = [];        
         
         var tree = Ext.ComponentQuery.query('#areatree')[0];
         tree.suspendEvents();
