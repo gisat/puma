@@ -8,10 +8,14 @@ module.exports = {
 	geoserverHost   : "127.0.0.1",
 	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
+	geoserverUsername : "admin",
+	geoserverPassword : "P4ssw0rd",
 
 	geoserver2Host  : "127.0.0.1",
 	geoserver2Port  : 8080,
 	geoserver2Path  : "/geoserver_i2",
+	geoserverUsername : "admin",
+	geoserverPassword : "P4ssw0rd",
 
 	geonodeHost     : "192.168.2.8",
 	geonodePath     : "",
