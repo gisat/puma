@@ -600,8 +600,8 @@ function getMetadata(params, req, res, callback) {
 function getSymbologiesFromServer(params, req, res, callback) {
     var opts = {
         symbologiesServer: function(asyncCallback) {
-            var username = 'admin';
-            var password = 'GeoNodeGeoServerNr1';
+            var username = config.geoserverUsername;
+            var password = config.geoserverPassword;
             var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
             var headers = {
                 'Content-type': 'application/json',
