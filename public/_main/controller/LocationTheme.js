@@ -459,7 +459,6 @@ Ext.define('PumaMain.controller.LocationTheme', {
             }
             area.id = area.at+'_'+area.gid;
             var node = Ext.create('Puma.model.Area',area);
-			debugger;
             if (!area.parentgid) {
                 data.push(node);
             }
