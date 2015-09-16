@@ -136,7 +136,7 @@ function wms(params, req, res, callback) {
 	
 	
     var username = useFirst ? 'admin' : 'admin';
-    var password = useFirst ? 'GeoNodeGeoServerNr1' : 'GeoNodeGeoServerNr2';
+    var password = useFirst ? 'Pa55WoRd4GSVRadm1n' : 'geoserver';
     
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {};
@@ -476,7 +476,7 @@ function saveSld(params, req, res, callback) {
 }
 function createLayerGroup(layers,style,addStyle) {
     var username = 'admin';
-    var password = 'GeoNodeGeoServerNr1';
+    var password = 'Pa55WoRd4GSVRadm1n';
     layerGroupMap[layers] = layerGroupMap[layers] || {};
     layerGroupMap[layers][style || 'def'] = 1;
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');

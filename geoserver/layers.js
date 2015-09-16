@@ -164,7 +164,7 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 
 function changeLayerGeoserver(layerId, method, callback) {
     var username = 'admin';
-    var password = 'GeoNodeGeoServerNr2';
+    var password = 'geoserver';
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {
         'Content-type': 'application/json',

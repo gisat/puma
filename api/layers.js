@@ -601,7 +601,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
     var opts = {
         symbologiesServer: function(asyncCallback) {
             var username = 'admin';
-            var password = 'GeoNodeGeoServerNr1';
+            var password = 'Pa55WoRd4GSVRadm1n';
             var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
             var headers = {
                 'Content-type': 'application/json',

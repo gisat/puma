@@ -123,7 +123,7 @@ function request(options,dataToWrite,callback) {
 
 function initGeoserver() {
     var username = 'admin';
-    var password = 'GeoNodeGeoServerNr1';
+    var password = 'Pa55WoRd4GSVRadm1n';
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {
         'Authorization': auth
