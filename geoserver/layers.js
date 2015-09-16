@@ -1,7 +1,8 @@
 
 var querystring = require('querystring');
 var async = require('async');
-var conn = require('../common/conn')
+var conn = require('../common/conn');
+var config = require('../config');
 
 function recreateLayerDb(layerRef,isUpdate,callback) {
     
@@ -163,8 +164,8 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 }
 
 function changeLayerGeoserver(layerId, method, callback) {
-    var username = 'admin';
-    var password = 'geoserver';
+    var username = config.geoserver2Username;
+    var password = config.geoserver2Password;
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {
         'Content-type': 'application/json',

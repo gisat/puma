@@ -15,6 +15,7 @@ var us = require('underscore')
 var jsid = null;
 var cacheStyleMap = null;
 var layerGroupMap = null;
+var config = require('../config');
 
 
 function wms(params, req, res, callback) {
@@ -135,8 +136,8 @@ function wms(params, req, res, callback) {
 	}
 	
 	
-    var username = useFirst ? 'admin' : 'admin';
-    var password = useFirst ? 'Pa55WoRd4GSVRadm1n' : 'geoserver';
+    var username = useFirst ? config.geoserverUsername : config.geoserver2Username;
+    var password = useFirst ? config.geoserverPassword : config.geoserver2Password;
     
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {};
@@ -475,8 +476,8 @@ function saveSld(params, req, res, callback) {
 
 }
 function createLayerGroup(layers,style,addStyle) {
-    var username = 'admin';
-    var password = 'Pa55WoRd4GSVRadm1n';
+    var username = config.geoserverUsername;
+    var password = config.geoserverPassword;
     layerGroupMap[layers] = layerGroupMap[layers] || {};
     layerGroupMap[layers][style || 'def'] = 1;
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
