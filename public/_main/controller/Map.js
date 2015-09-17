@@ -262,55 +262,57 @@ Ext.define('PumaMain.controller.Map', {
     
     createBaseNodes: function() {
         var baseNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','basegroup');
-        var liveNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
-        var hybridNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google hybrid',
-            checked: false,
-            allowDrag: false,
-            initialized: true,
-            leaf: true,
-            sortIndex: 10000,
-            type: 'hybrid'
-        });
-        var streetNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google street',
-            initialized: true,
-            allowDrag: false,
-            checked: false,
-            leaf: true,
-            sortIndex: 10000,
-            type: 'roadmap'
-        });
-        var terrainNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google terrain',
+//        var liveNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
+//        var hybridNode = Ext.create('Puma.model.MapLayer',{
+//            name: 'Google hybrid',
+//            checked: false,
+//            allowDrag: false,
+//            initialized: true,
+//            leaf: true,
+//            sortIndex: 10000,
+//            type: 'hybrid'
+//        });
+//        var streetNode = Ext.create('Puma.model.MapLayer',{
+//            name: 'Google street',
+//            initialized: true,
+//            allowDrag: false,
+//            checked: false,
+//            leaf: true,
+//            sortIndex: 10000,
+//            type: 'roadmap'
+//        });
+//        var terrainNode = Ext.create('Puma.model.MapLayer',{
+//            name: 'Google terrain',
+//            initialized: true,
+//            allowDrag: false,
+//            checked: true,
+//            leaf: true,
+//            sortIndex: 10000,
+//            type: 'terrain'
+//        });
+        var osmNode = Ext.create('Puma.model.MapLayer',{
+            name: 'OpenStreetMap',
             initialized: true,
             allowDrag: false,
             checked: true,
             leaf: true,
             sortIndex: 10000,
-            type: 'terrain'
-        });
-        var osmNode = Ext.create('Puma.model.MapLayer',{
-            name: 'OpenStreetMap',
-            initialized: true,
-            allowDrag: false,
-            checked: false,
-            leaf: true,
-            sortIndex: 10000,
             type: 'osm'
         });
-        var trafficNode = Ext.create('Puma.model.MapLayer',{
-            name: 'Google traffic',
-            initialized: true,
-            allowDrag: true,
-            checked: false,
-            leaf: true,
-            sortIndex: 0,
-            type: 'traffic'
-        });
-        Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
-        baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
-        liveNode.appendChild([trafficNode])
+//        var trafficNode = Ext.create('Puma.model.MapLayer',{
+//            name: 'Google traffic',
+//            initialized: true,
+//            allowDrag: true,
+//            checked: false,
+//            leaf: true,
+//            sortIndex: 0,
+//            type: 'traffic'
+//        });
+        //Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
+		Ext.StoreMgr.lookup('selectedlayers').loadData([osmNode],true);
+        //baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
+		baseNode.appendChild([osmNode]);
+        //liveNode.appendChild([trafficNode])
     },
     
     onMapMove: function(map) {
@@ -641,6 +643,7 @@ Ext.define('PumaMain.controller.Map', {
             initialized: true,
             visibility: false
         });
+		map.defaultLayer = osmLayer;
 //        var trafficLayer = new google.maps.TrafficLayer()
        
         

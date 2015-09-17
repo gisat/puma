@@ -1184,6 +1184,12 @@ Ext.define('PumaMain.controller.Layers', {
                 }
             }
         }
+		
+		if(typeof layer1 == undefined || typeof layer2 == undefined){
+			debugger;
+			console.log("node: ",node);
+		}
+		
         if (layer1.initialized)
             layer1.setVisibility(checked);
         if (layer2.initialized)
