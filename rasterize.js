@@ -44,7 +44,7 @@ if (system.args.length < 3 || system.args.length > 5) {
 //	page.onResourceReceived = function(response) {
 //		console.log('~~~~~~~~~~response~~~~~~~| '+response.url);
 //	};
-	
+
 	
     console.log("ADDRESS: ",address);
     page.open(address, function (status) {
@@ -60,7 +60,7 @@ if (system.args.length < 3 || system.args.length > 5) {
 			
 			
             window.setTimeout(function () {
-				//console.log("CONTENT: ",page.content);
+				console.log("CONTENT: ",page.content);
                 console.log("OUTPUT: ",output)
                 page.render(output);
                 phantom.exit();

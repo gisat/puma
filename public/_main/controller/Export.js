@@ -119,6 +119,7 @@ Ext.define('PumaMain.controller.Export', {
                 var layer = null;
                 var disallowedTypes = {selectedareas: 1, selectedareasfilled: 1, areaoutlines: 1}
                 if (!layerCfg.sldId && !layerCfg.layersParam && !disallowedTypes[layerCfg.type]) {
+					layerCfg.type = 'osm'; // offline!
                     layer = layerCfg.type == 'osm' ? new OpenLayers.Layer.OSM() : new OpenLayers.Layer.Google(
                             'Google',
                             {

@@ -79,7 +79,8 @@ Ext.define('PumaMain.controller.Map', {
             layers: layers1,
             layers2: years.length>1 ? layers2 : null,
             type: 'map',
-            trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
+            //trafficLayer: Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup').childNodes[0].get('checked'),
+			trafficLayer: false, // offline!
             year: map1.year,
             yearName: store.getById(map1.year).get('name'),
             year2: years.length>1 ? map2.year : null,
