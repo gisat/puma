@@ -245,8 +245,8 @@ strong {
 		.fields-holder > .label {
 			width            : 300px;
 			height           : 69px;
-			padding-left     : 81px;
-			background       : url("../images/puma-logo.png") no-repeat 0 8px;
+			padding-left     : 10px;
+			/*background       : url("../images/puma-logo.png") no-repeat 0 8px;*/
 			line-height      : 38px;
 			font-size        : 30px;
 			font-weight      : 800;
