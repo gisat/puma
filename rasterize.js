@@ -23,6 +23,7 @@ if (system.args.length < 3 || system.args.length > 5) {
     page.onConsoleMessage = function(msg) {
         //console.log(msg);
         /*
+        
          * Ugly hacks, but only way to get messages out of the 'page.evaluate()'
          * sandbox. If any, please contribute with improvements on this!
          */
