@@ -143,7 +143,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 					if (err)
 						return asyncCallback("SQL query error ("+err+")");
 					async.forEach(analysisObj.attributeSets, function(attrSet, eachCallback) {
-						console.log('AS '+attrSet);
+						//console.log('AS '+attrSet);
 						crud.create('layerref', {
 							location: location,
 							year: year,

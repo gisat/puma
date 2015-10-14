@@ -6,7 +6,7 @@ var forever = require('forever-monitor');
   });
 
   child.on('exit', function () {
-    console.log('your-filename.js has exited after 3 restarts');
+    console.log('server has exited after 3 restarts');
   });
 
   child.start();

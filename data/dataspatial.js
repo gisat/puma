@@ -28,7 +28,7 @@ function getData(params, callback) {
     var dbFilter = {
         areaTemplate: {$in: areaTemplates}, location: locationId, year: years[0], isData: false
     }
-    console.log(dbFilter);
+    //console.log(dbFilter);
     var opts = {
         layerRefMap: function(asyncCallback) {
             crud.read('layerref', dbFilter, function(err, resls) {
@@ -66,7 +66,7 @@ function getData(params, callback) {
 
             }],
         result: ['aggregateLayer', function(asyncCallback, results) {
-                console.log('here');
+                //console.log('here');
                 var unitLayerRef = results.layerRefMap[areaId]
                 if (!unitLayerRef && areaId != -1) {
                     return callback(new Error('notexistingdata'));
@@ -82,7 +82,7 @@ function getData(params, callback) {
                 if (gids.length) {
                     sql += ' WHERE b.'+unitLayerGid+' IN (' + gids.join(',') + ')';
                 }
-                console.log(sql);
+                //console.log(sql);
                 processClient.query(sql, function(err, resls) {
                     processClient.end();
                     if (err)
