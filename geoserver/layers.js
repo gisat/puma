@@ -8,7 +8,7 @@ function recreateLayerDb(layerRef,isUpdate,callback) {
     
     var crud = require('../rest/crud');
     if (layerRef.toBeDeleted) {
-        console.log('geoserver/layers.js removing');
+        //console.log('geoserver/layers.js removing');
         return removeLayerDbInternal(layerRef,callback);
     }
     async.waterfall([

@@ -544,7 +544,7 @@ function getMetadata(params, req, res, callback) {
 	WHERE \
 		r.role = \'pointOfContact\' AND \
 		l.typename IN (' + layers + ')'
-    console.log("getMetadata SQL: ", sql);
+    //console.log("getMetadata SQL: ", sql);
     client.query(sql, function(err, resls) {
         if (err)
             return callback(err);
