@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">// feature idea to enable Ajax loading and then the content
+// cache would actually make sense. Should we dictate that they use
+// data or support raw html as well?
+
+<span id='Ext-ux-RowExpander'>/**
+</span> * Plugin (ptype = 'rowexpander') that adds the ability to have a Column in a grid which enables
+ * a second row body which expands/contracts.  The expand/contract behavior is configurable to react
+ * on clicking of the column, double click of the row, and/or hitting enter while a row is selected.
+ */
+Ext.define('Ext.ux.RowExpander', {
+    extend: 'Ext.AbstractPlugin',
+<span id='Ext-ux-RowExpander-property-lockableScope'>    lockableScope: 'normal',
+</span>
+    requires: [
+        'Ext.grid.feature.RowBody',
+        'Ext.grid.feature.RowWrap'
+    ],
+
+    alias: 'plugin.rowexpander',
+
+<span id='Ext-ux-RowExpander-property-rowBodyTpl'>    rowBodyTpl: null,
+</span>
+<span id='Ext-ux-RowExpander-cfg-expandOnEnter'>    /**
+</span>     * @cfg {Boolean} expandOnEnter
+     * &lt;tt&gt;true&lt;/tt&gt; to toggle selected row(s) between expanded/collapsed when the enter
+     * key is pressed (defaults to &lt;tt&gt;true&lt;/tt&gt;).
+     */
+    expandOnEnter: true,
+
+<span id='Ext-ux-RowExpander-cfg-expandOnDblClick'>    /**
+</span>     * @cfg {Boolean} expandOnDblClick
+     * &lt;tt&gt;true&lt;/tt&gt; to toggle a row between expanded/collapsed when double clicked
+     * (defaults to &lt;tt&gt;true&lt;/tt&gt;).
+     */
+    expandOnDblClick: true,
+
+<span id='Ext-ux-RowExpander-cfg-selectRowOnExpand'>    /**
+</span>     * @cfg {Boolean} selectRowOnExpand
+     * &lt;tt&gt;true&lt;/tt&gt; to select a row when clicking on the expander icon
+     * (defaults to &lt;tt&gt;false&lt;/tt&gt;).
+     */
+    selectRowOnExpand: false,
+
+<span id='Ext-ux-RowExpander-property-rowBodyTrSelector'>    rowBodyTrSelector: '.x-grid-rowbody-tr',
+</span><span id='Ext-ux-RowExpander-property-rowBodyHiddenCls'>    rowBodyHiddenCls: 'x-grid-row-body-hidden',
+</span><span id='Ext-ux-RowExpander-property-rowCollapsedCls'>    rowCollapsedCls: 'x-grid-row-collapsed',
+</span>
+<span id='Ext-ux-RowExpander-event-expandbody'>    /**
+</span>     * @event expandbody
+     * &lt;b&lt;Fired through the grid's View&lt;/b&gt;
+     * @param {HTMLElement} rowNode The &amp;lt;tr&gt; element which owns the expanded row.
+     * @param {Ext.data.Model} record The record providing the data.
+     * @param {HTMLElement} expandRow The &amp;lt;tr&gt; element containing the expanded data.
+     */
+<span id='Ext-ux-RowExpander-event-collapsebody'>    /**
+</span>     * @event collapsebody
+     * &lt;b&lt;Fired through the grid's View.&lt;/b&gt;
+     * @param {HTMLElement} rowNode The &amp;lt;tr&gt; element which owns the expanded row.
+     * @param {Ext.data.Model} record The record providing the data.
+     * @param {HTMLElement} expandRow The &amp;lt;tr&gt; element containing the expanded data.
+     */
+
+    constructor: function() {
+        var me = this,
+            grid,
+            rowBodyTpl,
+            features;
+
+        me.callParent(arguments);
+        grid = me.getCmp();
+
+        me.recordsExpanded = {};
+        // &lt;debug&gt;
+        if (!me.rowBodyTpl) {
+            Ext.Error.raise(&quot;The 'rowBodyTpl' config is required and is not defined.&quot;);
+        }
+        // &lt;/debug&gt;
+
+        me.rowBodyTpl = Ext.XTemplate.getTpl(me, 'rowBodyTpl');
+        rowBodyTpl = this.rowBodyTpl;
+        features = [{
+            ftype: 'rowbody',
+            lockableScope: 'normal',
+            columnId: me.getHeaderId(),
+            recordsExpanded: me.recordsExpanded,
+            rowBodyHiddenCls: me.rowBodyHiddenCls,
+            rowCollapsedCls: me.rowCollapsedCls,
+            getAdditionalData: me.getRowBodyFeatureData,
+            getRowBodyContents: function(data) {
+                return rowBodyTpl.applyTemplate(data);
+            }
+        },{
+            ftype: 'rowwrap',
+            lockableScope: 'normal'
+        },
+        // In case the client grid is lockable (At this stage we cannot know; plugins are constructed early)
+        // push a Feature into the locked side which sets up the initially collapsed row state correctly
+        {
+            ftype: 'feature',
+            lockableScope: 'locked',
+            getAdditionalData: function(data, idx, record, result) {
+                if (!me.recordsExpanded[record.internalId]) {
+                    result.rowCls = (result.rowCls || '') + ' ' + me.rowCollapsedCls;
+                }
+            }
+        }];
+
+        if (grid.features) {
+            grid.features = Ext.Array.push(features, grid.features);
+        } else {
+            grid.features = features;
+        }
+        // NOTE: features have to be added before init (before Table.initComponent)
+    },
+
+<span id='Ext-ux-RowExpander-method-init'>    init: function(grid) {
+</span>        var me = this,
+            reconfigurable = grid;
+
+        me.callParent(arguments);
+        me.grid = grid;
+        me.view = grid.getView();
+        // Columns have to be added in init (after columns has been used to create the headerCt).
+        // Otherwise, shared column configs get corrupted, e.g., if put in the prototype.
+        me.addExpander();
+        me.bindView(me.view);
+
+        // If our client grid is the normal side of a lockable grid, we listen to its lockable owner's beforereconfigure
+        // and also bind to the locked grid's view for dblclick and keydown events
+        if (reconfigurable.ownerLockable) {
+            reconfigurable = reconfigurable.ownerLockable;
+            me.bindView(reconfigurable.lockedGrid.getView());
+        }
+        reconfigurable.on('beforereconfigure', me.beforeReconfigure, me);
+    },
+    
+<span id='Ext-ux-RowExpander-method-beforeReconfigure'>    beforeReconfigure: function(grid, store, columns, oldStore, oldColumns) {
+</span>        var expander = this.getHeaderConfig();
+        expander.locked = true;
+        columns.unshift(expander);
+    },
+
+<span id='Ext-ux-RowExpander-method-addExpander'>    /**
+</span>     * @private
+     * Inject the expander column into the correct grid.
+     * 
+     * If we are expanding the normal side of a lockable grid, poke the column into the locked side
+     */
+    addExpander: function() {
+        var me = this,
+            expanderGrid = me.grid,
+            expanderHeader = me.getHeaderConfig();
+
+        // If this is the normal side of a lockable grid, find the other side.
+        if (expanderGrid.ownerLockable) {
+            expanderGrid = expanderGrid.ownerLockable.lockedGrid;
+            expanderGrid.width += expanderHeader.width;
+        }
+        expanderGrid.headerCt.insert(0, expanderHeader);
+    },
+
+<span id='Ext-ux-RowExpander-method-getHeaderId'>    getHeaderId: function() {
+</span>        if (!this.headerId) {
+            this.headerId = Ext.id();
+        }
+        return this.headerId;
+    },
+
+<span id='Ext-ux-RowExpander-method-getRowBodyFeatureData'>    getRowBodyFeatureData: function(data, idx, record, orig) {
+</span>        var me = this,
+            o = me.self.prototype.getAdditionalData.apply(this, arguments),
+            id = me.columnId;
+
+        o.rowBodyColspan = o.rowBodyColspan - 1;
+        o.rowBody = me.getRowBodyContents(data);
+        o.rowCls = me.recordsExpanded[record.internalId] ? '' : me.rowCollapsedCls;
+        o.rowBodyCls = me.recordsExpanded[record.internalId] ? '' : me.rowBodyHiddenCls;
+        o[id + '-tdAttr'] = ' valign=&quot;top&quot; rowspan=&quot;2&quot; ';
+        if (orig[id+'-tdAttr']) {
+            o[id+'-tdAttr'] += orig[id+'-tdAttr'];
+        }
+        return o;
+    },
+
+<span id='Ext-ux-RowExpander-method-bindView'>    bindView: function(view) {
+</span>        if (this.expandOnEnter) {
+            view.on('itemkeydown', this.onKeyDown, this);
+        }
+        if (this.expandOnDblClick) {
+            view.on('itemdblclick', this.onDblClick, this);
+        }
+    },
+
+<span id='Ext-ux-RowExpander-method-onKeyDown'>    onKeyDown: function(view, record, row, rowIdx, e) {
+</span>        if (e.getKey() == e.ENTER) {
+            var ds   = view.store,
+                sels = view.getSelectionModel().getSelection(),
+                ln   = sels.length,
+                i = 0;
+
+            for (; i &lt; ln; i++) {
+                rowIdx = ds.indexOf(sels[i]);
+                this.toggleRow(rowIdx, sels[i]);
+            }
+        }
+    },
+
+<span id='Ext-ux-RowExpander-method-onDblClick'>    onDblClick: function(view, record, row, rowIdx, e) {
+</span>        this.toggleRow(rowIdx, record);
+    },
+
+<span id='Ext-ux-RowExpander-method-toggleRow'>    toggleRow: function(rowIdx, record) {
+</span>        var me = this,
+            view = me.view,
+            rowNode = view.getNode(rowIdx),
+            row = Ext.fly(rowNode, '_rowExpander'),
+            nextBd = row.down(me.rowBodyTrSelector, true),
+            isCollapsed = row.hasCls(me.rowCollapsedCls),
+            addOrRemoveCls = isCollapsed ? 'removeCls' : 'addCls',
+            rowHeight;
+
+        // Suspend layouts because of possible TWO views having their height change
+        Ext.suspendLayouts();
+        row[addOrRemoveCls](me.rowCollapsedCls);
+        Ext.fly(nextBd)[addOrRemoveCls](me.rowBodyHiddenCls);
+        me.recordsExpanded[record.internalId] = isCollapsed;
+        view.refreshSize();
+        view.fireEvent(isCollapsed ? 'expandbody' : 'collapsebody', row.dom, record, nextBd);
+
+        // Sync the height and class of the row on the locked side
+        if (me.grid.ownerLockable) {
+            view = me.grid.ownerLockable.lockedGrid.view;
+            rowHeight = row.getHeight();
+            row = Ext.fly(view.getNode(rowIdx), '_rowExpander');
+            row.setHeight(rowHeight);
+            row[addOrRemoveCls](me.rowCollapsedCls);
+            view.refreshSize();
+        }
+        // Coalesce laying out due to view size changes
+        Ext.resumeLayouts(true);
+    },
+
+<span id='Ext-ux-RowExpander-method-getHeaderConfig'>    getHeaderConfig: function() {
+</span>        var me = this;
+
+        return {
+            id: me.getHeaderId(),
+            width: 24,
+            lockable: false,
+            sortable: false,
+            resizable: false,
+            draggable: false,
+            hideable: false,
+            menuDisabled: true,
+            cls: Ext.baseCSSPrefix + 'grid-header-special',
+            renderer: function(value, metadata) {
+                metadata.tdCls = Ext.baseCSSPrefix + 'grid-cell-special';
+                return '&lt;div class=&quot;' + Ext.baseCSSPrefix + 'grid-row-expander&quot;&gt;&amp;#160;&lt;/div&gt;';
+            },
+            processEvent: function(type, view, cell, rowIndex, cellIndex, e, record) {
+                if (type == &quot;mousedown&quot; &amp;&amp; e.getTarget('.x-grid-row-expander')) {
+                    me.toggleRow(rowIndex, record);
+                    return me.selectRowOnExpand;
+                }
+            }
+        };
+    }
+});
+</pre>
+</body>
+</html>
