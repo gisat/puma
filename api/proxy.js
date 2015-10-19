@@ -109,30 +109,30 @@ function wms(params, req, res, callback) {
         // single layer
         if (layers.search(',')<0) {
             if(style && !layerGroup){
-                console.log('Add style '+layers+' '+style)
+                //console.log('Add style '+layers+' '+style)
                 createLayerGroup(layers,style,true);
             }else{
-                console.log('Single layer '+layers+' '+style)
+                //console.log('Single layer '+layers+' '+style)
                 path = conn.getGeoserverPath()+'/gwc/service/wms';
             }
         }
         // found layer group
         else if (layerGroup) {
-            console.log('Layer group found '+layerGroup+' '+style)
+            //console.log('Layer group found '+layerGroup+' '+style)
             params['LAYERS'] = layerGroup;
             params['STYLES'] = style;
             path = conn.getGeoserverPath()+'/gwc/service/wms';
         }
         // layer group to be created
         else {
-            console.log('Creating group, styles: '+style)
+            //console.log('Creating group, styles: '+style)
             createLayerGroup(layers,style);
         }
         method = 'GET';
         port = null; //// JJJJJ Proc to?
         
     }else{
-		console.log("useFirst: ", useFirst, "params[request]:",params['request']);
+		//console.log("useFirst: ", useFirst, "params[request]:",params['request']);
 	}
 	
 	
@@ -175,7 +175,7 @@ function wms(params, req, res, callback) {
     if (params['REQUEST'] == 'GetLegendGraphic') {
     }
     var time = new Date().getTime();
-	console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
+	//console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
     conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
         if (err) {
             console.log("\nProxy error: ", err, "options: ", options);
@@ -276,7 +276,7 @@ function saveSld(params, req, res, callback) {
                             comparison: 'gt'
                         }])
                 }else{
-					console.log("ZeroesAsNull ~FALSE +*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*");
+					//console.log("ZeroesAsNull ~FALSE +*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*+*");
 				}
                 dataParams['normalization'] = dataParams['normalization']=='year' ? 'none' : dataParams['normalization']
                 
@@ -528,12 +528,12 @@ function createLayerGroup(layers,style,addStyle) {
         port: conn.getGeoserverPort(),
         method: 'POST'
     };
-	console.log("################ ### ### ### ### proxy.createLayerGroup options: ",options,"\n####### data:", data);
+	//console.log("################ ### ### ### ### proxy.createLayerGroup options: ",options,"\n####### data:", data);
     conn.request(options, data, function(err, output, resl) {
 		if(err){
 			console.log("\n\n------ LayerGroup not created! -------\n\nError:",err);
 		}else{
-			console.log("####### output: ", output);
+			//console.log("####### output: ", output);
 	        layerGroupMap[layers][style || 'def'] = name;
 	        crud.create('layergroupgs',{name:name,layers:layers,style:style || 'def'},function(){});
 		}

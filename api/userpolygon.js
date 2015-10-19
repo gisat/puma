@@ -60,7 +60,7 @@ function userPolygon(params,req,res,callback) {
                 tableSql += ' WHERE gid IN ('+gids.join(',')+');';
                 sql += tableSql;
             }
-            console.log(sql)
+            //console.log(sql)
             var client = conn.getPgDataDb();
             client.query(sql, function(err, results) {
                 if (err)
@@ -203,10 +203,10 @@ function checkAnalysis(params,req,res,callback) {
             var client = conn.getPgDataDb();
             var sql = 'SELECT COUNT(*) as cnt';
             sql += ' FROM up.base_user_'+userId+'_loc_'+location;
-            console.log(sql)
+            //console.log(sql)
             client.query(sql, function(err, resls) {
                 if (err) return callback(null);
-                console.log(resls)
+                //console.log(resls)
                 if (!resls.rows[0] || resls.rows[0].cnt<1) return callback(null);
                 return asyncCallback(null);
             })     
@@ -336,7 +336,7 @@ function checkAnalysis(params,req,res,callback) {
             for (var i=0;i<analysis.length;i++) {
                 var oneAnalysis = analysis[i];
                 var map = dbRecord.analysisMap[oneAnalysis] || {};
-                console.log(map);
+                //console.log(map);
                 dbRecord.analysisMap[oneAnalysis] = map;
                 for (var j=0;j<years.length;j++) {
                     var year = years[j];
@@ -355,7 +355,7 @@ function checkAnalysis(params,req,res,callback) {
                     }
                 }
             }
-            console.log(analysisToPerform)
+            //console.log(analysisToPerform)
             if (!analysisToPerform.length) {
                 return asyncCallback(null);
             }
@@ -377,7 +377,7 @@ function checkAnalysis(params,req,res,callback) {
                         return asyncCallback(null);
                     }
                     spatialAgg.perform(anObj,ghostObj,layerRefMap,{},function(err) {
-                        console.log('performing');
+                        //console.log('performing');
                         if (err) return callback(err);
                         for (var i=0;i<item.ids.length;i++) {
                             item.yearMap[item.ids[i]] = true;

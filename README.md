@@ -18,6 +18,7 @@ Build
  1. zakomentovat řádek `'Puma.patch.Main',` v *requires* v *appde.js*
  2. build příkazem `sencha build -p appde.jsb3 -d .`
  3. minifikace příkazem `jsmin <appde.all.js >appde.min.js`
+ 4. odkomentovat řádek `'Puma.patch.Main',` v *requires* v *appde.js*
 
 Build administrace obdobně, jen *appmng* místo *appde*.
 

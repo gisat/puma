@@ -33,7 +33,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
                 if (featureLayerTemplate==-1) {
                     return mapCallback(null,null);
                 }
-                console.log("analysis/spatialagg.js featureLayerTemplate: " + featureLayerTemplate);
+                //console.log("analysis/spatialagg.js featureLayerTemplate: " + featureLayerTemplate);
                 crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: false}, function(err, resls) {
                     if (err)
                         return callback(err);

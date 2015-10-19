@@ -142,7 +142,7 @@ function drawChart(params, req, res, callback) {
             }],
         phantom: ['inFile', 'conf', function(asyncCallback, results) {
                 //console.log(new Date().getTime()-nullTime)
-                console.log('start ' + new Date().getTime());
+                //console.log('start ' + new Date().getTime());
                 cp.execFile('phantomjs.exe', ['highcharts-convert.js', '-infile', jsonFile, '-outfile', svgFile, '-constr', 'Chart'], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
                     //console.log(stdout)
                     confMap.length += results.conf.length;
