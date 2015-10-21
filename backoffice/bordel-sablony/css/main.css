@@ -64,12 +64,7 @@ a:hover, a:visited:hover {
 	color:#2f6eff;
 }
 a, a:link, a i {
-	
-	-o-transition:  color .3s ease-out;
-	-ms-transition:  color .3s ease-out;
-	-moz-transition:  color .3s ease-out;
-	-webkit-transition:  color .3s ease-out;
-	transition:  color .3s ease-out;
+	transition:  all .3s ease-out;
 }
 
 
@@ -79,6 +74,37 @@ a, a:link, a i {
 #menu {
 	background-color: #222;
 }
+#menu ul li {
+	list-style: none;
+	display: inline-block;
+	height: 3.75rem;
+}
+#menu ul li img {
+	width: 2.5rem;
+	height: 2.5rem;
+	margin: 0 .3125rem 0 .3125rem;
+}
+#menu a, #menu a span {
+	vertical-align: top;
+}
+#menu a {
+	display: inline-block;
+	height: 3.75rem;
+	padding: .625rem;
+	color: #aaa;
+}
+#menu a:hover {
+	background-color: #333;
+	color:#fff;
+}
+#menu a span {
+	display: inline-block;
+	font-size: 1rem;
+	line-height: 2.5rem;
+	
+	margin:0 .3125rem;
+}
+
 
 #content {
 	
@@ -94,11 +120,26 @@ a, a:link, a i {
 
 /* ==== responsive layouts ==== */
 
-@media screen and (max-width:53.99999em) {
+@media screen and (max-width:52.99999em) {
+	#menu a span {
+		display: none;
+	}
+}
+@media screen and (max-width:65.99999em) {
 	
 	#menu {
 		width: 100%;
 		height:3.75rem;
+	}
+	#menu ul {
+		width:200%;
+	}
+	#menu li {
+		border-right: 1px solid #333;
+		/*padding: 0 .3125rem;*/
+	}
+	#menu li:last-child {
+		border:0;
 	}
 	
 	#content {
@@ -111,7 +152,7 @@ a, a:link, a i {
 	}
 
 }
-@media screen and (min-width:54em) {
+@media screen and (min-width:66em) {
 	
 	body {
 		
@@ -125,12 +166,21 @@ a, a:link, a i {
 		overflow: hidden;
 		box-shadow: 0px 0px 15px 0px rgba(0,0,0,0.7);
 		
-		transition: width .3s ease-in-out;
-		transition-delay: .2s;
+		transition: width .3s .2s ease-in-out, height .3s .5s ease-in-out;
+		/* height added for responsive resizing */
 	}
 	#menu:hover {
-		width: 12rem;
+		width: 17rem;
 		transition-delay: .7s;
+	}
+	#menu ul, #menu ul li, #menu a {
+		width:22rem;
+	}
+	#menu li {
+		border-bottom: 1px solid #333;
+	}
+	#menu a {
+		padding-left: .3125rem;
 	}
 	
 	#content {
@@ -158,15 +208,13 @@ a, a:link, a i {
 	.screenContent {
 		width: 50rem;
 	}
-	.screen.open, .screen.opening, .screen.opening2 {
+	.screen.open, .screen.opening {
 		flex-grow: 1;
 		margin-right: .675rem;
 	}
-	.screen.opening2 {
-		overflow-y: auto;
-	}
 	.screen.open {
-		overflow: auto;
+		overflow-y: auto; 
+		/* overflow-x blocked (only here, at large screen sizes), only hides elements that count on it (.beside) */
 	}
 	.screen:last-child {
 		margin-right: 0;
@@ -186,12 +234,15 @@ a, a:link, a i {
 	/*border: 1px solid #f00;*/
 }
 
+
+
 .screen {
 	
 	/*background-color: burlywood;*/
 }
 p {
 	padding: 0 1.25rem;
+	/*background: rgba(255,255,0,.03);*/
 }
 
 @media screen and (min-width:54em) and (max-width:69.99999em) {
@@ -200,4 +251,14 @@ p {
 		/*background-color: aqua;*/
 	}
 
+}
+
+.beside {
+	position: absolute;
+	left:52rem;
+}
+@media screen and (max-width:74.99999em) {
+	.beside.hide {
+		display: none;
+	}
 }
