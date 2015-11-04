@@ -1,19 +1,30 @@
 {
   "name": "PUMA",
   "description": "PUMA platform",
-  "version": "0.0.1",
+  "version": "0.2.0",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gisat/puma.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gisat/puma/issues"
+  },
+  "homepage": "http://puma.worldbank.org/",
   "dependencies": {
+    "async": "1.5.x",
+    "bower": "^1.6.5",
     "express": "3.x",
-    "pg": "0.8.x",
-    "mongodb": "1.2.x",
-    "async": "0.1.x",
+    "forever-monitor": "^1.7.0",
+    "jsdom": "7.x.x",
+    "mongodb": "~2.0",
+    "onecolor": "2.3.4",
     "openlayers": "3.0.0",
-    "jsdom" : "0.3.4",
-    "xmldom" : "0.1.13",
-    "properties" : "0.3.3",
-    "underscore":"1.4.x",
-    "xml2json":"0.3.2",
-    "onecolor":"2.3.4"
+    "pg": "4.4.x",
+    "properties": "0.3.3",
+    "underscore": "1.4.x",
+    "xml2json": "0.9.x",
+    "xmldoc": "^0.3.2",
+    "xmldom": "0.1.13"
   }
 }
