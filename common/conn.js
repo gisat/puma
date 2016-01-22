@@ -90,7 +90,7 @@ function request(options,dataToWrite,callback) {
 //			console.log('auth set');
 //		}
 //	}
-	var reqs = http.request(options, function(resl){
+	var reqs = npmRequest(options, function(resl){
 		var output = '';
 		resl.setEncoding(options.resEncoding || 'utf8' ) ;
 		//console.log(resl.headers['geowebcache-cache-result'] || 'none');
