@@ -1,11 +1,10 @@
-
-
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
 ///// LIVE
 var http = require('http');
+var npmRequest = require('request');
 /////
 
 /////// DEBUG
@@ -14,8 +13,8 @@ var http = require('http');
 //http.debug = 2;
 ///////
 		
-var async = require('async')
-var collections = require('../rest/models').collections
+var async = require('async');
+var collections = require('../rest/models').collections;
 
 var mongodb = null;
 var pgDataDB = null;
@@ -30,17 +29,17 @@ var pgGeonodeConnString = config.pgGeonodeConnString;
 var mongoConnString = config.mongoConnString;
 
 function getPgDataConnString() {
-    return pgDataConnString;
+	return pgDataConnString;
 }
 function getPgGeonodeConnString() {
-    return pgGeonodeConnString;
+	return pgGeonodeConnString;
 }
 
 function getLocalAddress() {
-    return config.localAddress;
+	return config.localAddress;
 }
 function getRemoteAddress() {
-    return config.remoteAddress;
+	return config.remoteAddress;
 }
 
 
@@ -78,78 +77,80 @@ function getGeonodeHome(){
 
 
 function request(options,dataToWrite,callback) {
-    var time = new Date().getTime();
-//    if (!options.headers || !options.headers['Authorization']) {
-//        console.log('no auth',options.host);
-//        if (options.host == config.geonodeHost || options.host == config.baseServer) {
-//            options.headers = options.headers || {};
-//            var auth = 'Basic ' + new Buffer(config.authUser + ':' + config.authPass).toString('base64');
-//            options.headers['Authorization'] = auth;
-//            console.log('auth set');
-//        }
-//    }
-    var reqs = http.request(options, function(resl){
-        var output = '';
-        resl.setEncoding(options.resEncoding || 'utf8' ) ;
-        //console.log(resl.headers['geowebcache-cache-result'] || 'none');
-        resl.on('data', function (chunk) {
-            output += chunk;
-        });
-        resl.once('end', function() {
-            return callback(null,output,resl);
-       
-        });
-    });
-    reqs.setMaxListeners(0);
-//    reqs.once('socket', function (socket) {
-//        socket.setMaxListeners(0);
-//        socket.setTimeout(options.timeout || 60000); 
-//        socket.once('timeout', function() {
-//            reqs.abort();
-//            return callback(new Error('sockettimeout'))
-//        });
-//    })
+
+	console.log("\n\n============= common/conn.request options: \n", options, "\n======================================\n\n");
+
+	var time = new Date().getTime();
+//	if (!options.headers || !options.headers['Authorization']) {
+//		console.log('no auth',options.host);
+//		if (options.host == config.geonodeHost || options.host == config.baseServer) {
+//			options.headers = options.headers || {};
+//			var auth = 'Basic ' + new Buffer(config.authUser + ':' + config.authPass).toString('base64');
+//			options.headers['Authorization'] = auth;
+//			console.log('auth set');
+//		}
+//	}
+	var reqs = http.request(options, function(resl){
+		var output = '';
+		resl.setEncoding(options.resEncoding || 'utf8' ) ;
+		//console.log(resl.headers['geowebcache-cache-result'] || 'none');
+		resl.on('data', function (chunk) {
+			output += chunk;
+		});
+		resl.once('end', function() {
+			return callback(null,output,resl);
+		});
+	});
+	reqs.setMaxListeners(0);
+//	reqs.once('socket', function (socket) {
+//		socket.setMaxListeners(0);
+//		socket.setTimeout(options.timeout || 60000); 
+//		socket.once('timeout', function() {
+//			reqs.abort();
+//			return callback(new Error('sockettimeout'))
+//		});
+//	})
 
 	reqs.once('error',function(error) {
-        return callback(error)
-    })
-    if (dataToWrite) {
-        reqs.write(dataToWrite);
-    }
-    reqs.end();
-    return reqs;
+		return callback(error)
+	});
+	if (dataToWrite) {
+		reqs.write(dataToWrite);
+	}
+	reqs.end();
+	return reqs;
 }
 
 
 function initGeoserver() {
-    var username = config.geoserverUsername;
-    var password = config.geoserverPassword;
-    var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
-    var headers = {
-        'Authorization': auth
-    };
-    var options = {
-        host: getGeoserverHost(),
-        path: getGeoserverPath()+'/web',
-        headers: headers,
-        port: getGeoserverPort(),
-        method: 'GET'
-    };
-    var jsid = null;
-    request(options, null, function(err, output, resl) {
-        if (err) {
-            console.log("common/conn.js Geoserver request error: " + err);
-            return;
-        }
-        var cookies = resl.headers['set-cookie'] || [];
-        for (var i=0;i<cookies.length;i++) {
-            var cookie = cookies[i];
-            if (cookie.search('JSESSIONID')>-1) {
-                jsid = cookie.split(';')[0].split('=')[1];
-                break;
-            }
-        }
-        require('../api/proxy').setJsid(jsid);
+	var username = config.geoserverUsername;
+	var password = config.geoserverPassword;
+	var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+	var headers = {
+		'Authorization': auth
+	};
+	var options = {
+		host: getGeoserverHost(),
+		path: getGeoserverPath()+'/web',
+		headers: headers,
+		port: getGeoserverPort(),
+		method: 'GET'
+	};
+	var jsid = null;
+	request(options, null, function(err, output, resl) {
+		if (err) {
+			console.log("common/conn.js Geoserver request error: " + err);
+			return;
+		}
+		var cookies = resl.headers['set-cookie'] || [];
+		for (var i=0;i<cookies.length;i++) {
+			var cookie = cookies[i];
+			if (cookie.search('JSESSIONID')>-1) {
+				jsid = cookie.split(';')[0].split('=')[1];
+				break;
+			}
+		}
+		require('../api/proxy').setJsid(jsid);
 
 		//console.log("");
 		//console.log("");
@@ -157,110 +158,110 @@ function initGeoserver() {
 		//console.log("# "+jsid+" #");
 		//console.log("####################################");
 
-    })
+	})
 }
 
 function init(app,callback) {
-    pgDataDB = new pg.Client(getPgDataConnString());
-    pgDataDB.connect();
-    pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
-    pgGeonodeDB.connect();
-    var reconnectCommand = null;
-    
-    setInterval(function() {
-        initGeoserver();
-    },590000);
-    initGeoserver();
-    // keeping connection alive
-    setInterval(function() {
-        if (reconnectCommand) {
-            clearInterval(reconnectCommand);
-        }
-        var reconnectCommand = setInterval(function() {
-            if(!pgDataDB.activeQuery){
-                clearInterval(reconnectCommand);
-                pgDataDB.end();
-                pgDataDB = new pg.Client(getPgDataConnString());
-                pgDataDB.connect();
-                console.log('Data DB reconnected');
-            }else{
-                console.log('Data DB waiting for reconnect');
-            }
-        },2000);
-    },Math.round(1000*60*60*5.9));
+	pgDataDB = new pg.Client(getPgDataConnString());
+	pgDataDB.connect();
+	pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
+	pgGeonodeDB.connect();
+	var reconnectCommand = null;
 	
-    setInterval(function() {
-        if (reconnectCommand) {
-            clearInterval(reconnectCommand);
-        }
-        var reconnectCommand = setInterval(function() {
-            if(!pgGeonodeDB.activeQuery){
-                clearInterval(reconnectCommand);
-                pgGeonodeDB.end();
-                pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
-                pgGeonodeDB.connect();
-                console.log('Geonode DB reconnected');
-            }else{
-                console.log('Geonode DB waiting for reconnect');
-            }
-        },2000);
-    },Math.round(1000*60*60*5.42));
-    
+	setInterval(function() {
+		initGeoserver();
+	},590000);
+	initGeoserver();
+	// keeping connection alive
+	setInterval(function() {
+		if (reconnectCommand) {
+			clearInterval(reconnectCommand);
+		}
+		var reconnectCommand = setInterval(function() {
+			if(!pgDataDB.activeQuery){
+				clearInterval(reconnectCommand);
+				pgDataDB.end();
+				pgDataDB = new pg.Client(getPgDataConnString());
+				pgDataDB.connect();
+				console.log('Data DB reconnected');
+			}else{
+				console.log('Data DB waiting for reconnect');
+			}
+		},2000);
+	},Math.round(1000*60*60*5.9));
+	
+	setInterval(function() {
+		if (reconnectCommand) {
+			clearInterval(reconnectCommand);
+		}
+		var reconnectCommand = setInterval(function() {
+			if(!pgGeonodeDB.activeQuery){
+				clearInterval(reconnectCommand);
+				pgGeonodeDB.end();
+				pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
+				pgGeonodeDB.connect();
+				console.log('Geonode DB reconnected');
+			}else{
+				console.log('Geonode DB waiting for reconnect');
+			}
+		},2000);
+	},Math.round(1000*60*60*5.42));
+	
 	MongoClient.connect(mongoConnString, function(err, dbs) {
-        if (err){
+		if (err){
 			return callback(err);
 		}
-        mongodb=dbs;
-        var mongoSettings = mongodb.collection('settings');
-        mongoSettings.findOne({_id:1},function(err,result) {
-            objectId = result ? result.objectId : null;
-            if (err || !objectId) return callback(err);
-            callback();
-        });
-    });
+		mongodb=dbs;
+		var mongoSettings = mongodb.collection('settings');
+		mongoSettings.findOne({_id:1},function(err,result) {
+			objectId = result ? result.objectId : null;
+			if (err || !objectId) return callback(err);
+			callback();
+		});
+	});
 
-    var server = require('http').createServer(app);
-    //io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
-    server.listen(3100);
+	var server = require('http').createServer(app);
+	//io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
+	server.listen(3100);
 }
 
 function getIo() {
 	return null;
-    //return io;
+	//return io;
 }
 
 function getNextId() {
-    objectId++;
-    var mongoSettings = getMongoDb().collection('settings');
-    mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {})
-    return objectId;
+	objectId++;
+	var mongoSettings = getMongoDb().collection('settings');
+	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
+	return objectId;
 }
 
 function getMongoDb() {
-    return mongodb;
+	return mongodb;
 }
 
 function getPgDataDb() {
-    return pgDataDB;
+	return pgDataDB;
 }
 function getPgGeonodeDb() {
-    return pgGeonodeDB;
+	return pgGeonodeDB;
 }
 
 
 module.exports = {
-    init: init,
-    getIo: getIo,
-    request: request,
-    getMongoDb: getMongoDb,
-    getPgDataDb: getPgDataDb,
-    getPgGeonodeDb: getPgGeonodeDb,
-    getNextId: getNextId,
-    getLocalAddress: getLocalAddress,
+	init: init,
+	getIo: getIo,
+	request: request,
+	getMongoDb: getMongoDb,
+	getPgDataDb: getPgDataDb,
+	getPgGeonodeDb: getPgGeonodeDb,
+	getNextId: getNextId,
+	getLocalAddress: getLocalAddress,
 	getRemoteAddress: getRemoteAddress,
 	
 	getPgDataConnString: getPgDataConnString,
-    getPgGeonodeConnString: getPgGeonodeConnString,
+	getPgGeonodeConnString: getPgGeonodeConnString,
 
 	getGeoserverHost: getGeoserverHost,
 	getGeoserverPort: getGeoserverPort,
