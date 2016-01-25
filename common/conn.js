@@ -3,8 +3,7 @@ var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
 ///// LIVE
-var http = require('http');
-var npmRequest = require('request');
+var http = require('https');
 /////
 
 /////// DEBUG
@@ -90,7 +89,7 @@ function request(options,dataToWrite,callback) {
 //			console.log('auth set');
 //		}
 //	}
-	var reqs = npmRequest(options, function(resl){
+	var reqs = http.request(options, function(resl){
 		var output = '';
 		resl.setEncoding(options.resEncoding || 'utf8' ) ;
 		//console.log(resl.headers['geowebcache-cache-result'] || 'none');

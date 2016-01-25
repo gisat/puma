@@ -1,6 +1,6 @@
 var crud = require('../rest/crud');
 var async = require('async');
-var us = require('underscore')
+var us = require('underscore');
 
 var conn = require('../common/conn');
 
@@ -43,7 +43,7 @@ function getLocationConf(params, req, res, callback) {
                 
                 var dataset = results.dataset[datasetId];
                 for (var i=0;i<locs.length;i++) {
-                    locToQuery.push({location: locs[i]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId})    
+                    locToQuery.push({location: locs[i]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId});
                 }
             }
             var client = conn.getPgDataDb();
@@ -53,7 +53,7 @@ function getLocationConf(params, req, res, callback) {
                 
                 crud.read('layerref', item, function(err, results) {
                     if (err)
-                        return callback(err)
+                        return callback(err);
                     if (!results.length)
                         return eachCallback(null);
                     var layerRef = results[0];
@@ -71,13 +71,13 @@ function getLocationConf(params, req, res, callback) {
                 })
             },function() {
                 if (resultArr.length>1) {
-                    resultArr.push({name:'All places',id: 'custom'})
+                    resultArr.push({name:'All places',id: 'custom'});
                 }
                 res.data = resultArr;
                 return callback();
             })
         }]
-    }
+    };
     async.auto(opts);
 }
 
@@ -268,7 +268,7 @@ function getThemeYearConf(params, req, res, callback) {
                     }
                     locFeatureLayers.sort(function(a, b) {
                         return featureLayers.indexOf(a) > featureLayers.indexOf(b);
-                    })
+                    });
 
                     for (var j = 0; j < locFeatureLayers.length; j++) {
                         var fl = locFeatureLayers[j];
@@ -305,7 +305,7 @@ function getThemeYearConf(params, req, res, callback) {
                             }
                             sql += ' INNER JOIN views.layer_' + yearLayerRef._id + ' y' + years[k] + ' ON a.gid=y' + years[k] + '.gid'
                         }
-                        sql += ' WHERE 1=1'
+                        sql += ' WHERE 1=1';
                         if (locOpened && prevFl && locOpened[prevFl]) {
                             sql += ' AND a.parentgid IN (' + locOpened[prevFl].join(',') + ')';
                         }
@@ -314,7 +314,7 @@ function getThemeYearConf(params, req, res, callback) {
                         }
                     }
                 }
-                sql += ' ORDER BY idx ASC'
+                sql += ' ORDER BY idx ASC';
                 var client = conn.getPgDataDb();
                 client.query(sql, {}, function(err, resls) {
 
@@ -462,7 +462,7 @@ function getThemeYearConf(params, req, res, callback) {
                     areas = us.sortBy(areas,'idx');
                     var obj = {
                         leafMap: leafMap
-                    }
+                    };
                     if (results.sql.areas) {
                         obj['areas'] = areas;
                     }
@@ -565,7 +565,7 @@ function getThemeYearConf(params, req, res, callback) {
                                     sortIndex: 2.5,
                                     type: 'topiclayer',
                                     checked: false
-                                }
+                                };
                                 //node.children.push(symbNode);
                                 nodes.push(symbNode)
                             }
