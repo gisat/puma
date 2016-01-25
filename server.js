@@ -1,4 +1,3 @@
-    
 var express = require('express');
 var app = express();
 var conn = require('./common/conn');
@@ -8,21 +7,21 @@ var async = require('async');
 var loc = require('./common/loc');
 
 function initServer(err) {
-    if (err) {
-        console.log('Error: while initializing server: ', err);
-        return;
-    }
-    // Order is important
-    var oneDay = 60*60*24*1000;
-    //app.use(express.favicon());
-    //app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
-    app.use('/printpublic',function(req,res,next) {
-        if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
-            return next(new Error('unauthorized'));
-        }
-        return next(null);
-    });
-	
+	if (err) {
+		console.log('Error: while initializing server: ', err);
+		return;
+	}
+	// Order is important
+	var oneDay = 60*60*24*1000;
+	//app.use(express.favicon());
+	//app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
+	app.use('/printpublic',function(req,res,next) {
+		if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
+			return next(new Error('unauthorized'));
+		}
+		return next(null);
+	});
+
 	/*
 	#######################################################################
 	Nastaveni apache.conf pro servirovani statickych souboru primo Apachem:
@@ -54,23 +53,23 @@ function initServer(err) {
 	ProxyPass /tool/lib !
 	ProxyPass /tool/gisatlib !
 	ProxyPass /tool/extjs-4.1.3 !
-	
+
 	#### /tool* non-static routing (and some minor static, not covered by above code)
 	ProxyPass /tool http://127.0.0.1:3000
 	ProxyPassReverse /tool http://127.0.0.1:3000
 	 */
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
-    app.use('/printpublic',staticFn(__dirname + '/public'));
-    app.use(express.cookieParser());
-    app.use(express.bodyParser());
-    app.use(loc.langParser);
-    require('./routes/security')(app);
-    require('./routes/routes')(app);
-    require('./routes/finish')(app);
+	app.use('/printpublic',staticFn(__dirname + '/public'));
+	app.use(express.cookieParser());
+	app.use(express.bodyParser());
+	app.use(loc.langParser);
+	require('./routes/security')(app);
+	require('./routes/routes')(app);
+	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-    app.listen(3000);
-    console.log('Listening on port 3000'); 
+	app.listen(3000);
+	console.log('Listening on port 3000'); 
 }
 
 async.series([
@@ -82,4 +81,3 @@ async.series([
 	}],
 	initServer
 );
-
