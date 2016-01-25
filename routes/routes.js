@@ -122,7 +122,6 @@ module.exports = function(app) {
 		}
 	});
 	app.post('/api/:module/:method',function(req,res,next) {
-		console.log();
 		var mod = api[req.params.module];
 		var fn = mod[req.params.method];
 		try {
