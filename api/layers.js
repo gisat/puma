@@ -190,10 +190,10 @@ function getLayers(params, req, res, callback) {
                 var obj = {
                     name: layer,
                     referenced: layerMap[layer]
-                }
+                };
                 objs.push(obj);
             }
-            objs.push({name: 'WMS', referenced: false, isWms: true})
+            objs.push({name: 'WMS', referenced: false, isWms: true});
             res.data = objs;
             return callback();
         })
@@ -212,7 +212,7 @@ function activateLayerRef(params, req, res, callback) {
             crud.read('layerref', {_id: parseInt(params['id'])}, function(err, results) {
                 if (err)
                     return callback(err);
-                var layerRef = results[0]
+                var layerRef = results[0];
                 if (!layerRef.fidColumn) {
                     layerRef.active = !layerRef.active;
                 }
@@ -235,8 +235,8 @@ function activateLayerRef(params, req, res, callback) {
                         {location: layerRef.location},
                         {year: layerRef.year},
                         {areaTemplate: layerRef.areaTemplate},
-                        {isData: layerRef.isData},
-                    ]}
+                        {isData: layerRef.isData}
+                    ]};
                 if (layerRef.attributeSet) {
                     filter.attributeSet = layerRef.attributeSet
                 }
@@ -275,7 +275,7 @@ function activateLayerRef(params, req, res, callback) {
                 })
             }]
 
-    }
+    };
     async.auto(opts);
 }
 
@@ -376,8 +376,8 @@ function getLayerRefTable(params,req,res,callback) {
             var analyticalUnits = results.dataset.featureLayers;
             var featureLayers = results.featureLayerTemplates.featureLayers;
             var layers = results.featureLayerTemplates.layers;
-            var allFeatureLayers = us.union(analyticalUnits,featureLayers,layers)
-            var rows = [{value: 'Analytical units'}]
+            var allFeatureLayers = us.union(analyticalUnits,featureLayers,layers);
+            var rows = [{value: 'Analytical units'}];
             async.map(allFeatureLayers,function(item,mapCallback) {
                 crud.read('layerref',{location:location,year:year,isData:false,areaTemplate:item},{},function(err,resls) {
                     if (err) return callback(err);
@@ -389,10 +389,10 @@ function getLayerRefTable(params,req,res,callback) {
                             var attrSets = results.attributeSets.flMap[item];
                         }
                         else {
-                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}})
+                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}});
                         }
                         if (!attrSets || !attrSets.length) {
-                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}})
+                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}});
                         }
                         
                         crud.read('layerref',{location:location,year:year,isData:true,areaTemplate:item,attributeSet:{$in:attrSets}},{},function(err2,resls2) {
@@ -404,13 +404,13 @@ function getLayerRefTable(params,req,res,callback) {
                                 var layerRef = resls2[i];
                                 var id = layerRef.attributeSet;
                                 attrSetMap[id] = attrSetMap[id] || [];
-                                attrSetMap[id].push(layerRef)
+                                attrSetMap[id].push(layerRef);
                             }
-                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:attrSetMap})
+                            return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:attrSetMap});
                         })
                     }
                     else {
-                        return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}})
+                        return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}});
                     }
                 })
             },
@@ -421,27 +421,27 @@ function getLayerRefTable(params,req,res,callback) {
                     var au = allFeatureLayers[i];
                     var layerRefs = result[i].geometriesLayerRefs;
                     var name = results.featureLayerTemplates.flMap[au].name;
-                    var hasRef = true
+                    var hasRef = true;
                     for (var j = 0; j < layerRefs.length; j++) {
                         var layerRef = layerRefs[j];
-                        var cls = getCls(layerRef)
-                        value += '<a href="blank" layerref="' + layerRef['_id'] + '" class="' + cls + '">' + name + '</a> '
+                        var cls = getCls(layerRef);
+                        value += '<a href="blank" layerref="' + layerRef['_id'] + '" class="' + cls + '">' + name + '</a> ';
                     }
                     if (!layerRefs.length) {
                         hasRef = false;
-                        value += '<a href="blank" class="noref">' + name + '</a> '
+                        value += '<a href="blank" class="noref">' + name + '</a> ';
                     }
                     var attrSetLayerRefs = result[i].attrSetLayerRefs;
                     
                     if (i==analyticalUnits.length) {
                         rows.push({
                             value: 'Vector layers'
-                        })
+                        });
                     }
                     if (i==analyticalUnits.length+featureLayers.length) {
                         rows.push({
                             value: 'Layers'
-                        })
+                        });
                     }
                     
                     
@@ -457,7 +457,7 @@ function getLayerRefTable(params,req,res,callback) {
                             areaTemplate: au,
                             location: location,
                             year: year
-                        })
+                        });
                         continue;
                     }
                     if (!attrSets) {
@@ -467,16 +467,16 @@ function getLayerRefTable(params,req,res,callback) {
                     for (var j = 0; j < attrSets.length; j++) {
                         var attrSet = attrSets[j];
                         var name = results.attributeSets.attrSetMap[attrSet].name;
-                        var layerRefs = attrSetLayerRefs[attrSet]
+                        var layerRefs = attrSetLayerRefs[attrSet];
                         if (layerRefs) {
                             for (var k = 0; k < layerRefs.length; k++) {
                                 var layerRef = layerRefs[k];
-                                var cls = getCls(layerRef)
-                                value2 += '<a href="blank" objid="'+attrSet+'" layerref="' + layerRef['_id'] + '" class="' + cls + '">' + name + '</a> '
+                                var cls = getCls(layerRef);
+                                value2 += '<a href="blank" objid="'+attrSet+'" layerref="' + layerRef['_id'] + '" class="' + cls + '">' + name + '</a> ';
                             }
                         }
                         else {
-                            value2 += '<a href="blank" objid="'+attrSet+'" class="noref">' + name + '</a> '
+                            value2 += '<a href="blank" objid="'+attrSet+'" class="noref">' + name + '</a> ';
                         }
 
                     }
@@ -487,15 +487,15 @@ function getLayerRefTable(params,req,res,callback) {
                         areaTemplate: au,
                         location: location,
                         year: year
-                    })
+                    });
                 }
-                res.data = rows
+                res.data = rows;
                 return callback(null);
-            })
+            });
         }]
         
-    }
-    async.auto(opts)
+    };
+    async.auto(opts);
     
     
     
@@ -503,7 +503,7 @@ function getLayerRefTable(params,req,res,callback) {
 }
 
 var getCls = function(layerRef) {
-    var cls = 'ref'
+    var cls = 'ref';
     if (layerRef.analysis) {
         cls += ' refanalysis';
     }
@@ -514,7 +514,7 @@ var getCls = function(layerRef) {
         cls += ' refnoavailable';
     }
     return cls;
-}
+};
 
 
 
@@ -543,11 +543,12 @@ function getMetadata(params, req, res, callback) {
 		JOIN people_profile p ON p.id = r.contact_id \
 	WHERE \
 		r.role = \'pointOfContact\' AND \
-		l.typename IN (' + layers + ')'
+		l.typename IN (' + layers + ')';
     //console.log("getMetadata SQL: ", sql);
     client.query(sql, function(err, resls) {
-        if (err)
+        if (err) {
             return callback(err);
+        }
         var retData = [];
         for (var i=0;i<resls.rows.length;i++) {
 			var obj = resls.rows[i];
@@ -589,7 +590,7 @@ function getMetadata(params, req, res, callback) {
         }
         
         res.data = retData;
-        return callback(null)
+        return callback(null);
     })
 
 }
@@ -616,15 +617,16 @@ function getSymbologiesFromServer(params, req, res, callback) {
                 method: 'GET'
             };
             conn.request(options, null, function(err, output, resl) {
-                if (err)
+                if (err) {
                     return callback(err);
+                }
                 var styles = JSON.parse(output).styles.style;
-                //console.log(styles)
+                //console.log(styles);
                 var names = [];
                 for (var i = 0; i < styles.length; i++) {
-                    names.push(styles[i].name)
+                    names.push(styles[i].name);
                 }
-                asyncCallback(null, names)
+                asyncCallback(null, names);
             })
         },
         symbologiesDb: function(asyncCallback) {
@@ -635,34 +637,34 @@ function getSymbologiesFromServer(params, req, res, callback) {
                 for (var i = 0; i < resls.length; i++) {
                     symbologies.push(resls[i].symbologyName);
                 }
-                asyncCallback(null, symbologies)
-            })
+                asyncCallback(null, symbologies);
+            });
         },
         create: ['symbologiesServer', 'symbologiesDb', function(asyncCallback, results) {
                 var symbologiesDb = symbologiesDb;
-                var symbToCreate = us.difference(results.symbologiesServer, results.symbologiesDb)
+                var symbToCreate = us.difference(results.symbologiesServer, results.symbologiesDb);
                 async.forEach(symbToCreate, function(symb, eachCallback) {
                     var obj = {
                         name: symb,
                         active: true,
                         symbologyName: symb
-                    }
+                    };
                     crud.create('symbology', obj, {userId: req.userId}, function(err) {
                         if (err)
                             callback(err);
                         eachCallback(null);
-                    })
+                    });
 
                 }, function() {
-                    asyncCallback(null)
+                    asyncCallback(null);
                 })
             }],
         delete: ['symbologiesServer', 'symbologiesDb', 'create', function(asyncCallback, results) {
-                var symbToDel = us.difference(results.symbologiesDb, results.symbologiesServer)
+                var symbToDel = us.difference(results.symbologiesDb, results.symbologiesServer);
                 async.forEach(symbToDel, function(symb, eachCallback) {
                     var obj = {
                         symbologyName: symb
-                    }
+                    };
                     crud.read('symbology', obj, function(err, resls) {
                         async.forEach(resls, function(resl, eachCallback2) {
                             crud.remove('symbology', {_id: resl._id}, function(err) {
@@ -671,14 +673,14 @@ function getSymbologiesFromServer(params, req, res, callback) {
                             })
                         }, function() {
                             eachCallback(null);
-                        })
-                    })
+                        });
+                    });
 
                 }, function() {
-                    callback(null)
+                    callback(null);
                 })
             }]
-    }
+    };
     async.auto(opts);
 
 }
@@ -694,4 +696,4 @@ module.exports = {
     activateLayerRef: activateLayerRef,
     gatherLayerData: gatherLayerData,
     copyYears: copyYears
-}
+};

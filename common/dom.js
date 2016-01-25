@@ -24,4 +24,4 @@ function execInDom(callback) {
 
 module.exports = {
 	execInDom: execInDom
-}
+};

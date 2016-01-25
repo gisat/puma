@@ -111,7 +111,7 @@ function request(options,dataToWrite,callback) {
 //	})
 
 	reqs.once('error',function(error) {
-		return callback(error)
+		return callback(error);
 	});
 	if (dataToWrite) {
 		reqs.write(dataToWrite);
