@@ -1,4 +1,3 @@
-
 var analysis = {
 	spatialagg: require('../analysis/spatialagg'),
 	fidagg: require('../analysis/fidagg'),
