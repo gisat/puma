@@ -4,6 +4,7 @@ var MongoClient = require('mongodb').MongoClient;
 
 ///// LIVE
 var http = require('https');
+//var requestPackage = require('request'); // request was taken by conn.request
 /////
 
 /////// DEBUG
@@ -77,7 +78,9 @@ function getGeonodeHome(){
 
 function request(options,dataToWrite,callback) {
 
-	console.log("\n\n============= common/conn.request options: \n", options, "\n======================================\n\n");
+	options.protocol = "https:"; /////////////////////////////////////////////////////////////////////////////////////////
+	console.log("\n\n============= common/conn.request options:", options); //////////////////////////////////////////////
+	console.log("\n==========================================\n\n"); /////////////////////////////////////////////////////
 
 	var time = new Date().getTime();
 //	if (!options.headers || !options.headers['Authorization']) {
@@ -89,26 +92,72 @@ function request(options,dataToWrite,callback) {
 //			console.log('auth set');
 //		}
 //	}
+
+//	var reqs = http.request(options, function(resl){
+//		var output = '';
+//		resl.setEncoding(options.resEncoding || 'utf8' ) ;
+//		//console.log(resl.headers['geowebcache-cache-result'] || 'none');
+//		resl.on('data', function (chunk) {
+//			output += chunk;
+//		});
+//		resl.once('end', function() {
+//			return callback(null,output,resl);
+//		});
+//	});
+//	reqs.setMaxListeners(0);
+////	reqs.once('socket', function (socket) {
+////		socket.setMaxListeners(0);
+////		socket.setTimeout(options.timeout || 60000);
+////		socket.once('timeout', function() {
+////			reqs.abort();
+////			return callback(new Error('sockettimeout'))
+////		});
+////	})
+//
+//	reqs.once('error',function(error) {
+//		return callback(error);
+//	});
+//	if (dataToWrite) {
+//		reqs.write(dataToWrite);
+//	}
+//	reqs.end();
+//	return reqs;
+
+
+	//// compose url from host, port and path
+	//if(typeof options.url == "undefined"){
+	//	options.url = "http://" + options.host;
+	//	if(typeof options.port != "undefined") options.url += ":" + options.port;
+	//	if(options.path.charAt(0) != "/") options.url += "/";
+	//	options.url += options.path;
+	//}
+	//delete options.host;
+	//delete options.port;
+	//delete options.path;
+	//
+	//var reqs = requestPackage(options, function(res){
+	//
+	//}).setMaxListeners(100);
+
+	////////////////////
+
 	var reqs = http.request(options, function(resl){
 		var output = '';
-		resl.setEncoding(options.resEncoding || 'utf8' ) ;
+		resl.setEncoding(options.resEncoding || 'utf8' );
 		//console.log(resl.headers['geowebcache-cache-result'] || 'none');
 		resl.on('data', function (chunk) {
 			output += chunk;
 		});
 		resl.once('end', function() {
+
+			if(options.path == "/account/login/"){
+				console.log("---------> conn.request for login, output:\n", output, "\n\n\n"); /////////////////////////////////
+			}
+
 			return callback(null,output,resl);
 		});
 	});
 	reqs.setMaxListeners(0);
-//	reqs.once('socket', function (socket) {
-//		socket.setMaxListeners(0);
-//		socket.setTimeout(options.timeout || 60000); 
-//		socket.once('timeout', function() {
-//			reqs.abort();
-//			return callback(new Error('sockettimeout'))
-//		});
-//	})
 
 	reqs.once('error',function(error) {
 		return callback(error);
@@ -138,7 +187,7 @@ function initGeoserver() {
 	var jsid = null;
 	request(options, null, function(err, output, resl) {
 		if (err) {
-			console.log("common/conn.js Geoserver request error: " + err);
+			console.log("\n\ncommon/conn.initGeoserver Geoserver request error:", err, "\noutput:", output, "\n\n");
 			return;
 		}
 		var cookies = resl.headers['set-cookie'] || [];
@@ -157,7 +206,7 @@ function initGeoserver() {
 		//console.log("# "+jsid+" #");
 		//console.log("####################################");
 
-	})
+	});
 }
 
 function init(app,callback) {

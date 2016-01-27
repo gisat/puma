@@ -40,6 +40,8 @@ module.exports = function(app) {
 	
 	app.put('/rest/:objType/:objId',function(req,res,next) {
 		var obj = req.body.data;
+
+		// test if URL id equals PUT DATA id, todo ???
 		if (obj._id != req.params.objId) {
 			return next(new Error('updateid_notcorrect'))
 		}
