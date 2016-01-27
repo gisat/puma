@@ -26,7 +26,7 @@ module.exports = function(app) {
 			if (err) return next(err);
 			res.data = result;
 			next();
-		})
+		});
 	});
 	
 	app.get('/rest/:objType/:objId',function(req,res,next) {
@@ -35,7 +35,7 @@ module.exports = function(app) {
 			if (err) return next(err);
 			res.data = result;
 			next();
-		})
+		});
 	});
 	
 	app.put('/rest/:objType/:objId',function(req,res,next) {
@@ -47,7 +47,7 @@ module.exports = function(app) {
 			if (err) return next(err);
 			res.data = result;
 			next();
-		})
+		});
 	});
 	
 	
@@ -57,30 +57,28 @@ module.exports = function(app) {
 			if (err) return next(err);
 			res.data = result;
 			next();
-		})
+		});
 	});
 	
 	app.delete('/rest/:objType/:objId',function(req,res,next) {
 		crud.remove(req.params.objType,{_id: parseInt(req.params.objId)},{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err) return next(err);
 			next();
-		})
+		});
 	});
 	
 	
 	app.post('/print/*',function(req,res,next) {
 		try {
 			api.print.exporter({download:true},req,res,next);
-		}
-		catch (err) {
+		} catch (err) {
 			next(err);
 		}
 	});
 	app.get('/image/*',function(req,res,next) {
 		try {
 			api.print.exporter({},req,res,next);
-		}
-		catch (err) {
+		} catch (err) {
 			next(err);
 		}
 	});
@@ -104,9 +102,8 @@ module.exports = function(app) {
 			confId: req.params.confId
 		};
 		try {
-			fn(req.query,req,res,next)
-		}
-		catch (err) {
+			fn(req.query,req,res,next);
+		} catch (err) {
 			next(err);
 		}
 	});
@@ -116,8 +113,7 @@ module.exports = function(app) {
 		var fn = mod['wms'];
 		try {
 			fn(req.query,req,res,next);
-		}
-		catch (err) {
+		} catch (err) {
 			next(err);
 		}
 	});
@@ -126,16 +122,10 @@ module.exports = function(app) {
 		var fn = mod[req.params.method];
 		try {
 			fn(req.body,req,res,next);
-		}
-		catch (err) {
+		} catch (err) {
 			next(err);
 		}
 		  
-	})
-	
-	
-	
+	});
 	
 };
-
-

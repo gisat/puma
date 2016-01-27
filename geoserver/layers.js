@@ -199,8 +199,8 @@ function changeLayerGeoserver(layerId, method, callback) {
 	};
 	conn.request(options, data, function(err, output, resl) {
 		if (err) {
-            return callback(err);
-        }
+			return callback(err);
+		}
 		console.log("geoserver/layers.js output: " + output);
 		return callback();
 	});
