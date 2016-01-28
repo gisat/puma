@@ -17,8 +17,12 @@ function saveChart(params, req, res, callback) {
 		}
 	}
 	crud.create(collName, cfg, {userId: req.userId}, function(err, result) {
-		if (err)
+		if (err) {
 			return callback(err);
+		}
+		if (typeof result == "undefined"){
+			return callback("API/urlview.saveChart crud.create: result undefined");
+		}
 		res.data = result._id;
 		return callback(null);
 	})
