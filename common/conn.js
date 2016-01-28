@@ -3,7 +3,7 @@ var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
 ///// LIVE
-var http = require('https');
+var http = require('http');
 //var requestPackage = require('request'); // request was taken by conn.request
 /////
 
@@ -74,13 +74,10 @@ function getGeonodeHome(){
 }
 
 
-
-
 function request(options,dataToWrite,callback) {
 
-	options.protocol = "https:"; /////////////////////////////////////////////////////////////////////////////////////////
-	console.log("\n\n============= common/conn.request options:\n", options); //////////////////////////////////////////////
-	console.log("==========================================\n\n"); /////////////////////////////////////////////////////
+	//console.log("\n\n============= common/conn.request options:\n", options); ////////////////////////////////////////////
+	//console.log("==========================================\n\n"); ///////////////////////////////////////////////////////
 
 	var time = new Date().getTime();
 //	if (!options.headers || !options.headers['Authorization']) {
@@ -93,54 +90,6 @@ function request(options,dataToWrite,callback) {
 //		}
 //	}
 
-//	var reqs = http.request(options, function(resl){
-//		var output = '';
-//		resl.setEncoding(options.resEncoding || 'utf8' ) ;
-//		//console.log(resl.headers['geowebcache-cache-result'] || 'none');
-//		resl.on('data', function (chunk) {
-//			output += chunk;
-//		});
-//		resl.once('end', function() {
-//			return callback(null,output,resl);
-//		});
-//	});
-//	reqs.setMaxListeners(0);
-////	reqs.once('socket', function (socket) {
-////		socket.setMaxListeners(0);
-////		socket.setTimeout(options.timeout || 60000);
-////		socket.once('timeout', function() {
-////			reqs.abort();
-////			return callback(new Error('sockettimeout'))
-////		});
-////	})
-//
-//	reqs.once('error',function(error) {
-//		return callback(error);
-//	});
-//	if (dataToWrite) {
-//		reqs.write(dataToWrite);
-//	}
-//	reqs.end();
-//	return reqs;
-
-
-	//// compose url from host, port and path
-	//if(typeof options.url == "undefined"){
-	//	options.url = "http://" + options.host;
-	//	if(typeof options.port != "undefined") options.url += ":" + options.port;
-	//	if(options.path.charAt(0) != "/") options.url += "/";
-	//	options.url += options.path;
-	//}
-	//delete options.host;
-	//delete options.port;
-	//delete options.path;
-	//
-	//var reqs = requestPackage(options, function(res){
-	//
-	//}).setMaxListeners(100);
-
-	////////////////////
-
 	var reqs = http.request(options, function(resl){
 		var output = '';
 		resl.setEncoding(options.resEncoding || 'utf8' );
@@ -149,11 +98,6 @@ function request(options,dataToWrite,callback) {
 			output += chunk;
 		});
 		resl.once('end', function() {
-
-			if(options.path == "/account/login/"){
-				console.log("---------> conn.request for login, output:\n", output, "\n\n\n"); /////////////////////////////////
-			}
-
 			return callback(null,output,resl);
 		});
 	});
