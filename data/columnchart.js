@@ -98,28 +98,33 @@ function getChart(params, callback) {
 							var yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
 							if (params['aggregate'] == 'toptree' && row.loc!=-1 && !attr.topTreeAlready) {
 								var aggRow = results.data.aggDataMap[row.loc];
+								var value = parseFloat(aggRow[yearAttrName]);
 								if (aggRow) {
 									attr.topTreeAlready = true;
-									attr.plotValues.push(aggRow[yearAttrName]);
+									attr.plotValues.push(value);
 									attr.plotNames.push(aggRow['name']);
 								}
 							}
 							if (params['aggregate'] == 'topall' && i==0) {
 								var aggRow = results.data.aggDataMap[-1];
+								var value = parseFloat(aggRow[yearAttrName]);
 								if (aggRow) {
-									attr.plotValues.push(aggRow[yearAttrName]);
+									attr.plotValues.push(value);
 									attr.plotNames.push(aggRow['name']);
 								}
 							}
 							if (params['aggregate'] == 'select' && i==0) {
 								var aggRow = results.data.aggDataMap['select'];
-								attr.plotValues.push(aggRow[yearAttrName]);
+								var value = parseFloat(aggRow[yearAttrName]);
+								attr.plotValues.push(value);
 								attr.plotNames.push(aggRow['name']);
 							}
 
 
 							if (aggregate && aggregate in {min: true, avg: true, max: true}) {
-								attr.plotValues.push(results.data.aggregate[aggregate + '_' + yearAttrName]);
+								var value = results.data.aggregate[aggregate + '_' + yearAttrName];
+								value = parseFloat(value);
+								attr.plotValues.push(value);
 								attr.plotNames.push(aggregate);
 							}
 
