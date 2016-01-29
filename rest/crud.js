@@ -18,6 +18,10 @@ function ensureCollection(req,res,next) {
 function create(collName,obj,params,callback) {
 	if (typeof(params) === 'function') callback = params;
 
+	if(typeof obj == "string") {
+		obj = JSON.parse(obj);
+	}
+
 	var db = conn.getMongoDb();
 	var opts = {
 		checkRefs: function(asyncCallback) {
