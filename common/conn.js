@@ -41,6 +41,9 @@ function getLocalAddress() {
 function getRemoteAddress() {
 	return config.remoteAddress;
 }
+function getRemoteProtocol(){
+	return config.remoteProtocol;
+}
 
 
 function getGeoserverHost(){
@@ -251,6 +254,7 @@ module.exports = {
 	getNextId: getNextId,
 	getLocalAddress: getLocalAddress,
 	getRemoteAddress: getRemoteAddress,
+	getRemoteProtocol: getRemoteProtocol,
 	
 	getPgDataConnString: getPgDataConnString,
 	getPgGeonodeConnString: getPgGeonodeConnString,

@@ -49,7 +49,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		path: conn.getGeonodeHome()+'/',
 		method: 'GET',
 		headers: {
-			'referer': 'https://puma.worldbank.org/'
+			'referer': conn.getRemoteProtocol() + '://' + conn.getGeonodeHost() + "/"
 		}
 	};
 
@@ -83,7 +83,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Content-Length': postData.length,
 				'Cookie':'csrftoken='+csrf,
-				'referer': 'https://puma.worldbank.org/'
+				'referer': conn.getRemoteProtocol() + '://' + conn.getGeonodeHost() + '/'
 			}
 		};
 		conn.request(options2,postData,function(err,output,res2) {
