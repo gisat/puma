@@ -79,8 +79,8 @@ function getGeonodeHome(){
 
 function request(options,dataToWrite,callback) {
 
-	//console.log("\n\n============= common/conn.request options:\n", options); ////////////////////////////////////////////
-	//console.log("==========================================\n\n"); ///////////////////////////////////////////////////////
+	console.log("\n\n============= common/conn.request options:\n", options); ////////////////////////////////////////////
+	console.log("==========================================\n\n"); ///////////////////////////////////////////////////////
 
 	var time = new Date().getTime();
 //	if (!options.headers || !options.headers['Authorization']) {
