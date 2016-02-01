@@ -23,6 +23,7 @@ module.exports = function(app) {
 			message: message,
 			success: false
 		};
+		console.log("\n\n#######################   SERVER ERROR   #######################\n##\n##  ", message, "\n##\n################################################################\n\n");
 		res.json(status,obj);
 	})
 };

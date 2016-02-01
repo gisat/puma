@@ -21,7 +21,7 @@ function saveChart(params, req, res, callback) {
 			return callback(err);
 		}
 		if (typeof result == "undefined"){
-			return callback("API/urlview.saveChart crud.create: result undefined");
+			return callback({message: "API/urlview.saveChart crud.create: result undefined"});
 		}
 		res.data = result._id;
 		return callback(null);

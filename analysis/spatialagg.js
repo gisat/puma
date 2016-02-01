@@ -5,53 +5,53 @@ var pg = require('pg');
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
-    var location = performedAnalysisObj.location;
-    var year = performedAnalysisObj.year;
-    var featureLayerTemplates = performedAnalysisObj.featureLayerTemplates.slice(0);
-    featureLayerTemplates.push(analysisObj.areaTemplate);
-    var attrSets = [];
-    if (analysisObj.groupAttributeSet) {
-        attrSets.push(analysisObj.groupAttributeSet);
-    }
-    for (var i = 0; i < analysisObj.attributeMap.length; i++) {
-        var attrRec = analysisObj.attributeMap[i];
-        if (attrRec.normAttributeSet) {
-            attrSets.push(attrRec.normAttributeSet);
-        }
-        if (attrRec.calcAttributeSet) {
-            attrSets.push(attrRec.calcAttributeSet);
-        }
-    }
+	var location = performedAnalysisObj.location;
+	var year = performedAnalysisObj.year;
+	var featureLayerTemplates = performedAnalysisObj.featureLayerTemplates.slice(0);
+	featureLayerTemplates.push(analysisObj.areaTemplate);
+	var attrSets = [];
+	if (analysisObj.groupAttributeSet) {
+		attrSets.push(analysisObj.groupAttributeSet);
+	}
+	for (var i = 0; i < analysisObj.attributeMap.length; i++) {
+		var attrRec = analysisObj.attributeMap[i];
+		if (attrRec.normAttributeSet) {
+			attrSets.push(attrRec.normAttributeSet);
+		}
+		if (attrRec.calcAttributeSet) {
+			attrSets.push(attrRec.calcAttributeSet);
+		}
+	}
 
-    
-    var layerRefMap = {};
 
-    async.auto({
-        'layerRefFl': function(asyncCallback) {
-            async.map(featureLayerTemplates, function(featureLayerTemplate, mapCallback) {
-                // user polygon
-                if (featureLayerTemplate==-1) {
-                    return mapCallback(null,null);
-                }
-                //console.log("analysis/spatialagg.js featureLayerTemplate: " + featureLayerTemplate);
-                crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: false}, function(err, resls) {
-                    if (err)
-                        return callback(err);
-                    if (!resls.length) {
+	var layerRefMap = {};
+
+	async.auto({
+		'layerRefFl': function(asyncCallback) {
+			async.map(featureLayerTemplates, function(featureLayerTemplate, mapCallback) {
+				// user polygon
+				if (featureLayerTemplate==-1) {
+					return mapCallback(null,null);
+				}
+				//console.log("analysis/spatialagg.js featureLayerTemplate: " + featureLayerTemplate);
+				crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: false}, function(err, resls) {
+					if (err)
+						return callback(err);
+					if (!resls.length) {
 						console.log("LAYERREF missing 1||||| areaTemplate: "+featureLayerTemplate+" | location: "+location+" | year: "+year);
-                        return callback(new Error('missinglayerref'));
-                    }
-                    return mapCallback(null, resls[0]);
-                });
-            }, function(err, results) {
-                var layerRefMap = {};
-                for (var i = 0; i < featureLayerTemplates.length; i++) {
-                    layerRefMap[featureLayerTemplates[i]] = results[i];
-                }
-                return asyncCallback(null, layerRefMap);
-            });
-        },
-        'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
+						return callback(new Error('missinglayerref'));
+					}
+					return mapCallback(null, resls[0]);
+				});
+			}, function(err, results) {
+				var layerRefMap = {};
+				for (var i = 0; i < featureLayerTemplates.length; i++) {
+					layerRefMap[featureLayerTemplates[i]] = results[i];
+				}
+				return asyncCallback(null, layerRefMap);
+			});
+		},
+		'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
 			async.map(attrSets, function(attrSet, mapCallback) {
 				crud.read('layerref', {areaTemplate: analysisObj.areaTemplate, location: location, year: year, attributeSet: attrSet}, function(err, resls) {
 					if (err)
@@ -65,28 +65,28 @@ function check(analysisObj, performedAnalysisObj, callback) {
 			}, function(err, resls) {
 				return callback(null, results.layerRefFl);
 			});
-        }]
-    });
+		}]
+	});
 }
 
 function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) {
-    //console.log(analysisObj,performedAnalysisObj)
-    var refId = layerRefMap[analysisObj.areaTemplate]['_id'];
-    var client = new pg.Client(conn.getPgDataConnString());
-    client.connect();
+	//console.log(analysisObj,performedAnalysisObj)
+	var refId = layerRefMap[analysisObj.areaTemplate]['_id'];
+	var client = new pg.Client(conn.getPgDataConnString());
+	client.connect();
 
 	async.auto({
-        geomType: function(asyncCallback) {
-            var sql = 'SELECT DISTINCT ST_Dimension(the_geom) as dm,ST_SRID(the_geom) as srid FROM views.layer_' + refId+' LIMIT 1';
-            client.query(sql, function(err, results) {
-                if (err){
+		geomType: function(asyncCallback) {
+			var sql = 'SELECT DISTINCT ST_Dimension(the_geom) as dm,ST_SRID(the_geom) as srid FROM views.layer_' + refId+' LIMIT 1';
+			client.query(sql, function(err, results) {
+				if (err){
 					console.log("Unexpected PG Error! ",err);
-                    return callback(err);
+					return callback(err);
 				}
-                asyncCallback(null, results.rows[0]);
-            });
-        },
-        perform: ['geomType', function(asyncCallback, results) {
+				asyncCallback(null, results.rows[0]);
+			});
+		},
+		perform: ['geomType', function(asyncCallback, results) {
 			var location = performedAnalysisObj.location;
 			var year = performedAnalysisObj.year;
 
@@ -206,7 +206,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				currentSql = currentSql.replace('$LAYERREF$', layerName);
 				client.query(currentSql, function(err, results) {
 					if (err)
-						return asyncCallback("SQL query error ("+err+")");
+						return asyncCallback({message: "SQL query error ("+err+")"});
 					if (performedAnalysisObj.ghost){
 						return asyncCallback(null);
 					}
@@ -222,7 +222,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 						analysis: performedAnalysisObj['_id']
 					}, function(err, res) {
 						if(err) {
-							return asyncCallback("MongoDB creating 'layerref' ("+err+")");
+							return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 						}
 						return asyncCallback(null, res['_id']);
 					});
@@ -250,10 +250,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				});
 			});
 		}]
-    });
+	});
 }
 
 module.exports = {
-    check: check,
-    perform: perform
+	check: check,
+	perform: perform
 };

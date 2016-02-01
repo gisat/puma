@@ -5,89 +5,89 @@ var pg = require('pg');
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
-    var location = performedAnalysisObj.location;
-    var year = performedAnalysisObj.year;
-    var featureLayerTemplates = performedAnalysisObj.featureLayerTemplates;
+	var location = performedAnalysisObj.location;
+	var year = performedAnalysisObj.year;
+	var featureLayerTemplates = performedAnalysisObj.featureLayerTemplates;
 
-    var attrSets = analysisObj.attributeSets;
+	var attrSets = analysisObj.attributeSets;
 
-    var layerRefMap = {};
+	var layerRefMap = {};
 
 
-    var opts = {
-        'layerRefFl': [function(asyncCallback, results) {
-                async.map(featureLayerTemplates, function(flTemplate, mapCallback) {
-                    crud.read('layerref', {areaTemplate: flTemplate, location: location, year: year, isData: false}, function(err, resls) {
-                        if (err)
-                            return callback(err);
-                        if (!resls.length) {
+	var opts = {
+		'layerRefFl': [function(asyncCallback, results) {
+				async.map(featureLayerTemplates, function(flTemplate, mapCallback) {
+					crud.read('layerref', {areaTemplate: flTemplate, location: location, year: year, isData: false}, function(err, resls) {
+						if (err)
+							return callback(err);
+						if (!resls.length) {
 							console.log("LAYERREF missing 1||||| areaTemplate: "+flTemplate+" | location: "+location+" | year: "+year);
-                            return callback(new Error('missinglayerref'));
-                        }
-                        return mapCallback(null, resls[0]);
-                    });
-                }, function(err, resls) {
-                    var layerRefMap = {};
-                    for (var i = 0; i < featureLayerTemplates.length; i++) {
-                        layerRefMap[featureLayerTemplates[i]] = resls[i];
-                    }
-                    return asyncCallback(null, layerRefMap);
-                })
-            }],
-        'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
-                async.map(featureLayerTemplates, function(featureLayerTemplate, mapCallback) {
-                    crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: true, attributeSet: {$in: attrSets}}, function(err, resls) {
-                        if (err)
-                            return callback(err);
-                        var map = {};
-                        for (var i = 0; i<resls.length; i++) {
-                            var resl = resls[i];
-                            map[resl.attributeSet] = resl;
-                        }
-                        for (var i = 0; i < attrSets.length; i++) {
-                            var attrSet = attrSets[i];
-                            if (!map[attrSet]) {
+							return callback(new Error('missinglayerref'));
+						}
+						return mapCallback(null, resls[0]);
+					});
+				}, function(err, resls) {
+					var layerRefMap = {};
+					for (var i = 0; i < featureLayerTemplates.length; i++) {
+						layerRefMap[featureLayerTemplates[i]] = resls[i];
+					}
+					return asyncCallback(null, layerRefMap);
+				})
+			}],
+		'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
+				async.map(featureLayerTemplates, function(featureLayerTemplate, mapCallback) {
+					crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: true, attributeSet: {$in: attrSets}}, function(err, resls) {
+						if (err)
+							return callback(err);
+						var map = {};
+						for (var i = 0; i<resls.length; i++) {
+							var resl = resls[i];
+							map[resl.attributeSet] = resl;
+						}
+						for (var i = 0; i < attrSets.length; i++) {
+							var attrSet = attrSets[i];
+							if (!map[attrSet]) {
 								console.log("LAYERREF missing 2||||| areaTemplate: "+featureLayerTemplate+" | location: "+location+" | year: "+year+" | analysisObj.attributeSets: "+analysisObj.attributeSets+" | attrSet: "+attrSet);
-                                return callback(new Error('missinglayerref'))
-                            } else console.log("ok\n");
-                        }
-                        return mapCallback(null, resls[0]);
-                    });
-                }, function(err, resls) {
-                    return callback(null, results.layerRefFl);
-                })
-            }]
-    }
+								return callback(new Error('missinglayerref'))
+							} else console.log("ok\n");
+						}
+						return mapCallback(null, resls[0]);
+					});
+				}, function(err, resls) {
+					return callback(null, results.layerRefFl);
+				})
+			}]
+	};
 
-    async.auto(opts);
+	async.auto(opts);
 
 
 }
 
 function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) {
-    //console.log(analysisObj,performedAnalysisObj)
-    var client = new pg.Client(conn.getPgDataConnString());
-    client.connect();
+	//console.log(analysisObj,performedAnalysisObj)
+	var client = new pg.Client(conn.getPgDataConnString());
+	client.connect();
 
 
-    var location = performedAnalysisObj.location;
-    var year = performedAnalysisObj.year;
-    var featureLayerTemplates = performedAnalysisObj.featureLayerTemplates;
+	var location = performedAnalysisObj.location;
+	var year = performedAnalysisObj.year;
+	var featureLayerTemplates = performedAnalysisObj.featureLayerTemplates;
 
-    var attrSets = analysisObj.attributeSets;
+	var attrSets = analysisObj.attributeSets;
 	
-    async.auto({
-        'attributes': function(asyncCallback) {
-            crud.read('attributeset', {_id: attrSets[0]}, function(err, resls) {
-                if (err){
+	async.auto({
+		'attributes': function(asyncCallback) {
+			crud.read('attributeset', {_id: attrSets[0]}, function(err, resls) {
+				if (err){
 					console.log("Unexpected PG Error!");
-                    return callback(err);
+					return callback(err);
 				}
-                return asyncCallback(null, resls[0].attributes);
-            });
-        },
-        perform: ['attributes', function(asyncCallback, results) {
-                
+				return asyncCallback(null, resls[0].attributes);
+			});
+		},
+		perform: ['attributes', function(asyncCallback, results) {
+
 			var columnMap = [];
 
 
@@ -124,7 +124,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				//console.log("analysis/math.js currentSql: " + currentSql);
 				client.query(currentSql, function(err, resls) {
 					if (err)
-						return asyncCallback("SQL query error ("+err+")");
+						return asyncCallback({message: "SQL query error ("+err+")"});
 					//console.log("analysis/math.js currentSql: a");
 					crud.create('layerref', {
 						location: location,
@@ -138,11 +138,11 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 						analysis: performedAnalysisObj['_id']
 					}, function(err) {
 						if(err) {
-							return asyncCallback("MongoDB creating 'layerref' ("+err+")");
+							return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 						}
 						return eachCallback(null);
 					});
-                });
+				});
 			}, function(err, resls) {
 				client.end();
 				//if (performedAnalysisObj.ghost) {
@@ -166,12 +166,12 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				});
 			});
 		}]
-    });
+	});
 }
 
 module.exports = {
-    check: check,
-    perform: perform
-}
+	check: check,
+	perform: perform
+};
 
 

@@ -12,7 +12,7 @@ function userPolygon(params,req,res,callback) {
 
 	var userId = req.userId;
 	if (!userId) {
-		return callback('notloggedin');
+		return callback({message: 'notloggedin'});
 	}
 	var loc = parseInt(params['location']);
 	var geom = params['geom'];
@@ -173,7 +173,7 @@ function userPolygon(params,req,res,callback) {
 function checkAnalysis(params,req,res,callback) {
 	var userId = req.userId;
 	if (!userId) {
-		return callback('notloggedin');
+		return callback({message: 'notloggedin'});
 	}
 	var location = parseInt(params['location']);
 	var years = JSON.parse(params['years']);
