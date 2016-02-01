@@ -32,7 +32,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 						layerRefMap[featureLayerTemplates[i]] = resls[i];
 					}
 					return asyncCallback(null, layerRefMap);
-				})
+				});
 			}],
 		'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
 				async.map(featureLayerTemplates, function(featureLayerTemplate, mapCallback) {
@@ -55,7 +55,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					});
 				}, function(err, resls) {
 					return callback(null, results.layerRefFl);
-				})
+				});
 			}]
 	};
 
