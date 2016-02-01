@@ -21,7 +21,9 @@ function createLayerRef(result, callback, params) {
 
 		function(asyncCallback) {
 			apiLayers.activateLayerRef({obj: result,justPerform: true}, {userId: params.userId}, null, function(err) {
-				if (err) return callback(err);
+				if (err){
+					return callback(err);
+				}
 				return asyncCallback(null);
 			});
 		},
@@ -35,7 +37,9 @@ function createLayerRef(result, callback, params) {
 				if (err) {
 					crud.remove('layerref',{_id:result._id},{bypassHooks:true,userId: params.userId,isAdmin:params.isAdmin},function(err2,res) {
 
-						if (err2) return callback(err2);
+						if (err2){
+							return callback(err2);
+						}
 
 						return callback(err);
 					});

@@ -23,7 +23,9 @@ module.exports = function(app) {
 		//var filter = req.query.filter ? JSON.parse(req.query.filter) : {};
 		var filter = {};
 		crud.read(req.params.objType,filter,{userId: req.userId, justMine: req.query['justMine']},function(err,result) {
-			if (err) return next(err);
+			if (err){
+				return next(err);
+			}
 			res.data = result;
 			next();
 		});
@@ -32,7 +34,9 @@ module.exports = function(app) {
 	app.get('/rest/:objType/:objId',function(req,res,next) {
 		var filter = {_id: parseInt(req.params.objId)};
 		crud.read(req.params.objType,filter,{userId: req.userId, justMine: req.query['justMine']},function(err,result) {
-			if (err) return next(err);
+			if (err){
+				return next(err);
+			}
 			res.data = result;
 			next();
 		});
@@ -46,7 +50,9 @@ module.exports = function(app) {
 			return next(new Error('updateid_notcorrect'))
 		}
 		crud.update(req.params.objType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err) return next(err);
+			if (err){
+				return next(err);
+			}
 			res.data = result;
 			next();
 		});
@@ -56,7 +62,9 @@ module.exports = function(app) {
 	
 	app.post('/rest/:objType',function(req,res,next) {
 		crud.create(req.params.objType,req.body.data,{userId: req.userId},function(err,result) {
-			if (err) return next(err);
+			if (err){
+				return next(err);
+			}
 			res.data = result;
 			next();
 		});
@@ -64,7 +72,9 @@ module.exports = function(app) {
 	
 	app.delete('/rest/:objType/:objId',function(req,res,next) {
 		crud.remove(req.params.objType,{_id: parseInt(req.params.objId)},{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err) return next(err);
+			if (err){
+				return next(err);
+			}
 			next();
 		});
 	});

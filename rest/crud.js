@@ -56,7 +56,7 @@ function create(collName,obj,params,callback) {
 				if (err){
 					return callback(err);
 				}
-				return asyncCallback(null,result[0]);
+				return asyncCallback(null, result.ops[0]);
 			});
 		}],
 		hooks: ['create', function(asyncCallback,results) {

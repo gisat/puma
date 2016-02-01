@@ -215,6 +215,9 @@ function activateLayerRef(params, req, res, callback) {
 				if (err) {
 					return callback(err);
 				}
+				if(!results.length){
+					return callback({message: "Invalid layerref ID (no result while reading layerref)"});
+				}
 				var layerRef = results[0];
 				if (!layerRef.fidColumn) {
 					layerRef.active = !layerRef.active;
