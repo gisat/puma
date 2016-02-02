@@ -41,11 +41,25 @@ module.exports = function(app) {
 			next();
 		});
 	});
-	
+
+
+	// new backoffice
+	app.put('/rest/:objType',function(req,res,next) {
+		var obj = req.body.data;
+
+		crud.update(req.params.objType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
+			if (err){
+				return next(err);
+			}
+			res.data = result;
+			next();
+		});
+	});
+	// old backoffice
 	app.put('/rest/:objType/:objId',function(req,res,next) {
 		var obj = req.body.data;
 
-		// test if URL id equals PUT DATA id, todo ???
+		// test if URL id equals PUT DATA id
 		if (obj._id != req.params.objId) {
 			return next(new Error('updateid_notcorrect'))
 		}
@@ -57,9 +71,8 @@ module.exports = function(app) {
 			next();
 		});
 	});
-	
-	
-	
+
+
 	app.post('/rest/:objType',function(req,res,next) {
 		crud.create(req.params.objType,req.body.data,{userId: req.userId},function(err,result) {
 			if (err){
@@ -69,7 +82,19 @@ module.exports = function(app) {
 			next();
 		});
 	});
-	
+
+
+	// new backoffice
+	app.delete('/rest/:objType',function(req,res,next) {
+		var obj = req.body.data;
+		crud.remove(req.params.objType, obj, {userId: req.userId, isAdmin:req.isAdmin}, function(err, result) {
+			if (err){
+				return next(err);
+			}
+			next();
+		});
+	});
+	// old backoffice
 	app.delete('/rest/:objType/:objId',function(req,res,next) {
 		crud.remove(req.params.objType,{_id: parseInt(req.params.objId)},{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err){
@@ -78,7 +103,7 @@ module.exports = function(app) {
 			next();
 		});
 	});
-	
+
 	
 	app.post('/print/*',function(req,res,next) {
 		try {

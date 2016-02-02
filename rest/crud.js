@@ -94,6 +94,11 @@ function update(collName, obj, params, callback,bypassHooks) {
 	if (typeof(params) === 'function') {
 		callback = params;
 	}
+
+	if(typeof obj == "string") {
+		obj = JSON.parse(obj);
+	}
+
 	var db = conn.getMongoDb();
 	if (!canUpdate(collName, obj)) {
 		return callback(new Error('cannotupdate'));
@@ -121,7 +126,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 
 			collection.update(filter, {'$set': obj}, {}, function(err) {
 				if (err){
-					console.log("crud.update error");
+					console.log("crud.update error ", err);
 					return callback(err);
 				}
 				collection.findOne(filter, function(err, result) {
@@ -144,6 +149,11 @@ function update(collName, obj, params, callback,bypassHooks) {
 
 function remove(collName,filter,params,callback) {
 	if (typeof(params) === 'function') callback = params;
+
+	if(typeof filter == "string") {
+		filter = JSON.parse(filter);
+	}
+
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
 
