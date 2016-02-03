@@ -1,11 +1,12 @@
 var cp = require('child_process');
 var fs = require('fs');
-
+var conn = require('../common/conn');
 
 function exporter(params, req, res, callback) {
 	//var fullUrl = req.protocol + "://" + req.get('host') + req.url;
 
-	var fullUrl = "http://"+require('../common/conn').getRemoteAddress()+req.url;
+	var fullUrl = "http://" + conn.getRemoteAddress() + req.url;
+	//var fullUrl = conn.getRemoteProtocol() + "://" + conn.getRemoteAddress() + req.url;
 	var url = fullUrl.replace(params.download ? 'print' : 'image', 'printpublic');
 	url += params.download ? '&fordownload=1' : '';
 	var imgId = 'snap_' + generateId() + '.png';
@@ -13,10 +14,10 @@ function exporter(params, req, res, callback) {
 	var isWin = !!process.platform.match(/^win/);
 	var phantomName = isWin ? 'phantomjs.exe'  : 'phantomjs';
 	console.log("URL: ",url," outFile: ",outFile);
-	cp.execFile(phantomName, ['--ssl-protocol=tlsv1 --debug=true', 'rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
-		console.log("err: ",err);
-		console.log("stdout: -------------------------\n",stdout,"\n---------------------------------\n");
+	cp.execFile(phantomName, ['--ssl-protocol=any --ignore-ssl-errors=yes --debug=true', 'rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
+		console.log("err: ", err);
 		console.log("stderr: ",stderr);
+		console.log("stdout:\n==============================================\n",stdout,"\n==============================================\n");
 
 		if (params['download']) {
 			res.downFile = [outFile, imgId];
