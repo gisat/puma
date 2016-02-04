@@ -181,7 +181,14 @@ Ext.define('PumaMain.controller.Export', {
                     var legend = legends[i];
 
                     // replace protocol with no-ssl http when loading legend in Phantomjs
-                    var legendSrc = (location.protocol=="http") ? legend.src : legend.src.replace("https://", "http://");
+                    var legendSrc = legend.src;
+                    if(location.protocol == "http:"){
+                        legendSrc = legendSrc.replace("https://", "http://");
+                        if(legendSrc != legend.src){
+                            console.log("Legend src replaced:", legend.src, " -> ", legendSrc);
+                        }
+                    }
+
                     html += '<div class="legend-container"><div class="legend-text" >' + legend.name + '</div><img src="' + legendSrc + '"/></div>'
                 }
                 var legendEl = Ext.get('legend');

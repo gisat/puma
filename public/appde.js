@@ -20,7 +20,13 @@ Ext.application({
 	launch: function() {
 
 		// replace protocol with no-ssl http when loading chart or map in Phantomjs
-		Config.url = (location.protocol=="http") ? Config.url : Config.url.replace("https://", "http://");
+		if(location.protocol=="http:"){
+			var originalUrl = Config.url;
+			Config.url = Config.url.replace("https://", "http://");
+			if(originalUrl != Config.url){
+				console.log("Config.url replaced:", originalUrl, " -> ", Config.url);
+			}
+		}
 
 		window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''))
 		Ext.Ajax.method = 'POST';
