@@ -120,6 +120,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 			});
 		},
 		update: ['checkRefs',function(asyncCallback) {
+			console.log("#### CRUD update ", collName, " ###\nparams",params,"\nfilter:", filter, "\nobj:", obj);
 			delete obj['_id'];
 			obj['changed'] = new Date();
 			obj['changedBy'] = params.userId;
@@ -132,6 +133,9 @@ function update(collName, obj, params, callback,bypassHooks) {
 				collection.findOne(filter, function(err, result) {
 					if (err){
 						return callback(err);
+					}
+					if(result == null){
+						return callback(new Error("CRUD.update didn't find updated record, weird."));
 					}
 					asyncCallback(null, result);
 				});
@@ -272,11 +276,17 @@ var checkRefs = function(db,obj,collName,callback) {
 		var collection = db.collection(dependantCollName);
 		var filter = {_id: {$in: objs}};
 		var length = objs.length;
+		console.log("checkRefs collection ",dependantCollName," count filter:",filter);
+		console.log("objs: ", objs);
 		collection.count(filter,function(err,result) {
-			if (err) return asyncCallback(false);
+			if (err){
+				console.log("checkRefs err", err);
+				return asyncCallback(false);
+			}
 			if (result == length) {
 				return asyncCallback(true);
 			} else {
+				console.log("checkRefs result != length (",result,"!=",length,")");
 				return asyncCallback(false);
 			}
 		});

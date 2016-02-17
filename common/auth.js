@@ -76,6 +76,7 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
 
 	client.query(sql, [userName], function(err, result) {
 		if (err) {
+			console.log("\nError on PSQL users query.\nQuery:",sql,"\nusernames:[",userName,"]\nerr:",err,"result:",result,"\n");
 			return next(err);
 		}
 		var groups = [];

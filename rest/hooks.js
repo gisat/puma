@@ -65,6 +65,7 @@ function updateLayerRef(result, callback) {
 	if (!result.fidColumn) {
 		return callback(null, result);
 	}
+
 	geoserverLayers.recreateLayerDb(result, true, function(err,baseLayerRef) {
 		if (err) {
 			return callback(err);

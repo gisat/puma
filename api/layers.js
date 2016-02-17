@@ -206,7 +206,7 @@ function getLayers(params, req, res, callback) {
 
 
 function activateLayerRef(params, req, res, callback) {
-	var opts = {
+	async.auto({
 		'layerRef': function(asyncCallback) {
 			if (params['obj']) {
 				return asyncCallback(null, params['obj']);
@@ -226,7 +226,7 @@ function activateLayerRef(params, req, res, callback) {
 				}
 
 				var id = layerRef._id;
-				crud.update('layerref', layerRef, {userId: req.userId}, function(err) {
+				crud.update('layerref', layerRef, {userId: req.userId, isAdmin: req.isAdmin}, function(err, result) {
 					if (err) {
 						return callback(err);
 					}
@@ -236,53 +236,53 @@ function activateLayerRef(params, req, res, callback) {
 			});
 		},
 		'identicalLayerRef': ['layerRef', function(asyncCallback, results) {
-				var layerRef = results.layerRef;
-				var filter = {$and: [
-						{location: layerRef.location},
-						{year: layerRef.year},
-						{areaTemplate: layerRef.areaTemplate},
-						{isData: layerRef.isData}
-					]};
-				if (layerRef.attributeSet) {
-					filter.attributeSet = layerRef.attributeSet;
+			var layerRef = results.layerRef;
+			var filter = {
+				$and: [
+					{location: layerRef.location},
+					{year: layerRef.year},
+					{areaTemplate: layerRef.areaTemplate},
+					{isData: layerRef.isData}
+				]
+			};
+			if (layerRef.attributeSet) {
+				filter.attributeSet = layerRef.attributeSet;
+			}
+			crud.read('layerref', filter, function(err, resls) {
+				if (err) {
+					return callback(err);
 				}
-				crud.read('layerref', filter, function(err, resls) {
+				asyncCallback(null, resls);
+			});
+		}],
+		'finish': ['identicalLayerRef', 'layerRef', function(asyncCallback, results) {
+			var activated = false;
+			async.forEachSeries(results.identicalLayerRef, function(item, eachCallback) {
+				// nemenit puvodni layerref a taktez nemenit layerrefs jen pro vizualizaci
+				if (item._id == results.layerRef._id || !item.fidColumn) {
+					return eachCallback(null);
+				}
+				if (params.activateAnother && !activated) {
+					item.active = true;
+					activated = true;
+				} else {
+					item.active = false;
+				}
+				crud.update('layerref', item, {userId: req.userId, isAdmin: req.isAdmin}, function(err) {
 					if (err) {
+						console.log("Error: activateLayerRef failed at finish phase. err:", err);
 						return callback(err);
 					}
-					asyncCallback(null, resls);
+					eachCallback(null);
 				});
-			}],
-		'finish': ['identicalLayerRef', 'layerRef', function(asyncCallback, results) {
-				var activated = false;
-				async.forEachSeries(results.identicalLayerRef, function(item, eachCallback) {
-					// nemenit puvodni layerref a taktez nemenit layerrefs jen pro vizualizaci
-					if (item._id == results.layerRef._id || !item.fidColumn) {
-						return eachCallback(null);
-					}
-					if (params.activateAnother && !activated) {
-						item.active = true;
-						activated = true;
-					} else {
-						item.active = false;
-					}
-
-					crud.update('layerref', item, {userId: req.userId}, function(err) {
-						if (err) {
-							return callback(err);
-						}
-						eachCallback(null);
-					});
-				}, function() {
-					if (params.justPerform) {
-						return callback(null);
-					}
-					return getLayerRefTable(params, req, res, callback);
-				});
-			}]
-
-	};
-	async.auto(opts);
+			}, function() {
+				if (params.justPerform) {
+					return callback(null);
+				}
+				return getLayerRefTable(params, req, res, callback);
+			});
+		}]
+	});
 }
 
 
