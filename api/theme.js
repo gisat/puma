@@ -309,6 +309,7 @@ function getThemeYearConf(params, req, res, callback) {
 						if (locOpened && prevFl && locOpened[prevFl]) {
 							sql += ' AND a.parentgid IN (' + locOpened[prevFl].join(',') + ')';
 						}
+						// filter.areaTemplates possibly unused, like in Mongo DB theme.areaTemplates is unused. Jon
 						if (filter && (filter.areaTemplates[fl] || params.allAreaTemplates)) {
 							sql += getFilterSql(filter.filters, 'a.');
 						}
@@ -419,6 +420,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var sql = 'SELECT a.gid,COUNT(b.gid) as cnt FROM views.layer_' + item.layerRef._id + ' a';
 					sql += ' LEFT JOIN views.layer_' + item.nextLayerRef._id + ' b';
 					sql += ' ON a.gid = b.parentgid';
+					// filter.areaTemplates possibly unused, like in Mongo DB theme.areaTemplates is unused. Jon
 					if (filter && filter.areaTemplates[item.nextAt]) {
 						sql += getFilterSql(filter.filters, 'b.');
 					}

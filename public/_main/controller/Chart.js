@@ -574,7 +574,8 @@ Ext.define('PumaMain.controller.Chart', {
     },
     getParams: function(queryCfg) {
         var params = {};
-        var keysToJson = ['areas', 'attrs', 'years', 'classConfig', 'areaTemplates', 'oldAreas', 'invisibleAttrs', 'invisibleYears', 'activeFilters', 'activeSorters'];
+        //commented by Jonas, Feb. 2016
+        //var keysToJson = ['areas', 'attrs', 'years', 'classConfig', 'areaTemplates', 'oldAreas', 'invisibleAttrs', 'invisibleYears', 'activeFilters', 'activeSorters'];
         for (var key in queryCfg) {
             if (Ext.isObject(queryCfg[key]) || Ext.isArray(queryCfg[key])) {
                 params[key] = JSON.stringify(queryCfg[key])

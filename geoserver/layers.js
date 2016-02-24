@@ -17,7 +17,8 @@ function recreateLayerDb(layerRef,isUpdate,callback) {
 			if (!layerRef.isData) {
 				return asyncCallback(null,layerRef);
 			}
-			crud.read('layerref', {'active':{$ne:false},'areaTemplate':layerRef.areaTemplate, location: layerRef.location, isData:false,year:layerRef.year}, function(err,results) {
+			var filter = {'active':{$ne:false},'areaTemplate':layerRef.areaTemplate, location: layerRef.location, isData:false,year:layerRef.year};
+			crud.read('layerref', filter, function(err,results) {
 				if (err) return asyncCallback(err);
 				var result = null;
 				for (var i=0;i<results.length;i++) {
@@ -27,6 +28,8 @@ function recreateLayerDb(layerRef,isUpdate,callback) {
 					}
 				}
 				if (!result) {
+					console.log("recreateLayerDb: noareatemplateref Error");
+					console.log("CRUD.read layerref with filter:", filter, "\nresults:", results);
 					return asyncCallback(new Error('noareatemplateref'));
 				}
 				return asyncCallback(null,result)
