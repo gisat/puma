@@ -13,14 +13,23 @@ Mimo GitHub
 - public/lib/... (Highcharts, OpenLayers, jQuery)
 - public/devlib/... (OpenLayers, Rico)
 
-Build
------
- 0. cd to /public
- 1. zakomentovat řádek `'Puma.patch.Main',` v *requires* v *appde.js*
- 2. build příkazem `sencha build -p appde.jsb3 -d .`
- 3. minifikace příkazem `jsmin <appde.all.js >appde.min.js`
- 4. odkomentovat řádek `'Puma.patch.Main',` v *requires* v *appde.js*
+Build na Windows
+----------------
+Je potřeba Sencha Command 2.0
 
+Tool i stará backoffice skriptem:
+ 1. zakomentovat řádek `'Puma.patch.Main',` v *requires* v [*public\appde.js*](https://github.com/gisat/puma/blob/master/public/appde.js#L18)
+ 2. zakomentovat řádek `'Puma.patch.Main',` v *requires* v [*public\appmng.js*](https://github.com/gisat/puma/blob/master/public/appmng.js#L23)
+ 3. Spustit /build.cmd
+ 4. odkomentovat řádek `'Puma.patch.Main',` v *requires* v *public\appde.js*
+ 5. odkomentovat řádek `'Puma.patch.Main',` v *requires* v *public\appmng.js*
+ 
+Nebo ručně:
+ 1. cd to /public
+ 2. zakomentovat řádek `'Puma.patch.Main',` v *requires* v [*appde.js*](https://github.com/gisat/puma/blob/master/public/appde.js#L18)
+ 3. build příkazem `sencha build -p appde.jsb3 -d .`
+ 4. minifikace příkazem `jsmin <appde.all.js >appde.min.js`
+ 5. odkomentovat řádek `'Puma.patch.Main',` v *requires* v *appde.js*
 Build administrace obdobně, jen *appmng* místo *appde*.
 
 Příprava appde.jsb3 / appmng.jsb3
