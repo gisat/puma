@@ -67,13 +67,13 @@ var refs = {
 		'analysis': {coll:'analysis',canUpdate:true}
 	},
 
+	//removed unused analysis minFeatureLayer and minAttributeSets. Jonas
 	'theme': {
 		'years': {coll:'year', canUpdate: true},
 		'dataset': {coll:'dataset', canUpdate: true},
 		'topics': {coll:'topic', canUpdate: true},
-		'analysis': {coll:'analysis', canUpdate: true},
-		'visualizations': {coll:'visualization', canUpdate: true},
-		//removed unused minFeatureLayer and minAttributeSets. Jonas
+		//'analysis': {coll:'analysis', canUpdate: true},
+		'visualizations': {coll:'visualization', canUpdate: true}
 		//'minFeatureLayer': {coll:'areatemplate', canUpdate: true},
 		//'minAttributeSets': {coll:'attributeset', canUpdate: true}
 
