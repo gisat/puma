@@ -2,6 +2,7 @@ var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
+var config = require('../config');
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
@@ -72,7 +73,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) {
 	//console.log(analysisObj,performedAnalysisObj)
 	var refId = layerRefMap[analysisObj.areaTemplate]['_id'];
-	var client = new pg.Client(conn.getPgDataConnString());
+	var client = new pg.Client(config.pgDataConnString);
 	client.connect();
 
 	async.auto({

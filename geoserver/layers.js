@@ -172,7 +172,7 @@ function changeLayerGeoserver(layerId, method, callback) {
 	};
 	var name = 'layer_' + layerId;
 
-	var path = method != 'DELETE' ? conn.getGeoserver2Path()+'/rest/workspaces/puma/datastores/views/featuretypes' : conn.getGeoserver2Path()+'rest/layers';
+	var path = method != 'DELETE' ? config.geoserver2Path+'/rest/workspaces/puma/datastores/views/featuretypes' : config.geoserver2Path+'rest/layers';
 	var data = null;
 
 	if (method == 'POST') {
@@ -194,10 +194,10 @@ function changeLayerGeoserver(layerId, method, callback) {
 	console.log("geoserver/layers.js method: " + method);
 
 	var options = {
-		host: conn.getGeoserver2Host(),
+		host: config.geoserver2Host,
 		path: path,
 		headers: headers,
-		port: conn.getGeoserver2Port(),
+		port: config.geoserver2Port,
 		method: method
 	};
 	conn.request(options, data, function(err, output, resl) {

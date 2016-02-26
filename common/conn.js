@@ -24,58 +24,6 @@ var io = null;
 
 
 
-var pgDataConnString = config.pgDataConnString;
-var pgGeonodeConnString = config.pgGeonodeConnString;
-var mongoConnString = config.mongoConnString;
-
-function getPgDataConnString() {
-	return pgDataConnString;
-}
-function getPgGeonodeConnString() {
-	return pgGeonodeConnString;
-}
-
-function getLocalAddress() {
-	return config.localAddress;
-}
-function getRemoteAddress() {
-	return config.remoteAddress;
-}
-function getRemoteProtocol(){
-	return config.remoteProtocol;
-}
-
-
-function getGeoserverHost(){
-	return config.geoserverHost;
-}
-function getGeoserverPort(){
-	return config.geoserverPort;
-}
-function getGeoserverPath(){
-	return config.geoserverPath;
-}
-
-function getGeoserver2Host(){
-	return config.geoserver2Host;
-}
-function getGeoserver2Port(){
-	return config.geoserver2Port;
-}
-function getGeoserver2Path(){
-	return config.geoserver2Path;
-}
-
-function getGeonodeHost(){
-	return config.geonodeHost;
-}
-function getGeonodePath(){
-	return config.geonodePath;
-}
-function getGeonodeHome(){
-	return config.geonodeHome;
-}
-
 
 function request(options,dataToWrite,callback) {
 
@@ -125,10 +73,10 @@ function initGeoserver() {
 		'Authorization': auth
 	};
 	var options = {
-		host: getGeoserverHost(),
-		path: getGeoserverPath()+'/web',
+		host: config.geoserverHost,
+		path: config.geoserverPath+'/web',
 		headers: headers,
-		port: getGeoserverPort(),
+		port: config.geoserverPort,
 		method: 'GET'
 	};
 	var jsid = null;
@@ -157,9 +105,9 @@ function initGeoserver() {
 }
 
 function init(app,callback) {
-	pgDataDB = new pg.Client(getPgDataConnString());
+	pgDataDB = new pg.Client(config.pgDataConnString);
 	pgDataDB.connect();
-	pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
+	pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
 	pgGeonodeDB.connect();
 	var reconnectCommand = null;
 	
@@ -176,7 +124,7 @@ function init(app,callback) {
 			if(!pgDataDB.activeQuery){
 				clearInterval(reconnectCommand);
 				pgDataDB.end();
-				pgDataDB = new pg.Client(getPgDataConnString());
+				pgDataDB = new pg.Client(config.pgDataConnString);
 				pgDataDB.connect();
 				console.log('Data DB reconnected');
 			}else{
@@ -193,7 +141,7 @@ function init(app,callback) {
 			if(!pgGeonodeDB.activeQuery){
 				clearInterval(reconnectCommand);
 				pgGeonodeDB.end();
-				pgGeonodeDB = new pg.Client(getPgGeonodeConnString());
+				pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
 				pgGeonodeDB.connect();
 				console.log('Geonode DB reconnected');
 			}else{
@@ -202,7 +150,7 @@ function init(app,callback) {
 		},2000);
 	},Math.round(1000*60*60*5.42));
 	
-	MongoClient.connect(mongoConnString, function(err, dbs) {
+	MongoClient.connect(config.mongoConnString, function(err, dbs) {
 		if (err){
 			return callback(err);
 		}
@@ -251,23 +199,5 @@ module.exports = {
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
-	getNextId: getNextId,
-	getLocalAddress: getLocalAddress,
-	getRemoteAddress: getRemoteAddress,
-	getRemoteProtocol: getRemoteProtocol,
-	
-	getPgDataConnString: getPgDataConnString,
-	getPgGeonodeConnString: getPgGeonodeConnString,
-
-	getGeoserverHost: getGeoserverHost,
-	getGeoserverPort: getGeoserverPort,
-	getGeoserverPath: getGeoserverPath,
-
-	getGeoserver2Host: getGeoserver2Host,
-	getGeoserver2Port: getGeoserver2Port,
-	getGeoserver2Path: getGeoserver2Path,
-
-	getGeonodeHost: getGeonodeHost,
-	getGeonodePath: getGeonodePath,
-	getGeonodeHome: getGeonodeHome
+	getNextId: getNextId
 };
