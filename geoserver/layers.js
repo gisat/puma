@@ -172,7 +172,7 @@ function changeLayerGeoserver(layerId, method, callback) {
 	};
 	var name = 'layer_' + layerId;
 
-	var path = method != 'DELETE' ? config.geoserver2Path+'/rest/workspaces/puma/datastores/views/featuretypes' : config.geoserver2Path+'rest/layers';
+	var path = method != 'DELETE' ? config.geoserver2Path+'/rest/workspaces/'+config.geoserver2Workspace+'/datastores/views/featuretypes' : config.geoserver2Path+'rest/layers';
 	var data = null;
 
 	if (method == 'POST') {

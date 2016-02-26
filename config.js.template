@@ -16,8 +16,9 @@ module.exports = {
 	geoserver2Host  : "127.0.0.1",
 	geoserver2Port  : 8080,
 	geoserver2Path  : "/geoserver_i2",
-	geoserver2Username : "admin",
-	geoserver2Password : "P4ssw0rd",
+	geoserver2Username  : "admin",
+	geoserver2Password  : "P4ssw0rd",
+	geoserver2Workspace : "puma",
 
 	geonodeHost     : "192.168.2.8",
 	geonodePath     : "",

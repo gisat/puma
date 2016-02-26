@@ -90,7 +90,7 @@ function wms(params, req, res, callback) {
 		params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
-	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/puma/wms';
+	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/' + config.geoserver2Workspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
