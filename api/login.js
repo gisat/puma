@@ -1,6 +1,7 @@
 var querystring = require('querystring');
 var http = require('http');
 var conn = require('../common/conn');
+var config = require('../config');
 
 function getLoginInfo(params,req,res,callback) {
 	var data = {
@@ -45,11 +46,11 @@ function logout(params,req,res,callback) {
 var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 
 	var options1 = {
-		host: conn.getGeonodeHost(),
-		path: conn.getGeonodeHome()+'/',
+		host: config.geonodeHost,
+		path: config.geonodeHome+'/',
 		method: 'GET',
 		headers: {
-			'referer': conn.getRemoteProtocol() + '://' + conn.getGeonodeHost() + "/"
+			'referer': config.remoteProtocol + '://' + config.geonodeHost + "/"
 		}
 	};
 
@@ -76,14 +77,14 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		}
 		postData = querystring.stringify(postData);
 		var options2 = {
-			host: conn.getGeonodeHost(),
-			path: isLogin ? conn.getGeonodePath()+'/account/login/' : conn.getGeonodePath()+'/account/logout/',
+			host: config.geonodeHost,
+			path: isLogin ? config.geonodePath+'/account/login/' : config.geonodePath+'/account/logout/',
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Content-Length': postData.length,
 				'Cookie':'csrftoken='+csrf,
-				'referer': conn.getRemoteProtocol() + '://' + conn.getGeonodeHost() + '/'
+				'referer': config.remoteProtocol + '://' + config.geonodeHost + '/'
 			}
 		};
 		conn.request(options2,postData,function(err,output,res2) {

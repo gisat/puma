@@ -1,4 +1,3 @@
-
 var http = require('http');
 var querystring = require('querystring');
 var conn = require('../common/conn');
@@ -90,9 +89,9 @@ function wms(params, req, res, callback) {
 	if (params['LAYERS']) {
 		params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
-	var host = useFirst ? conn.getGeoserverHost() : conn.getGeoserver2Host();
-	var path = useFirst ? conn.getGeoserverPath()+'/geonode/wms' : conn.getGeoserver2Path()+'/puma/wms';
-	var port = useFirst ? conn.getGeoserverPort() : conn.getGeoserver2Port();
+	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
+	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/puma/wms';
+	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
 	var layers = params['LAYERS'];
@@ -113,7 +112,7 @@ function wms(params, req, res, callback) {
 				createLayerGroup(layers,style,true);
 			}else{
 				//console.log('Single layer '+layers+' '+style)
-				path = conn.getGeoserverPath()+'/gwc/service/wms';
+				path = config.geoserverPath+'/gwc/service/wms';
 			}
 		}
 		// found layer group
@@ -121,7 +120,7 @@ function wms(params, req, res, callback) {
 			//console.log('Layer group found '+layerGroup+' '+style)
 			params['LAYERS'] = layerGroup;
 			params['STYLES'] = style;
-			path = conn.getGeoserverPath()+'/gwc/service/wms';
+			path = config.geoserverPath+'/gwc/service/wms';
 		}
 		// layer group to be created
 		else {
@@ -477,7 +476,7 @@ function createLayerGroup(layers,style,addStyle) {
 	};
 
 	if (addStyle) {
-		var path = conn.getGeoserverPath()+'/rest/layers/' + layers + '/styles.json';
+		var path = config.geoserverPath+'/rest/layers/' + layers + '/styles.json';
 		var obj = {
 			style: {
 				name: style
@@ -485,7 +484,7 @@ function createLayerGroup(layers,style,addStyle) {
 		};
 		var name = 2;
 	}else{
-		var path = conn.getGeoserverPath()+'/rest/layergroups.json';
+		var path = config.geoserverPath+'/rest/layergroups.json';
 		var name = layers.substring(0, 17) + '_' + require('crypto').randomBytes(5).toString('hex');
 		var obj = {
 			layerGroup: {
@@ -511,10 +510,10 @@ function createLayerGroup(layers,style,addStyle) {
 	var data = JSON.stringify(obj);
 
 	var options = {
-		host: conn.getGeoserverHost(),
+		host: config.geoserverHost,
 		path: path,
 		headers: headers,
-		port: conn.getGeoserverPort(),
+		port: config.geoserverPort,
 		method: 'POST'
 	};
 	//console.log("################ ### ### ### ### proxy.createLayerGroup options: ",options,"\n####### data:", data);

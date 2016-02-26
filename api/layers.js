@@ -164,8 +164,8 @@ function getLayers(params, req, res, callback) {
 	};
 
 	var options = {
-		host: conn.getGeonodeHost(),
-		path: conn.getGeonodePath()+'/layers/acls',
+		host: config.geonodeHost,
+		path: config.geonodePath+'/layers/acls',
 		headers: headers,
 		method: 'GET'
 	};
@@ -295,9 +295,9 @@ function getLayerDetails(params, req, res, callback) {
 	};
 	postData = querystring.stringify(postData);
 	var options = {
-		host: conn.getGeoserverHost(),
-		port: conn.getGeoserverPort(),
-		path: conn.getGeoserverPath()+'/geonode/ows?' + postData,
+		host: config.geoserverHost,
+		port: config.geoserverPort,
+		path: config.geoserverPath+'/geonode/ows?' + postData,
 		method: 'GET',
 		headers: {
 			'Cookie': 'ssid=' + req.cookies['ssid']
@@ -603,9 +603,9 @@ function getSymbologiesFromServer(params, req, res, callback) {
 			};
 
 			var options = {
-				host: conn.getGeoserverHost(),
-				port: conn.getGeoserverPort(),
-				path: conn.getGeoserverPath()+'/rest/styles.json',
+				host: config.geoserverHost,
+				port: config.geoserverPort,
+				path: config.geoserverPath+'/rest/styles.json',
 				headers: headers,
 				method: 'GET'
 			};

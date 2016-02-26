@@ -7,6 +7,7 @@ var async = require('async');
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var pg = require('pg');
+var config = require('../config');
 
 
 
@@ -33,7 +34,7 @@ function remove(params,req,res,callback) {
 			})
 		}],
 		deleteLayers: ['layers',function(asyncCallback,results) {
-			var client = new pg.Client(conn.getPgDataConnString());
+			var client = new pg.Client(config.pgDataConnString);
 			client.connect();
 			var sql = '';
 			var layerNames = [];

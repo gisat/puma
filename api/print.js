@@ -1,12 +1,13 @@
 var cp = require('child_process');
 var fs = require('fs');
 var conn = require('../common/conn');
+var config = require('../config');
 
 function exporter(params, req, res, callback) {
 	//var fullUrl = req.protocol + "://" + req.get('host') + req.url;
 
-	var fullUrl = "http://" + conn.getRemoteAddress() + req.url;
-	//var fullUrl = conn.getRemoteProtocol() + "://" + conn.getRemoteAddress() + req.url;
+	var fullUrl = "http://" + config.remoteAddress + req.url;
+	//var fullUrl = config.remoteProtocol + "://" + config.remoteAddress + req.url;
 	var url = fullUrl.replace(params.download ? 'print' : 'image', 'printpublic');
 	url += params.download ? '&fordownload=1' : '';
 	var imgId = 'snap_' + generateId() + '.png';
