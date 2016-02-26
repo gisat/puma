@@ -1,9 +1,9 @@
 Ext.define('Puma.model.Theme', {
     extend: 'Ext.data.Model',
     fields: [
-        //removed unused minFeatureLayer and minAttributeSets. Jonas
+        //removed unused analysis, minFeatureLayer and minAttributeSets. Jonas
         //'_id','name','active','years','dataset','analysis','prefTopics','topics','minFeatureLayer','minAttributeSets','visOrder'
-        '_id','name','active','years','dataset','analysis','prefTopics','topics','visOrder'
+        '_id','name','active','years','dataset','prefTopics','topics','visOrder'
     ],
     idProperty: '_id',
     proxy: {
