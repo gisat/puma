@@ -14,7 +14,7 @@ function initServer(err) {
 	// Order is important
 	var oneDay = 60*60*24*1000;
 	//app.use(express.favicon());
-	//app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
+	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
 	app.use('/printpublic',function(req,res,next) {
 		if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
 			return next(new Error('unauthorized'));
