@@ -478,10 +478,10 @@
 
 /* Slider */
 .x-slider-horz, .x-slider-horz .x-slider-end, .x-slider-horz .x-slider-inner {
-	background-image: url("../images/puma-slider-bg.png");
+	background-image: url("../images/panther-slider-bg.png");
 }
 .yearselector .x-slider-horz,.yearselector .x-slider-horz .x-slider-end,.yearselector .x-slider-horz .x-slider-inner {
-	background-image: url("../images/puma-slider-bg-2.png");
+	background-image: url("../images/panther-slider-bg-2.png");
 }
 .x-slider-horz {
 	background-position: 0 -24px;
@@ -493,10 +493,10 @@
 	background-position: 0 -2px;
 }
 .x-slider-horz .x-slider-thumb {
-	background-image: url("../images/puma-slider-thumb.png");
+	background-image: url("../images/panther-slider-thumb.png");
 }
 .yearselector .x-slider-horz .x-slider-thumb {
-	background-image: url("../images/puma-slider-thumb-2.png");
+	background-image: url("../images/panther-slider-thumb-2.png");
 }
 .slider-thumb-label,
 .slider-constraints {
