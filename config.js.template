@@ -20,7 +20,7 @@ module.exports = {
 	geoserver2Password  : "P4ssw0rd",
 	geoserver2Workspace : "puma",
 
-	geonodeHost     : "192.168.2.8",
+	geonodeHost     : "37.205.9.78",
 	geonodePath     : "",
 	geonodeHome     : "/geonode",
 
