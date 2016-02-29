@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var conn = require('./common/conn');
+var publicConfig = require('./common/public-config');
 var staticFn = express['static'];
 
 var async = require('async');
@@ -25,9 +26,9 @@ function initServer(err) {
 	/*
 	#######################################################################
 	Nastaveni apache.conf pro servirovani statickych souboru primo Apachem:
-	
+
 	Alias /help /var/www/puma-app/public/help/
-	
+
 	#### /tool/* static routing
 	RedirectMatch 301 ^/tool$ /tool/
 	RedirectMatch 301 ^/catalogue/(.*)$ /catalogue/$1
@@ -58,6 +59,8 @@ function initServer(err) {
 	ProxyPass /tool http://127.0.0.1:3000
 	ProxyPassReverse /tool http://127.0.0.1:3000
 	 */
+
+	app.use('/config.js', publicConfig);
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
 	app.use('/printpublic',staticFn(__dirname + '/public'));
