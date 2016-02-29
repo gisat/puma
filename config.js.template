@@ -3,9 +3,9 @@ module.exports = {
 	pgGNConnString  : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode",
 	mongoConnString : "mongodb://192.168.2.13:27017/test",
 
+	remoteProtocol  : "http",
 	localAddress    : "192.168.2.196:3000/tool",
 	remoteAddress   : "37.205.9.78/tool",
-	remoteProtocol  : "http",
 
 	geoserverHost   : "127.0.0.1",
 	geoserverPort   : 8080,
@@ -24,5 +24,4 @@ module.exports = {
 	geonodePath     : "",
 	geonodeHome     : "/geonode",
 
-    geonetworkServer: "http://192.168.2.8/geonetwork"
 };
