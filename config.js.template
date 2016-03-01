@@ -1,6 +1,6 @@
 module.exports = {
-	pgConnString    : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode_data",
-	pgGNConnString  : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode",
+	pgConnString    : "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode_data",
+	pgGNConnString  : "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode",
 	mongoConnString : "mongodb://192.168.2.13:27017/test",
 
 	localAddress    : "192.168.2.196:3000/tool",
