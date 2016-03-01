@@ -287,7 +287,7 @@ function activateLayerRef(params, req, res, callback) {
 
 
 function getLayerDetails(params, req, res, callback) {
-
+	var workspace = params.layer.split(':')[0];
 	var postData = {
 		SERVICE: 'wfs',
 		REQUEST: 'DescribeFeatureType',
@@ -297,7 +297,7 @@ function getLayerDetails(params, req, res, callback) {
 	var options = {
 		host: config.geoserverHost,
 		port: config.geoserverPort,
-		path: config.geoserverPath+'/geonode/ows?' + postData,
+		path: config.geoserverPath + '/' + workspace + '/ows?' + postData,
 		method: 'GET',
 		headers: {
 			'Cookie': 'ssid=' + req.cookies['ssid']
