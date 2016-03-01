@@ -1,8 +1,8 @@
-
 var http = require('http');
 var conn = require('./conn');
 var pg = require('pg');
 var sessionCache = {};
+var config = require('../config');
 
 function anyUser(req, res, next) {
 	if (req.userId) {
@@ -40,8 +40,8 @@ function auth(req, res, next) {
 	};
 
 	var options = {
-		host: conn.getGeonodeHost(),
-		path: conn.getGeonodePath()+'/layers/acls',
+		host: config.geonodeHost,
+		path: config.geonodePath+'/layers/acls',
 		headers: headers,
 		method: 'GET'
 	};

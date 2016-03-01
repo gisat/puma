@@ -1,6 +1,7 @@
 var express = require('express');
 var app = express();
 var conn = require('./common/conn');
+var publicConfig = require('./common/public-config');
 var staticFn = express['static'];
 
 var async = require('async');
@@ -14,7 +15,7 @@ function initServer(err) {
 	// Order is important
 	var oneDay = 60*60*24*1000;
 	//app.use(express.favicon());
-	//app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
+	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
 	app.use('/printpublic',function(req,res,next) {
 		if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
 			return next(new Error('unauthorized'));
@@ -25,9 +26,9 @@ function initServer(err) {
 	/*
 	#######################################################################
 	Nastaveni apache.conf pro servirovani statickych souboru primo Apachem:
-	
+
 	Alias /help /var/www/puma-app/public/help/
-	
+
 	#### /tool/* static routing
 	RedirectMatch 301 ^/tool$ /tool/
 	RedirectMatch 301 ^/catalogue/(.*)$ /catalogue/$1
@@ -58,6 +59,8 @@ function initServer(err) {
 	ProxyPass /tool http://127.0.0.1:3000
 	ProxyPassReverse /tool http://127.0.0.1:3000
 	 */
+
+	app.use('/config.js', publicConfig);
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
 	app.use('/printpublic',staticFn(__dirname + '/public'));

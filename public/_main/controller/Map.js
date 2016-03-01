@@ -424,7 +424,7 @@ Ext.define('PumaMain.controller.Map', {
         
         var filter = filters.length < 2 ? filters[0] : new OpenLayers.Filter.Logical({type: '||', filters: filters});
         var style = new OpenLayers.Style();
-        var layerName = 'puma:layer_' + layerRefs.areaRef._id;
+        var layerName = Config.geoserver2Workspace + ':layer_' + layerRefs.areaRef._id;
         var rule = new OpenLayers.Rule({
             symbolizer: {
                 "Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 1, strokeColor: '#'+cmp.color})
@@ -899,7 +899,7 @@ Ext.define('PumaMain.controller.Map', {
             if (!layerName || (!layerRef || !layerRef.fidColumn) && at!=-1) return;
             var layerName = (layerRef ? 'layer_'+layerRef._id : layerName);
             if (!layerName) return;
-            layers.push('puma:'+layerName)
+            layers.push(Config.geoserver2Workspace + ':' + layerName)
         })
         if (!layers.length) {
             return false;
@@ -933,7 +933,7 @@ Ext.define('PumaMain.controller.Map', {
             if (at==-1) {
                 var location = Ext.ComponentQuery.query('initialbar #locationcontainer button[pressed=true]')[0].objId;
                 var year = Ext.ComponentQuery.query('initialbar #yearcontainer button[pressed=true]')[0].objId;
-                var layer = 'puma:#userpolygon#layer_user_#userid#_loc_'+location+'_y_'+year;
+                var layer = Config.geoserver2Workspace + ':#userpolygon#layer_user_#userid#_loc_'+location+'_y_'+year;
             }
             var atMap = areaTemplateMap[at] || {};
             for (var j=0;j<locations.length;j++) {
@@ -944,12 +944,12 @@ Ext.define('PumaMain.controller.Map', {
                 var lr2 = years.length>1 ? atMap[years[1]] : null;
                 if (lr1) {
                     lrMap[lr1._id] = {at:at,loc:loc};
-                    var layer = 'puma:layer_'+lr1._id;
+                    var layer = Config.geoserver2Workspace + ':layer_'+lr1._id;
                     layers1.push(layer)
                 }
                 if (lr2) {
                     lrMap[lr2._id] = {at:at,loc:loc};
-                    var layer = 'puma:layer_'+lr2._id;
+                    var layer = Config.geoserver2Workspace + ':layer_'+lr2._id;
                     layers2.push(layer)
                 }
                 
