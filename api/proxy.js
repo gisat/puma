@@ -160,7 +160,6 @@ function wms(params, req, res, callback) {
 		host: host,
 		port: port,
 		timeout: 60000,
-		//path: '/geoserver/geonode/wms?'+querystring.stringify(params),
 		path: path,
 		headers: headers,
 		method: method
