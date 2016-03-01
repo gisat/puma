@@ -64,15 +64,19 @@ var removeLayerDbInternal = function(areaLayerRef,callback) {
 
 function checkUniqueId(layerRef,callback) {
 	// overeni jedinecnosti ID
-	var from = layerRef.layer.split(':')[0] == 'geonode' ? layerRef.layer.split(':')[1] : (layerRef.layer.split(':')[0]+'.'+layerRef.layer.split(':')[1]);
-	var fromWithoutSchema = layerRef.layer.split(':')[1];
+	var from = conn.getLayerTable(layerRef.layer);
+	var layerName = layerRef.layer.substr(layerRef.layer.indexOf(":") + 1);
 
-	var sql = 'ALTER TABLE '+from+' DROP CONSTRAINT IF EXISTS '+fromWithoutSchema+'_unique;';
-	sql += 'ALTER TABLE '+from+' ADD CONSTRAINT '+fromWithoutSchema+'_unique UNIQUE("'+layerRef.fidColumn+'");';
+	var sql = 'ALTER TABLE '+from+' DROP CONSTRAINT IF EXISTS '+layerName+'_unique;';
+	sql += 'ALTER TABLE '+from+' ADD CONSTRAINT '+layerName+'_unique UNIQUE("'+layerRef.fidColumn+'");';
+
 	var client = conn.getPgDataDb();
 	//console.log(sql)
 	client.query(sql,function(err) {
-		if (err) return callback(new Error('IDs not unique'));
+		if (err){
+			console.log("checkUniqueId err: ", err);
+			return callback(new Error('IDs not unique'));
+		}
 
 		callback(null);
 	})
@@ -80,7 +84,7 @@ function checkUniqueId(layerRef,callback) {
 
 var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdate,callback) {
 	var layerName =' views.layer_'+areaLayerRef['_id'];
-	var from = areaLayerRef.layer.split(':')[0] == 'geonode' ? areaLayerRef.layer.split(':')[1] : (areaLayerRef.layer.split(':')[0]+'.'+areaLayerRef.layer.split(':')[1]);
+	var from = conn.getLayerTable(areaLayerRef.layer);
 	//console.log(isBase)
 	// priprava view
 	var sql = 'BEGIN; DROP VIEW IF EXISTS '+layerName+'; ';
@@ -98,7 +102,7 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 		sql += "THEN ST_Length(ST_Transform(the_geom,4326)::geography)";
 		sql += "ELSE ST_Length(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as length,";
 
-		sql += 'Box2D(ST_Transform(the_geom,4326)) as extent FROM '+areaLayerRef.layer.split(':')[1]+');';
+		sql += 'Box2D(ST_Transform(the_geom,4326)) as extent FROM '+from+');';
 		sql += 'ALTER TABLE views.'+viewName+' ADD CONSTRAINT '+viewName+'_unique UNIQUE(gid);'
 	}
 
@@ -122,7 +126,7 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 		var layerRef = dataLayerRefs[i];
 		var layerAlias = 'l_'+layerRef['_id'];
 		if (!layerRef.attributeSet) continue;
-		var name = layerRef.layer.split(':')[0] == 'geonode' ? layerRef.layer.split(':')[1] : (layerRef.layer.split(':')[0]+'.'+layerRef.layer.split(':')[1]);
+		var name = conn.getLayerTable(layerRef.layer);
 		layerMap[layerAlias] = {name:name, fid:layerRef.fidColumn};
 		for (var j = 0; j < layerRef.columnMap.length; j++) {
 			var attrRow = layerRef.columnMap[j];
