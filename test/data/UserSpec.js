@@ -34,6 +34,12 @@ describe('User', function(){
                 should(loadedUser).have.property('username', 'testTest');
             });
 
+            it('loads permissions of this user', function(){
+                should.exist(loadedUser);
+                
+                should(loadedUser.permissions).have.length(1);
+            });
+
             after(function(){
                 testUser.remove();
             });

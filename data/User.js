@@ -1,11 +1,12 @@
 var Promise = require('promise');
 var conn = require('../common/conn');
+var Permissions = require('./Permissions').Permissions;
 
 /**
  * Constructor function for user as defined in the Geonode.
  * @constructor
  */
-var User = function(email, username, firstName, lastName, password, isSuperuser, lastLogin, isActive, isStaff, dateJoined) {
+var User = function(email, username, firstName, lastName, password, isSuperuser, lastLogin, isActive, isStaff, dateJoined, permissions) {
     this.email = email;
     this.username = username;
     this.firstName = firstName;
@@ -16,6 +17,7 @@ var User = function(email, username, firstName, lastName, password, isSuperuser,
     this.isActive = isActive;
     this.isStaff = isStaff;
     this.dateJoined = dateJoined;
+    this.permissions = permissions;
 };
 
 User.prototype.save = function() {
@@ -43,8 +45,11 @@ User.load = function(id) {
             }
 
             var result = results.rows[0];
-            resolve(new User(result.email, result.username, result.first_name, result.last_name, result.password,
-                result.is_superuser, result.last_login, result.is_active, result.is_staff, result.date_joined));
+            Permissions.loadForUser(id).then(function(permissions){
+                resolve(new User(result.email, result.username, result.first_name, result.last_name, result.password,
+                    result.is_superuser, result.last_login, result.is_active, result.is_staff, result.date_joined,
+                    permissions));
+            });
         });
     });
 };

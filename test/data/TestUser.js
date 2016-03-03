@@ -18,17 +18,34 @@ TestUser.prototype.save = function(){
                 reject(err);
             }
             self._id = result.rows[0].id;
-            resolve();
+            var createPermissions = "INSERT INTO guardian_userobjectpermission (permission_id, object_pk, user_id, content_type_id) " +
+                " VALUES (115, 15, $1, 38);";
+            self._connection.query(createPermissions, [self._id], function(err, result){
+                if(err) {
+                    reject(err);
+                }
+
+                resolve();
+            });
         });
     });
 };
 
 TestUser.prototype.remove = function() {
-    var deleteUser = "DELETE FROM people_profile where email = 'test@test.test'";
-    this._connection.query(deleteUser, function(err){
+    var deletePermissions = "DELETE FROM guardian_userobjectpermission where user_id = $1";
+
+    var deleteUser = "DELETE FROM people_profile where id = $1";
+    var self = this;
+    this._connection.query(deletePermissions, [this.getId()], function(err){
         if(err){
             throw new Error(err);
         }
+
+        self._connection.query(deleteUser, [self.getId()], function(err){
+            if(err){
+                throw new Error(err);
+            }
+        })
     });
 };
 
