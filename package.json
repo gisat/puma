@@ -1,6 +1,6 @@
 {
-  "name": "PUMA",
-  "description": "PUMA platform",
+  "name": "PANTHER",
+  "description": "PANTHER platform",
   "version": "0.2.0",
   "private": true,
   "repository": {
@@ -10,7 +10,7 @@
   "bugs": {
     "url": "https://github.com/gisat/puma/issues"
   },
-  "homepage": "http://puma.worldbank.org/",
+  "homepage": "https://puma.worldbank.org/",
   "dependencies": {
     "async": "1.5.x",
     "bower": "^1.6.5",

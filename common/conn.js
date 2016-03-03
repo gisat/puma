@@ -198,6 +198,22 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
+function getLayerTable(layer){
+	var workspaceDelimiterIndex = layer.indexOf(":");
+	if(workspaceDelimiterIndex == -1){
+		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
+		return layer;
+	}
+	var workspace = layer.substr(0, workspaceDelimiterIndex);
+	var layerName = layer.substr(workspaceDelimiterIndex + 1);
+	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
+		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
+		return layer;
+	}
+	return config.workspaceSchemaMap[workspace] + "." + layerName;
+}
+
+
 module.exports = {
 	init: init,
 	getIo: getIo,
@@ -207,5 +223,6 @@ module.exports = {
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
-	getNextId: getNextId
+	getNextId: getNextId,
+	getLayerTable: getLayerTable
 };

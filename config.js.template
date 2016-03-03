@@ -1,11 +1,16 @@
 module.exports = {
-	pgConnString    : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode_data",
-	pgGNConnString  : "postgres://geonode:TheGeoNodeBigFan@127.0.0.1:5432/geonode",
-	mongoConnString : "mongodb://192.168.2.13:27017/test",
-
 	remoteProtocol  : "http",
 	localAddress    : "192.168.2.196:3000/tool",
 	remoteAddress   : "37.205.9.78/tool",
+
+	pgConnString    : "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode_data",
+	pgGNConnString  : "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode",
+	mongoConnString : "mongodb://192.168.2.13:27017/test",
+
+	// GeoServer workspace to PostgreSQL schema map
+	workspaceSchemaMap: {
+		geonode: "public"
+	}
 
 	geoserverHost   : "127.0.0.1",
 	geoserverPort   : 8080,
