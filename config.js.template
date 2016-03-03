@@ -1,5 +1,4 @@
 module.exports = {
-    //localAddress    : "192.168.2.196:3000/tool", // todo remove
 	localHost       : "127.0.0.1",
 	localPort       : 3000,
 	localPath       : "/tool",
