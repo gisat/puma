@@ -1,6 +1,6 @@
 var jsdom = require("jsdom");
 var fs = require("fs");
-var config = require('./config');
+var config = require('../config');
 
 var refPage = fs.readFileSync('public/index.html');
 
