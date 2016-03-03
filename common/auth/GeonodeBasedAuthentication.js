@@ -4,7 +4,7 @@
  * It supports access restriction based on the layers. It isn't possible to filter access on more granular level.
  */
 // Dependencies for this module.
-var conn = require('./conn');
+var conn = require('../conn');
 var pg = require('pg');
 var config = require('../config');
 
