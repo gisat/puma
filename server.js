@@ -7,6 +7,8 @@ var staticFn = express['static'];
 var async = require('async');
 var loc = require('./common/loc');
 
+var config = require('./config');
+
 function initServer(err) {
 	if (err) {
 		console.log('Error: while initializing server: ', err);
@@ -71,9 +73,9 @@ function initServer(err) {
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-	var port = 4000;
-	app.listen(port);
-	console.log('Listening on port ' + port); 
+	console.log('Going to listen on port ' + config.localPort + '...');
+	app.listen(config.localPort);
+	console.log('Listening on port ' + config.localPort);
 }
 
 async.series([

@@ -165,8 +165,8 @@ function init(app, callback) {
 
 	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
 
-	var server = require('http').createServer(app);
-	server.listen(3100);
+	//var server = require('http').createServer(app);
+	//server.listen(3100);
 }
 
 function getIo() {
