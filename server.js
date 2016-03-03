@@ -71,8 +71,9 @@ function initServer(err) {
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-	app.listen(3000);
-	console.log('Listening on port 3000'); 
+	var port = 4000;
+	app.listen(port);
+	console.log('Listening on port ' + port); 
 }
 
 async.series([
