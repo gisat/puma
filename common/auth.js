@@ -40,7 +40,7 @@ function auth(req, res, next) {
 	};
 
 	var options = {
-		host: config.geonodeHost,
+		host: config.localHost,
 		path: config.geonodePath+'/layers/acls',
 		headers: headers,
 		method: 'GET'
