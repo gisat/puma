@@ -28,6 +28,7 @@ module.exports = {
 	geoserver2Password  : "P4ssw0rd",
 	geoserver2Workspace : "puma",
 
+	geonodeProtocol : "http",
 	geonodeHost     : "37.205.9.78",
 	geonodePath     : "",
 	geonodeHome     : "/geonode",

@@ -63,6 +63,7 @@ function initServer(err) {
 	 */
 
 	app.use('/config.js', publicConfig);
+	app.use('/printpublic/config.js', publicConfig);
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
 	app.use('/printpublic',staticFn(__dirname + '/public'));
