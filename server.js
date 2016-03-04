@@ -7,6 +7,8 @@ var staticFn = express['static'];
 var async = require('async');
 var loc = require('./common/loc');
 
+var config = require('./config');
+
 function initServer(err) {
 	if (err) {
 		console.log('Error: while initializing server: ', err);
@@ -61,6 +63,7 @@ function initServer(err) {
 	 */
 
 	app.use('/config.js', publicConfig);
+	app.use('/printpublic/config.js', publicConfig);
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
 	app.use('/printpublic',staticFn(__dirname + '/public'));
@@ -71,9 +74,9 @@ function initServer(err) {
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-	var port = 4000;
-	app.listen(port);
-	console.log('Listening on port ' + port); 
+	console.log('Going to listen on port ' + config.localPort + '...');
+	app.listen(config.localPort);
+	console.log('Listening on port ' + config.localPort);
 }
 
 async.series([

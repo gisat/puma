@@ -2,14 +2,15 @@ var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
-///// LIVE
 var http = require('http');
+var https = require('https');
+
+//maybe one day we can switch to request instead of http and https
 //var requestPackage = require('request'); // request was taken by conn.request
-/////
 
 /////// DEBUG
 //var http = require('http-debug').http;
-//// var https = require('http-debug').https;
+//var https = require('http-debug').https;
 //http.debug = 2;
 ///////
 		
@@ -39,7 +40,11 @@ function request(options,dataToWrite,callback) {
 //		}
 //	}
 
-	var reqs = http.request(options, function(resl){
+	var requestEngine = (["https","https:","https://"].indexOf(options.protocol)!=-1) ? https : http;
+
+	delete options.protocol;
+
+	var reqs = requestEngine.request(options, function(resl){
 		var output = '';
 		resl.setEncoding(options.resEncoding || 'utf8' );
 		//console.log(resl.headers['geowebcache-cache-result'] || 'none');
@@ -165,8 +170,8 @@ function init(app, callback) {
 
 	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
 
-	var server = require('http').createServer(app);
-	server.listen(3100);
+	//var server = require('http').createServer(app);
+	//server.listen(3100);
 }
 
 function getIo() {
