@@ -25,10 +25,13 @@ function owner(req,res,next) {
 
 
 function auth(req, res, next) {
-
-	var sessionId = req.cookies['ssid'];
-	if (!sessionId)
+	if (!req.cookies){
 		return next();
+	}
+	var sessionId = req.cookies['ssid'];
+	if (!sessionId){
+		return next();
+	}
 	req.ssid = sessionId;
 	var userName = sessionCache[sessionId];
 	if (userName) {
