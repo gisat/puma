@@ -46,11 +46,12 @@ function logout(params,req,res,callback) {
 var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 
 	var options1 = {
+		protocol: config.geonodeProtocol,
 		host: config.geonodeHost,
 		path: config.geonodeHome+'/',
 		method: 'GET',
 		headers: {
-			'referer': config.remoteProtocol + '://' + config.geonodeHost + "/"
+			'referer': config.geonodeProtocol + '://' + config.geonodeHost + "/"
 		}
 	};
 
@@ -77,6 +78,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		}
 		postData = querystring.stringify(postData);
 		var options2 = {
+			protocol: config.geonodeProtocol,
 			host: config.geonodeHost,
 			path: isLogin ? config.geonodePath+'/account/login/' : config.geonodePath+'/account/logout/',
 			method: 'POST',

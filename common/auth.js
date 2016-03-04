@@ -43,7 +43,8 @@ function auth(req, res, next) {
 	};
 
 	var options = {
-		host: config.localHost,
+		protocol: config.geonodeProtocol,
+		host: config.geonodeHost,
 		path: config.geonodePath+'/layers/acls',
 		headers: headers,
 		method: 'GET'
