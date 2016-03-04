@@ -20,9 +20,40 @@ var User = function(email, username, firstName, lastName, password, isSuperuser,
     this.permissions = permissions;
 };
 
-User.prototype.save = function() {
+/**
+ * Use this method to decide whether user can do certain action with a layer. 
+ * @param layerName {String} Name of the layer in format workspace:name for example geonode:layer_name
+ * @param permissionToAskFor {String} One of the possible values: addResource, updateResource, removeResource, viewResource
+ * @returns {Promise} Promise of information about permission
+ */
+User.prototype.hasPermissionToLayer = function(layerName, permissionToAskFor) {
     var connection = conn.getPgGeonodeDb();
-    // Apply defaults to remaining fields.
+    var self = this;
+    return new Promise(function(resolve, reject){
+        var getLayerEquivalentInGeonode = "select * from layers_layer where typename = $1";
+        connection.query(getLayerEquivalentInGeonode, [layerName], function(err, results){
+            if(err){
+                reject(err);
+                return;
+            }
+
+            if(!results.rows) {
+                reject(err);
+                return;
+            }
+
+            var idOfLayer = results.rows[0].resourcebase_ptr_id;
+            var hasRights = false;
+            self.permissions.forEach(function(permission){
+                if(permission.objectPk == idOfLayer) {
+                    if(permission[permissionToAskFor] == permission.permissionId) {
+                        hasRights = true
+                    }
+                }
+            });
+            resolve(hasRights);
+        });
+    });
 };
 
 /**

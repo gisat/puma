@@ -33,6 +33,13 @@ var Permission = function(permissionId, objectPk, userId) {
     this.userId = userId;
 };
 
+// Ids of rights relevant for current moment in the Panther application.
+// TODO: Load this information from the table auth_permission
+Permission.prototype.addResource = 112;
+Permission.prototype.updateResource = 113;
+Permission.prototype.removeResource = 114;
+Permission.prototype.viewResource = 115;
+
 module.exports = {
     Permissions: Permissions
 };
