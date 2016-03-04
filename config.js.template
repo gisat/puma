@@ -33,4 +33,6 @@ module.exports = {
 	geonodePath     : "",
 	geonodeHome     : "/geonode",
 
+	debug: true,
+
 };
