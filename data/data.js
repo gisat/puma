@@ -1,7 +1,7 @@
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
-var us = require('underscore');
+var _ = require('underscore');
 
 function getData(params, callback) {
 
@@ -87,9 +87,9 @@ function getData(params, callback) {
 			attr: attr
 		};
 		if (params['sortNorm']) {
-			us.extend(attrObj, JSON.parse(params['sortNorm']))
+			_.extend(attrObj, JSON.parse(params['sortNorm']))
 		}
-		attrsWithSort = us.union(attrs, [attrObj]);
+		attrsWithSort = _.union(attrs, [attrObj]);
 	}
 
 	for (var i = 0; i < years.length; i++) {
@@ -110,8 +110,8 @@ function getData(params, callback) {
 			var attr = attrsWithSort[j];
 			var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
 			var aliasAttrName = moreYears ? (attrName + '_y_' + yearId) : attrName;
-			if (us.contains(attrs,attr)) {
-				if (us.contains(aliases,aliasAttrName)) {
+			if (_.contains(attrs,attr)) {
+				if (_.contains(aliases,aliasAttrName)) {
 					continue;
 				}
 				aliases.push(aliasAttrName);
@@ -218,7 +218,7 @@ function getData(params, callback) {
 		locationIds.push(parseInt(locationId));
 		for (var areaId in areas[locationId]) {
 			areaIds.push(parseInt(areaId));
-			originalAreas[locationId][areaId] = us.clone(areas[locationId][areaId]);
+			originalAreas[locationId][areaId] = _.clone(areas[locationId][areaId]);
 		}
 	}
 
@@ -229,19 +229,19 @@ function getData(params, callback) {
 			for (var areaId in selectedArea[locationId]) {
 				areaIds.push(parseInt(areaId));
 				originalSelected[locationId] = originalSelected[locationId] || {};
-				originalSelected[locationId][areaId] = us.clone(selectedArea[locationId][areaId]);
+				originalSelected[locationId][areaId] = _.clone(selectedArea[locationId][areaId]);
 				if (!params['noSelect']) {
 					originalAreas[locationId] = originalAreas[locationId] || {};
-					originalAreas[locationId][areaId] = us.clone(selectedArea[locationId][areaId]);
+					originalAreas[locationId][areaId] = _.clone(selectedArea[locationId][areaId]);
 					if (areas[locationId] && areas[locationId][areaId] && areas[locationId][areaId].length && originalAreas[locationId][areaId].length){
-						areas[locationId][areaId] = us.difference(areas[locationId][areaId],originalAreas[locationId][areaId]);
+						areas[locationId][areaId] = _.difference(areas[locationId][areaId],originalAreas[locationId][areaId]);
 					}
 				}
 			}
 		}
 	}
-	areaIds = us.uniq(areaIds);
-	locationIds = us.uniq(locationIds);
+	areaIds = _.uniq(areaIds);
+	locationIds = _.uniq(locationIds);
 
 	var allMap = selectedAreas;
 	allMap.push(areas);
@@ -301,7 +301,7 @@ function getData(params, callback) {
 					for (var i = 0; i < resls.length; i++) {
 						locationIds.push(resls[i]._id);
 					}
-					locationIds = us.uniq(locationIds);
+					locationIds = _.uniq(locationIds);
 					return asyncCallback(null, null);
 				})
 			}],
@@ -469,14 +469,14 @@ function getData(params, callback) {
 								if (params['topall']) {
 									normalData.push(row)
 								}
-								var aggRow = us.clone(row);
+								var aggRow = _.clone(row);
 								aggData.push(aggRow);
 								locAggDataMap[-1] = aggRow;
 							} else if (topLoc && row.at == results.dataset.featureLayers[0]) {
 								if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
 									normalData.push(row);
 								}
-								var aggRow = us.clone(row);
+								var aggRow = _.clone(row);
 								aggData.push(aggRow);
 								locAggDataMap[row.loc] = aggRow;
 
@@ -484,7 +484,7 @@ function getData(params, callback) {
 								//if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
 									normalData.push(row);
 								//}
-								var aggRow = us.clone(row);
+								var aggRow = _.clone(row);
 								aggData.push(aggRow);
 								locAggDataMap['select'] = aggRow;
 
@@ -667,9 +667,9 @@ function getAttrConf(params, callback) {
 				for (var i = 0; i < attrs.length; i++) {
 					var attrRec = attrs[i];
 					attrMap[attrRec.as] = attrMap[attrRec.as] || {};
-					attrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
+					attrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
 					prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
-					prevAttrMap[attrRec.as][attrRec.attr] = us.clone(results.attr[attrRec.attr]);
+					prevAttrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
 					var normType = attrRec.normType;
 					var units = results.attr[attrRec.attr].units || '';
 					var normUnits = null;
@@ -693,7 +693,7 @@ function getAttrConf(params, callback) {
 							attrMap[normAttrSet] = attrMap[normAttrSet] || {};
 							attrMap[normAttrSet][normAttr] = normAttrRec;
 							prevAttrMap[normAttrSet] = prevAttrMap[normAttrSet] || {};
-							prevAttrMap[normAttrSet][normAttr] = us.clone(normAttrRec);
+							prevAttrMap[normAttrSet][normAttr] = _.clone(normAttrRec);
 						}
 					}
 
@@ -733,7 +733,7 @@ function getAttrConf(params, callback) {
 }
 
 var getTopAllSql = function(topAllSql, layerRefMap, dataset, locationIds, year) {
-	locationIds = us.uniq(locationIds);
+	locationIds = _.uniq(locationIds);
 	var sql = '';
 	var firstAt = dataset.featureLayers[0];
 	for (var i = 0; i < locationIds.length; i++) {

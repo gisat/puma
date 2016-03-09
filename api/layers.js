@@ -6,7 +6,7 @@ var dom = require('../common/dom');
 var async = require('async');
 var OpenLayers = require('openlayers').OpenLayers;
 var xmldoc = require('xmldoc');
-var us = require('underscore');
+var _ = require('underscore');
 var config = require('../config');
 
 var filter = {
@@ -23,7 +23,7 @@ function copyYears(params, req, res, callback) {
 	};
 	crud.read('layerref',filter,function(err,resls) {
 		async.forEach(resls,function(item,eachCallback) {
-			var obj = us.clone(item);
+			var obj = _.clone(item);
 			delete obj['_id'];
 			obj.year = 278;
 			crud.create('layerref',obj,{bypassHooks: true,userId: req.userId},eachCallback);
@@ -66,8 +66,8 @@ function gatherLayerData(featureInfo, callback) {
 						attrSets.push(parseInt(splitted[1]));
 						attrs.push(parseInt(splitted[3]));
 					}
-					attrSets = us.uniq(attrSets);
-					attrs = us.uniq(attrs);
+					attrSets = _.uniq(attrSets);
+					attrs = _.uniq(attrs);
 					eachCallback(null, {row: row, attrs: attrs, attrSets: attrSets});
 				});
 			}, function(err, items) {
@@ -76,8 +76,8 @@ function gatherLayerData(featureInfo, callback) {
 				var attrs = [];
 				for (var i = 0; i < items.length; i++) {
 					var item = items[i];
-					attrSets = us.union(attrSets, item.attrSets);
-					attrs = us.union(attrs, item.attrs);
+					attrSets = _.union(attrSets, item.attrSets);
+					attrs = _.union(attrs, item.attrs);
 					rows.push(item.row);
 				}
 				return asyncCallback(null, {rows: rows, attrSets: attrSets, attrs: attrs});
@@ -380,7 +380,7 @@ function getLayerRefTable(params,req,res,callback) {
 			var analyticalUnits = results.dataset.featureLayers;
 			var featureLayers = results.featureLayerTemplates.featureLayers;
 			var layers = results.featureLayerTemplates.layers;
-			var allFeatureLayers = us.union(analyticalUnits,featureLayers,layers);
+			var allFeatureLayers = _.union(analyticalUnits,featureLayers,layers);
 			var rows = [{value: 'Analytical units'}];
 			async.map(allFeatureLayers,function(item,mapCallback) {
 				crud.read('layerref',{location:location,year:year,isData:false,areaTemplate:item},{},function(err,resls) {
@@ -637,7 +637,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
 		},
 		create: ['symbologiesServer', 'symbologiesDb', function(asyncCallback, results) {
 				var symbologiesDb = symbologiesDb;
-				var symbToCreate = us.difference(results.symbologiesServer, results.symbologiesDb);
+				var symbToCreate = _.difference(results.symbologiesServer, results.symbologiesDb);
 				async.forEach(symbToCreate, function(symb, eachCallback) {
 					var obj = {
 						name: symb,
@@ -656,7 +656,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
 				});
 			}],
 		delete: ['symbologiesServer', 'symbologiesDb', 'create', function(asyncCallback, results) {
-				var symbToDel = us.difference(results.symbologiesDb, results.symbologiesServer);
+				var symbToDel = _.difference(results.symbologiesDb, results.symbologiesServer);
 				async.forEach(symbToDel, function(symb, eachCallback) {
 					var obj = {
 						symbologyName: symb

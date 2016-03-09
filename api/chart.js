@@ -8,7 +8,7 @@ var charts = {
 	extentoutline: require('../data/extentoutline'),
 	filter: require('../data/filter')
 };
-var us = require('underscore');
+var _ = require('underscore');
 var cp = require('child_process');
 var async = require('async');
 var fs = require('fs');
@@ -74,7 +74,7 @@ function getChart(params, req, res, callback) {
 						return callback(null);
 		}
 		if (params['forExport']) {
-			conf = us.extend(conf,require('../data/printchart'))
+			conf = _.extend(conf,require('../data/printchart'))
 		}
 		res.data = conf;
 		callback();

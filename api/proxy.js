@@ -10,7 +10,7 @@ var chartConfMap = {};
 var async = require('async');
 var crud = require('../rest/crud');
 var layers = require('./layers');
-var us = require('underscore');
+var _ = require('underscore');
 var jsid = null;
 var cacheStyleMap = null;
 var layerGroupMap = null;
@@ -255,7 +255,7 @@ function saveSld(params, req, res, callback) {
 			if (!params['showChoropleth'] && !params['showMapChart']) {
 				return asyncCallback(null);
 			}
-			var dataParams = us.clone(params);
+			var dataParams = _.clone(params);
 			dataParams['aggregate'] = 'min,max';
 			if (params['showChoropleth']) {
 				dataParams['attrs'] = JSON.stringify([attrs[attrIndex]]);

@@ -1,7 +1,7 @@
 var dataMod = require('./data');
 var async = require('async')
 var crud = require('../rest/crud');
-var us = require('underscore');
+var _ = require('underscore');
 var onecolor = require('onecolor');
 function getChart(params, callback) {
 	var attrs = JSON.parse(params['attrs']);
@@ -34,7 +34,7 @@ function getChart(params, callback) {
 			if (data.length>5 || pastYears.length<2) {
 				return asyncCallback(null,[]);
 			}
-			var newParams = us.clone(params);
+			var newParams = _.clone(params);
 			newParams.years = JSON.stringify([pastYears[pastYears.length-2]]);
 			years.push(pastYears[pastYears.length-2]);
 			years.reverse();
@@ -68,7 +68,7 @@ function getChart(params, callback) {
 		res: ['data2', 'attrConf','years', function(asyncCallback, results) {
 				var forMap = params['forMap']
 				var attrConf = results.attrConf.attrMap;
-				var data = us.union(results.data2,results.data);
+				var data = _.union(results.data2,results.data);
 				var numRecs = data.length;
 				var numRows = Math.round(Math.sqrt(numRecs * height / width))
 				var numCols = Math.ceil(numRecs / numRows);
@@ -114,7 +114,7 @@ function getChart(params, callback) {
 							//console.log(c1)
 							var c2 = onecolor(attrRec.color).saturation(.3).lightness(.95).hex();
 							//console.log(c2)
-							var secondObj = us.clone(obj);
+							var secondObj = _.clone(obj);
 							secondObj.color = onecolor(attrRec.color).saturation(0.1).lightness(.96).hex();
 							secondObj.name = 'Other'
 							secondObj.y = 100-obj.y;
@@ -209,7 +209,7 @@ function getChart(params, callback) {
 				if (params['forMap']) {
 					for (var i = 0; i < series.length; i++) {
 						var conf = cfg();
-						conf = us.extend(conf,require('../data/defaultchart'))
+						conf = _.extend(conf,require('../data/defaultchart'))
 						var serie = series[i]
 						//conf.title.text = '';
 						//conf.legend.enabled = false;
@@ -225,7 +225,7 @@ function getChart(params, callback) {
 
 				else {
 					var conf = cfg();
-					conf = us.extend(conf,require('../data/defaultchart'))
+					conf = _.extend(conf,require('../data/defaultchart'))
 					conf.series = series;
 					//conf.chart.width = years.length>1 ? width+24 : null;
 					conf.chart.height = years.length>1 ? 382 : null;

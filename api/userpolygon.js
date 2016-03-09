@@ -6,7 +6,7 @@ var async = require('async');
 var crud = require('../rest/crud');
 var spatialAgg = require('../analysis/spatialagg');
 var geoserverLayers = require('../geoserver/layers');
-var us = require('underscore');
+var _ = require('underscore');
 
 function userPolygon(params,req,res,callback) {
 
@@ -347,7 +347,7 @@ function checkAnalysis(params,req,res,callback) {
 						if (yearMap[id]) continue;
 						ids.push(id);
 						//yearMap[id] = true;
-						gids = us.union(gids,dbRecord.geometries[id].gids);
+						gids = _.union(gids,dbRecord.geometries[id].gids);
 					}
 					if (gids.length) {
 						analysisToPerform.push({analysis:oneAnalysis,year:year,gids:gids,yearMap: yearMap,ids:ids});

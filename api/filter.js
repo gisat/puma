@@ -3,7 +3,7 @@ var conn = require('../common/conn');
 var data = require('../data/data');
 var async = require('async');
 var crud = require('../rest/crud');
-var us = require('underscore');
+var _ = require('underscore');
 
 
 
@@ -12,7 +12,7 @@ var us = require('underscore');
 function filter(params, req, res, callback) {
 
 
-//    var params2 = us.clone(params);
+//    var params2 = _.clone(params);
 
 	params.filter = null;
 //    params2.bypassLeafs = true;
@@ -104,7 +104,7 @@ function filter(params, req, res, callback) {
 				var attrMetaMap = {};
 				var attrs = JSON.parse(params['attrs']);
 				async.map(attrs, function(attr, mapCallback) {
-					var newParams = us.clone(params);
+					var newParams = _.clone(params);
 					//newParams.attrs = JSON.stringify([attr]);
 					newParams.sort = JSON.stringify([{property: 'as_' + attr.as + '_attr_' + attr.attr, direction: 'ASC'}]);
 					newParams.sortNorm = JSON.stringify({
@@ -192,7 +192,7 @@ function filter(params, req, res, callback) {
 
 				params.attrMap = results.attrConf.prevAttrMap;
 				var attrMetaMap = {};
-				var newParams = us.clone(params);
+				var newParams = _.clone(params);
 				newParams.aggregate = 'min,max';
 				data.getData(newParams, function(err, dataObj) {
 					if (err)
@@ -284,7 +284,7 @@ function getFilterConfig(params, req, res, callback) {
 			}
 			params['areas'] = JSON.stringify(areas);
 			async.map(years,function(item,mapCallback) {
-				var newParams = us.clone(params);
+				var newParams = _.clone(params);
 				newParams.aggregate = 'min,max';
 				newParams.years = JSON.stringify([item]);
 
