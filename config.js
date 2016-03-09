@@ -3,7 +3,8 @@ module.exports = {
 	pgGeonodeConnString  : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
 	mongoConnString : "mongodb://37.205.9.78:27017/test",
 
-	localAddress    : "localhost:4000/tool",
+    localAddress    : "localhost:4000/tool",
+    localPort       : "4000",
 	remoteAddress   : "localhost:4000/tool",
 	remoteProtocol  : "http",
 
@@ -20,7 +21,15 @@ module.exports = {
 	geoserver2Password  : "geoserver",
 	geoserver2Workspace : "puma",
 
-	geonodeHost     : "37.205.9.78",
+    geonodeProtocol : "http",
+    geonodeHost     : "37.205.9.78",
 	geonodePath     : "",
-	geonodeHome     : "/geonode"
+	geonodeHome     : "/geonode",
+
+    workspaceSchemaMap: {
+        geonode: "public"
+    },
+
+    debug: true,
+	allowedOrigins: "http://localhost:5555"
 };

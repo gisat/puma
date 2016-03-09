@@ -62,6 +62,10 @@ function initServer(err) {
 	ProxyPassReverse /tool http://127.0.0.1:3000
 	 */
 
+	app.use(function(req, res, next) {
+		console.log("Request: URL - " + req.url + " Method - " + req.method + "");
+		next();
+	});
 	app.use('/config.js', publicConfig);
 	app.use('/printpublic/config.js', publicConfig);
 
@@ -70,7 +74,15 @@ function initServer(err) {
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
 	app.use(loc.langParser);
-	require('./routes/security')(app);
+    // Allow CORS on the node level.
+    app.use(function(req, res, next) {
+        res.header("Access-Control-Allow-Origin", config.allowedOrigins);
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		res.header("Access-Control-Allow-Credentials", true);
+        next();
+    });
+    // End of allow CORS.
+    require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
