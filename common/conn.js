@@ -1,5 +1,6 @@
 var config = require('../config');
 var pg = require('pg');
+var _ = require('underscore');
 var MongoClient = require('mongodb').MongoClient;
 
 var http = require('http');
@@ -17,7 +18,7 @@ var https = require('https');
 var async = require('async');
 
 var mongodb = null;
-var pgDataDB = null;
+var pgDataDBMap = {};
 var pgGeonodeDB = null;
 var objectId = null;
 
@@ -107,46 +108,34 @@ function initGeoserver() {
 	});
 }
 
-function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
-	pgDataDB = new pg.Client(pgDataConnString);
-	pgDataDB.connect();
-	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
-	pgGeonodeDB.connect();
+function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback) {
+	pgGeonodeDB = connectToPgDb(pgGeonodeConnString);
+	_.mapObject(pgDataConnMap, function(db, name){
+		pgDataDBMap[name] = connectToPgDb(db.pgConnString);
+	},this);
 
 	// keeping connection alive
 	setInterval(function() {
-		if (reconnectCommand) {
-			clearInterval(reconnectCommand);
-		}
-		var reconnectCommand = setInterval(function() {
-			if(!pgDataDB.activeQuery){
-				clearInterval(reconnectCommand);
-				pgDataDB.end();
-				pgDataDB = new pg.Client(config.pgDataConnString);
-				pgDataDB.connect();
-				console.log('Data DB reconnected');
+		var date = new Date();
+		var reconnectingSession = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " + date.getHours() + "." + date.getMinutes() + "." + date.getSeconds();
+		console.log("\n\nreconnecting session", reconnectingSession);
+		_.mapObject(pgDataDBMap ,function(pgDB, name){
+			reconnectPgDB(pgDB, function(err){
+				if(err){
+					console.log('Error: PG data DB '+name+' NOT reconnected. Error:',err);
+				}else{
+					console.log("PG data DB "+name+" reconnected");
+				}
+			});
+		});
+		reconnectPgDB(pgGeonodeDB, function(err){
+			if(err){
+				console.log('Error: PG GeoNode DB NOT reconnected. Error:',err);
 			}else{
-				console.log('Data DB waiting for reconnect');
+				console.log("PG GeoNode DB reconnected");
 			}
-		},2000);
-	},Math.round(1000*60*60*5.9));
-
-	setInterval(function() {
-		if (reconnectCommand) {
-			clearInterval(reconnectCommand);
-		}
-		var reconnectCommand = setInterval(function() {
-			if(!pgGeonodeDB.activeQuery){
-				clearInterval(reconnectCommand);
-				pgGeonodeDB.end();
-				pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
-				pgGeonodeDB.connect();
-				console.log('Geonode DB reconnected');
-			}else{
-				console.log('Geonode DB waiting for reconnect');
-			}
-		},2000);
-	},Math.round(1000*60*60*5.42));
+		});
+	}, Math.round(1000*60*60*5)); // 5 hours cycle
 
 	MongoClient.connect(mongoConnString, function(err, dbs) {
 		if (err){
@@ -165,10 +154,10 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 function init(app, callback) {
 	setInterval(function() {
 		initGeoserver();
-	},590000);
+	},1000*60*10);
 	initGeoserver();
 
-	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
+	initDatabases(config.pgDataConnMap, config.pgGeonodeConnString, config.mongoConnString, callback);
 
 	//var server = require('http').createServer(app);
 	//server.listen(3100);
@@ -190,17 +179,48 @@ function getMongoDb() {
 	return mongodb;
 }
 
-function getPgDataDb() {
-	return pgDataDB;
+function getPgDataDb(name) {
+	if(!name){
+		throw new Error("conn.getPgDataDb: argument name is null or missing.");
+	}
+	if(!pgDataDBMap[name]){
+		throw new Error("conn.getPgDataDb: PostgreSQL database connection with name '"+name+"' not found.");
+	}
+	return pgDataDBMap[name];
 }
+
 function getPgGeonodeDb() {
 	return pgGeonodeDB;
 }
 
-function connectToPgDb(connectionString) {
-	var pgDatabase = new pg.Client(connectionString);
-	pgDatabase.connect();
+function connectToPgDb(connectionStringOrObject, callback) {
+	//console.log("--------------- Connecting to PG DB ", connectionStringOrObject);
+	var pgDatabase = new pg.Client(connectionStringOrObject);
+	pgDatabase.connect(callback);
 	return pgDatabase;
+}
+
+function reconnectPgDB(db, callback){
+	//console.log("reconnecting: START " + db.connectionParameters.host+":"+db.connectionParameters.port+"/"+db.connectionParameters.database);
+	if (reconnectCommand) {
+		clearInterval(reconnectCommand);
+	}
+	var reconnectCommand = setInterval(function() {
+		if(!db.activeQuery){
+			db.end();
+			db = connectToPgDb(db.connectionParameters, function(err){
+				if(err){
+					callback(err);
+				}else{
+					//console.log("reconnecting: SUCCESS " + db.connectionParameters.host+":"+db.connectionParameters.port+"/"+db.connectionParameters.database);
+					clearInterval(reconnectCommand);
+					callback(null);
+				}
+			});
+		}else{
+			console.log("reconnecting: WAITING " + db.connectionParameters.host+":"+db.connectionParameters.port+"/"+db.connectionParameters.database+" (Waiting for reconnect. There is an active query.)");
+		}
+	},3000);
 }
 
 function getLayerTable(layer){
