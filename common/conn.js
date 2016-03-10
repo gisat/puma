@@ -1,6 +1,7 @@
 var config = require('../config');
 var pg = require('pg');
 var _ = require('underscore');
+var Pool = require('generic-pool').Pool;
 var MongoClient = require('mongodb').MongoClient;
 
 var http = require('http');
@@ -18,10 +19,18 @@ var https = require('https');
 var async = require('async');
 
 var mongodb = null;
-var pgDataDBMap = {};
-var pgGeonodeDB = null;
+var pgDataDBMap = {}; // todo replace with pool
+var pgDataDBPoolMap = {};
+var pgGeonodeDB = null; // todo replace with pool
+var pgGeonodeDBPool = null;
 var objectId = null;
 
+
+// todo to be removed
+//var pgReconnectInterval = Math.round(1000*60*60*5); // 5 hour
+var pgReconnectInterval = 1000 * 60; // debugging quick loop
+
+var geonodeServiceDbName = "_geonode_service_db";
 
 
 
@@ -108,9 +117,37 @@ function initGeoserver() {
 	});
 }
 
+/**
+ * Create PG connection pools ang Mongo connection
+ * @param pgDataConnMap
+ * @param pgGeonodeConnString
+ * @param mongoConnString
+ * @param callback Callback params: err
+ */
+function initDatabases_pooling(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback){
+	pgGeonodeDBPool = createPgPool(geonodeServiceDbName, pgGeonodeConnString);
+	_.each(pgDataConnMap, function(db, name){
+		pgDataDBPoolMap[name] = createPgPool(name, db.pgConnString);
+	},this);
+
+	MongoClient.connect(mongoConnString, function(err, dbs) {
+		if (err){
+			return callback(err);
+		}
+		mongodb=dbs;
+		var mongoSettings = mongodb.collection('settings');
+		mongoSettings.findOne({_id:1},function(err,result) {
+			objectId = result ? result.objectId : null;
+			if (err || !objectId) return callback(err);
+			callback();
+		});
+	});
+}
+
+// todo to be removed
 function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback) {
 	pgGeonodeDB = connectToPgDb(pgGeonodeConnString);
-	_.mapObject(pgDataConnMap, function(db, name){
+	_.each(pgDataConnMap, function(db, name){
 		pgDataDBMap[name] = connectToPgDb(db.pgConnString);
 	},this);
 
@@ -135,20 +172,21 @@ function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, call
 				console.log("PG GeoNode DB reconnected");
 			}
 		});
-	}, Math.round(1000*60*60*5)); // 5 hours cycle
+	}, pgReconnectInterval);
 
-	MongoClient.connect(mongoConnString, function(err, dbs) {
-		if (err){
-			return callback(err);
-		}
-		mongodb=dbs;
-		var mongoSettings = mongodb.collection('settings');
-		mongoSettings.findOne({_id:1},function(err,result) {
-			objectId = result ? result.objectId : null;
-			if (err || !objectId) return callback(err);
-			callback();
-		});
-	});
+	// this is already called in initDatabases_pooling
+	//MongoClient.connect(mongoConnString, function(err, dbs) {
+	//	if (err){
+	//		return callback(err);
+	//	}
+	//	mongodb=dbs;
+	//	var mongoSettings = mongodb.collection('settings');
+	//	mongoSettings.findOne({_id:1},function(err,result) {
+	//		objectId = result ? result.objectId : null;
+	//		if (err || !objectId) return callback(err);
+	//		callback();
+	//	});
+	//});
 }
 
 function init(app, callback) {
@@ -158,9 +196,7 @@ function init(app, callback) {
 	initGeoserver();
 
 	initDatabases(config.pgDataConnMap, config.pgGeonodeConnString, config.mongoConnString, callback);
-
-	//var server = require('http').createServer(app);
-	//server.listen(3100);
+	initDatabases_pooling(config.pgDataConnMap, config.pgGeonodeConnString, config.mongoConnString, callback);
 }
 
 function getIo() {
@@ -179,7 +215,78 @@ function getMongoDb() {
 	return mongodb;
 }
 
-function getPgDataDb(name) {
+/**
+ * Creates PG DB connection pool
+ * @param connectionName Connection name string
+ * @param connectionStringOrObject Connection string or connection options object
+ */
+function createPgPool(connectionName, connectionStringOrObject){
+	// max of 10 connections, a min of 2, and a 30 second max idle time
+	return new Pool({
+		name     : connectionName,
+		create   : function(callback) {
+			var c = new pg.Client(connectionStringOrObject);
+			c.connect();
+			callback(null, c);
+		},
+		destroy  : function(client) { client.end(); },
+		max      : 10,
+		// optional. if you set this, make sure to drain() (see step 3)
+		min      : 2,
+		// specifies how long a resource can stay idle in pool before being removed
+		idleTimeoutMillis : 30000,
+		// if true, logs via console.log - can also be a function
+		log : false
+	});
+}
+
+/**
+ * Provides PG data DB client in callback
+ * @param name PG data DB
+ * @param callback
+ */
+function pgDataDbClient(name, callback) {
+										// todo temporarily hard set geonode_data DB
+										if(!name){
+											name = "geonode";
+										}
+	if(!name){
+		return callback(new Error("conn.getPgDataDb: argument name is null or missing."));
+	}
+	if(!pgDataDBMap[name]){
+		return callback(new Error("conn.getPgDataDb: PostgreSQL database connection with name '"+name+"' not found."));
+	}
+
+	pgDataDBMap[name].acquire(function(err, client) {
+		if (err) {
+			console.log("\n--------------\nError acquiring PG data DB of name '"+name+"'. Error:", err);
+			return callback(err);
+		}
+		callback(null, client);
+	});
+}
+
+/**
+ * Provides PG GeoNode service DB client in callback
+ * @param callback Callback params: err, client
+ */
+function pgGeonodeDbClient(callback) {
+	pgGeonodeDBPool.acquire(function(err, client) {
+		if (err) {
+			console.log("\n--------------\nError acquiring PG GeoNode service DB. Error:", err);
+			return callback(err);
+		}
+		callback(null, client);
+	});
+}
+
+
+// todo to be removed
+function getPgDataDb(name){
+										// todo temporarily hard set geonode_data DB
+										if(!name){
+											name = "geonode";
+										}
 	if(!name){
 		throw new Error("conn.getPgDataDb: argument name is null or missing.");
 	}
@@ -189,10 +296,12 @@ function getPgDataDb(name) {
 	return pgDataDBMap[name];
 }
 
+// todo to be removed
 function getPgGeonodeDb() {
 	return pgGeonodeDB;
 }
 
+// todo to be removed
 function connectToPgDb(connectionStringOrObject, callback) {
 	//console.log("--------------- Connecting to PG DB ", connectionStringOrObject);
 	var pgDatabase = new pg.Client(connectionStringOrObject);
@@ -200,6 +309,7 @@ function connectToPgDb(connectionStringOrObject, callback) {
 	return pgDatabase;
 }
 
+// todo to be removed
 function reconnectPgDB(db, callback){
 	//console.log("reconnecting: START " + db.connectionParameters.host+":"+db.connectionParameters.port+"/"+db.connectionParameters.database);
 	if (reconnectCommand) {
@@ -207,8 +317,12 @@ function reconnectPgDB(db, callback){
 	}
 	var reconnectCommand = setInterval(function() {
 		if(!db.activeQuery){
+			//console.log("/------------- DB before end:",db);
 			db.end();
-			db = connectToPgDb(db.connectionParameters, function(err){
+			var connectionParameters = _.clone(db.connectionParameters);
+			db = null; // todo this doesn't work. Connection stays an after 30 reconnections, it fails because to many clients.
+			//console.log("\\------------- DB after end:",db);
+			db = connectToPgDb(connectionParameters, function(err){
 				if(err){
 					callback(err);
 				}else{
@@ -223,19 +337,60 @@ function reconnectPgDB(db, callback){
 	},3000);
 }
 
-function getLayerTable(layer){
-	var workspaceDelimiterIndex = layer.indexOf(":");
+/**
+ * Split workspace:layerName string to object {workspace, layerName}
+ * @param layerWithWorkspace String workspace:layerName
+ * @returns {{workspace: string, layerName: string}}
+ */
+function splitWorkspaceLayer(layerWithWorkspace){
+	var workspace = "";
+	var layerName = "";
+	var workspaceDelimiterIndex = layerWithWorkspace.indexOf(":");
 	if(workspaceDelimiterIndex == -1){
-		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
-		return layer;
+		console.log("Warning: getLayerTable got parameter '"+layerWithWorkspace+"' without schema delimiter (colon). Returning this string as layerName");
+		layerName = layerWithWorkspace;
+	}else{
+		workspace = layerWithWorkspace.substr(0, workspaceDelimiterIndex);
+		layerName = layerWithWorkspace.substr(workspaceDelimiterIndex + 1);
 	}
-	var workspace = layer.substr(0, workspaceDelimiterIndex);
-	var layerName = layer.substr(workspaceDelimiterIndex + 1);
-	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
-		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
-		return layer;
+	return {
+		workspace: workspace,
+		layerName: layerName
+	};
+}
+
+/**
+ * Get layer table with schema (schema.layerName) from layer with geoserver workspace (workspace:layerName)
+ * @param layerWithWorkspace {string}  workspace:layerName
+ * @returns {string}                   schema.layerName
+ */
+function getLayerTable(layerWithWorkspace){
+	var workspace = splitWorkspaceLayer(layerWithWorkspace).workspace;
+	var layerName = splitWorkspaceLayer(layerWithWorkspace).layerName;
+
+	var dbName = getPgDataDbNameForLayer(layerWithWorkspace);
+	if(!config.pgDataConnMap[dbName].workspaceSchemaMap.hasOwnProperty(workspace)){
+		console.log("Error: getLayerTable got layerWithWorkspace with unknown workspace '"+ workspace +"'.");
+		return layerWithWorkspace;
 	}
 	return config.workspaceSchemaMap[workspace] + "." + layerName;
+}
+
+/**
+ * Get pgData DB name for layer with workspace string (workspace:layer)
+ * @param layerWithWorkspace {string} workspace:layer
+ * @returns {string} pgData DB name
+ */
+function getPgDataDbNameForLayer(layerWithWorkspace){
+	var workspace = splitWorkspaceLayer(layerWithWorkspace).workspace;
+	//var layerName = splitWorkspaceLayer(layerWithWorkspace).layerName;
+	var dbName = null;
+	_.each(config.pgDataConnMap, function(db, name){
+		if(db.workspaceSchemaMap.hasOwnProperty(workspace)){
+			dbName = name;
+		}
+	}, this);
+	return dbName;
 }
 
 
@@ -243,11 +398,16 @@ module.exports = {
 	init: init,
 	getIo: getIo,
 	request: request,
-	connectToPgDb: connectToPgDb,
+	connectToPgDb: connectToPgDb, // todo to be removed, use createPgPool instead
+	createPgPool: createPgPool,
 	initDatabases: initDatabases,
+	initDatabases_pooling: initDatabases_pooling, // todo to be refactored to initDatabases after removing old initDatabases
 	getMongoDb: getMongoDb,
-	getPgDataDb: getPgDataDb,
-	getPgGeonodeDb: getPgGeonodeDb,
+	getPgDataDb: getPgDataDb, // todo to be removed, use pgDataDbClient instead
+	pgDataDbClient: pgDataDbClient,
+	getPgGeonodeDb: getPgGeonodeDb, // todo to be removed, use pgGeonodeDbClient instead
+	pgGeonodeDbClient: pgGeonodeDbClient,
 	getNextId: getNextId,
-	getLayerTable: getLayerTable
+	getLayerTable: getLayerTable,
+	getPgDataDbNameForLayer: getPgDataDbNameForLayer
 };
