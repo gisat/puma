@@ -25,4 +25,8 @@ module.exports = {
 	geonodePath     : "",
 	geonodeHome     : "/geonode",
 
+	toggles: {
+		noGeoserverLayerGroups: false
+	}
+
 };
