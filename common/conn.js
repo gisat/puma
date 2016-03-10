@@ -276,8 +276,12 @@ function pgGeonodeDbClient(callback) {
 			console.log("\n--------------\nError acquiring PG GeoNode service DB. Error:", err);
 			return callback(err);
 		}
+		console.log("=========+++ PG data DB client acquired! +++==========");
 		callback(null, client);
 	});
+
+
+	///////// TODO !! Musi to byt schopne spojeni i zavirat!
 }
 
 
