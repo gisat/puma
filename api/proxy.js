@@ -521,7 +521,7 @@ function createLayerGroup(layers,style,addStyle) {
 	conn.request(options, data, function(err, output, resl) {
 		if(err){
 			console.log("\n\n------ LayerGroup not created! -------\n\nError:",err);
-		}else{
+		}else if(!config.toggles.noGeoserverLayerGroups){
 			//console.log("####### output: ", output);
 			layerGroupMap[layers][style || 'def'] = name;
 			crud.create('layergroupgs',{name:name,layers:layers,style:style || 'def'},function(){});

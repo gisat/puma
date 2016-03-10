@@ -35,4 +35,8 @@ module.exports = {
 
 	debug: true,
 
+	toggles: {
+		noGeoserverLayerGroups: false
+	}
+
 };
