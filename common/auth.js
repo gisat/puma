@@ -71,33 +71,34 @@ function auth(req, res, next) {
 
 var fetchUserInfo = function(userName, req, sessionId, next) {
 
-	var client = conn.getPgGeonodeDb();
 	var sql = 'SELECT p.id, p.username, g.name ';
 		sql += 'FROM people_profile p ';
 		sql += 'LEFT JOIN people_profile_groups pg ON pg.profile_id = p.id ';
 		sql += 'LEFT JOIN auth_group g ON pg.group_id = g.id ';
 		sql += 'WHERE p.username = $1';
 
-	client.query(sql, [userName], function(err, result) {
-		if (err) {
-			console.log("\nError on PSQL users query.\nQuery:",sql,"\nusernames:[",userName,"]\nerr:",err,"result:",result,"\n");
-			return next(err);
-		}
-		var groups = [];
-		var id = null;
-		for (var i = 0; i < result.rows.length; i++) {
-			var row = result.rows[i];
-			if (row.name) {
-				groups.push(row.name);
+	conn.pgGeonodeDbClient( function(err, client){
+		client.query(sql, [userName], function(err, result) {
+			if (err) {
+				console.log("\nError on PSQL users query.\nQuery:",sql,"\nusernames:[",userName,"]\nerr:",err,"result:",result,"\n");
+				return next(err);
 			}
-			id = id || row.id;
-		}
-		req.userId = id;
-		req.groups = groups;
-		req.isAdmin = groups.indexOf('admingroup') != -1;
-		req.userName = userName;
-		sessionCache[sessionId] = userName;
-		return next();
+			var groups = [];
+			var id = null;
+			for (var i = 0; i < result.rows.length; i++) {
+				var row = result.rows[i];
+				if (row.name) {
+					groups.push(row.name);
+				}
+				id = id || row.id;
+			}
+			req.userId = id;
+			req.groups = groups;
+			req.isAdmin = groups.indexOf('admingroup') != -1;
+			req.userName = userName;
+			sessionCache[sessionId] = userName;
+			return next();
+		});
 	});
 
 };
