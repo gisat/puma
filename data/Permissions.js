@@ -6,23 +6,26 @@ var Permissions = function() {
 };
 
 Permissions.loadForUser = function(userId) {
-    var connection = conn.getPgGeonodeDb();
     return new Promise(function(resolve, reject) {
         var loadPermissionsForUser = "SELECT * from guardian_userobjectpermission where user_id = $1";
-        connection.query(loadPermissionsForUser, [userId], function(err, result){
-            if(err){
-                reject(err);
-                return;
-            }
+        conn.pgGeonodeDbClient(function(err, connection, release){
+            connection.query(loadPermissionsForUser, [userId], function(err, result){
+                release();
 
-            if(!result.rows) {
-                reject("Some error with retrieving rows for Permissions for user with id " + userId);
-                return;
-            }
+                if(err){
+                    reject(err);
+                    return;
+                }
 
-            resolve(result.rows.map(function(permissionRow){
-                return new Permission(permissionRow.permission_id, permissionRow.object_pk, permissionRow.user_id);
-            }));
+                if(!result.rows) {
+                    reject("Some error with retrieving rows for Permissions for user with id " + userId);
+                    return;
+                }
+
+                resolve(result.rows.map(function(permissionRow){
+                    return new Permission(permissionRow.permission_id, permissionRow.object_pk, permissionRow.user_id);
+                }));
+            });
         });
     });
 };

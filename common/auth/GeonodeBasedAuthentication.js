@@ -22,24 +22,26 @@ var GeonodeBasedAuthentication = function() {
  * @param resource {Number} Id of the resource
  */
 GeonodeBasedAuthentication.prototype.authorize = function(user, resource) {
-    var connection = conn.getPgGeonodeDb();
-
     // Retrieve all permissions towardgiven resource.
     var retrieveUserRights = 'SELECT permission_id ' +
         'FROM guardian_userobjectpermission where user_id = $1 and object_pk = $2';
-    connection.query(retrieveUserRights, [user, resource], function(err, result){
-        if(err) {
-            // Log Error and return no rights
-            return false;
-        }
+    conn.pgGeonodeDbClient(function(err, connection, release){
+        connection.query(retrieveUserRights, [user, resource], function(err, result){
+            release();
 
-        if(!result.rows || !result.rows.length) {
-            return false;
-        }
+            if(err) {
+                // Log Error and return no rights
+                return false;
+            }
+
+            if(!result.rows || !result.rows.length) {
+                return false;
+            }
 
 
-        var rightsTowardsResource = result.rows.map(function(row){
+            var rightsTowardsResource = result.rows.map(function(row){
 
+            });
         });
     });
 };
@@ -56,11 +58,11 @@ GeonodeBasedAuthentication.prototype.canEdit = function(user, resource) {
  * @constructor
  */
 var GeonodeResourceRights = function() {
-    var connection = conn.getPgGeonodeDb();
-
     var retrievePermissions = 'SELECT codename FROM auth_permission';
-    connection.query(retrievePermissions, [], function(err, result){
-
+    conn.pgGeonodeDbClient(function(err, connection, release){
+        connection.query(retrievePermissions, [], function(err, result){
+            release();
+        });
     });
 
     this._permissions = [];

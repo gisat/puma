@@ -27,31 +27,34 @@ var User = function(email, username, firstName, lastName, password, isSuperuser,
  * @returns {Promise} Promise of information about permission
  */
 User.prototype.hasPermissionToLayer = function(layerName, permissionToAskFor) {
-    var connection = conn.getPgGeonodeDb();
     var self = this;
     return new Promise(function(resolve, reject){
         var getLayerEquivalentInGeonode = "select * from layers_layer where typename = $1";
-        connection.query(getLayerEquivalentInGeonode, [layerName], function(err, results){
-            if(err){
-                reject(err);
-                return;
-            }
+        conn.pgGeonodeDbClient(function(err, connection, release){
+            connection.query(getLayerEquivalentInGeonode, [layerName], function(err, results){
+                release();
 
-            if(!results.rows) {
-                reject(err);
-                return;
-            }
-
-            var idOfLayer = results.rows[0].resourcebase_ptr_id;
-            var hasRights = false;
-            self.permissions.forEach(function(permission){
-                if(permission.objectPk == idOfLayer) {
-                    if(permission[permissionToAskFor] == permission.permissionId) {
-                        hasRights = true
-                    }
+                if(err){
+                    reject(err);
+                    return;
                 }
+
+                if(!results.rows) {
+                    reject(err);
+                    return;
+                }
+
+                var idOfLayer = results.rows[0].resourcebase_ptr_id;
+                var hasRights = false;
+                self.permissions.forEach(function(permission){
+                    if(permission.objectPk == idOfLayer) {
+                        if(permission[permissionToAskFor] == permission.permissionId) {
+                            hasRights = true
+                        }
+                    }
+                });
+                resolve(hasRights);
             });
-            resolve(hasRights);
         });
     });
 };
@@ -61,25 +64,28 @@ User.prototype.hasPermissionToLayer = function(layerName, permissionToAskFor) {
  * @param id {Number} Identification of the user.
  */
 User.load = function(id) {
-    var connection = conn.getPgGeonodeDb();
     return new Promise(function(resolve, reject){
         var loadUserSql = "SELECT * FROM people_profile where id = $1;";
-        connection.query(loadUserSql, [id], function(err, results){
-            if(err) {
-                reject(err);
-                return;
-            }
+        conn.pgGeonodeDbClient(function(err, connection, release){
+            connection.query(loadUserSql, [id], function(err, results){
+                release();
 
-            if(results.rows.length == 0) {
-                reject('There is no user with id.' + id);
-                return;
-            }
+                if(err) {
+                    reject(err);
+                    return;
+                }
 
-            var result = results.rows[0];
-            Permissions.loadForUser(id).then(function(permissions){
-                resolve(new User(result.email, result.username, result.first_name, result.last_name, result.password,
-                    result.is_superuser, result.last_login, result.is_active, result.is_staff, result.date_joined,
-                    permissions));
+                if(results.rows.length == 0) {
+                    reject('There is no user with id.' + id);
+                    return;
+                }
+
+                var result = results.rows[0];
+                Permissions.loadForUser(id).then(function(permissions){
+                    resolve(new User(result.email, result.username, result.first_name, result.last_name, result.password,
+                        result.is_superuser, result.last_login, result.is_active, result.is_staff, result.date_joined,
+                        permissions));
+                });
             });
         });
     });
