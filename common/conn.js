@@ -323,9 +323,8 @@ function reconnectPgDB(db, callback){
 	var reconnectCommand = setInterval(function() {
 		if(!db.activeQuery){
 			//console.log("/------------- DB before end:",db);
-			db.end();
+			db.end(); // todo this doesn't work. Connection stays an after 30 reconnections, it fails because to many clients.
 			var connectionParameters = _.clone(db.connectionParameters);
-			db = null; // todo this doesn't work. Connection stays an after 30 reconnections, it fails because to many clients.
 			//console.log("\\------------- DB after end:",db);
 			db = connectToPgDb(connectionParameters, function(err){
 				if(err){
