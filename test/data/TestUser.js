@@ -3,7 +3,7 @@ var Promise = require('promise');
 
 var TestUser = function() {
     this._id = null;
-    this._connection = conn.connectToPgDb('postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode');
+    this._connectionPool = conn.createPgPool('postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode');
 };
 
 TestUser.prototype.save = function(){
@@ -13,19 +13,25 @@ TestUser.prototype.save = function(){
         "       'testTest','test@test.test',now(), false,true, now()) RETURNING id;";
     var self = this;
     return new Promise(function(resolve, reject) {
-        self._connection.query(createUser, function(err, result){
+        self._connectionPool.acquire(function(err, connection){
             if(err){
                 reject(err);
             }
-            self._id = result.rows[0].id;
-            var createPermissions = "INSERT INTO guardian_userobjectpermission (permission_id, object_pk, user_id, content_type_id) " +
-                " VALUES (115, 15, $1, 38);";
-            self._connection.query(createPermissions, [self._id], function(err, result){
-                if(err) {
+            connection.query(createUser, function(err, result){
+                if(err){
                     reject(err);
                 }
+                self._id = result.rows[0].id;
+                var createPermissions = "INSERT INTO guardian_userobjectpermission (permission_id, object_pk, user_id, content_type_id) " +
+                  " VALUES (115, 15, $1, 38);";
+                connection.query(createPermissions, [self._id], function(err, result){
+                    if(err) {
+                        reject(err);
+                    }
 
-                resolve();
+                    resolve();
+                    self._connectionPool.release(connection);
+                });
             });
         });
     });
@@ -36,16 +42,22 @@ TestUser.prototype.remove = function() {
 
     var deleteUser = "DELETE FROM people_profile where id = $1";
     var self = this;
-    this._connection.query(deletePermissions, [this.getId()], function(err){
+    self._connectionPool.acquire(function(err, connection){
         if(err){
-            throw new Error(err);
+            reject(err);
         }
-
-        self._connection.query(deleteUser, [self.getId()], function(err){
+        connection.query(deletePermissions, [this.getId()], function(err){
             if(err){
                 throw new Error(err);
             }
-        })
+
+            connection.query(deleteUser, [self.getId()], function(err){
+                if(err){
+                    throw new Error(err);
+                }
+                self._connectionPool.release(connection);
+            })
+        });
     });
 };
 
