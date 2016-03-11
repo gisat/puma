@@ -243,7 +243,7 @@ function createPgPool(connectionName, connectionStringOrObject){
 /**
  * Provides PG data DB client in callback
  * @param name PG data DB
- * @param callback
+ * @param callback Callback params: err, client, release function
  */
 function pgDataDbClient(name, callback) {
 										// todo temporarily hard set geonode_data DB
@@ -262,7 +262,7 @@ function pgDataDbClient(name, callback) {
 
 /**
  * Provides PG GeoNode service DB client in callback
- * @param callback Callback params: err, client
+ * @param callback Callback params: err, client, release function
  */
 function pgGeonodeDbClient(callback) {
 	acquireClientFromPool(pgGeonodeDBPool, callback);

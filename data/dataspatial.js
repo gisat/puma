@@ -2,6 +2,8 @@ var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
+var config = require('../config');
+
 function getData(params, callback) {
 
 
@@ -53,13 +55,18 @@ function getData(params, callback) {
 					return callback(new Error('notexistingdata'));
 				}
 				var sql = 'SELECT ST_SRID(the_geom) as srid FROM ' + aggregateLayerRef.layer.split(':')[1] + ' LIMIT 1';
-				var client = conn.getPgDataDb();
-
-				client.query(sql, function(err, resls) {
-					if (err)
+				conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+					if (err) {
 						return callback(err);
-					return asyncCallback(null, {srid: resls.rows[0]['srid'],layerRef:aggregateLayerRef});
-				})
+					}
+					client.query(sql, function (err, resls) {
+						release();
+						if (err){
+							return callback(err);
+						}
+						return asyncCallback(null, {srid: resls.rows[0]['srid'], layerRef: aggregateLayerRef});
+					});
+				});
 
 			}],
 		result: ['aggregateLayer', function(asyncCallback, results) {

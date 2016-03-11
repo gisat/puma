@@ -46,29 +46,34 @@ function gatherLayerData(featureInfo, callback) {
 			async.map(confs, function(item, eachCallback) {
 				var sql = 'SELECT * FROM views.' + item.layerName + ' WHERE gid=' + item.gid;
 				//console.log(sql)
-				var client = conn.getPgDataDb();
-				client.query(sql, [], function(err, resls) {
-					if (err) {
+				conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+					if(err){
 						return callback(err);
 					}
-					var row = resls.rows[0];
-					if (!row) {
-						return eachCallback(null, {row: null, attrs: [], attrSets: []});
-					}
-					var attrs = [];
-					var attrSets = [];
-					var dataMap = {};
-					for (var key in row) {
-						if (key.indexOf('attr') < 0) {
-							continue;
+					client.query(sql, [], function(err, resls) {
+						release();
+						if (err) {
+							return callback(err);
 						}
-						var splitted = key.split('_');
-						attrSets.push(parseInt(splitted[1]));
-						attrs.push(parseInt(splitted[3]));
-					}
-					attrSets = _.uniq(attrSets);
-					attrs = _.uniq(attrs);
-					eachCallback(null, {row: row, attrs: attrs, attrSets: attrSets});
+						var row = resls.rows[0];
+						if (!row) {
+							return eachCallback(null, {row: null, attrs: [], attrSets: []});
+						}
+						var attrs = [];
+						var attrSets = [];
+						var dataMap = {};
+						for (var key in row) {
+							if (key.indexOf('attr') < 0) {
+								continue;
+							}
+							var splitted = key.split('_');
+							attrSets.push(parseInt(splitted[1]));
+							attrs.push(parseInt(splitted[3]));
+						}
+						attrSets = _.uniq(attrSets);
+						attrs = _.uniq(attrs);
+						eachCallback(null, {row: row, attrs: attrs, attrSets: attrSets});
+					});
 				});
 			}, function(err, items) {
 				var rows = [];

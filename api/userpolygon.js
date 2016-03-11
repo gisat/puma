@@ -7,6 +7,7 @@ var crud = require('../rest/crud');
 var spatialAgg = require('../analysis/spatialagg');
 var geoserverLayers = require('../geoserver/layers');
 var _ = require('underscore');
+var config = require('../config');
 
 function userPolygon(params,req,res,callback) {
 
@@ -26,14 +27,20 @@ function userPolygon(params,req,res,callback) {
 				if (!conf) {
 					crud.create('userpolygon',{location:loc,user:userId,analysisMap:{},geometries:{},analysisCreated:{},viewsCreated:[],maxGid:0},{userId: userId},function(err,resl) {
 						var sql = 'CREATE TABLE up.base_user_'+userId+'_loc_'+loc+' (gid integer,name varchar,the_geom geometry,centroid geometry,area real,length real,extent box2d,dependingid bigint,fromdistance real);';
-						var client = conn.getPgDataDb();
-						client.query(sql,function(err,results) {
-							if (err) return callback(err);
-							asyncCallback(null,resl);
-						})
-					})
-				}
-				else {
+						conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+							if (err) {
+								return callback(err);
+							}
+							client.query(sql, function (err, results) {
+								release();
+								if (err) {
+									return callback(err);
+								}
+								asyncCallback(null, resl);
+							});
+						});
+					});
+				} else {
 					return asyncCallback(null,conf);
 				}
 
@@ -61,12 +68,17 @@ function userPolygon(params,req,res,callback) {
 				sql += tableSql;
 			}
 			//console.log(sql)
-			var client = conn.getPgDataDb();
-			client.query(sql, function(err, results) {
-				if (err)
+			conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+				if (err) {
 					return callback(err);
-				asyncCallback(null,gids);
-			})
+				}
+				client.query(sql, function (err, results) {
+					if (err) {
+						return callback(err);
+					}
+					asyncCallback(null, gids);
+				});
+			});
 
 		}],
 		addToTable: ['removeFromTable',function(asyncCallback,results) {
@@ -133,16 +145,23 @@ function userPolygon(params,req,res,callback) {
 				rowSql = rowSql.replace(new RegExp('#geom#','g'),geomSql);
 				sql += rowSql;
 			}
-			var client = conn.getPgDataDb();
-			client.query(sql, function(err, results) {
-				if (err) return callback(err);
-				var result = {
-					gids: addedGids,
-					maxGid: maxGid,
-					id: id
-				};
-				asyncCallback(null, result);
-			})
+			conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+				if (err) {
+					return callback(err);
+				}
+				client.query(sql, function (err, results) {
+					release();
+					if (err) {
+						return callback(err);
+					}
+					var result = {
+						gids: addedGids,
+						maxGid: maxGid,
+						id: id
+					};
+					asyncCallback(null, result);
+				});
+			});
 
 		}],
 		updateRecord: ['addToTable',function(asyncCallback,results) {
@@ -200,16 +219,25 @@ function checkAnalysis(params,req,res,callback) {
 			})
 		},
 		hasBase: function(asyncCallback) {
-			var client = conn.getPgDataDb();
 			var sql = 'SELECT COUNT(*) as cnt';
 			sql += ' FROM up.base_user_'+userId+'_loc_'+location;
 			//console.log(sql)
-			client.query(sql, function(err, resls) {
-				if (err) return callback(null);
-				//console.log(resls);
-				if (!resls.rows[0] || resls.rows[0].cnt<1) return callback(null);
-				return asyncCallback(null);
-			})
+			conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+				if (err) {
+					return callback(null);
+				}
+				client.query(sql, function (err, resls) {
+					release();
+					if (err) {
+						return callback(null);
+					}
+					//console.log(resls);
+					if (!resls.rows[0] || resls.rows[0].cnt < 1) {
+						return callback(null);
+					}
+					return asyncCallback(null);
+				});
+			});
 		},
 		analysis: function(asyncCallback) {
 			crud.read('analysis',{},function(err,resls) {
@@ -255,12 +283,18 @@ function checkAnalysis(params,req,res,callback) {
 				return asyncCallback(null,tablesToCreate);
 			}
 
-			var client = conn.getPgDataDb();
-
-			client.query(sql, function(err, resls) {
-				if (err) return callback(err);
-				asyncCallback(null, tablesToCreate);
-			})
+			conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+				if(err){
+					return callback(err);
+				}
+				client.query(sql, function(err, resls) {
+					release();
+					if (err){
+						return callback(err);
+					}
+					asyncCallback(null, tablesToCreate);
+				});
+			});
 		}],
 		createView: ['createTable',function(asyncCallback,results) {
 			if (!results.createTable.length) {
@@ -300,11 +334,18 @@ function checkAnalysis(params,req,res,callback) {
 				sql += joins;
 				sql +=');';
 			}
-			var client = conn.getPgDataDb();
-			client.query(sql, function(err, resls) {
-				if (err) return callback(err);
-				asyncCallback(null);
-			})
+			conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+				if (err) {
+					return callback(err);
+				}
+				client.query(sql, function (err, resls) {
+					release();
+					if (err) {
+						return callback(err);
+					}
+					asyncCallback(null);
+				});
+			});
 
 		}],
 		geoserverLayers: ['createView',function(asyncCallback,results) {

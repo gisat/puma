@@ -76,13 +76,18 @@ function getChart(params, callback) {
 					sql += ' WHERE a.gid = ' + item.item.gid;
 					sql += ' ORDER BY name';
 
-					var client = conn.getPgDataDb();
-					client.query(sql, {}, function(err, results) {
-
-						if (err)
+					conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+						if (err) {
 							return callback(err);
-						return eachCallback(null, results.rows);
-					})
+						}
+						client.query(sql, {}, function (err, results) {
+							release();
+							if (err) {
+								return callback(err);
+							}
+							return eachCallback(null, results.rows);
+						});
+					});
 				},function(err,resls) {
 					return callback(err,{rows:resls,layerRefs: results.layerRefs,opacity:params['featureLayerOpacity'] ? params['featureLayerOpacity']/100 : 0.7})
 				})
