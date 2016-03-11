@@ -125,9 +125,9 @@ function initGeoserver() {
  * @param callback Callback params: err
  */
 function initDatabases_pooling(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback){
-	pgGeonodeDBPool = createPgPool(geonodeServiceDbName, pgGeonodeConnString);
+	pgGeonodeDBPool = createPgPool(pgGeonodeConnString, geonodeServiceDbName);
 	_.each(pgDataConnMap, function(db, name){
-		pgDataDBPoolMap[name] = createPgPool(name, db.pgConnString);
+		pgDataDBPoolMap[name] = createPgPool(db.pgConnString, name);
 	},this);
 
 	MongoClient.connect(mongoConnString, function(err, dbs) {
@@ -217,10 +217,13 @@ function getMongoDb() {
 
 /**
  * Creates PG DB connection pool
- * @param connectionName Connection name string
  * @param connectionStringOrObject Connection string or connection options object
+ * @param connectionName Optional connection name string
  */
-function createPgPool(connectionName, connectionStringOrObject){
+function createPgPool(connectionStringOrObject, connectionName){
+	if(!connectionName){
+		connectionName = Math.random().toString(36).substr(2, 9);
+	}
 	return new Pool({
 		name     : connectionName,
 		create   : function(callback) {
