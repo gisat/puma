@@ -77,8 +77,9 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
 		sql += 'LEFT JOIN auth_group g ON pg.group_id = g.id ';
 		sql += 'WHERE p.username = $1';
 
-	conn.pgGeonodeDbClient( function(err, client){
+	conn.pgGeonodeDbClient( function(err, client, release){
 		client.query(sql, [userName], function(err, result) {
+			release();
 			if (err) {
 				console.log("\nError on PSQL users query.\nQuery:",sql,"\nusernames:[",userName,"]\nerr:",err,"result:",result,"\n");
 				return next(err);

@@ -27,8 +27,8 @@ var objectId = null;
 
 
 // todo to be removed
-//var pgReconnectInterval = Math.round(1000*60*60*5); // 5 hour
-var pgReconnectInterval = 1000 * 60; // debugging quick loop
+var pgReconnectInterval = Math.round(1000*60*60*5); // 5 hour
+//var pgReconnectInterval = 1000 * 60; // debugging quick loop
 
 var geonodeServiceDbName = "_geonode_service_db";
 
@@ -257,13 +257,7 @@ function pgDataDbClient(name, callback) {
 		return callback(new Error("conn.getPgDataDb: PostgreSQL database connection with name '"+name+"' not found."));
 	}
 
-	pgDataDBMap[name].acquire(function(err, client) {
-		if (err) {
-			console.log("\n--------------\nError acquiring PG data DB of name '"+name+"'. Error:", err);
-			return callback(err);
-		}
-		callback(null, client);
-	});
+	acquireClientFromPool(pgDataDBMap[name], callback);
 }
 
 /**
@@ -271,19 +265,27 @@ function pgDataDbClient(name, callback) {
  * @param callback Callback params: err, client
  */
 function pgGeonodeDbClient(callback) {
-	pgGeonodeDBPool.acquire(function(err, client) {
-		if (err) {
-			console.log("\n--------------\nError acquiring PG GeoNode service DB. Error:", err);
-			return callback(err);
-		}
-		console.log("=========+++ PG data DB client acquired! +++==========");
-		callback(null, client);
-	});
-
-
-	///////// TODO !! Musi to byt schopne spojeni i zavirat!
+	acquireClientFromPool(pgGeonodeDBPool, callback);
 }
 
+/**
+ * Acquire PG DB client from provede pool and call callback with client
+ * @param pool
+ * @param callback Callback with params: err, client, release function
+ */
+function acquireClientFromPool(pool, callback){
+	pool.acquire(function(err, client) {
+		if (err) {
+			console.log("\n--------------\nError acquiring client from pool '"+pool.getName()+"'. Error:", err);
+			return callback(err);
+		}
+		console.log("[+] client from pool '"+pool.getName()+"' acquired");
+		callback(null, client, function(){
+			pool.release(client);
+			console.log("   -client from pool '"+pool.getName()+"' released; available "+pool.availableObjectsCount()+"/"+pool.getPoolSize()+" (max "+pool.getMaxPoolSize()+") resources");
+		});
+	});
+}
 
 // todo to be removed
 function getPgDataDb(name){
