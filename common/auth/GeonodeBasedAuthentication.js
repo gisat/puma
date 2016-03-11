@@ -26,6 +26,10 @@ GeonodeBasedAuthentication.prototype.authorize = function(user, resource) {
     var retrieveUserRights = 'SELECT permission_id ' +
         'FROM guardian_userobjectpermission where user_id = $1 and object_pk = $2';
     conn.pgGeonodeDbClient(function(err, connection, release){
+        if(err) {
+            // Log Error and return no rights
+            return false;
+        }
         connection.query(retrieveUserRights, [user, resource], function(err, result){
             release();
 

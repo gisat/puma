@@ -9,6 +9,9 @@ Permissions.loadForUser = function(userId) {
     return new Promise(function(resolve, reject) {
         var loadPermissionsForUser = "SELECT * from guardian_userobjectpermission where user_id = $1";
         conn.pgGeonodeDbClient(function(err, connection, release){
+            if(err){
+                return reject(err);
+            }
             connection.query(loadPermissionsForUser, [userId], function(err, result){
                 release();
 

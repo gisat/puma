@@ -78,6 +78,9 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
 		sql += 'WHERE p.username = $1';
 
 	conn.pgGeonodeDbClient( function(err, client, release){
+		if (err) {
+			return next(err);
+		}
 		client.query(sql, [userName], function(err, result) {
 			release();
 			if (err) {

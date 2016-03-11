@@ -31,6 +31,9 @@ User.prototype.hasPermissionToLayer = function(layerName, permissionToAskFor) {
     return new Promise(function(resolve, reject){
         var getLayerEquivalentInGeonode = "select * from layers_layer where typename = $1";
         conn.pgGeonodeDbClient(function(err, connection, release){
+            if(err){
+                return reject(err);
+            }
             connection.query(getLayerEquivalentInGeonode, [layerName], function(err, results){
                 release();
 
@@ -67,6 +70,9 @@ User.load = function(id) {
     return new Promise(function(resolve, reject){
         var loadUserSql = "SELECT * FROM people_profile where id = $1;";
         conn.pgGeonodeDbClient(function(err, connection, release){
+            if(err) {
+                return reject(err);
+            }
             connection.query(loadUserSql, [id], function(err, results){
                 release();
 

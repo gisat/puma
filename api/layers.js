@@ -544,6 +544,9 @@ function getMetadata(params, req, res, callback) {
 		l.typename IN (' + layers + ')';
 	//console.log("getMetadata SQL: ", sql);
 	conn.pgGeonodeDbClient(function(err, client, release){
+		if (err) {
+			return callback(err);
+		}
 		client.query(sql, function(err, resls) {
 			release();
 			if (err) {
