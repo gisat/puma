@@ -19,15 +19,15 @@ var https = require('https');
 var async = require('async');
 
 var mongodb = null;
-var pgDataDBMap = {}; // todo replace with pool
+//var pgDataDBMap = {}; // todo replace with pool
 var pgDataDBPoolMap = {};
-var pgGeonodeDB = null; // todo replace with pool
+//var pgGeonodeDB = null; // todo replace with pool
 var pgGeonodeDBPool = null;
 var objectId = null;
 
 
 // todo to be removed
-var pgReconnectInterval = Math.round(1000*60*60*5); // 5 hour
+//var pgReconnectInterval = Math.round(1000*60*60*5); // 5 hour
 //var pgReconnectInterval = 1000 * 60; // debugging quick loop
 
 var geonodeServiceDbName = "_geonode_service_db";
@@ -124,7 +124,7 @@ function initGeoserver() {
  * @param mongoConnString
  * @param callback Callback params: err
  */
-function initDatabases_pooling(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback){
+function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback){
 	pgGeonodeDBPool = createPgPool(pgGeonodeConnString, geonodeServiceDbName);
 	_.each(pgDataConnMap, function(db, name){
 		pgDataDBPoolMap[name] = createPgPool(db.pgConnString, name);
@@ -145,7 +145,7 @@ function initDatabases_pooling(pgDataConnMap, pgGeonodeConnString, mongoConnStri
 }
 
 // todo to be removed
-function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback) {
+/*function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, callback) {
 	pgGeonodeDB = connectToPgDb(pgGeonodeConnString);
 	_.each(pgDataConnMap, function(db, name){
 		pgDataDBMap[name] = connectToPgDb(db.pgConnString);
@@ -174,7 +174,7 @@ function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, call
 		});
 	}, pgReconnectInterval);
 
-	// this is already called in initDatabases_pooling
+	// this is already called in initDatabases (new one)
 	//MongoClient.connect(mongoConnString, function(err, dbs) {
 	//	if (err){
 	//		return callback(err);
@@ -187,7 +187,7 @@ function initDatabases(pgDataConnMap, pgGeonodeConnString, mongoConnString, call
 	//		callback();
 	//	});
 	//});
-}
+}*/
 
 function init(app, callback) {
 	setInterval(function() {
@@ -196,7 +196,6 @@ function init(app, callback) {
 	initGeoserver();
 
 	initDatabases(config.pgDataConnMap, config.pgGeonodeConnString, config.mongoConnString, callback);
-	initDatabases_pooling(config.pgDataConnMap, config.pgGeonodeConnString, config.mongoConnString, callback);
 }
 
 function getIo() {
@@ -290,7 +289,7 @@ function acquireClientFromPool(pool, callback){
 }
 
 // todo to be removed
-function getPgDataDb(name){
+/*function getPgDataDb(name){
 										// todo temporarily hard set geonode_data DB
 										if(!name){
 											name = "geonode";
@@ -302,23 +301,23 @@ function getPgDataDb(name){
 		throw new Error("conn.getPgDataDb: PostgreSQL database connection with name '"+name+"' not found.");
 	}
 	return pgDataDBMap[name];
-}
+}*/
 
 // todo to be removed
-function getPgGeonodeDb() {
+/*function getPgGeonodeDb() {
 	return pgGeonodeDB;
-}
+}*/
 
 // todo to be removed
-function connectToPgDb(connectionStringOrObject, callback) {
+/*function connectToPgDb(connectionStringOrObject, callback) {
 	//console.log("--------------- Connecting to PG DB ", connectionStringOrObject);
 	var pgDatabase = new pg.Client(connectionStringOrObject);
 	pgDatabase.connect(callback);
 	return pgDatabase;
-}
+}*/
 
 // todo to be removed
-function reconnectPgDB(db, callback){
+/*function reconnectPgDB(db, callback){
 	//console.log("reconnecting: START " + db.connectionParameters.host+":"+db.connectionParameters.port+"/"+db.connectionParameters.database);
 	if (reconnectCommand) {
 		clearInterval(reconnectCommand);
@@ -342,7 +341,7 @@ function reconnectPgDB(db, callback){
 			console.log("reconnecting: WAITING " + db.connectionParameters.host+":"+db.connectionParameters.port+"/"+db.connectionParameters.database+" (Waiting for reconnect. There is an active query.)");
 		}
 	},3000);
-}
+}*/
 
 /**
  * Split workspace:layerName string to object {workspace, layerName}
@@ -405,14 +404,13 @@ module.exports = {
 	init: init,
 	getIo: getIo,
 	request: request,
-	connectToPgDb: connectToPgDb, // todo to be removed, use createPgPool instead
+	//connectToPgDb: connectToPgDb, // todo to be removed, use createPgPool instead
 	createPgPool: createPgPool,
 	initDatabases: initDatabases,
-	initDatabases_pooling: initDatabases_pooling, // todo to be refactored to initDatabases after removing old initDatabases
 	getMongoDb: getMongoDb,
-	getPgDataDb: getPgDataDb, // todo to be removed, use pgDataDbClient instead
+	//getPgDataDb: getPgDataDb, // todo to be removed, use pgDataDbClient instead
 	pgDataDbClient: pgDataDbClient,
-	getPgGeonodeDb: getPgGeonodeDb, // todo to be removed, use pgGeonodeDbClient instead
+	//getPgGeonodeDb: getPgGeonodeDb, // todo to be removed, use pgGeonodeDbClient instead
 	pgGeonodeDbClient: pgGeonodeDbClient,
 	getNextId: getNextId,
 	getLayerTable: getLayerTable,
