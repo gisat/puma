@@ -255,7 +255,7 @@ function pgDataDbClient(name, callback) {
 	if(!name){
 		return callback(new Error("conn.getPgDataDb: argument name is null or missing."));
 	}
-	if(!pgDataDBMap[name]){
+	if(!pgDataDBPoolMap[name]){
 		return callback(new Error("conn.getPgDataDb: PostgreSQL database connection with name '"+name+"' not found."));
 	}
 
