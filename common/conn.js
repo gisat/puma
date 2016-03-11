@@ -221,7 +221,6 @@ function getMongoDb() {
  * @param connectionStringOrObject Connection string or connection options object
  */
 function createPgPool(connectionName, connectionStringOrObject){
-	// max of 10 connections, a min of 2, and a 30 second max idle time
 	return new Pool({
 		name     : connectionName,
 		create   : function(callback) {
@@ -232,7 +231,7 @@ function createPgPool(connectionName, connectionStringOrObject){
 		destroy  : function(client) { client.end(); },
 		max      : 10,
 		// optional. if you set this, make sure to drain() (see step 3)
-		min      : 2,
+		//min      : 2,
 		// specifies how long a resource can stay idle in pool before being removed
 		idleTimeoutMillis : 30000,
 		// if true, logs via console.log - can also be a function
@@ -257,7 +256,7 @@ function pgDataDbClient(name, callback) {
 		return callback(new Error("conn.getPgDataDb: PostgreSQL database connection with name '"+name+"' not found."));
 	}
 
-	acquireClientFromPool(pgDataDBMap[name], callback);
+	acquireClientFromPool(pgDataDBPoolMap[name], callback);
 }
 
 /**
