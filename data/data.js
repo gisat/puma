@@ -5,8 +5,6 @@ var _ = require('underscore');
 
 function getData(params, callback) {
 
-	var client = conn.getPgDataDb();
-
 	var areas = JSON.parse(params['areas']);
 	var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
 	var defSelectedArea = params['defSelectedArea'] ? JSON.parse(params['defSelectedArea']) : null;
@@ -450,83 +448,91 @@ function getData(params, callback) {
 				dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + parseInt(params['limit'])) : '';
 				dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
 				//console.log(dataSql);
-				client.query(dataSql, function(err, resls) {
+				conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
 					if (err) {
-						//console.log(dataSql)
-						return callback(new Error('notexistingdata'));
+						return callback(err);
 					}
-					var aggData = [];
-					var normalData = [];
-					var locAggDataMap = {};
+					client.query(dataSql, function (err, resls) {
+						release();
+						if (err) {
+							//console.log(dataSql)
+							return callback(new Error('notexistingdata'));
+						}
+						var aggData = [];
+						var normalData = [];
+						var locAggDataMap = {};
 
-					if (topLoc || topAll || aggSelect) {
-						var aggColorPassed = false;
+						if (topLoc || topAll || aggSelect) {
+							var aggColorPassed = false;
 							//console.log(originalSelected);
-						for (var i = 0; i < resls.rows.length; i++) {
-							var row = resls.rows[i];
+							for (var i = 0; i < resls.rows.length; i++) {
+								var row = resls.rows[i];
 
-							if (row.loc == -1) {
-								if (params['topall']) {
-									normalData.push(row)
-								}
-								var aggRow = _.clone(row);
-								aggData.push(aggRow);
-								locAggDataMap[-1] = aggRow;
-							} else if (topLoc && row.at == results.dataset.featureLayers[0]) {
-								if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
+								if (row.loc == -1) {
+									if (params['topall']) {
+										normalData.push(row)
+									}
+									var aggRow = _.clone(row);
+									aggData.push(aggRow);
+									locAggDataMap[-1] = aggRow;
+								} else if (topLoc && row.at == results.dataset.featureLayers[0]) {
+									if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
+										normalData.push(row);
+									}
+									var aggRow = _.clone(row);
+									aggData.push(aggRow);
+									locAggDataMap[row.loc] = aggRow;
+
+								} else if (aggSelect && defSelectedArea && defSelectedArea.at == row.at && defSelectedArea.loc == row.loc && defSelectedArea.gid == row.gid) {
+									//if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
 									normalData.push(row);
-								}
-								var aggRow = _.clone(row);
-								aggData.push(aggRow);
-								locAggDataMap[row.loc] = aggRow;
+									//}
+									var aggRow = _.clone(row);
+									aggData.push(aggRow);
+									locAggDataMap['select'] = aggRow;
 
-							} else if (aggSelect && defSelectedArea && defSelectedArea.at==row.at && defSelectedArea.loc==row.loc && defSelectedArea.gid==row.gid) {
-								//if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
-									normalData.push(row);
-								//}
-								var aggRow = _.clone(row);
-								aggData.push(aggRow);
-								locAggDataMap['select'] = aggRow;
-
-							} else {
-								normalData.push(row);
-							}
-						}
-						if (params['limit']) {
-							var from = parseInt(params['start']) || 0;
-							var to = from + (parseInt(params['limit']) || 0);
-							normalData = normalData.slice(from, to);
-
-						}
-
-						if (params['normalization'] == 'toptree' || params['normalization'] == 'topall' || params['normalization'] == 'select') {
-							for (var i = 0; i < normalData.length; i++) {
-								var row = normalData[i];
-								if (params['normalization'] == 'toptree') {
-									var normRow = locAggDataMap[row.loc];
-
-								} else if (params['normalization'] == 'select') {
-									var normRow = locAggDataMap['select'];
 								} else {
-									var normRow = locAggDataMap[-1];
+									normalData.push(row);
 								}
-								for (var j = 0; j < attrs.length; j++) {
-									var attr = attrs[j];
-									var attrName = 'as_' + attr.as + '_attr_' + attr.attr;
-									for (var k = 0; k < years.length; k++) {
-										var yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
-										var val = row[yearAttrName];
-										val = val / normRow[yearAttrName] * 100;
-										row[yearAttrName] = val;
+							}
+							if (params['limit']) {
+								var from = parseInt(params['start']) || 0;
+								var to = from + (parseInt(params['limit']) || 0);
+								normalData = normalData.slice(from, to);
+
+							}
+
+							if (params['normalization'] == 'toptree' || params['normalization'] == 'topall' || params['normalization'] == 'select') {
+								for (var i = 0; i < normalData.length; i++) {
+									var row = normalData[i];
+									if (params['normalization'] == 'toptree') {
+										var normRow = locAggDataMap[row.loc];
+
+									} else if (params['normalization'] == 'select') {
+										var normRow = locAggDataMap['select'];
+									} else {
+										var normRow = locAggDataMap[-1];
+									}
+									for (var j = 0; j < attrs.length; j++) {
+										var attr = attrs[j];
+										var attrName = 'as_' + attr.as + '_attr_' + attr.attr;
+										for (var k = 0; k < years.length; k++) {
+											var yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
+											var val = row[yearAttrName];
+											val = val / normRow[yearAttrName] * 100;
+											row[yearAttrName] = val;
+										}
 									}
 								}
 							}
+						} else {
+							normalData = resls.rows;
 						}
-					} else {
-						normalData = resls.rows;
-					}
-					if (!normalData.length) return callback(new Error('nodata'));
-					return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
+						if (!normalData.length){
+							return callback(new Error('nodata'));
+						}
+						return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
+					});
 				});
 			}],
 		total: ['sql', 'data', function(asyncCallback, results) {
@@ -557,39 +563,43 @@ function getData(params, callback) {
 					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid<>' + row.gid + ')';
 				}
 				totalSql += ') as b';
-				client.query(totalSql, function(err, resls) {
-					if (err)
+				conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+					if (err) {
 						return callback(err);
-					if ((params['normalization'] == 'toptree' || params['normalization'] == 'topall') && aggregates) {
-						if (params['normalization'] == 'topall') {
-							aggData = results.data.aggDataMap[-1];
+					}
+					client.query(totalSql, function (err, resls) {
+						release();
+						if (err) {
+							return callback(err);
 						}
-						else if (params['normalization'] == 'select') {
-							aggData = results.data.aggDataMap['select'];
-						}
-						// v pripade toptree se bere pouze prvni lokalita
-						else {
-							for (var loc in results.data.aggDataMap) {
-								if (loc != -1) {
-									aggData = results.data.aggDataMap[loc];
-									break;
+						if ((params['normalization'] == 'toptree' || params['normalization'] == 'topall') && aggregates) {
+							if (params['normalization'] == 'topall') {
+								aggData = results.data.aggDataMap[-1];
+							} else if (params['normalization'] == 'select') {
+								aggData = results.data.aggDataMap['select'];
+							} else { // v pripade toptree se bere pouze prvni lokalita
+								for (var loc in results.data.aggDataMap) {
+									if (loc != -1) {
+										aggData = results.data.aggDataMap[loc];
+										break;
+									}
+								}
+							}
+
+							for (var i = 0; i < aliases.length; i++) {
+								var alias = aliases[i];
+								for (var j = 0; j < aggregates.length; j++) {
+									var aggr = aggregates[j];
+									var val = resls.rows[0][aggr + '_' + alias];
+									var normVal = aggData ? aggData[alias] / 100 : 1;
+									var newVal = val / normVal;
+									resls.rows[0][aggr + '_' + alias] = newVal;
 								}
 							}
 						}
-
-						for (var i = 0; i < aliases.length; i++) {
-							var alias = aliases[i];
-							for (var j = 0; j < aggregates.length; j++) {
-								var aggr = aggregates[j];
-								var val = resls.rows[0][aggr + '_' + alias];
-								var normVal = aggData ? aggData[alias] / 100 : 1;
-								var newVal = val / normVal;
-								resls.rows[0][aggr + '_' + alias] = newVal;
-							}
-						}
-					}
-					return asyncCallback(null, resls.rows[0]);
-				})
+						return asyncCallback(null, resls.rows[0]);
+					});
+				});
 			}],
 		res: ['data', 'total', 'sql', function(asyncCallback, results) {
 				//console.log(results.data.normalData)

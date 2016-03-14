@@ -7,7 +7,7 @@ describe('Given User exists in Geonode', function(){
         resource;
 
     before(function(){
-        var connection = conn.getPgGeonodeDb();
+        //var connection = conn.getPgGeonodeDb(); // todo change to conn.pgGeonodeDbClient ~Jonas
         var createUser = "INSERT into "
     });
 

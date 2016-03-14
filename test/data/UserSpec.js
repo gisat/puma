@@ -11,7 +11,7 @@ describe('User', function(){
 
     before(function(){
         // TODO: Prepare layer and permission in the database.
-        conn.initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, function(){});
+        conn.initDatabases(config.pgDataConnMap, config.pgGeonodeConnString, config.mongoConnString, function(){});
         
         testUser = new TestUser();
         testUser.save().then(function(){

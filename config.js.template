@@ -6,14 +6,28 @@ module.exports = {
 	remoteProtocol  : "http",
 	remoteAddress   : "37.205.9.78/tool",
 
-	pgConnString    : "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode_data",
-	pgGNConnString  : "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode",
-	mongoConnString : "mongodb://192.168.2.13:27017/test",
+	pgGeonodeConnString: "postgres://geonode:P4ssw0rd@127.0.0.1:5432/geonode",
+	mongoConnString: "mongodb://192.168.2.13:27017/test",
 
-	// GeoServer workspace to PostgreSQL schema map
-	workspaceSchemaMap: {
-		geonode: "public"
-	}
+	pgDataConnMap: {
+		geonode: {
+			pgConnString   : "postgres://geonode:P4ssw0rd@localhost:5432/geonode_data",
+			geometryColumn : "the_geom",
+			workspaceSchemaMap: {
+				geonode: "public"
+			}
+		},
+		urbis: {
+			pgConnString   : "postgres://geonode:P4ssw0rd@localhost:5432/urbis",
+			geometryColumn : "geom",
+			// GeoServer workspace to PostgreSQL schema map
+			workspaceSchemaMap: {
+				urbis_ancillary_layers: "ancillary_layers",
+				urbis_input: "input",
+				urbis_results_final: "results_final"
+			},
+		}
+	},
 
 	geoserverHost   : "127.0.0.1",
 	geoserverPort   : 8080,

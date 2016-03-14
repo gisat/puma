@@ -55,11 +55,18 @@ var removeLayerDbInternal = function(areaLayerRef,callback) {
 	var tableName = 'views.base_'+areaLayerRef['_id'];
 	var sql = 'DROP VIEW IF EXISTS '+viewName+';';
 	sql += 'DROP TABLE IF EXISTS '+tableName+';';
-	var client = conn.getPgDataDb();
-	client.query(sql,function(err,results) {
-		if (err) return callback(err);
-		callback(null);
-	})
+	conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+		if (err) {
+			return callback(err);
+		}
+		client.query(sql, function (err, results) {
+			release();
+			if (err) {
+				return callback(err);
+			}
+			callback(null);
+		});
+	});
 };
 
 function checkUniqueId(layerRef,callback) {
@@ -70,16 +77,20 @@ function checkUniqueId(layerRef,callback) {
 	var sql = 'ALTER TABLE '+from+' DROP CONSTRAINT IF EXISTS '+layerName+'_unique;';
 	sql += 'ALTER TABLE '+from+' ADD CONSTRAINT '+layerName+'_unique UNIQUE("'+layerRef.fidColumn+'");';
 
-	var client = conn.getPgDataDb();
 	//console.log(sql)
-	client.query(sql,function(err) {
-		if (err){
-			console.log("checkUniqueId err: ", err);
-			return callback(new Error('IDs not unique'));
+	conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+		if (err) {
+			return callback(err);
 		}
-
-		callback(null);
-	})
+		client.query(sql, function (err) {
+			release();
+			if (err) {
+				console.log("checkUniqueId err: ", err, "\nSQL:", sql);
+				return callback(new Error('IDs not unique'));
+			}
+			callback(null);
+		});
+	});
 }
 
 var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdate,callback) {
@@ -154,16 +165,21 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 	sql += '; COMMIT;';
 	//console.log(sql);
 	console.log('geoserver/layers.js start '+sql);
-	var client = conn.getPgDataDb();
-	client.query(sql,function(err,results) {
+	conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
 		if (err) {
-			client.query('ROLLBACK;',function() {
-				return callback(err);
-			});
-		} else {
-			callback(null,areaLayerRef);
+			return callback(err);
 		}
-	})
+		client.query(sql, function (err, results) {
+			if (err) {
+				client.query('ROLLBACK;', function () {
+					return callback(err);
+				});
+			} else {
+				callback(null, areaLayerRef);
+			}
+			release();
+		});
+	});
 };
 
 function changeLayerGeoserver(layerId, method, callback) {

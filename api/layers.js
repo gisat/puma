@@ -46,29 +46,34 @@ function gatherLayerData(featureInfo, callback) {
 			async.map(confs, function(item, eachCallback) {
 				var sql = 'SELECT * FROM views.' + item.layerName + ' WHERE gid=' + item.gid;
 				//console.log(sql)
-				var client = conn.getPgDataDb();
-				client.query(sql, [], function(err, resls) {
-					if (err) {
+				conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+					if(err){
 						return callback(err);
 					}
-					var row = resls.rows[0];
-					if (!row) {
-						return eachCallback(null, {row: null, attrs: [], attrSets: []});
-					}
-					var attrs = [];
-					var attrSets = [];
-					var dataMap = {};
-					for (var key in row) {
-						if (key.indexOf('attr') < 0) {
-							continue;
+					client.query(sql, [], function(err, resls) {
+						release();
+						if (err) {
+							return callback(err);
 						}
-						var splitted = key.split('_');
-						attrSets.push(parseInt(splitted[1]));
-						attrs.push(parseInt(splitted[3]));
-					}
-					attrSets = _.uniq(attrSets);
-					attrs = _.uniq(attrs);
-					eachCallback(null, {row: row, attrs: attrs, attrSets: attrSets});
+						var row = resls.rows[0];
+						if (!row) {
+							return eachCallback(null, {row: null, attrs: [], attrSets: []});
+						}
+						var attrs = [];
+						var attrSets = [];
+						var dataMap = {};
+						for (var key in row) {
+							if (key.indexOf('attr') < 0) {
+								continue;
+							}
+							var splitted = key.split('_');
+							attrSets.push(parseInt(splitted[1]));
+							attrs.push(parseInt(splitted[3]));
+						}
+						attrSets = _.uniq(attrSets);
+						attrs = _.uniq(attrs);
+						eachCallback(null, {row: row, attrs: attrs, attrSets: attrSets});
+					});
 				});
 			}, function(err, items) {
 				var rows = [];
@@ -515,7 +520,6 @@ var getCls = function(layerRef) {
 
 function getMetadata(params, req, res, callback) {
 	/// JJJ nebude na to mít pycsw nějaké lepší API než SQL?
-	var client = conn.getPgGeonodeDb();
 	var layers = "'" + JSON.parse(params['layers']).join("','") + "'";
 	var sql = 'SELECT \
 		l.name, \
@@ -539,52 +543,58 @@ function getMetadata(params, req, res, callback) {
 		r.role = \'pointOfContact\' AND \
 		l.typename IN (' + layers + ')';
 	//console.log("getMetadata SQL: ", sql);
-	client.query(sql, function(err, resls) {
+	conn.pgGeonodeDbClient(function(err, client, release){
 		if (err) {
 			return callback(err);
 		}
-		var retData = [];
-		for (var i=0;i<resls.rows.length;i++) {
-			var obj = resls.rows[i];
-			var parsed = new xmldoc.XmlDocument(obj.data);
-			/*var obj = {
-				title: parsed.valueWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:citation.gmd:CI_Citation.gmd:title.gco:CharacterString'),
-				abstract: parsed.valueWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:abstract.gco:CharacterString'),
-				mail: parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:contactInfo.gmd:CI_Contact.gmd:address.gmd:CI_Address.gmd:electronicMailAddress.gco:CharacterString')
+		client.query(sql, function(err, resls) {
+			release();
+			if (err) {
+				return callback(err);
+			}
+			var retData = [];
+			for (var i=0;i<resls.rows.length;i++) {
+				var obj = resls.rows[i];
+				var parsed = new xmldoc.XmlDocument(obj.data);
+				/*var obj = {
+					title: parsed.valueWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:citation.gmd:CI_Citation.gmd:title.gco:CharacterString'),
+					abstract: parsed.valueWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:abstract.gco:CharacterString'),
+					mail: parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:contactInfo.gmd:CI_Contact.gmd:address.gmd:CI_Address.gmd:electronicMailAddress.gco:CharacterString')
+				}
+
+				var name = parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:individualName.gco:CharacterString')
+				var organisation = parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:organisationName.gco:CharacterString')*/
+
+				obj.contact = obj.first_name + " " + obj.last_name;
+
+				var keywords = parsed.descendantWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:descriptiveKeywords.gmd:MD_Keywords');
+				var keywordsVal = '';
+				keywords = keywords || {children:[]};
+				for (var j=0;j<keywords.children.length;j++) {
+					var keyword = keywords.children[j];
+					var val = keyword.valueWithPath('gco:CharacterString');
+					if (!val) continue;
+					keywordsVal += keywordsVal ? (', '+val) : val;
+				}
+				obj.keywords = keywordsVal;
+
+				var temporalFrom = obj.temporal_extent_start;
+				var temporalTo = obj.temporal_extent_end;
+				var temporal = '';
+				if (temporalFrom) temporal = temporalFrom.getFullYear();
+				if (temporalTo) temporal += '&mdash;'+temporalTo.getFullYear();
+				obj.temporal = temporal;
+
+				//obj.address = config.geonetworkServer+'/srv/en/metadata.show?id='+resls.rows[i].id+'&currTab=ISOAll';
+				obj.address = '/layers/geonode%3A'+obj.name+'#more';
+				delete obj.data;
+				retData.push(obj);
+
 			}
 
-			var name = parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:individualName.gco:CharacterString')
-			var organisation = parsed.valueWithPath('gmd:contact.gmd:CI_ResponsibleParty.gmd:organisationName.gco:CharacterString')*/
-
-			obj.contact = obj.first_name + " " + obj.last_name;
-			
-			var keywords = parsed.descendantWithPath('gmd:identificationInfo.gmd:MD_DataIdentification.gmd:descriptiveKeywords.gmd:MD_Keywords');
-			var keywordsVal = '';
-			keywords = keywords || {children:[]};
-			for (var j=0;j<keywords.children.length;j++) {
-				var keyword = keywords.children[j];
-				var val = keyword.valueWithPath('gco:CharacterString');
-				if (!val) continue;
-				keywordsVal += keywordsVal ? (', '+val) : val;
-			}
-			obj.keywords = keywordsVal;
-
-			var temporalFrom = obj.temporal_extent_start;
-			var temporalTo = obj.temporal_extent_end;
-			var temporal = '';
-			if (temporalFrom) temporal = temporalFrom.getFullYear();
-			if (temporalTo) temporal += '&mdash;'+temporalTo.getFullYear();
-			obj.temporal = temporal;
-
-			//obj.address = config.geonetworkServer+'/srv/en/metadata.show?id='+resls.rows[i].id+'&currTab=ISOAll';
-			obj.address = '/layers/geonode%3A'+obj.name+'#more';
-			delete obj.data;
-			retData.push(obj);
-
-		}
-
-		res.data = retData;
-		return callback(null);
+			res.data = retData;
+			return callback(null);
+		});
 	});
 
 }

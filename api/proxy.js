@@ -340,16 +340,22 @@ function saveSld(params, req, res, callback) {
 			var year = JSON.parse(params['years'])[0];
 			var sql = 'SELECT COUNT(*),ST_XMax(#bbox#)-ST_XMin(#bbox#) as width,ST_YMax(#bbox#)-ST_YMin(#bbox#) as height FROM views.layer_'+results.layerRef;
 			sql = sql.replace(new RegExp('#bbox#','g'),'ST_Extent(ST_Transform(the_geom,900913))');
-			var client = conn.getPgDataDb();
-			client.query(sql, [], function(err, resls) {
-				if (err)
+			conn.pgDataDbClient(null, function(err, client, release) { // todo DB name
+				if(err){
 					return callback(err);
-				var obj = resls.rows[0];
-				var density = obj.width*obj.height/obj.count;
-				//console.log(density)
-				densityMap[id] = density;
-				asyncCallback(null);
-			})
+				}
+				client.query(sql, [], function (err, resls) {
+					release();
+					if (err){
+						return callback(err);
+					}
+					var obj = resls.rows[0];
+					var density = obj.width * obj.height / obj.count;
+					//console.log(density)
+					densityMap[id] = density;
+					asyncCallback(null);
+				});
+			});
 		}],
 		result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
 
