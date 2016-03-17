@@ -135,7 +135,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 						return callback(err);
 					}
 					if(result == null){
-						return callback(new Error("CRUD.update didn't find updated record, weird."));
+						return callback(new Error("CRUD.update didn't find updated record. Probably user mismatch or not isAdmin. (former Weird error)"));
 					}
 					asyncCallback(null, result);
 				});
