@@ -1,6 +1,7 @@
 var querystring = require('querystring');
 var async = require('async');
 var conn = require('../common/conn');
+var Timer = require('../common/timer');
 var config = require('../config');
 
 function recreateLayerDb(layerRef,isUpdate,callback) {
@@ -155,7 +156,9 @@ var recreateLayerDbInternal = function(areaLayerRef,dataLayerRefs,isBase,isUpdat
 	//console.log(sql);
 	console.log('geoserver/layers.js start '+sql);
 	var client = conn.getPgDataDb();
+	var timer = Timer("geoserver/layers-1");
 	client.query(sql,function(err,results) {
+		timer();
 		if (err) {
 			client.query('ROLLBACK;',function() {
 				return callback(err);
@@ -208,7 +211,7 @@ function changeLayerGeoserver(layerId, method, callback) {
 		if (err) {
 			return callback(err);
 		}
-		console.log("geoserver/layers.js output: " + output);
+		console.log("\n\ngeoserver i2 request\n| output:", output, "\n| request options:", options, "\n| request data:", data ,"\n|");
 		return callback();
 	});
 
