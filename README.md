@@ -84,7 +84,6 @@ Alias /favicon.ico /var/www/geonode/static/favicon.ico
 \#\#\#\# /tool/* static routing
 RedirectMatch 301 ^/tool$ /tool/
 
-AliasMatch ^/tool/$ /var/www/panther-app/public/data-exploration.html
 Alias /tool/css /var/www/panther-app/public/css
 Alias /tool/ux /var/www/panther-app/public/ux
 Alias /tool/_main /var/www/panther-app/public/_main
@@ -95,7 +94,6 @@ Alias /tool/lib /var/www/panther-app/public/lib
 Alias /tool/gisatlib /var/www/panther-app/public/gisatlib
 Alias /tool/extjs-4.1.3 /var/www/panther-app/public/extjs-4.1.3
 
-ProxyPassMatch ^/tool/?$ !
 ProxyPass /tool/css !
 ProxyPass /tool/ux !
 ProxyPass /tool/_main !

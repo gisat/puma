@@ -19,7 +19,7 @@ function initServer(err) {
 	//app.use(express.favicon());
 	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
 	app.use('/printpublic',function(req,res,next) {
-		if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
+		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
 			return next(new Error('unauthorized'));
 		}
 		return next(null);

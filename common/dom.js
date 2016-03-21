@@ -2,11 +2,9 @@ var jsdom = require("jsdom");
 var fs = require("fs");
 var config = require('../config');
 
-var refPage = fs.readFileSync('public/index.html');
-
 // Looks like this is not used, is it?
 function execInDom(callback) {
-	require('jsdom').env('http://' + config.localHost + ':' + config.localPort + config.localPath + '/index.html', function(errors, window) {
+	require('jsdom').env('http://' + config.localHost + ':' + config.localPort + config.localPath + '/index-for-dom.html', function(errors, window) {
 
 		if (errors) {
 			callback(errors);
