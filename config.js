@@ -1,11 +1,18 @@
 module.exports = {
-	pgDataConnString    : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode_data",
-	pgGeonodeConnString  : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
+	localHost       : "127.0.0.1",
+	localPort       : 4000,
+	localPath       : "/",
+
+	remoteProtocol  : "http",
+	remoteAddress   : "localhost:4000",
+
+	pgConnString    : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode_data",
+	pgGNConnString  : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
 	mongoConnString : "mongodb://37.205.9.78:27017/test",
 
-	localAddress    : "localhost:4000/tool",
-	remoteAddress   : "localhost:4000/tool",
-	remoteProtocol  : "http",
+	workspaceSchemaMap: {
+		geonode: "public"
+	},
 
 	geoserverHost   : "37.205.9.78",
 	geoserverPort   : 8080,
@@ -20,14 +27,12 @@ module.exports = {
 	geoserver2Password  : "geoserver",
 	geoserver2Workspace : "puma",
 
+	geonodeProtocol : "http",
 	geonodeHost     : "37.205.9.78",
 	geonodePath     : "",
 	geonodeHome     : "/geonode",
 
-	localPort       : 4000,
-	workspaceSchemaMap: {
-		geonode: "public"
-	},
+	debug: true,
 
 	toggles: {
 		noGeoserverLayerGroups: false
