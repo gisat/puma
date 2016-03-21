@@ -6,9 +6,9 @@ module.exports = {
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
 
-	pgConnString    : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode_data",
-	pgGNConnString  : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
-	mongoConnString : "mongodb://37.205.9.78:27017/test",
+	pgDataConnString   : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
+	mongoConnString    : "mongodb://37.205.9.78:27017/test",
 
 	workspaceSchemaMap: {
 		geonode: "public"
