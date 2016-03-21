@@ -25,6 +25,11 @@ function initServer(err) {
 		return next(null);
 	});
 
+	// Log the requests to see then the error occurs.
+	app.use(function(req, res, next) {
+		console.log("Request: URL - " + req.url + " Method - " + req.method + "");
+		next();
+	});
 	app.use('/config.js', publicConfig);
 	app.use('/printpublic/config.js', publicConfig);
 

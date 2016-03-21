@@ -22,5 +22,14 @@ module.exports = {
 
 	geonodeHost     : "37.205.9.78",
 	geonodePath     : "",
-	geonodeHome     : "/geonode"
+	geonodeHome     : "/geonode",
+
+	localPort       : 4000,
+	workspaceSchemaMap: {
+		geonode: "public"
+	},
+
+	toggles: {
+		noGeoserverLayerGroups: false
+	}
 };
