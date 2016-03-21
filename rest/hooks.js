@@ -20,7 +20,7 @@ function createLayerRef(result, callback, params) {
 
 
 		function(asyncCallback) {
-			apiLayers.activateLayerRef({obj: result,justPerform: true}, {userId: params.userId}, null, function(err) {
+			apiLayers.activateLayerRef({obj: result,justPerform: true}, {userId: params.userId, isAdmin:params.isAdmin}, null, function(err) {
 				if (err){
 					return callback(err);
 				}
@@ -35,7 +35,7 @@ function createLayerRef(result, callback, params) {
 			var crud = require('./crud');
 			geoserverLayers.recreateLayerDb(result, false, function(err,baseLayerRef) {
 				if (err) {
-					crud.remove('layerref',{_id:result._id},{bypassHooks:true,userId: params.userId,isAdmin:params.isAdmin},function(err2,res) {
+					crud.remove('layerref',{_id:result._id},{bypassHooks:true,userId: params.userId, isAdmin:params.isAdmin},function(err2,res) {
 
 						if (err2){
 							return callback(err2);
@@ -89,7 +89,7 @@ function removeLayerRef(result, callback, params) {
 	var async = require('async');
 	async.waterfall([
 		function(asyncCallback) {
-			apiLayers.activateLayerRef({obj: result,justPerform: true,activateAnother:true}, {userId: params.userId}, null, function(err) {
+			apiLayers.activateLayerRef({obj: result,justPerform: true,activateAnother:true}, {userId: params.userId, isAdmin:params.isAdmin}, null, function(err) {
 				if (err) return callback(err);
 				return asyncCallback(null);
 			});
