@@ -14,10 +14,19 @@ function initServer(err) {
 		console.log('Error: while initializing server: ', err);
 		return;
 	}
-	// Order is important
 	var oneDay = 60*60*24*1000;
+
+	// Order is important
+
+	// Log the requests to see then the error occurs.
+	app.use(function(req, res, next) {
+		console.log("Request: "+ req.method + " - " + req.url);
+		next();
+	});
+
 	//app.use(express.favicon());
 	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
+
 	app.use('/printpublic',function(req,res,next) {
 		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
 			return next(new Error('unauthorized'));
@@ -25,11 +34,6 @@ function initServer(err) {
 		return next(null);
 	});
 
-	// Log the requests to see then the error occurs.
-	app.use(function(req, res, next) {
-		console.log("Request: URL - " + req.url + " Method - " + req.method + "");
-		next();
-	});
 	app.use('/config.js', publicConfig);
 	app.use('/printpublic/config.js', publicConfig);
 
