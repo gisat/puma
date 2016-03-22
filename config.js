@@ -18,13 +18,13 @@ module.exports = {
 	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
-	geoserverPassword : "geoserver",
+	geoserverPassword : "GeoNodeGeoServerNr1",
 
 	geoserver2Host  : "37.205.9.78",
 	geoserver2Port  : 8080,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
-	geoserver2Password  : "geoserver",
+	geoserver2Password  : "GeoNodeGeoServerNr2",
 	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
