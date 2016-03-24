@@ -213,7 +213,7 @@ function getLayerTable(layer){
 	var layerName = layer.substr(workspaceDelimiterIndex + 1);
 	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
 		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
-		return layer;
+		return workspace + "." + layerName;
 	}
 	return config.workspaceSchemaMap[workspace] + "." + layerName;
 }
