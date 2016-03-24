@@ -4,6 +4,8 @@ var conn = require('./common/conn');
 var publicConfig = require('./common/public-config');
 var staticFn = express['static'];
 
+var config = require('./config');
+
 var async = require('async');
 var loc = require('./common/loc');
 
@@ -72,8 +74,8 @@ function initServer(err) {
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-	app.listen(3000);
-	console.log('Listening on port 3000'); 
+	app.listen(config.localPort);
+	console.log('Listening on port '+config.localPort);
 }
 
 async.series([
