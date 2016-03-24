@@ -167,10 +167,7 @@ function init(app,callback) {
 			callback();
 		});
 	});
-
-	var server = require('http').createServer(app);
-	//io = require('socket.io').listen(server,{log:false});// JJJ Tomas rikal, ze to rusime
-	server.listen(3100);
+	
 }
 
 function getIo() {

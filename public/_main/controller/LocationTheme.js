@@ -702,7 +702,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
                 var priority = layerGroupRec.get('priority')
                 priorities.push(priority);
                 // from highest priority to lowest
-                priorities.sort().reverse();
+                priorities.sort();//.reverse();
                 var idx = Ext.Array.indexOf(priorities,priority);
                 
                 layerGroupNode = root.insertChild(2+idx,{

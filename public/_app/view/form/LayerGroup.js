@@ -9,7 +9,7 @@ Ext.define('PumaMng.view.form.LayerGroup', {
         this.items = [{
             xtype: 'numberfield',
             name: 'priority',
-            fieldLabel: 'Priority'
+            fieldLabel: 'Priority (lower number, higher priority)'
         }];
 
         this.callParent();
