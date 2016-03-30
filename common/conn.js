@@ -15,13 +15,11 @@ var https = require('https');
 ///////
 		
 var async = require('async');
-var collections = require('../rest/models').collections;
 
 var mongodb = null;
 var pgDataDB = null;
 var pgGeonodeDB = null;
 var objectId = null;
-var io = null;
 
 
 
@@ -109,17 +107,12 @@ function initGeoserver() {
 	});
 }
 
-function init(app,callback) {
-	pgDataDB = new pg.Client(config.pgDataConnString);
+function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
+	pgDataDB = new pg.Client(pgDataConnString);
 	pgDataDB.connect();
-	pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
+	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
-	var reconnectCommand = null;
-	
-	setInterval(function() {
-		initGeoserver();
-	},590000);
-	initGeoserver();
+
 	// keeping connection alive
 	setInterval(function() {
 		if (reconnectCommand) {
@@ -137,7 +130,7 @@ function init(app,callback) {
 			}
 		},2000);
 	},Math.round(1000*60*60*5.9));
-	
+
 	setInterval(function() {
 		if (reconnectCommand) {
 			clearInterval(reconnectCommand);
@@ -154,8 +147,8 @@ function init(app,callback) {
 			}
 		},2000);
 	},Math.round(1000*60*60*5.42));
-	
-	MongoClient.connect(config.mongoConnString, function(err, dbs) {
+
+	MongoClient.connect(mongoConnString, function(err, dbs) {
 		if (err){
 			return callback(err);
 		}
@@ -167,7 +160,18 @@ function init(app,callback) {
 			callback();
 		});
 	});
-	
+}
+
+function init(app, callback) {
+	setInterval(function() {
+		initGeoserver();
+	},590000);
+	initGeoserver();
+
+	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
+
+	//var server = require('http').createServer(app);
+	//server.listen(3100);
 }
 
 function getIo() {
@@ -193,13 +197,37 @@ function getPgGeonodeDb() {
 	return pgGeonodeDB;
 }
 
+function connectToPgDb(connectionString) {
+	var pgDatabase = new pg.Client(connectionString);
+	pgDatabase.connect();
+	return pgDatabase;
+}
+
+function getLayerTable(layer){
+	var workspaceDelimiterIndex = layer.indexOf(":");
+	if(workspaceDelimiterIndex == -1){
+		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
+		return layer;
+	}
+	var workspace = layer.substr(0, workspaceDelimiterIndex);
+	var layerName = layer.substr(workspaceDelimiterIndex + 1);
+	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
+		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
+		return workspace + "." + layerName;
+	}
+	return config.workspaceSchemaMap[workspace] + "." + layerName;
+}
+
 
 module.exports = {
 	init: init,
 	getIo: getIo,
 	request: request,
+	connectToPgDb: connectToPgDb,
+	initDatabases: initDatabases,
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
-	getNextId: getNextId
+	getNextId: getNextId,
+	getLayerTable: getLayerTable
 };

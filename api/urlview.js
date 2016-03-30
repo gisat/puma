@@ -47,7 +47,7 @@ function getChart(params,req,res,callback) {
 			}
 			res.data = cfg;
 			callback(null);
-			crud.update(collName,{_id:cfg._id},{userId: req.userId},function(err,r){});
+			crud.update(collName,{_id:cfg._id},{userId: req.userId, isAdmin: req.isAdmin},function(err,r){});
 		})
 }
 

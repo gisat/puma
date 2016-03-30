@@ -16,7 +16,14 @@ function ensureCollection(req,res,next) {
 
 
 function create(collName,obj,params,callback) {
-	if (typeof(params) === 'function') callback = params;
+	if (typeof(params) === 'function'){
+		callback = params; // todo get rid of this
+		params = {};
+		console.log("\n\n  /-------------------------------------\\");
+		console.log(" <----- crud.create too few params! ----->");
+		console.log("  \\-------------------------------------/\n\n");
+	}
+	console.log("<============ CRUD CREATE ("+collName+") ============>\nparams:", params);
 
 	if(typeof obj == "string") {
 		obj = JSON.parse(obj);
@@ -77,7 +84,14 @@ function create(collName,obj,params,callback) {
 
 
 function read(collName,filter,params,callback) {
-	if (typeof(params) === 'function') callback = params;
+	if (typeof(params) === 'function'){
+		callback = params; // todo get rid of this
+		params = {};
+		console.log("\n\n  /-----------------------------------\\");
+		console.log(" <----- crud.read too few params! ----->");
+		console.log("  \\-----------------------------------/\n\n");
+	}
+	console.log("<============ CRUD READ ("+collName+") ============>\nparams:", params); // ...but not this
 
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
@@ -91,9 +105,14 @@ function read(collName,filter,params,callback) {
 }
 
 function update(collName, obj, params, callback,bypassHooks) {
-	if (typeof(params) === 'function') {
-		callback = params;
+	if (typeof(params) === 'function'){
+		callback = params; // todo get rid of this
+		params = {};
+		console.log("\n\n  /-------------------------------------\\");
+		console.log(" <----- crud.update too few params! ----->");
+		console.log("  \\-------------------------------------/\n\n");
 	}
+	console.log("<============ CRUD UPDATE ("+collName+") ============>\nparams:", params);
 
 	if(typeof obj == "string") {
 		obj = JSON.parse(obj);
@@ -135,7 +154,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 						return callback(err);
 					}
 					if(result == null){
-						return callback(new Error("CRUD.update didn't find updated record, weird."));
+						return callback(new Error("CRUD.update didn't find updated record. Probably user mismatch or not isAdmin. (former Weird error)"));
 					}
 					asyncCallback(null, result);
 				});
@@ -152,7 +171,14 @@ function update(collName, obj, params, callback,bypassHooks) {
 }
 
 function remove(collName,filter,params,callback) {
-	if (typeof(params) === 'function') callback = params;
+	if (typeof(params) === 'function'){
+		callback = params; // todo get rid of this
+		params = {};
+		console.log("\n\n  /-------------------------------------\\");
+		console.log(" <----- crud.remove too few params! ----->");
+		console.log("  \\-------------------------------------/\n\n");
+	}
+	console.log("<============ CRUD REMOVE ("+collName+") ============>\nparams:", params);
 
 	if(typeof filter == "string") {
 		filter = JSON.parse(filter);

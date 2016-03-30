@@ -1,6 +1,6 @@
 var crud = require('../rest/crud');
 var async = require('async');
-var us = require('underscore');
+var _ = require('underscore');
 
 var conn = require('../common/conn');
 
@@ -232,7 +232,7 @@ function getThemeYearConf(params, req, res, callback) {
 //                                                for (var j = 0; j < results.locations.length; j++) {
 //                                                    var currentLoc = results.locations[j];
 //                                                    if (loc == currentLoc) {
-//                                                        results.locations = us.difference(results.locations, [currentLoc]);
+//                                                        results.locations = _.difference(results.locations, [currentLoc]);
 //                                                        break;
 //                                                    }
 //                                                }
@@ -330,7 +330,7 @@ function getThemeYearConf(params, req, res, callback) {
 						for (var i = 0; i < resls.rows.length; i++) {
 							var row = resls.rows[i];
 							if (fids[row.loc] && fids[row.loc][row.at] && fids[row.loc][row.at].indexOf(row.gid) > -1) {
-								fids[row.loc][row.at] = us.without(fids[row.loc][row.at], row.gid)
+								fids[row.loc][row.at] = _.without(fids[row.loc][row.at], row.gid)
 							}
 							else {
 								newRows.push(row);
@@ -387,7 +387,7 @@ function getThemeYearConf(params, req, res, callback) {
 						catch (e) {
 						}
 						var areasOrGids = atMap[loc][at];
-						areas = us.difference(areas,areasOrGids);
+						areas = _.difference(areas,areasOrGids);
 						layerRefsToCheck.push({
 							loc: loc,
 							at: at,
@@ -460,8 +460,8 @@ function getThemeYearConf(params, req, res, callback) {
 
 					});
 				},function(err) {
-					areas = us.union(areas,newAreas);
-					areas = us.sortBy(areas,'idx');
+					areas = _.union(areas,newAreas);
+					areas = _.sortBy(areas,'idx');
 					var obj = {
 						leafMap: leafMap
 					};
