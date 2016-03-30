@@ -25,10 +25,9 @@ function owner(req,res,next) {
 
 
 function auth(req, res, next) {
-	if (!req.cookies){
-		return next();
-	}
-	var sessionId = req.cookies['ssid'];
+	// So the user will logIn after that there should be sessionId and we will have information about whether the user
+	// logged succesfully
+	var sessionId = req.sessionID;
 	if (!sessionId){
 		return next();
 	}
@@ -42,6 +41,7 @@ function auth(req, res, next) {
 		'Cookie': 'sessionid=' + sessionId
 	};
 
+	// It is possible to retrieve this information from the database and actually use it for other stuff as well. 
 	var options = {
 		protocol: config.geonodeProtocol,
 		host: config.geonodeHost,
