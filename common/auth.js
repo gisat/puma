@@ -27,7 +27,7 @@ function owner(req,res,next) {
 function auth(req, res, next) {
 	// So the user will logIn after that there should be sessionId and we will have information about whether the user
 	// logged succesfully
-	var sessionId = req.sessionID;
+	var sessionId = req.sessionID || req.cookies.ssid || req.ssid;
 	if (!sessionId){
 		return next();
 	}
