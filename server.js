@@ -48,8 +48,9 @@ function initServer(err) {
     // Allow CORS on the node level.
     app.use(function(req, res, next) {
         res.header("Access-Control-Allow-Origin", config.allowedOrigins);
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type");
 		res.header("Access-Control-Allow-Credentials", true);
+		res.header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
         next();
     });
     // End of allow CORS.
