@@ -79,11 +79,15 @@ function initServer(err) {
 	app.use('/printpublic',staticFn(__dirname + '/public'));
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
+	app.use(function(req, res, next){
+		req.ssid = req.cookies.ssid || req.ssid || '';
+		next();
+	});
 	app.use(loc.langParser);
     // Allow CORS on the node level.
     app.use(function(req, res, next) {
         res.header("Access-Control-Allow-Origin", config.allowedOrigins);
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type");
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
 		res.header("Access-Control-Allow-Credentials", true);
 		res.header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
         next();
