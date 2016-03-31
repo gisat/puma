@@ -86,11 +86,14 @@ function initServer(err) {
 	app.use(loc.langParser);
     // Allow CORS on the node level.
     app.use(function(req, res, next) {
-        res.header("Access-Control-Allow-Origin", config.allowedOrigins);
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
+		// Allow CORS from anywhere.
+		// TODO: Fix security issues.
+		var url = req.headers.origin;
+		res.header("Access-Control-Allow-Origin", url);
+		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
 		res.header("Access-Control-Allow-Credentials", true);
-		res.header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS");
-        next();
+		res.header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS, DELETE");
+		next();
     });
     // End of allow CORS.
     require('./routes/security')(app);
