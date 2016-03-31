@@ -1,0 +1,1 @@
+Zaloha vytvorena pri prvnim spusteni.
