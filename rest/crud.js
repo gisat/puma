@@ -184,9 +184,6 @@ function remove(collName,filter,params,callback) {
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
 
-	if (!params.isAdmin) {
-		filter['createdBy'] = params.userId;
-	}
 	var opts = {
 		checkRef: function(asyncCallback) {
 			if (filter['_id']) {
