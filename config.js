@@ -6,8 +6,8 @@ module.exports = {
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
 
-	pgDataConnString   : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
+	pgDataConnString   : "postgres://postgres:postgres@37.205.9.78:5432/geonode_data",
+	pgGeonodeConnString: "postgres://postgres:postgres@37.205.9.78:5432/geonode",
 	mongoConnString    : "mongodb://37.205.9.78:27017/test",
 
 	workspaceSchemaMap: {
@@ -36,5 +36,7 @@ module.exports = {
 
 	toggles: {
 		noGeoserverLayerGroups: false
-	}
+	},
+
+	allowedOrigins: "http://localhost:5555"
 };
