@@ -74,7 +74,7 @@ module.exports = function(app) {
 
 
 	app.post('/rest/:objType',function(req,res,next) {
-		crud.create(req.params.objType,req.body.data,{userId: req.userId},function(err,result) {
+		crud.create(req.params.objType,req.body.data,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err){
 				return next(err);
 			}

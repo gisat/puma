@@ -10,7 +10,7 @@ var chartConfMap = {};
 var async = require('async');
 var crud = require('../rest/crud');
 var layers = require('./layers');
-var us = require('underscore');
+var _ = require('underscore');
 var jsid = null;
 var cacheStyleMap = null;
 var layerGroupMap = null;
@@ -51,6 +51,8 @@ function wms(params, req, res, callback) {
 	}
 	if (sldId) {
 		var sld = sldMap[sldId] || sldMapTemp[sldId];
+
+		// missing SLD - probably node server restart
 		if(typeof sld == 'undefined'){
 			console.log("======= SLD ERROR. sldId: ",sldId,"\n\nsldMap:",sldMap,"\n\nsldMapTemp:",sldMapTemp);
 		}
@@ -255,7 +257,7 @@ function saveSld(params, req, res, callback) {
 			if (!params['showChoropleth'] && !params['showMapChart']) {
 				return asyncCallback(null);
 			}
-			var dataParams = us.clone(params);
+			var dataParams = _.clone(params);
 			dataParams['aggregate'] = 'min,max';
 			if (params['showChoropleth']) {
 				dataParams['attrs'] = JSON.stringify([attrs[attrIndex]]);
@@ -537,6 +539,32 @@ function getSld(params, req, res, callback) {
 	return callback(null);
 }
 
+/**
+ * Made for testing purposes. Make POST request to /api/proxy/getSldMap to see sldMap
+ * @param params
+ * @param req
+ * @param res
+ * @param callback
+ * @returns {*}
+ */
+function getSldMap(params, req, res, callback){
+	res.data = sldMap;
+	return callback(null);
+}
+
+/**
+ * Made for testing purposes. Make POST request to /api/proxy/getSldMapTemp to see sldMapTemp
+ * @param params
+ * @param req
+ * @param res
+ * @param callback
+ * @returns {*}
+ */
+function getSldMapTemp(params, req, res, callback){
+	res.data = sldMapTemp;
+	return callback(null);
+}
+
 function getSldSync(id) {
 	return sldMap[id];
 }
@@ -561,6 +589,8 @@ module.exports = {
 	setJsid: setJsid,
 	saveSld: saveSld,
 	getSld: getSld,
+	getSldMap: getSldMap,
+	getSldMapTemp: getSldMapTemp,
 	getSldSync: getSldSync,
 	setSldTemp: setSldTemp,
 	chartConfMap: chartConfMap

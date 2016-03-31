@@ -6,7 +6,7 @@ var async = require('async');
 var crud = require('../rest/crud');
 var spatialAgg = require('../analysis/spatialagg');
 var geoserverLayers = require('../geoserver/layers');
-var us = require('underscore');
+var _ = require('underscore');
 
 function userPolygon(params,req,res,callback) {
 
@@ -159,7 +159,7 @@ function userPolygon(params,req,res,callback) {
 				delete conf.geometries[id];
 			}
 
-			crud.update('userpolygon',conf,{userId: userId},function(err,resl) {
+			crud.update('userpolygon',conf,{userId: userId, isAdmin: req.isAdmin},function(err,resl) {
 				if (err) return callback(err);
 				res.data = obj ? obj.id : null;
 				return callback(null);
@@ -347,7 +347,7 @@ function checkAnalysis(params,req,res,callback) {
 						if (yearMap[id]) continue;
 						ids.push(id);
 						//yearMap[id] = true;
-						gids = us.union(gids,dbRecord.geometries[id].gids);
+						gids = _.union(gids,dbRecord.geometries[id].gids);
 					}
 					if (gids.length) {
 						analysisToPerform.push({analysis:oneAnalysis,year:year,gids:gids,yearMap: yearMap,ids:ids});
@@ -388,7 +388,7 @@ function checkAnalysis(params,req,res,callback) {
 			},asyncCallback)
 		}],
 		updateDbRecord: ['performAnalysis',function(asyncCallback,results) {
-			crud.update('userpolygon',results.dbRecord,{userId:userId},function(err) {
+			crud.update('userpolygon',results.dbRecord,{userId:userId, isAdmin: req.isAdmin},function(err) {
 				if (err) return callback(err);
 				return callback(null);
 			});
