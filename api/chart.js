@@ -8,7 +8,7 @@ var charts = {
 	extentoutline: require('../data/extentoutline'),
 	filter: require('../data/filter')
 };
-var us = require('underscore');
+var _ = require('underscore');
 var cp = require('child_process');
 var async = require('async');
 var fs = require('fs');
@@ -27,13 +27,13 @@ function shutdown(params,req,res,callback) {
 function exporter(params, req, res, callback) {
 	var isWin = !!process.platform.match(/^win/);
 	if (isWin)
-	cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+config.localAddress+'/index3.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+	cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+config.localHost+':'+config.localPort+config.localPath+'/index-for-export.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
 		console.log("api/chart.js stdout: " + stdout);
 		console.log("api/chart.js stderr: " + stderr);
 		return callback(err)
 	});
 	else
-	cp.exec('phantomjs rasterize.js http://'+config.localAddress+'/index3.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
+	cp.exec('phantomjs rasterize.js http://'+config.localHost+':'+config.localPort+config.localPath+'/index-for-export.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
 		console.log("api/chart.js stdout: " + stdout);
 		console.log("api/chart.js stderr: " + stderr);
 		return callback(err);
@@ -74,7 +74,7 @@ function getChart(params, req, res, callback) {
 						return callback(null);
 		}
 		if (params['forExport']) {
-			conf = us.extend(conf,require('../data/printchart'))
+			conf = _.extend(conf,require('../data/printchart'))
 		}
 		res.data = conf;
 		callback();

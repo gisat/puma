@@ -901,7 +901,7 @@ Ext.define('PumaMain.controller.Chart', {
             var url = (window.location.origin + window.location.pathname).split('public')[0]; /// JJJJ co s tim? Public uz neni.
         }
         if (isPrint) {
-            url = url + 'print/index3.html?id=' + id;
+            url = url + 'print/index-for-export.html?id=' + id;
             var form = Ext.widget('form'
                     , {
                 items: [{
@@ -918,7 +918,7 @@ Ext.define('PumaMain.controller.Chart', {
             });
         }
         else {
-            url = url + 'image/index3.html?id=' + id;
+            url = url + 'image/index-for-export.html?id=' + id;
             var rec = Ext.StoreMgr.lookup('screenshot').findRecord('large',true);
             var screenshot = Ext.create('Puma.model.Screenshot',{
                 src: url,

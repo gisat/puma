@@ -2,11 +2,11 @@ var dataMod = require('./data');
 var async = require('async');
 var crud = require('../rest/crud');
 
-var us = require('underscore');
+var _ = require('underscore');
 
 function getChart(params, callback) {
 	var conf = cfg();
-	conf = us.extend(conf,require('../data/defaultchart'));
+	conf = _.extend(conf,require('../data/defaultchart'));
 	var attrs = JSON.parse(params['attrs']);
 	var width = params['width'] || 560;
 	var areas = JSON.parse(params['areas']);
