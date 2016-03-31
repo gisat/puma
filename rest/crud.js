@@ -126,9 +126,6 @@ function update(collName, obj, params, callback,bypassHooks) {
 	var filter = {
 		"_id": obj['_id']
 	};
-	if (!params.isAdmin) {
-		filter['createdBy'] = params.userId;
-	}
 	async.auto({
 		checkRefs: function(asyncCallback) {
 			checkRefs(db,obj,collName,function(err) {
@@ -187,9 +184,6 @@ function remove(collName,filter,params,callback) {
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
 
-	if (!params.isAdmin) {
-		filter['createdBy'] = params.userId;
-	}
 	var opts = {
 		checkRef: function(asyncCallback) {
 			if (filter['_id']) {
@@ -200,8 +194,8 @@ function remove(collName,filter,params,callback) {
 			}
 		},
 		remove: ['checkRef',function(asyncCallback) {
-
-			collection.findAndRemove(filter, [], function(err, result) {
+			var filterRemoval = {_id: filter['_id']};
+			collection.findAndRemove(filterRemoval, [], function(err, result) {
 				if (err) {
 					return callback(err);
 				}
