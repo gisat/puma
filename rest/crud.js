@@ -194,8 +194,8 @@ function remove(collName,filter,params,callback) {
 			}
 		},
 		remove: ['checkRef',function(asyncCallback) {
-
-			collection.findAndRemove(filter, [], function(err, result) {
+			var filterRemoval = {_id: filter['_id']};
+			collection.findAndRemove(filterRemoval, [], function(err, result) {
 				if (err) {
 					return callback(err);
 				}
