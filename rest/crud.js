@@ -126,9 +126,6 @@ function update(collName, obj, params, callback,bypassHooks) {
 	var filter = {
 		"_id": obj['_id']
 	};
-	if (!params.isAdmin) {
-		filter['createdBy'] = params.userId;
-	}
 	async.auto({
 		checkRefs: function(asyncCallback) {
 			checkRefs(db,obj,collName,function(err) {
