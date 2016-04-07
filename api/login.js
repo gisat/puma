@@ -30,6 +30,7 @@ function login(params,req,res,callback) {
 			return callback(new Error('bad login (ssid missing)'));
 		}
 		res.cookie('ssid',ssid,{httpOnly: true});
+		res.cookie('sessionid',ssid,{httpOnly: true});
 		res.data = {status: 'ok', ssid: ssid};
 		callback();
 	})
