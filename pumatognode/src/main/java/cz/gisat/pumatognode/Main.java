@@ -22,6 +22,7 @@ public class Main {
         updateMongoLoggerLevel();
 
         final Mongo mongo = new Mongo( config );
+        final Geoserver geoserver = new Geoserver( config );
         final Postgres postgres = new Postgres( config );
 
         long runEvery = config.getRunEvery() * 1000;
@@ -31,7 +32,7 @@ public class Main {
             public void run() {
                 try {
                     List< Layer > layers = mongo.getLayers();
-                    postgres.updateGeonodeDatabase( layers );
+                    geoserver.updateGeoserverDataFiles( layers );
                 }
                 catch ( Exception e ) {
                     e.printStackTrace();
