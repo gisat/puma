@@ -1,15 +1,16 @@
-var crud = require('../rest/crud');
 var async = require('async');
 var _ = require('underscore');
 
+var crud = require('../rest/crud');
 var conn = require('../common/conn');
 
 function getLocationConf(params, req, res, callback) {
-	var opts = {
+	async.auto({
 		dataset: function(asyncCallback) {
 			crud.read('dataset', {}, function(err, results) {
-				if (err)
+				if (err){
 					return callback(err);
+				}
 				var datasetMap = {};
 				for (var i=0;i<results.length;i++) {
 					var result = results[i];
@@ -21,14 +22,15 @@ function getLocationConf(params, req, res, callback) {
 		},
 		datasetMap: function(asyncCallback) {
 			crud.read('location', {active: {$ne:false}}, function(err, results) {
-				if (err)
+				if (err){
 					return callback(err);
+				}
 				var datasetMap = {};
 				for (var i=0;i<results.length;i++) {
 					var result = results[i];
 					if (!result.dataset) continue;
 					datasetMap[result.dataset] = datasetMap[result.dataset] || [];
-					datasetMap[result.dataset].push(result)
+					datasetMap[result.dataset].push(result);
 				}
 
 				asyncCallback(null, datasetMap);
@@ -43,7 +45,12 @@ function getLocationConf(params, req, res, callback) {
 
 				var dataset = results.dataset[datasetId];
 				for (var i=0;i<locs.length;i++) {
-					locToQuery.push({location: locs[i]._id,areaTemplate: dataset.featureLayers[0],isData:false,dataset:datasetId});
+					locToQuery.push({
+						location: locs[i]._id,
+						areaTemplate: dataset.featureLayers[0],
+						isData: false,
+						dataset: datasetId
+					});
 				}
 			}
 			var client = conn.getPgDataDb();
@@ -52,33 +59,45 @@ function getLocationConf(params, req, res, callback) {
 				delete item.dataset;
 
 				crud.read('layerref', item, function(err, results) {
-					if (err)
+					if (err){
 						return callback(err);
-					if (!results.length)
+					}
+					if (!results.length){
 						return eachCallback(null);
+					}
 					var layerRef = results[0];
 					var sql = 'SELECT gid,name FROM views.layer_' + layerRef._id;
 					client.query(sql, {}, function(err, resls) {
-						if (err)
+						if (err){
 							return callback(err);
+						}
 						for (var i = 0; i < resls.rows.length; i++) {
 							var row = resls.rows[i];
-							resultArr.push({name: row.name,locGid: row.gid,id:item.location+'_'+row.gid,dataset:datasetId,location:item.location,at:item.areaTemplate});
+							resultArr.push({
+								name: row.name,
+								locGid: row.gid,
+								id: item.location+'_'+row.gid,
+								dataset: datasetId,
+								location: item.location,
+								at: item.areaTemplate
+							});
 						}
 						eachCallback(null);
 
-					})
-				})
-			},function() {
+					});
+				});
+			}, function() {
 				if (resultArr.length>1) {
-					resultArr.push({name:'All places',id: 'custom'});
+					resultArr.push({
+						name: 'All places',
+						id: 'custom'
+					});
 				}
 				res.data = resultArr;
 				return callback();
-			})
+			});
 		}]
-	};
-	async.auto(opts);
+	});
 }
 
 function getThemeYearConf(params, req, res, callback) {
@@ -92,8 +111,9 @@ function getThemeYearConf(params, req, res, callback) {
 	var opts = {
 		dataset: function(asyncCallback) {
 			crud.read('dataset', {_id: parseInt(params['dataset'])}, function(err, results) {
-				if (err)
+				if (err){
 					return callback(err);
+				}
 				asyncCallback(null, results[0]);
 			});
 		},
@@ -102,8 +122,9 @@ function getThemeYearConf(params, req, res, callback) {
 				return asyncCallback(null);
 			}
 			crud.read('theme', {_id: parseInt(params['theme'])}, function(err, results) {
-				if (err)
+				if (err){
 					return callback(err);
+				}
 				asyncCallback(null, results[0]);
 			});
 		},
@@ -114,8 +135,9 @@ function getThemeYearConf(params, req, res, callback) {
 				return asyncCallback(null,locations);
 			}
 			crud.read('location', {dataset: parseInt(params['dataset'])}, function(err, resls) {
-				if (err)
+				if (err){
 					return callback(err);
+				}
 				var ids = [];
 				for (var i = 0; i < resls.length; i++) {
 					ids.push(resls[i]._id);
@@ -128,8 +150,9 @@ function getThemeYearConf(params, req, res, callback) {
 					return asyncCallback(null)
 				}
 				crud.read('topic', {_id: {$in: results.theme.topics}}, function(err, resls) {
-					if (err)
+					if (err){
 						return callback(err);
+					}
 					var topicMap = {};
 
 					for (var i = 0; i < resls.length; i++) {
@@ -155,8 +178,9 @@ function getThemeYearConf(params, req, res, callback) {
 				}
 				// zatim se requiredtopicneresi, nacita se info o vsech attributsetech pro dane tema
 				crud.read('attributeset', {topic: {$in: allTopics}}, function(err, resls) {
-					if (err)
+					if (err){
 						return callback(err);
+					}
 					var ids = [];
 					for (var i = 0; i < resls.length; i++) {
 						var attrSet = resls[i];
@@ -199,50 +223,51 @@ function getThemeYearConf(params, req, res, callback) {
 				}
 				async.forEach(confs, function(item, eachCallback) {
 					crud.read('layerref', item, function(err, resls) {
-						if (err)
+						if (err){
 							return callback(err);
+						}
 						layerRefMap[item.location][item.areaTemplate][item.year] = resls[0];
 						eachCallback(null);
 					});
 				}, function() {
 					async.forEach(attrConfs, function(item, eachCallback) {
 						crud.read('layerref', item, function(err, resls) {
-							if (err)
+							if (err){
 								return callback(err);
+							}
 							if (resls && resls.length) {
 								attrLayerRefMap[item.location][item.areaTemplate][item.year][item.attributeSet] = true;
 							}
 							eachCallback(null);
 						});
 					}, function() {
-						for (var loc in layerRefMap) {
-							for (var fl in layerRefMap[loc]) {
-								for (var year in layerRefMap[loc][fl]) {
-									// vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
-//                                    for (var i = 0; i < attrSets.length; i++) {
-//                                        var attrLayerRef = null;
-//                                        try {
-//                                            var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]]
-//                                        }
-//                                        catch (e) {
-//                                        }
-//                                        if (!attrLayerRef) {
-//                                            layerRefMap[loc][fl][year] = null;
-//                                            if (fl == results.dataset.featureLayers[0]) {
-//                                                for (var j = 0; j < results.locations.length; j++) {
-//                                                    var currentLoc = results.locations[j];
-//                                                    if (loc == currentLoc) {
-//                                                        results.locations = _.difference(results.locations, [currentLoc]);
-//                                                        break;
-//                                                    }
-//                                                }
-//                                            }
-//                                            break;
-//                                        }
-//                                    }
-								}
-							}
-						}
+						// for (var loc in layerRefMap) {
+						// 	for (var fl in layerRefMap[loc]) {
+						// 		for (var year in layerRefMap[loc][fl]) {
+						// 			// vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
+						// 			for (var i = 0; i < attrSets.length; i++) {
+						// 				var attrLayerRef = null;
+						// 				try {
+						// 					var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]];
+						// 				} catch (e) {
+						// 				}
+						// 				if (!attrLayerRef) {
+						// 					layerRefMap[loc][fl][year] = null;
+						// 					if (fl == results.dataset.featureLayers[0]) {
+						// 						for (var j = 0; j < results.locations.length; j++) {
+						// 							var currentLoc = results.locations[j];
+						// 							if (loc == currentLoc) {
+						// 								results.locations = _.difference(results.locations, [currentLoc]);
+						// 								break;
+						// 							}
+						// 						}
+						// 					}
+						// 					break;
+						// 				}
+						// 			}
+						// 		}
+						// 	}
+						// }
 
 						return asyncCallback(null, layerRefMap);
 					})
@@ -264,7 +289,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var locOpened = opened[loc];
 					for (var key in locOpened) {
 						var idx = featureLayers.indexOf(parseInt(key));
-						locFeatureLayers.push(featureLayers[idx + 1])
+						locFeatureLayers.push(featureLayers[idx + 1]);
 					}
 					locFeatureLayers.sort(function(a, b) {
 						return featureLayers.indexOf(a) > featureLayers.indexOf(b);
@@ -275,11 +300,11 @@ function getThemeYearConf(params, req, res, callback) {
 						var layerRef = null;
 						try {
 							layerRef = layerRefMap[loc][fl][years[0]];
+						} catch (e) {
 						}
-						catch (e) {
-						}
-						if (!layerRef)
+						if (!layerRef){
 							continue;
+						}
 						var flIdx = featureLayers.indexOf(fl);
 						var prevFl = flIdx > 0 ? featureLayers[flIdx - 1] : null;
 						var leaf = 'FALSE';
@@ -291,8 +316,9 @@ function getThemeYearConf(params, req, res, callback) {
 								break;
 							}
 						}
-						if (!cont)
+						if (!cont){
 							continue;
+						}
 						sql += sql ? ' UNION ' : '';
 						sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + loc + ' AS loc,' + layerRef._id + ' AS lr, a.name, ST_AsText(a.extent) as extent';
 
@@ -303,7 +329,7 @@ function getThemeYearConf(params, req, res, callback) {
 								sql += ' INNER JOIN views.layer_' + layerRef._id + ' y' + years[k] + ' ON a.gid+1=y' + years[k] + '.gid';
 								continue;
 							}
-							sql += ' INNER JOIN views.layer_' + yearLayerRef._id + ' y' + years[k] + ' ON a.gid=y' + years[k] + '.gid'
+							sql += ' INNER JOIN views.layer_' + yearLayerRef._id + ' y' + years[k] + ' ON a.gid=y' + years[k] + '.gid';
 						}
 						sql += ' WHERE 1=1';
 						if (locOpened && prevFl && locOpened[prevFl]) {
@@ -319,8 +345,9 @@ function getThemeYearConf(params, req, res, callback) {
 				var client = conn.getPgDataDb();
 				client.query(sql, {}, function(err, resls) {
 
-					if (err)
+					if (err){
 						return callback(err);
+					}
 					var obj = {};
 					if (!fids) {
 						obj.areas = resls.rows;
@@ -331,8 +358,7 @@ function getThemeYearConf(params, req, res, callback) {
 							var row = resls.rows[i];
 							if (fids[row.loc] && fids[row.loc][row.at] && fids[row.loc][row.at].indexOf(row.gid) > -1) {
 								fids[row.loc][row.at] = _.without(fids[row.loc][row.at], row.gid)
-							}
-							else {
+							} else {
 								newRows.push(row);
 							}
 						}
@@ -408,8 +434,7 @@ function getThemeYearConf(params, req, res, callback) {
 							if (area.gid) {
 								area.leaf = true;
 								newAreas.push(area);
-							}
-							else {
+							} else {
 								leafMap[item.loc] = leafMap[item.loc] || {};
 								leafMap[item.loc][item.at] = leafMap[item.loc][item.at] || {};
 								leafMap[item.loc][item.at][area] = true;
@@ -428,14 +453,16 @@ function getThemeYearConf(params, req, res, callback) {
 					var client = conn.getPgDataDb();
 					client.query(sql, {}, function(err, resls) {
 
-						if (err)
+						if (err){
 							return callback(err);
+						}
 						var partLeafMap = {};
 						for (var i=0;i<resls.rows.length;i++) {
 							var row = resls.rows[i];
 
-							if (row.cnt>0) {}
-							else {
+							if (row.cnt>0) {
+
+							} else {
 								partLeafMap[row.gid] = true;
 							}
 						}
@@ -472,7 +499,7 @@ function getThemeYearConf(params, req, res, callback) {
 						obj['add'] = areas;
 					}
 					return asyncCallback(null,obj);
-				})
+				});
 
 
 			}],
@@ -486,7 +513,7 @@ function getThemeYearConf(params, req, res, callback) {
 					symMap[row._id] = row;
 				}
 				return asyncCallback(null, symMap);
-			})
+			});
 		},
 		layers: ['theme', 'locations', 'topicMap', 'symbologies', 'layerRefs', function(asyncCallback, results) {
 				if (!results.theme) {
@@ -497,12 +524,14 @@ function getThemeYearConf(params, req, res, callback) {
 				var layerRefMap = {};
 				async.map(topics, function(item, mapCallback) {
 					crud.read('areatemplate', {topic: item}, function(err, resls) {
-						if (err)
+						if (err){
 							return callback(err);
+						}
 						async.forEach(resls, function(at, eachCallback) {
 							crud.read('layerref', {$and: [{areaTemplate: at._id}, {year: {$in: years}}, {location: {$in: results.locations}}, {isData: false}]}, function(err, resls2) {
-								if (err)
+								if (err){
 									return callback(err);
+								}
 								layerRefMap[at._id] = {};
 								for (var i = 0; i < resls2.length; i++) {
 									var row = resls2[i];
@@ -516,11 +545,11 @@ function getThemeYearConf(params, req, res, callback) {
 									});
 								}
 								return eachCallback(null);
-							})
+							});
 						}, function(err) {
 							return mapCallback(null, resls);
-						})
-					})
+						});
+					});
 				}, function(err, map) {
 					var obj = {};
 					obj.layerRefMap = layerRefMap;
@@ -581,18 +610,18 @@ function getThemeYearConf(params, req, res, callback) {
 
 			}],
 		finish: ['layers', 'leafs', function(asyncCallback, results) {
-				res.data = (params['parentgids'] || params['justAreas']) ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
-					add: results.leafs ? results.leafs.add : results.sql.add,
-					leafMap: results.leafs ? results.leafs.leafMap : null,
-					auRefMap: results.layerRefs,
-					remove: results.sql.remove,
-					attrSets: results.requiredAttrSets,
-					areas: results.leafs ? results.leafs.areas : results.sql.areas,
-					layerRefMap: results.layers ? results.layers.layerRefMap : null,
-					layerNodes: results.layers ? results.layers.layerNodes : null
-				};
-				return callback(null);
-			}]
+			res.data = (params['parentgids'] || params['justAreas']) ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
+				add: results.leafs ? results.leafs.add : results.sql.add,
+				leafMap: results.leafs ? results.leafs.leafMap : null,
+				auRefMap: results.layerRefs,
+				remove: results.sql.remove,
+				attrSets: results.requiredAttrSets,
+				areas: results.leafs ? results.leafs.areas : results.sql.areas,
+				layerRefMap: results.layers ? results.layers.layerRefMap : null,
+				layerNodes: results.layers ? results.layers.layerNodes : null
+			};
+			return callback(null);
+		}]
 	};
 	async.auto(opts);
 }
