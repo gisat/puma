@@ -38,5 +38,15 @@ module.exports = {
 		noGeoserverLayerGroups: false
 	},
 
-	allowedOrigins: "http://localhost:5555"
+	allowedOrigins: "http://localhost:5555",
+	/*
+	 * It decides to which level will be the information logged. Default value is 1 meaning Info and higher will be logged
+	 * 0 - TRACE
+	 * 1 - INFO
+	 * 2 - WARNING
+	 * 3 - ERROR
+	 * 4 - NOTHING
+	 * Set level and all above will be logged.
+	 */
+	loggingLevel: 0
 };

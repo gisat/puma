@@ -1,8 +1,8 @@
 var should = require('should');
 
-var conn = require('../../common/conn');
+var conn = require('../../../common/conn');
 var config = require('../config');
-var User = require('../../data/User').User;
+var User = require('../../../data/User').User;
 var TestUser = require('./TestUser').TestUser;
 
 describe('User', function(){

@@ -2,6 +2,7 @@ var querystring = require('querystring');
 var http = require('http');
 var conn = require('../common/conn');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function getLoginInfo(params,req,res,callback) {
 	var data = {
@@ -16,10 +17,9 @@ function getLoginInfo(params,req,res,callback) {
 function login(params,req,res,callback) {
 	geonodeCom(params,true,callback,function(res1) {
 		var cookies = res1.headers['set-cookie'] || [];
-		console.log("\n\nLOGIN HEADERS: ", res1.headers, "\n\n"); //////////////////////////////////////////////////////////
+		logger.info("login# login(), Login headers received: ", res1.headers, "\n Cookies: ", cookies); //////////////////////////////////////////////////////////
 		var ssid = null;
 		for (var i=0; i<cookies.length; i++) {
-			console.log("iterating cookies: ", cookies[i]); //////////////////////////////////////////////////////////////////
 			var cookieRow = cookies[i].split(';')[0];
 			var name = cookieRow.split('=')[0];
 			if (name == 'sessionid') {
@@ -27,7 +27,7 @@ function login(params,req,res,callback) {
 			}
 		}
 		if (!ssid) {
-			return callback(new Error('bad login (ssid missing)'));
+			return callback(new Error(logger.info("login# login(), Invalid login")));
 		}
 		res.cookie('ssid',ssid,{httpOnly: true});
 		res.data = {status: 'ok', ssid: ssid};

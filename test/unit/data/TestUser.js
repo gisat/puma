@@ -1,4 +1,4 @@
-var conn = require('../../common/conn');
+var conn = require('../../../common/conn');
 var Promise = require('promise');
 
 var TestUser = function() {

@@ -1,6 +1,6 @@
 var expect    = require("chai").expect;
 
-var conn = require('../../../common/conn');
+var conn = require('../../../../common/conn');
 
 describe('Given User exists in Geonode', function(){
     var user,
