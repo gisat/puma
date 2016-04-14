@@ -34,6 +34,7 @@ function login(params,req,res,callback) {
 			return callback(new Error(logger.info("login# login(), Invalid login")));
 		}
 		res.cookie('ssid',ssid,{httpOnly: true});
+		res.cookie('sessionid',ssid,{httpOnly: true});
 		res.cookie('csrftoken',csrfToken,{httpOnly: true});
 
 		res.data = {status: 'ok', ssid: ssid, csrfToken: csrfToken};
