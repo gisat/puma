@@ -3,6 +3,7 @@ var _ = require('underscore');
 
 var crud = require('../rest/crud');
 var conn = require('../common/conn');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function getLocationConf(params, req, res, callback) {
 	async.auto({
@@ -28,7 +29,9 @@ function getLocationConf(params, req, res, callback) {
 				var datasetMap = {};
 				for (var i=0;i<results.length;i++) {
 					var result = results[i];
-					if (!result.dataset) continue;
+					if (!result.dataset){
+						continue;
+					}
 					datasetMap[result.dataset] = datasetMap[result.dataset] || [];
 					datasetMap[result.dataset].push(result);
 				}
@@ -37,56 +40,63 @@ function getLocationConf(params, req, res, callback) {
 			});
 		},
 		singleLocationAreas: ['dataset','datasetMap',function(asyncCallback,results) {
+			logger.info("theme# getLocationConf(), results.datasetMap:", results.datasetMap);
+
 			var datasetMap = results.datasetMap;
-			var locToQuery = [];
 			var resultArr = [];
-			for (var datasetId in datasetMap) {
-				var locs = datasetMap[datasetId];
+
+			async.forEachOf(datasetMap, function datasetMapIterator(locationsOfDataset, datasetId, datasetMapIterationCallback) {
 
 				var dataset = results.dataset[datasetId];
-				for (var i=0;i<locs.length;i++) {
-					locToQuery.push({
-						location: locs[i]._id,
-						areaTemplate: dataset.featureLayers[0],
-						isData: false,
-						dataset: datasetId
-					});
-				}
-			}
-			var client = conn.getPgDataDb();
-			async.forEach(locToQuery, function(item, eachCallback) {
-				var datasetId = item.dataset;
-				delete item.dataset;
+				async.each(locationsOfDataset, function(location, locationsIteratingCallback){
+					//var location = locationsOfDataset[i];
 
-				crud.read('layerref', item, function(err, results) {
-					if (err){
-						return callback(err);
+					/**
+					 * New approach: location has a BBOX, it is the same as location in Front Office
+					 */
+					if(location.hasOwnProperty("bbox") && location.bbox) {
+						var loc = {
+							name: location.name,
+							locGid: null,
+							id: location._id,
+							dataset: datasetId,
+							location: location._id,
+							at: dataset.featureLayers[0],
+							bbox: location.bbox
+						};
+						logger.info("theme# getLocationConf(), Adding normal location with bbox - ",loc.name);
+						resultArr.push(loc);
+						return locationsIteratingCallback(null);
 					}
-					if (!results.length){
-						return eachCallback(null);
+					/**
+					 * Old approach: location has no BBOX, it's multilocation in AU layer - polygons are separate locations
+					 */
+					else{
+						if(!dataset || !dataset.hasOwnProperty("featureLayers")){
+							logger.trace("theme# getLocationConf(), empty dataset.featureLayers");
+						}
+						getLocationsFromDB({
+							location: location._id,
+							areaTemplate: dataset.featureLayers[0],
+							isData: false,
+							dataset: datasetId
+						}, function getLocationsFromDBCallback(err, locations){
+							if(err){
+								return callback(err);
+							}
+							logger.info("theme# getLocationConf(), Adding multilocations of ", location.name);
+							if(locations != null){
+								resultArr = resultArr.concat(locations);
+							}
+							return locationsIteratingCallback(null)
+						});
 					}
-					var layerRef = results[0];
-					var sql = 'SELECT gid,name FROM views.layer_' + layerRef._id;
-					client.query(sql, {}, function(err, resls) {
-						if (err){
-							return callback(err);
-						}
-						for (var i = 0; i < resls.rows.length; i++) {
-							var row = resls.rows[i];
-							resultArr.push({
-								name: row.name,
-								locGid: row.gid,
-								id: item.location+'_'+row.gid,
-								dataset: datasetId,
-								location: item.location,
-								at: item.areaTemplate
-							});
-						}
-						eachCallback(null);
 
-					});
-				});
-			}, function() {
+				}, function locationsIteratingFinalCallback(err){
+					datasetMapIterationCallback(err);
+				}); // todo
+
+			}, function datasetMapIterationFinalCallback(err){
 				if (resultArr.length>1) {
 					resultArr.push({
 						name: 'All places',
@@ -97,6 +107,44 @@ function getLocationConf(params, req, res, callback) {
 				return callback();
 			});
 		}]
+	});
+}
+
+
+function getLocationsFromDB(locationOptions, callback){
+	var resultLocs = [];
+	var client = conn.getPgDataDb();
+
+	var datasetId = locationOptions.dataset;
+	delete locationOptions.dataset;
+
+	crud.read('layerref', locationOptions, function(err, layerRefs) {
+		if (err){
+			return callback(err);
+		}
+		if (!layerRefs.length){
+			return callback(null);
+		}
+		var layerRef = layerRefs[0];
+		var sql = 'SELECT gid,name FROM views.layer_' + layerRef._id;
+		client.query(sql, {}, function(err, resls) {
+			if (err){
+				return callback(err);
+			}
+			for (var i = 0; i < resls.rows.length; i++) {
+				var row = resls.rows[i];
+				resultLocs.push({
+					name: row.name,
+					locGid: row.gid,
+					id: locationOptions.location+'_'+row.gid,
+					dataset: datasetId,
+					location: locationOptions.location,
+					at: locationOptions.areaTemplate,
+					bbox: null
+				});
+			}
+			callback(null, resultLocs);
+		});
 	});
 }
 

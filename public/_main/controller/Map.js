@@ -505,7 +505,7 @@ Ext.define('PumaMain.controller.Map', {
         
         
         
-        console.log(overallExtent)
+        console.info("Map.afterExtentOutlineRender overallExtent: ", overallExtent);
         
         map.outlineExtent = overallExtent;
         map.layer1.setVisibility(true);
