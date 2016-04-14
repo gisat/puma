@@ -31,7 +31,7 @@ Logger.prototype.error = function() {
 };
 
 Logger.prototype._log = function(method, level, passedArguments) {
-	let args = Array.prototype.slice.call(passedArguments);
+	var args = Array.prototype.slice.call(passedArguments);
 	args.unshift("[Panther] ");
 	if(this.currentLevel <= level) {
 		return console[method].apply(console, args);
