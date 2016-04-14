@@ -17,20 +17,27 @@ function getLoginInfo(params,req,res,callback) {
 function login(params,req,res,callback) {
 	geonodeCom(params,true,callback,function(res1) {
 		var cookies = res1.headers['set-cookie'] || [];
-		logger.info("login# login(), Login headers received: ", res1.headers, "\n Cookies: ", cookies); //////////////////////////////////////////////////////////
+		logger.info("login# login(), Login headers received: ", res1.headers, "\n Cookies: ", cookies);
 		var ssid = null;
+		var csrfToken = null;
 		for (var i=0; i<cookies.length; i++) {
 			var cookieRow = cookies[i].split(';')[0];
 			var name = cookieRow.split('=')[0];
 			if (name == 'sessionid') {
 				ssid = cookieRow.split('=')[1];
 			}
+			if(name == 'csrftoken') {
+				csrfToken = cookieRow.split('=')[1];
+			}
 		}
 		if (!ssid) {
 			return callback(new Error(logger.info("login# login(), Invalid login")));
 		}
 		res.cookie('ssid',ssid,{httpOnly: true});
-		res.data = {status: 'ok', ssid: ssid};
+		res.cookie('sessionid',ssid,{httpOnly: true});
+		res.cookie('csrftoken',csrfToken,{httpOnly: true});
+
+		res.data = {status: 'ok', ssid: ssid, csrfToken: csrfToken};
 		callback();
 	})
 
