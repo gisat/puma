@@ -7,6 +7,7 @@ var session = require('express-session');
 
 var async = require('async');
 var loc = require('./common/loc');
+var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
@@ -21,7 +22,7 @@ function initServer(err) {
 
 	// Log the requests to see then the error occurs.
 	app.use(function(req, res, next) {
-		console.log("Request: "+ req.method + " - " + req.url);
+		logger.info("Request: "+ req.method + " - " + req.url);
 		next();
 	});
 
