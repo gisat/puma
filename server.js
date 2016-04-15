@@ -22,7 +22,7 @@ function initServer(err) {
 
 	// Log the requests to see then the error occurs.
 	app.use(function(req, res, next) {
-		logger.info("Request: ", req);
+		logger.info("Request: "+ req.method + " - " + req.url);
 		next();
 	});
 
