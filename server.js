@@ -7,7 +7,7 @@ var session = require('express-session');
 
 var async = require('async');
 var loc = require('./common/loc');
-var logger = require('./common/Logger');
+var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
