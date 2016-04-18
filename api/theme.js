@@ -254,25 +254,34 @@ function getThemeYearConf(params, req, res, callback) {
 			//var attrSets = results.requiredAttrSets || [];
 			// zadne attr sets nejsou vyzadovany
 			var attrSets = [];
-			for (var i = 0; i < results.locations.length; i++) {
+			for (var i = 0; i < results.locations.length; i++) { // iterate Locations
 				var locationID = results.locations[i]._id;
 				layerRefMap[locationID] = layerRefMap[locationID] || {};
 				attrLayerRefMap[locationID] = attrLayerRefMap[locationID] || {};
-				for (var j = 0; j < results.dataset.featureLayers.length; j++) {
+				for (var j = 0; j < results.dataset.featureLayers.length; j++) { // iterate AU level area templates
 					var fl = results.dataset.featureLayers[j];
 					layerRefMap[locationID][fl] = layerRefMap[locationID][fl] || {};
 					attrLayerRefMap[locationID][fl] = attrLayerRefMap[locationID][fl] || {};
-					for (var k = 0; k < years.length; k++) {
+					for (var k = 0; k < years.length; k++) { // iterate Years
 						var year = years[k];
 						attrLayerRefMap[locationID][fl][year] = attrLayerRefMap[locationID][fl][year] || {};
-						confs.push({location: locationID, year: year, areaTemplate: fl, isData: false});
-						for (var l = 0; l < attrSets.length; l++) {
+						confs.push({
+							location: locationID,
+							year: year,
+							areaTemplate: fl,
+							isData: false
+						});
+						for (var l = 0; l < attrSets.length; l++) { // iterate Attribute Sets
 							var attrSet = attrSets[l];
-							attrConfs.push({location: locationID, year: year, areaTemplate: fl, attributeSet: attrSet, isData: true});
+							attrConfs.push({
+								location: locationID,
+								year: year,
+								areaTemplate: fl,
+								attributeSet: attrSet,
+								isData: true
+							});
 						}
-
 					}
-
 				}
 			}
 			async.forEach(confs, function(item, eachCallback) {
@@ -295,37 +304,37 @@ function getThemeYearConf(params, req, res, callback) {
 						eachCallback(null);
 					});
 				}, function() {
-					// for (var loc in layerRefMap) {
-					// 	for (var fl in layerRefMap[loc]) {
-					// 		for (var year in layerRefMap[loc][fl]) {
-					// 			// vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
-					// 			for (var i = 0; i < attrSets.length; i++) {
-					// 				var attrLayerRef = null;
-					// 				try {
-					// 					var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]];
-					// 				} catch (e) {
-					// 				}
-					// 				if (!attrLayerRef) {
-					// 					layerRefMap[loc][fl][year] = null;
-					// 					if (fl == results.dataset.featureLayers[0]) {
-					// 						for (var j = 0; j < results.locations.length; j++) {
-					// 							var currentLoc = results.locations[j];
-					// 							if (loc == currentLoc) {
-					// 								results.locations = _.difference(results.locations, [currentLoc]);
-					// 								break;
-					// 							}
-					// 						}
-					// 					}
-					// 					break;
-					// 				}
-					// 			}
-					// 		}
-					// 	}
-					// }
+					/*for (var loc in layerRefMap) {
+						for (var fl in layerRefMap[loc]) {
+							for (var year in layerRefMap[loc][fl]) {
+								// vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
+								for (var i = 0; i < attrSets.length; i++) {
+									var attrLayerRef = null;
+									try {
+										var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]];
+									} catch (e) {
+									}
+									if (!attrLayerRef) {
+										layerRefMap[loc][fl][year] = null;
+										if (fl == results.dataset.featureLayers[0]) {
+											for (var j = 0; j < results.locations.length; j++) {
+												var currentLoc = results.locations[j];
+												if (loc == currentLoc) {
+													results.locations = _.difference(results.locations, [currentLoc]);
+													break;
+												}
+											}
+										}
+										break;
+									}
+								}
+							}
+						}
+					}*/
 
 					return asyncCallback(null, layerRefMap);
-				})
-			})
+				});
+			});
 		}],
 
 		sql: ['layerRefs', 'locations', function(asyncCallback, results) {
