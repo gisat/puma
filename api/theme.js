@@ -259,24 +259,24 @@ function getThemeYearConf(params, req, res, callback) {
 				layerRefMap[locationID] = layerRefMap[locationID] || {};
 				attrLayerRefMap[locationID] = attrLayerRefMap[locationID] || {};
 				for (var j = 0; j < results.dataset.featureLayers.length; j++) { // iterate AU level area templates
-					var fl = results.dataset.featureLayers[j];
-					layerRefMap[locationID][fl] = layerRefMap[locationID][fl] || {};
-					attrLayerRefMap[locationID][fl] = attrLayerRefMap[locationID][fl] || {};
+					var areaTemplateID = results.dataset.featureLayers[j];
+					layerRefMap[locationID][areaTemplateID] = layerRefMap[locationID][areaTemplateID] || {};
+					attrLayerRefMap[locationID][areaTemplateID] = attrLayerRefMap[locationID][areaTemplateID] || {};
 					for (var k = 0; k < years.length; k++) { // iterate Years
-						var year = years[k];
-						attrLayerRefMap[locationID][fl][year] = attrLayerRefMap[locationID][fl][year] || {};
+						var yearID = years[k];
+						attrLayerRefMap[locationID][areaTemplateID][yearID] = attrLayerRefMap[locationID][areaTemplateID][yearID] || {};
 						confs.push({
 							location: locationID,
-							year: year,
-							areaTemplate: fl,
+							year: yearID,
+							areaTemplate: areaTemplateID,
 							isData: false
 						});
 						for (var l = 0; l < attrSets.length; l++) { // iterate Attribute Sets
 							var attrSet = attrSets[l];
 							attrConfs.push({
 								location: locationID,
-								year: year,
-								areaTemplate: fl,
+								year: yearID,
+								areaTemplate: areaTemplateID,
 								attributeSet: attrSet,
 								isData: true
 							});
@@ -305,18 +305,18 @@ function getThemeYearConf(params, req, res, callback) {
 					});
 				}, function() {
 					/*for (var loc in layerRefMap) {
-						for (var fl in layerRefMap[loc]) {
-							for (var year in layerRefMap[loc][fl]) {
+						for (var areaTemplateID in layerRefMap[loc]) {
+							for (var yearID in layerRefMap[loc][areaTemplateID]) {
 								// vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
 								for (var i = 0; i < attrSets.length; i++) {
 									var attrLayerRef = null;
 									try {
-										var attrLayerRef = attrLayerRefMap[loc][fl][year][attrSets[i]];
+										var attrLayerRef = attrLayerRefMap[loc][areaTemplateID][yearID][attrSets[i]];
 									} catch (e) {
 									}
 									if (!attrLayerRef) {
-										layerRefMap[loc][fl][year] = null;
-										if (fl == results.dataset.featureLayers[0]) {
+										layerRefMap[loc][areaTemplateID][yearID] = null;
+										if (areaTemplateID == results.dataset.featureLayers[0]) {
 											for (var j = 0; j < results.locations.length; j++) {
 												var currentLoc = results.locations[j];
 												if (loc == currentLoc) {
