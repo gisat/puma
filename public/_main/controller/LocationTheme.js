@@ -306,10 +306,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var vis = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         var params = {
-                theme: theme,
-                years: JSON.stringify(years),
-                dataset: dataset
-            }
+						theme: theme,
+						years: JSON.stringify(years),
+						dataset: dataset
+        };
         var areaController = this.getController('Area');
      
         
@@ -323,13 +323,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
-        var loc = locationObj.location;
-        if (this.datasetChanged && loc) {
+        var locationId = locationObj.location;
+        if (this.datasetChanged && locationId) {
             var expanded = {};
-            var at = locationObj.at;
+            var areaTemplateId = locationObj.at;
             var locGid = locationObj.locGid;
-            expanded[loc] = {};
-            expanded[loc][at] = [locGid]
+            expanded[locationId] = {};
+            expanded[locationId][areaTemplateId] = [locGid];
             params['expanded'] = JSON.stringify(expanded);
         }
         if (detailLevelChanged) {
@@ -366,7 +366,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             failure: function() {
                 me.getController('DomManipulation').deactivateLoadingMask();
             }
-        })
+        });
         
         if (this.visChanged) {
             this.getController('Chart').loadVisualization(vis);
