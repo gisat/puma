@@ -317,7 +317,7 @@ function getData(params, callback) {
 					if (err)
 						return callback(err);
 					if (!resls.length && areaIds.indexOf(-1) < 0) {
-						return callback(new Error('notexistingdata'));
+						return callback(new Error('notexistingdata (1)'));
 					}
 					var layerRefMap = {};
 					for (var i = 0; i < resls.length; i++) {
@@ -453,7 +453,7 @@ function getData(params, callback) {
 				client.query(dataSql, function(err, resls) {
 					if (err) {
 						//console.log(dataSql)
-						return callback(new Error('notexistingdata'));
+						return callback(new Error('notexistingdata (2)'));
 					}
 					var aggData = [];
 					var normalData = [];
