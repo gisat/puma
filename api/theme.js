@@ -317,7 +317,7 @@ function getThemeYearConf(params, req, res, callback) {
 									if (!attrLayerRef) {
 										layerRefMap[loc][areaTemplateID][yearID] = null;
 										if (areaTemplateID == results.dataset.featureLayers[0]) {
-											for (var j = 0; j < results.locations.length; j++) {
+											for (var j = 0; j < results.locations.length; j++) { // !!! out of date. results.locations now contains location objects instead IDs!
 												var currentLoc = results.locations[j];
 												if (loc == currentLoc) {
 													results.locations = _.difference(results.locations, [currentLoc]);
@@ -590,6 +590,11 @@ function getThemeYearConf(params, req, res, callback) {
 			if (!results.theme) {
 				return asyncCallback(null);
 			}
+			var locationIDs = [];
+			for (var i = 0; i < results.locations.length; i++) {
+				locationIDs.push(results.locations[i]._id);
+			}
+
 			var theme = results.theme;
 			var topics = theme.topics;
 			var layerRefMap = {};
@@ -599,7 +604,7 @@ function getThemeYearConf(params, req, res, callback) {
 						return callback(err);
 					}
 					async.forEach(resls, function(at, eachCallback) {
-						crud.read('layerref', {$and: [{areaTemplate: at._id}, {year: {$in: years}}, {location: {$in: results.locations}}, {isData: false}]}, function(err, resls2) {
+						crud.read('layerref', {$and: [{areaTemplate: at._id}, {year: {$in: years}}, {location: {$in: locationIDs}}, {isData: false}]}, function(err, resls2) {
 							if (err){
 								return callback(err);
 							}
@@ -623,6 +628,7 @@ function getThemeYearConf(params, req, res, callback) {
 				});
 			}, function(err, map) {
 				var obj = {};
+				logger.info("theme# getThemeYearConf, layerRefs; layerRefMap before save to obj:", layerRefMap);
 				obj.layerRefMap = layerRefMap;
 				if (!params['refreshLayers']) {
 					return asyncCallback(null, obj);
