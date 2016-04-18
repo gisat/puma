@@ -179,12 +179,11 @@ function getThemeYearConf(params, req, res, callback) {
 			});
 		},
 
-		locations: function(asyncCallback, results) {
-
-			var locations = locations ? JSON.parse(params['locations']) : null;
-			if (locations) {
-				return asyncCallback(null,locations);
-			}
+		locations: function(asyncCallback) {
+			// var locations = locations ? JSON.parse(params['locations']) : null;
+			// if (locations) {
+			// 	return asyncCallback(null,locations);
+			// }
 			crud.read('location', {dataset: parseInt(params['dataset'])}, function(err, resls) {
 				if (err){
 					return callback(err);
@@ -193,7 +192,8 @@ function getThemeYearConf(params, req, res, callback) {
 				for (var i = 0; i < resls.length; i++) {
 					ids.push(resls[i]._id);
 				}
-				asyncCallback(null, ids);
+				//asyncCallback(null, ids);
+				asyncCallback(null, resls);
 			});
 		},
 
@@ -255,20 +255,20 @@ function getThemeYearConf(params, req, res, callback) {
 			// zadne attr sets nejsou vyzadovany
 			var attrSets = [];
 			for (var i = 0; i < results.locations.length; i++) {
-				var loc = results.locations[i];
-				layerRefMap[loc] = layerRefMap[loc] || {};
-				attrLayerRefMap[loc] = attrLayerRefMap[loc] || {};
+				var locationID = results.locations[i]._id;
+				layerRefMap[locationID] = layerRefMap[locationID] || {};
+				attrLayerRefMap[locationID] = attrLayerRefMap[locationID] || {};
 				for (var j = 0; j < results.dataset.featureLayers.length; j++) {
 					var fl = results.dataset.featureLayers[j];
-					layerRefMap[loc][fl] = layerRefMap[loc][fl] || {};
-					attrLayerRefMap[loc][fl] = attrLayerRefMap[loc][fl] || {};
+					layerRefMap[locationID][fl] = layerRefMap[locationID][fl] || {};
+					attrLayerRefMap[locationID][fl] = attrLayerRefMap[locationID][fl] || {};
 					for (var k = 0; k < years.length; k++) {
 						var year = years[k];
-						attrLayerRefMap[loc][fl][year] = attrLayerRefMap[loc][fl][year] || {};
-						confs.push({location: loc, year: year, areaTemplate: fl, isData: false});
+						attrLayerRefMap[locationID][fl][year] = attrLayerRefMap[locationID][fl][year] || {};
+						confs.push({location: locationID, year: year, areaTemplate: fl, isData: false});
 						for (var l = 0; l < attrSets.length; l++) {
 							var attrSet = attrSets[l];
-							attrConfs.push({location: loc, year: year, areaTemplate: fl, attributeSet: attrSet, isData: true});
+							attrConfs.push({location: locationID, year: year, areaTemplate: fl, attributeSet: attrSet, isData: true});
 						}
 
 					}
@@ -328,58 +328,69 @@ function getThemeYearConf(params, req, res, callback) {
 			})
 		}],
 
-		sql: ['layerRefs', function(asyncCallback, results) {
+		sql: ['layerRefs', 'locations', function(asyncCallback, results) {
 			if (!params['refreshAreas'] || params['refreshAreas']=='false') {
 				return asyncCallback(null, {});
 			}
 			var locations = results.locations;
-			var featureLayers = results.dataset.featureLayers;
+			var areaTemplates = results.dataset.featureLayers; // areaTemplates renamed from featureLayers
 			var layerRefMap = results.layerRefs;
 			var opened = params['parentgids'] ? JSON.parse(params['parentgids']) : null;
 			opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
 			var sql = '';
 			for (var i = 0; i < locations.length; i++) {
-				var loc = locations[i];
-				var locFeatureLayers = params['parentgids'] ? [] : [featureLayers[0]];
-				var locOpened = opened[loc];
+				var location = locations[i];
+				var locationId = location._id;
+				var locAreaTemplates = params['parentgids'] ? [] : [areaTemplates[0]];
+				logger.info("theme# getThemeYearConf, auto:sql, locAreaTemplates before forloop:", locAreaTemplates);
+				var locOpened = opened[locationId];
 				for (var key in locOpened) {
-					var idx = featureLayers.indexOf(parseInt(key));
-					locFeatureLayers.push(featureLayers[idx + 1]);
+					var idx = areaTemplates.indexOf(parseInt(key));
+					locAreaTemplates.push(areaTemplates[idx + 1]);
 				}
-				locFeatureLayers.sort(function(a, b) {
-					return featureLayers.indexOf(a) > featureLayers.indexOf(b);
+				locAreaTemplates.sort(function(a, b) {
+					return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
 				});
+				logger.info("theme# getThemeYearConf, auto:sql, Iterating locAreaTemplates:", locAreaTemplates);
 
-				for (var j = 0; j < locFeatureLayers.length; j++) {
-					var fl = locFeatureLayers[j];
+				for (var j = 0; j < locAreaTemplates.length; j++) {
+					var topmostAT = (location.bbox && j==0); // {bool} topmost area template in normal place (not multiplace)
+					var areaTemplateId = locAreaTemplates[j];
 					var layerRef = null;
 					try {
-						layerRef = layerRefMap[loc][fl][years[0]];
+						layerRef = layerRefMap[locationId][areaTemplateId][years[0]];
 					} catch (e) {
 					}
 					if (!layerRef){
 						continue;
 					}
-					var flIdx = featureLayers.indexOf(fl);
-					var prevFl = flIdx > 0 ? featureLayers[flIdx - 1] : null;
+					var areaTemplateIndex = areaTemplates.indexOf(areaTemplateId);
+					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
 					var leaf = 'FALSE';
-					var cont = true;
+					var abort = false;
 					for (var k = 0; k < years.length; k++) {
-						var curLayerRef = layerRefMap[loc][fl][years[k]];
+						var curLayerRef = layerRefMap[locationId][areaTemplateId][years[k]];
 						if (!curLayerRef) {
-							cont = false;
+							abort = true;
 							break;
 						}
 					}
-					if (!cont){
+					if (abort){
 						continue;
 					}
 					sql += sql ? ' UNION ' : '';
-					sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + loc + ' AS loc,' + layerRef._id + ' AS lr, a.name, ST_AsText(a.extent) as extent';
+					sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
+					if (topmostAT) {
+						sql += ", '" + location.name + "' AS name";
+						sql += ", ST_AsText(ST_Envelope(ST_GeomFromText('MULTIPOINT("+location.bbox+")'))) AS extent";
+					} else {
+						sql += ', a.name';
+						sql += ', ST_AsText(a.extent) AS extent';
+					}
 
 					sql += ' FROM views.layer_' + layerRef._id + ' a';
 					for (var k = 1; k < years.length; k++) {
-						var yearLayerRef = layerRefMap[loc][fl][years[k]];
+						var yearLayerRef = layerRefMap[locationId][areaTemplateId][years[k]];
 						if (!yearLayerRef) {
 							sql += ' INNER JOIN views.layer_' + layerRef._id + ' y' + years[k] + ' ON a.gid+1=y' + years[k] + '.gid';
 							continue;
@@ -387,17 +398,19 @@ function getThemeYearConf(params, req, res, callback) {
 						sql += ' INNER JOIN views.layer_' + yearLayerRef._id + ' y' + years[k] + ' ON a.gid=y' + years[k] + '.gid';
 					}
 					sql += ' WHERE 1=1';
-					if (locOpened && prevFl && locOpened[prevFl]) {
-						sql += ' AND a.parentgid IN (' + locOpened[prevFl].join(',') + ')';
+					logger.info("theme# getThemeYearConf, auto:sql prevAreaTemplate:",prevAreaTemplate," locOpened:", locOpened);
+					if (locOpened && prevAreaTemplate && locOpened[prevAreaTemplate] && locOpened[prevAreaTemplate][0] !== null) {
+						sql += ' AND a.parentgid IN (' + locOpened[prevAreaTemplate].join(',') + ')';
 					}
 					// filter.areaTemplates possibly unused, like in Mongo DB theme.areaTemplates is unused. Jon
-					if (filter && (filter.areaTemplates[fl] || params.allAreaTemplates)) {
+					if (filter && (filter.areaTemplates[areaTemplateId] || params.allAreaTemplates)) {
 						sql += getFilterSql(filter.filters, 'a.');
 					}
 				}
 			}
 			sql += ' ORDER BY idx ASC';
 			var client = conn.getPgDataDb();
+			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
 			client.query(sql, {}, function(err, resls) {
 
 				if (err){
