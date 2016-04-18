@@ -50,6 +50,7 @@ Ext.define('PumaMain.controller.Area', {
             location: rec ? rec.get('location') : null,
             locGid: rec ? rec.get('locGid') : null,
             at: rec ? rec.get('at') : null,
+            bbox: rec ? rec.get('bbox') : null,
             obj: rec
         }
     },

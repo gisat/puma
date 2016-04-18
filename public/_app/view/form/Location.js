@@ -9,7 +9,7 @@ Ext.define('PumaMng.view.form.Location', {
         this.items = [{
                     xtype: 'textfield',
                     name: 'bbox',
-                    allowBlank: false,
+                    allowBlank: true,
                     fieldLabel: 'BBOX'
                 },  {
                     xtype: 'pumacombo',
@@ -21,6 +21,6 @@ Ext.define('PumaMng.view.form.Location', {
 
         this.callParent();
     }
-})
+});
 
 

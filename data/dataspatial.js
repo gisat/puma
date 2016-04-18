@@ -32,7 +32,7 @@ function getData(params, callback) {
 				if (err)
 					return callback(err);
 				if (!resls.length) {
-					return callback(new Error('notexistingdata'));
+					return callback(new Error('notexistingdata (3)'));
 				}
 				var layerRefMap = {};
 				for (var i = 0; i < resls.length; i++) {
@@ -50,7 +50,7 @@ function getData(params, callback) {
 		aggregateLayer: ['layerRefMap', function(asyncCallback, results) {
 				var aggregateLayerRef = results.layerRefMap[aggregateFeatureTemplate];
 				if (!aggregateLayerRef) {
-					return callback(new Error('notexistingdata'));
+					return callback(new Error('notexistingdata (4)'));
 				}
 				var sql = 'SELECT ST_SRID(the_geom) as srid FROM ' + aggregateLayerRef.layer.split(':')[1] + ' LIMIT 1';
 				var client = conn.getPgDataDb();
@@ -66,7 +66,7 @@ function getData(params, callback) {
 				//console.log('here');
 				var unitLayerRef = results.layerRefMap[areaId];
 				if (!unitLayerRef && areaId != -1) {
-					return callback(new Error('notexistingdata'));
+					return callback(new Error('notexistingdata (5)'));
 				}
 				var unitLayerName = areaId != -1 ? (unitLayerRef.layer.split(':')[1]) : ('up.base_user_' + params['userId'] + '_loc_' + locationId);
 				var unitLayerGid = areaId != -1 ? ('"'+unitLayerRef.fidColumn+'"') : 'gid';
