@@ -244,7 +244,7 @@ Ext.define('PumaMain.controller.Map', {
 		for (var i=0;i<sel.length;i++) {
 			var area = areas.length ? areas[i] : areaController.getArea(sel[i]);
 			var extent = format.read(area.get('extent')).geometry.getBounds();
-			extent = extent.transform(new OpenLayers.Projection("EPSG:4326"),new OpenLayers.Projection("EPSG:900913"))
+			extent = extent.transform(new OpenLayers.Projection("EPSG:4326"),new OpenLayers.Projection("EPSG:900913"));
 			if (!overallExtent) {
 				overallExtent = extent;
 			} else {
@@ -310,7 +310,7 @@ Ext.define('PumaMain.controller.Map', {
 		});
 		Ext.StoreMgr.lookup('selectedlayers').loadData([hybridNode,streetNode,terrainNode,osmNode],true);
 		baseNode.appendChild([hybridNode,streetNode,terrainNode,osmNode]);
-		liveNode.appendChild([trafficNode])
+		liveNode.appendChild([trafficNode]);
 	},
 
 	onMapMove: function(map) {
@@ -364,12 +364,12 @@ Ext.define('PumaMain.controller.Map', {
 
 		cmp.map = map;
 		var hybridLayer = new OpenLayers.Layer.Google(
-				'Google',
-				{
-					type: 'terrain',
-					initialized: true,
-					animationEnabled: true
-				}
+			'Google',
+			{
+				type: 'terrain',
+				initialized: true,
+				animationEnabled: true
+			}
 		);
 		var layerDefaults = this.getController('Layers').getWmsLayerDefaults();
 		var layerDefaultsTiled = this.getController('Layers').getWmsLayerDefaults();
@@ -394,11 +394,11 @@ Ext.define('PumaMain.controller.Map', {
 		for (var i=0;i<2;i++) {
 			var layer = map['layer'+(i+1)];
 			layer.events.register('loadend', null, function(a, b) {
-					counterObj.cnt++;
-					if (counterObj.cnt == counterObj.desired) {
-						me.onExtentOutlineComplete(cmp)
-					}
-				});
+				counterObj.cnt++;
+				if (counterObj.cnt == counterObj.desired) {
+					me.onExtentOutlineComplete(cmp)
+				}
+			});
 		}
 
 		var layerRefs = cmp.layerRefs;
@@ -575,13 +575,12 @@ Ext.define('PumaMain.controller.Map', {
 		var el = Ext.get(cmp.id);
 		el.on('contextmenu',function(e) {
 			return;
-
-			e.stopEvent();
-			var layerMenu = Ext.widget('layermenu', {
-				map: map
-			});
-
-			layerMenu.showAt(e.getXY());
+			// e.stopEvent();
+			// var layerMenu = Ext.widget('layermenu', {
+			// 	map: map
+			// });
+			//
+			// layerMenu.showAt(e.getXY());
 		});
 		if (cmp.itemId=='map') {
 			this.createBaseNodes();
@@ -657,7 +656,7 @@ Ext.define('PumaMain.controller.Map', {
 				strokeOpacity: 0.8,
 				pointRadius: 2
 			}
-		})
+		});
 		//bbox: 112.337169,-7.954641,112.977462,-7.029791
 		//debugger;
 		map.size = map.getCurrentSize();
