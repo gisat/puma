@@ -252,7 +252,12 @@ Ext.define('PumaMain.controller.Map', {
 			}
 		}
 		
-		map.zoomToExtent(overallExtent);
+		this.zoomToExtent(overallExtent);
+	},
+
+	zoomToExtent: function(extent){
+		var map = Ext.ComponentQuery.query('#map')[0].map;
+		map.zoomToExtent(extent);
 	},
 
 	createBaseNodes: function() {

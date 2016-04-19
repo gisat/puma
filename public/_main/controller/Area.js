@@ -199,6 +199,10 @@ Ext.define('PumaMain.controller.Area', {
 		var areaRoot = Ext.StoreMgr.lookup('area').getRootNode();
 		var locObj = this.getLocationObj();
 		var loc = locObj.location;
+		if (locObj.bbox){
+			this.getController('Map').zoomToExtent(new OpenLayers.Bounds(locObj.bbox.split(",")));
+			return;
+		}
 		var locGid = locObj.locGid;
 		var areas = [];
 		for (var i=0;i<areaRoot.childNodes.length;i++) {
