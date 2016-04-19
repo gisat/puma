@@ -391,7 +391,7 @@ function getThemeYearConf(params, req, res, callback) {
 					sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
 						sql += ", '" + location.name + "' AS name";
-						sql += ", ST_AsText(ST_Envelope(ST_GeomFromText('MULTIPOINT("+location.bbox+")'))) AS extent";
+						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+location.bbox+"))) AS extent";
 					} else {
 						sql += ', a.name';
 						sql += ', ST_AsText(a.extent) AS extent';
