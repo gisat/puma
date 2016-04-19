@@ -392,9 +392,11 @@ function getThemeYearConf(params, req, res, callback) {
 					if (topmostAT) {
 						sql += ", '" + location.name + "' AS name";
 						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+location.bbox+"))) AS extent";
+						sql += ", TRUE AS definedplace";
 					} else {
 						sql += ', a.name';
 						sql += ', ST_AsText(a.extent) AS extent';
+						sql += ", FALSE AS definedplace"; // todo is it Always true?
 					}
 
 					sql += ' FROM views.layer_' + layerRef._id + ' a';

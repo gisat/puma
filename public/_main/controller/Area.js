@@ -406,7 +406,7 @@ Ext.define('PumaMain.controller.Area', {
 					highestMap[loc][at].push(gid);
 				}
 				if (node.isExpanded()) {
-					if ((at!=locObj.at || loc!=locObj.location || node.get('gid')!=locObj.locGid)) {
+					if (at!=locObj.at || loc!=locObj.location || (!node.get('definedplace') && node.get('gid')!=locObj.locGid)) {
 						if (locObj.obj && locObj.obj.get('dataset')) {
 							changeLocToCustom = true;
 						}
@@ -415,7 +415,7 @@ Ext.define('PumaMain.controller.Area', {
 						atLeastOneLoc = true;
 					}
 				}
-				if (node.isLeaf() && (at==locObj.at && loc==locObj.location && node.get('gid')==locObj.locGid)) {
+				if (node.isLeaf() && at==locObj.at && loc==locObj.location && (node.get('definedplace') || node.get('gid')==locObj.locGid)) {
 					me.placeNode = node;
 					atLeastOneLoc = true;
 				}

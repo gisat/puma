@@ -2,7 +2,7 @@ Ext.define('Puma.model.Area', {
     extend: 'Ext.data.TreeModel',
     fields: [
 
-    'gid','name','tree','at','lr','initialized','extent','id','loc'
+    'gid','name','tree','at','lr','initialized','extent','id','loc','definedplace'
     ],
     //idProperty: 'gid',
     proxy: {
