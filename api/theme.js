@@ -351,7 +351,6 @@ function getThemeYearConf(params, req, res, callback) {
 				var location = locations[i];
 				var locationId = location._id;
 				var locAreaTemplates = params['parentgids'] ? [] : [areaTemplates[0]];
-				logger.info("theme# getThemeYearConf, auto:sql, locAreaTemplates before forloop:", locAreaTemplates);
 				var locOpened = opened[locationId];
 				for (var key in locOpened) {
 					var idx = areaTemplates.indexOf(parseInt(key));
@@ -360,11 +359,14 @@ function getThemeYearConf(params, req, res, callback) {
 				locAreaTemplates.sort(function(a, b) {
 					return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
 				});
-				logger.info("theme# getThemeYearConf, auto:sql, Iterating locAreaTemplates:", locAreaTemplates);
 
 				for (var j = 0; j < locAreaTemplates.length; j++) {
-					var topmostAT = (location.bbox && j==0); // {bool} topmost area template in normal place (not multiplace)
 					var areaTemplateId = locAreaTemplates[j];
+					var areaTemplateIndex = areaTemplates.indexOf(areaTemplateId);
+					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
+					var topmostAT = (location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
+					var leaf = 'FALSE';
+					
 					var layerRef = null;
 					try {
 						layerRef = layerRefMap[locationId][areaTemplateId][years[0]];
@@ -373,9 +375,8 @@ function getThemeYearConf(params, req, res, callback) {
 					if (!layerRef){
 						continue;
 					}
-					var areaTemplateIndex = areaTemplates.indexOf(areaTemplateId);
-					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
-					var leaf = 'FALSE';
+
+					// abort if layerref for some year is missing
 					var abort = false;
 					for (var k = 0; k < years.length; k++) {
 						var curLayerRef = layerRefMap[locationId][areaTemplateId][years[k]];
@@ -387,6 +388,7 @@ function getThemeYearConf(params, req, res, callback) {
 					if (abort){
 						continue;
 					}
+
 					sql += sql ? ' UNION ' : '';
 					sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
@@ -396,7 +398,7 @@ function getThemeYearConf(params, req, res, callback) {
 					} else {
 						sql += ', a.name';
 						sql += ', ST_AsText(a.extent) AS extent';
-						sql += ", FALSE AS definedplace"; // todo is it Always true?
+						sql += ", FALSE AS definedplace";
 					}
 
 					sql += ' FROM views.layer_' + layerRef._id + ' a';
