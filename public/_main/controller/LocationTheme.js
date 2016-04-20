@@ -162,7 +162,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var nodeToExpand = null;
         for (var i=0;i<areaRoot.childNodes.length;i++) {
             var node = areaRoot.childNodes[i];
-            if (node.get('loc') == locObj.location && node.get('gid') == locObj.locGid) {
+            if (node.get('loc') == locObj.location && (node.get('definedplace') || node.get('gid')==locObj.locGid)) {
                 nodeToExpand = node;
             }
             else {
