@@ -32,6 +32,7 @@ Logger.prototype.error = function() {
 
 Logger.prototype._log = function(method, level, passedArguments) {
 	var args = Array.prototype.slice.call(passedArguments);
+	args.unshift(new Date().toISOString());
 	args.unshift("[Panther] ");
 	if(this.currentLevel <= level) {
 		return console[method].apply(console, args);
