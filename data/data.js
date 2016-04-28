@@ -452,7 +452,7 @@ function getData(params, callback) {
 				//console.log(dataSql);
 				client.query(dataSql, function(err, resls) {
 					if (err) {
-						//console.log(dataSql)
+						console.log(err);
 						return callback(new Error('notexistingdata (2)'));
 					}
 					var aggData = [];
