@@ -7,8 +7,15 @@ module.exports = function(app) {
 
 	logger.info("Set up the route: /integration/process, method: POST");
 	app.post("/integration/process", function(request, response, next){
-		logger.info("Respond to /integration/process");
-		var urlOfGeoTiff = request.params.url;
+		if(!request.body.url){
+			logger.error("Url of the data source must be specified.");
+			response.status(400).json({
+				message: "Url of the data source must be specified."
+			});
+			return;
+		}
+
+		var urlOfGeoTiff = request.body.url;
 		var id = guid();
 
 		runningProcesses[id] = {
@@ -28,7 +35,6 @@ module.exports = function(app) {
 
 	logger.info("Set up the route: /integration/status, method: GET");
 	app.get("/integration/status", function(request, response, next){
-		logger.info("Respond to /integration/status");
 
 		var url = require('url');
 		var url_parts = url.parse(request.url, true);
@@ -36,11 +42,19 @@ module.exports = function(app) {
 
 		var id = query.id;
 		if(!id) {
-			throw new Error(logger.error("Status integration request didn't contain id."));
+			logger.error("Status integration request didn't contain id.");
+			response.status(400).json({
+				message: "Status integration request didn't contain id"
+			});
+			return;
 		}
 
 		if(!runningProcesses[id]) {
-			throw new Error(logger.error("There is no running process with id", id));
+			logger.error("There is no running process with id", id);
+			response.status(400).json({
+				message: "There is no running process with id " + id
+			});
+			return;
 		}
 
 		if(runningProcesses[id].status == "Finished") {
