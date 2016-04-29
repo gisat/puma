@@ -6,7 +6,7 @@ module.exports = function(app) {
 	};
 
 	logger.info("Set up the route: /integration/process, method: POST");
-	app.post("/integration/process", function(request, response, next){
+	app.post("/integration/process", function(request, response){
 		if(!request.body.url){
 			logger.error("Url of the data source must be specified.");
 			response.status(400).json({
@@ -34,7 +34,7 @@ module.exports = function(app) {
 	});
 
 	logger.info("Set up the route: /integration/status, method: GET");
-	app.get("/integration/status", function(request, response, next){
+	app.get("/integration/status", function(request, response){
 
 		var url = require('url');
 		var url_parts = url.parse(request.url, true);
