@@ -97,7 +97,8 @@ function initServer(err) {
 		next();
     });
     // End of allow CORS.
-    require('./routes/security')(app);
+	require('./routes/integration')(app);
+	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
