@@ -3,6 +3,7 @@ var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
@@ -17,8 +18,10 @@ function check(analysisObj, performedAnalysisObj, callback) {
 		'dataset': function(asyncCallback) {
 
 			crud.read('dataset', {_id: performedAnalysisObj.dataset}, function(err, resls) {
-				if (err)
+				if (err) {
+					logger.error("It wasn't possible to read dataset: ", performedAnalysisObj.dataset, " Error: ", err);
 					return callback(err);
+				}
 				return asyncCallback(null, resls[0])
 			});
 		},
@@ -27,15 +30,18 @@ function check(analysisObj, performedAnalysisObj, callback) {
 			var flIndex = flTemplates.indexOf(featureLayerTemplate);
 			flTemplates = flTemplates.slice(0, flIndex + 1);
 			async.map(flTemplates, function(flTemplate, mapCallback) {
-				crud.read('layerref', {areaTemplate: flTemplate, location: location, year: year, isData: false}, function(err, resls) {
+				var filter = {areaTemplate: flTemplate, location: location, year: year, isData: false};
+				crud.read('layerref', filter, function(err, resls) {
 					if (err) {
-											return callback(err);
-										}
+						logger.error("It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
+						return callback(err);
+					}
 					if (!resls.length) {
-
-					  return callback(new Error('missinglayerrefbase'))
+						logger.error("Base layer ref is missing. Filter: ", filter);
+					    return callback(new Error('missinglayerrefbase'))
 					}
 					if (flTemplates.indexOf(flTemplate)!=0 && !resls[0].parentColumn) {
+						logger.error("Parent of base layer ref is missing. Filter: ", filter);
 						return callback(new Error('missingparent'))
 					}
 					return mapCallback(null, resls[0]);
@@ -50,10 +56,14 @@ function check(analysisObj, performedAnalysisObj, callback) {
 		}],
 		'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
 				async.map(attrSets, function(attrSet, mapCallback) {
-					crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, attributeSet: attrSet}, function(err, resls) {
-						if (err)
+					var filter = {areaTemplate: featureLayerTemplate, location: location, year: year, attributeSet: attrSet};
+					crud.read('layerref', filter, function(err, resls) {
+						if (err) {
+							logger.error("It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
 							return callback(err);
+						}
 						if (!resls.length) {
+							logger.error("There was no layerref with given filter: ", filter);
 							return callback(new Error('missinglayerrefattrset'))
 						}
 						return mapCallback(null, resls[0]);
@@ -81,7 +91,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 		'dataset': function(asyncCallback) {
 			crud.read('dataset', {_id: performedAnalysisObj.dataset}, function(err, resls) {
 				if (err){
-					console.log("Unexpected PG Error!");
+					logger.error("It wasn't possible to read dataset with id: ", performedAnalysisObj.dataset, " Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null, resls[0]);
@@ -145,7 +155,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 					}
 					async.forEach(analysisObj.attributeSets, function(attrSet, eachCallback) {
 						//console.log('AS '+attrSet);
-						crud.create('layerref', {
+						var data = {
 							location: location,
 							year: year,
 							areaTemplate: nextFl,
@@ -155,14 +165,17 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 							columnMap: columnMap[attrSet].slice(0),
 							layer: 'analysis:an_' + performedAnalysisObj['_id'] + '_' + nextFl,
 							analysis: performedAnalysisObj['_id']
-						}, function(err, res) {
+						};
+						crud.create('layerref', data, function(err, res) {
 							if(err) {
+								logger.error("It wasn't possible to create layerref with Data: ", data, " Error: ", err);
 								return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 							}
 							return eachCallback(null);
 						});
 					}, function(err) {
 						if (err) {
+							logger.error("Problem with creating layerrefs based on the attribute sets: ",analysisObj.attributeSets ," Error: ", err);
 							return asyncCallback(err); // zmena z callback
 						}
 						return asyncCallback(null);
@@ -170,12 +183,13 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				});
 			}, function(err, resls) {
 				client.end();
-				//if (performedAnalysisObj.ghost) {
+				if (performedAnalysisObj.ghost) {
 					//return callback(null);
-					console.log("\n\n    .-.\n   (o o) bubu, "+(performedAnalysisObj.ghost ? "true":"false")+"!\n   | O \\ \n    \\   \\ \n     `~~~' \n   Duch Cát\n\n");
-				//}
+					logger.warn("Performed analysis is ghost. Analysis: ", performedAnalysisObj);
+				}
 				if(!performedAnalysisObj.status){
 					if(err){
+						logger.error("The analysis was unsuccessful. Analysis: ", performedAnalysisObj);
 						performedAnalysisObj.status = "Failed. "+err;
 					}else{
 						performedAnalysisObj.status = "Successful";
@@ -184,7 +198,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				performedAnalysisObj.finished = new Date();
 				crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId,isAdmin: true}, function(err) {
 					if(err){
-						console.log("Failed to write in MongoDB performedanalysis. Error message:\n"+err);
+						logger.error("Failed to write in MongoDB performedanalysis. Data: ", performedAnalysisObj, " Error" , err);
 						return callback(err);
 					}
 					return callback(null);
