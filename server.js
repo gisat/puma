@@ -85,7 +85,8 @@ function initServer(err) {
 		next();
 	});
 	app.use(loc.langParser);
-    // Allow CORS on the node level.
+    
+	// Allow CORS on the node level.
     app.use(function(req, res, next) {
 		// Allow CORS from anywhere.
 		// TODO: Fix security issues.
@@ -97,6 +98,7 @@ function initServer(err) {
 		next();
     });
     // End of allow CORS.
+	
 	require('./routes/integration')(app);
 	require('./routes/security')(app);
 	require('./routes/routes')(app);

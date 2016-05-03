@@ -1,5 +1,6 @@
 var errMap = require('../common/errors').errMap;
 var fs = require('fs');
+var logger = require('../common/Logger').applicationWideLogger;
 
 module.exports = function(app) {
 
@@ -11,7 +12,7 @@ module.exports = function(app) {
 	app.all('/image/*',standardResponse);
 
 	app.use(function(err,req,res,next) {
-		console.log(err.stack);
+		logger.error("Error in processing request. Err: ", err, " Request: ", req.method, "-", req.url, "\n");
 		var message = err.message;
 		var status = 500;
 		var errContext = errMap[err.message];
@@ -23,7 +24,6 @@ module.exports = function(app) {
 			message: message,
 			success: false
 		};
-		console.log("\n\n#######################   SERVER ERROR   #######################\n##\n##  ", message, "\n##\n################################################################\n\n");
 		res.json(status,obj);
 	})
 };

@@ -5,7 +5,6 @@ module.exports = function(app) {
 
 	};
 
-	logger.info("Set up the route: /integration/process, method: POST");
 	app.post("/integration/process", function(request, response){
 		if(!request.body.url){
 			logger.error("Url of the data source must be specified.");
@@ -14,6 +13,8 @@ module.exports = function(app) {
 			});
 			return;
 		}
+
+		logger.info("/integration/process, Start remote process. Url: ", request.body.url);
 
 		var urlOfGeoTiff = request.body.url;
 		var id = guid();
@@ -33,7 +34,6 @@ module.exports = function(app) {
 		response.json({id: id});
 	});
 
-	logger.info("Set up the route: /integration/status, method: GET");
 	app.get("/integration/status", function(request, response){
 
 		var url = require('url');
@@ -56,6 +56,8 @@ module.exports = function(app) {
 			});
 			return;
 		}
+
+		logger.info("/integration/status Requested status of task: ", id);
 
 		if(runningProcesses[id].status == "Finished") {
 			response.json({
