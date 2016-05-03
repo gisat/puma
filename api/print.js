@@ -2,6 +2,7 @@ var cp = require('child_process');
 var fs = require('fs');
 var conn = require('../common/conn');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function exporter(params, req, res, callback) {
 	//var fullUrl = req.protocol + "://" + req.get('host') + req.url;
@@ -14,11 +15,11 @@ function exporter(params, req, res, callback) {
 	var outFile = 'tmp/' + imgId;
 	var isWin = !!process.platform.match(/^win/);
 	var phantomName = isWin ? 'phantomjs.exe'  : 'phantomjs';
-	console.log("URL: ",url," outFile: ",outFile);
+	logger.info("URL: ",url," outFile: ",outFile);
 	cp.execFile(phantomName, ['--ssl-protocol=any --ignore-ssl-errors=yes --debug=true', 'rasterize.js', url, outFile, '-', 1], {}, function(err, stdout, stderr) {
-		console.log("err: ", err);
-		console.log("stderr: ",stderr);
-		console.log("stdout:\n==============================================\n",stdout,"\n==============================================\n");
+		logger.info("err: ", err);
+		logger.info("stderr: ",stderr);
+		logger.info("stdout:\n==============================================\n",stdout,"\n==============================================\n");
 
 		if (params['download']) {
 			res.downFile = [outFile, imgId];

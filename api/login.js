@@ -64,7 +64,10 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 	};
 
 	conn.request(options1,null,function(err,output,res1) {
-		if (err) return generalCallback(err);
+		if (err) {
+			logger.error("api/login.js geonodeCom. Options: ", options1, " Error: ", err);
+			return generalCallback(err);
+		}
 		var qsVars = [];
 		if(!('set-cookie' in res1.headers)) return generalCallback({message: 'cookies not set'});
 		res1.headers['set-cookie'][0].split(';').forEach(function(element, index, array){
@@ -99,7 +102,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		};
 		conn.request(options2,postData,function(err,output,res2) {
 			if (err){
-				console.log("\n\nconn.geonodeCom ERROR:\nerr code:", err, "\noutput:", output);
+				logger.error("api/login.js geonodeCom ERROR:", err, " Output:", output, " Options: ", options2);
 				return generalCallback(err);
 			}
 			return specificCallback(res2);

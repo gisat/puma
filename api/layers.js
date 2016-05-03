@@ -8,6 +8,7 @@ var OpenLayers = require('openlayers').OpenLayers;
 var xmldoc = require('xmldoc');
 var _ = require('underscore');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 var filter = {
 	281: [
@@ -49,6 +50,7 @@ function gatherLayerData(featureInfo, callback) {
 				var client = conn.getPgDataDb();
 				client.query(sql, [], function(err, resls) {
 					if (err) {
+						logger.error("api/layers.js gatherLayerData data. Sql: ", sql, " Error: ", err);
 						return callback(err);
 					}
 					var row = resls.rows[0];
@@ -84,8 +86,10 @@ function gatherLayerData(featureInfo, callback) {
 			});
 		},
 		attrSets: ['data',function(asyncCallback, results) {
-			crud.read('attributeset', {_id: {$in: results.data.attrSets}}, function(err, resls) {
+			var filter = {_id: {$in: results.data.attrSets}};
+			crud.read('attributeset', filter, function(err, resls) {
 				if (err) {
+					logger.error("api/layers.js gatherLayerData attrSets. It wasn't possible to read attribute set with Filter: ", filter);
 					callback(err);
 				}
 				var attrSetMap = {};
@@ -97,8 +101,10 @@ function gatherLayerData(featureInfo, callback) {
 			});
 		}],
 		attrs: ['data',function(asyncCallback, results) {
-			crud.read('attribute', {_id: {$in: results.data.attrs}}, function(err, resls) {
+			var filter = {_id: {$in: results.data.attrs}};
+			crud.read('attribute', filter, function(err, resls) {
 				if (err) {
+					logger.error("api/layers.js gatherLayerData attrs. It wasn't possible to read attribute with Filter: ", filter);
 					callback(err);
 				}
 				var attrMap = {};
@@ -173,6 +179,7 @@ function getLayers(params, req, res, callback) {
 
 	conn.request(options, null, function(err, output, resl) {
 		if (err) {
+			logger.error('api/layers.js getLayers. Request options: ', options, " Error: ", err);
 			return callback(err);
 		}
 		var layers = JSON.parse(output).rw;
@@ -181,14 +188,18 @@ function getLayers(params, req, res, callback) {
 			layerMap[layers[i]] = false;
 		}
 
-		crud.read('layerref', {layer: {$in: layers}}, function(err, result) {
-			if (err)
+		var filter = {layer: {$in: layers}};
+		crud.read('layerref', filter, function(err, result) {
+			if (err) {
+				logger.error("api/layers.js getLayers. It wasn't possible to read layerref with Filter: ", filter, " Error: ", err);
 				return callback(err);
+			}
 
 			for (var i = 0; i < result.length; i++) {
 				layerMap[result[i].layer] = true;
 			}
 			var objs = [];
+			var layer;
 			for (layer in layerMap) {
 				var obj = {
 					name: layer,
@@ -212,11 +223,14 @@ function activateLayerRef(params, req, res, callback) {
 			if (params['obj']) {
 				return asyncCallback(null, params['obj']);
 			}
-			crud.read('layerref', {_id: parseInt(params['id'])}, function(err, results) {
+			var filter = {_id: parseInt(params['id'])};
+			crud.read('layerref', filter, function(err, results) {
 				if (err) {
+					logger.error("api/layers.js activateLayerRef. It wasn't possible to read layerref with Filter: ", filter, " Error: ", err);
 					return callback(err);
 				}
 				if(!results.length){
+					logger.error("api/layers.js activateLayerRef. Invalide layerrefid. Filter: ", filter);
 					return callback({message: "Invalid layerref ID (no result while reading layerref)"});
 				}
 				var layerRef = results[0];
@@ -229,6 +243,7 @@ function activateLayerRef(params, req, res, callback) {
 				var id = layerRef._id;
 				crud.update('layerref', layerRef, {userId: req.userId, isAdmin: req.isAdmin}, function(err, result) {
 					if (err) {
+						logger.error("/api/layers.js activateLayerRef. It wasn't possible to update layerref: ", layerRef, " Error: ", err);
 						return callback(err);
 					}
 					layerRef._id = id;
@@ -251,6 +266,7 @@ function activateLayerRef(params, req, res, callback) {
 			}
 			crud.read('layerref', filter, function(err, resls) {
 				if (err) {
+					logger.error("api/layers.js activateLayerRef. It wasn't possible to read layerref with Filter: ", filter);
 					return callback(err);
 				}
 				asyncCallback(null, resls);
@@ -271,7 +287,7 @@ function activateLayerRef(params, req, res, callback) {
 				}
 				crud.update('layerref', item, {userId: req.userId, isAdmin: req.isAdmin}, function(err) {
 					if (err) {
-						console.log("Error: activateLayerRef failed at finish phase. err:", err);
+						logger.error("Error: activateLayerRef failed at finish phase. Layerref: ", item,"Error:", err);
 						return callback(err);
 					}
 					eachCallback(null);
@@ -306,6 +322,8 @@ function getLayerDetails(params, req, res, callback) {
 	};
 	conn.request(options, null, function(err, output, resl) {
 		if (err) {
+			logger.error("api/layers.js getLayerDetails. Failed retrieving data about layer from geoserver. Options: ",
+				options, " Error: ", err);
 			return callback(err);
 		}
 		res.data = output;
@@ -322,20 +340,32 @@ function getLayerRefTable(params,req,res,callback) {
 	var theme = parseInt(params['theme']);
 	var opts = {
 		theme: function(asyncCallback) {
-			crud.read('theme',{_id:theme},{},function(err,resl) {
-				if (err) return callback(err);
+			var filter = {_id:theme};
+			crud.read('theme',filter,{},function(err,resl) {
+				if (err) {
+					logger.error("api/layers.js getLayerRefTable. It wasn't possible to read Theme with filter: ", filter, " Error: ", err);
+					return callback(err);
+				}
 				return asyncCallback(null,resl[0]);
 			});
 		},
 		dataset: ['theme',function(asyncCallback,results) {
-			crud.read('dataset',{_id:results.theme.dataset},{},function(err,resl) {
-				if (err) return callback(err);
+			var filter = {_id:results.theme.dataset};
+			crud.read('dataset', filter,{},function(err,resl) {
+				if (err) {
+					logger.error("api/layers.js getLayerRefTable. It wasn't possible to read Dataset with filter: ", filter, " Error: ", err);
+					return callback(err);
+				}
 				return asyncCallback(null,resl[0]);
 			});
 		}],
 		attributeSets: ['dataset','theme',function(asyncCallback,results) {
-			crud.read('attributeset',{topic:{$in:results.theme.topics}},{},function(err,resl) {
-				if (err) return callback(err);
+			var filter = {topic:{$in:results.theme.topics}};
+			crud.read('attributeset',filter,{},function(err,resl) {
+				if (err) {
+					logger.error("api/layer.js getLayerRefTable. It wasn't possible to read Attribute set with filter: ", filter, " Error: ", err);
+					return callback(err);
+				}
 				//console.log(resl)
 				var attrSetMap = {};
 				var flMap = {'-1':[]};
@@ -357,8 +387,12 @@ function getLayerRefTable(params,req,res,callback) {
 			});
 		}],
 		featureLayerTemplates: ['dataset','theme',function(asyncCallback,results) {
-			crud.read('areatemplate',{$or:[{_id:{$in:results.dataset.featureLayers}},{topic:{$in:results.theme.topics}}]},{},function(err,resl) {
-				if (err) return callback(err);
+			var filter = {$or:[{_id:{$in:results.dataset.featureLayers}},{topic:{$in:results.theme.topics}}]};
+			crud.read('areatemplate',filter,{},function(err,resl) {
+				if (err) {
+					logger.error("api/layers.js getLayerRefTable. It wasn't possible to read areatemplate with filter: ", filter, " Error: ", err);
+					return callback(err);
+				}
 				var flMap = {};
 				var featureLayers = [];
 				var layers = [];
@@ -383,8 +417,12 @@ function getLayerRefTable(params,req,res,callback) {
 			var allFeatureLayers = _.union(analyticalUnits,featureLayers,layers);
 			var rows = [{value: 'Analytical units'}];
 			async.map(allFeatureLayers,function(item,mapCallback) {
-				crud.read('layerref',{location:location,year:year,isData:false,areaTemplate:item},{},function(err,resls) {
-					if (err) return callback(err);
+				var filter = {location:location,year:year,isData:false,areaTemplate:item};
+				crud.read('layerref',false,{},function(err,resls) {
+					if (err) {
+						logger.error("api/layers.js getLayerRefTable. It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
+						return callback(err);
+					}
 					if (resls.length) {
 						if (analyticalUnits.indexOf(item)>-1) {
 							var attrSets = results.attributeSets.flMap[-1];
@@ -397,9 +435,13 @@ function getLayerRefTable(params,req,res,callback) {
 							return mapCallback(null,{geometriesLayerRefs:resls,attrSetLayerRefs:{}});
 						}
 
-						crud.read('layerref',{location:location,year:year,isData:true,areaTemplate:item,attributeSet:{$in:attrSets}},{},function(err2,resls2) {
+						var filter2 = {location:location,year:year,isData:true,areaTemplate:item,attributeSet:{$in:attrSets}};
+						crud.read('layerref', filter2,{},function(err2,resls2) {
 
-							if (err2) return callback(err2);
+							if (err2) {
+								logger.error("api/layers.js getLayerRefTable. It wasn't possible to read layerred with filter: ", filter, " Error: ", err);
+								return callback(err2);
+							}
 
 							var attrSetMap = {};
 							for (var i=0;i<resls2.length;i++) {
@@ -541,6 +583,7 @@ function getMetadata(params, req, res, callback) {
 	//console.log("getMetadata SQL: ", sql);
 	client.query(sql, function(err, resls) {
 		if (err) {
+			logger.error("api/layers.js getMetadata. Sql: ", sql, " Error: ", err);
 			return callback(err);
 		}
 		var retData = [];
@@ -612,6 +655,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
 			};
 			conn.request(options, null, function(err, output, resl) {
 				if (err) {
+					logger.error("api/layers.js getSymbologiesFromServer. Options: ", options, " Error: ", err);
 					return callback(err);
 				}
 				var styles = JSON.parse(output).styles.style;
@@ -626,6 +670,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
 		symbologiesDb: function(asyncCallback) {
 			crud.read('symbology', {}, function(err, resls) {
 				if (err) {
+					logger.error("api/layers.js getSymbologiesFromServer. It wasn't possible to read symbologies. Error: ", err);
 					return callback(err);
 				}
 				var symbologies = [];
@@ -646,6 +691,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
 					};
 					crud.create('symbology', obj, {userId: req.userId}, function(err) {
 						if (err) {
+							logger.error("api/layers.js getSymbologiesFromServer. It wasn't possible to create symbology: ", obj, " Error:", err);
 							callback(err);
 						}
 						eachCallback(null);

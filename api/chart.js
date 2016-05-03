@@ -16,6 +16,7 @@ var proxy = require('./proxy');
 var conn = require('../common/conn');
 var confMap = {length: 0};
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function shutdown(params,req,res,callback) {
 	setTimeout(function() {
@@ -28,14 +29,14 @@ function exporter(params, req, res, callback) {
 	var isWin = !!process.platform.match(/^win/);
 	if (isWin){
 		cp.execFile('phantomjs.exe', ['rasterize.js', 'http://'+config.localHost+':'+config.localPort+config.localPath+'/index-for-export.html?type=grid', 'out.png','-',1], {maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
-			console.log("api/chart.js stdout: " + stdout);
-			console.log("api/chart.js stderr: " + stderr);
+			logger.info("api/chart.js stdout: " + stdout);
+			logger.error("api/chart.js stderr: " + stderr);
 			return callback(err);
 		});
 	} else {
 		cp.exec('phantomjs rasterize.js http://'+config.localHost+':'+config.localPort+config.localPath+'/index-for-export.html?type=grid out.png - 1',{maxBuffer: 5000 * 1024}, function(err, stdout, stderr) {
-			console.log("api/chart.js stdout: " + stdout);
-			console.log("api/chart.js stderr: " + stderr);
+			logger.info("api/chart.js stdout: " + stdout);
+			logger.error("api/chart.js stderr: " + stderr);
 			return callback(err);
 		});
 	}
@@ -47,8 +48,7 @@ function getChart(params, req, res, callback) {
 	params['userId'] = req.userId;
 	mod.getChart(params, function(err, conf) {
 		if (err) {
-			console.log("api/chart.js getChart error: " + err);
-			console.log('returning nodata');
+			logger.error("api/chart.js getChart Error:", err, " Returning nodata");
 			var noDataConf = {
 				chart: {},
 				noData: true,
@@ -127,6 +127,7 @@ function drawChart(params, req, res, callback) {
 			params['forMap'] = true;
 			mod.getChart(params, function(err, conf) {
 				if (err){
+					logger.error("api/chart.js drawChart conf Error: ", err, " Configuration: ", conf);
 					return callback(err);
 				}
 				asyncCallback(err, conf);
@@ -163,6 +164,7 @@ function getGridData(params, req, res, callback) {
 		attrConf: function(asyncCallback) {
 			charts.data.getAttrConf(params, function(err, attrConf) {
 				if (err){
+					logger.error("api/chart.js getGridData attrConf Error: ", err, " AttrConf: ", attrConf);
 					return callback(err);
 				}
 				return asyncCallback(null, attrConf);
@@ -172,6 +174,7 @@ function getGridData(params, req, res, callback) {
 			params.attrMap = results.attrConf.prevAttrMap;
 			charts.data.getData(params, function(err, dataObj) {
 				if (err){
+					logger.error("api/chart.js getGridData res Error: ", err, " Data: ", dataObj);
 					return callback(err);
 				}
 				res.data = dataObj.data;
