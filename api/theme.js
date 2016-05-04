@@ -364,7 +364,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var areaTemplateId = locAreaTemplates[j];
 					var areaTemplateIndex = areaTemplates.indexOf(areaTemplateId);
 					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
-					var topmostAT = (location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
+					var topmostAT = (location.hasOwnProperty("bbox") && location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
 					var leaf = 'FALSE';
 					
 					var layerRef = null;
