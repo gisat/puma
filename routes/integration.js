@@ -1,5 +1,5 @@
 var logger = require('../common/Logger').applicationWideLogger;
-var remoteFile = require('../integration/RemoteFileThingy');
+var remoteFile = require('../integration/remoteFile');
 
 module.exports = function(app) {
 	var runningProcesses = {
