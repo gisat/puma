@@ -1,4 +1,5 @@
 var logger = require('../common/Logger').applicationWideLogger;
+var remoteFile = require('../integration/RemoteFileThingy');
 
 module.exports = function(app) {
 	var runningProcesses = {
@@ -25,6 +26,44 @@ module.exports = function(app) {
 			sourceUrl: urlOfGeoTiff
 		};
 
+		if (remoteFile.validateUrl(urlOfGeoTiff)) {
+
+			logger.trace();
+
+			var destinationPath = ''; // todo
+
+			remoteFile.get(urlOfGeoTiff, destinationPath, function (success, output) {
+
+				if (success) {
+
+					runningProcesses[id].status = "Processing";
+					runningProcesses[id].message = "File was retrieved successfully and is being processed.";
+
+					// todo connect file to layer
+					// todo run analysis
+					// todo create view
+					// todo set process result
+
+				} else { //file download failed
+
+					logger.error("/integration/process, for", request.body.url, ": File download failed:", output.error);
+					runningProcesses[id].status = "Error";
+					runningProcesses[id].message = output.error;
+
+				}
+
+			});
+
+		} else { //invalid url
+
+			logger.info("Invalid file url provided, aborted.");
+			response.status(400).json({
+				message: "Invalid file url."
+			});
+
+		}
+
+		// todo remove
 		setTimeout(function(){ // After 30 seconds change to finished
 			runningProcesses[id].status = "Finished";
 			runningProcesses[id].url = "http://185.8.164.70/tool/?id=6290";
@@ -68,7 +107,8 @@ module.exports = function(app) {
 		} else {
 			response.json({
 				status: runningProcesses[id].status,
-				sourceUrl: runningProcesses[id].sourceUrl
+				sourceUrl: runningProcesses[id].sourceUrl,
+				message: runningProcesses[id].message
 			});
 		}
 	});
