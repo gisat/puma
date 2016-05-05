@@ -37,6 +37,4 @@ RemoteFile.prototype.get = function (sourceUrl, destinationPath, callback) {
 
 };
 
-module.exports = {
-	RemoteFile: RemoteFile
-};
+module.exports = RemoteFile;
