@@ -31,23 +31,24 @@ RemoteFile.prototype.get = function () {
 
 		req.on('response', function(response) {
 			if (response.statusCode !== 200) {
-				logger.error("RemoteFile#get Error: ", response.statusCode);
+				logger.error("RemoteFile#get Response status: ", response.statusCode);
 				reject('Response status '+ response.statusCode);
 			}
 		});
 
 		req.on('error', function (err) {
-			logger.error("RemoteFile#get Error: ", err);
+			logger.error("RemoteFile#get Request error: ", err);
 			reject('Request error: '+ err);
 		});
 
-		var file = fs.createWriteStream(self.getDestination());
+		var destinationPath = self.getDestination();
+		var file = fs.createWriteStream(destinationPath);
 		req.pipe(file);
 
 		file.on('finish', function() {
 			file.close(function(err){
 				if(err){
-					logger.error("RemoteFile#get Error: ", err);
+					logger.error("RemoteFile#get File close error: ", err);
 				}
 				resolve();
 			});
@@ -55,7 +56,7 @@ RemoteFile.prototype.get = function () {
 
 		file.on('error', function(err) {
 			fs.unlink(destinationPath);
-			logger.error("RemoteFile#get Error: ", err);
+			logger.error("RemoteFile#get File error: ", err);
 			reject('File error: '+ err);
 		});
 	});
