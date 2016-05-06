@@ -26,13 +26,6 @@ module.exports = function (app) {
 		var urlOfGeoTiff = request.body.url;
 		var id = guid();
 
-		runningProcesses[id] = {
-			tiff: urlOfGeoTiff,
-			status: "Started",
-			sourceUrl: urlOfGeoTiff
-		};
-
-
 		var remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
 		if (!remoteFile.validateUrl()) {
 			logger.error("Invalid file url provided, aborted.");
@@ -41,6 +34,12 @@ module.exports = function (app) {
 			});
 			return;
 		}
+
+		runningProcesses[id] = {
+			tiff: urlOfGeoTiff,
+			status: "Started",
+			sourceUrl: urlOfGeoTiff
+		};
 
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
