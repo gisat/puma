@@ -41,6 +41,10 @@ module.exports = function (app) {
 			sourceUrl: urlOfGeoTiff
 		};
 
+		//configuration
+		var spatialAnalysisKey = 1;
+		var levelAnalysisKey = 1;
+
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
 			runningProcesses[id].status = "Processing";
@@ -59,15 +63,32 @@ module.exports = function (app) {
 				.create();
 		}).then(function(){
 			// Run analysis // Async
-			return new Analysis() // TODO Think of naming
+			return new Analysis(spatialAnalysisKey) // TODO Think of naming
 				.run();
 		}).then(function(){
 			// Run level analysis // Async
-			return new Analysis() // TODO Think of naming
+			return new Analysis(levelAnalysisKey) // TODO Think of naming
 				.run();
 		}).then(function(){
 			// In Puma specify FrontOffice view
-			return new ViewResolver() // TODO Think of naming
+			var viewProps = {
+				"location": "2450_39", //placeKey + "_" + areaKey, // place + area (NUTS0)
+				"expanded": {
+					"2450": {
+						"1426": [
+							39
+						] // au level
+					} // place
+				},
+				"mapCfg": {
+					"center": {
+						"lon": 11793025.757714,
+						"lat": 1228333.4862894
+					},
+					"zoom": 7
+				}
+			};
+			return new ViewResolver(viewProps) // TODO Think of naming
 				.create();
 		}).then(function(url){
 			// Set result to the process.
