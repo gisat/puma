@@ -26,13 +26,6 @@ module.exports = function (app) {
 		var urlOfGeoTiff = request.body.url;
 		var id = guid();
 
-		runningProcesses[id] = {
-			tiff: urlOfGeoTiff,
-			status: "Started",
-			sourceUrl: urlOfGeoTiff
-		};
-
-
 		var remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
 		if (!remoteFile.validateUrl()) {
 			logger.error("Invalid file url provided, aborted.");
@@ -41,6 +34,12 @@ module.exports = function (app) {
 			});
 			return;
 		}
+
+		runningProcesses[id] = {
+			tiff: urlOfGeoTiff,
+			status: "Started",
+			sourceUrl: urlOfGeoTiff
+		};
 
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
@@ -63,12 +62,17 @@ module.exports = function (app) {
 			return new Analysis() // TODO Think of naming
 				.run();
 		}).then(function(){
+			// Run level analysis // Async
+			return new Analysis() // TODO Think of naming
+				.run();
+		}).then(function(){
 			// In Puma specify FrontOffice view
 			return new ViewResolver() // TODO Think of naming
 				.create();
 		}).then(function(url){
 			// Set result to the process.
 			runningProcesses[id].status = "Finished";
+			runningProcesses[id].message = "File processing was finished.";
 			runningProcesses[id].url = url;
 		}).catch(function (err) {
 			logger.error("/integration/process, for", request.body.url, ": File processing failed:", err);
