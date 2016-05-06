@@ -15,7 +15,7 @@ Logger.prototype.setLevel = function(newLevel) {
 };
 
 Logger.prototype.trace = function() {
-	return this._log('trace', Logger.LEVEL_TRACE, arguments);
+	return this._log('log', Logger.LEVEL_TRACE, arguments);
 };
 
 Logger.prototype.info = function() {

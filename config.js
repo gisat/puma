@@ -48,5 +48,10 @@ module.exports = {
 	 * 4 - NOTHING
 	 * Set level and all above will be logged.
 	 */
-	loggingLevel: 0
+	loggingLevel: 0,
+
+	/*
+	* UrbanTEP - Destination of temporary downloaded files.
+	*/
+	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\'
 };

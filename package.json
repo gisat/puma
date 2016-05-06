@@ -26,7 +26,8 @@
     "underscore": "1.4.x",
     "xml2json": "0.9.x",
     "xmldoc": "^0.3.2",
-    "xmldom": "0.1.13"
+    "xmldom": "0.1.13",
+    "request": "latest"
   },
   "devDependencies": {
     "chai": "^3.5.0",

@@ -1,13 +1,19 @@
+var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
-var remoteFile = require('../integration/remoteFile');
 
-module.exports = function(app) {
-	var runningProcesses = {
+var Analysis = require('../integration/Analysis');
+var GeonodeLayer = require('../integration/GeonodeLayer');
+var GufMetadataStructures = require('../integration/GufMetadataStructures');
+var RasterToVector = require('../integration/RasterToVector');
+// Careful with renaming to uppercase start. Was created in windows with lowercase first.
+var RemoteFile = require('../integration/remoteFile');
+var ViewResolver = require('../integration/ViewResolver');
 
-	};
+module.exports = function (app) {
+	var runningProcesses = {};
 
-	app.post("/integration/process", function(request, response){
-		if(!request.body.url){
+	app.post("/integration/process", function (request, response) {
+		if (!request.body.url) {
 			logger.error("Url of the data source must be specified.");
 			response.status(400).json({
 				message: "Url of the data source must be specified."
@@ -26,61 +32,61 @@ module.exports = function(app) {
 			sourceUrl: urlOfGeoTiff
 		};
 
-		if (remoteFile.validateUrl(urlOfGeoTiff)) {
 
-			logger.trace();
-
-			var destinationPath = ''; // todo
-
-			remoteFile.get(urlOfGeoTiff, destinationPath, function (success, output) {
-
-				if (success) {
-
-					runningProcesses[id].status = "Processing";
-					runningProcesses[id].message = "File was retrieved successfully and is being processed.";
-
-					// todo connect file to layer
-					// todo run analysis
-					// todo create view
-					// todo set process result
-
-				} else { //file download failed
-
-					logger.error("/integration/process, for", request.body.url, ": File download failed:", output.error);
-					runningProcesses[id].status = "Error";
-					runningProcesses[id].message = output.error;
-
-				}
-
-			});
-
-		} else { //invalid url
-
-			logger.info("Invalid file url provided, aborted.");
+		var remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
+		if (!remoteFile.validateUrl()) {
+			logger.error("Invalid file url provided, aborted.");
 			response.status(400).json({
 				message: "Invalid file url."
 			});
-
+			return;
 		}
 
-		// todo remove
-		setTimeout(function(){ // After 30 seconds change to finished
-			runningProcesses[id].status = "Finished";
-			runningProcesses[id].url = "http://185.8.164.70/tool/?id=6290";
+		var promiseOfFile = remoteFile.get();
+		promiseOfFile.then(function () {
+			runningProcesses[id].status = "Processing";
+			runningProcesses[id].message = "File was retrieved successfully and is being processed.";
 
-		}, 30000);
+			// Transform to vector
+			return new RasterToVector(remoteFile.getDestination())
+				.process();
+		}).then(function(){
+			// Upload to Geonode // Async
+			return new GeonodeLayer()
+				.upload();
+		}).then(function(){
+			// Connect metadata structures to layer // Async
+			return new GufMetadataStructures()
+				.create();
+		}).then(function(){
+			// Run analysis // Async
+			return new Analysis() // TODO Think of naming
+				.run();
+		}).then(function(){
+			// In Puma specify FrontOffice view
+			return new ViewResolver() // TODO Think of naming
+				.create();
+		}).then(function(url){
+			// Set result to the process.
+			runningProcesses[id].status = "Finished";
+			runningProcesses[id].url = url;
+		}).catch(function (err) {
+			logger.error("/integration/process, for", request.body.url, ": File processing failed:", err);
+			runningProcesses[id].status = "Error";
+			runningProcesses[id].message = err;
+		});
 
 		response.json({id: id});
 	});
 
-	app.get("/integration/status", function(request, response){
+	app.get("/integration/status", function (request, response) {
 
 		var url = require('url');
 		var url_parts = url.parse(request.url, true);
 		var query = url_parts.query;
 
 		var id = query.id;
-		if(!id) {
+		if (!id) {
 			logger.error("Status integration request didn't contain id.");
 			response.status(400).json({
 				message: "Status integration request didn't contain id"
@@ -88,7 +94,7 @@ module.exports = function(app) {
 			return;
 		}
 
-		if(!runningProcesses[id]) {
+		if (!runningProcesses[id]) {
 			logger.error("There is no running process with id", id);
 			response.status(400).json({
 				message: "There is no running process with id " + id
@@ -98,7 +104,7 @@ module.exports = function(app) {
 
 		logger.info("/integration/status Requested status of task: ", id);
 
-		if(runningProcesses[id].status == "Finished") {
+		if (runningProcesses[id].status == "Finished") {
 			response.json({
 				status: runningProcesses[id].status,
 				url: runningProcesses[id].url,
