@@ -9,8 +9,11 @@ var crud = require('../rest/crud');
 var pg = require('pg');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
+var UUID = require('../common/UUID');
 
-
+var runningAnalysis = {
+	
+};
 
 
 function remove(params,req,res,callback) {
@@ -85,6 +88,9 @@ function remove(params,req,res,callback) {
 
 
 function create(params,req,res,callback) {
+	var uuid = new UUID().toString();
+	runningAnalysis[uuid] = "Started";
+
 	var performedAnalysisObj = params['data'];
 	var opts = {
 		'analysis': function(asyncCallback) {
@@ -114,31 +120,61 @@ function create(params,req,res,callback) {
 		}],
 		create: ['layerRef','analysis',function(asyncCallback,results) {
 			crud.create('performedanalysis',performedAnalysisObj,function(err,result) {
-
 				var analysisObj = results.analysis;
 				var type = analysisObj.type;
+				result.uuid = uuid;
 				res.data = result;
 
 				callback(null);
 				analysis[type].perform(analysisObj,result,results.layerRef,req,function(err) {
 					if (err) {
+						runningAnalysis[uuid] = "Error";
 						logger.error('Analysis ', analysisObj, ' failed. Error: ', err);
 					}
 					else {
+						runningAnalysis[uuid] = "Finished";
 						logger.info('Analysis ',analysisObj,' finished');
 					}
-
 				});
-
-
 			})
 		}]
 	};
 	async.auto(opts)
 }
 
+// TODO move most to the routes.
+function status(request, response) {
+	var url = require('url');
+	var url_parts = url.parse(request.url, true);
+	var query = url_parts.query;
+	var id = query.id;
+
+	if (!id) {
+		logger.error("Status analysis request didn't contain id.");
+		response.status(400).json({
+			message: "Status analysis request didn't contain id"
+		});
+		return;
+	}
+
+	if (!runningAnalysis[id]) {
+		logger.error("There is no running analysis with id", id);
+		response.status(400).json({
+			message: "There is no running analysis with id " + id
+		});
+		return;
+	}
+
+	logger.info("/analysis/status Requested status of task: ", id);
+
+	response.json({
+		status: runningAnalysis[id]
+	});
+}
+
 
 module.exports = {
 	create: create,
-	remove: remove
+	remove: remove,
+	status: status
 };

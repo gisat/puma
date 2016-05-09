@@ -177,6 +177,12 @@ module.exports = function(app) {
 		}
 	});
 
+	app.get('/api/analysis/status', function(request, response, next){
+		logger.info("Call status of analysis User: ", request.userId, " With params: ", request.query);
+
+		api.analysis.status(request, response);
+	});
+
 	app.post('/api/:module/:method',function(req,res,next) {
 		logger.info("Call method of API. Module: ", req.params.module, " Method: ", req.params.method, " by User: ", req.userId);
 		var mod = api[req.params.module];
