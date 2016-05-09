@@ -14,6 +14,7 @@ GeonodeLayer.prototype.upload = function(){
 		this.fileToUpload);
 
 	// Log a user into the Geonode.
+	// Upload this layer using the logged in user.
 	return new Promise(function(resolve, reject){
 		resolve();
 	});
