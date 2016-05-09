@@ -661,9 +661,6 @@ function getThemeYearConf(params, req, res, callback) {
 						}
 						for (var k = 0; k < symbologies.length; k++) {
 							var symbology = symbologies[k] != -1 ? results.symbologies[symbologies[k]] : null;
-							if (symbology && symbology.topic && topics.indexOf(symbology.topic)<0) {
-								continue;
-							}
 							var symbNode = {
 								name: layer.name + (symbology ? '-' + symbology.name : ''),
 								symbologyId: symbology ? symbology.symbologyName : '#blank#',
