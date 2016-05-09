@@ -1,11 +1,7 @@
-var config = require('../config');
-var conn = require('../common/conn');
 var logger = require('../common/Logger').applicationWideLogger;
-
-var Geonode = require('./Geonode');
 var Cookies = require('../common/Cookies');
 
-var User = function(username, password){
+var User = function(geonode, username, password){
 	this.username = username;
 	this.password = password;
 
@@ -13,7 +9,7 @@ var User = function(username, password){
 	this.ssid = null;
 	this.csrf = null;
 
-	this.geonode = new Geonode(config.geonodeProtocol, config.geonodeHost, config.geonodeProtocol);
+	this.geonode = geonode;
 };
 
 User.prototype.login = function(){
