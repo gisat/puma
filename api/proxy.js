@@ -15,6 +15,7 @@ var jsid = null;
 var cacheStyleMap = null;
 var layerGroupMap = null;
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 
 function wms(params, req, res, callback) {
@@ -177,7 +178,7 @@ function wms(params, req, res, callback) {
 	//console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
 	conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
 		if (err) {
-			console.log("\nProxy error: ", err, "options: ", options);
+			logger.error("Proxy error: ", err, " Options: ", options);
 			return callback(err);
 		}
 		//console.log(new Date().getTime()-time);
@@ -187,13 +188,14 @@ function wms(params, req, res, callback) {
 
 		}
 		if (output.length<10000 && (output.indexOf("PNG") == -1 || output.indexOf("PNG") > 8)) {
-			console.log("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options,"\n\nDATA: "+data);
+			logger.info("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options,"\n\nDATA: "+data);
 		}
 		res.data = output;
 		if (params['REQUEST'] == 'GetFeatureInfo') {
 			if (params['COMPLETELAYER']) {
 				layers.gatherLayerData(output,function(err,layerData) {
 					if (err) {
+						logger.error("api/proxy.js Error: ", err, " Output:", output);
 						return callback(err);
 					}
 					res.data = layerData;
@@ -285,6 +287,7 @@ function saveSld(params, req, res, callback) {
 			dataParams.attrMap = results.attrConf.prevAttrMap;
 			data.getData(dataParams, function(err, dataObj) {
 				if (err) {
+					logger.error("api/proxy.js getData. Params: ", dataParams, " Error: ", err);
 					return callback(err);
 				}
 				if (params['altYears']) {
@@ -326,7 +329,10 @@ function saveSld(params, req, res, callback) {
 				{active: {$ne:false}}
 			]};
 			crud.read('layerref',query,function(err,resls) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/proxy.js layerRef. It wasn't possible to read Layerref with filter: ", query, " Error: ", err);
+					return callback(err);
+				}
 				var layerName = resls[0] ? resls[0]._id : ('user_'+req.userId+'_loc_'+params['location']+'_y_'+year);
 				//console.log(layerName);
 				//console.log(params['location']);
@@ -342,8 +348,10 @@ function saveSld(params, req, res, callback) {
 			sql = sql.replace(new RegExp('#bbox#','g'),'ST_Extent(ST_Transform(the_geom,900913))');
 			var client = conn.getPgDataDb();
 			client.query(sql, [], function(err, resls) {
-				if (err)
+				if (err) {
+					logger.error("api/proxy.js density. Sql: ", sql, " Error: ", err);
 					return callback(err);
+				}
 				var obj = resls.rows[0];
 				var density = obj.width*obj.height/obj.count;
 				//console.log(density)
@@ -520,7 +528,7 @@ function createLayerGroup(layers,style,addStyle) {
 	//console.log("################ ### ### ### ### proxy.createLayerGroup options: ",options,"\n####### data:", data);
 	conn.request(options, data, function(err, output, resl) {
 		if(err){
-			console.log("\n\n------ LayerGroup not created! -------\n\nError:",err);
+			logger.error("\n\n------ LayerGroup not created! -------\n\nError:",err);
 		}else if(!config.toggles.noGeoserverLayerGroups){
 			//console.log("####### output: ", output);
 			layerGroupMap[layers][style || 'def'] = name;

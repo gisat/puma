@@ -364,7 +364,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var areaTemplateId = locAreaTemplates[j];
 					var areaTemplateIndex = areaTemplates.indexOf(areaTemplateId);
 					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
-					var topmostAT = (location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
+					var topmostAT = (location.hasOwnProperty("bbox") && location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
 					var leaf = 'FALSE';
 					
 					var layerRef = null;
@@ -661,9 +661,6 @@ function getThemeYearConf(params, req, res, callback) {
 						}
 						for (var k = 0; k < symbologies.length; k++) {
 							var symbology = symbologies[k] != -1 ? results.symbologies[symbologies[k]] : null;
-							if (symbology && symbology.topic && topics.indexOf(symbology.topic)<0) {
-								continue;
-							}
 							var symbNode = {
 								name: layer.name + (symbology ? '-' + symbology.name : ''),
 								symbologyId: symbology ? symbology.symbologyName : '#blank#',

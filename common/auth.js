@@ -3,11 +3,14 @@ var conn = require('./conn');
 var pg = require('pg');
 var sessionCache = {};
 var config = require('../config');
+var logger = require('./Logger').applicationWideLogger;
 
 function anyUser(req, res, next) {
 	if (req.userId) {
 		return next();
 	}
+
+	logger.error("Anonymous user isn't authorized for request. Method: ", req.method," Url:", req.url);
 	return next(new Error('unauthorized'))
 }
 
@@ -16,6 +19,7 @@ function adminOrOwner(req, res, next) {
 		return next();
 	}
 
+	logger.error("User isn't authorized for request. Method: ", req.method," Url:", req.url);
 	return next(new Error('unauthorized'));
 }
 
@@ -80,7 +84,7 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
 
 	client.query(sql, [userName], function(err, result) {
 		if (err) {
-			console.log("\nError on PSQL users query.\nQuery:",sql,"\nusernames:[",userName,"]\nerr:",err,"result:",result,"\n");
+			logger.error("\nError on PSQL users query.\nQuery:",sql,"\nusernames:[",userName,"]\nerr:",err,"result:",result,"\n");
 			return next(err);
 		}
 		var groups = [];

@@ -7,11 +7,13 @@ var crud = require('../rest/crud');
 var spatialAgg = require('../analysis/spatialagg');
 var geoserverLayers = require('../geoserver/layers');
 var _ = require('underscore');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function userPolygon(params,req,res,callback) {
 
 	var userId = req.userId;
 	if (!userId) {
+		logger.error("api/userpolygon userPolygon. Anonymous user can't access userpolygon.");
 		return callback({message: 'notloggedin'});
 	}
 	var loc = parseInt(params['location']);
@@ -20,15 +22,22 @@ function userPolygon(params,req,res,callback) {
 	var id = params['id'];
 	var opts = {
 		dbRecord: function(asyncCallback) {
-			crud.read('userpolygon',{$and:[{location:loc},{user:userId}]},function(err,resls) {
-				if (err) return callback(err);
+			var filter = {$and:[{location:loc},{user:userId}]};
+			crud.read('userpolygon', filter, function(err,resls) {
+				if (err) {
+					logger.error("api/userpolygon.js userPolygon. It wasn't possible to read userpolygon. Filter: ", filter);
+					return callback(err);
+				}
 				var conf = resls[0];
 				if (!conf) {
 					crud.create('userpolygon',{location:loc,user:userId,analysisMap:{},geometries:{},analysisCreated:{},viewsCreated:[],maxGid:0},{userId: userId},function(err,resl) {
 						var sql = 'CREATE TABLE up.base_user_'+userId+'_loc_'+loc+' (gid integer,name varchar,the_geom geometry,centroid geometry,area real,length real,extent box2d,dependingid bigint,fromdistance real);';
 						var client = conn.getPgDataDb();
 						client.query(sql,function(err,results) {
-							if (err) return callback(err);
+							if (err) {
+								logger.error("api/userpolygon.js userPolygon. Sql: ", sql, " Error: ", err);
+								return callback(err);
+							}
 							asyncCallback(null,resl);
 						})
 					})
@@ -63,8 +72,10 @@ function userPolygon(params,req,res,callback) {
 			//console.log(sql)
 			var client = conn.getPgDataDb();
 			client.query(sql, function(err, results) {
-				if (err)
+				if (err) {
+					logger.error("api/userpolygon userpolygon. Sql: ", sql, " Error: ", err);
 					return callback(err);
+				}
 				asyncCallback(null,gids);
 			})
 
@@ -135,7 +146,10 @@ function userPolygon(params,req,res,callback) {
 			}
 			var client = conn.getPgDataDb();
 			client.query(sql, function(err, results) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/userpolygon.js userPolygon. Sql: ", sql," Error: ", err);
+					return callback(err);
+				}
 				var result = {
 					gids: addedGids,
 					maxGid: maxGid,
@@ -160,7 +174,10 @@ function userPolygon(params,req,res,callback) {
 			}
 
 			crud.update('userpolygon',conf,{userId: userId, isAdmin: req.isAdmin},function(err,resl) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/userpolygon.js userPolygon. It wasn't possible to create userpolygon with Configuration: ", conf);
+					return callback(err);
+				}
 				res.data = obj ? obj.id : null;
 				return callback(null);
 			})
@@ -190,8 +207,12 @@ function checkAnalysis(params,req,res,callback) {
 
 	var opts = {
 		dbRecord: function(asyncCallback) {
-			crud.read('userpolygon',{$and:[{location:location},{user:userId}]},function(err,resls) {
-				if (err) return callback(err);
+			var filter = {$and:[{location:location},{user:userId}]};
+			crud.read('userpolygon', filter,function(err,resls) {
+				if (err) {
+					logger.error("api/userPolygon.js checkAnalysis. It wasn't possible to read userpolygon with filter: ", filter);
+					return callback(err);
+				}
 				var conf = resls[0];
 				if (!conf) {
 					return callback(null);
@@ -205,15 +226,24 @@ function checkAnalysis(params,req,res,callback) {
 			sql += ' FROM up.base_user_'+userId+'_loc_'+location;
 			//console.log(sql)
 			client.query(sql, function(err, resls) {
-				if (err) return callback(null);
+				if (err) {
+					logger.error("api/userPolygon.js checkAnalysis. Sql: ", sql, " Error: ", err);
+					return callback(null);
+				}
 				//console.log(resls);
-				if (!resls.rows[0] || resls.rows[0].cnt<1) return callback(null);
+				if (!resls.rows[0] || resls.rows[0].cnt<1) {
+					logger.warn("api/userPolygon.js checkAnalysis. No results returned. Sql: ", sql, " Error: ", err);
+					return callback(null);
+				}
 				return asyncCallback(null);
 			})
 		},
 		analysis: function(asyncCallback) {
 			crud.read('analysis',{},function(err,resls) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/userPolygon.js checkAnalysis. It wasn't possible to read analysis");
+					return callback(err);
+				}
 				var reslMap = {};
 				for (var i=0;i<resls.length;i++) {
 					var resl = resls[i];
@@ -258,7 +288,10 @@ function checkAnalysis(params,req,res,callback) {
 			var client = conn.getPgDataDb();
 
 			client.query(sql, function(err, resls) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/userPolygon.js checkAnalysis. Sql: ", sql, " Error: ", err);
+					return callback(err);
+				}
 				asyncCallback(null, tablesToCreate);
 			})
 		}],
@@ -302,7 +335,10 @@ function checkAnalysis(params,req,res,callback) {
 			}
 			var client = conn.getPgDataDb();
 			client.query(sql, function(err, resls) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/userPolygon.js checkAnalysis. Sql: ", sql, " Error: ", err);
+					return callback(err);
+				}
 				asyncCallback(null);
 			})
 
@@ -322,7 +358,11 @@ function checkAnalysis(params,req,res,callback) {
 				}
 				var viewName = 'user_'+userId+'_loc_'+location+'_y_'+year;
 				geoserverLayers.changeLayerGeoserver(viewName,method,function(err) {
-					if (err) return callback(err);
+					if (err) {
+						logger.error("api/userpolygon.js checkAnalysis. ChangeLayerInGeoserver. View name: ", viewName,
+							" Method: ", method, " Error: ", err);
+						return callback(err);
+					}
 					return eachCallback(null);
 				})
 			}, asyncCallback);
@@ -372,12 +412,15 @@ function checkAnalysis(params,req,res,callback) {
 				};
 				spatialAgg.check(anObj,ghostObj,function(err,layerRefMap) {
 					if (err) {
-						console.log(err.stack);
+						logger.error("api/userpolygon checkAnalysis. Error: ", err);
 						return asyncCallback(null);
 					}
 					spatialAgg.perform(anObj,ghostObj,layerRefMap,{},function(err) {
 						//console.log('performing');
-						if (err) return callback(err);
+						if (err) {
+							logger.error("api/userpolygon checkAnalysis. Perform spatial aggregation. Error: ", err);
+							return callback(err);
+						}
 						for (var i=0;i<item.ids.length;i++) {
 							item.yearMap[item.ids[i]] = true;
 						}
@@ -389,7 +432,11 @@ function checkAnalysis(params,req,res,callback) {
 		}],
 		updateDbRecord: ['performAnalysis',function(asyncCallback,results) {
 			crud.update('userpolygon',results.dbRecord,{userId:userId, isAdmin: req.isAdmin},function(err) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("api/userpolygon.js checkAnalysis. It wasn't possible to update record: ", results.dbRecord,
+						" Error: ", err);
+					return callback(err);
+				}
 				return callback(null);
 			});
 		}]

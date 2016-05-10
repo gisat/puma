@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # provided large tif file
 tif="$1"
 
@@ -6,7 +8,7 @@ tif="$1"
 # make tiles from provided tif
 rm -rf tiles-tif
 mkdir tiles-tif
-python mtile.py -ts 5001 5001 -o tiles-tif/ source-files/$tif
+python mtile.py -ts 2501 2501 -o tiles-tif/ source-files/$tif
 
 
 
@@ -60,10 +62,10 @@ done
 ogrinfo $result -dialect SQLite -sql "UPDATE ${tif%.*} SET UF = CAST(UF>0 AS integer(11))"
 
 # add FID field
-ogrinfo $result -sql "ALTER TABLE ${tif%.*} ADD COLUMN fid integer(11)"
+ogrinfo $result -sql "ALTER TABLE ${tif%.*} ADD COLUMN fid integer(11) NOT NULL AUTO_INCREMENT PRIMARY KEY"
 
 # Add another ID field
-ogrinfo $result -sql "ALTER TABLE ${tif%.*} ADD COLUMN id_geom integer(11)"
+ogrinfo $result -sql "ALTER TABLE ${tif%.*} ADD COLUMN id_geom integer(11) NOT NULL AUTO_INCREMENT UNIQUE"
 
 
 
