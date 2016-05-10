@@ -4,6 +4,8 @@ var deepcopy = require('deepcopy');
 var _ = require('underscore');
 var request = require('request');
 
+var config = require('../config');
+
 // todo replace with correct data (correct scope, year, layers, visualization, etc.)
 var baseView = {
 	"name": "",
@@ -211,9 +213,14 @@ ViewResolver.prototype.create = function(){
 
 		var req = request.post('/tool/rest/dataview', {data: self.view}, function (error, response, data) {
 
-			if (data.success) {
+			if (
+				data.success &&
+				data.hasOwnProperty("data") &&
+				data.data.hasOwnProperty("_id")
+			) {
 				var createdViewKey = data.data._id;
-				var viewUrl = "http://185.8.164.70/tool/?id=" + createdViewKey;
+				//var viewUrl = "http://185.8.164.70/tool/?id=" + createdViewKey;
+				var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "?id=" + createdViewKey;
 				resolve(viewUrl);
 			}
 
