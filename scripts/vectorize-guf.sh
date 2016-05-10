@@ -18,7 +18,7 @@ mkdir tiles-shp
 cd tiles-tif
 for file in ./*
 do
-  gdal_polygonize.py "$file" -f "ESRI Shapefile" ../tiles-shp/"${file%.*}.shp" UF
+  gdal_polygonize.py "$file" -f "ESRI Shapefile" ../tiles-shp/"${file%.*}.shp" "UrbanFootprint" UF
 done
 cd -
 
