@@ -51,7 +51,7 @@ module.exports = function (app) {
 			runningProcesses[id].message = "File was retrieved successfully and is being processed.";
 
 			// Transform to vector
-			return new RasterToVector(remoteFile.getDestination())
+			return new RasterToVector("../scripts/", remoteFile.getDestination(), "") // todo result SHP file path as 3rd param
 				.process();
 		}).then(function(){
 			// Upload to Geonode // Async
