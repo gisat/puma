@@ -75,7 +75,7 @@ function create(collName,obj,params,callback) {
 			}
 			doHooks("create",collName,results.create,params,function(err,result) {
 				if (err){
-					logger.error("crud#create. create Error: ", err);
+					logger.error("crud#create. hooks Error: ", err);
 					return callback(err);
 				}
 				return callback(null,results.create);
