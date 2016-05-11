@@ -109,7 +109,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			for (var i = 0; i < analysisObj.attributeMap.length; i++) {
 				var obj = analysisObj.attributeMap[i];
 				var text = null;
-				if (groupAttr) {
+				if (groupAttr && obj.groupVal) {
 
 					var attrName = 'as_' + analysisObj.attributeSet + '_attr_' + obj.attribute;
 					var groupVals = obj.groupVal.split(',');
