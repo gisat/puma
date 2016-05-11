@@ -220,7 +220,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 					if (performedAnalysisObj.ghost){
 						return asyncCallback(null);
 					}
-					crud.create('layerref', {
+					var filter = {
 						location: location,
 						year: year,
 						areaTemplate: item,
@@ -230,8 +230,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 						columnMap: columnMap,
 						layer: 'analysis:an_' + performedAnalysisObj['_id'] + '_' + item,
 						analysis: performedAnalysisObj['_id']
-					}, function(err, res) {
+					};
+					crud.create('layerref', filter, function(err, res) {
 						if(err) {
+							logger.error("spatialagg#perform Creation of layerref failed. Filter: ", filter,"Error: ", err);
 							return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 						}
 						return asyncCallback(null, res['_id']);
