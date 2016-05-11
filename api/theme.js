@@ -10,6 +10,7 @@ function getLocationConf(params, req, res, callback) {
 		dataset: function(asyncCallback) {
 			crud.read('dataset', {}, function(err, results) {
 				if (err){
+					logger.error("theme#getLocationConf dataset. Error: ", err);
 					return callback(err);
 				}
 				var datasetMap = {};
@@ -24,6 +25,7 @@ function getLocationConf(params, req, res, callback) {
 		datasetMap: function(asyncCallback) {
 			crud.read('location', {active: {$ne:false}}, function(err, results) {
 				if (err){
+					logger.error("theme#getLocationConf datasetMap. Error: ", err);
 					return callback(err);
 				}
 				var datasetMap = {};
@@ -82,6 +84,7 @@ function getLocationConf(params, req, res, callback) {
 							dataset: datasetId
 						}, function getLocationsFromDBCallback(err, locations){
 							if(err){
+								logger.error("theme#getLocationConf getLocationsFromDB. Error: ", err);
 								return callback(err);
 							}
 							logger.info("theme# getLocationConf(), Adding multilocations of ", location.name);
@@ -120,6 +123,7 @@ function getLocationsFromDB(locationOptions, callback){
 
 	crud.read('layerref', locationOptions, function(err, layerRefs) {
 		if (err){
+			logger.error("theme#getLocationsFromDB Read Layerref. Error: ", err);
 			return callback(err);
 		}
 		if (!layerRefs.length){
@@ -129,6 +133,7 @@ function getLocationsFromDB(locationOptions, callback){
 		var sql = 'SELECT gid,name FROM views.layer_' + layerRef._id;
 		client.query(sql, {}, function(err, resls) {
 			if (err){
+				logger.error("theme#getLocationsFromDB Sql: ", sql, " Error: ", err);
 				return callback(err);
 			}
 			for (var i = 0; i < resls.rows.length; i++) {
@@ -161,6 +166,7 @@ function getThemeYearConf(params, req, res, callback) {
 		dataset: function(asyncCallback) {
 			crud.read('dataset', {_id: parseInt(params['dataset'])}, function(err, results) {
 				if (err){
+					logger.error("theme#getThemeYearConf Read dataset. Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null, results[0]);
@@ -173,6 +179,7 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 			crud.read('theme', {_id: parseInt(params['theme'])}, function(err, results) {
 				if (err){
+					logger.error("theme#getThemeYearConf Read theme. Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null, results[0]);
@@ -186,6 +193,7 @@ function getThemeYearConf(params, req, res, callback) {
 			// }
 			crud.read('location', {dataset: parseInt(params['dataset'])}, function(err, resls) {
 				if (err){
+					logger.error("theme#getThemeYearConf locations Read Location. Error: ", err);
 					return callback(err);
 				}
 				var ids = [];
@@ -203,6 +211,7 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 			crud.read('topic', {_id: {$in: results.theme.topics}}, function(err, resls) {
 				if (err){
+					logger.error("theme#getThemeYearConf topicMap Read Theme. Error: ", err);
 					return callback(err);
 				}
 				var topicMap = {};
@@ -232,6 +241,7 @@ function getThemeYearConf(params, req, res, callback) {
 			// zatim se requiredtopicneresi, nacita se info o vsech attributsetech pro dane tema
 			crud.read('attributeset', {topic: {$in: allTopics}}, function(err, resls) {
 				if (err){
+					logger.error("theme#getThemeYearConf topicMap Read attibuteset. Error: ", err);
 					return callback(err);
 				}
 				var ids = [];
@@ -287,6 +297,7 @@ function getThemeYearConf(params, req, res, callback) {
 			async.forEach(confs, function(item, eachCallback) {
 				crud.read('layerref', item, function(err, resls) {
 					if (err){
+						logger.error("theme#getThemeYearConf Configurations Read layerref. Error: ", err);
 						return callback(err);
 					}
 					layerRefMap[item.location][item.areaTemplate][item.year] = resls[0];
@@ -296,6 +307,7 @@ function getThemeYearConf(params, req, res, callback) {
 				async.forEach(attrConfs, function(item, eachCallback) {
 					crud.read('layerref', item, function(err, resls) {
 						if (err){
+							logger.error("theme#getThemeYearConf Configurations Read layerref. Error: ", err);
 							return callback(err);
 						}
 						if (resls && resls.length) {
@@ -371,6 +383,7 @@ function getThemeYearConf(params, req, res, callback) {
 					try {
 						layerRef = layerRefMap[locationId][areaTemplateId][years[0]];
 					} catch (e) {
+						logger.info("theme#getThemeYearConf. Some reference doesn't exist. Error: ", e);
 					}
 					if (!layerRef){
 						continue;
@@ -427,6 +440,7 @@ function getThemeYearConf(params, req, res, callback) {
 			client.query(sql, {}, function(err, resls) {
 
 				if (err){
+					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
 					return callback(err);
 				}
 				var obj = {};
@@ -481,6 +495,7 @@ function getThemeYearConf(params, req, res, callback) {
 					try {
 						layerRef = results.layerRefs[loc][at][years[0]];
 					} catch (e) {
+						logger.warn("theme#getThemeYearConf. An issue with retrieving layerref. Error: ", e);
 					}
 					var featureLayers = results.dataset.featureLayers;
 					var idx = featureLayers.indexOf(parseInt(at));
@@ -489,6 +504,7 @@ function getThemeYearConf(params, req, res, callback) {
 					try {
 						nextLayerRef = results.layerRefs[loc][nextAt][years[0]];
 					} catch (e) {
+						logger.warn("theme#getThemeYearConf. An issue with retrieving next layerref. Error: ", e);
 					}
 					var areasOrGids = atMap[loc][at];
 					areas = _.difference(areas,areasOrGids);
@@ -532,6 +548,7 @@ function getThemeYearConf(params, req, res, callback) {
 				client.query(sql, {}, function(err, resls) {
 
 					if (err){
+						logger.error("theme#getThemeYearConf. Sql:", sql, " Error: ", err);
 						return callback(err);
 					}
 					var partLeafMap = {};
@@ -579,6 +596,7 @@ function getThemeYearConf(params, req, res, callback) {
 		symbologies: function(asyncCallback) {
 			crud.read('symbology', {}, function(err, resls) {
 				if (err) {
+					logger.error("theme#getThemeYearConf. Read symbologies. Error: ", err);
 					return callback(err);
 				}
 				var symMap = {};
@@ -605,11 +623,13 @@ function getThemeYearConf(params, req, res, callback) {
 			async.map(topics, function(item, mapCallback) {
 				crud.read('areatemplate', {topic: item}, function(err, resls) {
 					if (err){
+						logger.error("theme#getThemeYearConf. Read areatemplate. Error: ", err);
 						return callback(err);
 					}
 					async.forEach(resls, function(at, eachCallback) {
 						crud.read('layerref', {$and: [{areaTemplate: at._id}, {year: {$in: years}}, {location: {$in: locationIDs}}, {isData: false}]}, function(err, resls2) {
 							if (err){
+								logger.error("theme#getThemeYearConf. Read layerref. Error: ", err);
 								return callback(err);
 							}
 							layerRefMap[at._id] = {};
@@ -627,6 +647,7 @@ function getThemeYearConf(params, req, res, callback) {
 							return eachCallback(null);
 						});
 					}, function(err) {
+						logger.error("theme#getThemeYearConf. Error: ", err);
 						return mapCallback(null, resls);
 					});
 				});
