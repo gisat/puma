@@ -34,6 +34,7 @@ function create(collName,obj,params,callback) {
 		checkRefs: function(asyncCallback) {
 			checkRefs(db,obj,collName,function(err) {
 				if (err){
+					logger.error("crud#create. checkRefs Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null);
@@ -52,6 +53,7 @@ function create(collName,obj,params,callback) {
 			}
 			doHooks("precreate",collName,obj,params,function(err,result) {
 				if (err){
+					logger.error("crud#create. preCreate Hooks Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null);
@@ -61,6 +63,7 @@ function create(collName,obj,params,callback) {
 			var collection = db.collection(collName);
 			collection.insert(obj,function(err,result) {
 				if (err){
+					logger.error("crud#create. create Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null, result.ops[0]);
@@ -72,6 +75,7 @@ function create(collName,obj,params,callback) {
 			}
 			doHooks("create",collName,results.create,params,function(err,result) {
 				if (err){
+					logger.error("crud#create. hooks Error: ", err);
 					return callback(err);
 				}
 				return callback(null,results.create);
@@ -127,6 +131,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 		checkRefs: function(asyncCallback) {
 			checkRefs(db,obj,collName,function(err) {
 				if (err){
+					logger.error("crud#update. update checkRefs Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null);
@@ -139,16 +144,16 @@ function update(collName, obj, params, callback,bypassHooks) {
 
 			collection.update(filter, {'$set': obj}, {}, function(err) {
 				if (err){
-					logger.error("It wasn't possible to update collection: ",collName," With Error: ", err);
+					logger.error("crud#update It wasn't possible to update collection: ",collName," With Error: ", err);
 					return callback(err);
 				}
 				collection.findOne(filter, function(err, result) {
 					if (err){
-						logger.error("It wasn't possible to find updated record: ",collName," Filter: ", filter, " With Error: ", err);
+						logger.error("crud#update It wasn't possible to find updated record: ",collName," Filter: ", filter, " With Error: ", err);
 						return callback(err);
 					}
 					if(result == null){
-						logger.error("It wasn't possible to find updated record: ",collName," Filter: ", filter);
+						logger.error("crud#update It wasn't possible to find updated record: ",collName," Filter: ", filter);
 						return callback(new Error("CRUD.update didn't find updated record. Probably user mismatch or not isAdmin. (former Weird error)"));
 					}
 					asyncCallback(null, result);
@@ -158,7 +163,10 @@ function update(collName, obj, params, callback,bypassHooks) {
 		}],
 		hooks: ['update', function(asyncCallback,results) {
 			doHooks("update",collName,results.update,params,function(err,result) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("crud#update hooks Error: ", err);
+					return callback(err);
+				}
 				return callback(null,results.update);
 			});
 		}]

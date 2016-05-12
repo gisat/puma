@@ -87,7 +87,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			var sql = 'SELECT DISTINCT ST_Dimension(the_geom) as dm,ST_SRID(the_geom) as srid FROM views.layer_' + refId+' LIMIT 1';
 			client.query(sql, function(err, results) {
 				if (err){
-					logger.error("Unexpected PG Error! Performing Spatial aggregation. Error: ",err);
+					logger.error("Unexpected PG Error! Performing Spatial aggregation. SQL: ", sql, " Error: ",err);
 					return callback(err);
 				}
 				asyncCallback(null, results.rows[0]);
@@ -109,7 +109,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			for (var i = 0; i < analysisObj.attributeMap.length; i++) {
 				var obj = analysisObj.attributeMap[i];
 				var text = null;
-				if (groupAttr) {
+				if (groupAttr && obj.groupVal) {
 
 					var attrName = 'as_' + analysisObj.attributeSet + '_attr_' + obj.attribute;
 					var groupVals = obj.groupVal.split(',');
@@ -211,13 +211,16 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				var layerName = item != -1 ? 'views.layer_'+layerRef : performedAnalysisObj.sourceTable;
 				var currentSql = sql.replace('$INDEX$', item);
 				currentSql = currentSql.replace('$LAYERREF$', layerName);
+				logger.trace("spatialagg#perform Sql to perform: ", currentSql);
 				client.query(currentSql, function(err, results) {
-					if (err)
-						return asyncCallback({message: "SQL query error ("+err+")"});
+					if (err) {
+						logger.error("spatialagg#perform Unexpected PG Error! Performing Spatial aggregation. SQL: ", currentSql, " Error: ",err);
+						return asyncCallback({message: "SQL query error (" + err + ")"});
+					}
 					if (performedAnalysisObj.ghost){
 						return asyncCallback(null);
 					}
-					crud.create('layerref', {
+					var filter = {
 						location: location,
 						year: year,
 						areaTemplate: item,
@@ -227,8 +230,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 						columnMap: columnMap,
 						layer: 'analysis:an_' + performedAnalysisObj['_id'] + '_' + item,
 						analysis: performedAnalysisObj['_id']
-					}, function(err, res) {
+					};
+					crud.create('layerref', filter, function(err, res) {
 						if(err) {
+							logger.error("spatialagg#perform Creation of layerref failed. Filter: ", filter,"Error: ", err);
 							return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 						}
 						return asyncCallback(null, res['_id']);

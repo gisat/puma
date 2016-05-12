@@ -2,6 +2,9 @@ var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
+
+var logger = require('../common/Logger').applicationWideLogger;
+
 function getData(params, callback) {
 
 
@@ -29,9 +32,12 @@ function getData(params, callback) {
 	var opts = {
 		layerRefMap: function(asyncCallback) {
 			crud.read('layerref', dbFilter, function(err, resls) {
-				if (err)
+				if (err) {
+					logger.error("dataspatial#getData Read layerref. Error: ", err);
 					return callback(err);
+				}
 				if (!resls.length) {
+					logger.error("dataspatial#getData Read layerref. No data returned. Filter: ", dbFilter);
 					return callback(new Error('notexistingdata (3)'));
 				}
 				var layerRefMap = {};
@@ -56,8 +62,10 @@ function getData(params, callback) {
 				var client = conn.getPgDataDb();
 
 				client.query(sql, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error("dataspatial#getData Sql. ", sql, " Error: ", err);
 						return callback(err);
+					}
 					return asyncCallback(null, {srid: resls.rows[0]['srid'],layerRef:aggregateLayerRef});
 				})
 
@@ -82,8 +90,10 @@ function getData(params, callback) {
 				//console.log(sql);
 				processClient.query(sql, function(err, resls) {
 					processClient.end();
-					if (err)
+					if (err) {
+						logger.error("dataspatial#getData result Sql. ", sql, " Error: ", err);
 						return callback(err);
+					}
 					return callback(null, resls.rows[0].cnt);
 				})
 

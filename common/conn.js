@@ -2,6 +2,7 @@ var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
+var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
 
@@ -25,9 +26,7 @@ var objectId = null;
 
 
 function request(options,dataToWrite,callback) {
-
-	console.log("\n\n============= common/conn.request options:\n", options); ////////////////////////////////////////////
-	console.log("==========================================\n\n"); ///////////////////////////////////////////////////////
+	logger.info("conn#request Options: ", options);
 
 	var time = new Date().getTime();
 //	if (!options.headers || !options.headers['Authorization']) {
@@ -85,7 +84,7 @@ function initGeoserver() {
 	var jsid = null;
 	request(options, null, function(err, output, resl) {
 		if (err) {
-			console.log("\n\ncommon/conn.initGeoserver Geoserver request error:", err, "\noutput:", output, "\n\n");
+			logger.error("conn#init Geoserver request error:", err, "\noutput:", output);
 			return;
 		}
 		var cookies = resl.headers['set-cookie'] || [];
@@ -97,12 +96,6 @@ function initGeoserver() {
 			}
 		}
 		require('../api/proxy').setJsid(jsid);
-
-		//console.log("");
-		//console.log("");
-		//console.log("############### JSID ###############");
-		//console.log("# "+jsid+" #");
-		//console.log("####################################");
 
 	});
 }
@@ -124,9 +117,9 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 				pgDataDB.end();
 				pgDataDB = new pg.Client(config.pgDataConnString);
 				pgDataDB.connect();
-				console.log('Data DB reconnected');
+				logger.info('conn#initDatabases Data DB reconnected');
 			}else{
-				console.log('Data DB waiting for reconnect');
+				logger.info('conn#initDatabases Data DB waiting for reconnect');
 			}
 		},2000);
 	},Math.round(1000*60*60*5.9));
@@ -141,9 +134,9 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 				pgGeonodeDB.end();
 				pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
 				pgGeonodeDB.connect();
-				console.log('Geonode DB reconnected');
+				logger.info('conn#initDatabases Geonode DB reconnected');
 			}else{
-				console.log('Geonode DB waiting for reconnect');
+				logger.info('conn#initiDatabases Geonode DB waiting for reconnect');
 			}
 		},2000);
 	},Math.round(1000*60*60*5.42));

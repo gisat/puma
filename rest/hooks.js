@@ -1,10 +1,11 @@
 var geoserverLayers = require('../geoserver/layers');
-
+var logger = require('../common/Logger').applicationWideLogger;
 
 function precreateLayerRef(result, callback, params) {
 	if (!result.fidColumn) return callback(null);
 	geoserverLayers.checkUniqueId(result, function(err) {
 		if (err) {
+			logger.error("hooks#precreateLayerRef checkUniqueId Error: ", err);
 			return callback(err);
 		}
 		callback(null);
@@ -22,6 +23,7 @@ function createLayerRef(result, callback, params) {
 		function(asyncCallback) {
 			apiLayers.activateLayerRef({obj: result,justPerform: true}, {userId: params.userId, isAdmin:params.isAdmin}, null, function(err) {
 				if (err){
+					logger.error("hooks#createLayerRef activateLayerRef Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null);
@@ -35,9 +37,11 @@ function createLayerRef(result, callback, params) {
 			var crud = require('./crud');
 			geoserverLayers.recreateLayerDb(result, false, function(err,baseLayerRef) {
 				if (err) {
+					logger.error("hooks#recreateLayerDb Error: ", err);
 					crud.remove('layerref',{_id:result._id},{bypassHooks:true,userId: params.userId, isAdmin:params.isAdmin},function(err2,res) {
 
 						if (err2){
+							logger.error("hooks#precreateLayerRef Remove LayerRef Error: ", err);
 							return callback(err2);
 						}
 
@@ -52,6 +56,7 @@ function createLayerRef(result, callback, params) {
 		function(baseLayerRef,asyncCallback) {
 			geoserverLayers.changeLayerGeoserver(result.isData ? baseLayerRef['_id'] : result['_id'], result.isData ? 'PUT' : 'POST', function(err) {
 				if (err) {
+					logger.error("hooks#precreateLayerRef changeLayerGeoserver Error: ", err);
 					return callback(err);
 				}
 				return callback(null, result);
@@ -68,10 +73,12 @@ function updateLayerRef(result, callback) {
 
 	geoserverLayers.recreateLayerDb(result, true, function(err,baseLayerRef) {
 		if (err) {
+			logger.error("hooks#updateLayerRef recreateLayerDb Error: ", err);
 			return callback(err);
 		}
 		geoserverLayers.changeLayerGeoserver(result.isData ? baseLayerRef['_id'] : result['_id'], 'PUT', function(err) {
 			if (err) {
+				logger.error("hooks#updateLayerRef changeLayerGeoserver Error: ", err);
 				return callback(err);
 			}
 			return callback(null, result);
@@ -90,7 +97,10 @@ function removeLayerRef(result, callback, params) {
 	async.waterfall([
 		function(asyncCallback) {
 			apiLayers.activateLayerRef({obj: result,justPerform: true,activateAnother:true}, {userId: params.userId, isAdmin:params.isAdmin}, null, function(err) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("hooks#removeLayerRef activateLayerRef Error: ", err);
+					return callback(err);
+				}
 				return asyncCallback(null);
 			});
 		},
@@ -100,6 +110,7 @@ function removeLayerRef(result, callback, params) {
 			}
 			geoserverLayers.recreateLayerDb(result, false, function(err,baseLayerRef) {
 				if (err) {
+					logger.error("hooks#removeLayerRef recreateLayerDb Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null,baseLayerRef);
@@ -109,6 +120,7 @@ function removeLayerRef(result, callback, params) {
 			//console.log(baseLayerRef)
 			geoserverLayers.changeLayerGeoserver(result.isData ? baseLayerRef['_id'] : result['_id'], result.isData ? 'PUT' : 'DELETE', function(err) {
 				if (err) {
+					logger.error("hooks#removeLayerRef changeLayerGeoserver Error: ", err);
 					return callback(err);
 				}
 				return callback(null, result);
