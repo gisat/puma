@@ -11,26 +11,21 @@ var Processes = function(mongoConnection) {
 
 Processes.prototype.store = function(process){
 	// todo
-};
-
-
-Processes.prototype.all = function(){
-	var self = this;
+	var collection = this.mongoConnection.collection("runningProcesses");
 	return new Promise(function(resolve, reject){
-
-		// todo get all record using db.collection and resolve
-
-		// crud.read("runningProcesses", {}, {}, function(err, results){
-		// 	if(err){
-		// 		logger.error("RunningProcess# get(), CRUD Error:", err);
-		// 		reject(err);
-		// 	}
-		// 	logger.info("RunningProcess# get(), CRUD results:", results);
-		// 	resolve(results);
-		// });
+		collection.insert(process.json);
 	});
 };
 
+Processes.prototype.all = function(){
+	var collection = this.mongoConnection.collection("runningProcesses");
+	return collection.find({}); // Promise
+};
+
+Processes.prototype.getById = function(id){
+	var collection = this.mongoConnection.collection("runningProcesses");
+	return collection.find({_id: id}); // Promise
+};
 
 
 module.exports = Processes;

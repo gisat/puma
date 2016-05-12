@@ -8,9 +8,12 @@ var RasterToVector = require('../integration/RasterToVector');
 // Careful with renaming to uppercase start. Was created in windows with lowercase first.
 var RemoteFile = require('../integration/remoteFile');
 var ViewResolver = require('../integration/ViewResolver');
+var conn = require('../common/conn');
+var Process = require('../integration/Process');
+var Processes = require('../integration/Processes');
 
 module.exports = function (app) {
-	var runningProcesses = {};
+	// var runningProcesses = {};
 
 	app.post("/integration/process", function (request, response) {
 		if (!request.body.url) {
@@ -35,11 +38,18 @@ module.exports = function (app) {
 			return;
 		}
 
-		runningProcesses[id] = {
+		// runningProcesses[id] = {
+		// 	tiff: urlOfGeoTiff,
+		// 	status: "Started",
+		// 	sourceUrl: urlOfGeoTiff
+		// };
+		var db = conn.getMongoDb();
+		var processes = new Processes(db);
+		var process = processes.store(new Process({
 			tiff: urlOfGeoTiff,
 			status: "Started",
 			sourceUrl: urlOfGeoTiff
-		};
+		}));
 
 		//configuration
 		var spatialAnalysisKey = 1;
@@ -47,8 +57,10 @@ module.exports = function (app) {
 
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
-			runningProcesses[id].status = "Processing";
-			runningProcesses[id].message = "File was retrieved successfully and is being processed.";
+			// runningProcesses[id].status = "Processing";
+			// runningProcesses[id].message = "File was retrieved successfully and is being processed.";
+			process.status("Processing", "File was retrieved successfully and is being processed.");
+			processes.store(process);
 
 			// Transform to vector
 			return new RasterToVector("../scripts/", remoteFile.getDestination(), "") // todo result SHP file path as 3rd param
@@ -92,13 +104,18 @@ module.exports = function (app) {
 				.create();
 		}).then(function(url){
 			// Set result to the process.
-			runningProcesses[id].status = "Finished";
-			runningProcesses[id].message = "File processing was finished.";
-			runningProcesses[id].url = url;
+			// runningProcesses[id].status = "Finished";
+			// runningProcesses[id].message = "File processing was finished.";
+			// runningProcesses[id].url = url;
+			process.end("File processing was finished.");
+			process.setOption("url", url);
+			processes.store(process);
 		}).catch(function (err) {
 			logger.error("/integration/process, for", request.body.url, ": File processing failed:", err);
-			runningProcesses[id].status = "Error";
-			runningProcesses[id].message = err;
+			// runningProcesses[id].status = "Error";
+			// runningProcesses[id].message = err;
+			process.error(err);
+			processes.store(process);
 		});
 
 		response.json({id: id});
@@ -109,6 +126,7 @@ module.exports = function (app) {
 		var url = require('url');
 		var url_parts = url.parse(request.url, true);
 		var query = url_parts.query;
+		var processes = new Processes(conn.getMongoDb());
 
 		var id = query.id;
 		if (!id) {
@@ -119,6 +137,10 @@ module.exports = function (app) {
 			return;
 		}
 
+		var processPromise = processes.getById(id);
+		processPromise.then(function(process){
+			
+		}); //////////////////////////////
 		if (!runningProcesses[id]) {
 			logger.error("There is no running process with id", id);
 			response.status(400).json({
