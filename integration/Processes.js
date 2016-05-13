@@ -19,7 +19,6 @@ Processes.prototype.store = function(process){
 	var collection = this.mongoConnection.collection("runningProcesses");
 	return new Promise(function(resolve, reject){
 		collection.save(process.mongoDoc(), {w:1}).then(function(result){
-			console.log("======="); /////////////////////
 			logger.info("integration/Processes# store(), Process saved. ", result.result);
 			resolve(process);
 		}).catch(function(err){

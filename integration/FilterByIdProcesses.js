@@ -21,9 +21,7 @@ FilterByIdProcesses.prototype.all = function() { // all of the one
 	return new Promise(function(resolve, reject){
 		logger.trace("integration/FilterByIdProcess# all(), new Promisse"); ///
 		self.processes.all().then(function(processes){
-			console.log("-------FBIPall processes:", processes);
 			var filtered = _.filter(processes, function(process){
-				console.log("Comparing", process.getOption("id"), "and", self.id);
 				if(process.id == self.id) {
 					return true;
 				}
