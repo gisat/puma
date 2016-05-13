@@ -1,3 +1,5 @@
+var Promise = require('Promise');
+
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -11,9 +13,9 @@ var ViewResolver = require('../integration/ViewResolver');
 var conn = require('../common/conn');
 var Process = require('../integration/Process');
 var Processes = require('../integration/Processes');
+var FilterByIdProcesses = require('../integration/FilterByIdProcesses');
 
 module.exports = function (app) {
-	// var runningProcesses = {};
 
 	app.post("/integration/process", function (request, response) {
 		if (!request.body.url) {
@@ -38,14 +40,9 @@ module.exports = function (app) {
 			return;
 		}
 
-		// runningProcesses[id] = {
-		// 	tiff: urlOfGeoTiff,
-		// 	status: "Started",
-		// 	sourceUrl: urlOfGeoTiff
-		// };
 		var db = conn.getMongoDb();
 		var processes = new Processes(db);
-		var process = processes.store(new Process({
+		var process = processes.store(new Process(id, {
 			tiff: urlOfGeoTiff,
 			status: "Started",
 			sourceUrl: urlOfGeoTiff
@@ -57,10 +54,10 @@ module.exports = function (app) {
 
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
-			// runningProcesses[id].status = "Processing";
-			// runningProcesses[id].message = "File was retrieved successfully and is being processed.";
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
+			// or like this:
+			// processes.store(process.status("Processing", "..."));
 
 			// Transform to vector
 			return new RasterToVector("../scripts/", remoteFile.getDestination(), "") // todo result SHP file path as 3rd param
@@ -104,16 +101,11 @@ module.exports = function (app) {
 				.create();
 		}).then(function(url){
 			// Set result to the process.
-			// runningProcesses[id].status = "Finished";
-			// runningProcesses[id].message = "File processing was finished.";
-			// runningProcesses[id].url = url;
-			process.end("File processing was finished.");
-			process.setOption("url", url);
+			process.end("File processing was finished.")
+				.setOption("url", url);
 			processes.store(process);
 		}).catch(function (err) {
 			logger.error("/integration/process, for", request.body.url, ": File processing failed:", err);
-			// runningProcesses[id].status = "Error";
-			// runningProcesses[id].message = err;
 			process.error(err);
 			processes.store(process);
 		});
@@ -121,12 +113,12 @@ module.exports = function (app) {
 		response.json({id: id});
 	});
 
+
 	app.get("/integration/status", function (request, response) {
 
 		var url = require('url');
 		var url_parts = url.parse(request.url, true);
 		var query = url_parts.query;
-		var processes = new Processes(conn.getMongoDb());
 
 		var id = query.id;
 		if (!id) {
@@ -136,34 +128,42 @@ module.exports = function (app) {
 			});
 			return;
 		}
+		logger.info("/integration/status Requested status of task:", id);
 
-		var processPromise = processes.getById(id);
-		processPromise.then(function(process){
-			
-		}); //////////////////////////////
-		if (!runningProcesses[id]) {
-			logger.error("There is no running process with id", id);
-			response.status(400).json({
-				message: "There is no running process with id " + id
-			});
-			return;
-		}
+		var oneProcesses = new FilterByIdProcesses(conn.getMongoDb(), id);
+		var allOneProcesses = oneProcesses.all();
+		console.log("oneProcesses", oneProcesses);
+		console.log("allOneProcesses", allOneProcesses);
+		allOneProcesses.then(function(processes){
+			console.log("FilterByIdProcesses all then: ", processes);
 
-		logger.info("/integration/status Requested status of task: ", id);
+			if (!processes.length) {
+				logger.error("There is no running process with id", id);
+				response.status(400).json({
+					success: false,
+					message: "There is no running process with id " + id
+				});
+				resolve();
+			}
+			if(processes.length > 1){
+				logger.error("There is more then one process with id", id);
+				response.status(500).json({
+					message: "There is more then one process with id " + id
+				});
+				resolve();
+			}
+			var process = processes[0];
 
-		if (runningProcesses[id].status == "Finished") {
-			response.json({
-				status: runningProcesses[id].status,
-				url: runningProcesses[id].url,
-				sourceUrl: runningProcesses[id].sourceUrl
+			response.json(process);
+			resolve();
+
+		}).catch(function(err){
+			response.status(500).json({
+				success: false,
+				error: err
 			});
-		} else {
-			response.json({
-				status: runningProcesses[id].status,
-				sourceUrl: runningProcesses[id].sourceUrl,
-				message: runningProcesses[id].message
-			});
-		}
+		});
+
 	});
 
 	function guid() {

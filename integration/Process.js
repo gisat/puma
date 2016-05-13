@@ -1,47 +1,82 @@
 var logger = require('../common/Logger').applicationWideLogger;
 
-var Process = function(id, status, options){
+var Process = function(id, options){
 	this.id = id;
-	this.processStatus = status || "Started";
-	this.options = options;
-	this.message = null;
+	this.options = options || {};
+	this.options.status = options.status || "Started";
+	this.options.message = options.message || null;
 
-	logger.info("Process# constructor, Process", id, "created");
+	logger.info("Process# constructor, Process", this.id, "created");
 };
 
+/**
+ * Set status. Returns itself.
+ * @param newStatus - optional
+ * @param newMessage - optional
+ * @returns {Process} Process itself
+ */
 Process.prototype.status = function (newStatus, newMessage) {
 	if(newStatus){
-		this.processStatus = newStatus;
+		this.options.status = newStatus;
 	}
 	if(newMessage){
-		this.message = newMessage;
+		this.options.message = newMessage;
 	}
-	return this.processStatus;
+	return this;
 };
 
+/**
+ * Set any option to Process options. Returns itself.
+ * @param name {String}
+ * @param value {Process} Process itself
+ */
 Process.prototype.setOption = function(name, value){
 	this.options[name] = value;
+	return this;
 };
 
+/**
+ * Get option of Process by name
+ * @param name
+ * @returns {undefined}
+ */
 Process.prototype.getOption = function(name){
 	return (this.options.hasOwnProperty(name)) ? this.options[name] : undefined;
 };
 
-Process.prototype.json = function () {
-	return JSON.stringify(this);
+/**
+ * Returns Mongo DB document (with _id)
+ * @returns {{_id: *, options: *}}
+ */
+Process.prototype.mongoDoc = function(){
+	return {
+		_id: this.id,
+		options: this.options
+	};
 };
 
-
+/**
+ * Set Finish state and message. Returns itself.
+ * @param message
+ * @returns {Process} Process itself
+ */
 Process.prototype.end = function(message){
-	this.processStatus = "Finished";
-	this.message = message;
-	logger.info("Process# end(), Process", id, "finished sucessfully, message:", message);
+	this.options.status = "Finished";
+	this.options.message = message;
+	logger.info("Process# end(), Process", this.id, "finished sucessfully, message:", message);
+	return this;
 };
 
+/**
+ * Set Error state and message. Returns itself.
+ * @param message
+ * @returns {Process} Process itself
+ */
 Process.prototype.error = function(message){
-	this.processStatus = "Error";
-	this.message = message;
-	logger.info("Process# error(), Process", id, "failed, message:", message);
+	this.options.status = "Error";
+	this.options.message = message;
+	logger.info("Process# error(), Process", this.id, "failed, message:", message);
+	return this;
 };
 
 module.exports = Process;
