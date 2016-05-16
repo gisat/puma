@@ -1,5 +1,3 @@
-var Promise = require('Promise');
-
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 
