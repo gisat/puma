@@ -1,0 +1,154 @@
+.urbis .fields-holder > .label {
+    background: url("../images/urbis-colour-white.png") no-repeat 15px 8px;
+    background-size: 220px;
+}
+.urbis .fields-holder .field > .label {
+    color            : #eee;
+}
+.urbis .field.level .x-btn {
+    background           : #eee;
+}
+.urbis .field.level .x-btn .x-btn-inner {
+    color: inherit;
+}
+.urbis .field.help .help-btn .x-btn {
+    background: #eee;
+}
+
+.urbis .field.year .widget .x-field .x-form-item-body{
+    color: #eee;
+}
+.urbis .yearselector .x-slider-horz .x-slider-thumb{
+    background-image: url("../images/urbis-slider-thumb-2.png")
+}
+
+.urbis #button-1033-btnIconEl{
+    color: #333;
+}
+
+.urbis #content-intro {
+    background-color: rgb(172, 68, 0);
+    background-color: rgba(172, 68, 0, .8);
+}
+.urbis #content-intro-guide {
+    background-color: rgb(55, 55, 55);
+    background-color : rgba(55, 55, 55, .8);
+    color: #eee;
+}
+.urbis #content-intro-terms {
+    color: #666;
+}
+.urbis #content-intro-terms h2,
+.urbis #content-intro-guide h2 {
+    border: 0;
+}
+.urbis #toolbar {
+    background-color : #ac4400;
+    border-bottom: 2px solid #823300;
+}
+.urbis #toolbar > .label {
+    margin-top       : 7px;
+}
+
+/* ============== Ext ================== */
+.urbis.x-border-box .x-form-text {
+    color                : #333;
+    background           : #eee;
+}
+.urbis.x-border-box .x-form-trigger {
+    background           : #eee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAWIAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAIhJREFUeNpidHYKYWZgYJgDxLuBeBkDJogCYlcgTmEBEvOBOBaKGdA0gBQuAmKQgcxMQGIHEP+FCiyCKkBXCJLfwYJk0iIkDTZAnIakMA6kjgXJamaok0B0JlQcpDARZiATkvsWQyX+oilcDFPAhObzxVArf0HpxciSLFiCCmTlESB+hC4BEGAAZXUd8tVZG3gAAAAASUVORK5CYII=) no-repeat 50% 50%;
+}
+
+.urbis.x-border-box .x-form-trigger.x-form-refresh-trigger {
+    background           : #eee url("../images/icons/paging-refresh2.png") no-repeat 50% 50%;
+}
+
+.urbis.x-border-box .x-form-trigger.x-form-spinner-up {
+    background           : #eee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAWIAAAABGdBTUEAALGPC/xhBQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB90JEAkUOtgOpdcAAABySURBVBjTfcvBCQIxEAXQp7tYhsUowhbgKRBBsCePQg424dUuvNmH4GUCIUTn8meG91f73dFgtnj3z/UAJrwi/+KMgk1k/oUzbpjinuLOPU4N/OAaWQsJ5lhKA0+449n8S8XLAGqyFpYZ54CPBugKB1y+PK8ZAZvCJxQAAAAASUVORK5CYII=) no-repeat 50% 50%;
+}
+
+.urbis.x-border-box .custom-combo .x-form-text {
+    color                : #333;
+    background           : #eee;
+}
+
+.urbis.x-border-box .custom-combo .x-form-trigger {
+    background-color     : #eee;
+}
+
+/* Box ============= */
+#app-reports-paging {
+    border-bottom: 1px solid white;
+}
+
+.urbis #sidebar-reports, .urbis #sidebar-tools {
+    background: rgb(245,245,245);
+}
+
+.urbis #app-reports-paging .paging-toolbar {
+    background: none;
+}
+
+.urbis .x-panel-collapsed .x-panel-header-default {
+    border-bottom: 1px solid white;
+}
+
+/* Accordion =============== */
+.urbis .x-box-inner {
+    background: none;
+}
+.urbis .x-accordion-hd  {
+    border-color: white !important;
+}
+.urbis .x-accordion-hd .x-panel-header-text {
+    color: #333;
+}
+.urbis .x-accordion-body {
+    border: 0;
+}
+
+/* Buttons ================ */
+.urbis .x-btn-default-small {
+    background: #777777;
+    border: 0;
+}
+.urbis .x-btn-default-small .x-btn-inner {
+    color: #fff;
+}
+.urbis .x-btn.custom-button.x-btn-default-small {
+    background: #eee;
+}
+.urbis .x-btn.custom-button.btn-confirm {
+    background: #2ecc71;
+}
+.urbis .x-btn.custom-button.btn-confirm .x-btn-inner {
+    color                : #fff;
+}
+.urbis .x-btn.custom-button.btn-confirm:hover, .x-btn.btn-confirm:focus {
+    background           : #27ae60;
+}
+.urbis #agreement-accept .x-btn {
+     background: #2ecc71;
+     border: 0;
+ }
+.urbis #agreement-accept .x-btn:hover {
+    background: #27ae60;
+}
+.urbis .x-boundlist .x-boundlist-item {
+    border-top           : 1px solid #ddd;
+}
+
+.urbis .x-boundlist.custom-combo-list .x-boundlist-item {
+    background           : #eee;
+    color                : #333;
+}
+
+.urbis .x-boundlist.custom-combo-list .x-boundlist-item:hover,
+.urbis .x-boundlist.custom-combo-list .x-boundlist-item-over {
+    background           : #ddd;
+}
+
+.urbis .x-grid-row-over .x-grid-cell, .urbis .x-grid-row-over .x-grid-rowwrap-div,
+.urbis .x-grid-row-focused .x-grid-cell, .urbis .x-grid-row-focused .x-grid-rowwrap-div {
+    background-color     : #eee;
+}

@@ -173,10 +173,10 @@
 	padding-left         : 6px;
 	padding-right        : 6px;
 	border               : none;
-	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;
+	/*background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;*/
 }
 .x-accordion-hd:hover {
-	background: #d7d0c8 !important;
+	/*background: #d7d0c8 !important;*/
 }
 .x-accordion-hd, .x-accordion-hd .x-panel-header-text {
 	cursor               : pointer;
