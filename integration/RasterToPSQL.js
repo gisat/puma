@@ -11,12 +11,10 @@ var logger = require('../common/Logger').applicationWideLogger;
  * @param psqlDB - PSQL connection
  * @param rasterFileLocation - Input raster file
  * @param psqlRasterTable - Output PSQL table
- * @param sqlFileLocation - Output SQL file
  * @constructor
  */
-var RasterToPSQL = function(psqlDB, rasterFileLocation, psqlRasterTable, sqlFileLocation) {
+var RasterToPSQL = function(psqlDB, rasterFileLocation, psqlRasterTable) {
 	this.rasterFileLocation = rasterFileLocation;
-	this.sqlFileLocation = sqlFileLocation;
 	this.psqlRasterTable = psqlRasterTable;
 	this.psqlRasterTileSize = "200x200";
 };
@@ -30,20 +28,19 @@ RasterToPSQL.prototype.process = function(){
 
 	var self = this;
 	return new Promise(function(resolve, reject){
+		var connectionParameters = parse(config.pgDataConnString);
 		var command = "raster2pgsql";
 		command += " -c"; // create table
 		command += " -C"; // apply raster constraints
 		command += " -t " + self.psqlRasterTileSize; // split to tiles
 		command += " -F " + self.rasterFileLocation; // input raster file location
 		command += " " + self.psqlRasterTable; // result table name
-		command += " > " + self.sqlFileLocation; // result SQL file name
 		command += " | psql"; // pipe to psql
-		var connectionParameters = parse(config.pgDataConnString);
 		command += " -h " + connectionParameters.host;
 		command += " -U " + connectionParameters.user;
 		command += " -d " + connectionParameters.database;
-		logger.info("RasterToPSQL#process, running raster2psql command: ", command);
-		cp.exec(command, {}, function(err, stdout, stderr) {
+		logger.info("RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=########" + command);
+		cp.exec("PGPASSWORD=" + connectionParameters.password + command, {}, function(err, stdout, stderr) {
 			if(err) {
 				logger.error("RasterToPSQL#process, Error at raster2psql. err:", err);
 				reject(err);
