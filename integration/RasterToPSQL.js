@@ -39,14 +39,14 @@ RasterToPSQL.prototype.process = function(){
 		command += " -h " + connectionParameters.host;
 		command += " -U " + connectionParameters.user;
 		command += " -d " + connectionParameters.database;
-		logger.info("RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=########" + command);
-		cp.exec("PGPASSWORD=" + connectionParameters.password + command, {}, function(err, stdout, stderr) {
+		// logger doesn't seem to work here
+		console.log("RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=######## " + command);
+		cp.exec("PGPASSWORD=" + connectionParameters.password + " " + command, {}, function(err, stdout, stderr) {
 			if(err) {
-				logger.error("RasterToPSQL#process, Error at raster2psql. err:", err);
+				console.log("RasterToPSQL#process, Error at raster2psql. err:", err);
 				reject(err);
 			}
-
-			logger.info("RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
+			console.log("RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
 			resolve();
 		});
 	});
