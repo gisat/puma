@@ -1,5 +1,3 @@
-var Promise = require('Promise');
-
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -42,11 +40,12 @@ module.exports = function (app) {
 
 		var db = conn.getMongoDb();
 		var processes = new Processes(db);
-		var process = processes.store(new Process(id, {
+		var process = new Process(id, {
 			tiff: urlOfGeoTiff,
 			status: "Started",
 			sourceUrl: urlOfGeoTiff
-		}));
+		});
+		processes.store(process);
 
 		//configuration
 		var spatialAnalysisKey = 1;
