@@ -4,7 +4,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var SumRasterVectorGuf = require('../analysis/spatial/SumRasterVectorGuf');
 var GeonodeLayer = require('../integration/GeonodeLayer');
 var GufMetadataStructures = require('../integration/GufMetadataStructures');
-var RasterToVector = require('../integration/RasterToVector');
+var RasterToPSQL = require('../integration/RasterToPSQL');
 // Careful with renaming to uppercase start. Was created in windows with lowercase first.
 var RemoteFile = require('../integration/remoteFile');
 var ViewResolver = require('../integration/ViewResolver');
@@ -59,7 +59,7 @@ module.exports = function (app) {
 			// processes.store(process.status("Processing", "..."));
 
 			// Transform to vector
-			return new RasterToVector("../scripts/", remoteFile.getDestination(), "") // todo result SHP file path as 3rd param
+			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
 				.process();
 		}).then(function(){
 			// Connect metadata structures to layer // Async
