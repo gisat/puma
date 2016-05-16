@@ -3,7 +3,7 @@ var Promise = require('Promise');
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 
-var Analysis = require('../integration/Analysis');
+var SumRasterVectorGuf = require('../analysis/spatial/SumRasterVectorGuf');
 var GeonodeLayer = require('../integration/GeonodeLayer');
 var GufMetadataStructures = require('../integration/GufMetadataStructures');
 var RasterToVector = require('../integration/RasterToVector');
@@ -42,11 +42,12 @@ module.exports = function (app) {
 
 		var db = conn.getMongoDb();
 		var processes = new Processes(db);
-		var process = processes.store(new Process(id, {
+		var process = new Process(id, {
 			tiff: urlOfGeoTiff,
 			status: "Started",
 			sourceUrl: urlOfGeoTiff
-		}));
+		});
+		processes.store(process);
 
 		//configuration
 		var spatialAnalysisKey = 1;
@@ -63,20 +64,16 @@ module.exports = function (app) {
 			return new RasterToVector("../scripts/", remoteFile.getDestination(), "") // todo result SHP file path as 3rd param
 				.process();
 		}).then(function(){
-			// Upload to Geonode // Async
-			return new GeonodeLayer()
-				.upload();
-		}).then(function(){
 			// Connect metadata structures to layer // Async
 			return new GufMetadataStructures()
 				.create();
 		}).then(function(){
 			// Run analysis // Async
-			return new Analysis(spatialAnalysisKey) // TODO Think of naming
+			return new SumRasterVectorGuf("analyticalUnitsLayerName", "layerName")
 				.run();
 		}).then(function(){
 			// Run level analysis // Async
-			return new Analysis(levelAnalysisKey) // TODO Think of naming
+			return new LevelAnalysisGuf(levelAnalysisKey) // TODO Think of naming
 				.run();
 		}).then(function(){
 			// In Puma specify FrontOffice view

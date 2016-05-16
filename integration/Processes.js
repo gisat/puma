@@ -22,8 +22,9 @@ Processes.prototype.store = function(process){
 			logger.info("integration/Processes# store(), Process saved. ", result.result);
 			resolve(process);
 		}).catch(function(err){
-			logger.error("integration/Processes# store(), Process saving failed: ", err);
-			reject(err);
+			throw new Error(
+				logger.error("integration/Processes# store(), Process saving failed: ", err)
+			);
 		});
 	});
 };
