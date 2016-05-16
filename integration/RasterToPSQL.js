@@ -1,6 +1,9 @@
 var Promise = require('promise');
 var cp = require('child_process');
 var path = require('path');
+var parse = require('pg-connection-string').parse;
+
+var config = require('../config.js');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -34,6 +37,11 @@ RasterToPSQL.prototype.process = function(){
 		command += " -F " + self.rasterFileLocation; // input raster file location
 		command += " " + self.psqlRasterTable; // result table name
 		command += " > " + self.sqlFileLocation; // result SQL file name
+		command += " | psql"; // pipe to psql
+		var connectionParameters = parse(config.pgDataConnString);
+		command += " -h " + connectionParameters.host;
+		command += " -U " + connectionParameters.user;
+		command += " -d " + connectionParameters.database;
 		logger.info("RasterToPSQL#process, running raster2psql command: ", command);
 		cp.exec(command, {}, function(err, stdout, stderr) {
 			if(err) {
