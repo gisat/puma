@@ -24,7 +24,11 @@ var RasterToPSQL = function(psqlDB, rasterFileLocation, psqlRasterTable) {
  * @returns {Promise} promise resolves when execution finished
  */
 RasterToPSQL.prototype.process = function(){
-	logger.trace('RasterToPSQL#process Start processing of the raster', this.rasterFileLocation);
+
+	// logger doesn't seem to work here, not even logger.error // todo resolve
+
+	console.log('{console} RasterToPSQL#process Start processing of the raster', this.rasterFileLocation);
+	logger.trace('{logger} RasterToPSQL#process Start processing of the raster', this.rasterFileLocation);
 
 	var self = this;
 	return new Promise(function(resolve, reject){
@@ -39,14 +43,16 @@ RasterToPSQL.prototype.process = function(){
 		command += " -h " + connectionParameters.host;
 		command += " -U " + connectionParameters.user;
 		command += " -d " + connectionParameters.database;
-		// logger doesn't seem to work here
-		console.log("RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=######## " + command);
+		console.log("{console} RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=######## " + command);
+		logger.info("{logger} RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=######## " + command);
 		cp.exec("PGPASSWORD=" + connectionParameters.password + " " + command, {}, function(err, stdout, stderr) {
 			if(err) {
-				console.log("RasterToPSQL#process, Error at raster2psql. err:", err);
+				console.log("{console} RasterToPSQL#process, Error at raster2psql. err:", err);
+				logger.info("{logger} RasterToPSQL#process, Error at raster2psql. err:", err);
 				reject(err);
 			}
-			console.log("RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
+			console.log("{console} RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
+			logger.info("{logger} RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
 			resolve();
 		});
 	});
