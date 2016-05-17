@@ -22,7 +22,7 @@ var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaT
 };
 
 SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, rasterLayerTable) {
-	return util.format("SELECT analyticalUnits.gid as gid, ST_Height(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as height, ST_Width(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as width, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).value as val, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom),1)).count as amount FROM %s AS rasterLayer INNER JOIN %s AS analyticalUnits ON ST_Intersects(rasterLayer.rast, analyticalUnits.the_geom)", rasterLayerTable, analyticalUnitsTable);
+	return util.format("SELECT analyticalUnits.gid as gid, analyticalUnits.area as area, ST_Height(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as height, ST_Width(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as width, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).value as val, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom),1)).count as amount FROM %s AS rasterLayer INNER JOIN %s AS analyticalUnits ON ST_Intersects(rasterLayer.rast, analyticalUnits.the_geom)", rasterLayerTable, analyticalUnitsTable);
 };
 
 SumRasterVectorGuf.prototype.run = function () {
@@ -101,7 +101,7 @@ SumRasterVectorGuf.prototype.storeRows = function (rowsValues, performedAnalysis
 	return new Promise(function (resolve, reject) {
 		var sql = "";
 		rowsValues.forEach(function (row) {
-			var rowSql = util.format("insert into analysis.an_%s_%s (gid, as_%s_attr_%s, as_%s_attr_%s) values(%s,%s,%s)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId, row.gid, row.areaOfUrbanized, row.areaOfNonUrbanized);
+			var rowSql = util.format("insert into analysis.an_%s_%s (gid, as_%s_attr_%s, as_%s_attr_%s) values(%s,%s,%s)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId, row.gid, row.countOfUrbanized * 12, row.countOfNonUrbanized * 12);
 			sql += rowSql;
 		});
 
