@@ -70,12 +70,13 @@ module.exports = function (app) {
 			var promises = [];
 			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6353)
 				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6353)
+			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6354)
 				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6353)
+			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6355)
 				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6353)
+			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6356)
 				.run());
+
 			return Promise.all(promises);
 		}).then(function(){
 			// In Puma specify FrontOffice view
