@@ -3,13 +3,14 @@ var conn = require('../../common/conn');
 var logger = require('../../common/Logger').applicationWideLogger;
 
 var Promise = require('promise');
+var _ = require('underscore');
 
-var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable) {
-	analyticalUnitsTable = "public.nuts0_wgs";
-	rasterLayerTable = "public.italy";
-
+var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, layerReferenceId) {
 	this.analyticalUnitsTable = analyticalUnitsTable;
 	this.rasterLayerTable = rasterLayerTable;
+	this.layerReferenceId = layerReferenceId;
+
+	this.analysisId = '';
 };
 
 SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, rasterLayerTable) {
@@ -19,7 +20,7 @@ SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, raster
 SumRasterVectorGuf.prototype.run = function () {
 	var self = this;
 	return new Promise(function (resolve, reject) {
-		var sql = this.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
+		var sql = self.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
 		conn.getPgGeonodeDb().query(sql, function (error, results) {
 			if (error) {
 				throw new Error(
@@ -60,6 +61,9 @@ SumRasterVectorGuf.prototype.run = function () {
 };
 
 SumRasterVectorGuf.prototype.storeAnalysis = function(resultsOfAnalysis) {
+	// Create performed analysis.
+	// Also alter table with the areatemplate and add relevant columns. Or fill in the data if the column already exists.
+
 	var sqlToCreateAnalysisTable = util.format("create table analysis.an_%s_%s", this.performedAnalysisId, this.layerReferenceId);
 	conn.getPgGeonodeDb().query(sqlToCreateAnalysisTable, function (error) {
 		if (error) {
@@ -68,9 +72,21 @@ SumRasterVectorGuf.prototype.storeAnalysis = function(resultsOfAnalysis) {
 			);
 		}
 		// For each value in resultsofAnalysis insert a row.
-
-
+		_.values(resultsOfAnalysis).forEach(function(){
+			
+		});
 	});
+};
+
+SumRasterVectorGuf.prototype.createPerformedAnalysis = function() {
+	var performedAnalysis = {
+
+	};
+	crud.create("performedanalysis", performedAnalysis);
+};
+
+SumRasterVectorGuf.prototype.storeRow = function(gidResult) {
+	
 };
 
 module.exports = SumRasterVectorGuf;
