@@ -75,7 +75,7 @@ function checkUniqueId(layerRef,callback) {
 	//console.log(sql)
 	client.query(sql,function(err) {
 		if (err){
-			console.log("checkUniqueId err: ", err);
+			console.log("checkUniqueId err: ", err, " SQL: ", sql);
 			return callback(new Error('IDs not unique'));
 		}
 

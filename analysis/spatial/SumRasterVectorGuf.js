@@ -22,14 +22,14 @@ var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaT
 };
 
 SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, rasterLayerTable) {
-	return util.format("SELECT analyticalUnits.gid as gid, analyticalUnits.\"NUTS_ID\" as analyticalUnitId, ST_Height(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as height, ST_Width(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as width, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).value as val, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom),1)).count as amount FROM %s AS rasterLayer INNER JOIN %s AS analyticalUnits ON ST_Intersects(rasterLayer.rast, analyticalUnits.the_geom)", analyticalUnitsTable, rasterLayerTable);
+	return util.format("SELECT analyticalUnits.gid as gid, ST_Height(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as height, ST_Width(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom)) as width, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).value as val, (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom),1)).count as amount FROM %s AS rasterLayer INNER JOIN %s AS analyticalUnits ON ST_Intersects(rasterLayer.rast, analyticalUnits.the_geom)", rasterLayerTable, analyticalUnitsTable);
 };
 
 SumRasterVectorGuf.prototype.run = function () {
 	var self = this;
 	return new Promise(function (resolve, reject) {
 		var sql = self.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
-		conn.getPgGeonodeDb().query(sql, function (error, results) {
+		conn.getPgDataDb().query(sql, function (error, results) {
 			if (error) {
 				throw new Error(
 					logger.error("SumRasterVectorGuf#process Error when executing SQL: ", sql, " Error: ", error)
@@ -42,10 +42,9 @@ SumRasterVectorGuf.prototype.run = function () {
 			} else {
 				var groupByAnalyticalId = {};
 				results.rows.forEach(function (row) {
-					if (groupByAnalyticalId[row.analyticalUnitId] == null) {
-						groupByAnalyticalId[row.analyticalUnitId] = {
+					if (groupByAnalyticalId[row.gid] == null) {
+						groupByAnalyticalId[row.gid] = {
 							gid: row.gid,
-							id: row.analyticalUnitId,
 							sumOfArea: 0,
 							countOfUrbanized: 0,
 							countOfNonUrbanized: 0,
@@ -54,15 +53,15 @@ SumRasterVectorGuf.prototype.run = function () {
 						}
 					}
 
-					var informationForUnitWithGid = groupByAnalyticalId[row.analyticalUnitId];
+					var informationForUnitWithGid = groupByAnalyticalId[row.gid];
 					informationForUnitWithGid.sumOfArea += (row.height * row.width);
 					if (row.val == 255) {
 						informationForUnitWithGid.countOfUrbanized += row.amount;
 					} else {
 						informationForUnitWithGid.countOfNonUrbanized += row.amount;
 					}
-					informationForUnitWithGid.areaOfUrbanized = informationForUnitWithGid.countOfUrbanized / informationForUnitWithGid.sumOfArea;
-					informationForUnitWithGid.areaOfNonUrbanized = informationForUnitWithGid.countOfNonUrbanized / informationForUnitWithGid.sumOfArea;
+					informationForUnitWithGid.areaOfUrbanized = informationForUnitWithGid.countOfUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * 100;
+					informationForUnitWithGid.areaOfNonUrbanized = informationForUnitWithGid.countOfNonUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * 100;
 				});
 
 				self.storeAnalysis(groupByAnalyticalId).then(function () {
@@ -79,7 +78,7 @@ SumRasterVectorGuf.prototype.storeAnalysis = function (resultsOfAnalysis) {
 		var performedAnalysisId = performedAnalysis._id;
 		return new Promise(function (resolve, reject) {
 			var sqlToCreateAnalysisTable = util.format("create table analysis.an_%s_%s (gid integer PRIMARY KEY, as_%s_attr_%s double precision, as_%s_attr_%s double precision)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId);
-			conn.getPgGeonodeDb().query(sqlToCreateAnalysisTable, function (error) {
+			conn.getPgDataDb().query(sqlToCreateAnalysisTable, function (error) {
 				if (error) {
 					throw new Error(
 						logger.error("SumRasterVectorGuf#process Error when executing SQL: ", sql, " Error: ", error)
@@ -87,30 +86,35 @@ SumRasterVectorGuf.prototype.storeAnalysis = function (resultsOfAnalysis) {
 				}
 
 				self.storeRows(_.values(resultsOfAnalysis), performedAnalysisId).then(function () {
-					resolve();
+					resolve(performedAnalysisId);
 				});
 			});
 		});
-	}).then(function () {
-		return self.createLayerRefForAnalysis();
+	}).then(function (performedAnalysisId) {
+		return self.createLayerRefForAnalysis(performedAnalysisId);
 	});
 
 };
 
 SumRasterVectorGuf.prototype.storeRows = function (rowsValues, performedAnalysisId) {
 	var self = this;
-	var sql = "";
-	rowsValues.forEach(function (row) {
-		var rowSql = util.format("insert into analysis.an_%s_%s (gid, as_%s_attr_%s, as_%s_attr_%s) values(%s,%s)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId, row.areaOfUrbanized, row.areaOfNonUrbanized);
-		sql += rowSql;
-	});
+	return new Promise(function (resolve, reject) {
+		var sql = "";
+		rowsValues.forEach(function (row) {
+			var rowSql = util.format("insert into analysis.an_%s_%s (gid, as_%s_attr_%s, as_%s_attr_%s) values(%s,%s,%s)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId, row.gid, row.areaOfUrbanized, row.areaOfNonUrbanized);
+			sql += rowSql;
+		});
 
-	conn.getPgGeonodeDb().query(sql, function(err, results){
-		if(err) {
-			throw new Error(
-				logger.error("SumRasterVectorGuf#storeRows Couldn't insert the information about rows. Sql: ", sql)
-			);
-		}
+		conn.getPgDataDb().query(sql, function (err, results) {
+			if (err) {
+				throw new Error(
+					logger.error("SumRasterVectorGuf#storeRows Couldn't insert the information about rows. Sql: ", sql)
+				);
+			}
+
+			resolve();
+		});
+
 	});
 };
 
@@ -126,10 +130,11 @@ SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
 			],
 			"status": "Success",
 			"location": self.locationId,
-			"year": self.yearId
+			"year": self.yearId,
+			"finished": new Date()
 		};
 
-		crud.create("performedanalysis", performedAnalysis, null, function (err, result) {
+		crud.create("performedanalysis", performedAnalysis, {userId: 1}, function (err, result) {
 			if (err) {
 				throw new Error(
 					logger.error("SumRasterVectorGuf#createPerformedAnalysis ")
@@ -141,7 +146,7 @@ SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
 	});
 };
 
-SumRasterVectorGuf.prototype.createLayerRefForAnalysis = function () {
+SumRasterVectorGuf.prototype.createLayerRefForAnalysis = function (performedAnalysisId) {
 	var self = this;
 	return new Promise(function (resolve, reject) {
 		var layerRef = {
@@ -161,10 +166,10 @@ SumRasterVectorGuf.prototype.createLayerRefForAnalysis = function () {
 					"attribute": self.attributeNonUrbanizedId
 				}
 			],
-			"layer": "analysis:an_" + self.analysisId + "_" + self.areaTemplateId,
+			"layer": "analysis:an_" + performedAnalysisId + "_" + self.areaTemplateId,
 			"analysis": self.analysisId
 		};
-		crud.create("layerref", layerRef, null, function (err, result) {
+		crud.create("layerref", layerRef, {userId: 1}, function (err, result) {
 			if (err) {
 				throw new Error(
 					logger.error("SumRasterVectorGuf#createLayerRefForAnalysis ")

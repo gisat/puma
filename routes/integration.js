@@ -53,11 +53,9 @@ module.exports = function (app) {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
 			// or like this:
-			// processes.store(process.status("Processing", "..."));
 
-			// Transform to vector
-			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
-				.process();
+			// processes.store(process.status("Processing", "..."));
+			return 'italy';
 		}).then(function(rasterTableName){
 			// Run analysis // Async
 			var rasterLayerTableName = "public." + rasterTableName;
