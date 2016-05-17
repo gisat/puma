@@ -251,18 +251,23 @@ var baseView = {
 	}
 };
 
-var ViewResolver = function(viewProps){
+var ViewResolver = function (viewProps) {
 	var base = deepcopy(baseView);
 	var conf = base.conf;
-	_.extend(conf,viewProps);
+	_.extend(conf, viewProps);
 	this.view = base;
 };
 
-ViewResolver.prototype.create = function(){
+ViewResolver.prototype.create = function () {
 	var self = this;
-	return new Promise(function(resolve, reject){
-		request.post(config.remoteProtocol + '://' + config.remoteAddress + '/rest/dataview', {data: self.view}, function (error, response, data) {
-			if(error) {
+	return new Promise(function (resolve, reject) {
+		request.post(config.remoteProtocol + '://' + config.remoteAddress + '/rest/dataview', {
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(self.view)
+		}, function (error, response, data) {
+			if (error) {
 				throw new Error(
 					logger.error("ViewResolver#error Error: ", error)
 				);
