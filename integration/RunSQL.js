@@ -34,7 +34,7 @@ RunSQL.prototype.process = function(){
 		command += " -f " + self.sqlFilePath;
 
 		logger.info("RunSQL#process, running command: ", "PGPASSWORD=######## " + command);
-		cp.exec("PGPASSWORD=" + connectionParameters.password + " " + command, {}, function(err, stdout, stderr) {
+		cp.exec("PGPASSWORD=" + connectionParameters.password + " " + command, {maxBuffer: 1024 * 1024 * 100}, function(err, stdout, stderr) {
 			if(err) {
 				logger.info("RunSQL#process, Error at psql. err:", err);
 				reject(err);

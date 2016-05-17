@@ -40,7 +40,7 @@ RasterToPSQL.prototype.process = function(){
 			command += " > " + sqlFilePath;
 
 			logger.info("RasterToPSQL#process, running raster2psql command: ", command);
-			cp.exec(command, {maxBuffer: 1024 * 1024 * 1024 * 100}, function(err, stdout, stderr) {
+			cp.exec(command, {maxBuffer: 1024 * 1024 * 100}, function(err, stdout, stderr) {
 				if(err) {
 					logger.info("RasterToPSQL#process, Error at raster2psql. err:", err);
 					reject(err);
