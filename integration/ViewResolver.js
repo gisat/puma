@@ -262,6 +262,12 @@ ViewResolver.prototype.create = function(){
 	var self = this;
 	return new Promise(function(resolve, reject){
 		request.post('/tool/rest/dataview', {data: self.view}, function (error, response, data) {
+			if(error) {
+				throw new Error(
+					logger.error("ViewResolver#error Error: ", error)
+				);
+			}
+
 			logger.info("ViewResolver#create Data: ", data, "Response: ", response, " View: ", self.view);
 			if (
 				data.success &&
