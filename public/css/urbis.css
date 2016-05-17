@@ -1,3 +1,18 @@
+/* Main components */
+.urbis.without-header #wb-header, .urbis #header {
+    display: none;
+}
+.urbis.without-header body.application #main {
+    padding-top: 90px;
+}
+.urbis.without-header #content-application{
+    top: 0;
+}
+.urbis.without-footer #footer {
+    display: none;
+}
+
+/* Header === */
 .urbis .fields-holder > .label {
     background: url("../images/urbis-colour-white.png") no-repeat 15px 8px;
     background-size: 220px;
@@ -77,20 +92,30 @@
 }
 
 /* Box ============= */
-#app-reports-paging {
+.urbis #sidebar-reports {
+    background: rgb(245,245,245);
+    border-left: 1px solid white;
+}
+.urbis #sidebar-tools {
+    background: rgb(245,245,245);
+    border-right: 1px solid white;
+}
+.urbis #app-reports-paging, #app-tools-actions, #maptools-1059 {
     border-bottom: 1px solid white;
 }
-
-.urbis #sidebar-reports, .urbis #sidebar-tools {
-    background: rgb(245,245,245);
-}
-
 .urbis #app-reports-paging .paging-toolbar {
     background: none;
 }
+.urbis #app-tools-accordeon > .x-container {
+    background: #fff;
+}
 
-.urbis .x-panel-collapsed .x-panel-header-default {
-    border-bottom: 1px solid white;
+/* box toggles */
+.urbis #sidebar-reports-toggle, .urbis #sidebar-reports-add {
+    left: -22px;
+}
+.urbis #sidebar-tools-toggle {
+    right: -22px;
 }
 
 /* Accordion =============== */
@@ -106,6 +131,69 @@
 .urbis .x-accordion-body {
     border: 0;
 }
+.urbis .x-panel-header {
+    background: #ddd !important;
+    border-bottom: 1px solid white;
+}
+.urbis .x-panel-header:hover {
+    background: #d3d3d3 !important;
+}
+/* Tables ================ */
+.urbis .x-grid-with-row-lines {
+    border: 1px solid #ccc;
+    margin: 10px;
+}
+.urbis .x-grid-locked {
+    border: 0;
+    margin: 0;
+}
+
+.urbis .x-grid-locked .x-grid-inner-locked {
+    border-width: 1px !important;
+    margin-right: 0;
+}
+
+.urbis .x-grid-with-row-lines .x-grid-cell{
+    border: 0;
+}
+.urbis .x-grid-header-ct {
+    border: 0;
+}
+.urbis .x-column-header {
+    background: #eee;
+    border: 0;
+}
+.urbis .x-column-header-over {
+    background: #ddd;
+    border: 0;
+}
+.urbis .x-grid-body {
+    border: 0;
+}
+
+/* Tabs ================= */
+
+.urbis.x-border-box .x-tab-bar {
+    background: white;
+}
+
+.urbis.x-border-box .x-tab-bar-strip {
+    height: 0;
+    border: 0;
+}
+
+.urbis .x-tab-bar-body {
+    border: 0;
+}
+.urbis.x-border-box .x-tab-default-top {
+    background: none;
+}
+.urbis.x-border-box .x-tab-top-active {
+    background: #eee;
+}
+.urbis.x-border-box .x-tab-inner {
+    font-size: 11px;
+}
 
 /* Buttons ================ */
 .urbis .x-btn-default-small {
@@ -113,19 +201,31 @@
     border: 0;
 }
 .urbis .x-btn-default-small .x-btn-inner {
+    color: #333;
+}
+.urbis #agreement-btns .x-btn-default-small .x-btn-inner {
     color: #fff;
 }
 .urbis .x-btn.custom-button.x-btn-default-small {
-    background: #eee;
+    background: rgb(245,245,245);
 }
 .urbis .x-btn.custom-button.btn-confirm {
     background: #2ecc71;
+    border: 1px solid #2ecc71;
 }
 .urbis .x-btn.custom-button.btn-confirm .x-btn-inner {
     color                : #fff;
 }
 .urbis .x-btn.custom-button.btn-confirm:hover, .x-btn.btn-confirm:focus {
     background           : #27ae60;
+    border: 1px solid #27ae60;
+}
+.urbis #agreement-cancel .x-btn {
+    background: #777777;
+    border: 0;
+}
+.urbis #agreement-cancel .x-btn:hover {
+    background: #555555;
 }
 .urbis #agreement-accept .x-btn {
      background: #2ecc71;
@@ -133,6 +233,9 @@
  }
 .urbis #agreement-accept .x-btn:hover {
     background: #27ae60;
+}
+.urbis .x-action-col-icon:hover {
+    cursor: pointer;
 }
 .urbis .x-boundlist .x-boundlist-item {
     border-top           : 1px solid #ddd;
