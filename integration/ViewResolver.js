@@ -261,7 +261,7 @@ var ViewResolver = function(viewProps){
 ViewResolver.prototype.create = function(){
 	var self = this;
 	return new Promise(function(resolve, reject){
-		request.post('/tool/rest/dataview', {data: self.view}, function (error, response, data) {
+		request.post(config.remoteProtocol + '://' + config.remoteAddress + '/tool/rest/dataview', {data: self.view}, function (error, response, data) {
 			if(error) {
 				throw new Error(
 					logger.error("ViewResolver#error Error: ", error)
@@ -276,7 +276,7 @@ ViewResolver.prototype.create = function(){
 			) {
 				var createdViewKey = data.data._id;
 				//var viewUrl = "http://185.8.164.70/tool/?id=" + createdViewKey;
-				var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "?id=" + createdViewKey;
+				var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "/?id=" + createdViewKey;
 				resolve(viewUrl);
 			}
 
