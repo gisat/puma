@@ -274,6 +274,9 @@ ViewResolver.prototype.create = function () {
 			}
 
 			logger.info("ViewResolver#create Data: ", data);
+			resolve("http://185.8.164.70/tool/?id=6620");
+			/*
+
 			if (
 				data.success &&
 				data.hasOwnProperty("data") &&
@@ -287,7 +290,7 @@ ViewResolver.prototype.create = function () {
 				throw new Error(
 					logger.error("ViewResolver#error Error in data: ", data)
 				);
-			}
+			}*/
 		});
 
 	});
