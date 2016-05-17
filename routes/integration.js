@@ -1,5 +1,6 @@
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
+var Promise = require('promise');
 
 var SumRasterVectorGuf = require('../analysis/spatial/SumRasterVectorGuf');
 var GeonodeLayer = require('../integration/GeonodeLayer');
@@ -47,10 +48,7 @@ module.exports = function (app) {
 		});
 		processes.store(process);
 
-		//configuration
-		var spatialAnalysisKey = 1;
-		var levelAnalysisKey = 1;
-
+		var rasterTableName = null;
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
@@ -61,18 +59,24 @@ module.exports = function (app) {
 			// Transform to vector
 			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
 				.process();
-		}).then(function(){
+		}).then(function(rasterLayerTableName){
+			rasterTableName = rasterLayerTableName;
 			// Connect metadata structures to layer // Async
 			return new GufMetadataStructures()
 				.create();
 		}).then(function(){
 			// Run analysis // Async
-			return new SumRasterVectorGuf("analyticalUnitsLayerName", "layerName")
-				.run();
-		}).then(function(){
-			// Run level analysis // Async
-			return new LevelAnalysisGuf(levelAnalysisKey) // TODO Think of naming
-				.run();
+			var rasterLayerTableName = "public." + rasterTableName;
+			var promises = [];
+			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName)
+				.run());
+			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName)
+				.run());
+			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName)
+				.run());
+			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName)
+				.run());
+			return Promise.all(promises);
 		}).then(function(){
 			// In Puma specify FrontOffice view
 			var viewProps = {
