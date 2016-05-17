@@ -47,7 +47,7 @@ RasterToPSQL.prototype.process = function(){
 				reject(err);
 			}
 			console.log("RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
-			resolve();
+			resolve(self.rasterTable);
 		});
 	});
 };
