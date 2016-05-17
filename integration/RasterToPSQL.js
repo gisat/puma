@@ -10,12 +10,10 @@ var logger = require('../common/Logger').applicationWideLogger;
 /**
  * @param psqlDB - PSQL connection
  * @param rasterFileLocation - Input raster file
- * @param psqlRasterTable - Output PSQL table
  * @constructor
  */
-var RasterToPSQL = function(psqlDB, rasterFileLocation, psqlRasterTable) {
+var RasterToPSQL = function(psqlDB, rasterFileLocation) {
 	this.rasterFileLocation = rasterFileLocation;
-	this.psqlRasterTable = psqlRasterTable;
 	this.psqlRasterTileSize = "200x200";
 };
 
@@ -33,12 +31,16 @@ RasterToPSQL.prototype.process = function(){
 	var self = this;
 	return new Promise(function(resolve, reject){
 		var connectionParameters = parse(config.pgDataConnString);
+		var tableName = path.parse(self.rasterFileLocation).name;
+
+		// todo Test if table exists and if so, change the name
+
 		var command = "raster2pgsql";
 		command += " -c"; // create table
 		command += " -C"; // apply raster constraints
 		command += " -t " + self.psqlRasterTileSize; // split to tiles
 		command += " -F " + self.rasterFileLocation; // input raster file location
-		command += " " + self.psqlRasterTable; // result table name
+		command += " " + tableName; // result table name
 		command += " | psql"; // pipe to psql
 		command += " -h " + connectionParameters.host;
 		command += " -U " + connectionParameters.user;
@@ -53,7 +55,7 @@ RasterToPSQL.prototype.process = function(){
 			}
 			console.log("{console} RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
 			logger.info("{logger} RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
-			resolve(self.rasterTable);
+			resolve(tableName);
 		});
 	});
 };
