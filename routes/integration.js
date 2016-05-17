@@ -80,20 +80,20 @@ module.exports = function (app) {
 		}).then(function(){
 			// In Puma specify FrontOffice view
 			var viewProps = {
-				location: "2450_39", //placeKey + "_" + areaKey, // place + area (NUTS0)
+				location: "6294_18", //placeKey + "_" + areaKey, // place + area (NUTS0)
 				expanded: {
-					2450: {
-						1426: [
-							39
+					6294: {
+						6292: [
+							"18"
 						] // au level
 					} // place
 				},
 				mapCfg: {
 					center: {
-						lon: 11793025.757714,
-						lat: 1228333.4862894
+						lon: 921685.33123517,
+						lat: 6278007.5989754
 					},
-					zoom: 7
+					zoom: 6
 				}
 			};
 			return new ViewResolver(viewProps) // TODO Think of naming
