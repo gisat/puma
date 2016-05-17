@@ -172,7 +172,7 @@ module.exports = function (app) {
 				.substring(1);
 		}
 
-		return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-			s4() + '-' + s4() + s4() + s4();
+		return s4() + s4() + '_' + s4() + '_' + s4() + '_' +
+			s4() + '_' + s4() + s4() + s4();
 	}
 };
