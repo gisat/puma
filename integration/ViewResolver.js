@@ -254,7 +254,7 @@ var baseView = {
 var ViewResolver = function(viewProps){
 	var base = deepcopy(baseView);
 	var conf = base.conf;
-	_.assign(conf,viewProps);
+	_.extend(conf,viewProps);
 	this.view = base;
 };
 
