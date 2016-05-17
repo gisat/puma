@@ -48,7 +48,6 @@ module.exports = function (app) {
 		});
 		processes.store(process);
 
-		var rasterTableName = null;
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
@@ -59,22 +58,17 @@ module.exports = function (app) {
 			// Transform to vector
 			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
 				.process();
-		}).then(function(rasterLayerTableName){
-			rasterTableName = rasterLayerTableName;
-			// Connect metadata structures to layer // Async
-			return new GufMetadataStructures()
-				.create();
-		}).then(function(){
+		}).then(function(rasterTableName){
 			// Run analysis // Async
 			var rasterLayerTableName = "public." + rasterTableName;
 			var promises = [];
-			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6353)
+			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6292)
 				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6354)
+			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6300)
 				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6355)
+			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6301)
 				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6356)
+			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6302)
 				.run());
 
 			return Promise.all(promises);
