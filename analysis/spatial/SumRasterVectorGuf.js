@@ -101,7 +101,7 @@ SumRasterVectorGuf.prototype.storeRows = function (rowsValues, performedAnalysis
 	return new Promise(function (resolve, reject) {
 		var sql = "";
 		rowsValues.forEach(function (row) {
-			var rowSql = util.format("insert into analysis.an_%s_%s (gid, as_%s_attr_%s, as_%s_attr_%s) values(%s,%s,%s)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId, row.gid, row.countOfUrbanized * 12, row.countOfNonUrbanized * 12);
+			var rowSql = util.format("insert into analysis.an_%s_%s (gid, as_%s_attr_%s, as_%s_attr_%s) values(%s,%s,%s)", performedAnalysisId, self.areaTemplateId, self.attributeSetId, self.attributeUrbanizedId, self.attributeSetId, self.attributeNonUrbanizedId, row.gid, row.countOfUrbanized * 12 * 12, row.countOfNonUrbanized * 12 * 12);
 			sql += rowSql;
 		});
 
