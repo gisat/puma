@@ -54,9 +54,8 @@ module.exports = function (app) {
 			processes.store(process);
 			// or like this:
 
-			return "italy";
-			/*return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
-				.process();*/
+			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
+				.process();
 		}).then(function(rasterTableName){
 			// Run analysis // Async
 			var rasterLayerTableName = "public." + rasterTableName;
