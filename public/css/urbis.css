@@ -1,6 +1,10 @@
 /* Main components */
+/* DomManipulation.js line 114*/
 .urbis.without-header #wb-header, .urbis #header {
     display: none;
+}
+.urbis.without-header #main {
+    padding: 0;
 }
 .urbis.without-header body.application #main {
     padding-top: 90px;
@@ -10,6 +14,15 @@
 }
 .urbis.without-footer #footer {
     display: none;
+}
+
+
+.urbis.intro #app-map {
+     display: none;
+}
+.urbis.intro #map-holder {
+     background: url('../images/urbis-background.jpg') no-repeat;
+     background-size: cover;
 }
 
 /* Header === */
@@ -65,7 +78,7 @@
     margin-top       : 7px;
 }
 
-/* ============== Ext ================== */
+/* Form ================== */
 .urbis.x-border-box .x-form-text {
     color                : #333;
     background           : #eee;
@@ -143,9 +156,10 @@
     border: 1px solid #ccc;
     margin: 10px;
 }
-.urbis .x-grid-locked {
-    border: 0;
+
+.urbis .x-grid-with-row-lines.x-grid-locked .x-grid-inner-locked, .urbis .x-grid-with-row-lines.x-grid-locked .x-grid-with-row-lines {
     margin: 0;
+    border: 0;
 }
 
 .urbis .x-grid-locked .x-grid-inner-locked {
