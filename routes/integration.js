@@ -100,6 +100,7 @@ module.exports = function (app) {
 			return new ViewResolver(viewProps) // TODO Think of naming
 				.create();
 		}).then(function(url){
+			logger.info("Finished preparation of Url: ", url);
 			// Set result to the process.
 			process.end("File processing was finished.")
 				.setOption("url", url);

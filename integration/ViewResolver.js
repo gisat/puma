@@ -268,7 +268,7 @@ ViewResolver.prototype.create = function(){
 				);
 			}
 
-			logger.info("ViewResolver#create Data: ", data, "Response: ", response, " View: ", self.view);
+			logger.info("ViewResolver#create Data: ", data);
 			if (
 				data.success &&
 				data.hasOwnProperty("data") &&
@@ -278,8 +278,11 @@ ViewResolver.prototype.create = function(){
 				//var viewUrl = "http://185.8.164.70/tool/?id=" + createdViewKey;
 				var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "/?id=" + createdViewKey;
 				resolve(viewUrl);
+			} else {
+				throw new Error(
+					logger.error("ViewResolver#error Error in data: ", data)
+				);
 			}
-
 		});
 
 	});
