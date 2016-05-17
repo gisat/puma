@@ -1,6 +1,7 @@
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
+var _ = require('underscore');
 
 var SumRasterVectorGuf = require('../analysis/spatial/SumRasterVectorGuf');
 var GeonodeLayer = require('../integration/GeonodeLayer');
@@ -104,8 +105,8 @@ module.exports = function (app) {
 				.setOption("url", url);
 			processes.store(process);
 		}).catch(function (err) {
-			logger.error("/integration/process, for", request.body.url, ": File processing failed:", err);
-			process.error(err);
+			logger.error("/integration/process, for", request.body.url, "(" + process.id + "): File processing failed:", err);
+			process.error("Process failed.");
 			processes.store(process);
 		});
 
@@ -153,7 +154,12 @@ module.exports = function (app) {
 			}
 			var process = processes[0];
 
-			response.json(process);
+			var outputProcess = {
+				id: process.id
+			};
+
+			_.extend(outputProcess, process.options);
+			response.json(outputProcess);
 			resolve();
 
 		}).catch(function(err){
