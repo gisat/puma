@@ -6,6 +6,7 @@ var SumRasterVectorGuf = require('../analysis/spatial/SumRasterVectorGuf');
 var GeonodeLayer = require('../integration/GeonodeLayer');
 var GufMetadataStructures = require('../integration/GufMetadataStructures');
 var RasterToPSQL = require('../integration/RasterToPSQL');
+var RunSQL = require('../integration/RunSQL');
 // Careful with renaming to uppercase start. Was created in windows with lowercase first.
 var RemoteFile = require('../integration/remoteFile');
 var ViewResolver = require('../integration/ViewResolver');
@@ -52,11 +53,17 @@ module.exports = function (app) {
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
-			// or like this:
 
 			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
 				.process();
+		}).then(function(sqlOptions){
+			process.status("Processing", "Raster has been converted to SQL and is being imported.");
+			processes.store(process);
+			return new RunSQL(conn.getPgDataDb(), sqlOptions)
+				.process();
 		}).then(function(rasterTableName){
+			process.status("Processing", "Raster has been imported to PostgreSQL and is being analyzed.");
+			processes.store(process);
 			// Run analysis // Async
 			var rasterLayerTableName = "public." + rasterTableName;
 			var promises = [];

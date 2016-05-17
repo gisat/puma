@@ -1,7 +1,6 @@
 var Promise = require('promise');
 var cp = require('child_process');
 var path = require('path');
-var parse = require('pg-connection-string').parse;
 
 var config = require('../config.js');
 
@@ -28,27 +27,29 @@ RasterToPSQL.prototype.process = function(){
 
 	var self = this;
 	return new Promise(function(resolve, reject){
-		var connectionParameters = parse(config.pgDataConnString);
+		var name = path.parse(self.rasterFileLocation).name;
+		var sqlFilePath = path.join(config.temporaryDownloadedFilesLocation, name + ".sql");
 
-		getTableName(self.psqlDB, path.parse(self.rasterFileLocation).name).then(function(tableName){
+		getTableName(self.psqlDB, name).then(function(tableName){
 			var command = "raster2pgsql";
 			command += " -c"; // create table
 			command += " -C"; // apply raster constraints
 			command += " -t " + self.psqlRasterTileSize; // split to tiles
 			command += " -F " + self.rasterFileLocation; // input raster file location
 			command += " " + tableName; // result table name
-			command += " | psql"; // pipe to psql
-			command += " -h " + connectionParameters.host;
-			command += " -U " + connectionParameters.user;
-			command += " -d " + connectionParameters.database;
-			logger.info("RasterToPSQL#process, running raster2psql command: ", "PGPASSWORD=######## " + command);
-			cp.exec("PGPASSWORD=" + connectionParameters.password + " " + command, {}, function(err, stdout, stderr) {
+			command += " > " + sqlFilePath;
+
+			logger.info("RasterToPSQL#process, running raster2psql command: ", command);
+			cp.exec(command, {}, function(err, stdout, stderr) {
 				if(err) {
 					logger.info("RasterToPSQL#process, Error at raster2psql. err:", err);
 					reject(err);
 				}
 				logger.info("RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
-				resolve(tableName);
+				resolve({
+					sqlFilePath: sqlFilePath,
+					rasterTableName: tableName
+				});
 			});
 		});
 	});
