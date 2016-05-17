@@ -261,9 +261,8 @@ var ViewResolver = function(viewProps){
 ViewResolver.prototype.create = function(){
 	var self = this;
 	return new Promise(function(resolve, reject){
-
-		var req = request.post('/tool/rest/dataview', {data: self.view}, function (error, response, data) {
-
+		request.post('/tool/rest/dataview', {data: self.view}, function (error, response, data) {
+			logger.info("ViewResolver#create Data: ", data, "Response: ", response, " View: ", self.view);
 			if (
 				data.success &&
 				data.hasOwnProperty("data") &&
