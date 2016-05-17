@@ -43,7 +43,9 @@ Logger.prototype._log = function(method, level, passedArguments) {
 };
 
 var applicationWideLogger = new Logger();
-applicationWideLogger.setLevel(config.loggingLevel);
+if(config.loggingLevel) {
+	applicationWideLogger.setLevel(config.loggingLevel);
+}
 
 module.exports = {
 	Logger: Logger,
