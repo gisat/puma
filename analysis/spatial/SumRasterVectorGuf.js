@@ -6,7 +6,6 @@ var logger = require('../../common/Logger').applicationWideLogger;
 
 var Promise = require('promise');
 var _ = require('underscore');
-var UUID = require('../../common/UUID');
 
 var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaTemplateId) {
 	this.analyticalUnitsTable = analyticalUnitsTable;
@@ -132,10 +131,7 @@ SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
 
 	var self = this;
 	return new Promise(function (resolve, reject) {
-		var id =new UUID().withoutDelimiters();
 		var performedAnalysis = {
-			"_id": id,
-			"id": id,
 			"analysis": self.analysisId,
 			"dataset": self.scopeId,
 			"featureLayerTemplates": [
