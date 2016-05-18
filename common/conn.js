@@ -172,10 +172,9 @@ function getIo() {
 }
 
 function getNextId() {
-	objectId++;
-	var newId = objectId;
+	var newId = ++objectId;
 	var mongoSettings = getMongoDb().collection('settings');
-	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
+	mongoSettings.update({_id: 1}, {_id: 1,objectId: newId}, {upsert: true}, function() {});
 	return newId;
 }
 
