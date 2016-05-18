@@ -1,6 +1,7 @@
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
+var UUID = require('../common/UUID');
 
 var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
