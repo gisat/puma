@@ -58,17 +58,17 @@ module.exports = function (app) {
 			processes.store(process);
 			// Run analysis // Async
 			var rasterLayerTableName = "public." + rasterTableName;
-			return new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6292)
-				.run().then(function(){
-				return new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6300)
-					.run();
-			}).then(function(){
-				return new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6301)
-					.run()
-			}).then(function(){
-				return new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6302)
-					.run()
-			});
+			var promises = [];
+			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6292)
+				.run());
+			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6300)
+				.run());
+			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6301)
+				.run());
+			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6302)
+				.run());
+
+			return Promise.all(promises);
 		}).then(function(){
 			logger.info("integration#process Analysis was finished and view is being prepared.");
 			// In Puma specify FrontOffice view

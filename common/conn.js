@@ -2,6 +2,7 @@ var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
+var UUID = require('../common/UUID');
 var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
@@ -21,7 +22,6 @@ var mongodb = null;
 var pgDataDB = null;
 var pgGeonodeDB = null;
 var objectId = null;
-
 
 
 
@@ -173,8 +173,7 @@ function getIo() {
 }
 
 function getNextId() {
-	objectId++;
-	var newId = objectId;
+	var newId = new UUID().withoutDelimiters();
 	var mongoSettings = getMongoDb().collection('settings');
 	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
 	return newId;
