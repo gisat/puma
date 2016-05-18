@@ -6,8 +6,6 @@ var Process = function(id, options){
 	this.options = options || {};
 	this.options.status = options.status || "Started";
 	this.options.message = options.message || null;
-
-	logger.info("Process# constructor, Process", this.id, "created");
 };
 
 /**
