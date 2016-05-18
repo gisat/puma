@@ -26,7 +26,7 @@
     "promise": "^7.1.1",
     "properties": "0.3.3",
     "request": "latest",
-    "underscore": "1.4.x",
+    "underscore": "1.8.x",
     "xml2json": "0.9.x",
     "xmldoc": "^0.3.2",
     "xmldom": "0.1.13"
