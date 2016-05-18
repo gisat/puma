@@ -1,7 +1,6 @@
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
-var UUID = require('../common/UUID');
 
 var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
@@ -172,9 +171,12 @@ function getIo() {
 	//return io;
 }
 
-// TODO: FInd better solution.
 function getNextId() {
-	return new UUID().toNumber();
+	objectId++;
+	var newId = objectId;
+	var mongoSettings = getMongoDb().collection('settings');
+	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
+	return newId;
 }
 
 function getMongoDb() {
