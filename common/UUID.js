@@ -8,8 +8,10 @@ UUID.prototype.toString = function(){
 	return this.value;
 };
 
+// TODO: Update to return stable version. 
 UUID.prototype.withoutDelimiters = function() {
-	return this.value.replace('-', '');
+	return s4() + s4() + s4() + s4() +
+		s4() + s4() + s4() + s4();
 };
 
 function s4() {
