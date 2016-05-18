@@ -21,7 +21,7 @@
      display: none;
 }
 .urbis.intro #map-holder {
-     background: url('../images/urbis-background.jpg') no-repeat;
+     background: url('../images/urbis-background-90-inv.jpg') no-repeat;
      background-size: cover;
 }
 
@@ -54,25 +54,31 @@
     color: #333;
 }
 
-.urbis #content-intro {
-    background-color: rgb(172, 68, 0);
-    background-color: rgba(172, 68, 0, .8);
+.urbis #content-intro{
+    background-color: rgb(67, 66, 84);
+    background-color: rgba(67, 66, 84, .95);
+    padding: 19px;
+    border: 1px solid #666;
+    border-left: 0;
 }
+
 .urbis #content-intro-guide {
     background-color: rgb(55, 55, 55);
-    background-color : rgba(55, 55, 55, .8);
+    background-color : rgba(55, 55, 55, .95);
+    border: 1px solid #666;
+    border-right: 0;
     color: #eee;
+    top: auto;
+    bottom: 150px;
 }
-.urbis #content-intro-terms {
-    color: #666;
-}
+
 .urbis #content-intro-terms h2,
 .urbis #content-intro-guide h2 {
     border: 0;
 }
 .urbis #toolbar {
-    background-color : #ac4400;
-    border-bottom: 2px solid #823300;
+    background: rgb(67, 66, 84);
+    border-bottom: 2px solid rgb(36, 36, 49);
 }
 .urbis #toolbar > .label {
     margin-top       : 7px;
@@ -163,26 +169,25 @@
 }
 /* Tables ================ */
 .urbis .x-grid-with-row-lines {
-    border: 1px solid #ccc;
-    margin: 10px;
+    border: 0;
+    padding: 10px;
 }
 
 .urbis .x-grid-with-row-lines.x-grid-locked .x-grid-inner-locked, .urbis .x-grid-with-row-lines.x-grid-locked .x-grid-with-row-lines {
-    margin: 0;
+    padding: 0;
     border: 0;
 }
 
 .urbis .x-grid-locked .x-grid-inner-locked {
     border-width: 1px !important;
-    margin-right: 0;
+    padding-right: 0;
 }
 
 .urbis .x-grid-with-row-lines .x-grid-cell{
     border: 0;
 }
 .urbis .x-grid-header-ct {
-    border: 0;
-    border-bottom: 1px solid #ddd;
+    border: 1px solid #ddd !important;
 }
 .urbis .x-column-header {
     background: #eee;
@@ -193,7 +198,19 @@
     border: 0;
 }
 .urbis .x-grid-body {
-    border: 0;
+    border: 1px solid #ddd !important;
+    border-top: 0 !important;
+}
+
+.urbis .x-tree-panel .x-grid-header-ct {
+    border: 0 !important;
+}
+.urbis .x-tree-panel .x-grid-body {
+    border: 0 !important;
+}
+
+.urbis .x-window .x-tree-panel {
+    border: 1px solid #ddd;
 }
 
 /* Tabs ================= */
@@ -249,15 +266,15 @@
     background: rgb(245,245,245);
 }
 .urbis .x-btn.custom-button.btn-confirm {
-    background: #2ecc71;
-    border: 1px solid #2ecc71;
+    background: #ff7600;
+    border: 1px solid #ff7600;
 }
 .urbis .x-btn.custom-button.btn-confirm .x-btn-inner {
     color                : #fff;
 }
 .urbis .x-btn.custom-button.btn-confirm:hover, .x-btn.btn-confirm:focus {
-    background           : #27ae60;
-    border: 1px solid #27ae60;
+    background           : #d35400;
+    border: 1px solid #d35400;
 }
 .urbis #agreement-cancel .x-btn {
     background: #777777;
@@ -299,7 +316,8 @@
 
 .urbis .x-window .x-grid .x-toolbar-default.x-docked-top {
     background: #f5d9c6;
-    border-bottom: 1px solid #bbb !important;
+    border: 1px solid #ddd !important;
+    border-bottom-color: #bbb !important;
 }
 
 
