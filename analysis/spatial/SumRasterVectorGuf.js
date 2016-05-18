@@ -6,6 +6,7 @@ var logger = require('../../common/Logger').applicationWideLogger;
 
 var Promise = require('promise');
 var _ = require('underscore');
+var UUID = require('../../common/UUID');
 
 var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaTemplateId) {
 	this.analyticalUnitsTable = analyticalUnitsTable;
@@ -92,6 +93,10 @@ SumRasterVectorGuf.prototype.storeAnalysis = function (resultsOfAnalysis) {
 		});
 	}).then(function (performedAnalysisId) {
 		return self.createLayerRefForAnalysis(performedAnalysisId);
+	}).catch(function(error){
+		throw new Error(
+			logger.error("SumRasterVectorGuf#storeAnalysis Error: ", error)
+		);
 	});
 
 };
@@ -123,6 +128,7 @@ SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
 	var self = this;
 	return new Promise(function (resolve, reject) {
 		var performedAnalysis = {
+			"_id": new UUID().withoutDelimiters(),
 			"analysis": self.analysisId,
 			"dataset": self.scopeId,
 			"featureLayerTemplates": [
