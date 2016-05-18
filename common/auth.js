@@ -23,6 +23,10 @@ function adminOrOwner(req, res, next) {
 	return next(new Error('unauthorized'));
 }
 
+function anyone(req, res, next){
+	return next();
+}
+
 function owner(req,res,next) {
 
 }
@@ -109,6 +113,7 @@ var fetchUserInfo = function(userName, req, sessionId, next) {
 module.exports = {
 	auth: auth,
 	anyUser: anyUser,
+	anyone: anyone,
 	adminOrOwner: adminOrOwner
 };
 

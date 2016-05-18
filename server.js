@@ -11,6 +11,10 @@ var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
+process.on('uncaughtException', (err) => {
+	logger.error("Caught exception: ", err);
+});
+
 function initServer(err) {
 	if (err) {
 		console.log('Error: while initializing server: ', err);

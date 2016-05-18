@@ -48,5 +48,16 @@ module.exports = {
 	 * 4 - NOTHING
 	 * Set level and all above will be logged.
 	 */
-	loggingLevel: 0
+	loggingLevel: 0,
+
+	/*
+	 * UrbanTEP - Destination of temporary downloaded files.
+	 */
+	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
+
+	/*
+	 * UrbanTEP - UserName and Password under which the layers are uploaded
+	 */
+	urbanTepGeonodeUserName: '',
+	urbanTepGeonodeUserPassword: ''
 };
