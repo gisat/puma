@@ -3,6 +3,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var deepcopy = require('deepcopy');
 var _ = require('underscore');
 var request = require('request');
+var crud = require('../rest/crud');
 
 var config = require('../config');
 
@@ -261,38 +262,16 @@ var ViewResolver = function (viewProps) {
 ViewResolver.prototype.create = function () {
 	var self = this;
 	return new Promise(function (resolve, reject) {
-		request.post(config.remoteProtocol + '://' + config.remoteAddress + '/rest/dataview', {
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(self.view)
-		}, function (error, response, data) {
-			if (error) {
+		crud.create("dataview", self.view, {userId: 1}, function (err, result) {
+			if (err) {
 				throw new Error(
-					logger.error("ViewResolver#error Error: ", error)
+					logger.error("ViewResolver#create dataview. Error: ", err)
 				);
 			}
 
-			logger.info("ViewResolver#create Data: ", data);
-			resolve("http://185.8.164.70/tool/?id=6620");
-			/*
-
-			if (
-				data.success &&
-				data.hasOwnProperty("data") &&
-				data.data.hasOwnProperty("_id")
-			) {
-				var createdViewKey = data.data._id;
-				//var viewUrl = "http://185.8.164.70/tool/?id=" + createdViewKey;
-				var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "/?id=" + createdViewKey;
-				resolve(viewUrl);
-			} else {
-				throw new Error(
-					logger.error("ViewResolver#error Error in data: ", data)
-				);
-			}*/
+			var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "/?id=" + result._id;
+			resolve(viewUrl);
 		});
-
 	});
 };
 

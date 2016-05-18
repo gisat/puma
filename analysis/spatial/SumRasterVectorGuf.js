@@ -137,7 +137,7 @@ SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
 		crud.create("performedanalysis", performedAnalysis, {userId: 1}, function (err, result) {
 			if (err) {
 				throw new Error(
-					logger.error("SumRasterVectorGuf#createPerformedAnalysis ")
+					logger.error("SumRasterVectorGuf#createPerformedAnalysis. Error: ", err)
 				);
 			}
 

@@ -52,16 +52,7 @@ module.exports = function (app) {
 
 		var promiseOfFile = remoteFile.get();
 		promiseOfFile.then(function () {
-			process.status("Processing", "File was retrieved successfully and is being processed.");
-			processes.store(process);
-
-			return new RasterToPSQL(conn.getPgDataDb(), remoteFile.getDestination())
-				.process();
-		}).then(function(sqlOptions){
-			process.status("Processing", "Raster has been converted to SQL and is being imported.");
-			processes.store(process);
-			return new RunSQL(conn.getPgDataDb(), sqlOptions)
-				.process();
+			return 'italy';
 		}).then(function(rasterTableName){
 			process.status("Processing", "Raster has been imported to PostgreSQL and is being analyzed.");
 			processes.store(process);
