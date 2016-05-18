@@ -2,7 +2,6 @@ var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
 
-var UUID = require('../common/UUID');
 var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
@@ -172,11 +171,17 @@ function getIo() {
 	//return io;
 }
 
+var availableIds = [];
+
 function getNextId() {
-	var newId = new UUID().withoutDelimiters();
-	var mongoSettings = getMongoDb().collection('settings');
-	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
-	return newId;
+	if(!availableIds.length) {
+		availableIds = [objectId + 1, objectId + 2, objectId + 3, objectId + 4, objectId + 5, objectId + 6, objectId + 7, objectId + 8, objectId + 9];
+		objectId = objectId + 10;
+		var mongoSettings = getMongoDb().collection('settings');
+		mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
+
+	}
+	return availableIds.pop();
 }
 
 function getMongoDb() {
