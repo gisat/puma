@@ -31,12 +31,12 @@
 	font-size            : 12px;
 }
 .x-btn.custom-button {
-	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
+	background           : #f5f1ee url("./images/btn-bg.png") repeat-x 0 0;
 	border               : none;
 	padding              : 0;
 }
 .x-btn.custom-button:hover, .x-btn.custom-button:focus {
-	background           : #eee url("../images/btn-bg-hover.png") repeat-x 0 0;
+	background           : #eee url("./images/btn-bg-hover.png") repeat-x 0 0;
 }
 .x-btn.custom-button.toggle-active {
 	background           : #fff;
@@ -98,7 +98,7 @@
 }
 
 .x-border-box .x-form-trigger.x-form-refresh-trigger {
-	background           : #ddd url("../images/icons/paging-refresh2.png") no-repeat 50% 50%;
+	background           : #ddd url("./images/icons/paging-refresh2.png") no-repeat 50% 50%;
         background-size: 16px 16px;
 }
 
@@ -173,7 +173,7 @@
 	padding-left         : 6px;
 	padding-right        : 6px;
 	border               : none;
-	background           : #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0 !important;
+	background           : #e5e0db url("./images/accordeon-h-bg.png") repeat-x 0 0 !important;
 }
 .x-accordion-hd:hover {
 	background: #d7d0c8 !important;
@@ -188,22 +188,22 @@
 }
 
 div .x-tool-expand-top, div .x-tool-expand-right, div .x-tool-expand-bottom, div .x-tool-expand-left {
-	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
+	background           : url("./images/icons/expand.png") no-repeat 50% 50%;
 }
 div .x-tool-over .x-tool-expand-top, div .x-tool-over .x-tool-expand-right, div .x-tool-over .x-tool-expand-bottom, div .x-tool-over .x-tool-expand-left {
-	background           : url("../images/icons/expand.png") no-repeat 50% 50%;
+	background           : url("./images/icons/expand.png") no-repeat 50% 50%;
 }
 div .x-tool-collapse-top, div .x-tool-collapse-right, div .x-tool-collapse-bottom, div .x-tool-collapse-left {
-	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+	background           : url("./images/icons/collapse.png") no-repeat 50% 50%;
 }
 div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, div .x-tool-over .x-tool-collapse-bottom, div .x-tool-over .x-tool-collapse-left {
-	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+	background           : url("./images/icons/collapse.png") no-repeat 50% 50%;
 }
 div .x-tool-collapse-top, div .x-tool-collapse-right, div .x-tool-collapse-bottom, div .x-tool-collapse-left {
-	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+	background           : url("./images/icons/collapse.png") no-repeat 50% 50%;
 }
 div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, div .x-tool-over .x-tool-collapse-bottom, div .x-tool-over .x-tool-collapse-left {
-	background           : url("../images/icons/collapse.png") no-repeat 50% 50%;
+	background           : url("./images/icons/collapse.png") no-repeat 50% 50%;
 }
 
 /* TABS */
@@ -215,7 +215,7 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 }
 .x-border-box .x-tab-default-top {
 	height               : 30px;
-	background           : #f4f0ec url("../images/tab-bg.png") repeat-x 0 0;
+	background           : #f4f0ec url("./images/tab-bg.png") repeat-x 0 0;
 	border               : none;
 	-webkit-border-radius: 0;
 	-moz-border-radius   : 0;
@@ -226,7 +226,7 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 	font-size            : 12px;
 }
 .x-border-box .x-tab-top-active {
-	background-image     : url("../images/tab-selected-bg.png");
+	background-image     : url("./images/tab-selected-bg.png");
 }
 .x-tab-bar-top .x-tab-bar-strip {
 	top                  : 35px;
@@ -237,7 +237,7 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 	-webkit-border-radius: 0;
 	-moz-border-radius   : 0;
 	border-radius        : 0;
-	background: #e6e1dc url("../images/window-bg.png") repeat-x 0 0;
+	background: #e6e1dc url("./images/window-bg.png") repeat-x 0 0;
 }
 .x-window-header-default-top {
 	-webkit-box-shadow   : none;
@@ -253,7 +253,7 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 	font-size            : 12px;
 }
 .x-window-header-default-top .x-tool .x-tool-close {
-	background           : url("../images/icons/close.png") no-repeat 50% 50%;
+	background           : url("./images/icons/close.png") no-repeat 50% 50%;
 }
 .x-window-body-default {
 	background           : #fff;
@@ -302,18 +302,18 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 
 /* TREE */
 .x-tree-icon-parent {
-	background-image     : url("../images/icons/tree-node-closed.png");
+	background-image     : url("./images/icons/tree-node-closed.png");
 	background-repeat     : no-repeat;
 }
 .x-grid-tree-node-expanded .x-tree-icon-parent {
-	background-image     : url("../images/icons/tree-node-opened.png");
+	background-image     : url("./images/icons/tree-node-opened.png");
 }
 .x-tree-icon-leaf {
-	background-image     : url("../images/icons/tree-node-item.png");
+	background-image     : url("./images/icons/tree-node-item.png");
 	background-repeat     : no-repeat;
 }
 .layerpanel .x-tree-icon-leaf {
-	background-image     : url("../images/icons/info.png");
+	background-image     : url("./images/icons/info.png");
 	background-repeat     : no-repeat;
         visibility: hidden
 }
@@ -329,10 +329,10 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 	margin-right         : 5px;
 }
 .x-tree-lines .x-tree-elbow-plus, .x-tree-lines .x-tree-elbow-end-plus {
-	background-image     : url("../images/icons/tree-node-expand.png");
+	background-image     : url(./images/icons/tree-node-expand.png);
 }
 .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-plus, .x-tree-lines .x-grid-tree-node-expanded .x-tree-elbow-end-plus {
-	background-image     : url("../images/icons/tree-node-collapse.png");
+	background-image     : url(./images/icons/tree-node-collapse.png);
 }
 .x-tree-lines .x-tree-elbow, .x-tree-lines .x-tree-elbow-end, .x-tree-lines .x-tree-elbow-line {
 	background-image     : none;
@@ -359,10 +359,10 @@ div .x-tool-over .x-tool-collapse-top, div .x-tool-over .x-tool-collapse-right, 
 	width                : 18px;
 	height               : 18px;
 	margin-left          : -1px;
-	background           : url("../images/icons/tree-node-collapse.png") no-repeat 0 0;
+	background           : url(./images/icons/tree-node-collapse.png) no-repeat 0 0;
 }
 .x-grid-row-collapsed .x-grid-row-expander {
-	background-image     : url("../images/icons/tree-node-expand.png");
+	background-image     : url(./images/icons/tree-node-expand.png);
 }
 .layers-selected .x-grid-row-over .x-grid-cell, .layers-selected .x-grid-row-over .x-grid-rowwrap-div,
 .layers-selected .x-grid-row-focused .x-grid-cell, .layers-selected .x-grid-row-focused .x-grid-rowwrap-div {

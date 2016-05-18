@@ -17,19 +17,17 @@
 }
 @media screen and (max-height: 800px) {
 	#content-intro-terms {
-                        height           : 494px; 
-                        
+	    height: 494px;
+	}
+		#content-intro-terms #agreement-detail {
+			height: 216px;
 		}
-                #content-intro-terms #agreement-detail {
-                    height: 216px;
-                }
 }
 @media screen and (max-height: 700px) {
 	#content-intro-terms {
-                        height           : 394px; 
-                        
+		height: 394px;
+	}
+		#content-intro-terms #agreement-detail {
+			height: 116px;
 		}
-                #content-intro-terms #agreement-detail {
-                    height: 116px;
-                }
 }
