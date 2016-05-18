@@ -54,7 +54,7 @@ module.exports = function (app) {
 		promiseOfFile.then(function () {
 			return 'italy';
 		}).then(function(rasterTableName){
-			process.status("Processing", "Raster has been imported to PostgreSQL and is being analyzed.");
+			process.status("Processing", logger.info("integration#process Raster has been imported to PostgreSQL and is being analyzed."));
 			processes.store(process);
 			// Run analysis // Async
 			var rasterLayerTableName = "public." + rasterTableName;
@@ -70,6 +70,7 @@ module.exports = function (app) {
 
 			return Promise.all(promises);
 		}).then(function(){
+			logger.info("integration#process Analysis was finished and view is being prepared.");
 			// In Puma specify FrontOffice view
 			var viewProps = {
 				location: "6294_18", //placeKey + "_" + areaKey, // place + area (NUTS0)

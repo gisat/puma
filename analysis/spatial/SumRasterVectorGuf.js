@@ -29,6 +29,7 @@ SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, raster
 SumRasterVectorGuf.prototype.run = function () {
 	var self = this;
 	return new Promise(function (resolve, reject) {
+		logger.info("SumRasterVectorGuf#run Analysis started.");
 		var sql = self.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
 		conn.getPgDataDb().query(sql, function (error, results) {
 			if (error) {
@@ -74,6 +75,7 @@ SumRasterVectorGuf.prototype.run = function () {
 };
 
 SumRasterVectorGuf.prototype.storeAnalysis = function (resultsOfAnalysis) {
+	logger.info("SumRasterVectorGuf#storeAnalysis Store information about finished analysis.", resultsOfAnalysis);
 	var self = this;
 	return this.createPerformedAnalysis().then(function (performedAnalysis) {
 		var performedAnalysisId = performedAnalysis._id;
@@ -102,6 +104,7 @@ SumRasterVectorGuf.prototype.storeAnalysis = function (resultsOfAnalysis) {
 };
 
 SumRasterVectorGuf.prototype.storeRows = function (rowsValues, performedAnalysisId) {
+	logger.info("SumRasterVectorGuf#storeRows Rows.", rowsValues);
 	var self = this;
 	return new Promise(function (resolve, reject) {
 		var sql = "";
@@ -125,10 +128,14 @@ SumRasterVectorGuf.prototype.storeRows = function (rowsValues, performedAnalysis
 
 // TODO: Move outside.
 SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
+	logger.info("SumRasterVectorGuf#createPerformedAnalysis Started");
+
 	var self = this;
 	return new Promise(function (resolve, reject) {
+		var id =new UUID().withoutDelimiters();
 		var performedAnalysis = {
-			"_id": new UUID().withoutDelimiters(),
+			"_id": id,
+			"id": id,
 			"analysis": self.analysisId,
 			"dataset": self.scopeId,
 			"featureLayerTemplates": [
@@ -153,6 +160,8 @@ SumRasterVectorGuf.prototype.createPerformedAnalysis = function () {
 };
 
 SumRasterVectorGuf.prototype.createLayerRefForAnalysis = function (performedAnalysisId) {
+	logger.info("SumRasterVectorGuf#createLayerRefForAnalysis for analysis: ", performedAnalysisId, " Started");
+
 	var self = this;
 	return new Promise(function (resolve, reject) {
 		var layerRef = {
