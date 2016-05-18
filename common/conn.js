@@ -171,17 +171,9 @@ function getIo() {
 	//return io;
 }
 
-var availableIds = [];
-
+// TODO: FInd better solution.
 function getNextId() {
-	if(!availableIds.length) {
-		availableIds = [objectId + 1, objectId + 2, objectId + 3, objectId + 4, objectId + 5, objectId + 6, objectId + 7, objectId + 8, objectId + 9];
-		objectId = objectId + 10;
-		var mongoSettings = getMongoDb().collection('settings');
-		mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
-
-	}
-	return availableIds.pop();
+	return new UUID().toNumber();
 }
 
 function getMongoDb() {
