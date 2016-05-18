@@ -158,7 +158,7 @@
 	margin-left          : -12px;
 }
 	.x-btn-pressed.btn-tool-hover button .x-btn-icon {
-		background-image : url("../images/icons/tools-hover-pressed.png") !important;
+		background-image : url(./images/icons/tools-hover-pressed.png) !important;
 	}
 .x-btn.btn-tool-zoom-selected button .x-btn-icon {
 	width                : 35px;
@@ -171,7 +171,7 @@
 	margin-left          : -19px;
 }
 	.x-btn-pressed.btn-tool-measure-line button .x-btn-icon {
-		background-image : url("../images/icons/tools-measure-line-pressed.png") !important;
+		background-image : url(./images/icons/tools-measure-line-pressed.png) !important;
 	}
 .x-btn.btn-tool-measure-polygon button .x-btn-icon {
 	width                : 44px;
@@ -179,7 +179,7 @@
 	margin-left          : -22px;
 }
 	.x-btn-pressed.btn-tool-measure-polygon button .x-btn-icon {
-		background-image : url("../images/icons/tools-measure-polygon-pressed.png") !important;
+		background-image : url(./images/icons/tools-measure-polygon-pressed.png) !important;
 	}
 .x-btn.btn-tool-multiple-maps button .x-btn-icon {
 	width                : 60px;
@@ -187,7 +187,7 @@
 	margin-left          : -30px;
 }
 	.x-btn-pressed.btn-tool-multiple-maps button .x-btn-icon {
-		background-image : url("../images/icons/tools-maps-multiple-pressed.png") !important;
+		background-image : url(./images/icons/tools-maps-multiple-pressed.png) !important;
 	}
 .x-btn.btn-tool-save-image button .x-btn-icon {
 	width                : 48px;
@@ -202,7 +202,7 @@
 #app-reports-paging .paging-toolbar {
 	padding              : 4px 10px;
 	height               : 30px;
-	background           : #f5f1ee url("../images/btn-bg.png") repeat-x 0 0;
+	background           : #f5f1ee url(./images/btn-bg.png) repeat-x 0 0;
 	border               : none;
 }
 #app-reports-accordeon {
@@ -218,31 +218,31 @@
 	font-size            : 12px;
 }
 .paging-toolbar .x-tbar-page-first {
-	background-image     : url("../images/icons/paging-first.png") !important;
+	background-image     : url(./images/icons/paging-first.png) !important;
 }
 .paging-toolbar .x-item-disabled .x-tbar-page-first {
-	background-image     : url("../images/icons/paging-first-disabled.png") !important;
+	background-image     : url(./images/icons/paging-first-disabled.png) !important;
 }
 .paging-toolbar .x-tbar-page-last {
-	background-image     : url("../images/icons/paging-last.png") !important;
+	background-image     : url(./images/icons/paging-last.png) !important;
 }
 .paging-toolbar .x-item-disabled .x-tbar-page-last {
-	background-image     : url("../images/icons/paging-last-disabled.png") !important;
+	background-image     : url(./images/icons/paging-last-disabled.png) !important;
 }
 .paging-toolbar .x-tbar-page-prev {
-	background-image     : url("../images/icons/paging-prev.png") !important;
+	background-image     : url(./images/icons/paging-prev.png) !important;
 }
 .paging-toolbar .x-item-disabled .x-tbar-page-prev {
-	background-image     : url("../images/icons/paging-prev-disabled.png") !important;
+	background-image     : url(./images/icons/paging-prev-disabled.png) !important;
 }
 .paging-toolbar .x-tbar-page-next {
-	background-image     : url("../images/icons/paging-next.png") !important;
+	background-image     : url(./images/icons/paging-next.png) !important;
 }
 .paging-toolbar .x-item-disabled .x-tbar-page-next {
-	background-image     : url("../images/icons/paging-next-disabled.png") !important;
+	background-image     : url(./images/icons/paging-next-disabled.png) !important;
 }
 .paging-toolbar .x-tbar-loading {
-	background-image     : url("../images/icons/paging-refresh.png") !important;
+	background-image     : url(./images/icons/paging-refresh.png) !important;
 }
 .paging-toolbar .x-btn:hover, .paging-toolbar .x-btn:focus, .paging-toolbar .x-btn-over, .paging-toolbar .x-btn-focus {
 	background           : none;
@@ -279,69 +279,69 @@
 	background-position  : 50% 50%;
 }
 .x-panel-header .x-tool-poweron {
-	background-image     : url("../images/icons/power2.png") !important;
+	background-image     : url(./images/icons/power2.png) !important;
 }
 .x-panel-header .x-tool-refresh {
-	background-image     : url("../images/icons/paging-refresh.png") !important;
+	background-image     : url(./images/icons/paging-refresh.png) !important;
 }
 .x-panel-header .x-tool-areacollapse {
-	background-image     : url("../images/icons/collapse.gif") !important;
+	background-image     : url(./images/icons/collapse.gif) !important;
 }
 .x-panel-header .x-tool-gear {
-	background-image     : url("../images/icons/settings.png") !important;
+	background-image     : url(./images/icons/settings.png) !important;
 }
 .x-panel-header .x-tool-detach {
-	background-image     : url("../images/icons/detach.gif") !important;
+	background-image     : url(./images/icons/detach.gif) !important;
 }
 .x-panel-header .x-tool-unselect {
-	background-image     : url("../images/icons/unselect.gif") !important;
+	background-image     : url(./images/icons/unselect.gif) !important;
 }
 .x-panel-header .x-tool-unselectall {
-	background-image     : url("../images/icons/unselect_all.gif") !important;
+	background-image     : url(./images/icons/unselect_all.gif) !important;
 }
 .x-panel-header .x-tool-close {
-	background-image     : url("../images/icons/close.png") !important;
+	background-image     : url(./images/icons/close.png) !important;
 }
 .x-panel-header .x-tool-help {
-	background-image     : url("../images/icons/legend.png") !important;
+	background-image     : url(./images/icons/legend.png) !important;
 }
 .x-panel-header .x-tool-save {
-	background-image     : url("../images/icons/snapshot.png") !important;
+	background-image     : url(./images/icons/snapshot.png) !important;
 }
 .x-panel-header .x-tool-print {
-	background-image     : url("../images/icons/save.png") !important;
+	background-image     : url(./images/icons/save.png) !important;
 }
 .x-panel-header .x-tool-search {
-	background-image     : url("../images/icons/search.png") !important;
+	background-image     : url(./images/icons/search.png) !important;
 }
 
 .x-panel-header .x-tool-collapse {
-	background-image     : url("../images/icons/save-csv.png") !important;
+	background-image     : url(./images/icons/save-csv.png) !important;
 }
 
 .cmptype-grid, .cmptype-piechart, .cmptype-scatterchart, .cmptype-snapshot, .cmptype-addchart, .cmptype-columnchart, .cmptype-extentoutline {
 	width                : 17px;
 }
 .cmptype-grid {
-	background-image     : url("../images/icons/grid.png");
+	background-image     : url(./images/icons/grid.png);
 }
 .cmptype-piechart {
-	background-image     : url("../images/icons/graph.png");
+	background-image     : url(./images/icons/graph.png);
 }
 .cmptype-scatterchart {
-	background-image     : url("../images/icons/graph.png");
+	background-image     : url(./images/icons/graph.png);
 }
 .cmptype-columnchart {
-	background-image     : url("../images/icons/graph.png");
+	background-image     : url(./images/icons/graph.png);
 }
 .cmptype-snapshot {
-	background-image     : url("../images/icons/snapshots.png");
+	background-image     : url(./images/icons/snapshots.png);
 }
 .cmptype-extentoutline {
-	background-image     : url("../images/icons/graph.png");
+	background-image     : url(./images/icons/graph.png);
 }
 .cmptype-addchart {
-	background-image     : url("../images/icons/add.png");
+	background-image     : url(./images/icons/add.png);
 }
 
 .tools-colorpicker {
@@ -427,7 +427,7 @@
 }
 
 #sidebar-tools-colors .label {
-	background: #e5e0db url("../images/accordeon-h-bg.png") repeat-x 0 0;
+	background: #e5e0db url(./images/accordeon-h-bg.png) repeat-x 0 0;
 	padding: 7px 10px;
 	font-weight: bold;
 }
@@ -478,10 +478,10 @@
 
 /* Slider */
 .x-slider-horz, .x-slider-horz .x-slider-end, .x-slider-horz .x-slider-inner {
-	background-image: url("../images/panther-slider-bg.png");
+	background-image: url(./images/panther-slider-bg.png);
 }
 .yearselector .x-slider-horz,.yearselector .x-slider-horz .x-slider-end,.yearselector .x-slider-horz .x-slider-inner {
-	background-image: url("../images/panther-slider-bg-2.png");
+	background-image: url(./images/panther-slider-bg-2.png);
 }
 .x-slider-horz {
 	background-position: 0 -24px;
@@ -493,10 +493,10 @@
 	background-position: 0 -2px;
 }
 .x-slider-horz .x-slider-thumb {
-	background-image: url("../images/panther-slider-thumb.png");
+	background-image: url(./images/panther-slider-thumb.png);
 }
 .yearselector .x-slider-horz .x-slider-thumb {
-	background-image: url("../images/panther-slider-thumb-2.png");
+	background-image: url(./images/panther-slider-thumb-2.png);
 }
 .slider-thumb-label,
 .slider-constraints {
