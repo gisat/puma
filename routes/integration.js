@@ -125,10 +125,8 @@ module.exports = function (app) {
 
 		var oneProcesses = new FilterByIdProcesses(conn.getMongoDb(), id);
 		var allOneProcesses = oneProcesses.all();
-		console.log("oneProcesses", oneProcesses);
-		console.log("allOneProcesses", allOneProcesses);
 		allOneProcesses.then(function(processes){
-			console.log("FilterByIdProcesses all then: ", processes);
+			logger.info("FilterByIdProcesses all then: ", processes);
 
 			if (!processes.length) {
 				logger.error("There is no running process with id", id);
