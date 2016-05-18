@@ -2,6 +2,8 @@ var dataMod = require('./data');
 var async = require('async');
 var crud = require('../rest/crud');
 
+var logger = require('../common/Logger').applicationWideLogger;
+
 var _ = require('underscore');
 
 function getChart(params, callback) {
@@ -33,24 +35,30 @@ function getChart(params, callback) {
 				var stacking = params['stacking'];
 				var attrsNum = (!stacking || stacking == 'none' || stacking == 'double') ? attrs.length * years.length : years.length;
 				dataMod.getData(params, function(err, dataObj) {
-					if (err)
+					if (err) {
+						logger.error("columnchart#getChart data. Error: ", err);
 						return callback(err);
+					}
 					return asyncCallback(null, dataObj);
 				})
 			}],
 		attrConf: function(asyncCallback) {
 
 			dataMod.getAttrConf(params, function(err, attrConf) {
-				if (err)
+				if (err) {
+					logger.error("columnchart#getChart attrConf. Error: ", err);
 					return callback(err);
+				}
 
 				return asyncCallback(null, attrConf);
 			})
 		},
 		years: function(asyncCallback) {
 			crud.read('year', {}, function(err, resls) {
-				if (err)
+				if (err){
+					logger.error("columnchart#getChart Read years. Error: ", err);
 					return callback(err);
+				}
 				var map = {};
 				for (var i=0;i<resls.length;i++) {
 					var resl = resls[i];
