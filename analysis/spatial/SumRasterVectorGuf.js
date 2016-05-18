@@ -83,7 +83,7 @@ SumRasterVectorGuf.prototype.storeAnalysis = function (resultsOfAnalysis) {
 			conn.getPgDataDb().query(sqlToCreateAnalysisTable, function (error) {
 				if (error) {
 					throw new Error(
-						logger.error("SumRasterVectorGuf#process Error when executing SQL: ", sql, " Error: ", error)
+						logger.error("SumRasterVectorGuf#process Error when executing SQL: ", sqlToCreateAnalysisTable, " Error: ", error)
 					);
 				}
 
