@@ -64,18 +64,20 @@ function getData(params, callback) {
 				// Any pumas own derived tables are filtered out, eg. tables from the schema 'analysis'.
 				// So we must take into account that geometry column of the source table may be of whatever name.
 				var aggTableName = conn.getLayerTable(aggregateLayerRef.layer);
-				var aggGeomColName = conn.getGeometryColumnName(aggTableName);
-				var sql = util.format('SELECT ST_SRID(%s) as srid FROM %s LIMIT 1', aggGeomColName, aggTableName);
-				var client = conn.getPgDataDb();
-
-				client.query(sql, function(err, resls) {
-					if (err) {
-						logger.error("dataspatial#getData Sql. ", sql, " Error: ", err);
-						return callback(err);
-					}
-					return asyncCallback(null, {srid: resls.rows[0]['srid'],layerRef:aggregateLayerRef});
-				})
-
+				conn.getGeometryColumnName(aggTableName).then(function (aggGeomColName) {
+					var sql = util.format('SELECT ST_SRID(%s) as srid FROM %s LIMIT 1', aggGeomColName, aggTableName);
+					var client = conn.getPgDataDb();
+					client.query(sql, function(err, resls) {
+						if (err) {
+							logger.error(util.format("dataspatial#getData Sql. %s Error: %s", sql, err));
+							return callback(err);
+						}
+						return asyncCallback(null, {srid: resls.rows[0]['srid'], layerRef: aggregateLayerRef});
+					});
+				}).catch(function (err) {
+					return callback(err);
+				});
+	
 			}],
 		result: ['aggregateLayer', function(asyncCallback, results) {
 				//console.log('here');
@@ -94,29 +96,37 @@ function getData(params, callback) {
 				// So we must take into account that geometry column of the source table may be of whatever name.
 				// In case of unitLayerName, this is only true if also areaId != -1.
 				var aggTableName = conn.getLayerTable(aggregateLayerRef.layer);
-				var aggGeomColName = conn.getGeometryColumnName(aggTableName);
-				var unitGeomColName = "the_geom";
-				if (areaId != -1) {
-					var unitTableName = conn.getLayertable(unitLayerRef.layer);
-					unitGeomColName = conn.getGeometryColumnName(unitTableName);
-				}
-
-				var sql = 'SELECT COUNT(DISTINCT a."'+aggregateLayerRef.fidColumn+'") as cnt';
-				sql += ' FROM ' + aggregateLayerRef.layer.split(':')[1] + ' a';
-				sql += util.format(' JOIN %s b ON ST_Intersects(a.%s, ST_Transform(b.%s, %s))',
-				                   unitTableName, aggGeomColName, unitGeomColName, results.aggregateLayer.srid);
-				if (gids.length) {
-					sql += ' WHERE b.'+unitLayerGid+' IN (' + gids.join(',') + ')';
-				}
-				//console.log(sql);
-				processClient.query(sql, function(err, resls) {
-					processClient.end();
-					if (err) {
-						logger.error("dataspatial#getData result Sql. ", sql, " Error: ", err);
-						return callback(err);
+				var aggGeomColName = null;
+				var unitTableName = conn.getLayerTable(unitLayerRef.layer);
+				var unitGeomColName = null;
+				conn.getGeometryColumnName(aggTableName).then(function (colName) {
+					aggGeomColName = colName;
+					if (areaId != -1) {
+						return conn.getGeometryColumnName(unitTableName);
+					} else {
+						return "the_geom";
 					}
-					return callback(null, resls.rows[0].cnt);
-				})
+				}).then(function (colName) {
+					unitGeomColName = colName;
+					var sql = 'SELECT COUNT(DISTINCT a."'+aggregateLayerRef.fidColumn+'") as cnt';
+					sql += ' FROM ' + aggregateLayerRef.layer.split(':')[1] + ' a';
+					sql += util.format(' JOIN %s b ON ST_Intersects(a.%s, ST_Transform(b.%s, %s))',
+					                   unitTableName, aggGeomColName, unitGeomColName, results.aggregateLayer.srid);
+					if (gids.length) {
+						sql += ' WHERE b.'+unitLayerGid+' IN (' + gids.join(',') + ')';
+					}
+					//console.log(sql);
+					processClient.query(sql, function(err, resls) {
+						processClient.end();
+						if (err) {
+							logger.error("dataspatial#getData result Sql. ", sql, " Error: ", err);
+							return callback(err);
+						}
+						return callback(null, resls.rows[0].cnt);
+					})
+				}).catch(function (err) {
+					return callback(err);
+				});
 
 			}]
 	};
