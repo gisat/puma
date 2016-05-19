@@ -78,7 +78,7 @@ function getData(params, callback) {
 				}
 				var unitLayerName = areaId != -1 ? (unitLayerRef.layer.split(':')[1]) : ('up.base_user_' + params['userId'] + '_loc_' + locationId);
 				var unitLayerGid = areaId != -1 ? ('"'+unitLayerRef.fidColumn+'"') : 'gid';
-				var processClient = new pg.Client(conn.getPgConnString());
+				var processClient = conn.getPgDataDb();
 				processClient.connect();
 				var aggregateLayerRef = results.aggregateLayer.layerRef;
 				var sql = 'SELECT COUNT(DISTINCT a."'+aggregateLayerRef.fidColumn+'") as cnt';
