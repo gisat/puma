@@ -214,7 +214,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onConfirm: function() {
-        if (!this.agreementAccepted) return;
+        if (Config.toggles.useWBAgreement && !this.agreementAccepted){
+            console.info("Access not allowed. You have to agree with Agreement.");
+            return;
+        }
         var val = Ext.ComponentQuery.query('#initialtheme')[0].getValue();
         this.onThemeChange({switching:true},val)
     },

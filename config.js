@@ -35,7 +35,15 @@ module.exports = {
 	debug: true,
 
 	toggles: {
-		noGeoserverLayerGroups: false
+		noGeoserverLayerGroups: false,
+		useWBAgreement: false,
+		useWBHeader: false,
+		useWBFooter: false,
+		allowPumaHelp: false,
+		allowDownloadsLink: false,
+		usePumaLogo: false,
+		advancedFiltersFirst: false
+		//renameAdvancedFiltersTo: "Evaluation Tool"
 	},
 
 	allowedOrigins: "http://localhost:5555",

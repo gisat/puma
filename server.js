@@ -2,6 +2,8 @@ var express = require('express');
 var app = express();
 var conn = require('./common/conn');
 var publicConfig = require('./common/public-config');
+var getCSS = require('./common/get-css');
+var getMngCSS = require('./common/get-mng-css');
 var staticFn = express['static'];
 var session = require('express-session');
 
@@ -11,7 +13,7 @@ var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
@@ -79,6 +81,12 @@ function initServer(err) {
 
 	app.use('/config.js', publicConfig);
 	app.use('/printpublic/config.js', publicConfig);
+
+	app.use('/app.css', getCSS);
+	app.use('/printpublic/app.css', getCSS);
+
+	app.use('/app-mng.css', getMngCSS);
+
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
 	app.use('/printpublic',staticFn(__dirname + '/public'));
