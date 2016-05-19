@@ -13,7 +13,7 @@ var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
