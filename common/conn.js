@@ -1,3 +1,6 @@
+var Promise = require('promise');
+var util = require('util');
+
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
@@ -222,6 +225,7 @@ function getGeometryColumnName(sourceTableName) {
 	return new Promise(function (resolve, reject) {
 		// Extract schema name and table name.
 		var nameParts = sourceTableName.split(".");
+		var err_msg = "";
 		if (nameParts.length != 2) {
 			err_msg = util.format("Error: sourceTableName does not keep tj format 'schema.table': %s.", nameParts);
 			logger.error(err_msg);
@@ -238,7 +242,7 @@ function getGeometryColumnName(sourceTableName) {
 		// Do lookup.
 		// Lookup is made into the same schema the table resides.
 		var sql = util.format("SELECT f_geometry_column FROM %s.geometry_columns WHERE f_table_schema = $1 AND f_table_name = $2;", schemaName);
-		var client = conn.getPgDataDb();
+		var client = getPgDataDb();
 		client.query(sql, [schemaName, tableName], function(err, results) {
 			if (err) {
 				err_msg = util.format("conn#getGeometryColumnName Sql. %s Error: ", sql, err);
@@ -250,7 +254,7 @@ function getGeometryColumnName(sourceTableName) {
 				logger.error(err_msg);
 				return reject(new Error(err_msg));
 			}
-			colName = results.rows[0]['f_geometry_column'];
+			var colName = results.rows[0]['f_geometry_column'];
 			resolve(colName);
 		});
 	});
@@ -267,5 +271,5 @@ module.exports = {
 	getPgGeonodeDb: getPgGeonodeDb,
 	getNextId: getNextId,
 	getLayerTable: getLayerTable,
-	getGeometryColumnName, getGeometryColumnName
+	getGeometryColumnName: getGeometryColumnName
 };
