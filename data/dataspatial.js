@@ -2,6 +2,7 @@ var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
+var util = require('util');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -58,7 +59,13 @@ function getData(params, callback) {
 				if (!aggregateLayerRef) {
 					return callback(new Error('notexistingdata (4)'));
 				}
-				var sql = 'SELECT ST_SRID(the_geom) as srid FROM ' + aggregateLayerRef.layer.split(':')[1] + ' LIMIT 1';
+				// NOTE:
+				// Due to dbFilter we always obtain references to source tables (layer source data).
+				// Any pumas own derived tables are filtered out, eg. tables from the schema 'analysis'.
+				// So we must take into account that geometry column of the source table may be of whatever name.
+				var aggTableName = conn.getLayerTable(aggregateLayerRef.layer);
+				var aggGeomColName = conn.getGeometryColumnName(aggTableName);
+				var sql = util.format('SELECT ST_SRID(%s) as srid FROM %s LIMIT 1', aggGeomColName, aggTableName);
 				var client = conn.getPgDataDb();
 
 				client.query(sql, function(err, resls) {
@@ -81,9 +88,23 @@ function getData(params, callback) {
 				var processClient = new pg.Client(conn.getPgConnString());
 				processClient.connect();
 				var aggregateLayerRef = results.aggregateLayer.layerRef;
+
+				// NOTE:
+				// Due to dbFilter and aggregateLayer() we are always working with source tables (layer source data).
+				// So we must take into account that geometry column of the source table may be of whatever name.
+				// In case of unitLayerName, this is only true if also areaId != -1.
+				var aggTableName = conn.getLayerTable(aggregateLayerRef.layer);
+				var aggGeomColName = conn.getGeometryColumnName(aggTableName);
+				var unitGeomColName = "the_geom";
+				if (areaId != -1) {
+					var unitTableName = conn.getLayertable(unitLayerRef.layer);
+					unitGeomColName = conn.getGeometryColumnName(unitTableName);
+				}
+
 				var sql = 'SELECT COUNT(DISTINCT a."'+aggregateLayerRef.fidColumn+'") as cnt';
 				sql += ' FROM ' + aggregateLayerRef.layer.split(':')[1] + ' a';
-				sql += ' JOIN ' + unitLayerName + ' b ON ST_Intersects(a.the_geom,ST_Transform(b.the_geom,' + results.aggregateLayer.srid + '))';
+				sql += util.format(' JOIN %s b ON ST_Intersects(a.%s, ST_Transform(b.%s, %s))',
+				                   unitTableName, aggGeomColName, unitGeomColName, results.aggregateLayer.srid);
 				if (gids.length) {
 					sql += ' WHERE b.'+unitLayerGid+' IN (' + gids.join(',') + ')';
 				}

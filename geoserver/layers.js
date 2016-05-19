@@ -4,6 +4,7 @@ var conn = require('../common/conn');
 var Timer = require('../common/timer');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
+var util = require('util');
 
 function recreateLayerDb(layerRef, isUpdate, callback) {
 
@@ -112,33 +113,36 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
 	var layerName = ' views.layer_' + areaLayerRef['_id'];
 	var from = conn.getLayerTable(areaLayerRef.layer);
 	//console.log(isBase)
-	// priprava view
-	var sql = 'BEGIN; DROP VIEW IF EXISTS ' + layerName + '; ';
+	// NOTE:
+	// 'from' table is always source table (layer source data).
+	// So we must take into account that geometry column of the source table may be of whatever name.
+	var geomColName = conn.getGeometryColumnName(from);
+	var sql = 'BEGIN;';
+	sql += util.format(' DROP VIEW IF EXISTS %s;', layerName);
 	if (isBase && !isUpdate) {
-		var viewName = 'base_' + areaLayerRef['_id'];
-		sql += 'CREATE TABLE views.' + viewName + ' AS (SELECT ';
-		sql += '"' + areaLayerRef.fidColumn + '" AS gid,';
-		sql += 'ST_Centroid(ST_Transform(the_geom,4326)) as centroid,';
-
-		sql += "CASE WHEN ST_Contains(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))";
-		sql += "THEN ST_Area(ST_Transform(the_geom,4326)::geography)";
-		sql += "ELSE ST_Area(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as area,";
-
-		sql += "CASE WHEN ST_Contains(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))";
-		sql += "THEN ST_Length(ST_Transform(the_geom,4326)::geography)";
-		sql += "ELSE ST_Length(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as length,";
-
-		sql += 'Box2D(ST_Transform(the_geom,4326)) as extent FROM ' + from + ');';
-		sql += 'ALTER TABLE views.' + viewName + ' ADD CONSTRAINT ' + viewName + '_unique UNIQUE(gid);'
+		var viewName = util.format('base_%s', areaLayerRef['_id']);
+		var trSql = util.format('ST_Transform(%s, 4326)', geomColName);
+		var polygonSql = "ST_GeometryFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))', 4326)"
+		sql += util.format('CREATE TABLE views.%s AS (', viewName);
+                sql +=             ' SELECT';
+		sql += util.format('  "%s" AS gid,', areaLayerRef.fidColumn);
+		sql += util.format('  ST_Centroid(%s) as centroid,', trSql);
+		sql += util.format("  CASE WHEN ST_Contains(%s, %s)", polygonSql, trSql);
+		sql += util.format("   THEN ST_Area(%s::geography)", trSql);
+		sql += util.format("   ELSE ST_Area(ST_Intersection(%s, %s)::geography) END as area,", polygonSql, trSql);
+		sql += util.format("  CASE WHEN ST_Contains(%s, %s)", polygonSql, trSql);
+		sql += util.format("   THEN ST_Length(%s::geography)", trSql);
+		sql += util.format("   ELSE ST_Length(ST_Intersection(%s, %s)::geography) END as length,", polygonSql, trSql);
+		sql += util.format('  Box2D(%s) as extent', trSql);
+		sql += util.format(' FROM %s);', from);
+		sql += util.format(' ALTER TABLE views.%s ADD CONSTRAINT %s_unique UNIQUE(gid);', viewName, viewName);
 	}
-
-
 	sql += 'CREATE VIEW ' + layerName + ' AS SELECT ';
 	// select z uzemni vrstvy
 	sql += 'a."' + areaLayerRef.fidColumn + '" AS gid,';
 	sql += 'a."' + (areaLayerRef.nameColumn || areaLayerRef.fidColumn) + (areaLayerRef.nameColumn ? '"' : '"::VARCHAR') + ' AS name,';
 	sql += areaLayerRef.parentColumn ? ('a."' + areaLayerRef.parentColumn + '" AS parentgid,') : 'NULL::integer AS parentgid,';
-	sql += 'a.the_geom,';
+	sql += util.format('a.%s,', geomColName);
 	sql += 'b.area,';
 	sql += 'b.length,';
 	sql += 'b.centroid,';

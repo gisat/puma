@@ -210,6 +210,9 @@ function getLayerTable(layer){
 	return config.workspaceSchemaMap[workspace] + "." + layerName;
 }
 
+function getGeometryColumnName(sourceTableName) {
+	return "the_geom";
+}
 
 module.exports = {
 	init: init,
@@ -221,5 +224,6 @@ module.exports = {
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
 	getNextId: getNextId,
-	getLayerTable: getLayerTable
+	getLayerTable: getLayerTable,
+	getGeometryColumnName, getGeometryColumnName
 };
