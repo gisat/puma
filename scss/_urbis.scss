@@ -1,0 +1,363 @@
+@mixin urbis {
+    /* Main components */
+    /* DomManipulation.js line 114*/
+    .urbis.without-header #wb-header, .urbis #header {
+        display: none;
+    }
+    .urbis.without-header #main {
+        padding: 0;
+    }
+    .urbis.without-header body.application #main {
+        padding-top: 90px;
+    }
+    .urbis.without-header #content-application{
+        top: 0;
+    }
+    .urbis.without-footer #footer {
+        display: none;
+    }
+
+
+    .urbis.intro #app-map {
+        display: none;
+    }
+    .urbis.intro #map-holder {
+        background: url('../public/images/urbis-background-90-inv.jpg') no-repeat;
+        background-size: cover;
+    }
+
+    /* Header === */
+    .urbis .fields-holder > .label {
+        background: url("../public/images/urbis-colour-white.png") no-repeat 15px 11px;
+        background-size: 200px;
+        width: 250px;
+    }
+    .urbis .fields-holder .field > .label {
+        color            : #eee;
+    }
+    .urbis .field.level .x-btn {
+        background           : #eee;
+    }
+    .urbis .field.level .x-btn .x-btn-inner {
+        color: inherit;
+    }
+    .urbis .field.help .help-btn .x-btn {
+        background: #eee;
+    }
+
+    .urbis .field.year .widget .x-field .x-form-item-body{
+        color: #eee;
+    }
+    .urbis .yearselector .x-slider-horz .x-slider-thumb{
+        background-image: url("../public/images/urbis-slider-thumb-2.png")
+    }
+
+    .urbis #button-1033-btnIconEl{
+        color: #333;
+    }
+
+    .urbis #content-intro{
+        background-color: rgb(67, 66, 84);
+        background-color: rgba(67, 66, 84, .95);
+        padding: 19px;
+        border: 1px solid #666;
+        border-left: 0;
+        width: 810px;
+    }
+
+    .urbis #content-intro-guide {
+        background-color: rgb(55, 55, 55);
+        background-color : rgba(55, 55, 55, .95);
+        border: 1px solid #666;
+        border-right: 0;
+        color: #eee;
+        top: auto;
+        bottom: 150px;
+    }
+
+    .urbis #content-intro-terms h2,
+    .urbis #content-intro-guide h2 {
+        border: 0;
+    }
+    .urbis #toolbar {
+        background: rgb(67, 66, 84);
+        border-bottom: 2px solid rgb(36, 36, 49);
+    }
+    .urbis #toolbar > .label {
+        margin-top       : 7px;
+    }
+
+    /* Form ================== */
+    .urbis.x-border-box .x-form-text {
+        color                : #333;
+        background           : #eee;
+        border-radius: 2px 0 0 2px;
+    }
+    .urbis.x-border-box .x-form-trigger {
+        background           : #eee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAWIAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAIhJREFUeNpidHYKYWZgYJgDxLuBeBkDJogCYlcgTmEBEvOBOBaKGdA0gBQuAmKQgcxMQGIHEP+FCiyCKkBXCJLfwYJk0iIkDTZAnIakMA6kjgXJamaok0B0JlQcpDARZiATkvsWQyX+oilcDFPAhObzxVArf0HpxciSLFiCCmTlESB+hC4BEGAAZXUd8tVZG3gAAAAASUVORK5CYII=) no-repeat 50% 50%;
+        border-radius: 0 2px 2px 0;
+    }
+
+    .urbis.x-border-box .x-form-trigger.x-form-refresh-trigger {
+        background           : #eee url("../public/images/icons/paging-refresh2.png") no-repeat 50% 50%;
+        margin-left: -1px;
+    }
+
+    .urbis.x-border-box .x-form-trigger.x-form-spinner-up {
+        background           : #eee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAWIAAAABGdBTUEAALGPC/xhBQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB90JEAkUOtgOpdcAAABySURBVBjTfcvBCQIxEAXQp7tYhsUowhbgKRBBsCePQg424dUuvNmH4GUCIUTn8meG91f73dFgtnj3z/UAJrwi/+KMgk1k/oUzbpjinuLOPU4N/OAaWQsJ5lhKA0+449n8S8XLAGqyFpYZ54CPBugKB1y+PK8ZAZvCJxQAAAAASUVORK5CYII=) no-repeat 50% 50%;
+    }
+
+    .urbis.x-border-box .custom-combo .x-form-text {
+        border-radius: 2px 0 0 2px;
+        color                : #333;
+        background           : #eee;
+    }
+    .urbis.x-border-box .custom-combo .x-form-trigger {
+        background-color     : #eee;
+        border-radius: 0 2px 2px 0;
+    }
+    .urbis.x-border-box .custom-combo .x-form-refresh-trigger {
+
+    }
+
+    /* Box ============= */
+    .urbis #sidebar-reports {
+        background: rgb(245,245,245);
+        border-left: 1px solid white;
+    }
+    .urbis #sidebar-tools {
+        background: rgb(245,245,245);
+        border-right: 1px solid white;
+    }
+    .urbis #app-reports-paging, #app-tools-actions, #maptools-1059 {
+        border-bottom: 1px solid white;
+    }
+    .urbis #app-reports-paging .paging-toolbar {
+        background: none;
+    }
+    .urbis #app-tools-accordeon > .x-container {
+        background: #fff;
+    }
+    .urbis #app-tools-actions span {
+        color: #333;
+    }
+    .urbis .btn-map-tool span.x-btn-inner {
+        color: #333;
+    }
+
+    /* box toggles */
+    .urbis #sidebar-reports-toggle, .urbis #sidebar-reports-add {
+        left: -22px;
+    }
+    .urbis #sidebar-tools-toggle {
+        right: -22px;
+    }
+
+    /* Accordion =============== */
+    .urbis .x-box-inner {
+        background: none;
+    }
+    .urbis .x-accordion-hd  {
+        border-color: white !important;
+    }
+    .urbis .x-accordion-hd .x-panel-header-text {
+        color: #333;
+    }
+    .urbis .x-accordion-body {
+        border: 0;
+    }
+    .urbis .x-panel-header {
+        background: #ddd !important;
+        border-bottom: 1px solid white;
+    }
+    .urbis .x-panel-header:hover {
+        background: #d3d3d3 !important;
+    }
+    .urbis .x-accordion-hd .x-tool-over .x-tool-collapse-top {
+        background-position: inherit;
+    }
+    /* Tables ================ */
+    .urbis .x-grid-with-row-lines {
+        border: 0;
+        padding: 10px;
+    }
+
+    .urbis .x-grid-with-row-lines.x-grid-locked .x-grid-inner-locked, .urbis .x-grid-with-row-lines.x-grid-locked .x-grid-with-row-lines {
+        padding: 0;
+        border: 0;
+    }
+
+    .urbis .x-grid-locked .x-grid-inner-locked {
+        border-width: 1px !important;
+        padding-right: 0;
+    }
+
+    .urbis .x-grid-with-row-lines .x-grid-cell{
+        border: 0;
+    }
+    .urbis .x-grid-header-ct {
+        border: 1px solid #ddd !important;
+    }
+    .urbis .x-column-header {
+        background: #eee;
+        border: 0;
+    }
+    .urbis .x-column-header-over {
+        background: #ddd;
+        border: 0;
+    }
+    .urbis .x-grid-body {
+        border: 1px solid #ddd !important;
+        border-top: 0 !important;
+    }
+
+    .urbis .x-tree-panel .x-grid-header-ct {
+        border: 0 !important;
+    }
+    .urbis .x-tree-panel .x-grid-body {
+        border: 0 !important;
+    }
+
+    .urbis .x-window .x-tree-panel {
+        border: 1px solid #ddd;
+    }
+
+    /* Tabs ================= */
+
+    .urbis.x-border-box .x-tab-bar {
+        background: white;
+        border-bottom: 1px solid #ddd !important;
+    }
+
+    .urbis.x-border-box .x-tab-bar-strip {
+        height: 0;
+        border: 0;
+    }
+    .urbis .x-tab-bar-top .x-tab-bar-body {
+        padding: 3px 0 3px;
+        border: 0;
+    }
+    .urbis.x-border-box .x-tab-default-top {
+        background: white;
+        border-bottom: 1px solid #ddd !important;
+        height: 28px;
+    }
+    .urbis.x-border-box .x-tab-top-active {
+        border: 0;
+        background: #eee;
+    }
+    .urbis.x-border-box .x-tab-inner {
+        font-size: 11px;
+    }
+
+
+    /* Buttons ================ */
+    .urbis .x-btn-default-small {
+        background: #d35400;
+        border: 0;
+        border-radius: 2px;
+    }
+    .urbis .x-btn-default-small:hover {
+        background: #ac4400;
+    }
+    .urbis .x-btn-default-small .x-btn-inner {
+        color: #fff;
+    }
+    .urbis .x-btn-default-toolbar-small-over {
+        background: #bbbbc0;
+        border: 1px solid #bbbbc0;
+    }
+
+    .urbis #agreement-btns .x-btn-default-small .x-btn-inner {
+        color: #fff;
+    }
+    .urbis .x-btn.custom-button.x-btn-default-small {
+        background: rgb(245,245,245);
+    }
+    .urbis .x-btn.custom-button.btn-confirm {
+        background: #ff7600;
+        border: 1px solid #ff7600;
+    }
+    .urbis .x-btn.custom-button.btn-confirm .x-btn-inner {
+        color                : #fff;
+    }
+    .urbis .x-btn.custom-button.btn-confirm:hover, .x-btn.btn-confirm:focus {
+        background           : #d35400;
+        border: 1px solid #d35400;
+    }
+    .urbis #agreement-cancel .x-btn {
+        background: #777777;
+        border: 0;
+    }
+    .urbis #agreement-cancel .x-btn:hover {
+        background: #555555;
+    }
+    .urbis #agreement-accept .x-btn {
+        background: #2ecc71;
+        border: 0;
+    }
+    .urbis #agreement-accept .x-btn:hover {
+        background: #27ae60;
+    }
+
+    /* Windows ================= */
+    .urbis .x-window-default {
+        background: #fff;
+        border: 1px solid #ccc;
+    }
+    .urbis .x-tool {
+        padding-bottom: 1px;
+    }
+    .urbis .x-window-header-text-default {
+        padding-left: 5px;
+        color: #333;
+    }
+    .urbis .x-window-body {
+        border: 0;
+    }
+    .urbis .x-toolbar-footer {
+        background: none;
+        border: 0;
+    }
+    .urbis .x-toolbar-footer.x-docked-bottom {
+        border: 0 !important;
+    }
+
+    .urbis .x-window .x-grid .x-toolbar-default.x-docked-top {
+        background: #CFCFD3;
+        border: 1px solid #ddd !important;
+        border-bottom-color: #CFCFD3 !important;
+    }
+
+
+
+    .urbis .x-action-col-icon:hover {
+        cursor: pointer;
+    }
+    .urbis .x-boundlist .x-boundlist-item {
+        border-top           : 1px solid #ddd;
+    }
+
+    .urbis .x-boundlist.custom-combo-list .x-boundlist-item {
+        background           : #eee;
+        color                : #333;
+    }
+
+    .urbis .x-boundlist.custom-combo-list .x-boundlist-item:hover,
+    .urbis .x-boundlist.custom-combo-list .x-boundlist-item-over {
+        background           : #ddd;
+    }
+
+    .urbis .x-grid-row-over .x-grid-cell, .urbis .x-grid-row-over .x-grid-rowwrap-div,
+    .urbis .x-grid-row-focused .x-grid-cell, .urbis .x-grid-row-focused .x-grid-rowwrap-div {
+        background-color     : #eee;
+    }
+
+    @media screen and (max-width: 1140px){
+        .urbis #toolbar > .label {
+            width: 60px;
+            padding-left: 65px;
+        }
+    }
+}
+

@@ -17,10 +17,11 @@
 }
 
 
-.urbis.intro #app-map {
+/* Intro ========= */
+.urbis .intro #app-map {
      display: none;
 }
-.urbis.intro #map-holder {
+.urbis .intro #map-holder {
      background: url('../images/urbis-background-90-inv.jpg') no-repeat;
      background-size: cover;
 }
@@ -90,33 +91,34 @@
 .urbis.x-border-box .x-form-text {
     color                : #333;
     background           : #eee;
-    border-radius: 2px 0 0 2px;
+    border-radius: 1px 0 0 1px;
+    border-right: 0;
 }
 .urbis.x-border-box .x-form-trigger {
     background           : #eee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAWIAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAIhJREFUeNpidHYKYWZgYJgDxLuBeBkDJogCYlcgTmEBEvOBOBaKGdA0gBQuAmKQgcxMQGIHEP+FCiyCKkBXCJLfwYJk0iIkDTZAnIakMA6kjgXJamaok0B0JlQcpDARZiATkvsWQyX+oilcDFPAhObzxVArf0HpxciSLFiCCmTlESB+hC4BEGAAZXUd8tVZG3gAAAAASUVORK5CYII=) no-repeat 50% 50%;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 1px 1px 0;
+    border-left: 0;
 }
-
 .urbis.x-border-box .x-form-trigger.x-form-refresh-trigger {
     background           : #eee url("../images/icons/paging-refresh2.png") no-repeat 50% 50%;
     margin-left: -1px;
 }
-
 .urbis.x-border-box .x-form-trigger.x-form-spinner-up {
     background           : #eee url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAICAYAAAAvOAWIAAAABGdBTUEAALGPC/xhBQAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB90JEAkUOtgOpdcAAABySURBVBjTfcvBCQIxEAXQp7tYhsUowhbgKRBBsCePQg424dUuvNmH4GUCIUTn8meG91f73dFgtnj3z/UAJrwi/+KMgk1k/oUzbpjinuLOPU4N/OAaWQsJ5lhKA0+449n8S8XLAGqyFpYZ54CPBugKB1y+PK8ZAZvCJxQAAAAASUVORK5CYII=) no-repeat 50% 50%;
 }
 
 .urbis.x-border-box .custom-combo .x-form-text {
-    border-radius: 2px 0 0 2px;
+    border-radius: 1px 0 0 1px;
     color                : #333;
     background           : #eee;
 }
 .urbis.x-border-box .custom-combo .x-form-trigger {
     background-color     : #eee;
-    border-radius: 0 2px 2px 0;
+    border-radius: 0 1px 1px 0;
 }
-.urbis.x-border-box .custom-combo .x-form-refresh-trigger {
 
+.urbis.x-border-box .x-tbar-page-number .x-form-text {
+    border: 1px solid #aaa;
 }
 
 /* Box ============= */
@@ -173,9 +175,10 @@
     background: #d3d3d3 !important;
 }
 .urbis .x-accordion-hd .x-tool-over .x-tool-collapse-top {
-    background-position: inherit;
+    background-position: 50% 50%;
 }
-    /* Tables ================ */
+
+/* Tables ================ */
 .urbis .x-grid-with-row-lines {
     border: 0;
     padding: 10px;
@@ -250,11 +253,41 @@
 }
 
 
-    /* Buttons ================ */
+/* Buttons ================ */
+/* Sidebars buttons */
+.urbis #sidebar-tools-toggle, .urbis #sidebar-reports-toggle {
+    background: #ddd url('../images/urbis-sidebar-toggle-sprite.png');
+    border: 1px solid white;
+    border-top: 0;
+}
+.urbis #sidebar-reports-add {
+    background: #ddd url('../images/icons/urbis-add.png') no-repeat center center;
+    border-left: 1px solid white;
+    border-bottom: 1px solid white;
+    height: 31px;
+}
+.urbis #sidebar-tools-toggle:hover, .urbis #sidebar-reports-toggle:hover, .urbis #sidebar-reports-add:hover {
+    background-color: #d3d3d3;
+}
+.urbis #sidebar-tools-toggle {
+    background-position: -23px -3px;
+    border-left: 0;
+}
+.urbis #sidebar-reports-toggle {
+    background-position: -1px -3px;
+    border-right: 0;
+}
+.urbis #sidebar-reports.hidden #sidebar-reports-toggle {
+    background-position: -23px -3px;
+}
+.urbis #sidebar-tools.hidden #sidebar-tools-toggle {
+    background-position: -1px -3px;
+}
+/*Basic buttons*/
 .urbis .x-btn-default-small {
     background: #d35400;
     border: 0;
-    border-radius: 2px;
+    border-radius: 1px;
 }
 .urbis .x-btn-default-small:hover {
     background: #ac4400;
@@ -299,6 +332,38 @@
     background: #27ae60;
 }
 
+/* help buttons */
+.urbis #app-toolbar-contexthelp span.x-btn-icon {
+    background: url('../images/icons/urbis-help-context.png') !important;
+}
+.urbis #app-toolbar-webhelp span.x-btn-icon {
+    background: url('../images/icons/urbis-help-web.png') !important;
+}
+
+/* map tools buttons */
+.urbis .x-btn.btn-map-tool {
+    background: #fff;
+}
+.urbis .x-btn-pressed.btn-tool-hover button .x-btn-icon {
+    background: url('../images/icons/urbis-tools-hover-pressed.png') !important;
+}
+.urbis .x-btn-pressed.btn-tool-multiple-maps button .x-btn-icon {
+    background-image: url('../images/icons/urbis-tools-maps-multiple-pressed.png') !important;
+}
+.urbis .x-btn-pressed.btn-tool-measure-line button .x-btn-icon {
+    background-image: url('../images/icons/urbis-tools-measure-line-pressed.png') !important;
+}
+.urbis .x-btn-pressed.btn-tool-measure-polygon button .x-btn-icon {
+    background-image: url('../images/icons/urbis-tools-measure-polygon-pressed.png') !important;
+}
+.urbis .x-btn-pressed.btn-map-tool button .x-btn-inner,  .urbis #app-tools-actions .x-btn-pressed span.x-btn-inner{
+    color: #c85931;
+}
+.urbis .x-btn.btn-map-tool:focus, .urbis .x-btn.btn-map-tool:hover, .urbis .x-btn.btn-snapshot:hover, .urbis .x-btn.btn-map-select:hover {
+    background: #eee;
+}
+
+
 /* Windows ================= */
 .urbis .x-window-default {
     background: #fff;
@@ -314,6 +379,7 @@
 .urbis .x-window-body {
     border: 0;
 }
+
 .urbis .x-toolbar-footer {
     background: none;
     border: 0;
