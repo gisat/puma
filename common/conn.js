@@ -167,7 +167,7 @@ function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
 		});
 	}).then(function () {
 		var serverPromises = [];
-		for (var remoteServerName of remoteDbSchemas) {
+		for (var remoteServerName in remoteDbSchemas) {
 			function promiseCallback(remoteServerName) {
 				return function (resolve, reject) {
 					var remoteDbConnParams = pgConnStringParser(remoteDbSchemas[remoteServerName].connString);
