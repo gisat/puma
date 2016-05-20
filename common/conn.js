@@ -194,22 +194,25 @@ function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
 		var importPromises = [];
 		for (var remoteServerName in remoteDbSchemas) {
 			for (var workspaceName in remoteDbSchemas[remoteServerName].workspaceSchemaMap) {
-				importPromises.push(new Promise(function (resolve, reject) {
-					var remoteSchemaName = remoteDbSchemas[remoteServerName].workspaceSchemaMap[workspaceName];
-					var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
-					var sql = "";
-					sql += util.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", localSchemaName);
-					sql += util.format("CREATE SCHEMA %s;\n", localSchemaName);
-					sql += util.format("IMPORT FOREIGN SCHEMA %s FROM SERVER %s INTO %s;\n", remoteSchemaName, remoteServerName, localSchemaName);
-					pgClient.query(sql, function(err, results) {
-						if (err) {
-							reject(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err));
-						}
-						setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
-						logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
-						resolve();
-					});
-				}));
+				function promiseCallback(remoteServerName, workspaceName) {
+					return function (resolve, reject) {
+						var remoteSchemaName = remoteDbSchemas[remoteServerName].workspaceSchemaMap[workspaceName];
+						var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
+						var sql = "";
+						sql += util.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", localSchemaName);
+						sql += util.format("CREATE SCHEMA %s;\n", localSchemaName);
+						sql += util.format("IMPORT FOREIGN SCHEMA %s FROM SERVER %s INTO %s;\n", remoteSchemaName, remoteServerName, localSchemaName);
+						pgClient.query(sql, function(err, results) {
+							if (err) {
+								reject(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err));
+							}
+							setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
+							logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
+							resolve();
+						});
+					}
+				}
+				importPromises.push(new Promise(promiseCallback(remoteServerName, workspaceName)));
 			}
 		}
 	}).catch(function (err) {
