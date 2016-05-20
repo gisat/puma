@@ -94,9 +94,9 @@ function initGeoserver() {
 	});
 }
 
-function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, pgDataCallback) {
+function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
-	pgDataDB.connect(pgDataCallback);
+	pgDataDB.connect(initPgSchemas(config.workspaceSchemaMap, config.remoteDbSchemas));
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
 
@@ -212,13 +212,15 @@ function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
 						sql += util.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", localSchemaName);
 						sql += util.format("CREATE SCHEMA %s;\n", localSchemaName);
 						sql += util.format("IMPORT FOREIGN SCHEMA %s FROM SERVER %s INTO %s;\n", remoteSchemaName, remoteServerName, localSchemaName);
+						logger.info("conn#initPgSchemas importing foreign schemas SQL: ", sql);
 						pgClient.query(sql, function(err, results) {
 							if (err) {
-								reject(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err));
+								reject(logger.error(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err)));
+							} else {
+								setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
+								logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
+								resolve();
 							}
-							setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
-							logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
-							resolve();
 						});
 					}
 				}
@@ -236,9 +238,7 @@ function init(app, callback) {
 	},590000);
 	initGeoserver();
 
-	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, function pgDataCallback(err) {
-		initPgSchemas(config.workspaceSchemaMap, config.remoteDbSchemas);
-	});
+	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
 
 	//var server = require('http').createServer(app);
 	//server.listen(3100);
