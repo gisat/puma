@@ -14,6 +14,17 @@ module.exports = {
 		geonode: "public"
 	},
 
+	remoteDbSchemas: {
+		urbis: {
+			connString     : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
+			workspaceSchemaMap: {
+				urbis_ancillary_layers: "ancillary_layers",
+				urbis_input: "input",
+				urbis_results_final: "results_final"
+			}
+		}
+	},
+
 	geoserverHost   : "185.8.164.70",
 	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",

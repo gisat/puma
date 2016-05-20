@@ -1,24 +1,15 @@
+var http = require('http');
+var https = require('https');
+var MongoClient = require('mongodb').MongoClient;
+var pg = require('pg');
+var pgConnStringParser = require('pg-connection-string').parse;
 var Promise = require('promise');
 var util = require('util');
 
 var config = require('../config');
-var pg = require('pg');
-var MongoClient = require('mongodb').MongoClient;
-
 var logger = require('../common/Logger').applicationWideLogger;
-var http = require('http');
-var https = require('https');
 
-//maybe one day we can switch to request instead of http and https
-//var requestPackage = require('request'); // request was taken by conn.request
-
-/////// DEBUG
-//var http = require('http-debug').http;
-//var https = require('http-debug').https;
-//http.debug = 2;
-///////
 		
-var async = require('async');
 
 var mongodb = null;
 var pgDataDB = null;
@@ -103,9 +94,9 @@ function initGeoserver() {
 	});
 }
 
-function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
+function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, pgDataCallback) {
 	pgDataDB = new pg.Client(pgDataConnString);
-	pgDataDB.connect();
+	pgDataDB.connect(pgDataCallback);
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
 
@@ -158,8 +149,69 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 	});
 }
 
-function initPgSchemas(_workspaceSchemaMap) {
+function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
+	// Setup initial local schemas.
 	workspaceSchemaMap = _workspaceSchemaMap;
+	var pgClient = null;
+
+	new Promise(function (resolve, reject) {
+		pgClient = getPgDataDb();
+		var sql = "CREATE EXTENSION IF NOT EXISTS postgres_fdw;";
+		pgClient.query(sql, function(err, results) {
+			if (err) {
+				reject(util.format("Error creating extension postgres_fdw: %s", err));
+			} else {
+				logger.info("Created extension postgres_fdw.");
+				resolve();
+			}
+		});
+	}).then(function () {
+		var serverPromises = [];
+		for (var remoteServerName in remoteDbSchemas) {
+			serverPromises.push(new Promise(function (resolve, reject) {
+				var remoteDbConnParams = pgConnStringParser(remoteDbSchemas[remoteServerName].connString);
+				var sql = "";
+				sql += util.format("DROP SERVER IF EXISTS %s CASCADE;\n", remoteServerName);
+				sql += util.format("CREATE SERVER %s FOREIGN DATA WRAPPER postgres_fdw OPTIONS (dbname '%s', host '%s', port '%s');\n",
+				                   remoteServerName, remoteDbConnParams.database, remoteDbConnParams.host, remoteDbConnParams.port);
+				sql += util.format("CREATE USER MAPPING FOR CURRENT_USER SERVER %s OPTIONS (user '%s', password '%s');\n";
+				                   remoteServerName, remoteDbConnParams.user, remoteDbConnParams.password);
+				pgClient.query(sql, function(err, results) {
+					if (err) {
+						reject(util.format("Error creating foreign data wrapper for server '%s': %s", remoteServerName, err));
+					} else {
+						logger.info(util.format("Created foreign data wrapper for server '%s'.", remoteServerName));
+						resolve();
+					}
+				});
+			}));
+		}
+		return Promise.all(serverPromises);
+	}).then(function () {
+		var importPromises = []
+		for (var remoteServerName in remoteDbSchemas) {
+			for (var workspaceName in remoteDbSchemas[remoteServerName].workspaceSchemaMap) {
+				importPromises.push(new Promise(function (resolve, reject) {
+					var remoteSchemaName = remoteDbSchemas[remoteServerName].workspaceSchemaMap[workspaceName];
+					var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
+					var sql = ""
+					sql += util.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", localSchemaName);
+					sql += util.format("CREATE SCHEMA %s;\n", localSchemaName);
+					sql += util.format("IMPORT FOREIGN SCHEMA %s FROM SERVER %s INTO %s;\n", remoteSchemaName, remoteServerName, localSchemaName);
+					pgClient.query(sql, function(err, results) {
+						if (err) {
+							reject(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err)));
+						}
+						setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
+						logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
+						resolve();
+					});
+				}));
+			}
+		}
+	}).catch(function (err) {
+		logger.error(err);
+	}
 }
 
 function init(app, callback) {
@@ -168,8 +220,9 @@ function init(app, callback) {
 	},590000);
 	initGeoserver();
 
-	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
-	initPgSchemas(config.workspaceSchemaMap);
+	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, function pgDataCallback(err) {
+		initPgSchemas(config.workspaceSchemaMap, config.remoteDbSchemas);
+	});
 
 	//var server = require('http').createServer(app);
 	//server.listen(3100);
