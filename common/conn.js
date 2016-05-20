@@ -168,6 +168,9 @@ function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
 	}).then(function () {
 		var serverPromises = [];
 		for (var remoteServerName in remoteDbSchemas) {
+			if(!remoteDbSchemas.hasOwnProperty(remoteServerName)){
+				continue;
+			}
 			function promiseCallback(remoteServerName) {
 				return function (resolve, reject) {
 					var remoteDbConnParams = pgConnStringParser(remoteDbSchemas[remoteServerName].connString);
@@ -193,7 +196,14 @@ function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
 	}).then(function () {
 		var importPromises = [];
 		for (var remoteServerName in remoteDbSchemas) {
-			for (var workspaceName in remoteDbSchemas[remoteServerName].workspaceSchemaMap) {
+			if(!remoteDbSchemas.hasOwnProperty(remoteServerName)){
+				continue;
+			}
+			var map = remoteDbSchemas[remoteServerName].workspaceSchemaMap;
+			for (var workspaceName in map) {
+				if(!map.hasOwnProperty(workspaceName)){
+					continue;
+				}
 				function promiseCallback(remoteServerName, workspaceName) {
 					return function (resolve, reject) {
 						var remoteSchemaName = remoteDbSchemas[remoteServerName].workspaceSchemaMap[workspaceName];
