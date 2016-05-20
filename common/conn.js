@@ -24,6 +24,7 @@ var mongodb = null;
 var pgDataDB = null;
 var pgGeonodeDB = null;
 var objectId = null;
+var workspaceSchemaMap = {};
 
 
 
@@ -157,6 +158,10 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 	});
 }
 
+function initPgSchemas(_workspaceSchemaMap) {
+	workspaceSchemaMap = _workspaceSchemaMap;
+}
+
 function init(app, callback) {
 	setInterval(function() {
 		initGeoserver();
@@ -164,6 +169,7 @@ function init(app, callback) {
 	initGeoserver();
 
 	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
+	initPgSchemas(config.workspaceSchemaMap);
 
 	//var server = require('http').createServer(app);
 	//server.listen(3100);
@@ -198,19 +204,44 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
-function getLayerTable(layer){
-	var workspaceDelimiterIndex = layer.indexOf(":");
-	if(workspaceDelimiterIndex == -1){
-		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
-		return layer;
+function setWorkspaceSchemaMapItem(workspaceName, schemaName) {
+	workspaceSchemaMap[workspaceName] = schemaName;
+}
+
+function getSchemaName(workspaceName) {
+	if (!workspaceSchemaMap.hasOwnProperty(workspaceName)) {
+		logger.error(util.format("Error: workspace '%s' not found in workspaceSchemaMap.", workspaceName);
+		return null;
 	}
-	var workspace = layer.substr(0, workspaceDelimiterIndex);
-	var layerName = layer.substr(workspaceDelimiterIndex + 1);
-	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
-		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
-		return workspace + "." + layerName;
+	return workspaceSchemaMap[workspaceName];
+
+}
+
+function getLayerTable(layerName) {
+	// Extract workspaceName and tableName.
+	var nameParts = layerName.split(":");
+	var err_msg = "";
+	if (nameParts.length != 2) {
+		err_msg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", nameParts);
+		logger.error(err_msg);
+		return null;
 	}
-	return config.workspaceSchemaMap[workspace] + "." + layerName;
+	var workspaceName = nameParts[0];
+	var tableName = nameParts[1];
+	if (workspaceName == "" || tableName == "") {
+		err_msg = util.format("Error: layerName has empty workspace or table: '%s'.", nameParts);
+		logger.error(err_msg);
+		return null;
+	}
+
+	// Do lookup for schema.
+	var schemaName = getSchemaName(workspaceName);
+
+	// Return schemaName.tableName optionaly without the schema part.
+	if (schemaName == null) {
+		return tableName;
+	}
+	return util.format("%s.%s", schemaName, tableName);
 }
 
 /**
@@ -227,14 +258,14 @@ function getGeometryColumnName(sourceTableName) {
 		var nameParts = sourceTableName.split(".");
 		var err_msg = "";
 		if (nameParts.length != 2) {
-			err_msg = util.format("Error: sourceTableName does not keep tj format 'schema.table': %s.", nameParts);
+			err_msg = util.format("Error: sourceTableName does not keep the format 'schema.table': '%s'.", nameParts);
 			logger.error(err_msg);
 			reject(new Error(err_msg));
 		}
 		var schemaName = nameParts[0];
 		var tableName = nameParts[1];
 		if (schemaName == "" || tableName == "") {
-			err_msg = util.format("Error: sourceTableName has empty schema or table: %s.", nameParts);
+			err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
 			logger.error(err_msg);
 			reject(new Error(err_msg));
 		}
