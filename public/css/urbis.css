@@ -393,25 +393,48 @@
 .urbis .slider-thumb-label.sliding {
     color: #c85931;
 }
+.urbis .x-slider-horz, .urbis .x-slider-horz .x-slider-end, .urbis .x-slider-horz .x-slider-inner {
+    background-image: url("../images/urbis-slider-gray-3.png");
+}
+.urbis .x-slider-horz {
+    background-repeat: repeat-x;
+    background-position: 0;
+}
+.urbis .x-slider-horz .x-slider-inner{
+    background-image: url("../images/urbis-slider-gray-3.png");
+    background-repeat: no-repeat;
+    background-position: 0;
+}
+.urbis .x-slider-horz .x-slider-end{
+    background-repeat: repeat-x;
+    background-position: 0;
+}
+/* yearselector slider*/
 .urbis .yearselector .x-slider-horz, .urbis .yearselector .x-slider-horz .x-slider-inner, .urbis .yearselector .x-slider-horz .x-slider-end  {
     background-image: url("../images/panther-slider-bg-2.png");
+}
+.urbis .yearselector .x-slider-horz .x-slider-inner{
+    background-repeat: repeat;
 }
 
 /* advanced filters slider */
 .urbis .tools-filters-list .x-slider-horz, .urbis .tools-filters-list .x-slider-horz .x-slider-end, .urbis .tools-filters-list .x-slider-horz .x-slider-inner {
-    background-image: url("../images/urbis-panther-slider-bg.png");
+    background-image: url("../images/urbis-slider-gray-3.png");
 }
+
 .urbis .tools-filters-list .x-slider-horz {
     background-repeat: repeat-x;
+    background-position: 0;
 }
 .urbis .tools-filters-list .x-slider-horz .x-slider-inner{
     background-repeat: no-repeat;
-    background-size: 100px 62px;
-    background-position: 60px -1px;
+    background-image: url("../images/urbis-slider-orange-4.png");
+    background-position: 0;
 }
-.urbis .x-slider-horz .x-slider-end {
-    background-position: 100% -45px;
+.urbis .tools-filters-list .x-slider-horz .x-slider-end {
+    background-position: 0;
 }
+
 
 /* Windows ================= */
 .urbis .x-window-default {

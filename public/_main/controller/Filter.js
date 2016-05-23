@@ -109,8 +109,8 @@ Ext.define('PumaMain.controller.Filter', {
             var sliderUnit = sliderInner.dom.offsetWidth/diff;
             var sliderInnerSize = (value[1] - value[0])*sliderUnit;
             var sliderInnerPosition = (value[0]-slider.minValue)*sliderUnit;
-            sliderInner.setStyle('background-size', sliderInnerSize + 'px 62px');
-            sliderInner.setStyle('background-position', sliderInnerPosition + 'px -1px');
+            sliderInner.setStyle('background-size', sliderInnerSize + 'px 4px');
+            sliderInner.setStyle('background-position', sliderInnerPosition + 'px 7px');
             // urbis end
 
             var inc = diff/points.length;
@@ -358,7 +358,7 @@ Ext.define('PumaMain.controller.Filter', {
                 color: '#ccc',
                 states: {
                     select: {
-                        color: '#f09999'
+                        color: '#d35400'
                     }
                 }
             }]
