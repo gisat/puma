@@ -106,11 +106,13 @@ Ext.define('PumaMain.controller.Filter', {
 
             // urbis slider background-position
             var sliderInner  = Ext.get(slider.el.id + "-innerEl");
-            var sliderUnit = sliderInner.dom.offsetWidth/diff;
-            var sliderInnerSize = (value[1] - value[0])*sliderUnit;
-            var sliderInnerPosition = (value[0]-slider.minValue)*sliderUnit;
-            sliderInner.setStyle('background-size', sliderInnerSize + 'px 4px');
-            sliderInner.setStyle('background-position', sliderInnerPosition + 'px 7px');
+            if (sliderInner){
+                var sliderUnit = sliderInner.dom.offsetWidth/diff;
+                var sliderInnerSize = (value[1] - value[0])*sliderUnit;
+                var sliderInnerPosition = (value[0]-slider.minValue)*sliderUnit;
+                sliderInner.setStyle('background-size', sliderInnerSize + 'px 4px');
+                sliderInner.setStyle('background-position', sliderInnerPosition + 'px 7px');
+            }
             // urbis end
 
             var inc = diff/points.length;
