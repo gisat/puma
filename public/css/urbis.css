@@ -374,6 +374,18 @@
 .urbis .x-btn.btn-map-tool:focus, .urbis .x-btn.btn-map-tool:hover, .urbis .x-btn.btn-snapshot:hover, .urbis .x-btn.btn-map-select:hover {
     background: #eee;
 }
+
+/* Checkbox ========== */
+.urbis .x-grid-checkheader {
+    background-image: url('../images/urbis-unchecked.png');
+    height: 16px;
+    background-position: 50% 0;
+}
+.urbis .x-grid-checkheader-checked {
+    background-image: url('../images/urbis-checked.png');
+}
+
+
 /* Slider ======== */
 .urbis .x-slider-thumb {
     background-image: url('../images/urbis-panther-slider-thumb.png');
@@ -401,7 +413,7 @@
     background-position: 100% -45px;
 }
 
-    /* Windows ================= */
+/* Windows ================= */
 .urbis .x-window-default {
     background: #fff;
     border: 1px solid #ccc;
