@@ -2,6 +2,9 @@
 	body.intro div#content-intro-terms{
 		display: block;
 	}
+	body.dataview div#content-intro-terms{
+		display: block;
+	}
 }
 
 @if $useWBHeader == true {
