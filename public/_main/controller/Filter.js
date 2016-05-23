@@ -103,9 +103,20 @@ Ext.define('PumaMain.controller.Filter', {
             var points = slider.chart.series[0].data;
             var value = slider.getValue();
             var diff = slider.maxValue-slider.minValue;
+
+            // urbis slider background-position
+            var sliderInner  = Ext.get(slider.el.id + "-innerEl");
+            var sliderUnit = sliderInner.dom.offsetWidth/diff;
+            var sliderInnerSize = (value[1] - value[0])*sliderUnit;
+            var sliderInnerPosition = (value[0]-slider.minValue)*sliderUnit;
+            sliderInner.setStyle('background-size', sliderInnerSize + 'px 62px');
+            sliderInner.setStyle('background-position', sliderInnerPosition + 'px -1px');
+            // urbis end
+
             var inc = diff/points.length;
             var sum = 0;
             var approx = 0;
+
             for (var i=0;i<points.length;i++) {
                 var point = points[i];
                 
@@ -128,7 +139,6 @@ Ext.define('PumaMain.controller.Filter', {
                 span.innerText = text;
             }
         }
-        
     },
     
     onFilterDragStart: function(slider,value,thumb) {

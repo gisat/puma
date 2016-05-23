@@ -92,6 +92,8 @@
     color                : #333;
     background           : #eee;
     border-radius: 1px 0 0 1px;
+}
+.urbis.x-border-box .x-form-text.x-trigger-noedit {
     border-right: 0;
 }
 .urbis.x-border-box .x-form-trigger {
@@ -175,6 +177,9 @@
     background: #d3d3d3 !important;
 }
 .urbis .x-accordion-hd .x-tool-over .x-tool-collapse-top {
+    background-position: 50% 50%;
+}
+.urbis .x-accordion-hd .x-tool-over .x-tool-expand-bottom {
     background-position: 50% 50%;
 }
 
@@ -285,12 +290,12 @@
 }
 /*Basic buttons*/
 .urbis .x-btn-default-small {
-    background: #d35400;
+    background: #ff7600;
     border: 0;
     border-radius: 1px;
 }
 .urbis .x-btn-default-small:hover {
-    background: #ac4400;
+    background: #d35400;
 }
 .urbis .x-btn-default-small .x-btn-inner {
     color: #fff;
@@ -304,7 +309,7 @@
     color: #fff;
 }
 .urbis .x-btn.custom-button.x-btn-default-small {
-    background: rgb(245,245,245);
+    background: white;
 }
 .urbis .x-btn.custom-button.btn-confirm {
     background: #ff7600;
@@ -330,6 +335,13 @@
  }
 .urbis #agreement-accept .x-btn:hover {
     background: #27ae60;
+}
+
+.urbis #app-tools-actions .x-btn {
+    background: #eee;
+}
+.urbis #app-tools-actions .x-btn:hover {
+    background: #ddd;
 }
 
 /* help buttons */
@@ -362,9 +374,34 @@
 .urbis .x-btn.btn-map-tool:focus, .urbis .x-btn.btn-map-tool:hover, .urbis .x-btn.btn-snapshot:hover, .urbis .x-btn.btn-map-select:hover {
     background: #eee;
 }
+/* Slider ======== */
+.urbis .x-slider-thumb {
+    background-image: url('../images/urbis-panther-slider-thumb.png');
+}
+.urbis .slider-thumb-label.sliding {
+    color: #c85931;
+}
+.urbis .yearselector .x-slider-horz, .urbis .yearselector .x-slider-horz .x-slider-inner, .urbis .yearselector .x-slider-horz .x-slider-end  {
+    background-image: url("../images/panther-slider-bg-2.png");
+}
 
+/* advanced filters slider */
+.urbis .tools-filters-list .x-slider-horz, .urbis .tools-filters-list .x-slider-horz .x-slider-end, .urbis .tools-filters-list .x-slider-horz .x-slider-inner {
+    background-image: url("../images/urbis-panther-slider-bg.png");
+}
+.urbis .tools-filters-list .x-slider-horz {
+    background-repeat: repeat-x;
+}
+.urbis .tools-filters-list .x-slider-horz .x-slider-inner{
+    background-repeat: no-repeat;
+    background-size: 100px 62px;
+    background-position: 60px -1px;
+}
+.urbis .x-slider-horz .x-slider-end {
+    background-position: 100% -45px;
+}
 
-/* Windows ================= */
+    /* Windows ================= */
 .urbis .x-window-default {
     background: #fff;
     border: 1px solid #ccc;
