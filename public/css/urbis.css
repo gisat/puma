@@ -344,6 +344,16 @@
     background: #ddd;
 }
 
+/* top tools buttons */
+.urbis .btn-map-select .x-btn-icon {
+    background-image: url('../images/icons/urbis-map-select.png') !important;
+    width: 18px;
+    top: 2px;
+}
+.urbis .btn-map-select.x-pressed .x-btn-icon {
+    background-image: url('../images/icons/urbis-map-select-active.png') !important;
+}
+
 /* help buttons */
 .urbis #app-toolbar-contexthelp span.x-btn-icon {
     background: url('../images/icons/urbis-help-context.png') !important;
