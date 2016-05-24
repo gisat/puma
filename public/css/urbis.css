@@ -224,9 +224,15 @@
 .urbis .x-tree-panel .x-grid-body {
     border: 0 !important;
 }
+.urbis .x-tree-panel .x-grid-body .x-grid-table {
+    padding: 5px 0;
+}
 
 .urbis .x-window .x-tree-panel {
     border: 1px solid #ddd;
+}
+#layerselectedpanel div {
+    border: 0 !important;
 }
 
 /* Tabs ================= */
@@ -309,7 +315,7 @@
     color: #fff;
 }
 .urbis .x-btn.custom-button.x-btn-default-small {
-    background: white;
+    background: #eee;
 }
 .urbis .x-btn.custom-button.btn-confirm {
     background: #ff7600;
@@ -348,7 +354,7 @@
 .urbis .btn-map-select .x-btn-icon {
     background-image: url('../images/icons/urbis-map-select.png') !important;
     width: 18px;
-    top: 2px;
+    top: 3px;
 }
 .urbis .btn-map-select.x-pressed .x-btn-icon {
     background-image: url('../images/icons/urbis-map-select-active.png') !important;
@@ -364,7 +370,10 @@
 
 /* map tools buttons */
 .urbis .x-btn.btn-map-tool {
-    background: #fff;
+    background: #fff !important;
+}
+.urbis .x-btn.btn-map-tool:hover {
+    background: #eee !important;
 }
 .urbis .x-btn-pressed.btn-tool-hover button .x-btn-icon {
     background: url('../images/icons/urbis-tools-hover-pressed.png') !important;
@@ -472,11 +481,9 @@
 
 .urbis .x-window .x-grid .x-toolbar-default.x-docked-top {
     background: #CFCFD3;
-    border: 1px solid #ddd !important;
-    border-bottom-color: #CFCFD3 !important;
+    margin-bottom: 5px !important;
+    border-bottom: 0 !important;
 }
-
-
 
 .urbis .x-action-col-icon:hover {
     cursor: pointer;
