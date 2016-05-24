@@ -17,11 +17,14 @@ CenterOfRaster.prototype.center = function() {
 					logger.error('CenterOfRaster#center Error with SQL: ', sql, " Error: ", error)
 				);
 			}
-
-			resolve(proj4('EPSG:900913', {
+			var result = proj4('EPSG:900913', {
 				x: results.rows[0].x,
 				y: results.rows[0].y
-			}));
+			});
+			result.xWgs = results.rows[0].x;
+			result.yWgs = results.rows[0].y;
+			
+			resolve(result);
 		});
 	});
 };
