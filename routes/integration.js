@@ -15,6 +15,7 @@ var conn = require('../common/conn');
 var Process = require('../integration/Process');
 var Processes = require('../integration/Processes');
 var FilterByIdProcesses = require('../integration/FilterByIdProcesses');
+var CenterOfRaster = require('../analysis/spatial/CenterOfRaster');
 
 module.exports = function (app) {
 
@@ -51,6 +52,7 @@ module.exports = function (app) {
 		processes.store(process);
 
 		var promiseOfFile = remoteFile.get();
+		var rasterLayerTable;
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
@@ -63,6 +65,7 @@ module.exports = function (app) {
 			return new RunSQL(conn.getPgDataDb(), sqlOptions)
 				.process();
 		}).then(function(rasterTableName){
+			rasterLayerTable = rasterTableName;
 			process.status("Processing", logger.info("integration#process Raster has been imported to PostgreSQL and is being analyzed."));
 			processes.store(process);
 			// Run analysis // Async
@@ -79,21 +82,23 @@ module.exports = function (app) {
 
 			return Promise.all(promises);
 		}).then(function(){
+			return new CenterOfRaster(rasterLayerTable).center();
+		}).then(function(center){
 			logger.info("integration#process Analysis was finished and view is being prepared.");
 			// In Puma specify FrontOffice view
 			var viewProps = {
-				location: "6294_18", //placeKey + "_" + areaKey, // place + area (NUTS0)
+				location: "6294_7", //placeKey + "_" + areaKey, // place + area (NUTS0)
 				expanded: {
 					6294: {
 						6292: [
-							"18"
+							"7"
 						] // au level
 					} // place
 				},
 				mapCfg: {
 					center: {
-						lon: 921685.33123517,
-						lat: 6278007.5989754
+						lon: center.x,
+						lat: center.y
 					},
 					zoom: 6
 				}
