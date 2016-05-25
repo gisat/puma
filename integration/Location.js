@@ -15,6 +15,7 @@ Location.prototype.location = function(){
 
 	var sql = util.format("SELECT gid, name FROM %s au WHERE ST_Contains(au.%s, 'POINT(%s %s)'::geography::geometry) LIMIT 1;",
 		this.auLayerTable, this.auLayerTableGeometryColumn, this.centerLon, this.centerLat);
+	logger.info("Location#location Sql: ", sql);
 
 	var self = this;
 	return new Promise(function(resolve, reject){
