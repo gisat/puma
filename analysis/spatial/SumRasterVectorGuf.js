@@ -28,7 +28,7 @@ SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, raster
 
 SumRasterVectorGuf.prototype.run = function () {
 	var self = this;
-	return new SizeOfPixel(this.analyticalUnitsTable).get().then(function(size){
+	return new SizeOfPixel(this.rasterLayerTable).get().then(function(size){
 		return new Promise(function (resolve, reject) {
 			logger.info("SumRasterVectorGuf#run Analysis started.");
 			var sql = self.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
