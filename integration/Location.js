@@ -24,7 +24,7 @@ Location.prototype.location = function(){
 					logger.error('Location#location Error with SQL: ', sql, " Error: ", error)
 				);
 			}
-			var place = results[0];
+			var place = results.rows[0];
 			logger.info("Location#location, For point lon:", self.centerLon, "lat:", self.centerLat, "found place: ", place.gid, "/", place.name);
 			resolve(place.gid);
 		});
