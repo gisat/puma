@@ -1,7 +1,7 @@
 var Promise = require('promise');
 var util = require('util');
 
-var logger = require('../common/Logger').applicationWideLogger;
+var logger = require('../../common/Logger').applicationWideLogger;
 var connection = require('../../common/conn');
 
 var SizeOfPixel = function(rasterLayerTable) {
