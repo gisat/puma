@@ -16,6 +16,7 @@ var Process = require('../integration/Process');
 var Processes = require('../integration/Processes');
 var FilterByIdProcesses = require('../integration/FilterByIdProcesses');
 var CenterOfRaster = require('../analysis/spatial/CenterOfRaster');
+var Location = require('../integration/Location');
 
 module.exports = function (app) {
 
