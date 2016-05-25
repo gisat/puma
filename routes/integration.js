@@ -52,7 +52,7 @@ module.exports = function (app) {
 		processes.store(process);
 
 		var promiseOfFile = remoteFile.get();
-		var rasterLayerTable;
+		var rasterLayerTable, center;
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
@@ -83,15 +83,18 @@ module.exports = function (app) {
 			return Promise.all(promises);
 		}).then(function(){
 			return new CenterOfRaster(rasterLayerTable).center();
-		}).then(function(center){
+		}).then(function(pCenter){
+			center = pCenter;
+			return new Location(center).location();
+		}).then(function(locationId){
 			logger.info("integration#process Analysis was finished and view is being prepared.");
 			// In Puma specify FrontOffice view
 			var viewProps = {
-				location: "6294_7", //placeKey + "_" + areaKey, // place + area (NUTS0)
+				location: "6294_" + locationId, //placeKey + "_" + areaKey, // place + area (NUTS0)
 				expanded: {
 					6294: {
 						6292: [
-							"7"
+							locationId // todo cast to string?
 						] // au level
 					} // place
 				},
