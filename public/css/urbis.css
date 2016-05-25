@@ -360,6 +360,11 @@
     background-image: url('../images/icons/urbis-map-select-active.png') !important;
 }
 
+/* paneal header buttons */
+.urbis .x-panel-header .x-tool-detach {
+    background-image: url("../images/icons/urbis-detach.png") !important;
+}
+
 /* help buttons */
 .urbis #app-toolbar-contexthelp span.x-btn-icon {
     background: url('../images/icons/urbis-help-context.png') !important;
