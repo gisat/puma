@@ -7,8 +7,8 @@ var conn = require('../common/conn');
 var Location = function(center){
 	this.auLayerTable = "views.layer_6353";
 	this.auLayerTableGeometryColumn = "the_geom";
-	this.centerLon = center.yWgs;
-	this.centerLat = center.xWgs;
+	this.centerLon = center.xWgs;
+	this.centerLat = center.yWgs;
 };
 
 Location.prototype.location = function(){
