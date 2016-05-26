@@ -7,6 +7,7 @@ var Promise = require('promise');
 var util = require('util');
 
 var config = require('../config');
+var foreign = require('./foreign');
 var logger = require('../common/Logger').applicationWideLogger;
 
 		
@@ -97,7 +98,7 @@ function initGeoserver() {
 function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
 	pgDataDB.connect(function () {
-		initForeignTables(pgDataDB(), config.remoteDbSchemas);
+		foreign.initForeignTables(pgDataDB(), config.remoteDbSchemas);
 	});
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();

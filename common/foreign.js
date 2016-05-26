@@ -1,6 +1,7 @@
 var _ = require('underscore');
 var pg = require('pg');
 var util = require('util');
+var Promise = require('promise');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -15,7 +16,7 @@ var LS_COLUMNS_SQL = "SELECT at.attname AS colname, format_type(at.atttypid, at.
                       ORDER BY at.attnum;";
 
 
-function openRemotePgClient(remotePgConnString) {
+function openPgClient(remotePgConnString) {
 	return new Promise(function (resolve, reject) {
 		var remotePgClient = new pg.Client(remotePgConnString);
 		remotePgClient.connect(function (err, client, done) {
@@ -54,7 +55,7 @@ function queryRemoteTables(remotePgClient, remoteServerName, remoteSchemaName, l
 	}).then(function () {
 		var promises = [];
 		for (var i = 0; i < foreignTables.length; i++) {
-			promises.push(new Promise(function (resolve, reject) {
+			promises.push(new Promise(function (resolve, reject) { // FIXME mutable i
 				var foreignTable = foreignTables[i];
 				remotePgClient.query(LS_COLUMNS_SQL, [table.remote_oid], function (err, results) {
 					if (err) {
@@ -96,7 +97,7 @@ function setCreateTableSql(foreignTables) {
 
 function createForeignTables(localPgClient, tables) {
 	var promises = [];
-	for (var i = 0; i < tables.length; i++) {
+	for (var i = 0; i < tables.length; i++) { // FIXME mutable i
 		promises.push(new Promise(function (resolve, reject) {
 			var table = tables[i];
 			var sql = util.format("CREATE SCHEMA IF NOT EXISTS %s;\n", table.local_schema_name);
@@ -126,7 +127,7 @@ function initForeignTables(localPgClient, remoteDbSchemas) {
 					var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
 					remoteSchemaPromises.push(queryRemoteTables(remotePgClient, remoteServerName, remoteSchemaName, localSchemaName).then(function (fTables) {
 						foreignTables = foreignTables.concat(fTables);
-					)));
+					}));
 				});
 				return Promise.all(remoteSchemaPromises);
 			}));
@@ -143,4 +144,4 @@ function initForeignTables(localPgClient, remoteDbSchemas) {
 
 module.exports = {
 	initForeignTables: initForeignTables
-}
+};
