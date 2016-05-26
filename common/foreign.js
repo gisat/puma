@@ -54,10 +54,9 @@ function queryRemoteTables(remotePgClient, remoteServerName, remoteSchemaName, l
 		});
 	}).then(function () {
 		var promises = [];
-		for (var i = 0; i < foreignTables.length; i++) {
-			promises.push(new Promise(function (resolve, reject) { // FIXME mutable i
-				var foreignTable = foreignTables[i];
-				remotePgClient.query(LS_COLUMNS_SQL, [table.remote_oid], function (err, results) {
+		_.each(foreignTables, function (foreignTable, idx) {
+			promises.push(new Promise(function (resolve, reject) {
+				remotePgClient.query(LS_COLUMNS_SQL, [foreignTable.remote_oid], function (err, results) {
 					if (err) {
 						reject(util.format("Error getting list of column for foreign table %s: %s", foreignTable.remote_table_name, err));
 					} else {
@@ -72,7 +71,7 @@ function queryRemoteTables(remotePgClient, remoteServerName, remoteSchemaName, l
 					}
 				});
 			}));
-		}
+		});
 		return Promise.all(promises);
 	}).then(function () {
 		return foreignTables;
@@ -95,23 +94,22 @@ function setCreateTableSql(foreignTables) {
 	}
 }
 
-function createForeignTables(localPgClient, tables) {
+function createForeignTables(localPgClient, foreignTables) {
 	var promises = [];
-	for (var i = 0; i < tables.length; i++) { // FIXME mutable i
+	_.each(foreignTables, function (foreignTable, idx) {
 		promises.push(new Promise(function (resolve, reject) {
-			var table = tables[i];
-			var sql = util.format("CREATE SCHEMA IF NOT EXISTS %s;\n", table.local_schema_name);
-			sql += table.sql;
+			var sql = util.format("CREATE SCHEMA IF NOT EXISTS %s;\n", foreignTable.local_schema_name);
+			sql += foreignTable.sql;
 			localPgClient.query(sql, function(err, results) {
 				if (err) {
-					reject(util.format("Error creating foreign table '%s': %s", table.local_table_name, err));
+					reject(util.format("Error creating foreign table '%s': %s", foreignTable.local_table_name, err));
 				} else {
-					logger.info(util.format("Foreign table '%s' has been created.", table.local_table_name));
+					logger.info(util.format("Foreign table '%s' has been created.", foreignTable.local_table_name));
 					resolve();
 				}
 			});
 		}));
-	}
+	});
 	return Promise.all(promises);
 }
 
