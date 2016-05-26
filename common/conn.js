@@ -16,7 +16,6 @@ var mongodb = null;
 var pgDataDB = null;
 var pgGeonodeDB = null;
 var objectId = null;
-var workspaceSchemaMap = {};
 
 
 
@@ -193,17 +192,26 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
-function setWorkspaceSchemaMapItem(workspaceName, schemaName) {
-	workspaceSchemaMap[workspaceName] = schemaName;
-}
-
 function getSchemaName(workspaceName) {
-	if (!workspaceSchemaMap.hasOwnProperty(workspaceName)) {
-		logger.error(util.format("Error: workspace '%s' not found in workspaceSchemaMap.", workspaceName));
-		return null;
+	var schemaName = null;
+	if (config.workspaceSchemaMap.hasOwnProperty(workspaceName)) {
+		schemaName = workspaceSchemaMap[workspaceName];
+	} else {
+		var wMap = {}
+		_.each(config.remoteDbSchemas, function (remoteServerOptions, remoteServerName) {
+			_.each(remoteServerOptions.workspaceMap, function (mapItem, idx) {
+				if (workspaceName == mapItem.workspace) {
+					wMap[workspaceName] = mapItem.local_schema;
+				}
+			}
+		}
+		if (wMap.hasOwnProperty(workspaceName)) {
+			schemaName = wMap[workspaceName];
+		} else {
+			logger.error(util.format("Error: workspace '%s' not found in any map.", workspaceName));
+		}
 	}
-	return workspaceSchemaMap[workspaceName];
-
+	return schemaName;
 }
 
 function getLayerTable(layerName) {

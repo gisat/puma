@@ -121,11 +121,9 @@ function initForeignTables(localPgClient, remoteDbSchemas) {
 		var remoteServerPromises = [];
 		_.each(remoteDbSchemas, function (remoteServerOptions, remoteServerName) {
 			remoteServerPromises.push(openPgClient(remoteServerOptions.connString).then(function (remotePgClient) {
-				var workspaceSchemaMap = remoteServerOptions.workspaceSchemaMap;
 				var remoteSchemaPromises = [];
-				_.each(workspaceSchemaMap, function (remoteSchemaName, workspaceName) {
-					var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
-					remoteSchemaPromises.push(queryRemoteTables(remotePgClient, remoteServerName, remoteSchemaName, localSchemaName).then(function (fTables) {
+				_.each(remoteServerOptions.workspaceMap, function (mapItem, idx) {
+					remoteSchemaPromises.push(queryRemoteTables(remotePgClient, remoteServerName, mapItem.remote_schema, mapItem.local_schema).then(function (fTables) {
 						foreignTables = foreignTables.concat(fTables);
 					}));
 				});

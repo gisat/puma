@@ -16,12 +16,18 @@ module.exports = {
 
 	remoteDbSchemas: {
 		urbis: {
-			connString     : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
-			workspaceSchemaMap: {
-				urbis_ancillary_layers: "ancillary_layers",
-				urbis_input: "input",
-				urbis_results_final: "results_final"
-			}
+			connString: "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
+			workspaceMap: [
+				{workspace: "urbis_ancillary_layers",
+				 remote_schema: "ancillary_layers",
+				 local_schema: "urbis_ancillary_layers"},
+				{workspace: "urbis_input",
+				 remote_schema: "input",
+				 local_schema: "urbis_input"},
+				{workspace: "urbit_results_final",
+				 remote_schema: "results_final",
+				 local_schema: "urbis_results_final"}
+			]
 		}
 	},
 	geometryColumnNamePattern: "%geom%",
