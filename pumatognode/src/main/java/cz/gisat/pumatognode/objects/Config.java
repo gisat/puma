@@ -11,11 +11,13 @@ public class Config {
     private String postgresDbName = "";
     private String postgresUser = "";
     private String postgresPass = "";
+    private String geoserverHost = "";
+    private String geoserverRestBase = "";
+    private String geoserverUser = "";
+    private String geoserverPass = "";
     private int runEvery = 0;
 
     public Config() {}
-
-    ;
 
     public String getMongoHost() {
         return mongoHost;
@@ -103,5 +105,37 @@ public class Config {
 
     public void setRunEvery( int runEvery ) {
         this.runEvery = runEvery;
+    }
+
+    public String getGeoserverRestBase() {
+        return geoserverRestBase;
+    }
+
+    public void setGeoserverRestBase( String geoserverRestBase ) {
+        this.geoserverRestBase = geoserverRestBase;
+    }
+
+    public String getGeoserverUser() {
+        return geoserverUser;
+    }
+
+    public void setGeoserverUser( String geoserverUser ) {
+        this.geoserverUser = geoserverUser;
+    }
+
+    public String getGeoserverPass() {
+        return geoserverPass;
+    }
+
+    public void setGeoserverPass( String geoserverPass ) {
+        this.geoserverPass = geoserverPass;
+    }
+
+    public String getGeoserverHost() {
+        return geoserverHost;
+    }
+
+    public void setGeoserverHost( String geoserverHost ) {
+        this.geoserverHost = geoserverHost;
     }
 }

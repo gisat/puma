@@ -6,6 +6,7 @@ import cz.gisat.pumatognode.objects.Layer;
 import java.sql.*;
 import java.util.List;
 
+@Deprecated
 public class Postgres {
     Config config;
     Connection connection;
@@ -98,9 +99,9 @@ public class Postgres {
                     stringBuilder.append( " );" );
                     stringBuilder.append( '\n' );
                 }
-                statement.executeUpdate(
+                /*statement.executeUpdate(
                         "DELETE FROM layers_layer_styles WHERE layer_id=" + gnodeLayerId
-                );
+                );*/
                 PreparedStatement preparedStatement = connection.prepareStatement(
                         "INSERT INTO layers_layer_styles ( layer_id, style_id ) SELECT ?, ? WHERE NOT EXISTS ( SELECT 1 FROM layers_layer_styles WHERE layer_id=? AND style_id=? );"
                 );
@@ -115,9 +116,9 @@ public class Postgres {
                         preparedStatement.setInt( 2, gnodeStyleId );
                         preparedStatement.setInt( 3, gnodeLayerId );
                         preparedStatement.setInt( 4, gnodeStyleId );
-                        preparedStatement.addBatch();
+                        //preparedStatement.addBatch();
                         if ( !def ) {
-                            statement.executeUpdate( "UPDATE layers_layer SET default_style_id=" + gnodeStyleId + " WHERE resourcebase_ptr_id=" + gnodeLayerId );
+                            //statement.executeUpdate( "UPDATE layers_layer SET default_style_id=" + gnodeStyleId + " WHERE resourcebase_ptr_id=" + gnodeLayerId );
                         }
                     }
                     resultSet1.close();
@@ -135,7 +136,7 @@ public class Postgres {
         backup.saveBackupToFile( stringBuilder.toString() );
 
         consolePrinter.printLineSeparator();
-        consolePrinter.printLineToConsole( "Updating PostgreSQL database is done!" );
+        consolePrinter.printLineToConsole( "Updating of PostgreSQL database is done!" );
         consolePrinter.printLineSeparator();
         consolePrinter.printEmptyLine();
 

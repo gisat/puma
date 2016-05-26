@@ -11,6 +11,7 @@ public class Layer {
     private List< String > symbologies;
     private int gnodeLayerId;
     private List< Integer > gnodeLayerStyles;
+    private String layerType;
 
     public Layer( String name ) {
         this.name = name;
@@ -48,5 +49,13 @@ public class Layer {
 
     public void setGnodeLayerStyles( List< Integer > gnodeLayerStyles ) {
         this.gnodeLayerStyles = gnodeLayerStyles;
+    }
+
+    public String getLayerType() {
+        return layerType;
+    }
+
+    public void setLayerType( String layerType ) {
+        this.layerType = layerType;
     }
 }

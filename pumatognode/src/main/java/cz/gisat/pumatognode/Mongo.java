@@ -83,11 +83,20 @@ public class Mongo {
                     layers.add( layer );
                     layerNames.add( layerName );
 
-                    consolePrinter.printLineToConsole( layerName );
+                    //consolePrinter.printLineToConsole( layerName );
+                    System.out.print( "." );
+                } else if ( layerName.contains( "geonode:" ) && document1.getString( "layerType" ).equalsIgnoreCase( "au" ) ) {
+                    Layer layer = new Layer( layerName );
+                    layer.setLayerType( "au" );
+                    layers.add( layer );
+                    layerNames.add( layerName );
+                    //consolePrinter.printLineToConsole( layerName );
+                    System.out.print( "." );
                 }
             }
         }
 
+        consolePrinter.printEmptyLine();
         consolePrinter.printLineSeparator();
         consolePrinter.printLineToConsole( "found " + layers.size() + " layers" );
         consolePrinter.printLineSeparator();
