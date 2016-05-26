@@ -24,6 +24,7 @@ module.exports = {
 			}
 		}
 	},
+	geometryColumnNamePattern: "%geom%",
 
 	geoserverHost   : "185.8.164.70",
 	geoserverPort   : 8080,

@@ -344,7 +344,11 @@ function getGeometryColumnName(sourceTableName) {
 		// Such view is one only per database and is located in the same schema where postgis extension is located.
 		// Although it is one only it keeps geometry columns of all the tables throughout the database.
 		// We do not want to search for the schema and we expect that such important view must be accessible by 'search_path'.
-		var sql = "SELECT f_geometry_column FROM geometry_columns WHERE f_table_schema = $1 AND f_table_name = $2;";
+		//
+		// FIXME:
+		// Remove such dirty quick fix which is here to deal with situation where table has more than one geometry column.
+		var sql = util.format("SELECT f_geometry_column FROM geometry_columns WHERE f_table_schema = $1 AND f_table_name = $2 AND f_geometry_column LIKE '%s';",
+		                      config.geometryColumnNamePattern);
 		var client = getPgDataDb();
 		client.query(sql, [schemaName, tableName], function(err, results) {
 			if (err) {
