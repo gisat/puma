@@ -58,6 +58,12 @@ module.exports = {
 		advancedFiltersFirst: false
 	},
 
+	texts: {
+		renameAdvancedFiltersTo: "Evaluation Tool",
+		appTitle: "Urbis",
+		appName: "&nbsp;"
+	},
+
 	allowedOrigins: "http://localhost:5555",
 	/*
 	 * It decides to which level will be the information logged. Default value is 1 meaning Info and higher will be logged
@@ -69,6 +75,9 @@ module.exports = {
 	 * Set level and all above will be logged.
 	 */
 	loggingLevel: 0,
+
+
+
 
 	/*
 	 * UrbanTEP - Destination of temporary downloaded files.
@@ -84,11 +93,6 @@ module.exports = {
 	/*
 	 * UrbanTep - Approximate pixel size in input tif file, m^2
 	 */
-	urbanTepTifPixelSize: 75*75,
+	urbanTepTifPixelSize: 75*75
 
-	texts: {
-		renameAdvancedFiltersTo: "Evaluation Tool",
-		appTitle: "Urbis",
-		appName: "&nbsp;"
-	}
 };

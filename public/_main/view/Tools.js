@@ -15,7 +15,7 @@ Ext.define('PumaMain.view.Tools', {
             //hideCollapseTool: true
             collapseLeft: true
         }
-        this.items = [
+        var items = [
          {
             xtype: 'panel',
             title: 'Selection color',
@@ -159,11 +159,21 @@ Ext.define('PumaMain.view.Tools', {
 //            }],
             title: 'Advanced filters',
             bodyCls: 'tools-filters-list'
-        }]
-        
+        }];
+
         this.callParent();
-        
+
+        if(Config.texts.renameAdvancedFiltersTo){
+              items[items.length-1].title = Config.texts.renameAdvancedFiltersTo;
+        }
+
+        if(Config.toggles.advancedFiltersFirst){
+            var av = items.pop();
+            items.splice(1, 0, av);
+        }
+
+        this.items = items;
     }
-})
+});
 
 
