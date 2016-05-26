@@ -14,6 +14,17 @@ module.exports = {
 		geonode: "public"
 	},
 
+	remoteDbSchemas: {
+		urbis: {
+			connString     : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
+			workspaceSchemaMap: {
+				urbis_ancillary_layers: "ancillary_layers",
+				urbis_input: "input",
+				urbis_results_final: "results_final"
+			}
+		}
+	},
+
 	geoserverHost   : "185.8.164.70",
 	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
@@ -35,7 +46,15 @@ module.exports = {
 	debug: true,
 
 	toggles: {
-		noGeoserverLayerGroups: false
+		noGeoserverLayerGroups: false,
+		useWBAgreement: false,
+		useWBHeader: false,
+		useWBFooter: false,
+		allowPumaHelp: false,
+		allowDownloadsLink: false,
+		usePumaLogo: false,
+		advancedFiltersFirst: false
+		//renameAdvancedFiltersTo: "Evaluation Tool"
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -48,5 +67,16 @@ module.exports = {
 	 * 4 - NOTHING
 	 * Set level and all above will be logged.
 	 */
-	loggingLevel: 0
+	loggingLevel: 0,
+
+	/*
+	 * UrbanTEP - Destination of temporary downloaded files.
+	 */
+	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
+
+	/*
+	 * UrbanTEP - UserName and Password under which the layers are uploaded
+	 */
+	urbanTepGeonodeUserName: '',
+	urbanTepGeonodeUserPassword: ''
 };

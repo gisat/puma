@@ -4,6 +4,7 @@ var conn = require('../common/conn');
 var Timer = require('../common/timer');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
+var util = require('util');
 
 function recreateLayerDb(layerRef, isUpdate, callback) {
 
@@ -112,87 +113,91 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
 	var layerName = ' views.layer_' + areaLayerRef['_id'];
 	var from = conn.getLayerTable(areaLayerRef.layer);
 	//console.log(isBase)
-	// priprava view
-	var sql = 'BEGIN; DROP VIEW IF EXISTS ' + layerName + '; ';
-	if (isBase && !isUpdate) {
-		var viewName = 'base_' + areaLayerRef['_id'];
-		sql += 'CREATE TABLE views.' + viewName + ' AS (SELECT ';
-		sql += '"' + areaLayerRef.fidColumn + '" AS gid,';
-		sql += 'ST_Centroid(ST_Transform(the_geom,4326)) as centroid,';
+	// NOTE:
+	// 'from' table is always source table (layer source data).
+	// So we must take into account that geometry column of the source table may be of whatever name.
+	conn.getGeometryColumnName(from).then(function (geomColName) {
+		var sql = 'BEGIN;';
+		sql += util.format(' DROP VIEW IF EXISTS %s;', layerName);
+		if (isBase && !isUpdate) {
+			var viewName = util.format('base_%s', areaLayerRef['_id']);
+			var trSql = util.format('ST_Transform(%s, 4326)', geomColName);
+			var polygonSql = "ST_GeometryFromText('POLYGON((-180 -90, 180 -90, 180 90, -180 90, -180 -90))', 4326)"
+			sql += util.format('CREATE TABLE views.%s AS (', viewName);
+	                sql +=             ' SELECT';
+			sql += util.format('  "%s" AS gid,', areaLayerRef.fidColumn);
+			sql += util.format('  ST_Centroid(%s) as centroid,', trSql);
+			sql += util.format("  CASE WHEN ST_Contains(%s, %s)", polygonSql, trSql);
+			sql += util.format("   THEN ST_Area(%s::geography)", trSql);
+			sql += util.format("   ELSE ST_Area(ST_Intersection(%s, %s)::geography) END as area,", polygonSql, trSql);
+			sql += util.format("  CASE WHEN ST_Contains(%s, %s)", polygonSql, trSql);
+			sql += util.format("   THEN ST_Length(%s::geography)", trSql);
+			sql += util.format("   ELSE ST_Length(ST_Intersection(%s, %s)::geography) END as length,", polygonSql, trSql);
+			sql += util.format('  Box2D(%s) as extent', trSql);
+			sql += util.format(' FROM %s);', from);
+			sql += util.format(' ALTER TABLE views.%s ADD CONSTRAINT %s_unique UNIQUE(gid);', viewName, viewName);
+		}
+		sql += 'CREATE VIEW ' + layerName + ' AS SELECT ';
+		// select z uzemni vrstvy
+		sql += 'a."' + areaLayerRef.fidColumn + '" AS gid,';
+		sql += 'a."' + (areaLayerRef.nameColumn || areaLayerRef.fidColumn) + (areaLayerRef.nameColumn ? '"' : '"::VARCHAR') + ' AS name,';
+		sql += areaLayerRef.parentColumn ? ('a."' + areaLayerRef.parentColumn + '" AS parentgid,') : 'NULL::integer AS parentgid,';
+		sql += util.format('a.%s,', geomColName);
+		sql += 'b.area,';
+		sql += 'b.length,';
+		sql += 'b.centroid,';
+		sql += 'b.extent';
+		var attrSql = '';
+		var layerMap = {};
 
-		sql += "CASE WHEN ST_Contains(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))";
-		sql += "THEN ST_Area(ST_Transform(the_geom,4326)::geography)";
-		sql += "ELSE ST_Area(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as area,";
-
-		sql += "CASE WHEN ST_Contains(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))";
-		sql += "THEN ST_Length(ST_Transform(the_geom,4326)::geography)";
-		sql += "ELSE ST_Length(ST_Intersection(ST_GeometryFromText('POLYGON((-180 -90,180 -90, 180 90,-180 90,-180 -90))',4326),ST_Transform(the_geom,4326))::geography) END as length,";
-
-		sql += 'Box2D(ST_Transform(the_geom,4326)) as extent FROM ' + from + ');';
-		sql += 'ALTER TABLE views.' + viewName + ' ADD CONSTRAINT ' + viewName + '_unique UNIQUE(gid);'
-	}
-
-
-	sql += 'CREATE VIEW ' + layerName + ' AS SELECT ';
-	// select z uzemni vrstvy
-	sql += 'a."' + areaLayerRef.fidColumn + '" AS gid,';
-	sql += 'a."' + (areaLayerRef.nameColumn || areaLayerRef.fidColumn) + (areaLayerRef.nameColumn ? '"' : '"::VARCHAR') + ' AS name,';
-	sql += areaLayerRef.parentColumn ? ('a."' + areaLayerRef.parentColumn + '" AS parentgid,') : 'NULL::integer AS parentgid,';
-	sql += 'a.the_geom,';
-	sql += 'b.area,';
-	sql += 'b.length,';
-	sql += 'b.centroid,';
-	sql += 'b.extent';
-	var attrSql = '';
-	var layerMap = {};
-
-	// select z pripojenych vrstev
-	var existingAliases = {};
-	for (var i = 0; i < dataLayerRefs.length; i++) {
-		var layerRef = dataLayerRefs[i];
-		var layerAlias = 'l_' + layerRef['_id'];
-		if (!layerRef.attributeSet) continue;
-		var name = conn.getLayerTable(layerRef.layer);
-		layerMap[layerAlias] = {name: name, fid: layerRef.fidColumn};
-		for (var j = 0; j < layerRef.columnMap.length; j++) {
-			var attrRow = layerRef.columnMap[j];
-			var alias = 'as_' + layerRef.attributeSet + '_attr_' + attrRow.attribute;
-			var column = layerAlias + '."' + attrRow.column + '"';
-			if (existingAliases[alias]) {
-				continue;
+		// select z pripojenych vrstev
+		var existingAliases = {};
+		for (var i = 0; i < dataLayerRefs.length; i++) {
+			var layerRef = dataLayerRefs[i];
+			var layerAlias = 'l_' + layerRef['_id'];
+			if (!layerRef.attributeSet) continue;
+			var name = conn.getLayerTable(layerRef.layer);
+			layerMap[layerAlias] = {name: name, fid: layerRef.fidColumn};
+			for (var j = 0; j < layerRef.columnMap.length; j++) {
+				var attrRow = layerRef.columnMap[j];
+				var alias = 'as_' + layerRef.attributeSet + '_attr_' + attrRow.attribute;
+				var column = layerAlias + '."' + attrRow.column + '"';
+				if (existingAliases[alias]) {
+					continue;
+				}
+				existingAliases[alias] = true;
+				attrSql += attrSql ? ',' : '';
+				attrSql += column + ' AS ' + alias;
 			}
-			existingAliases[alias] = true;
-			attrSql += attrSql ? ',' : '';
-			attrSql += column + ' AS ' + alias;
 		}
-	}
-	sql += attrSql ? ',' : '';
-	sql += attrSql;
+		sql += attrSql ? ',' : '';
+		sql += attrSql;
 
-	sql += ' FROM ' + from + ' a';
-	sql += ' LEFT JOIN views.base_' + areaLayerRef['_id'] + ' b ON a."' + areaLayerRef.fidColumn + '"=b."gid"';
-	// join pripojenych vrstev
-	for (var key in layerMap) {
-		sql += ' LEFT JOIN ' + layerMap[key].name + ' ' + key + ' ON ';
-		sql += 'a."' + areaLayerRef.fidColumn + '"=' + key + '."' + layerMap[key].fid + '"::bigint';
-	}
-
-	sql += '; COMMIT;';
-
-	logger.info('geoserver/layers.js start ' + sql);
-	var client = conn.getPgDataDb();
-	var timer = Timer("geoserver/layers-1");
-	client.query(sql, function (err, results) {
-		timer();
-		if (err) {
-			logger.error('layers#recreateLayerDbInternal SQL: ', sql, ' Error: ', err);
-			client.query('ROLLBACK;', function () {
-				return callback(err);
-			});
-		} else {
-			callback(null, areaLayerRef);
+		sql += ' FROM ' + from + ' a';
+		sql += ' LEFT JOIN views.base_' + areaLayerRef['_id'] + ' b ON a."' + areaLayerRef.fidColumn + '"=b."gid"';
+		// join pripojenych vrstev
+		for (var key in layerMap) {
+			sql += ' LEFT JOIN ' + layerMap[key].name + ' ' + key + ' ON ';
+			sql += 'a."' + areaLayerRef.fidColumn + '"=' + key + '."' + layerMap[key].fid + '"::bigint';
 		}
-	})
+
+		sql += '; COMMIT;';
+
+		logger.info('geoserver/layers.js start ' + sql);
+		var client = conn.getPgDataDb();
+		var timer = Timer("geoserver/layers-1");
+		client.query(sql, function (err, results) {
+			timer();
+			if (err) {
+				logger.error('layers#recreateLayerDbInternal SQL: ', sql, ' Error: ', err);
+				client.query('ROLLBACK;', function () {
+					return callback(err);
+				});
+			} else {
+				callback(null, areaLayerRef);
+			}
+		});
+	});
 };
 
 function changeLayerGeoserver(layerId, method, callback) {

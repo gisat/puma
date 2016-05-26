@@ -10,6 +10,7 @@ import java.util.Date;
 /**
  * Create backup of sql data.
  */
+@Deprecated
 public class Backup {
     File backupFile;
 

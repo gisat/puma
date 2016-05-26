@@ -15,7 +15,7 @@ Logger.prototype.setLevel = function(newLevel) {
 };
 
 Logger.prototype.trace = function() {
-	return this._log('trace', Logger.LEVEL_TRACE, arguments);
+	return this._log('log', Logger.LEVEL_TRACE, arguments);
 };
 
 Logger.prototype.info = function() {
@@ -43,7 +43,9 @@ Logger.prototype._log = function(method, level, passedArguments) {
 };
 
 var applicationWideLogger = new Logger();
-applicationWideLogger.setLevel(config.loggingLevel);
+if(config.loggingLevel) {
+	applicationWideLogger.setLevel(config.loggingLevel);
+}
 
 module.exports = {
 	Logger: Logger,

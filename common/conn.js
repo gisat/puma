@@ -1,27 +1,21 @@
-var config = require('../config');
-var pg = require('pg');
-var MongoClient = require('mongodb').MongoClient;
-
-var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
+var MongoClient = require('mongodb').MongoClient;
+var pg = require('pg');
+var pgConnStringParser = require('pg-connection-string').parse;
+var Promise = require('promise');
+var util = require('util');
 
-//maybe one day we can switch to request instead of http and https
-//var requestPackage = require('request'); // request was taken by conn.request
+var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
-/////// DEBUG
-//var http = require('http-debug').http;
-//var https = require('http-debug').https;
-//http.debug = 2;
-///////
 		
-var async = require('async');
 
 var mongodb = null;
 var pgDataDB = null;
 var pgGeonodeDB = null;
 var objectId = null;
-
+var workspaceSchemaMap = {};
 
 
 
@@ -102,7 +96,7 @@ function initGeoserver() {
 
 function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
-	pgDataDB.connect();
+	pgDataDB.connect(initPgSchemas(config.workspaceSchemaMap, config.remoteDbSchemas));
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
 
@@ -155,6 +149,89 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 	});
 }
 
+function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
+	// Setup initial local schemas.
+	workspaceSchemaMap = _workspaceSchemaMap;
+	var pgClient = null;
+
+	new Promise(function (resolve, reject) {
+		pgClient = getPgDataDb();
+		var sql = "CREATE EXTENSION IF NOT EXISTS postgres_fdw;";
+		pgClient.query(sql, function(err, results) {
+			if (err) {
+				reject(util.format("Error creating extension postgres_fdw: %s", err));
+			} else {
+				logger.info("Created extension postgres_fdw.");
+				resolve();
+			}
+		});
+	}).then(function () {
+		var serverPromises = [];
+		for (var remoteServerName in remoteDbSchemas) {
+			if(!remoteDbSchemas.hasOwnProperty(remoteServerName)){
+				continue;
+			}
+			function promiseCallback(remoteServerName) {
+				return function (resolve, reject) {
+					var remoteDbConnParams = pgConnStringParser(remoteDbSchemas[remoteServerName].connString);
+					var sql = "";
+					sql += util.format("DROP SERVER IF EXISTS %s CASCADE;\n", remoteServerName);
+					sql += util.format("CREATE SERVER %s FOREIGN DATA WRAPPER postgres_fdw OPTIONS (dbname '%s', host '%s', port '%s');\n",
+						remoteServerName, remoteDbConnParams.database, remoteDbConnParams.host, remoteDbConnParams.port);
+					sql += util.format("CREATE USER MAPPING FOR CURRENT_USER SERVER %s OPTIONS (user '%s', password '%s');\n",
+						remoteServerName, remoteDbConnParams.user, remoteDbConnParams.password);
+					pgClient.query(sql, function(err, results) {
+						if (err) {
+							reject(util.format("Error creating foreign data wrapper for server '%s': %s", remoteServerName, err));
+						} else {
+							logger.info(util.format("Created foreign data wrapper for server '%s'.", remoteServerName));
+							resolve();
+						}
+					});
+				}
+			}
+			serverPromises.push(new Promise(promiseCallback(remoteServerName)));
+		}
+		return Promise.all(serverPromises);
+	}).then(function () {
+		var importPromises = [];
+		for (var remoteServerName in remoteDbSchemas) {
+			if(!remoteDbSchemas.hasOwnProperty(remoteServerName)){
+				continue;
+			}
+			var map = remoteDbSchemas[remoteServerName].workspaceSchemaMap;
+			for (var workspaceName in map) {
+				if(!map.hasOwnProperty(workspaceName)){
+					continue;
+				}
+				function promiseCallback(remoteServerName, workspaceName) {
+					return function (resolve, reject) {
+						var remoteSchemaName = remoteDbSchemas[remoteServerName].workspaceSchemaMap[workspaceName];
+						var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
+						var sql = "";
+						sql += util.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", localSchemaName);
+						sql += util.format("CREATE SCHEMA %s;\n", localSchemaName);
+						sql += util.format("IMPORT FOREIGN SCHEMA %s FROM SERVER %s INTO %s;\n", remoteSchemaName, remoteServerName, localSchemaName);
+						logger.info("conn#initPgSchemas importing foreign schemas SQL: ", sql);
+						pgClient.query(sql, function(err, results) {
+							if (err) {
+								reject(logger.error(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err)));
+							} else {
+								setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
+								logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
+								resolve();
+							}
+						});
+					}
+				}
+				importPromises.push(new Promise(promiseCallback(remoteServerName, workspaceName)));
+			}
+		}
+	}).catch(function (err) {
+		logger.error(err);
+	});
+}
+
 function init(app, callback) {
 	setInterval(function() {
 		initGeoserver();
@@ -173,10 +250,10 @@ function getIo() {
 }
 
 function getNextId() {
-	objectId++;
+	var newId = ++objectId;
 	var mongoSettings = getMongoDb().collection('settings');
-	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
-	return objectId;
+	mongoSettings.update({_id: 1}, {_id: 1,objectId: newId}, {upsert: true}, function() {});
+	return newId;
 }
 
 function getMongoDb() {
@@ -196,21 +273,92 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
-function getLayerTable(layer){
-	var workspaceDelimiterIndex = layer.indexOf(":");
-	if(workspaceDelimiterIndex == -1){
-		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
-		return layer;
-	}
-	var workspace = layer.substr(0, workspaceDelimiterIndex);
-	var layerName = layer.substr(workspaceDelimiterIndex + 1);
-	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
-		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
-		return workspace + "." + layerName;
-	}
-	return config.workspaceSchemaMap[workspace] + "." + layerName;
+function setWorkspaceSchemaMapItem(workspaceName, schemaName) {
+	workspaceSchemaMap[workspaceName] = schemaName;
 }
 
+function getSchemaName(workspaceName) {
+	if (!workspaceSchemaMap.hasOwnProperty(workspaceName)) {
+		logger.error(util.format("Error: workspace '%s' not found in workspaceSchemaMap.", workspaceName));
+		return null;
+	}
+	return workspaceSchemaMap[workspaceName];
+
+}
+
+function getLayerTable(layerName) {
+	// Extract workspaceName and tableName.
+	var nameParts = layerName.split(":");
+	var err_msg = "";
+	if (nameParts.length != 2) {
+		err_msg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", nameParts);
+		logger.error(err_msg);
+		return null;
+	}
+	var workspaceName = nameParts[0];
+	var tableName = nameParts[1];
+	if (workspaceName == "" || tableName == "") {
+		err_msg = util.format("Error: layerName has empty workspace or table: '%s'.", nameParts);
+		logger.error(err_msg);
+		return null;
+	}
+
+	// Do lookup for schema.
+	var schemaName = getSchemaName(workspaceName);
+
+	// Return schemaName.tableName optionaly without the schema part.
+	if (schemaName == null) {
+		return tableName;
+	}
+	return util.format("%s.%s", schemaName, tableName);
+}
+
+/**
+ * Gets the name of the geometry column used by particular table.
+ *
+ * @param {string} sourceTableName - The name of the table holding the geometry column.
+ *   The value must always keep the format "schemaName.tableName".
+ * @return {string} Geometry column name.
+ *   If the table has more geometry columns than the column returned is undefined.
+ */
+function getGeometryColumnName(sourceTableName) {
+	return new Promise(function (resolve, reject) {
+		// Extract schema name and table name.
+		var nameParts = sourceTableName.split(".");
+		var err_msg = "";
+		if (nameParts.length != 2) {
+			err_msg = util.format("Error: sourceTableName does not keep the format 'schema.table': '%s'.", nameParts);
+			logger.error(err_msg);
+			reject(new Error(err_msg));
+		}
+		var schemaName = nameParts[0];
+		var tableName = nameParts[1];
+		if (schemaName == "" || tableName == "") {
+			err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
+			logger.error(err_msg);
+			reject(new Error(err_msg));
+		}
+	
+		// Do lookup.
+		// Lookup is made into the same schema the table resides.
+		var sql = util.format("SELECT f_geometry_column FROM %s.geometry_columns WHERE f_table_schema = $1 AND f_table_name = $2;", schemaName);
+		var client = getPgDataDb();
+		client.query(sql, [schemaName, tableName], function(err, results) {
+			if (err) {
+				err_msg = util.format("conn#getGeometryColumnName Sql. %s Error: ", sql, err);
+				logger.error(err_msg);
+				return reject(new Error(err_msg));
+			}
+			if (results.rows.length < 1) {
+				err_msg = util.format("conn#getGeometryColumnName found no item for table %s.", sourceTableName);
+				logger.error(err_msg);
+				return reject(new Error(err_msg));
+			}
+			var colName = results.rows[0]['f_geometry_column'];
+			resolve(colName);
+		});
+	});
+}
 
 module.exports = {
 	init: init,
@@ -222,5 +370,6 @@ module.exports = {
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
 	getNextId: getNextId,
-	getLayerTable: getLayerTable
+	getLayerTable: getLayerTable,
+	getGeometryColumnName: getGeometryColumnName
 };
