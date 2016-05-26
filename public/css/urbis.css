@@ -1,20 +1,5 @@
 /* Main components */
 /* DomManipulation.js line 114*/
-.urbis.without-header #wb-header, .urbis #header {
-    display: none;
-}
-.urbis.without-header #main {
-    padding: 0;
-}
-.urbis.without-header body.application #main {
-    padding-top: 90px;
-}
-.urbis.without-header #content-application{
-    top: 0;
-}
-.urbis.without-footer #footer {
-    display: none;
-}
 
 
 /* Intro ========= */
@@ -39,7 +24,7 @@
     background           : #eee;
 }
 .urbis .field.level .x-btn .x-btn-inner {
-    color: inherit;
+    color: #555;
 }
 .urbis .field.help .help-btn .x-btn {
     background: #eee;
@@ -53,7 +38,7 @@
 }
 
 .urbis #button-1033-btnIconEl{
-    color: #333;
+    color: #555;
 }
 
 .urbis #content-intro{
@@ -89,7 +74,7 @@
 
 /* Form ================== */
 .urbis.x-border-box .x-form-text {
-    color                : #333;
+    color                : #555;
     background           : #eee;
     border-radius: 1px 0 0 1px;
 }
@@ -142,10 +127,10 @@
     background: #fff;
 }
 .urbis #app-tools-actions span {
-    color: #333;
+    color: #555;
 }
 .urbis .btn-map-tool span.x-btn-inner {
-    color: #333;
+    color: #555;
 }
 
 /* box toggles */
@@ -164,7 +149,7 @@
     border-color: white !important;
 }
 .urbis .x-accordion-hd .x-panel-header-text {
-    color: #333;
+    color: #555;
 }
 .urbis .x-accordion-body {
     border: 0;
@@ -361,10 +346,26 @@
 }
 
 /* paneal header buttons */
+.urbis .x-panel-header .x-tool-unselect {
+    background-image: url("../images/icons/urbis-unselect.png") !important;
+}
+.urbis .x-panel-header .x-tool-unselectall {
+    background-image: url("../images/icons/urbis-unselect-all.png") !important;
+}
 .urbis .x-panel-header .x-tool-detach {
     background-image: url("../images/icons/urbis-detach.png") !important;
 }
-
+.urbis .x-tool-collapse-top, .urbis .x-tool-collapse-right, .urbis .x-tool-collapse-bottom, .urbis .x-tool-collapse-left,
+.urbis .x-tool-over .x-tool-collapse-top, .urbis .x-tool-over .x-tool-collapse-right, .urbis .x-tool-over .x-tool-collapse-bottom, .urbis .x-tool-over .x-tool-collapse-left{
+    background: url("../images/icons/urbis-collapse.png") no-repeat 50% 50%;
+}
+.urbis .x-tool-expand-top, .urbis .x-tool-expand-right, .urbis .x-tool-expand-bottom, .urbis .x-tool-expand-left,
+.urbis .x-tool-over .x-tool-expand-top, .urbis .x-tool-over .x-tool-expand-right, .urbis .x-tool-over .x-tool-expand-bottom, .urbis .x-tool-over .x-tool-expand-left{
+    background: url("../images/icons/urbis-expand.png") no-repeat 50% 50%;
+}
+.urbis .x-tool-close {
+    background: url("../images/icons/urbis-close.png") no-repeat 50% 50% !important;
+}
 /* help buttons */
 .urbis #app-toolbar-contexthelp span.x-btn-icon {
     background: url('../images/icons/urbis-help-context.png') !important;
@@ -499,7 +500,7 @@
 
 .urbis .x-boundlist.custom-combo-list .x-boundlist-item {
     background           : #eee;
-    color                : #333;
+    color                : #555;
 }
 
 .urbis .x-boundlist.custom-combo-list .x-boundlist-item:hover,

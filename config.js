@@ -49,12 +49,14 @@ module.exports = {
 		noGeoserverLayerGroups: false,
 		useWBAgreement: false,
 		useWBHeader: false,
+		useHeader: false,
 		useWBFooter: false,
+		useFooterLegal: false,
 		allowPumaHelp: false,
 		allowDownloadsLink: false,
 		usePumaLogo: false,
-		advancedFiltersFirst: false
-		//renameAdvancedFiltersTo: "Evaluation Tool"
+		advancedFiltersFirst: false,
+		renameAdvancedFiltersTo: "Evaluation Tool"
 	},
 
 	allowedOrigins: "http://localhost:5555",
