@@ -97,7 +97,7 @@ function initGeoserver() {
 function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
 	pgDataDB.connect(function () {
-		foreign.initForeignTables(pgDataDB(), config.remoteDbSchemas);
+		foreign.initForeignTables(getPgDataDb(), config.remoteDbSchemas);
 	});
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
@@ -203,8 +203,8 @@ function getSchemaName(workspaceName) {
 				if (workspaceName == mapItem.workspace) {
 					wMap[workspaceName] = mapItem.local_schema;
 				}
-			}
-		}
+			});
+		});
 		if (wMap.hasOwnProperty(workspaceName)) {
 			schemaName = wMap[workspaceName];
 		} else {

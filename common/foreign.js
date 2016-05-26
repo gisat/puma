@@ -48,7 +48,7 @@ function queryRemoteTables(remotePgClient, remoteServerName, remoteSchemaName, l
 					                    columns: null,
 					                    sql: null});
 				}
-				logger.info("List of remote tables for schema '%s' has been read.", remoteSchemaName);
+				logger.info(util.format("List of remote tables for schema '%s' has been read.", remoteSchemaName));
 				resolve();
 			}
 		});
