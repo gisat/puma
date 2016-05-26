@@ -1,6 +1,4 @@
 /* Main components */
-/* DomManipulation.js line 114*/
-
 
 /* Intro ========= */
 .urbis .intro #app-map {
@@ -51,8 +49,8 @@
 }
 
 .urbis #content-intro-guide {
-    background-color: rgb(55, 55, 55);
-    background-color : rgba(55, 55, 55, .95);
+    background-color: rgb(67, 66, 84);
+    background-color: rgba(67, 66, 84, .95);
     border: 1px solid #666;
     border-right: 0;
     color: #eee;

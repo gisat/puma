@@ -14,16 +14,16 @@ module.exports = {
 		geonode: "public"
 	},
 
-	remoteDbSchemas: {
-		urbis: {
-			connString     : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
-			workspaceSchemaMap: {
-				urbis_ancillary_layers: "ancillary_layers",
-				urbis_input: "input",
-				urbis_results_final: "results_final"
-			}
-		}
-	},
+	//remoteDbSchemas: {
+	//	urbis: {
+	//		connString     : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
+	//		workspaceSchemaMap: {
+	//			urbis_ancillary_layers: "ancillary_layers",
+	//			urbis_input: "input",
+	//			urbis_results_final: "results_final"
+	//		}
+	//	}
+	//},
 
 	geoserverHost   : "185.8.164.70",
 	geoserverPort   : 8080,
@@ -55,8 +55,7 @@ module.exports = {
 		allowPumaHelp: false,
 		allowDownloadsLink: false,
 		usePumaLogo: false,
-		advancedFiltersFirst: false,
-		renameAdvancedFiltersTo: "Evaluation Tool"
+		advancedFiltersFirst: false
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -85,5 +84,11 @@ module.exports = {
 	/*
 	 * UrbanTep - Approximate pixel size in input tif file, m^2
 	 */
-	urbanTepTifPixelSize: 75*75
+	urbanTepTifPixelSize: 75*75,
+
+	texts: {
+		renameAdvancedFiltersTo: "Evaluation Tool",
+		appTitle: "Urbis",
+		appName: "&nbsp;"
+	}
 };
