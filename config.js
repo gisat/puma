@@ -80,5 +80,10 @@ module.exports = {
 	 * UrbanTEP - UserName and Password under which the layers are uploaded
 	 */
 	urbanTepGeonodeUserName: '',
-	urbanTepGeonodeUserPassword: ''
+	urbanTepGeonodeUserPassword: '',
+
+	/*
+	 * UrbanTep - Approximate pixel size in input tif file, m^2
+	 */
+	urbanTepTifPixelSize: 75*75
 };

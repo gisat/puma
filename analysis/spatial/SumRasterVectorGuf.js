@@ -1,11 +1,11 @@
 var util = require('util');
-var conn = require('../../common/conn');
-var crud = require('../../rest/crud');
-
-var logger = require('../../common/Logger').applicationWideLogger;
-
 var Promise = require('promise');
 var _ = require('underscore');
+
+var config = require('../../config');
+var conn = require('../../common/conn');
+var crud = require('../../rest/crud');
+var logger = require('../../common/Logger').applicationWideLogger;
 
 var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaTemplateId) {
 	this.analyticalUnitsTable = analyticalUnitsTable;
@@ -61,8 +61,8 @@ SumRasterVectorGuf.prototype.run = function () {
 					} else {
 						informationForUnitWithGid.countOfNonUrbanized += row.amount;
 					}
-					informationForUnitWithGid.areaOfUrbanized = informationForUnitWithGid.countOfUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * 100;
-					informationForUnitWithGid.areaOfNonUrbanized = informationForUnitWithGid.countOfNonUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * 100;
+					informationForUnitWithGid.areaOfUrbanized = informationForUnitWithGid.countOfUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * config.urbanTepTifPixelSize;
+					informationForUnitWithGid.areaOfNonUrbanized = informationForUnitWithGid.countOfNonUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * config.urbanTepTifPixelSize;
 				});
 
 				self.storeAnalysis(groupByAnalyticalId).then(function () {

@@ -35,6 +35,7 @@ module.exports = function(req, res) {
 			console.log("SASS Error: ", err);
 			res.end("SASS Error: ", err);
 		}
+		res.set('Content-Type', 'text/css');
 		res.end(result.css.toString());
 	});
 
