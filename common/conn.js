@@ -96,7 +96,9 @@ function initGeoserver() {
 
 function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
-	pgDataDB.connect(initPgSchemas(config.workspaceSchemaMap, config.remoteDbSchemas));
+	pgDataDB.connect(function () {
+		initForeignTables(pgDataDB(), config.remoteDbSchemas);
+	});
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
 
@@ -146,89 +148,6 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 			if (err || !objectId) return callback(err);
 			callback();
 		});
-	});
-}
-
-function initPgSchemas(_workspaceSchemaMap, remoteDbSchemas) {
-	// Setup initial local schemas.
-	workspaceSchemaMap = _workspaceSchemaMap;
-	var pgClient = null;
-
-	new Promise(function (resolve, reject) {
-		pgClient = getPgDataDb();
-		var sql = "CREATE EXTENSION IF NOT EXISTS postgres_fdw;";
-		pgClient.query(sql, function(err, results) {
-			if (err) {
-				reject(util.format("Error creating extension postgres_fdw: %s", err));
-			} else {
-				logger.info("Created extension postgres_fdw.");
-				resolve();
-			}
-		});
-	}).then(function () {
-		var serverPromises = [];
-		for (var remoteServerName in remoteDbSchemas) {
-			if(!remoteDbSchemas.hasOwnProperty(remoteServerName)){
-				continue;
-			}
-			function promiseCallback(remoteServerName) {
-				return function (resolve, reject) {
-					var remoteDbConnParams = pgConnStringParser(remoteDbSchemas[remoteServerName].connString);
-					var sql = "";
-					sql += util.format("DROP SERVER IF EXISTS %s CASCADE;\n", remoteServerName);
-					sql += util.format("CREATE SERVER %s FOREIGN DATA WRAPPER postgres_fdw OPTIONS (dbname '%s', host '%s', port '%s');\n",
-						remoteServerName, remoteDbConnParams.database, remoteDbConnParams.host, remoteDbConnParams.port);
-					sql += util.format("CREATE USER MAPPING FOR CURRENT_USER SERVER %s OPTIONS (user '%s', password '%s');\n",
-						remoteServerName, remoteDbConnParams.user, remoteDbConnParams.password);
-					pgClient.query(sql, function(err, results) {
-						if (err) {
-							reject(util.format("Error creating foreign data wrapper for server '%s': %s", remoteServerName, err));
-						} else {
-							logger.info(util.format("Created foreign data wrapper for server '%s'.", remoteServerName));
-							resolve();
-						}
-					});
-				}
-			}
-			serverPromises.push(new Promise(promiseCallback(remoteServerName)));
-		}
-		return Promise.all(serverPromises);
-	}).then(function () {
-		var importPromises = [];
-		for (var remoteServerName in remoteDbSchemas) {
-			if(!remoteDbSchemas.hasOwnProperty(remoteServerName)){
-				continue;
-			}
-			var map = remoteDbSchemas[remoteServerName].workspaceSchemaMap;
-			for (var workspaceName in map) {
-				if(!map.hasOwnProperty(workspaceName)){
-					continue;
-				}
-				function promiseCallback(remoteServerName, workspaceName) {
-					return function (resolve, reject) {
-						var remoteSchemaName = remoteDbSchemas[remoteServerName].workspaceSchemaMap[workspaceName];
-						var localSchemaName = util.format("_%s_%s", remoteServerName, remoteSchemaName);
-						var sql = "";
-						sql += util.format("DROP SCHEMA IF EXISTS %s CASCADE;\n", localSchemaName);
-						sql += util.format("CREATE SCHEMA %s;\n", localSchemaName);
-						sql += util.format("IMPORT FOREIGN SCHEMA %s FROM SERVER %s INTO %s;\n", remoteSchemaName, remoteServerName, localSchemaName);
-						logger.info("conn#initPgSchemas importing foreign schemas SQL: ", sql);
-						pgClient.query(sql, function(err, results) {
-							if (err) {
-								reject(logger.error(util.format("Error importing remote schema '%s.%s': %s", remoteServerName, remoteSchemaName, err)));
-							} else {
-								setWorkspaceSchemaMapItem(workspaceName, localSchemaName);
-								logger.info(util.format("Imported schema '%s' from remote '%s.%s'.", localSchemaName, remoteServerName, remoteSchemaName));
-								resolve();
-							}
-						});
-					}
-				}
-				importPromises.push(new Promise(promiseCallback(remoteServerName, workspaceName)));
-			}
-		}
-	}).catch(function (err) {
-		logger.error(err);
 	});
 }
 
