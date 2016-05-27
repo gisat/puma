@@ -24,7 +24,7 @@ module.exports = {
 				{workspace: "urbis_input",
 				 remote_schema: "input",
 				 local_schema: "_urbis_input"},
-				{workspace: "urbit_results_final",
+				{workspace: "urbis_results_final",
 				 remote_schema: "results_final",
 				 local_schema: "_urbis_results_final"}
 			]
