@@ -14,9 +14,9 @@ Ext.define('PumaMain.controller.Render', {
                 collapse: this.onFloatingCollapse
             }
         })
-        
+
         $('.problematichelp').live('click',function(e) {
-            
+
             if (Config.contextHelp) {
                 PumaMain.controller.Help.onHelpClick(e);
             }
@@ -27,7 +27,7 @@ Ext.define('PumaMain.controller.Render', {
             panel.up('window').setHeight(null);
         },100)
     },
-    
+
     dockPanel: function(win) {
         var panel = win.down('panel');
         win.remove(panel,false);
@@ -41,16 +41,16 @@ Ext.define('PumaMain.controller.Render', {
                 idx++;
             }
         }
-        
-        
+
+
         var container = Ext.ComponentQuery.query('toolspanel')[0];
-        
+
         panel.collapse();
         panel.header.items.getByKey('undock').show();
         container.insert(idx,panel);
 
     },
-    
+
     undockPanel: function(tool) {
         var panel = tool.up('panel');
         panel.up('container').remove(panel,false);
@@ -67,11 +67,11 @@ Ext.define('PumaMain.controller.Render', {
             items: [panel]
         }).show();
         win.el.setOpacity(0.9);
-        
+
         var el = Ext.get('sidebar-tools-toggle');
         var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
         win.alignTo(el,'tl-tr',[50*factor,50*factor]);
-        
+
         panel.expand();
         panel.doLayout();
         panel.header.items.getByKey('undock').hide();
@@ -79,8 +79,8 @@ Ext.define('PumaMain.controller.Render', {
             this.getController('Filter').afterAccordionLayout();
         }
     },
-    
-    
+
+
     renderApp: function() {
         var me = this;
         var locStore = Ext.StoreMgr.lookup('location4init');
@@ -88,7 +88,9 @@ Ext.define('PumaMain.controller.Render', {
         //customRec.set('name','Custom')
         if (Config.dataviewId) {
             Ext.getBody().addCls('dataview');
-            this.renderAggreement();
+            if(Config.toggles.useWBAgreement) {
+                this.renderAggreement();
+            }
         }
 //		Ext.widget('button',{ // JJJ HACK čára do konzole
 //			renderTo: 'footer-legal',
@@ -149,7 +151,7 @@ Ext.define('PumaMain.controller.Render', {
             itemId: 'selyear',
             cls: 'yearselector problematichelp',
             helpId: 'Switchingbetweenyears',
-            
+
         })
         Ext.widget('pumacombo',{
             store: 'visualization4sel',
@@ -186,8 +188,8 @@ Ext.define('PumaMain.controller.Render', {
             icon: 'images/icons/share.png',
             cls: 'custom-button btn-share'
         })
-        
-        
+
+
 //        Ext.widget('slider',{
 //            renderTo: 'app-toolbar-level',
 //            itemId: 'areaslider',
@@ -196,8 +198,8 @@ Ext.define('PumaMain.controller.Render', {
 //            maxValue: 2,
 //            width: '100%'
 //        })
-        
-     
+
+
         Ext.widget('button',{
             renderTo: 'app-toolbar-contexthelp',
             itemId: 'contexthelp',
@@ -220,7 +222,7 @@ Ext.define('PumaMain.controller.Render', {
                 }
             }
         })
-        
+
         Ext.widget('button',{
             renderTo: 'app-toolbar-webhelp',
             itemId: 'webhelp',
@@ -231,7 +233,7 @@ Ext.define('PumaMain.controller.Render', {
             height: 30,
             href: 'help/PUMA webtool help.html'
         })
-        
+
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
             itemId: 'areamoredetails',
@@ -250,7 +252,7 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button'
         })
-    
+
         Ext.widget('button',{
             renderTo: 'app-toolbar-manage',
             itemId: 'managedataview',
@@ -325,7 +327,7 @@ Ext.define('PumaMain.controller.Render', {
                 showSeparator: false
                 },
                 itemId: 'onlySelected',
-                
+
                 //text: 'Only selected',
                 enableToggle: true,
                 tooltip: 'Only selected',
@@ -335,9 +337,9 @@ Ext.define('PumaMain.controller.Render', {
         })
         Ext.ComponentQuery.query('#screenshotpanel')[0].collapse();
         Ext.ComponentQuery.query('#areapager #useselectedcolorpicker')[0].select(['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']);
-        
+
     },
-    
+
     renderMap: function() {
         Ext.widget('component',{
             renderTo: 'app-map',
@@ -352,8 +354,8 @@ Ext.define('PumaMain.controller.Render', {
             width: 1920,
             height: 900
         })
-    },  
-    
+    },
+
     renderAggreement: function() {
         Ext.widget('button',{
             renderTo: 'agreement-accept',
@@ -391,7 +393,7 @@ Ext.define('PumaMain.controller.Render', {
 
 		})
     },
-            
+
     renderIntro: function() {
         this.renderMap();
         Ext.widget('pumacombo',{
@@ -437,8 +439,10 @@ Ext.define('PumaMain.controller.Render', {
             height: '100%',
             cls: 'custom-button btn-confirm'
         })
-        this.renderAggreement()
-        
+        if(Config.toggles.useWBAgreement) {
+					this.renderAggreement();
+				}
+
     }
     })
 

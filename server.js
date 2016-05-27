@@ -2,6 +2,8 @@ var express = require('express');
 var app = express();
 var conn = require('./common/conn');
 var publicConfig = require('./common/public-config');
+var getCSS = require('./common/get-css');
+var getMngCSS = require('./common/get-mng-css');
 var staticFn = express['static'];
 var session = require('express-session');
 
@@ -11,7 +13,7 @@ var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
-process.on('uncaughtException', (err) => {
+process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
@@ -40,45 +42,14 @@ function initServer(err) {
 		return next(null);
 	});
 
-	/*
-	#######################################################################
-	Nastaveni apache.conf pro servirovani statickych souboru primo Apachem:
-
-	Alias /help /var/www/puma-app/public/help/
-
-	#### /tool/* static routing
-	RedirectMatch 301 ^/tool$ /tool/
-	RedirectMatch 301 ^/catalogue/(.*)$ /catalogue/$1
-
-	AliasMatch ^/tool/$ /var/www/puma-app/public/data-exploration.html
-	Alias /tool/css /var/www/puma-app/public/css
-	Alias /tool/ux /var/www/puma-app/public/ux
-	Alias /tool/_main /var/www/puma-app/public/_main
-	Alias /tool/_common /var/www/puma-app/public/_common
-	Alias /tool/images /var/www/puma-app/public/images
-	Alias /tool/devlib /var/www/puma-app/public/devlib
-	Alias /tool/lib /var/www/puma-app/public/lib
-	Alias /tool/gisatlib /var/www/puma-app/public/gisatlib
-	Alias /tool/extjs-4.1.3 /var/www/puma-app/public/extjs-4.1.3
-
-	ProxyPassMatch ^/tool/?$ !
-	ProxyPass /tool/css !
-	ProxyPass /tool/ux !
-	ProxyPass /tool/_main !
-	ProxyPass /tool/_common !
-	ProxyPass /tool/images !
-	ProxyPass /tool/devlib !
-	ProxyPass /tool/lib !
-	ProxyPass /tool/gisatlib !
-	ProxyPass /tool/extjs-4.1.3 !
-
-	#### /tool* non-static routing (and some minor static, not covered by above code)
-	ProxyPass /tool http://127.0.0.1:3000
-	ProxyPassReverse /tool http://127.0.0.1:3000
-	 */
-
 	app.use('/config.js', publicConfig);
 	app.use('/printpublic/config.js', publicConfig);
+
+	app.use('/app.css', getCSS);
+	app.use('/printpublic/app.css', getCSS);
+
+	app.use('/app-mng.css', getMngCSS);
+
 
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
 	app.use('/printpublic',staticFn(__dirname + '/public'));

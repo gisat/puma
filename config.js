@@ -35,7 +35,15 @@ module.exports = {
 	debug: true,
 
 	toggles: {
-		noGeoserverLayerGroups: false
+		noGeoserverLayerGroups: false,
+		useWBAgreement: false,
+		useWBHeader: false,
+		useWBFooter: false,
+		allowPumaHelp: false,
+		allowDownloadsLink: false,
+		usePumaLogo: false,
+		advancedFiltersFirst: false
+		//renameAdvancedFiltersTo: "Evaluation Tool"
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -59,5 +67,10 @@ module.exports = {
 	 * UrbanTEP - UserName and Password under which the layers are uploaded
 	 */
 	urbanTepGeonodeUserName: '',
-	urbanTepGeonodeUserPassword: ''
+	urbanTepGeonodeUserPassword: '',
+
+	/*
+	 * UrbanTep - Approximate pixel size in input tif file, m^2
+	 */
+	urbanTepTifPixelSize: 75*75
 };

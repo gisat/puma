@@ -6,7 +6,7 @@ html, body {
 body, body.x-body {
 	font-family          : "Open Sans", sans-serif;
 	font-size            : 12px;
-	background           : #e5e3df url("../images/loading.gif") no-repeat 50% 50%;
+	background           : #e5e3df url(./images/loading.gif) no-repeat 50% 50%;
 }
 body.application {
 	background-image     : none;
@@ -37,8 +37,8 @@ strong {
 	filter               : Alpha(opacity=50);
 }
 #loading-mask {
-	background           : url("../images/loading-mask.gif") no-repeat 50% 50%;
-/*        background           : url("../images/loading.gif") no-repeat 50% 50%;*/
+	background           : url(./images/loading-mask.gif) no-repeat 50% 50%;
+/*        background           : url(./images/loading.gif) no-repeat 50% 50%;*/
 }
 
 /* LAYOUT */
@@ -99,7 +99,7 @@ strong {
 	}
 	#wb-header a {
 		color              : #fff;
-		background         : #2b292a url("../images/WB-LOGO-EN.gif") no-repeat 0 0;
+		background         : #2b292a url(./images/WB-LOGO-EN.gif) no-repeat 0 0;
 		padding-left       : 30px;
 		text-transform     : uppercase;
 		font-weight        : bold;
@@ -245,8 +245,8 @@ strong {
 		.fields-holder > .label {
 			width            : 300px;
 			height           : 69px;
-			padding-left     : 81px;
-			background       : url("../images/project-logo.png") no-repeat 0 8px;
+			padding-left     : 10px;
+			//background       : url(./images/puma-logo.png) no-repeat 0 8px;
 			line-height      : 38px;
 			font-size        : 30px;
 			font-weight      : 800;
@@ -350,7 +350,6 @@ strong {
                 }
                 #content-intro-terms #agreement-btns div {
                     float: right;
-                    background-color: '#ff0000';
                     height: 30px;
                     margin-left: 20px;
                     width: 75px;
@@ -410,7 +409,7 @@ strong {
 			margin-top       : 10px;
 		}
 		#toolbar .group .field.with-sep {
-/*			background       : url("../images/toolbar-group-border.png") repeat-y 100% 0;*/
+/*			background       : url(./images/toolbar-group-border.png) repeat-y 100% 0;*/
 		}
 
                 
@@ -461,7 +460,7 @@ strong {
 			display             : block;
 			width               : 21px;
 			height              : 30px;
-			background-image    : url("../images/sidebar-toggle-sprite.png");
+			background-image    : url(./images/sidebar-toggle-sprite.png);
 			background-repeat   : no-repeat;
 			background-position : 0 -2px;
 			position            : absolute;
@@ -473,7 +472,7 @@ strong {
                     width               : 21px;
                     left                : -21px;
                     height              : 21px;
-		    background-image    : url("../images/icons/add.png");
+		    background-image    : url(./images/icons/add.png);
                     top                 : 30px;
                     background-position : 0 0;
                     background-color: #eee;
@@ -524,7 +523,7 @@ strong {
 		color            : #111c24;
 	}
 	#footer-bar a.wb {
-		background       : url("../images/wbg-footer-en.gif") no-repeat 0 50%;
+		background       : url(./images/wbg-footer-en.gif) no-repeat 0 50%;
 		padding-left     : 30px;
 		text-transform   : uppercase;
 		font-weight      : bold;

@@ -3,7 +3,7 @@
 	background : #FFF;
 }
 .x-cp-rgbpicker {
-	background-image: url(images/mask.png);
+	background-image: url(./images/ux/mask.png);
 	background-repeat: no-repeat;
 	background-color: red;
 	width: 182px;
@@ -14,7 +14,7 @@
 	_margin: 7px 7px 7px 4px;
 	_cursor: hand;
 	_background-image: none;
-	_filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='mask.png', sizingMethod='scale');
+	_filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='./images/ux/mask.png', sizingMethod='scale');
 }
 
 .x-cp-rgbslider {
@@ -23,7 +23,7 @@
 	top: -7px;
 	width: 15px;
 	height: 15px;
-	background-image: url(images/slider-rgb.gif) !important;
+	background-image: url(./images/ux/slider-rgb.gif) !important;
 	background-repeat: no-repeat !important;
 	cursor: pointer;
 	_cursor: hand;
@@ -34,7 +34,7 @@
 	width: 9px;
 	float: left;
 	margin: 7px 0 0 7px;
-	background-image: url(images/hue.png) !important;
+	background-image: url(./images/ux/hue.png) !important;
 	background-repeat: no-repeat;
 	cursor: pointer;
 	_cursor: hand;
@@ -46,7 +46,7 @@
 	top: -7px;
 	width: 15px;
 	height: 15px;
-	background-image: url(images/slider-rgb.gif) !important;
+	background-image: url(./images/ux/slider-rgb.gif) !important;
 	background-repeat: no-repeat;
 	cursor: pointer;
 	_cursor: hand;
@@ -80,7 +80,7 @@
 }
 
 .x-cp-leftarrow {
-	background-image: url(images/leftarrow.jpg) !important;
+	background-image: url(./images/ux/leftarrow.jpg) !important;
 	background-repeat: no-repeat;
 	background-position: center center;
 	padding: 0 2px 0 2px;

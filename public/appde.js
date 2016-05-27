@@ -28,6 +28,9 @@ Ext.application({
 			}
 		}
 
+		// set Home link in header // todo Move this somewhere else?
+		$("#home-link").attr("href", Config.projectHome);
+
 		window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''));
 		Ext.Ajax.method = 'POST';
 		if (Config.exportPage) {
