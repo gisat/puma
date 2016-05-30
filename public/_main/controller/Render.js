@@ -32,6 +32,9 @@ Ext.define('PumaMain.controller.Render', {
         var panel = win.down('panel');
         win.remove(panel,false);
         var order = ['selcolor','areatree','layerpanel','maptools','advancedfilters'];
+        if (Config.toggles.advancedFiltersFirst){
+            order = ['selcolor','advancedfilters','areatree','layerpanel','maptools'];
+        }
         var idx = 0;
         for (var i=0;i<order.length;i++) {
             var name = order[i];

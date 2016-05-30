@@ -55,7 +55,7 @@ module.exports = {
 		allowPumaHelp: false,
 		allowDownloadsLink: false,
 		usePumaLogo: false,
-		advancedFiltersFirst: false,
+		advancedFiltersFirst: true,
 		isUrbis: true
 	},
 
