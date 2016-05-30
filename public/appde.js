@@ -31,7 +31,13 @@ Ext.application({
 		// set Home link in header // todo Move this somewhere else?
 		$("#home-link").attr("href", Config.projectHome);
 		$(".urbis title").html(Config.texts.appTitle);
-		$("#toolbar .label").html(Config.texts.appName);
+		$("#toolbar > .label").html(Config.texts.appName);
+		$("#content-intro > .label").html(Config.texts.appName);
+
+		if (Config.toggles.isUrbis){
+			var content = "<div id='about-urbis'><h2>About project</h2><p>To get an overview about the URBIS project - Urban Land Recycling Information Services for Sustainable Cities, please visit the <a href='http://www.ict-urbis.eu/' target='_blank'>URBIS homepage</a>.</p></div>";
+			$("#content-intro-guide").append(content);
+		}
 
 		window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''));
 		Ext.Ajax.method = 'POST';

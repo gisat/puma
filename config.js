@@ -55,13 +55,8 @@ module.exports = {
 		allowPumaHelp: false,
 		allowDownloadsLink: false,
 		usePumaLogo: false,
-		advancedFiltersFirst: false
-	},
-
-	texts: {
-		renameAdvancedFiltersTo: "Evaluation Tool",
-		appTitle: "Urbis",
-		appName: "&nbsp;"
+		advancedFiltersFirst: true,
+		isUrbis: true
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -75,9 +70,6 @@ module.exports = {
 	 * Set level and all above will be logged.
 	 */
 	loggingLevel: 0,
-
-
-
 
 	/*
 	 * UrbanTEP - Destination of temporary downloaded files.
@@ -93,6 +85,11 @@ module.exports = {
 	/*
 	 * UrbanTep - Approximate pixel size in input tif file, m^2
 	 */
-	urbanTepTifPixelSize: 75*75
+	urbanTepTifPixelSize: 75*75,
 
+	texts: {
+		advancedFiltersName: "Evaluation Tool",
+		appTitle: "Urbis",
+		appName: "&nbsp;"
+	}
 };
