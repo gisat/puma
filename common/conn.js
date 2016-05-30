@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var http = require('http');
 var https = require('https');
 var MongoClient = require('mongodb').MongoClient;
