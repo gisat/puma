@@ -162,7 +162,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var nodeToExpand = null;
         for (var i=0;i<areaRoot.childNodes.length;i++) {
             var node = areaRoot.childNodes[i];
-            if (node.get('loc') == locObj.location && node.get('gid') == locObj.locGid) {
+            if (node.get('loc') == locObj.location && (node.get('definedplace') || node.get('gid')==locObj.locGid)) {
                 nodeToExpand = node;
             }
             else {
@@ -214,7 +214,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
     },
     
     onConfirm: function() {
-        if (!this.agreementAccepted) return;
+        if (Config.toggles.useWBAgreement && !this.agreementAccepted){
+            console.info("Access not allowed. You have to agree with Agreement.");
+            return;
+        }
         var val = Ext.ComponentQuery.query('#initialtheme')[0].getValue();
         this.onThemeChange({switching:true},val)
     },
@@ -306,10 +309,10 @@ Ext.define('PumaMain.controller.LocationTheme', {
         var years = Ext.ComponentQuery.query('#selyear')[0].getValue();
         var vis = Ext.ComponentQuery.query('#selvisualization')[0].getValue();
         var params = {
-                theme: theme,
-                years: JSON.stringify(years),
-                dataset: dataset
-            }
+						theme: theme,
+						years: JSON.stringify(years),
+						dataset: dataset
+        };
         var areaController = this.getController('Area');
      
         
@@ -323,13 +326,13 @@ Ext.define('PumaMain.controller.LocationTheme', {
         if (params['refreshLayers']) {
             params['queryTopics'] = this.getQueryTopics(theme);
         }
-        var loc = locationObj.location;
-        if (this.datasetChanged && loc) {
+        var locationId = locationObj.location;
+        if (this.datasetChanged && locationId) {
             var expanded = {};
-            var at = locationObj.at;
+            var areaTemplateId = locationObj.at;
             var locGid = locationObj.locGid;
-            expanded[loc] = {};
-            expanded[loc][at] = [locGid]
+            expanded[locationId] = {};
+            expanded[locationId][areaTemplateId] = [locGid];
             params['expanded'] = JSON.stringify(expanded);
         }
         if (detailLevelChanged) {
@@ -366,7 +369,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             failure: function() {
                 me.getController('DomManipulation').deactivateLoadingMask();
             }
-        })
+        });
         
         if (this.visChanged) {
             this.getController('Chart').loadVisualization(vis);

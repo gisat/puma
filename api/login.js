@@ -2,6 +2,7 @@ var querystring = require('querystring');
 var http = require('http');
 var conn = require('../common/conn');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function getLoginInfo(params,req,res,callback) {
 	var data = {
@@ -16,21 +17,27 @@ function getLoginInfo(params,req,res,callback) {
 function login(params,req,res,callback) {
 	geonodeCom(params,true,callback,function(res1) {
 		var cookies = res1.headers['set-cookie'] || [];
-		console.log("\n\nLOGIN HEADERS: ", res1.headers, "\n\n"); //////////////////////////////////////////////////////////
+		logger.info("login# login(), Login headers received: ", res1.headers, "\n Cookies: ", cookies);
 		var ssid = null;
+		var csrfToken = null;
 		for (var i=0; i<cookies.length; i++) {
-			console.log("iterating cookies: ", cookies[i]); //////////////////////////////////////////////////////////////////
 			var cookieRow = cookies[i].split(';')[0];
 			var name = cookieRow.split('=')[0];
 			if (name == 'sessionid') {
 				ssid = cookieRow.split('=')[1];
 			}
+			if(name == 'csrftoken') {
+				csrfToken = cookieRow.split('=')[1];
+			}
 		}
 		if (!ssid) {
-			return callback(new Error('bad login (ssid missing)'));
+			return callback(new Error(logger.info("login# login(), Invalid login")));
 		}
 		res.cookie('ssid',ssid,{httpOnly: true});
-		res.data = {status: 'ok', ssid: ssid};
+		res.cookie('sessionid',ssid,{httpOnly: true});
+		res.cookie('csrftoken',csrfToken,{httpOnly: true});
+
+		res.data = {status: 'ok', ssid: ssid, csrfToken: csrfToken};
 		callback();
 	})
 
@@ -57,7 +64,10 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 	};
 
 	conn.request(options1,null,function(err,output,res1) {
-		if (err) return generalCallback(err);
+		if (err) {
+			logger.error("api/login.js geonodeCom. Options: ", options1, " Error: ", err);
+			return generalCallback(err);
+		}
 		var qsVars = [];
 		if(!('set-cookie' in res1.headers)) return generalCallback({message: 'cookies not set'});
 		res1.headers['set-cookie'][0].split(';').forEach(function(element, index, array){
@@ -92,7 +102,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		};
 		conn.request(options2,postData,function(err,output,res2) {
 			if (err){
-				console.log("\n\nconn.geonodeCom ERROR:\nerr code:", err, "\noutput:", output);
+				logger.error("api/login.js geonodeCom ERROR:", err, " Output:", output, " Options: ", options2);
 				return generalCallback(err);
 			}
 			return specificCallback(res2);

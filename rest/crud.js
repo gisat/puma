@@ -5,25 +5,25 @@ var ensureObj = require('./models').ensureIds;
 var refs = require('./models').refs;
 var conn = require('../common/conn');
 var collections = require('./models').collections;
+var logger = require('../common/Logger').applicationWideLogger;
 
 function ensureCollection(req,res,next) {
 	if (collections.indexOf(req.params.objType)!=-1) {
 		next();
 	} else {
+		logger.error("Given collection doesnt exist: ",req.params.objType, " User: ", req.userId);
 		next(new Error('unknownCollection'));
 	}
 }
 
 
 function create(collName,obj,params,callback) {
+	logger.info("Create new item in collection: ", collName, " With data: ", obj, " and Params: ", params);
 	if (typeof(params) === 'function'){
-		callback = params; // todo get rid of this
+		callback = params; // TODO: get rid of this
 		params = {};
-		console.log("\n\n  /-------------------------------------\\");
-		console.log(" <----- crud.create too few params! ----->");
-		console.log("  \\-------------------------------------/\n\n");
+		logger.warn("Create doesn't have enough parameters for collection: ", collName, " with data: ", obj, " and Params: ", params);
 	}
-	console.log("<============ CRUD CREATE ("+collName+") ============>\nparams:", params);
 
 	if(typeof obj == "string") {
 		obj = JSON.parse(obj);
@@ -34,6 +34,7 @@ function create(collName,obj,params,callback) {
 		checkRefs: function(asyncCallback) {
 			checkRefs(db,obj,collName,function(err) {
 				if (err){
+					logger.error("crud#create. checkRefs Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null);
@@ -52,6 +53,7 @@ function create(collName,obj,params,callback) {
 			}
 			doHooks("precreate",collName,obj,params,function(err,result) {
 				if (err){
+					logger.error("crud#create. preCreate Hooks Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null);
@@ -61,6 +63,7 @@ function create(collName,obj,params,callback) {
 			var collection = db.collection(collName);
 			collection.insert(obj,function(err,result) {
 				if (err){
+					logger.error("crud#create. create Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null, result.ops[0]);
@@ -72,6 +75,7 @@ function create(collName,obj,params,callback) {
 			}
 			doHooks("create",collName,results.create,params,function(err,result) {
 				if (err){
+					logger.error("crud#create. hooks Error: ", err);
 					return callback(err);
 				}
 				return callback(null,results.create);
@@ -84,14 +88,12 @@ function create(collName,obj,params,callback) {
 
 
 function read(collName,filter,params,callback) {
+	logger.info("Read data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
-		console.log("\n\n  /-----------------------------------\\");
-		console.log(" <----- crud.read too few params! ----->");
-		console.log("  \\-----------------------------------/\n\n");
+		logger.warn("Read doesn't have enough parameters for collection: ", collName, " with filter: ", filter, " and Params: ", params);
 	}
-	console.log("<============ CRUD READ ("+collName+") ============>\nparams:", params); // ...but not this
 
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
@@ -105,14 +107,12 @@ function read(collName,filter,params,callback) {
 }
 
 function update(collName, obj, params, callback,bypassHooks) {
+	logger.info("Update item in collection: ", collName, " With data: ", obj, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
-		console.log("\n\n  /-------------------------------------\\");
-		console.log(" <----- crud.update too few params! ----->");
-		console.log("  \\-------------------------------------/\n\n");
+		logger.warn("Update doesn't have enough parameters for collection: ", collName, " with data: ", obj, " and Params: ", params);
 	}
-	console.log("<============ CRUD UPDATE ("+collName+") ============>\nparams:", params);
 
 	if(typeof obj == "string") {
 		obj = JSON.parse(obj);
@@ -120,6 +120,7 @@ function update(collName, obj, params, callback,bypassHooks) {
 
 	var db = conn.getMongoDb();
 	if (!canUpdate(collName, obj)) {
+		logger.error("It wasn't possible to update collection: ", collName, " With data: ", obj, " and Params: ", params);
 		return callback(new Error('cannotupdate'));
 	}
 	var collection = db.collection(collName);
@@ -130,27 +131,29 @@ function update(collName, obj, params, callback,bypassHooks) {
 		checkRefs: function(asyncCallback) {
 			checkRefs(db,obj,collName,function(err) {
 				if (err){
+					logger.error("crud#update. update checkRefs Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null);
 			});
 		},
 		update: ['checkRefs',function(asyncCallback) {
-			console.log("#### CRUD update ", collName, " ###\nparams",params,"\nfilter:", filter, "\nobj:", obj);
 			delete obj['_id'];
 			obj['changed'] = new Date();
 			obj['changedBy'] = params.userId;
 
 			collection.update(filter, {'$set': obj}, {}, function(err) {
 				if (err){
-					console.log("crud.update error ", err);
+					logger.error("crud#update It wasn't possible to update collection: ",collName," With Error: ", err);
 					return callback(err);
 				}
 				collection.findOne(filter, function(err, result) {
 					if (err){
+						logger.error("crud#update It wasn't possible to find updated record: ",collName," Filter: ", filter, " With Error: ", err);
 						return callback(err);
 					}
 					if(result == null){
+						logger.error("crud#update It wasn't possible to find updated record: ",collName," Filter: ", filter);
 						return callback(new Error("CRUD.update didn't find updated record. Probably user mismatch or not isAdmin. (former Weird error)"));
 					}
 					asyncCallback(null, result);
@@ -160,7 +163,10 @@ function update(collName, obj, params, callback,bypassHooks) {
 		}],
 		hooks: ['update', function(asyncCallback,results) {
 			doHooks("update",collName,results.update,params,function(err,result) {
-				if (err) return callback(err);
+				if (err) {
+					logger.error("crud#update hooks Error: ", err);
+					return callback(err);
+				}
 				return callback(null,results.update);
 			});
 		}]
@@ -168,14 +174,12 @@ function update(collName, obj, params, callback,bypassHooks) {
 }
 
 function remove(collName,filter,params,callback) {
+	logger.info("Delete data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
-		console.log("\n\n  /-------------------------------------\\");
-		console.log(" <----- crud.remove too few params! ----->");
-		console.log("  \\-------------------------------------/\n\n");
+		logger.warn("Delete doesn't have enough parameters for collection: ", collName, " with filter: ", filter, " and Params: ", params);
 	}
-	console.log("<============ CRUD REMOVE ("+collName+") ============>\nparams:", params);
 
 	if(typeof filter == "string") {
 		filter = JSON.parse(filter);
@@ -197,6 +201,7 @@ function remove(collName,filter,params,callback) {
 			var filterRemoval = {_id: filter['_id']};
 			collection.findAndRemove(filterRemoval, [], function(err, result) {
 				if (err) {
+					logger.error("It wasn't possible to remove object: ", filter, " from collection: ", collName);
 					return callback(err);
 				}
 				return asyncCallback(null, result);
@@ -206,6 +211,7 @@ function remove(collName,filter,params,callback) {
 				if (!params['bypassHooks']) {
 					doHooks("remove", collName, results.remove, params, function(err, result) {
 						if (err) {
+							logger.error("It wasn't possible to remove, when running hooks, object: ", filter, " from collection: ", collName);
 							return callback(err);
 						}
 						return callback(null, result);
@@ -296,23 +302,27 @@ var checkRefs = function(db,obj,collName,callback) {
 		var collection = db.collection(dependantCollName);
 		var filter = {_id: {$in: objs}};
 		var length = objs.length;
-		console.log("checkRefs collection ",dependantCollName," count filter:",filter);
-		console.log("objs: ", objs);
+		logger.info("checkRefs collection ",dependantCollName," count filter:",filter);
+		logger.info("objs: ", objs);
 		collection.count(filter,function(err,result) {
 			if (err){
-				console.log("checkRefs err", err);
+				logger.error("checkRefs err", err);
 				return asyncCallback(false);
 			}
 			if (result == length) {
 				return asyncCallback(true);
 			} else {
-				console.log("checkRefs result != length (",result,"!=",length,")");
+				logger.error("checkRefs result != length (",result,"!=",length,")");
 				return asyncCallback(false);
 			}
 		});
 	}, function(result) {
-		if (!result) return callback(new Error('referror'));
-		else return callback(null);
+		if (!result) {
+			logger.error("It wasn't possible to check Reference.");
+			return callback(new Error('referror'));
+		} else {
+			return callback(null);
+		}
 	});
 
 };

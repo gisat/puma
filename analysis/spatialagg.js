@@ -3,6 +3,7 @@ var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
@@ -34,12 +35,14 @@ function check(analysisObj, performedAnalysisObj, callback) {
 				if (featureLayerTemplate==-1) {
 					return mapCallback(null,null);
 				}
-				//console.log("analysis/spatialagg.js featureLayerTemplate: " + featureLayerTemplate);
-				crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: false}, function(err, resls) {
-					if (err)
+				var filter =  {areaTemplate: featureLayerTemplate, location: location, year: year, isData: false};
+				crud.read('layerref',filter, function(err, resls) {
+					if (err) {
+						logger.error("It wasn't possible to read layerref with filter: ", filter);
 						return callback(err);
+					}
 					if (!resls.length) {
-						console.log("LAYERREF missing 1||||| areaTemplate: "+featureLayerTemplate+" | location: "+location+" | year: "+year);
+						logger.error("LAYERREF missing 1||||| areaTemplate: ",featureLayerTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
 						return callback(new Error('missinglayerref'));
 					}
 					return mapCallback(null, resls[0]);
@@ -54,11 +57,14 @@ function check(analysisObj, performedAnalysisObj, callback) {
 		},
 		'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
 			async.map(attrSets, function(attrSet, mapCallback) {
-				crud.read('layerref', {areaTemplate: analysisObj.areaTemplate, location: location, year: year, attributeSet: attrSet}, function(err, resls) {
-					if (err)
+				var filter = {areaTemplate: analysisObj.areaTemplate, location: location, year: year, attributeSet: attrSet};
+				crud.read('layerref', filter, function(err, resls) {
+					if (err) {
+						logger.error("It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
 						return callback(err);
+					}
 					if (!resls.length) {
-						console.log("LAYERREF missing 2||||| areaTemplate: "+analysisObj.areaTemplate+" | location: "+location+" | year: "+year);
+						logger.error("LAYERREF missing 2||||| areaTemplate: ",analysisObj.areaTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
 						return callback(new Error('missinglayerref'));
 					}
 					return mapCallback(null, resls[0]);
@@ -81,7 +87,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			var sql = 'SELECT DISTINCT ST_Dimension(the_geom) as dm,ST_SRID(the_geom) as srid FROM views.layer_' + refId+' LIMIT 1';
 			client.query(sql, function(err, results) {
 				if (err){
-					console.log("Unexpected PG Error! ",err);
+					logger.error("Unexpected PG Error! Performing Spatial aggregation. SQL: ", sql, " Error: ",err);
 					return callback(err);
 				}
 				asyncCallback(null, results.rows[0]);
@@ -103,7 +109,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			for (var i = 0; i < analysisObj.attributeMap.length; i++) {
 				var obj = analysisObj.attributeMap[i];
 				var text = null;
-				if (groupAttr) {
+				if (groupAttr && obj.groupVal) {
 
 					var attrName = 'as_' + analysisObj.attributeSet + '_attr_' + obj.attribute;
 					var groupVals = obj.groupVal.split(',');
@@ -205,13 +211,16 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				var layerName = item != -1 ? 'views.layer_'+layerRef : performedAnalysisObj.sourceTable;
 				var currentSql = sql.replace('$INDEX$', item);
 				currentSql = currentSql.replace('$LAYERREF$', layerName);
+				logger.trace("spatialagg#perform Sql to perform: ", currentSql);
 				client.query(currentSql, function(err, results) {
-					if (err)
-						return asyncCallback({message: "SQL query error ("+err+")"});
+					if (err) {
+						logger.error("spatialagg#perform Unexpected PG Error! Performing Spatial aggregation. SQL: ", currentSql, " Error: ",err);
+						return asyncCallback({message: "SQL query error (" + err + ")"});
+					}
 					if (performedAnalysisObj.ghost){
 						return asyncCallback(null);
 					}
-					crud.create('layerref', {
+					var filter = {
 						location: location,
 						year: year,
 						areaTemplate: item,
@@ -221,8 +230,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 						columnMap: columnMap,
 						layer: 'analysis:an_' + performedAnalysisObj['_id'] + '_' + item,
 						analysis: performedAnalysisObj['_id']
-					}, function(err, res) {
+					};
+					crud.create('layerref', filter, function(err, res) {
 						if(err) {
+							logger.error("spatialagg#perform Creation of layerref failed. Filter: ", filter,"Error: ", err);
 							return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 						}
 						return asyncCallback(null, res['_id']);
@@ -230,12 +241,13 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				});
 			}, function(err, resls) {
 				client.end();
-				//if (performedAnalysisObj.ghost) {
+				if (performedAnalysisObj.ghost) {
 					//return callback(null);
-					console.log("\n\n    .-.\n   (o o) bubu, "+(performedAnalysisObj.ghost ? "true":"false")+"!\n   | O \\ \n    \\   \\ \n     `~~~' \n   Duch Cát\n\n");
-				//}
+					logger.warn("Performed analysis is a ghost: ", performedAnalysisObj);
+				}
 				if(!performedAnalysisObj.status){
 					if(err){
+						logger.error("Analysis: ", performedAnalysisObj, " Failed with error: ", err);
 						performedAnalysisObj.status = "Failed. "+err;
 					}else{
 						performedAnalysisObj.status = "Successful";
@@ -244,7 +256,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				performedAnalysisObj.finished = new Date();
 				crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId,isAdmin: true}, function(err) {
 					if(err){
-						console.log("Failed to write in MongoDB performedanalysis. Error message:\n"+err);
+						logger.error("Failed to write in MongoDB performedanalysis. Error:", err);
 						return callback(err);
 					}
 					return callback(null);

@@ -5,17 +5,10 @@
 		<meta charset="utf-8">
 
 		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,800,700">
-		<link rel="stylesheet" type="text/css" href="css/ux/ItemSelector.css">
-		<link rel="stylesheet" type="text/css" href="css/app.css">
 		<link rel="stylesheet" type="text/css" href="extjs-4.1.3/resources/css/ext-all-gray.css">
-		<link rel="stylesheet" type="text/css" href="css/ux/colorpicker.css">
 		<link rel="stylesheet" type="text/css" href="extjs-4.1.3/examples/ux/css/CheckHeader.css">
 
-		<link rel="stylesheet" type="text/css" href="css/extjs-puma.css">
-		<link rel="stylesheet" type="text/css" href="css/layout.css">
-		<link rel="stylesheet" type="text/css" href="css/components.css">
-
-		<link rel="stylesheet" type="text/css" href="css/responsive.css" media="screen">
+		<link rel="stylesheet" type="text/css" href="app.css">
 		
 		<script type="text/javascript" src="//maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
 		<script type="text/javascript" src="config.js"></script>
@@ -26,11 +19,11 @@
 		<script src="lib/Highcharts-3.0.0/js/modules/exporting.js"></script>
 		
 		
-		<!-- -- DEVELOPMENT SCRIPTS: -- -->
-<!--		<script type="text/javascript" src="devlib/OpenLayers.js"></script>
+		<!-- -- DEVELOPMENT SCRIPTS: -- - ->
+		<script type="text/javascript" src="devlib/OpenLayers.js"></script>
 		<script type="text/javascript" src="gisatlib/OpenLayers/Geoserver23.js"></script>
 		<script type="text/javascript" src="extjs-4.1.3/ext-debug.js"></script>
-		<script type="text/javascript" src="appde.js"></script>-->
+		<script type="text/javascript" src="appde.js"></script>
 		<!-- -------------------- -->
 		
 		
@@ -73,11 +66,11 @@
 				<a href="http://www.worldbank.org/"><span>The World Bank</span></a>
 			</div>
 			<div id="header">
-				<a href="/" class="home"><span>PUMA</span></a>
+				<a href="/" class="home" id="home-link"><span>Home</span></a>
 				<ul class="menu">
-					<li><a href="/tool" class="active">Data exploration</a></li>
-					<li><a href="/downloads">Downloads</a></li>
-					<li><a href="/help" target="_blank">Help</a></li>
+					<li id="data-exploration-link"><a href="/tool" class="active">Data exploration</a></li>
+					<li id="downloads-link"><a href="/downloads">Downloads</a></li>
+					<li id="help-link"><a href="/help" target="_blank">Help</a></li>
 				</ul>
 				<div class="user">
 					<a href="#" class="login">LOG IN</a>

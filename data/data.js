@@ -1,6 +1,7 @@
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
+var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 
 function getData(params, callback) {
@@ -247,11 +248,14 @@ function getData(params, callback) {
 	allMap.push(areas);
 	var opts = {
 		dataset: function(asyncCallback) {
-
-			crud.read('dataset', {featureLayers: areaIds[0]}, function(err, resls) {
-				if (err)
+			var filter = {featureLayers: areaIds[0]};
+			crud.read('dataset', filter, function(err, resls) {
+				if (err) {
+					logger.error('data#getData Read dataset. Error: ', err);
 					return callback(err);
+				}
 				if (!resls.length) {
+					logger.error('data#getData Read dataset. No data set was returned. Filter: ', filter);
 					return callback(new Error('nodataset'));
 				}
 
@@ -296,8 +300,10 @@ function getData(params, callback) {
 					return asyncCallback(null, null);
 				}
 				crud.read('location', {dataset: results.dataset._id}, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error('data#getData Read location. Error: ', err);
 						return callback(err);
+					}
 					for (var i = 0; i < resls.length; i++) {
 						locationIds.push(resls[i]._id);
 					}
@@ -314,10 +320,13 @@ function getData(params, callback) {
 					isData: false
 				};
 				crud.read('layerref', dbFilter, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error('data#getData Read layerref. Error: ', err);
 						return callback(err);
+					}
 					if (!resls.length && areaIds.indexOf(-1) < 0) {
-						return callback(new Error('notexistingdata'));
+						logger.error('data#getData Read dataset. No data set was returned. Filter: ', dbFilter);
+						return callback(new Error('notexistingdata (1)'));
 					}
 					var layerRefMap = {};
 					for (var i = 0; i < resls.length; i++) {
@@ -452,8 +461,8 @@ function getData(params, callback) {
 				//console.log(dataSql);
 				client.query(dataSql, function(err, resls) {
 					if (err) {
-						//console.log(dataSql)
-						return callback(new Error('notexistingdata'));
+						logger.error('data#getData Read dataset. Sql: ', sql, ' Error: ', err);
+						return callback(new Error('notexistingdata (2)'));
 					}
 					var aggData = [];
 					var normalData = [];
@@ -558,8 +567,10 @@ function getData(params, callback) {
 				}
 				totalSql += ') as b';
 				client.query(totalSql, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error('data#getData Read dataset. Sql: ', sql, " Error: ", err);
 						return callback(err);
+					}
 					if ((params['normalization'] == 'toptree' || params['normalization'] == 'topall') && aggregates) {
 						if (params['normalization'] == 'topall') {
 							aggData = results.data.aggDataMap[-1];
@@ -639,8 +650,10 @@ function getAttrConf(params, callback) {
 		attrSet: function(asyncCallback) {
 			crud.read('attributeset', {_id: {$in: attrSetIds}}, function(err, resls) {
 				var attrSetMap = {};
-				if (err)
+				if (err) {
+					logger.error('data#getData Read attributeset. Error: ', err);
 					return callback(err);
+				}
 				for (var i = 0; i < resls.length; i++) {
 					var attrSet = resls[i];
 					attrSetMap[attrSet._id] = attrSet;
@@ -651,8 +664,10 @@ function getAttrConf(params, callback) {
 		attr: function(asyncCallback) {
 			crud.read('attribute', {_id: {$in: attrIds}}, function(err, resls) {
 				var attrMap = {};
-				if (err)
+				if (err) {
+					logger.error('data#getData Read attribute. Error: ', err);
 					return callback(err);
+				}
 				for (var i = 0; i < resls.length; i++) {
 					var attr = resls[i];
 					attrMap[attr._id] = attr;
