@@ -89,7 +89,7 @@ function setCreateTableSql(foreignTables) {
 		var sql = util.format('CREATE FOREIGN TABLE IF NOT EXISTS "%s"."%s" (\n', foreignTable.local_schema_name, foreignTable.local_table_name);
 		sql += util.format(" %s)\n", col_sql.join(",\n "));
 		sql += util.format("SERVER %s\n", foreignTable.remote_server_name);
-		sql += util.format("OPTIONS (schema_name '%s', table_name '%s');", foreignTable.remote_schema_name, foreignTable.remote_table_name);
+		sql += util.format("OPTIONS (schema_name '%s', table_name '%s', updatable 'false');", foreignTable.remote_schema_name, foreignTable.remote_table_name);
 		foreignTable.sql = sql;
 	}
 }
