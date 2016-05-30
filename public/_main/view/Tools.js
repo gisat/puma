@@ -24,7 +24,7 @@ Ext.define('PumaMain.view.Tools', {
             tools: [{
                 type: 'unselect',
                 cls: 'unselect',
-                tooltip: 'Unselect',
+                tooltip: 'Unselect last added',
                 itemId: 'unselect'
             },{
                 type: 'unselectall',
