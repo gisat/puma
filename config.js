@@ -55,7 +55,8 @@ module.exports = {
 		allowPumaHelp: false,
 		allowDownloadsLink: false,
 		usePumaLogo: false,
-		advancedFiltersFirst: false
+		advancedFiltersFirst: false,
+		isUrbis: true
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -87,7 +88,7 @@ module.exports = {
 	urbanTepTifPixelSize: 75*75,
 
 	texts: {
-		renameAdvancedFiltersTo: "Evaluation Tool",
+		advancedFiltersName: "Evaluation Tool",
 		appTitle: "Urbis",
 		appName: "&nbsp;"
 	}

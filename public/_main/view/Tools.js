@@ -157,7 +157,7 @@ Ext.define('PumaMain.view.Tools', {
 //                disabled: true,
 //                itemId: 'filterselect'
 //            }],
-            title: 'Advanced filters',
+            title: Config.texts.advancedFiltersName,
             bodyCls: 'tools-filters-list'
         }]
         

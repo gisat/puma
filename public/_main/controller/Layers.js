@@ -397,22 +397,23 @@ Ext.define('PumaMain.controller.Layers', {
         }
     },
     onOpacityChange: function(slider, value) {
-        console.log(slider);
         slider.layer1.setOpacity(value / 100);
         if (slider.layer2) {
             slider.layer2.setOpacity(value / 100);
         }
         // urbis slider
-        var sliderInner  = Ext.get(slider.el.id + "-innerEl");
-        var sliderStart  = Ext.get(slider.el.id + "-inputEl");
-        var sliderEnd  = Ext.get(slider.el.id + "-endEl");
-        sliderInner.setStyle('background-image', 'url("../images/urbis-slider-orange-3.png")');
-        sliderStart.setStyle('background-image', 'url("../images/urbis-slider-orange-3.png")');
-        sliderStart.setStyle('background-position', '0px');
-        sliderEnd.setStyle('background-image', 'url("../images/urbis-slider-gray-4.png")');
-        var sliderUnit = (slider.width - 10)/100;
-        sliderInner.setStyle('background-size', value*sliderUnit + 'px 4px');
-        sliderInner.setStyle('background-position', '0px');
+        if (Config.toggles.isUrbis){
+            var sliderInner  = Ext.get(slider.el.id + "-innerEl");
+            var sliderStart  = Ext.get(slider.el.id + "-inputEl");
+            var sliderEnd  = Ext.get(slider.el.id + "-endEl");
+            sliderInner.setStyle('background-image', 'url("../images/urbis-slider-orange-3.png")');
+            sliderStart.setStyle('background-image', 'url("../images/urbis-slider-orange-3.png")');
+            sliderStart.setStyle('background-position', '0px');
+            sliderEnd.setStyle('background-image', 'url("../images/urbis-slider-gray-4.png")');
+            var sliderUnit = (slider.width - 10)/100;
+            sliderInner.setStyle('background-size', value*sliderUnit + 'px 4px');
+            sliderInner.setStyle('background-position', '0px');
+        }
         // urbis end
     },
     openOpacityWindow: function(panel,rec) {
@@ -431,9 +432,9 @@ Ext.define('PumaMain.controller.Layers', {
                 }]
         })
         window.show();
-        // urbis slider
-        this.onOpacityChange(window.items.items[0], window.items.items[0].value);
-        // urbis end
+        if (Config.toggles.isUrbis){
+            this.onOpacityChange(window.items.items[0], window.items.items[0].value);
+        }
     },
     onLayerContextMenu: function(tree, rec, item, index, e) {
         return;
