@@ -104,7 +104,7 @@ function getChart(params, callback) {
 							as: attr.as,
 							visible: visible,
 							attr: attr.attr,
-							y: row[columnName],
+							y: +row[columnName],
 							color: attrRec.color
 						}
 
