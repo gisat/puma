@@ -9,6 +9,16 @@
      background-size: cover;
 }
 
+/* About project info === */
+.urbis #about-urbis a {
+    color: #ff7600;
+    text-decoration: underline;
+}
+.urbis #about-urbis a:hover {
+    color: #d35400;
+}
+
+
 /* Header === */
 .urbis .fields-holder > .label {
     background: url("../images/urbis-colour-white.png") no-repeat 15px 11px;
