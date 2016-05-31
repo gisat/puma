@@ -375,14 +375,15 @@
 .urbis .x-tool-over .x-tool-expand-top, .urbis .x-tool-over .x-tool-expand-right, .urbis .x-tool-over .x-tool-expand-bottom, .urbis .x-tool-over .x-tool-expand-left{
     background: url("../images/icons/urbis-expand.png") no-repeat 50% 50%;
 }
-.urbis .x-tool-close {
-    background: url("../images/icons/urbis-close.png") no-repeat 50% 50% !important;
-}
 .urbis .x-window-header .x-tool-close {
     background: url("../images/icons/urbis-attach.png") no-repeat 50% 50% !important;
     width: 20px;
     height: 20px;
 }
+.urbis .x-tool-close, .urbis .legend-window .x-tool-close  {
+    background: url("../images/icons/urbis-close.png") no-repeat 50% 50% !important;
+}
+
 /* help buttons */
 .urbis #app-toolbar-contexthelp span.x-btn-icon {
     background: url('../images/icons/urbis-help-context.png') !important;

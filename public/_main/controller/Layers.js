@@ -76,8 +76,8 @@ Ext.define('PumaMain.controller.Layers', {
                 islegend: 1,
                 items: [img],
                 factor: Ext.ComponentQuery.query('window[islegend=1]').length,
-                title: rec.get('name')
-                
+                title: rec.get('name'),
+                cls: "legend-window"
             })
             img.on('resize',function(i) {
                 i.el.on('load',function(a, dom) {
