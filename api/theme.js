@@ -647,7 +647,9 @@ function getThemeYearConf(params, req, res, callback) {
 							return eachCallback(null);
 						});
 					}, function(err) {
-						logger.error("theme#getThemeYearConf. Error: ", err);
+						if(err) {
+							logger.error("theme#getThemeYearConf. async.forEach Error in callback: ", err);
+						}
 						return mapCallback(null, resls);
 					});
 				});
