@@ -35,8 +35,17 @@ Ext.application({
 		$("#content-intro > .label").html(Config.texts.appName);
 
 		if (Config.toggles.isUrbis){
-			var content = "<div id='about-urbis'><h2>About project</h2><p>To get an overview about the URBIS project - Urban Land Recycling Information Services for Sustainable Cities, please visit the <a href='http://www.ict-urbis.eu/' target='_blank'>URBIS homepage</a>.</p></div>";
-			$("#content-intro-guide").append(content);
+			$(".field.scope .label").html(Config.texts.scopeName);
+			$(".field.teritory .label").html(Config.texts.placeName);
+			$(".field.theme .label").html(Config.texts.themeName);
+
+			$("#content-intro-guide").html("<h2>Selection guide</h2><h3>" + Config.texts.scopeName + "</h3><p>" +
+				Config.texts.scopeAbout + "</p><h3>" + Config.texts.placeName + "</h3><p>" +
+				Config.texts.placeAbout + "</p><h3>" + Config.texts.themeName + "</h3><p>" +
+				Config.texts.themeAbout + "</p>");
+
+			var aboutProject = "<div id='about-urbis'><h2>About project</h2><p>To get an overview about the URBIS project - Urban Land Recycling Information Services for Sustainable Cities, please visit the <a href='http://www.ict-urbis.eu/' target='_blank'>URBIS homepage</a>.</p></div>";
+			$("#content-intro-guide").append(aboutProject);
 		}
 
 		window.location.origin = window.location.origin || (window.location.protocol+'//'+window.location.hostname+ (window.location.port ? (':'+window.location.port) : ''));

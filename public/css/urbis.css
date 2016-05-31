@@ -65,7 +65,11 @@
     border-right: 0;
     color: #eee;
     top: auto;
-    bottom: 150px;
+    bottom: 50px;
+}
+
+.urbis #about-urbis h2 {
+    margin-top: 15px;
 }
 
 .urbis #content-intro-terms h2,
@@ -526,4 +530,13 @@
        width: 60px;
        padding-left: 65px;
    }
+}
+
+@media screen and (max-height: 700px){
+    .urbis #content-intro {
+        top: 30px;
+    }
+    .urbis #content-intro-guide {
+        bottom: 20px;
+    }
 }

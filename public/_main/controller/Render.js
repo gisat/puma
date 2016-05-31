@@ -65,12 +65,10 @@ Ext.define('PumaMain.controller.Render', {
             resizable: true,
             cls: 'detached-window',
             isdetached: 1,
-            constrainHeader: true
-            ,
+            constrainHeader: true,
             items: [panel]
         }).show();
         win.el.setOpacity(0.9);
-
         var el = Ext.get('sidebar-tools-toggle');
         var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
         win.alignTo(el,'tl-tr',[50*factor,50*factor]);
