@@ -5,6 +5,7 @@ module.exports = {
 
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
+	projectHome     : "",
 
 	pgDataConnString   : "postgres://postgres:postgres@185.8.164.70:5432/geonode_data",
 	pgGeonodeConnString: "postgres://postgres:postgres@185.8.164.70:5432/geonode",
