@@ -378,6 +378,11 @@
 .urbis .x-tool-close {
     background: url("../images/icons/urbis-close.png") no-repeat 50% 50% !important;
 }
+.urbis .x-window-header .x-tool-close {
+    background: url("../images/icons/urbis-attach.png") no-repeat 50% 50% !important;
+    width: 20px;
+    height: 20px;
+}
 /* help buttons */
 .urbis #app-toolbar-contexthelp span.x-btn-icon {
     background: url('../images/icons/urbis-help-context.png') !important;

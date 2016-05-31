@@ -62,7 +62,7 @@ module.exports = {
 	texts: {
 		advancedFiltersName: "Evaluation Tool",
 		areasSectionName: "Selection level",
-		appTitle: "Urbis",
+		appTitle: "URBIS tool",
 		appName: "&nbsp;",
 		scopeName: "Scale",
 		scopeAbout: "Different type of data and information address different scales of analysis, which correspond to different levels of urban-related decision making. Please choose your scale of interest first.",

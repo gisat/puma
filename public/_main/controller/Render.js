@@ -68,6 +68,12 @@ Ext.define('PumaMain.controller.Render', {
             constrainHeader: true,
             items: [panel]
         }).show();
+        var toolId = win.tools.close.el.id;
+        Ext.tip.QuickTipManager.register({
+            target: toolId,
+            text: 'Attach back'
+        });
+
         win.el.setOpacity(0.9);
         var el = Ext.get('sidebar-tools-toggle');
         var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
