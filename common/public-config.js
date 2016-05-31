@@ -6,6 +6,7 @@ module.exports = function(request, response, next){
 		signupAddress: config.geonodeProtocol + '://' + config.geonodeHost + config.geonodePath + '/account/signup/',
 		geoserver2Workspace: config.geoserver2Workspace,
 
+		htmlTagClasses: config.htmlTagClasses,
 		toggles: config.toggles,
 		texts: config.texts
 	};

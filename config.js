@@ -44,6 +44,8 @@ module.exports = {
 	geonodeHome     : "/geonode",
 
 	debug: true,
+	
+	htmlTagClasses: "urbis",
 
 	toggles: {
 		noGeoserverLayerGroups: false,
