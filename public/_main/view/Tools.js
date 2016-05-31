@@ -121,7 +121,7 @@ Ext.define('PumaMain.view.Tools', {
         };
         var areas = {
             xtype: 'treepanel',
-            title: 'Areas',
+            title: Config.texts.areasSectionName,
             itemId: 'areatree',
             helpId: 'TreeofanalyticalunitsAREAS',
             collapsed: true,
