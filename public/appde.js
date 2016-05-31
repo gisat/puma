@@ -30,7 +30,7 @@ Ext.application({
 
 		// set Home link in header // todo Move this somewhere else?
 		$("#home-link").attr("href", Config.projectHome);
-		$(".urbis title").html(Config.texts.appTitle);
+		$("title").html(Config.texts.appTitle);
 		$("#toolbar > .label").html(Config.texts.appName);
 		$("#content-intro > .label").html(Config.texts.appName);
 
