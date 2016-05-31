@@ -7,6 +7,7 @@ var config = require('../config');
 module.exports = function(req, res) {
 
 
+	// config variables passed to Sass compiler
 	var scssVariables = {
 		useWBHeader: config.toggles.useWBHeader,
 		useHeader: config.toggles.useHeader,
@@ -19,12 +20,20 @@ module.exports = function(req, res) {
 	};
 
 
+	// base Sass code
 	var scss = "";
 	_.each(scssVariables, function(value, key){
 		if(typeof value != "undefined") scss += "$" + key + ": " + value + ";\n";
 	});
 	scss += '@import "app.scss";\n';
-
+	
+	
+	// import project-specific styles
+	if(config.toggles.isUrbis){
+		scss += '@import "urbis"\n'; // this imports _urbis.scss
+	}
+	
+	
 
 	sass.render({
 		data: scss,
