@@ -30,7 +30,7 @@ module.exports = function(req, res) {
 	
 	// import project-specific styles
 	if(config.toggles.isUrbis){
-		scss += '@import "urbis"\n'; // this imports _urbis.scss
+		scss += '@import "urbis";\n'; // this imports _urbis.scss
 	}
 	
 	
