@@ -265,7 +265,7 @@ Ext.define('PumaMain.controller.Map', {
 		var liveNode = Ext.StoreMgr.lookup('layers').getRootNode().findChild('type','livegroup');
 		var hybridNode = Ext.create('Puma.model.MapLayer',{
 			name: 'Google hybrid',
-			checked: false,
+			checked: (Config.initialBaseMap == "hybrid"),
 			allowDrag: false,
 			initialized: true,
 			leaf: true,
@@ -276,7 +276,7 @@ Ext.define('PumaMain.controller.Map', {
 			name: 'Google street',
 			initialized: true,
 			allowDrag: false,
-			checked: false,
+			checked: (Config.initialBaseMap == "roadmap"),
 			leaf: true,
 			sortIndex: 10000,
 			type: 'roadmap'
@@ -285,7 +285,7 @@ Ext.define('PumaMain.controller.Map', {
 			name: 'Google terrain',
 			initialized: true,
 			allowDrag: false,
-			checked: true,
+			checked: (Config.initialBaseMap == "terrain"),
 			leaf: true,
 			sortIndex: 10000,
 			type: 'terrain'
@@ -294,7 +294,7 @@ Ext.define('PumaMain.controller.Map', {
 			name: 'OpenStreetMap',
 			initialized: true,
 			allowDrag: false,
-			checked: false,
+			checked: (Config.initialBaseMap == "osm"),
 			leaf: true,
 			sortIndex: 10000,
 			type: 'osm'

@@ -5,7 +5,7 @@ module.exports = function(request, response, next){
 		url: config.remoteProtocol + '://' + config.remoteAddress,
 		signupAddress: config.geonodeProtocol + '://' + config.geonodeHost + config.geonodePath + '/account/signup/',
 		geoserver2Workspace: config.geoserver2Workspace,
-
+		initialBaseMap: config.initialBaseMap,
 		toggles: config.toggles
 	};
 	response.end('var Config = ' + JSON.stringify(Config));
