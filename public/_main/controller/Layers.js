@@ -406,10 +406,10 @@ Ext.define('PumaMain.controller.Layers', {
             var sliderInner  = Ext.get(slider.el.id + "-innerEl");
             var sliderStart  = Ext.get(slider.el.id + "-inputEl");
             var sliderEnd  = Ext.get(slider.el.id + "-endEl");
-            sliderInner.setStyle('background-image', 'url("../images/urbis-slider-orange-3.png")');
-            sliderStart.setStyle('background-image', 'url("../images/urbis-slider-orange-3.png")');
+            sliderInner.setStyle('background-image', 'url("images/urbis-slider-orange-3.png")');
+            sliderStart.setStyle('background-image', 'url("images/urbis-slider-orange-3.png")');
             sliderStart.setStyle('background-position', '0px');
-            sliderEnd.setStyle('background-image', 'url("../images/urbis-slider-gray-4.png")');
+            sliderEnd.setStyle('background-image', 'url("images/urbis-slider-gray-4.png")');
             var sliderUnit = (slider.width - 10)/100;
             sliderInner.setStyle('background-size', value*sliderUnit + 'px 4px');
             sliderInner.setStyle('background-position', '0px');
