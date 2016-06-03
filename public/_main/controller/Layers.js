@@ -482,7 +482,7 @@ Ext.define('PumaMain.controller.Layers', {
                     var filledStyle = new OpenLayers.Style();
                     //var layerId = at == -1 ? '#userlocation#_y_' + year : lr._id;
                     var layerId = lr._id;
-                    var layerName = 'puma:layer_' + layerId
+                    var layerName = Config.geoserver2Workspace + ':layer_' + layerId
 
                     var defRule = new OpenLayers.Rule({
                             symbolizer: {"Polygon": new OpenLayers.Symbolizer.Polygon({fillOpacity: 0, strokeOpacity: 0}
@@ -693,7 +693,7 @@ Ext.define('PumaMain.controller.Layers', {
                 var lr = (areaTemplates[loc] && areaTemplates[loc][at]) ? areaTemplates[loc][at][year] : null;
                 if (!lr || !allAreas[loc][at].length )
                     continue;
-                var layerName = 'puma:layer_' + lr._id
+                var layerName = Config.geoserver2Workspace + ':layer_' + lr._id
                 var filters = [];
                 for (var i = 0; i < allAreas[loc][at].length; i++) {
                     var gid = allAreas[loc][at][i];

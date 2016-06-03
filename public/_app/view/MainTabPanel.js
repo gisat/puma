@@ -5,10 +5,10 @@ Ext.define('PumaMng.view.MainTabPanel' ,{
 
     initComponent: function() {
         this.items = [{
-            xtype: 'container',
-            itemId: 'welcome',
-            title: 'Welcome'
-        }, {
+        //    xtype: 'container',
+        //    itemId: 'welcome',
+        //    title: 'Welcome'
+        //}, {
             xtype: 'managementtab',
             disabled: true,
             title: 'Objects management'
@@ -76,8 +76,8 @@ Ext.define('PumaMng.view.MainTabPanel' ,{
 //            disabled: true,
 //            title: 'Theme'
 //        }
-    ]
+    ];
         this.callParent();
     }
-})
+});
 

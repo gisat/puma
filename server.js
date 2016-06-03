@@ -1,34 +1,46 @@
-    
 var express = require('express');
 var app = express();
 var conn = require('./common/conn');
+var publicConfig = require('./common/public-config');
 var staticFn = express['static'];
+var session = require('express-session');
 
 var async = require('async');
 var loc = require('./common/loc');
 
+var config = require('./config');
+
 function initServer(err) {
-    if (err) {
-        console.log('Error: while initializing server: ', err);
-        return;
-    }
-    // Order is important
-    var oneDay = 60*60*24*1000;
-    //app.use(express.favicon());
-    //app.use(express.favicon(__dirname + '/public/images/puma-logo.png'));
-    app.use('/printpublic',function(req,res,next) {
-        if (req.path.search('.html')>-1 && req.path.search('index3')<0) {
-            return next(new Error('unauthorized'));
-        }
-        return next(null);
-    });
-	
+	if (err) {
+		console.log('Error: while initializing server: ', err);
+		return;
+	}
+	var oneDay = 60*60*24*1000;
+
+	// Order is important
+
+	// Log the requests to see then the error occurs.
+	app.use(function(req, res, next) {
+		console.log("Request: "+ req.method + " - " + req.url);
+		next();
+	});
+
+	//app.use(express.favicon());
+	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
+
+	app.use('/printpublic',function(req,res,next) {
+		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
+			return next(new Error('unauthorized'));
+		}
+		return next(null);
+	});
+
 	/*
 	#######################################################################
 	Nastaveni apache.conf pro servirovani statickych souboru primo Apachem:
-	
+
 	Alias /help /var/www/puma-app/public/help/
-	
+
 	#### /tool/* static routing
 	RedirectMatch 301 ^/tool$ /tool/
 	RedirectMatch 301 ^/catalogue/(.*)$ /catalogue/$1
@@ -54,23 +66,43 @@ function initServer(err) {
 	ProxyPass /tool/lib !
 	ProxyPass /tool/gisatlib !
 	ProxyPass /tool/extjs-4.1.3 !
-	
+
 	#### /tool* non-static routing (and some minor static, not covered by above code)
 	ProxyPass /tool http://127.0.0.1:3000
 	ProxyPassReverse /tool http://127.0.0.1:3000
 	 */
 
+	app.use('/config.js', publicConfig);
+	app.use('/printpublic/config.js', publicConfig);
+
 	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
-    app.use('/printpublic',staticFn(__dirname + '/public'));
-    app.use(express.cookieParser());
-    app.use(express.bodyParser());
-    app.use(loc.langParser);
+	app.use('/printpublic',staticFn(__dirname + '/public'));
+	app.use(express.cookieParser());
+	app.use(express.bodyParser());
+	app.use(function(req, res, next){
+		req.ssid = req.cookies.ssid || req.ssid || '';
+		next();
+	});
+	app.use(loc.langParser);
+    // Allow CORS on the node level.
+    app.use(function(req, res, next) {
+		// Allow CORS from anywhere.
+		// TODO: Fix security issues.
+		var url = req.headers.origin;
+		res.header("Access-Control-Allow-Origin", url);
+		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
+		res.header("Access-Control-Allow-Credentials", true);
+		res.header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS, DELETE");
+		next();
+    });
+    // End of allow CORS.
     require('./routes/security')(app);
-    require('./routes/routes')(app);
-    require('./routes/finish')(app);
+	require('./routes/routes')(app);
+	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-    app.listen(3000);
-    console.log('Listening on port 3000'); 
+	console.log('Going to listen on port ' + config.localPort + '...');
+	app.listen(config.localPort);
+	console.log('Listening on port ' + config.localPort);
 }
 
 async.series([
@@ -82,4 +114,3 @@ async.series([
 	}],
 	initServer
 );
-

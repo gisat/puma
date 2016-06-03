@@ -1,7 +1,5 @@
 module.exports = {
-    legend: {
-            enabled: false
-    },
-}
-
-
+	legend: {
+		enabled: false
+	},
+};
