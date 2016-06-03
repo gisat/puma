@@ -206,40 +206,40 @@ Ext.define('PumaMain.controller.Render', {
 //            width: '100%'
 //        })
 
-
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-contexthelp',
-            itemId: 'contexthelp',
-            tooltip: 'Context help',
-            tooltipType: 'title',
-            icon: 'images/icons/help-context.png',
-            enableToggle: true,
-            width: 30,
-            height: 30,
-            listeners : {
-                toggle : {
-                    fn : function(btn, active) {
-                        if (active) {
-                            btn.addCls("toggle-active");
-                        }
-                        else {
-                            btn.removeCls("toggle-active");
+        if(Config.toggles.allowPumaHelp !== false) {
+            Ext.widget('button', {
+                renderTo: 'app-toolbar-contexthelp',
+                itemId: 'contexthelp',
+                tooltip: 'Context help',
+                tooltipType: 'title',
+                icon: 'images/icons/help-context.png',
+                enableToggle: true,
+                width: 30,
+                height: 30,
+                listeners: {
+                    toggle: {
+                        fn: function (btn, active) {
+                            if (active) {
+                                btn.addCls("toggle-active");
+                            }
+                            else {
+                                btn.removeCls("toggle-active");
+                            }
                         }
                     }
                 }
-            }
-        })
-
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-webhelp',
-            itemId: 'webhelp',
-            tooltip: 'PUMA WebTool help',
-            tooltipType: 'title',
-            icon: 'images/icons/help-web.png',
-            width: 30,
-            height: 30,
-            href: 'help/PUMA webtool help.html'
-        })
+            })
+            Ext.widget('button', {
+                renderTo: 'app-toolbar-webhelp',
+                itemId: 'webhelp',
+                tooltip: 'PUMA WebTool help',
+                tooltipType: 'title',
+                icon: 'images/icons/help-web.png',
+                width: 30,
+                height: 30,
+                href: 'help/PUMA webtool help.html'
+            })
+        }
 
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',
