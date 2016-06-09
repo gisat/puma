@@ -5,32 +5,35 @@ module.exports = {
 
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
+	projectHome     : "",
 
-	pgDataConnString   : "postgres://postgres:postgres@185.8.164.70:5432/geonode_data",
-	pgGeonodeConnString: "postgres://postgres:postgres@185.8.164.70:5432/geonode",
-	mongoConnString    : "mongodb://185.8.164.70:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5433/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5433/geonode",
+	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
 		geonode: "public"
 	},
 
-	geoserverHost   : "185.8.164.70",
-	geoserverPort   : 8080,
+	geoserverHost   : "localhost",
+	geoserverPort   : 80,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
-	geoserverPassword : "GeoNodeGeoServerNr1",
+	geoserverPassword : "geoserver",
 
-	geoserver2Host  : "185.8.164.70",
-	geoserver2Port  : 8080,
+	geoserver2Host  : "localhost",
+	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
-	geoserver2Password  : "GeoNodeGeoServerNr2",
+	geoserver2Password  : "geoserver",
 	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "185.8.164.70",
+	geonodeHost     : "localhost",
 	geonodePath     : "",
-	geonodeHome     : "/geonode",
+	geonodeHome     : "/",
+
+	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
 
 	debug: true,
 
