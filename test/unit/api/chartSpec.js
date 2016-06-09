@@ -3,5 +3,11 @@ describe('chart', function() {
 
 	});
 
+	describe('exporter', function(){
+		// TODO: Implement as a functional test.
+	});
 
+	describe('getChart', function(){
+
+	});
 });
