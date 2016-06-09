@@ -11,7 +11,7 @@ var Geonode = require('./Geonode');
 var GeonodeLayer = function(fileToUpload){
 	this.fileToUpload = fileToUpload;
 
-	this.geonode = new Geonode(config.geonodeProtocol, config.geonodeHost, config.geonodeProtocol);
+	this.geonode = new Geonode(config.geonodeProtocol, config.geonodeHost, config.geonodePort, config.geonodeProtocol);
 };
 
 GeonodeLayer.prototype.upload = function(){
