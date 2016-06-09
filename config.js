@@ -33,7 +33,7 @@ module.exports = {
 	geonodePath     : "",
 	geonodeHome     : "/",
 
-	initialBaseMap: "osm", // "osm", "hybrid", "roadmap" or "terrain"
+	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
 
 	debug: true,
 
