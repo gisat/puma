@@ -172,7 +172,8 @@ function getLayers(params, req, res, callback) {
 	var options = {
 		protocol: config.geonodeProtocol,
 		host: config.geonodeHost,
-		path: config.geonodePath+'/layers/acls',
+		port: config.geonodePort || 80,
+		path: config.geonodePath + '/layers/acls',
 		headers: headers,
 		method: 'GET'
 	};

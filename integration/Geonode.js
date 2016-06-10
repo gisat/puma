@@ -5,13 +5,14 @@ var querystring = require('querystring');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
-var Geonode = function (protocol, host, home) {
+var Geonode = function (protocol, host, port, home) {
 	this.home = home;
 
-	this.referer = protocol + '://' + host + "/";
+	this.referer = protocol + '://' + host + (port==80 ? "" : ":" + port) + "/";
 	this.defaultOptions = {
 		protocol: protocol,
 		host: host,
+		port: port,
 		method: 'GET'
 	}
 };
