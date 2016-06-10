@@ -512,7 +512,7 @@ Ext.define('PumaMain.controller.Layers', {
 
 
 					/**
-					 * This is where switching polygons to points in small scale for choropleths and area outlined is defined.
+					 * This is where switching polygons to points in small scale for choropleths and area outlines is defined.
 					 * For other ~3 appearances search "maxScaleDenominator".
 					 */
 					var obj = {
