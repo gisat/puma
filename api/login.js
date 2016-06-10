@@ -56,10 +56,11 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 	var options1 = {
 		protocol: config.geonodeProtocol,
 		host: config.geonodeHost,
-		path: config.geonodeHome+'/',
+		port: config.geonodePort || 80,
+		path: config.geonodeHome + '/',
 		method: 'GET',
 		headers: {
-			'referer': config.geonodeProtocol + '://' + config.geonodeHost + "/"
+			'referer': config.geonodeProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + "/"
 		}
 	};
 
@@ -91,13 +92,14 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		var options2 = {
 			protocol: config.geonodeProtocol,
 			host: config.geonodeHost,
-			path: isLogin ? config.geonodePath+'/account/login/' : config.geonodePath+'/account/logout/',
+			port: config.geonodePort || 80,
+			path: isLogin ? config.geonodePath + '/account/login/' : config.geonodePath + '/account/logout/',
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/x-www-form-urlencoded',
 				'Content-Length': postData.length,
 				'Cookie':'csrftoken='+csrf,
-				'referer': config.remoteProtocol + '://' + config.geonodeHost + '/'
+				'referer': config.remoteProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + '/'
 			}
 		};
 		conn.request(options2,postData,function(err,output,res2) {
