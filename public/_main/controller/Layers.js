@@ -511,6 +511,10 @@ Ext.define('PumaMain.controller.Layers', {
 					var filterFc = new OpenLayers.Filter.Logical({type: '||', filters: filters});
 
 
+					/**
+					 * This is where switching polygons to points in small scale for choropleths and area outlined is defined.
+					 * For other ~3 appearances search "maxScaleDenominator".
+					 */
 					var obj = {
 						filter: filterFc,
 						maxScaleDenominator: this.scaleBorder,
