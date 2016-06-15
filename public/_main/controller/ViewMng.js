@@ -137,7 +137,7 @@ Ext.define('PumaMain.controller.ViewMng', {
             function(rec) {
                 return rec.get('dataset')==Config.cfg.dataset;
             }
-        ]); 
+        ]);
         locationCombo.setValue(Config.cfg.location);
         
         var themeStore = Ext.StoreMgr.lookup('theme4sel');
