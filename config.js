@@ -7,21 +7,21 @@ module.exports = {
 	remoteAddress   : "localhost:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
-	mongoConnString    : "mongodb://localhost:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@185.8.164.70:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@185.8.164.70:5432/geonode",
+	mongoConnString    : "mongodb://185.8.164.70:27017/panther",
 
 	workspaceSchemaMap: {
 		geonode: "public"
 	},
 
-	geoserverHost   : "localhost",
+	geoserverHost   : "185.8.164.70",
 	geoserverPort   : 80,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
 
-	geoserver2Host  : "localhost",
+	geoserver2Host  : "185.8.164.70",
 	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
@@ -29,7 +29,7 @@ module.exports = {
 	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "localhost",
+	geonodeHost     : "185.8.164.70",
 	geonodePort			: 80,
 	geonodePath     : "",
 	geonodeHome     : "/",
