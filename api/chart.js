@@ -18,13 +18,6 @@ var confMap = {length: 0};
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
-function shutdown(params,req,res,callback) {
-	setTimeout(function() {
-		var y = x + 5; // wtf?
-	},1);
-}
-
-
 function exporter(params, req, res, callback) {
 	var isWin = !!process.platform.match(/^win/);
 	if (isWin){
@@ -193,19 +186,10 @@ function getGridDataCsv(params,req,res,callback) {
 	});
 }
 
-var generateId = function() {
-	var time = new Date().getTime();
-	var random = Math.round(Math.random() * 100000000);
-	return time.toString(32) + random.toString(32);
-};
-
-
-
 module.exports = {
 	getChart: getChart,
 	drawChart: drawChart,
 	getGridData: getGridData,
 	exporter: exporter,
-	shutdown: shutdown,
 	getGridDataCsv: getGridDataCsv
 };

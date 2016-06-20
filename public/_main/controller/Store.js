@@ -385,7 +385,7 @@ Ext.define('PumaMain.controller.Store', {
                 sorterFn: function(o1,o2) {
                     var type1 = o1.get('type');
                     
-                    if (Ext.Array.contains(['systemgroup,choroplethgroup','themtaicgroup','basegroup'],type1)) {
+                    if (Ext.Array.contains(['systemgroup,choroplethgroup','thematicgroup','basegroup'],type1)) {
                         return null;
                     }
                 }

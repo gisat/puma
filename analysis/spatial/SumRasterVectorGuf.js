@@ -5,6 +5,7 @@ var crud = require('../../rest/crud');
 var logger = require('../../common/Logger').applicationWideLogger;
 
 var Promise = require('promise');
+var SizeOfPixel = require('./SizeOfPixel');
 var _ = require('underscore');
 
 var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaTemplateId) {
@@ -27,49 +28,51 @@ SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, raster
 
 SumRasterVectorGuf.prototype.run = function () {
 	var self = this;
-	return new Promise(function (resolve, reject) {
-		logger.info("SumRasterVectorGuf#run Analysis started.");
-		var sql = self.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
-		conn.getPgDataDb().query(sql, function (error, results) {
-			if (error) {
-				throw new Error(
-					logger.error("SumRasterVectorGuf#process Error when executing SQL: ", sql, " Error: ", error)
-				);
-			}
+	return new SizeOfPixel(this.rasterLayerTable).get().then(function(size){
+		return new Promise(function (resolve, reject) {
+			logger.info("SumRasterVectorGuf#run Analysis started.");
+			var sql = self.prepareSql(self.analyticalUnitsTable, self.rasterLayerTable);
+			conn.getPgDataDb().query(sql, function (error, results) {
+				if (error) {
+					throw new Error(
+						logger.error("SumRasterVectorGuf#process Error when executing SQL: ", sql, " Error: ", error)
+					);
+				}
 
-			if (!results.rows.length) {
-				logger.warn("SumRasterVectorGuf#process No results from SQL: ", sql);
-				resolve({});
-			} else {
-				var groupByAnalyticalId = {};
-				results.rows.forEach(function (row) {
-					if (groupByAnalyticalId[row.gid] == null) {
-						groupByAnalyticalId[row.gid] = {
-							gid: row.gid,
-							sumOfArea: 0,
-							countOfUrbanized: 0,
-							countOfNonUrbanized: 0,
-							areaOfUrbanized: 0,
-							areaOfNonUrbanized: 0
+				if (!results.rows.length) {
+					logger.warn("SumRasterVectorGuf#process No results from SQL: ", sql);
+					resolve({});
+				} else {
+					var groupByAnalyticalId = {};
+					results.rows.forEach(function (row) {
+						if (groupByAnalyticalId[row.gid] == null) {
+							groupByAnalyticalId[row.gid] = {
+								gid: row.gid,
+								sumOfArea: 0,
+								countOfUrbanized: 0,
+								countOfNonUrbanized: 0,
+								areaOfUrbanized: 0,
+								areaOfNonUrbanized: 0
+							}
 						}
-					}
 
-					var informationForUnitWithGid = groupByAnalyticalId[row.gid];
-					informationForUnitWithGid.sumOfArea += (row.height * row.width);
-					if (row.val == 255) {
-						informationForUnitWithGid.countOfUrbanized += row.amount;
-					} else {
-						informationForUnitWithGid.countOfNonUrbanized += row.amount;
-					}
-					informationForUnitWithGid.areaOfUrbanized = informationForUnitWithGid.countOfUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * 100;
-					informationForUnitWithGid.areaOfNonUrbanized = informationForUnitWithGid.countOfNonUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * 100;
-				});
+						var informationForUnitWithGid = groupByAnalyticalId[row.gid];
+						informationForUnitWithGid.sumOfArea += (row.height * row.width);
+						if (row.val == 255) {
+							informationForUnitWithGid.countOfUrbanized += row.amount;
+						} else {
+							informationForUnitWithGid.countOfNonUrbanized += row.amount;
+						}
+						informationForUnitWithGid.areaOfUrbanized = informationForUnitWithGid.countOfUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * size.x * size.y;
+						informationForUnitWithGid.areaOfNonUrbanized = informationForUnitWithGid.countOfNonUrbanized / (informationForUnitWithGid.countOfUrbanized + informationForUnitWithGid.countOfNonUrbanized) * size.x * size.y;
+					});
 
-				self.storeAnalysis(groupByAnalyticalId).then(function () {
-					resolve();
-				});
-			}
-		})
+					self.storeAnalysis(groupByAnalyticalId).then(function () {
+						resolve();
+					});
+				}
+			})
+		});
 	});
 };
 

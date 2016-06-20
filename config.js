@@ -5,10 +5,11 @@ module.exports = {
 
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
+	projectHome     : "",
 
-	pgDataConnString   : "postgres://postgres:postgres@185.8.164.70:5432/geonode_data",
-	pgGeonodeConnString: "postgres://postgres:postgres@185.8.164.70:5432/geonode",
-	mongoConnString    : "mongodb://185.8.164.70:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
+	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
 		geonode: "public"
@@ -32,23 +33,26 @@ module.exports = {
 	},
 	geometryColumnNamePattern: "%geom%",
 
-	geoserverHost   : "185.8.164.70",
+	geoserverHost   : "localhost",
 	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
-	geoserverPassword : "GeoNodeGeoServerNr1",
+	geoserverPassword : "geoserver",
 
-	geoserver2Host  : "185.8.164.70",
-	geoserver2Port  : 8080,
+	geoserver2Host  : "localhost",
+	geoserver2Port  : 8181,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
-	geoserver2Password  : "GeoNodeGeoServerNr2",
+	geoserver2Password  : "geoserver",
 	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "185.8.164.70",
-	geonodePath     : "",
+	geonodeHost     : "localhost",
+	geonodePort	: 80,
+	geonodePath     : "/geonode",
 	geonodeHome     : "/geonode",
+
+	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
 
 	debug: true,
 
@@ -85,5 +89,10 @@ module.exports = {
 	 * UrbanTEP - UserName and Password under which the layers are uploaded
 	 */
 	urbanTepGeonodeUserName: '',
-	urbanTepGeonodeUserPassword: ''
+	urbanTepGeonodeUserPassword: '',
+
+	/*
+	 * UrbanTep - Approximate pixel size in input tif file, m^2
+	 */
+	urbanTepTifPixelSize: 75*75
 };
