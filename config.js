@@ -34,6 +34,10 @@ module.exports = {
 	geonodePath     : "",
 	geonodeHome     : "/",
 
+	googleAnalyticsTracker: '',
+	googleAnalyticsCookieDomain: 'auto',
+	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
+
 	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
 
 	debug: true,
