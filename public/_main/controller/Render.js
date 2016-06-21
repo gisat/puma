@@ -31,7 +31,10 @@ Ext.define('PumaMain.controller.Render', {
     dockPanel: function(win) {
         var panel = win.down('panel');
         win.remove(panel,false);
-        var order = ['selcolor','areatree','layerpanel','maptools','advancedfilters'];
+        var order = ['selcolor','layerpanel','areatree','maptools','advancedfilters'];
+        if (Config.toggles.advancedFiltersFirst){
+            order = ['selcolor','advancedfilters','layerpanel','areatree','maptools'];
+        }
         var idx = 0;
         for (var i=0;i<order.length;i++) {
             var name = order[i];
@@ -62,12 +65,16 @@ Ext.define('PumaMain.controller.Render', {
             resizable: true,
             cls: 'detached-window',
             isdetached: 1,
-            constrainHeader: true
-            ,
+            constrainHeader: true,
             items: [panel]
         }).show();
-        win.el.setOpacity(0.9);
+        var toolId = win.tools.close.el.id;
+        Ext.tip.QuickTipManager.register({
+            target: toolId,
+            text: 'Attach back'
+        });
 
+        win.el.setOpacity(0.9);
         var el = Ext.get('sidebar-tools-toggle');
         var factor = Ext.ComponentQuery.query('window[isdetached=1]').length-1;
         win.alignTo(el,'tl-tr',[50*factor,50*factor]);
@@ -199,40 +206,40 @@ Ext.define('PumaMain.controller.Render', {
 //            width: '100%'
 //        })
 
-
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-contexthelp',
-            itemId: 'contexthelp',
-            tooltip: 'Context help',
-            tooltipType: 'title',
-            icon: 'images/icons/help-context.png',
-            enableToggle: true,
-            width: 30,
-            height: 30,
-            listeners : {
-                toggle : {
-                    fn : function(btn, active) {
-                        if (active) {
-                            btn.addCls("toggle-active");
-                        }
-                        else {
-                            btn.removeCls("toggle-active");
+        if(Config.toggles.allowPumaHelp !== false) {
+            Ext.widget('button', {
+                renderTo: 'app-toolbar-contexthelp',
+                itemId: 'contexthelp',
+                tooltip: 'Context help',
+                tooltipType: 'title',
+                icon: 'images/icons/help-context.png',
+                enableToggle: true,
+                width: 30,
+                height: 30,
+                listeners: {
+                    toggle: {
+                        fn: function (btn, active) {
+                            if (active) {
+                                btn.addCls("toggle-active");
+                            }
+                            else {
+                                btn.removeCls("toggle-active");
+                            }
                         }
                     }
                 }
-            }
-        })
-
-        Ext.widget('button',{
-            renderTo: 'app-toolbar-webhelp',
-            itemId: 'webhelp',
-            tooltip: 'PUMA WebTool help',
-            tooltipType: 'title',
-            icon: 'images/icons/help-web.png',
-            width: 30,
-            height: 30,
-            href: 'help/PUMA webtool help.html'
-        })
+            })
+            Ext.widget('button', {
+                renderTo: 'app-toolbar-webhelp',
+                itemId: 'webhelp',
+                tooltip: 'PUMA WebTool help',
+                tooltipType: 'title',
+                icon: 'images/icons/help-web.png',
+                width: 30,
+                height: 30,
+                href: 'help/PUMA webtool help.html'
+            })
+        }
 
         Ext.widget('button',{
             renderTo: 'app-toolbar-level-more',

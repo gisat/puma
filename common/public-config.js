@@ -5,8 +5,10 @@ module.exports = function(request, response, next){
 		url: config.remoteProtocol + '://' + config.remoteAddress,
 		signupAddress: config.geonodeProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + config.geonodePath + '/account/signup/',
 		geoserver2Workspace: config.geoserver2Workspace,
-		initialBaseMap: config.initialBaseMap,
-		toggles: config.toggles
+
+		htmlTagClasses: config.htmlTagClasses,
+		toggles: config.toggles,
+		texts: config.texts
 	};
 	response.end('var Config = ' + JSON.stringify(Config));
 

@@ -28,6 +28,17 @@ body.application #main {
 	top: 30px;
 }
 
+//@if $useHeader == true {
+#header{
+	display: none;
+}
+#main{
+	padding-top: 0;
+}
+#content-application {
+	top: 0;
+}
+
 
 //$useWBFooter == true {
 #footer-bar,
@@ -43,7 +54,13 @@ body.application #main {
 	padding-bottom: 34px;
 }
 
-
+//$useFooterLegal == true {
+#footer-legal{
+	display: none;
+}
+body.application #main{
+	padding-top: 90px;
+}
 
 //$allowDownloadsLink == false {
 #downloads-link{

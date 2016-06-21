@@ -16,8 +16,8 @@ Ext.define('PumaMain.view.ScreenshotView', {
             //'<img class="screenshotimg" src="{src}"/>',
             '<div>',
             '</div>',
-            '<img class="screenshoticon screenshotpng" height=30 width=30 src="images/icons/snapshot-download.png" />',
-            '<tpl if="!large"><img class="screenshoticon screenshotremove" height=30 width=30 src="images/icons/snapshot-delete.png" /></tpl>',    
+            '<img class="screenshoticon screenshotpng" height=30 width=30 src="images/icons/urbis-snapshot-download.png" />',
+            '<tpl if="!large"><img class="screenshoticon screenshotremove" height=30 width=30 src="images/icons/urbis-snapshot-delete.png" /></tpl>',
             '<img class="screenshoticon screenshotenlarge" height=36 width=36 src="images/icons/snapshot-enlarge.png" />',    
             '</div>',
             '</tpl>'

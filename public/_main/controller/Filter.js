@@ -98,14 +98,28 @@ Ext.define('PumaMain.controller.Filter', {
             labelEl.alignTo(thumb.el,"b-t",[offset,0]);   
         }
         if (slider.chartEl) {
-            
             slider.chartEl.alignTo(slider.el,"b-t",[0,-20]);
             var points = slider.chart.series[0].data;
             var value = slider.getValue();
             var diff = slider.maxValue-slider.minValue;
+
+            // Urbis sliders
+            if (Config.toggles.isUrbis){
+                var sliderInner  = Ext.get(slider.el.id + "-innerEl");
+                if (sliderInner){
+                    var sliderUnit = sliderInner.dom.offsetWidth/diff;
+                    var sliderInnerSize = (value[1] - value[0])*sliderUnit;
+                    var sliderInnerPosition = (value[0]-slider.minValue)*sliderUnit;
+                    sliderInner.setStyle('background-size', sliderInnerSize + 'px 4px');
+                    sliderInner.setStyle('background-position', sliderInnerPosition + 'px 7px');
+                }
+            }
+            // Urbis sliders end
+
             var inc = diff/points.length;
             var sum = 0;
             var approx = 0;
+
             for (var i=0;i<points.length;i++) {
                 var point = points[i];
                 
@@ -128,7 +142,6 @@ Ext.define('PumaMain.controller.Filter', {
                 span.innerText = text;
             }
         }
-        
     },
     
     onFilterDragStart: function(slider,value,thumb) {
@@ -137,15 +150,16 @@ Ext.define('PumaMain.controller.Filter', {
         var labelEl = label.el;
         if (!labelEl) return;
         labelEl.addCls('sliding');
+
+        console.log(slider.chart);
+        console.log(slider.chart.container.id);
+        var chartId = slider.chart.container.id;
+        Ext.get(chartId).setStyle('display', 'block');
         if (slider.chartEl) {
-            
             slider.chartEl.setDisplayed('');
-            slider.chartEl.setStyle({visibility:'visible',zIndex:100000});
-            slider.chartEl.down('text').setStyle({visibility:'visible'})
+            slider.chartEl.setStyle({visibility:'visible', display:'block', zIndex:100000});
+            slider.chartEl.down('text').setStyle({visibility:'visible', display:'block'});
         }
-        
-        
-        
     },
     
     
@@ -158,11 +172,12 @@ Ext.define('PumaMain.controller.Filter', {
         if (!label1El || !label2El) return;
         label1El.removeCls('sliding');
         label2El.removeCls('sliding');
+        var chartId = slider.chart.container.id;
+        Ext.get(chartId).setStyle('display', 'none');
         if (slider.chartEl) {
-            
             slider.chartEl.setDisplayed('none');
-            slider.chartEl.setStyle({visibility:'hidden'});
-            slider.chartEl.down('text').setStyle({visibility:'hidden'})
+            slider.chartEl.setStyle({visibility:'hidden', display:'none'});
+            slider.chartEl.down('text').setStyle({visibility:'hidden', display:'none'});
         }
     },
     
@@ -285,17 +300,23 @@ Ext.define('PumaMain.controller.Filter', {
                 zIndex: 100000,
                 backgroundColor: '#fff',
                 //borderRadius: '8px',
-                borderStyle: 'solid'
+                borderStyle: 'solid',
+                display: 'none',
+                visibility: 'hidden'
             },
             floating: true
-        })
+        });
         cmp.show();
         cmp.hide();
+
         var chart = new Highcharts.Chart({
             chart: {
                 renderTo: cmp.el.dom,
                 animation: false,
-                type: 'column'    
+                type: 'column',
+                style: {
+                    display: 'none'
+                }
             },
             yAxis: {
                 min: 0,
@@ -348,14 +369,14 @@ Ext.define('PumaMain.controller.Filter', {
                 color: '#ccc',
                 states: {
                     select: {
-                        color: '#f09999'
+                        color: '#d35400'
                     }
                 }
             }]
         
         });
         slider.chartEl = cmp.el;
-        slider.chartEl.down('text').setStyle({visibility:'hidden'});
+        slider.chartEl.down('text').setStyle({visibility:'hidden', display:'none'});
         
         slider.chart = chart;
     },
