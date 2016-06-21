@@ -8,7 +8,9 @@ module.exports = function(request, response, next){
 
 		htmlTagClasses: config.htmlTagClasses,
 		toggles: config.toggles,
-		texts: config.texts
+		texts: config.texts,
+		googleAnalyticsTracker: config.googleAnalyticsTracker,
+		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain
 	};
 	response.end('var Config = ' + JSON.stringify(Config));
 
