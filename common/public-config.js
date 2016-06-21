@@ -6,9 +6,9 @@ module.exports = function(request, response, next){
 		signupAddress: config.geonodeProtocol + '://' + config.geonodeHost + config.geonodePath + '/account/signup/',
 		geoserver2Workspace: config.geoserver2Workspace,
 
-
-
-
+		googleAnalyticsTracker: config.googleAnalyticsTracker,
+		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain,
+		
 
 		itworks: true
 	};

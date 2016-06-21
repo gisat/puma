@@ -32,6 +32,10 @@ module.exports = {
 	geonodePath     : "",
 	geonodeHome     : "/geonode",
 
+	googleAnalyticsTracker: '',
+	googleAnalyticsCookieDomain: 'auto',
+	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
+
 	debug: true,
 
 	toggles: {
