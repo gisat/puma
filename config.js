@@ -1,23 +1,39 @@
 module.exports = {
 	localHost       : "127.0.0.1",
-	localPort       : 4000,
+	localPort       : 3000,
 	localPath       : "/",
 
 	remoteProtocol  : "http",
-	remoteAddress   : "localhost:4000",
-	projectHome     : "",
+	remoteAddress   : "127.0.0.1",
+	projectHome     : "http://localhost",
 
-	pgDataConnString   : "postgres://geonode:geonode@185.8.164.70:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@185.8.164.70:5432/geonode",
-	mongoConnString    : "mongodb://185.8.164.70:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@127.0.0.1:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@127.0.0.1:5432/geonode",
+	mongoConnString    : "mongodb://127.0.0.1:27017/panther",
 
+	/*
+	 * Mapping of geoserver workspace to database schema.
+	 *
+	 * Currently, if other schema than default is needed
+	 * there must be a new workspace for every such schema.
+	 */
 	workspaceSchemaMap: {
-		geonode: "public"
+		geonode: "public",
 	},
 
+	/*
+	 * The settings for remote databases.
+	 *
+	 * Remote database schemas must be brought to pgData database using foreign data wrapper.
+	 * This is needed while panther builds its own view on top of feature table/layer
+	 * and it is allowed by postgresql withinside one database only.
+	 *
+	 * FIXME:
+	 * Such feature is unfinished, used partially and should be secured as soon as possible.
+	 */
 	remoteDbSchemas: {
 		urbis: {
-			connString: "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/urbis",
+			connString: "postgres://geonode:geonode@127.0.0.1:5432/geonode_data",
 			workspaceMap: [
 				{workspace: "urbis_ancillary_layers",
 				 remote_schema: "ancillary_layers",
@@ -85,7 +101,7 @@ module.exports = {
 		themeAbout: "URBIS services are focused on different thematic information, including Green and Grey infrastructure or Urban Land Typology and Dynamics. Please select theme/service according your thematic interests."
 	},
 
-	allowedOrigins: "http://localhost:5555",
+	allowedOrigins: "http://localhost:3000",
 	/*
 	 * It decides to which level will be the information logged. Default value is 1 meaning Info and higher will be logged
 	 * 0 - TRACE
@@ -100,7 +116,7 @@ module.exports = {
 	/*
 	 * UrbanTEP - Destination of temporary downloaded files.
 	 */
-	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
+	temporaryDownloadedFilesLocation: '/var/tmp/panther',
 
 	/*
 	 * UrbanTEP - UserName and Password under which the layers are uploaded
