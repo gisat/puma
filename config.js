@@ -30,7 +30,7 @@ module.exports = {
 
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
-	geonodePort			: 80,
+	geonodePort		: 80,
 	geonodePath     : "",
 	geonodeHome     : "/",
 

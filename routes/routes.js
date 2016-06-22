@@ -1,6 +1,9 @@
 var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
 
+var Style = require('../styles/Style');
+var UUID = require('../common/UUID');
+
 var api = {
 	login: require('../api/login'),
 	layers: require('../api/layers'),
@@ -16,9 +19,6 @@ var api = {
 };
 
 module.exports = function(app) {
-	app.post('/rest/:objType', crud.ensureCollection);
-	app.post('/rest/:objType/*', crud.ensureCollection);
-	
 	app.get('/rest/:objType',function(req,res,next) {
 		logger.info("Requested collection of type: ", req.params.objType, " By User: ", req.userId);
 		//var filter = req.query.filter ? JSON.parse(req.query.filter) : {};
@@ -79,8 +79,59 @@ module.exports = function(app) {
 		});
 	});
 
+	/**
+	 * It sets up the object type used in specific collection.
+	 */
+	app.post('/rest/:objectType', function(req, res, next){
+		req.params.objType = req.params.objectType;
+		next();
+	});
 
-	app.post('/rest/:objType',function(req,res,next) {
+	app.post('/rest/symbology', function(req, res, next){
+		var receivedData = req.body.data;
+
+		if(!receivedData || !Style.validateDescription(receivedData)) {
+			res.send(400, 'Request must contain valid data for generating SLD.');
+			return;
+		}
+
+		var style = new Style(new UUID().toString(), receivedData);
+
+		var sql = style.toSql();
+		// Save to PostgreSQL;
+
+		// Save to Mongo Database
+
+		Promise.all([sqlPromise, mongoPromise]).then(function(){
+			next();
+		}, function(){
+			next({
+				message: 'Error in saving symbology.'
+			});
+		});
+	});
+
+	app.post('/rest/layergroup', createStandardRestObject);
+	app.post('/rest/layergroupgs', createStandardRestObject);
+	app.post('/rest/dataview', createStandardRestObject);
+	app.post('/rest/chartcfg', createStandardRestObject);
+	app.post('/rest/viewcfg', createStandardRestObject);
+	app.post('/rest/userpolygon', createStandardRestObject);
+	app.post('/rest/dataset', createStandardRestObject);
+	app.post('/rest/scope', createStandardRestObject);
+	app.post('/rest/topic', createStandardRestObject);
+	app.post('/rest/analysis', createStandardRestObject);
+	app.post('/rest/performedanalysis', createStandardRestObject);
+	app.post('/rest/visualization', createStandardRestObject);
+	app.post('/rest/location', createStandardRestObject);
+	app.post('/rest/attributeset', createStandardRestObject);
+	app.post('/rest/attribute', createStandardRestObject);
+	app.post('/rest/layerref', createStandardRestObject);
+	app.post('/rest/theme', createStandardRestObject);
+	app.post('/rest/areatemplate', createStandardRestObject);
+	app.post('/rest/year', createStandardRestObject);
+
+	function createStandardRestObject(req, res, next) {
 		logger.info("Create object of type: ", req.params.objType, " by User: ", req.userId, "With data: ", req.body.data);
 		crud.create(req.params.objType,req.body.data,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err){
@@ -91,8 +142,7 @@ module.exports = function(app) {
 			res.data = result;
 			next();
 		});
-	});
-
+	}
 
 	// new backoffice
 	app.delete('/rest/:objType',function(req,res,next) {
@@ -136,18 +186,6 @@ module.exports = function(app) {
 			next(err);
 		}
 	});
-	
-//	app.get('/api/:module/:method',function(req,res,next) {
-//		var mod = api[req.params.module];
-//		var fn = mod[req.params.method];
-//		console.log(fn)
-//		try {
-//			fn(req.query,req,res,next)
-//		}
-//		catch (err) {
-//			next(err);
-//		}
-//	})
 	
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
