@@ -80,5 +80,12 @@ module.exports = {
 	/*
 	 * UrbanTep - Approximate pixel size in input tif file, m^2
 	 */
-	urbanTepTifPixelSize: 75*75
+	urbanTepTifPixelSize: 75*75,
+
+	/*
+	* Environment in which is the application run. The used libraries will differ.
+	* Allowed values: 'production', 'development'
+	* If no value is present production will be used
+	*/
+	environment: 'production	'
 };

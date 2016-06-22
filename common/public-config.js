@@ -8,7 +8,8 @@ module.exports = function(request, response, next){
 		initialBaseMap: config.initialBaseMap,
 		toggles: config.toggles,
 		googleAnalyticsTracker: config.googleAnalyticsTracker,
-		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain
+		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain,
+		environment: config.environment
 	};
 	response.end('var Config = ' + JSON.stringify(Config));
 
