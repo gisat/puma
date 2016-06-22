@@ -196,7 +196,7 @@ function connectToPgDb(connectionString) {
 function getSchemaName(workspaceName) {
 	var schemaName = null;
 	if (config.workspaceSchemaMap.hasOwnProperty(workspaceName)) {
-		schemaName = workspaceSchemaMap[workspaceName];
+		schemaName = config.workspaceSchemaMap[workspaceName];
 	} else {
 		var wMap = {}
 		_.each(config.remoteDbSchemas, function (remoteServerOptions, remoteServerName) {
