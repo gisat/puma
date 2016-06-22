@@ -87,5 +87,5 @@ module.exports = {
 	* Allowed values: 'production', 'development'
 	* If no value is present production will be used
 	*/
-	environment: 'production	'
+	environment: 'production'
 };
