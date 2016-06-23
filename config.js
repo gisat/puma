@@ -32,7 +32,7 @@ module.exports = {
 	geonodeHost     : "localhost",
 	geonodePort			: 80,
 	geonodePath     : "/geonode",
-	geonodeHome     : "/",
+	geonodeHome     : "/geonode/",
 
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
