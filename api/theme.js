@@ -403,13 +403,13 @@ function getThemeYearConf(params, req, res, callback) {
 					}
 
 					sql += sql ? ' UNION ' : '';
-					sql += 'SELECT a.gid,a.parentgid, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
+					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
-						sql += ", '" + location.name + "' AS name";
+						sql += ", '" + location.name + "'::text AS name";
 						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+location.bbox+"))) AS extent";
 						sql += ", TRUE AS definedplace";
 					} else {
-						sql += ', a.name';
+						sql += ', a.name::text';
 						sql += ', ST_AsText(a.extent) AS extent';
 						sql += ", FALSE AS definedplace";
 					}
@@ -536,9 +536,9 @@ function getThemeYearConf(params, req, res, callback) {
 					}
 					return eachCallback(null);
 				}
-				var sql = 'SELECT a.gid,COUNT(b.gid) as cnt FROM views.layer_' + item.layerRef._id + ' a';
+				var sql = 'SELECT a.gid::text,COUNT(b.gid) as cnt FROM views.layer_' + item.layerRef._id + ' a';
 				sql += ' LEFT JOIN views.layer_' + item.nextLayerRef._id + ' b';
-				sql += ' ON a.gid = b.parentgid';
+				sql += ' ON a.gid::text = b.parentgid::text';
 				// filter.areaTemplates possibly unused, like in Mongo DB theme.areaTemplates is unused. Jon
 				if (filter && filter.areaTemplates[item.nextAt]) {
 					sql += getFilterSql(filter.filters, 'b.');
