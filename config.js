@@ -31,7 +31,7 @@ module.exports = {
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
 	geonodePort			: 80,
-	geonodePath     : "",
+	geonodePath     : "/geonode",
 	geonodeHome     : "/",
 
 	googleAnalyticsTracker: '',
