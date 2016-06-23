@@ -364,8 +364,8 @@ function getData(params, callback) {
 									var aggObj = userAggregates[locationId][areaId][aggGid];
 									var aggGids = aggObj.gids;
 									var aggName = aggObj.name;
-									gidSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (' + aggGids.join(',') + ")) THEN " + aggGid + ' ELSE ';
-									nameSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (' + aggGids.join(',') + ")) THEN '" + aggName + "' ELSE ";
+									gidSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (\'' + aggGids.join('\',\'') + "\')) THEN " + aggGid + ' ELSE ';
+									nameSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (\'' + aggGids.join('\',\'') + "\')) THEN '" + aggName + "' ELSE ";
 									x++;
 								}
 								gidSql += 'x_' + years[0] + '."gid"';
@@ -421,7 +421,7 @@ function getData(params, callback) {
 
 							if (gids !== true) {
 								oneSql += ' AND x_' + baseYear + '."gid" IN ';
-								oneSql += '(' + gids.join(',') + ')';
+								oneSql += '(\'' + gids.join('\',\'') + '\')';
 							}
 							if (params['useAggregation'] || topAll) {
 								oneSql += ' GROUP BY 1,2,3,4'

@@ -170,14 +170,16 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
 	sql += attrSql;
 
 	sql += ' FROM ' + from + ' a';
-	sql += ' LEFT JOIN views.base_' + areaLayerRef['_id'] + ' b ON a."' + areaLayerRef.fidColumn + '"=b."gid"';
+	sql += ' LEFT JOIN views.base_' + areaLayerRef['_id'] + ' b ON a."' + areaLayerRef.fidColumn + '"::text=b."gid"::text';
 	// join pripojenych vrstev
 	for (var key in layerMap) {
 		sql += ' LEFT JOIN ' + layerMap[key].name + ' ' + key + ' ON ';
-		sql += 'a."' + areaLayerRef.fidColumn + '"=' + key + '."' + layerMap[key].fid + '"::bigint';
+		sql += 'a."' + areaLayerRef.fidColumn + '"::text=' + key + '."' + layerMap[key].fid + '"::text';
 	}
 
 	sql += '; COMMIT;';
+
+	// It is actually necessary that the data in the primary key and elsewhere have the same type otherwise it fails.
 
 	logger.info('geoserver/layers.js start ' + sql);
 	var client = conn.getPgDataDb();
