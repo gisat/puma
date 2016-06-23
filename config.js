@@ -1,5 +1,5 @@
 module.exports = {
-	localHost       : "127.0.0.1",
+	localHost       : "localhost",
 	localPort       : 4000,
 	localPath       : "/",
 
@@ -7,21 +7,21 @@ module.exports = {
 	remoteAddress   : "localhost:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@185.8.164.70:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@185.8.164.70:5432/geonode",
-	mongoConnString    : "mongodb://185.8.164.70:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
+	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
 		geonode: "public"
 	},
 
-	geoserverHost   : "185.8.164.70",
+	geoserverHost   : "localhost",
 	geoserverPort   : 80,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
 
-	geoserver2Host  : "185.8.164.70",
+	geoserver2Host  : "localhost",
 	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
@@ -29,7 +29,7 @@ module.exports = {
 	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "185.8.164.70",
+	geonodeHost     : "localhost",
 	geonodePort			: 80,
 	geonodePath     : "",
 	geonodeHome     : "/",
@@ -85,5 +85,5 @@ module.exports = {
 	* Allowed values: 'production', 'development'
 	* If no value is present production will be used
 	*/
-	environment: 'production	'
+	environment: 'production'
 };
