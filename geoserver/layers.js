@@ -89,7 +89,7 @@ var removeLayerDbInternal = function (areaLayerRef, callback) {
 	})
 };
 
-function checkUniqueId(layerRef, callback) {
+/*function checkUniqueId(layerRef, callback) {
 	// overeni jedinecnosti ID
 	var from = conn.getLayerTable(layerRef.layer);
 	var layerName = layerRef.layer.substr(layerRef.layer.indexOf(":") + 1);
@@ -101,6 +101,23 @@ function checkUniqueId(layerRef, callback) {
 	//console.log(sql)
 	client.query(sql, function (err) {
 		if (err) {
+			logger.error("layers#checkUniqueId IDs not unique. SQL: ", sql, " Error: ", err);
+			return callback(new Error('IDs not unique'));
+		}
+
+		callback(null);
+	})
+}*/
+function checkUniqueId(layerRef, callback) {
+	// overeni jedinecnosti ID
+	var from = conn.getLayerTable(layerRef.layer);
+	//var layerName = layerRef.layer.substr(layerRef.layer.indexOf(":") + 1);
+
+	var sql = 'SELECT COUNT(' + layerRef.fidColumn + ') FROM ' + from + ' GROUP BY ' + layerRef.fidColumn + ' HAVING COUNT(' + layerRef.fidColumn + ') > 1';
+
+	var client = conn.getPgDataDb();
+	client.query(sql, function (err, result) {
+		if (err || result.rowCount > 0) {
 			logger.error("layers#checkUniqueId IDs not unique. SQL: ", sql, " Error: ", err);
 			return callback(new Error('IDs not unique'));
 		}
