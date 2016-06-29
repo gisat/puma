@@ -31,6 +31,7 @@ function login(params,req,res,callback) {
 			}
 		}
 		if (!ssid) {
+			// Update to return 400 instead of 500
 			return callback(new Error(logger.info("login# login(), Invalid login")));
 		}
 		res.cookie('ssid',ssid,{httpOnly: true});

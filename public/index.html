@@ -4,8 +4,28 @@
 		<title>Data exploration</title>
 		<meta charset="utf-8">
 
-		<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
-		<link rel="icon" href="images/favicon.ico" type="image/x-icon">
+		<script type="text/javascript" src="config.js"></script> <!-- TODO: Move loading into specific class instead if simple dynamic server -->
+		<script type="text/javascript">
+			function createScript(src) {
+				var startupScript = document.createElement("script");
+				startupScript.type = "text/javascript";
+				startupScript.src = src;
+				startupScript.async = 1;
+				document.getElementsByTagName('head')[0].appendChild(startupScript);
+			}
+
+			var configuration = Config.environment;
+			if(configuration == 'development') {
+				createScript('devlib/OpenLayers.js');
+				createScript('gisatlib/OpenLayers/Geoserver23.js');
+				createScript('extjs-4.1.3/ext-debug.js');
+				createScript('appde.js');
+			} else {
+				createScript('lib/OpenLayers.min.js');
+				createScript('extjs-4.1.3/ext.js');
+				createScript('appde.min.js');
+			}
+		</script>
 
 		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,800,700">
 		<link rel="stylesheet" type="text/css" href="extjs-4.1.3/resources/css/ext-all-gray.css">
@@ -15,31 +35,12 @@
 
 
 		<script type="text/javascript" src="//maps.google.com/maps/api/js?v=3.2&sensor=false"></script>
-		<script type="text/javascript" src="config.js"></script>
+
 
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 		<script src="lib/Highcharts-3.0.0/js/highcharts.src.js"></script>
 		<script src="lib/Highcharts-3.0.0/js/highcharts-more.js"></script>
 		<script src="lib/Highcharts-3.0.0/js/modules/exporting.js"></script>
-		
-		
-		<!-- -- DEVELOPMENT SCRIPTS: -- -->
-		<script type="text/javascript" src="devlib/OpenLayers.js"></script>
-		<script type="text/javascript" src="gisatlib/OpenLayers/Geoserver23.js"></script>
-		<script type="text/javascript" src="extjs-4.1.3/ext-debug.js"></script>
-		<script type="text/javascript" src="appde.js"></script>
-		<!-- -------------------- -->
-		
-		
-		
-		
-		<!-- --- LIVE SCRIPTS: -- - ->
-		<script type="text/javascript" src="lib/OpenLayers.min.js"></script>
-		<script type="text/javascript" src="extjs-4.1.3/ext.js"></script>
-		<script type="text/javascript" src="appde.min.js"></script>
-		<!-- -------------------- -->
-		
-		
 	</head>
 	<body class="intro urbis">
 		<script>

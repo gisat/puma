@@ -38,7 +38,7 @@ module.exports = function(req, res) {
 	sass.render({
 		data: scss,
 		includePaths: ["scss/"],
-		outputStyle: config.debug ? 'expanded':'compressed'
+		outputStyle: config.environment=='development' ? 'expanded':'compressed'
 	}, function (err, result) {
 		if (err) {
 			console.log("SASS Error: ", err);
