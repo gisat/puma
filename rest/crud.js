@@ -88,11 +88,12 @@ function create(collName,obj,params,callback) {
 
 
 function read(collName,filter,params,callback) {
-	logger.info("Read data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
 		logger.warn("Read doesn't have enough parameters for collection: ", collName, " with filter: ", filter, " and Params: ", params);
+	} else {
+		logger.info("Read data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	}
 
 	var db = conn.getMongoDb();
@@ -107,11 +108,12 @@ function read(collName,filter,params,callback) {
 }
 
 function update(collName, obj, params, callback,bypassHooks) {
-	logger.info("Update item in collection: ", collName, " With data: ", obj, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
 		logger.warn("Update doesn't have enough parameters for collection: ", collName, " with data: ", obj, " and Params: ", params);
+	} else {
+		logger.info("Update item in collection: ", collName, " With data: ", obj, " and Params: ", params);
 	}
 
 	if(typeof obj == "string") {
@@ -174,11 +176,12 @@ function update(collName, obj, params, callback,bypassHooks) {
 }
 
 function remove(collName,filter,params,callback) {
-	logger.info("Delete data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
 		logger.warn("Delete doesn't have enough parameters for collection: ", collName, " with filter: ", filter, " and Params: ", params);
+	} else {
+		logger.info("Delete data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	}
 
 	if(typeof filter == "string") {
