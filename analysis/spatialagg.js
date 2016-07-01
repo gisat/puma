@@ -43,7 +43,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("LAYERREF missing 1||||| areaTemplate: ",featureLayerTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('missinglayerref'));
+						return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and area ('+featureLayerTemplate+')'));
 					}
 					return mapCallback(null, resls[0]);
 				});
@@ -65,7 +65,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("LAYERREF missing 2||||| areaTemplate: ",analysisObj.areaTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('missinglayerref'));
+						return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), area ('+featureLayerTemplate+') and Attribute Set ('+attrSet+')'));
 					}
 					return mapCallback(null, resls[0]);
 				});
