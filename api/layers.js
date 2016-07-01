@@ -283,6 +283,8 @@ function activateLayerRef(params, req, res, callback) {
 				if (params.activateAnother && !activated) {
 					item.active = true;
 					activated = true;
+				} else {
+					item.active = false;
 				}
 				crud.update('layerref', item, {userId: req.userId, isAdmin: req.isAdmin}, function(err) {
 					if (err) {
