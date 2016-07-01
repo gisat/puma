@@ -24,7 +24,8 @@ function recreateLayerDb(layerRef, isUpdate, callback) {
 					'areaTemplate': layerRef.areaTemplate,
 					location: layerRef.location,
 					isData: false,
-					year: layerRef.year
+					year: layerRef.year,
+					layer: layerRef.layer
 				};
 				crud.read('layerref', filter, function (err, results) {
 					if (err) {
@@ -52,7 +53,8 @@ function recreateLayerDb(layerRef, isUpdate, callback) {
 					areaTemplate: layerRef.areaTemplate,
 					year: layerRef.year,
 					location: layerRef.location,
-					isData: true
+					isData: true,
+					layer: layerRef.layer
 				};
 				crud.read('layerref', filter, function (err, results) {
 					if (err) {
