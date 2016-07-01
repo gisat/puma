@@ -43,7 +43,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("LAYERREF missing 1||||| areaTemplate: ",featureLayerTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+featureLayerTemplate+')'));
+						return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+featureLayerTemplate+'). Please try to take a look whether you have correctly associated Vector Layer Template with this number to the vector data layer from which the attributes for analysis comes. '));
 					}
 					return mapCallback(null, resls[0]);
 				});
