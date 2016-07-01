@@ -326,7 +326,7 @@ function getData(params, callback) {
 					}
 					if (!resls.length && areaIds.indexOf(-1) < 0) {
 						logger.error('data#getData Read dataset. No data set was returned. Filter: ', dbFilter);
-						return callback(new Error('There ws no layerref with given area template, location and year.'));
+						return callback(new Error('notexistingdata (1)'));
 					}
 					var layerRefMap = {};
 					for (var i = 0; i < resls.length; i++) {
@@ -462,7 +462,7 @@ function getData(params, callback) {
 				client.query(dataSql, function(err, resls) {
 					if (err) {
 						logger.error('data#getData Read dataset. Sql: ', sql, ' Error: ', err);
-						return callback(new Error('It wasn\'t possible to load data to show in the table.'));
+						return callback(new Error('notexistingdata (2)'));
 					}
 					var aggData = [];
 					var normalData = [];
