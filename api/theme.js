@@ -426,7 +426,7 @@ function getThemeYearConf(params, req, res, callback) {
 					sql += ' WHERE 1=1';
 					logger.info("theme# getThemeYearConf, auto:sql prevAreaTemplate:",prevAreaTemplate," locOpened:", locOpened);
 					if (locOpened && prevAreaTemplate && locOpened[prevAreaTemplate] && locOpened[prevAreaTemplate][0] !== null) {
-						sql += ' AND a.parentgid IN (\'' + locOpened[prevAreaTemplate].join(',') + '\')';
+						sql += ' AND a.parentgid IN (\'' + locOpened[prevAreaTemplate].join('\',\'') + '\')';
 					}
 					// filter.areaTemplates possibly unused, like in Mongo DB theme.areaTemplates is unused. Jon
 					if (filter && (filter.areaTemplates[areaTemplateId] || params.allAreaTemplates)) {
