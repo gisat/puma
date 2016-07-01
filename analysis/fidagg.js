@@ -38,7 +38,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("Base layer ref is missing. Filter: ", filter);
-					    return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and area ('+flTemplate+')'))
+					    return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+flTemplate+')'))
 					}
 					if (flTemplates.indexOf(flTemplate)!=0 && !resls[0].parentColumn) {
 						logger.error("Parent of base layer ref is missing. Filter: ", filter);
@@ -64,7 +64,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 						}
 						if (!resls.length) {
 							logger.error("There was no layerref with given filter: ", filter);
-							return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), area ('+featureLayerTemplate+') and Attribute Set ('+attrSet+')'))
+							return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), Vector Layer Template ('+featureLayerTemplate+') and Attribute Set ('+attrSet+')'))
 						}
 						return mapCallback(null, resls[0]);
 					});
