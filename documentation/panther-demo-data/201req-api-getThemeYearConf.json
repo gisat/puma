@@ -1,0 +1,9 @@
+{
+	"sort": [
+		{
+			"property": "name",
+			"direction": "ASC"
+		}
+	],
+	"node": "root"
+}

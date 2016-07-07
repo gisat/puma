@@ -1,0 +1,25 @@
+{
+	"data": [
+		{
+			"_id": 4123,
+			"name": "Information Layers",
+			"active": true,
+			"priority": 1,
+			"created": "2014-01-28T13:45:39.706Z",
+			"createdBy": 10000,
+			"changed": "2016-03-24T14:23:30.010Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 4124,
+			"name": "Reference Satellite Images",
+			"active": true,
+			"priority": 3,
+			"created": "2014-01-28T13:45:51.277Z",
+			"createdBy": 10000,
+			"changed": "2016-03-24T14:23:27.370Z",
+			"changedBy": 1
+		}
+	],
+	"success": true
+}
