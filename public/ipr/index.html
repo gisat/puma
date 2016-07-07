@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>IPR Query</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="./js/query.js"></script>
+    <style>
+        #iprQuerySearchInput {
+            width: 80%;
+        }
+        #iprQuerySearchForm {
+            margin: 0px auto;
+            width: 500px;
+            text-align: center;
+            border: 1px dotted #7b8b9d;
+            padding: 25px;
+            margin-top: 35px;
+            position: relative;
+        }
+        #iprQuerySearchFormTitle {
+            position: absolute;
+            top: -20px;
+            left: 5px;
+            border: 1px dotted #7b8b9d;
+            background: white;
+            padding: 10px;
+        }
+        #iprQuerySearchOutput {
+            margin: 0px auto;
+            width: 500px;
+            text-align: center;
+            border: 1px dotted #7b8b9d;
+            padding: 25px;
+            margin-top: 35px;
+            position: relative;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="iprQuerySearchForm">
+        <div id="iprQuerySearchFormTitle">IPR</div>
+        <input type="text" name="iprQuerySearchInput" id="iprQuerySearchInput" autocomplete="off" placeholder="Zadejte hledaný text..." autofocus/>
+    </div>
+    <div id="iprQuerySearchOutput"></div>
+</body>
+</html>

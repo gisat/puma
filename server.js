@@ -78,7 +78,9 @@ function initServer(err) {
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
+	require('./routes/iprquery')(app);
 	app.use('/', staticFn(__dirname + '/public'));
+	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
 	console.log('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);
 	console.log('Listening on port ' + config.localPort);

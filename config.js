@@ -1,10 +1,10 @@
 module.exports = {
 	localHost       : "localhost",
-	localPort       : 4000,
+	localPort       : 3000,
 	localPath       : "/",
 
 	remoteProtocol  : "http",
-	remoteAddress   : "localhost:4000",
+	remoteAddress   : "localhost:3000",
 	projectHome     : "",
 
 	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
@@ -16,13 +16,13 @@ module.exports = {
 	},
 
 	geoserverHost   : "localhost",
-	geoserverPort   : 80,
+	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
 
 	geoserver2Host  : "localhost",
-	geoserver2Port  : 80,
+	geoserver2Port  : 8181,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
@@ -30,7 +30,7 @@ module.exports = {
 
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
-	geonodePort			: 80,
+	geonodePort		: 80,
 	geonodePath     : "/geonode",
 	geonodeHome     : "/geonode/",
 
@@ -52,7 +52,7 @@ module.exports = {
 		//renameAdvancedFiltersTo: "Evaluation Tool"
 	},
 
-	allowedOrigins: "http://localhost:5555",
+	allowedOrigins: "http://localhost:3000",
 	/*
 	 * It decides to which level will be the information logged. Default value is 1 meaning Info and higher will be logged
 	 * 0 - TRACE
