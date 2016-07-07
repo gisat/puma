@@ -170,8 +170,8 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				//text = text.replace(new RegExp('&AREA&', 'g'), stText + '(ST_Intersection(ST_Transform(a.the_geom,4326),ST_Transform(b.the_geom,4326))::geography)');
 
 				text = text.replace(new RegExp('&AREA2&', 'g'), results.geomType.dm > 1 ? 'b.area' : 'b.length');
-				text = text.replace(new RegExp('&ATTR&', 'g'), 'as_' + obj.calcAttributeSet + '_attr_' + obj.calcAttribute);
-				text = text.replace(new RegExp('&ATTR2&', 'g'), 'as_' + obj.normAttributeSet + '_attr_' + obj.normAttribute);
+				text = text.replace(new RegExp('&ATTR&', 'g'), 'b.as_' + obj.calcAttributeSet + '_attr_' + obj.calcAttribute);
+				text = text.replace(new RegExp('&ATTR2&', 'g'), 'b.as_' + obj.normAttributeSet + '_attr_' + obj.normAttribute);
 				var attrName = 'as_' + analysisObj.attributeSet + '_attr_' + obj.attribute;
 				text += ' AS ' + attrName;
 				select += ',' + text;
