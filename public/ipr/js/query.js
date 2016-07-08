@@ -28,8 +28,7 @@ $(document).ready(function () {
             });
             searchRequest.always(function (data, statusText, jqXHR) {
                 if (statusText == "success") {
-                    var response = $.parseJSON(data);
-                    searchOutput.text(response.content);
+                    searchOutput.text(JSON.parse(data).content);
                     searchOutput.show();
                 } else {
                     var error = $.parseJSON(data.responseText);
