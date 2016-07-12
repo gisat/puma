@@ -119,12 +119,17 @@ module.exports = function(app) {
 		var analysis = req.body.data;
 
 		// Verify only when some attributes are present.
+		var sourceAttributeSetIsntUsedAsResult = true;
 		if(analysis.attributeMap && analysis.attributeMap.length > 0) {
 			analysis.attributeMap.forEach(function(attributeToAnalyse){
 				if(attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
-					return next(new Error("Attributes used in the analysis as a source attribute and as a reult attributes must be from differrent attribute sets."));
+					sourceAttributeSetIsntUsedAsResult = false;
 				}
 			});
+		}
+
+		if(!sourceAttributeSetIsntUsedAsResult) {
+			return next(new Error("Attributes used in the analysis as a source attribute and as a reult attributes must be from differrent attribute sets."));
 		}
 
 		updateStandardRestObject(req, res, next);
