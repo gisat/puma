@@ -113,6 +113,24 @@ module.exports = function(app) {
 		});
 	});
 
+	app.put('/rest/analysis', function(req, res, next) {
+		// Verify that the created analysis doesn't have attribute from the same attribute set as the source one.
+		// calcAttributeSet a normAttributeSet u vsech atributu se musi lisit od source attribute setu
+		var analysis = req.body.data;
+
+		// Verify only when some attributes are present.
+		if(analysis.attributeMap && analysis.attributeMap.length > 0) {
+			analysis.attributeMap.forEach(function(attributeToAnalyse){
+				if(attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
+					return next(new Error("Attributes used in the analysis as a source attribute and as a reult attributes must be from differrent attribute sets."));
+				}
+			});
+		}
+
+		updateStandardRestObject(req, res, next);
+	});
+
+
 	// new backoffice
 	function updateStandardRestObject(req,res,next) {
 		logger.info("Update object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
@@ -139,7 +157,6 @@ module.exports = function(app) {
 	app.put('/rest/viewcfg', updateStandardRestObject);
 	app.put('/rest/userpolygon', updateStandardRestObject);
 	app.put('/rest/topic', updateStandardRestObject);
-	app.put('/rest/analysis', updateStandardRestObject);
 	app.put('/rest/performedanalysis', updateStandardRestObject);
 	app.put('/rest/visualization', updateStandardRestObject);
 	app.put('/rest/location', updateStandardRestObject);
