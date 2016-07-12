@@ -3,6 +3,7 @@ $(document).ready(function () {
     var searchField = $("#iprQuerySearchInput");
     var searchButton = $("#iprQuerySearchButton");
     var searchOutput = $("#iprQuerySearchOutput");
+    var searchSelect = $("#iprQuerySelect");
 
     searchButton.on('click', function () {
         executeSearch();
@@ -17,24 +18,23 @@ $(document).ready(function () {
 
     function executeSearch() {
         var searchValue = searchField.val();
-        if (searchValue.length > 0 && searchButton.val().contains("Vyhledat")) {
+        if (searchValue.length > 0 && searchButton.val().indexOf("Vyhledat") >= 0) {
             searchButton.val("Vyhledávám...");
             searchOutput.hide();
             var searchRequest = $.ajax({
                 url: "/iprquery",
                 method: "POST",
-                data: {search: searchValue},
-                dataType: "html"
+                data: { search: searchValue, source: searchSelect.val() },
+                dataType: "json",
+                timeout: 15000
             });
             searchRequest.always(function (data, statusText, jqXHR) {
-                if (statusText == "success") {
-                    searchOutput.text(JSON.parse(data).content);
-                    searchOutput.show();
+                if ( statusText == "success" ) {
+                    searchOutput.html(data.body);
                 } else {
-                    var error = $.parseJSON(data.responseText);
-                    searchOutput.text(error.message);
-                    searchOutput.show();
+                    searchOutput.text(statusText);
                 }
+                searchOutput.show();
                 searchButton.val("Vyhledat...");
             });
         } else {
