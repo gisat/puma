@@ -43,7 +43,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("LAYERREF missing 1||||| areaTemplate: ",featureLayerTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('missinglayerref'));
+						return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+featureLayerTemplate+'). Please try to take a look whether you have correctly associated Vector Layer Template with this number to the vector data layer from which the attributes for analysis comes. '));
 					}
 					return mapCallback(null, resls[0]);
 				});
@@ -65,7 +65,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("LAYERREF missing 2||||| areaTemplate: ",analysisObj.areaTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('missinglayerref'));
+						return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), Vector Layer Template ('+featureLayerTemplate+') and Attribute Set ('+attrSet+')'));
 					}
 					return mapCallback(null, resls[0]);
 				});
@@ -169,6 +169,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				text = text.replace(new RegExp('&AREA&', 'g'), stText + '(ST_Intersection(ST_Transform(a.the_geom,4326),ST_Transform(b.the_geom,4326))::geography)');
 				//text = text.replace(new RegExp('&AREA&', 'g'), stText + '(ST_Intersection(ST_Transform(a.the_geom,4326),ST_Transform(b.the_geom,4326))::geography)');
 
+				// It mustn't contain b as otherwise it won't be capable of working with attribute sets associated with analytical units.
 				text = text.replace(new RegExp('&AREA2&', 'g'), results.geomType.dm > 1 ? 'b.area' : 'b.length');
 				text = text.replace(new RegExp('&ATTR&', 'g'), 'as_' + obj.calcAttributeSet + '_attr_' + obj.calcAttribute);
 				text = text.replace(new RegExp('&ATTR2&', 'g'), 'as_' + obj.normAttributeSet + '_attr_' + obj.normAttribute);

@@ -1,0 +1,620 @@
+{
+	"data": [
+		{
+			"_id": 279,
+			"active": true,
+			"changed": "2013-06-13T16:05:29.612Z",
+			"changedBy": 10000,
+			"created": "2013-03-28T13:16:00.591Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "AOI",
+			"symbologies": [
+				""
+			],
+			"layerType": "au"
+		},
+		{
+			"_id": 280,
+			"active": true,
+			"changed": "2013-06-13T16:29:29.164Z",
+			"changedBy": 10000,
+			"created": "2013-03-28T13:16:14.234Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "Core City x Outer Urban Zone",
+			"symbologies": [
+				""
+			],
+			"topic": null,
+			"layerType": "au"
+		},
+		{
+			"_id": 281,
+			"active": true,
+			"changed": "2013-06-13T16:05:34.615Z",
+			"changedBy": 10000,
+			"created": "2013-03-28T13:16:47.770Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "GADM2",
+			"symbologies": [
+				""
+			],
+			"layerType": "au"
+		},
+		{
+			"_id": 282,
+			"active": true,
+			"changed": "2013-06-13T16:05:37.702Z",
+			"changedBy": 10000,
+			"created": "2013-03-28T13:16:50.734Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "GADM3",
+			"symbologies": [
+				""
+			],
+			"layerType": "au"
+		},
+		{
+			"_id": 283,
+			"active": true,
+			"changed": "2013-06-13T16:05:25.730Z",
+			"changedBy": 10000,
+			"created": "2013-03-28T13:16:53.192Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "GADM4",
+			"symbologies": [
+				""
+			],
+			"layerType": "au"
+		},
+		{
+			"_id": 376,
+			"active": true,
+			"changed": "2013-06-04T11:06:17.047Z",
+			"changedBy": 10000,
+			"created": "2013-04-03T16:56:16.902Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "Region",
+			"layerType": "au"
+		},
+		{
+			"_id": 377,
+			"active": true,
+			"changed": "2013-06-13T14:45:32.141Z",
+			"changedBy": 10000,
+			"created": "2013-04-03T16:56:46.021Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "Cities",
+			"symbologies": [],
+			"topic": null,
+			"layerType": "au"
+		},
+		{
+			"_id": 431,
+			"active": true,
+			"changed": "2014-01-28T13:47:36.844Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T07:56:53.658Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4123,
+			"name": "Land cover",
+			"symbologies": [
+				1322,
+				1304
+			],
+			"topic": 1654,
+			"layerType": "raster"
+		},
+		{
+			"_id": 437,
+			"active": true,
+			"changed": "2013-12-02T10:53:02.898Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T07:59:01.296Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"name": "Land cover change",
+			"symbologies": [
+				1352,
+				1344,
+				1339
+			],
+			"topic": 1654,
+			"layerType": "raster"
+		},
+		{
+			"_id": 519,
+			"name": "AOI-data",
+			"justVisualization": true,
+			"created": "2013-04-11T08:26:58.474Z",
+			"createdBy": 10000,
+			"changed": "2013-04-11T08:30:49.262Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 520,
+			"name": "ADM1-CCOUZ-data",
+			"justVisualization": true,
+			"created": "2013-04-11T08:27:03.479Z",
+			"createdBy": 10000,
+			"changed": "2013-04-11T08:30:51.836Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 521,
+			"active": true,
+			"changed": "2013-07-21T14:02:01.240Z",
+			"changedBy": 10000,
+			"created": "2013-04-11T08:27:11.483Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"name": "ADM2-data",
+			"symbologies": [
+				""
+			],
+			"topic": 1654,
+			"layerType": "raster"
+		},
+		{
+			"_id": 522,
+			"name": "ADM3-data",
+			"justVisualization": true,
+			"created": "2013-04-11T08:27:16.902Z",
+			"createdBy": 10000,
+			"changed": "2013-04-11T08:30:56.659Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 523,
+			"name": "ADM4-data",
+			"justVisualization": true,
+			"created": "2013-04-11T08:27:30.010Z",
+			"createdBy": 10000,
+			"changed": "2013-04-11T08:31:00.181Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 575,
+			"active": true,
+			"changed": "2014-01-28T13:47:52.301Z",
+			"changedBy": 10000,
+			"created": "2013-04-15T13:21:50.059Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4124,
+			"name": "Satellite image - reference",
+			"symbologies": [],
+			"topic": 1531,
+			"layerType": "raster"
+		},
+		{
+			"_id": 605,
+			"name": "AOI-roaddata",
+			"justVisualization": true,
+			"created": "2013-04-16T09:55:39.123Z",
+			"createdBy": 10000,
+			"changed": "2013-04-16T09:55:45.523Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 606,
+			"active": true,
+			"changed": "2013-07-21T14:01:58.425Z",
+			"changedBy": 10000,
+			"created": "2013-04-16T09:55:52.726Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"name": "ADM1-CCOUZ-roaddata",
+			"symbologies": [],
+			"topic": 1654,
+			"layerType": "raster"
+		},
+		{
+			"_id": 607,
+			"name": "ADM2-roaddata",
+			"justVisualization": true,
+			"created": "2013-04-16T09:55:58.141Z",
+			"createdBy": 10000,
+			"changed": "2013-04-16T09:55:58.141Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 608,
+			"name": "ADM3-roaddata",
+			"justVisualization": true,
+			"created": "2013-04-16T09:56:03.406Z",
+			"createdBy": 10000,
+			"changed": "2013-04-16T09:56:03.406Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 609,
+			"name": "ADM4-roaddata",
+			"justVisualization": true,
+			"created": "2013-04-16T09:56:11.084Z",
+			"createdBy": 10000,
+			"changed": "2013-04-16T09:56:11.084Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 633,
+			"name": "CityFootprints",
+			"justVisualization": true,
+			"created": "2013-04-18T14:23:02.151Z",
+			"createdBy": 10000,
+			"changed": "2013-04-18T14:24:24.943Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 634,
+			"name": "NewDevelopment",
+			"justVisualization": true,
+			"created": "2013-04-18T14:24:33.651Z",
+			"createdBy": 10000,
+			"changed": "2013-04-18T14:24:33.651Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 650,
+			"active": true,
+			"changed": "2014-01-28T13:48:10.607Z",
+			"changedBy": 10000,
+			"created": "2013-05-03T09:48:00.909Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "Land cover change",
+			"symbologies": [
+				1352
+			],
+			"topic": 1649,
+			"layerType": "vector"
+		},
+		{
+			"_id": 795,
+			"active": true,
+			"changed": "2014-01-28T13:48:24.987Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T10:03:26.910Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "Road network",
+			"symbologies": [
+				""
+			],
+			"topic": 1978,
+			"layerType": "vector"
+		},
+		{
+			"_id": 846,
+			"active": true,
+			"changed": "2013-08-23T13:31:14.216Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T12:51:08.710Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "Hospitals",
+			"symbologies": [
+				""
+			],
+			"topic": 1654,
+			"layerType": "vector"
+		},
+		{
+			"_id": 847,
+			"name": "Geology",
+			"justVisualization": false,
+			"active": true,
+			"created": "2013-05-10T12:51:13.336Z",
+			"createdBy": 10000,
+			"changed": "2013-05-10T12:51:13.336Z",
+			"changedBy": 10000,
+			"layerType": "vector"
+		},
+		{
+			"_id": 1426,
+			"active": true,
+			"changed": "2013-06-03T09:18:17.819Z",
+			"changedBy": 10000,
+			"created": "2013-05-31T13:07:57.377Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"name": "Countries",
+			"layerType": "au"
+		},
+		{
+			"_id": 1431,
+			"name": "GADM1",
+			"justVisualization": false,
+			"active": true,
+			"created": "2013-05-31T13:10:47.971Z",
+			"createdBy": 10000,
+			"changed": "2013-05-31T13:10:47.971Z",
+			"changedBy": 10000,
+			"layerType": "vector"
+		},
+		{
+			"_id": 1503,
+			"name": "Counties",
+			"justVisualization": false,
+			"active": true,
+			"created": "2013-06-07T03:35:31.910Z",
+			"createdBy": 10000,
+			"changed": "2013-06-07T03:35:31.910Z",
+			"changedBy": 10000,
+			"layerType": "au"
+		},
+		{
+			"_id": 2559,
+			"active": true,
+			"changed": "2014-01-28T13:47:49.349Z",
+			"changedBy": 10000,
+			"created": "2013-09-01T15:40:20.854Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4123,
+			"name": "Population grid",
+			"symbologies": [],
+			"topic": 3274,
+			"layerType": "raster"
+		},
+		{
+			"_id": 2646,
+			"active": true,
+			"changed": "2014-01-28T13:47:45.783Z",
+			"changedBy": 10000,
+			"created": "2013-09-01T15:51:48.657Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4124,
+			"name": "Satellite image - alternative",
+			"symbologies": [],
+			"topic": 1531,
+			"layerType": "raster"
+		},
+		{
+			"_id": 3229,
+			"active": true,
+			"changed": "2014-01-28T13:47:25.376Z",
+			"changedBy": 10000,
+			"created": "2013-09-09T19:48:54.090Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4123,
+			"name": "Population grid",
+			"symbologies": [],
+			"topic": 3274,
+			"layerType": "raster"
+		},
+		{
+			"_id": 3664,
+			"active": true,
+			"changed": "2014-01-28T13:47:42.387Z",
+			"changedBy": 10000,
+			"created": "2013-12-03T11:29:58.178Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4123,
+			"name": "Urban expansion grid",
+			"symbologies": [],
+			"topic": 2652,
+			"layerType": "raster"
+		},
+		{
+			"_id": 3722,
+			"active": true,
+			"changed": "2014-02-28T13:49:11.440Z",
+			"changedBy": 10000,
+			"created": "2013-12-03T12:57:03.926Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4123,
+			"name": "Population density grid",
+			"symbologies": [],
+			"topic": 3273,
+			"layerType": "raster"
+		},
+		{
+			"_id": 3782,
+			"name": "globreg",
+			"justVisualization": false,
+			"active": true,
+			"symbologies": [
+				""
+			],
+			"topic": "",
+			"created": "2013-12-03T16:12:41.444Z",
+			"createdBy": 10000,
+			"changed": "2013-12-03T16:12:41.444Z",
+			"changedBy": 10000,
+			"layerType": "vector"
+		},
+		{
+			"_id": 3852,
+			"active": true,
+			"changed": "2014-01-28T13:48:22.051Z",
+			"changedBy": 10000,
+			"created": "2013-12-30T15:05:27.149Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "Possible low-income settlements (areals)",
+			"symbologies": [
+				""
+			],
+			"topic": 3274,
+			"layerType": "vector"
+		},
+		{
+			"_id": 3853,
+			"active": true,
+			"changed": "2014-01-28T13:48:15.952Z",
+			"changedBy": 10000,
+			"created": "2013-12-30T15:06:34.400Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "Possible low-income settlements (mid-points)",
+			"symbologies": [],
+			"topic": 3274,
+			"layerType": "vector"
+		},
+		{
+			"_id": 4055,
+			"name": "Continent",
+			"justVisualization": false,
+			"active": true,
+			"symbologies": [],
+			"topic": null,
+			"layerGroup": "",
+			"created": "2014-01-13T11:35:51.515Z",
+			"createdBy": 10000,
+			"changed": "2014-01-13T11:35:51.515Z",
+			"changedBy": 10000,
+			"layerType": "vector"
+		},
+		{
+			"_id": 4074,
+			"active": true,
+			"changed": "2014-01-28T13:47:55.068Z",
+			"changedBy": 10000,
+			"created": "2014-01-13T13:10:36.353Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4123,
+			"name": "Urban Areas ",
+			"symbologies": [],
+			"topic": 4059,
+			"layerType": "raster"
+		},
+		{
+			"_id": 4094,
+			"name": "Global urban footprint",
+			"justVisualization": true,
+			"active": true,
+			"symbologies": [],
+			"topic": 4074,
+			"layerGroup": 4123,
+			"created": "2014-01-15T12:31:23.935Z",
+			"createdBy": 10000,
+			"changed": "2014-01-28T13:48:00.824Z",
+			"changedBy": 10000,
+			"layerType": "raster"
+		},
+		{
+			"_id": 5083,
+			"active": true,
+			"changed": "2015-05-26T11:28:44.690Z",
+			"changedBy": 10000,
+			"created": "2015-05-11T14:35:26.469Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "EOW2 Land cover",
+			"symbologies": [
+				5148,
+				5149,
+				5150
+			],
+			"topic": 5074,
+			"layerType": "vector"
+		},
+		{
+			"_id": 5289,
+			"active": true,
+			"changed": "2016-04-26T16:52:50.020Z",
+			"changedBy": 1,
+			"created": "2015-05-20T17:21:41.926Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "EOW2 Land cover change",
+			"symbologies": [
+				5484,
+				5485
+			],
+			"topic": 5290,
+			"layerType": "vector"
+		},
+		{
+			"_id": 5501,
+			"active": true,
+			"changed": "2015-05-27T09:16:08.831Z",
+			"changedBy": 10000,
+			"created": "2015-05-27T09:15:53.043Z",
+			"createdBy": 10000,
+			"justVisualization": true,
+			"layerGroup": 4124,
+			"name": "EOW2 Satellite image - reference",
+			"symbologies": [],
+			"topic": 5500,
+			"layerType": "raster"
+		},
+		{
+			"_id": 5524,
+			"name": "GADM",
+			"justVisualization": false,
+			"active": true,
+			"symbologies": [
+				""
+			],
+			"topic": "",
+			"layerGroup": "",
+			"created": "2015-06-02T15:03:44.477Z",
+			"createdBy": 10000,
+			"changed": "2015-06-02T15:03:44.477Z",
+			"changedBy": 10000,
+			"layerType": "au"
+		},
+		{
+			"_id": 6260,
+			"name": "Bus stops",
+			"layerType": "vector",
+			"active": false,
+			"created": "2016-04-05T23:50:42.308Z",
+			"createdBy": 21,
+			"changed": "2016-04-05T23:50:42.308Z",
+			"changedBy": 21
+		},
+		{
+			"_id": 652,
+			"active": true,
+			"changed": "2016-05-23T11:39:29.927Z",
+			"changedBy": 1,
+			"created": "2013-05-03T10:02:38.074Z",
+			"createdBy": 10000,
+			"justVisualization": false,
+			"layerGroup": 4123,
+			"name": "Land cover",
+			"symbologies": [
+				1276,
+				1322,
+				1304
+			],
+			"topic": 1534,
+			"layerType": "vector",
+			"attributeSets": [
+				435
+			]
+		}
+	],
+	"success": true
+}

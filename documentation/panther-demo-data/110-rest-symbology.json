@@ -1,0 +1,225 @@
+{
+	"data": [
+		{
+			"_id": 1259,
+			"active": true,
+			"changed": "2013-05-16T08:39:06.551Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.034Z",
+			"createdBy": 10000,
+			"name": "Population development 2000 > 2010 (%)",
+			"symbologyName": "population_development_p"
+		},
+		{
+			"_id": 1274,
+			"active": true,
+			"changed": "2013-05-16T09:17:28.314Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.046Z",
+			"createdBy": 10000,
+			"name": "Share of urban greenery in artificial areas (%)",
+			"symbologyName": "14_percentage"
+		},
+		{
+			"_id": 1276,
+			"active": true,
+			"changed": "2013-12-02T10:51:51.537Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.047Z",
+			"createdBy": 10000,
+			"name": "detailed",
+			"symbologyName": "status_L3",
+			"topic": 1534
+		},
+		{
+			"_id": 1304,
+			"active": true,
+			"changed": "2013-08-23T14:50:57.491Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.062Z",
+			"createdBy": 10000,
+			"name": "Urban Fabric",
+			"symbologyName": "urban_fabric",
+			"topic": 1534
+		},
+		{
+			"_id": 1307,
+			"active": false,
+			"changed": "2013-05-16T08:36:42.963Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.063Z",
+			"createdBy": 10000,
+			"name": "Share of artificial land in AU (%)",
+			"symbologyName": "1_percentage"
+		},
+		{
+			"_id": 1308,
+			"active": true,
+			"changed": "2013-05-16T08:38:56.303Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.063Z",
+			"createdBy": 10000,
+			"name": "Population density of urban fabric (persons/ha)",
+			"symbologyName": "population_density_per_UF"
+		},
+		{
+			"_id": 1313,
+			"active": true,
+			"changed": "2013-05-16T08:35:17.518Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.064Z",
+			"createdBy": 10000,
+			"name": "Share of urban fabric in artificial areas (%)",
+			"symbologyName": "11_percentage"
+		},
+		{
+			"_id": 1317,
+			"active": true,
+			"changed": "2013-05-16T08:35:47.853Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.065Z",
+			"createdBy": 10000,
+			"name": "Share of commercial/industrial/transportation units in artificial areas (%)",
+			"symbologyName": "12_percentage"
+		},
+		{
+			"_id": 1319,
+			"active": true,
+			"changed": "2013-05-16T08:42:05.926Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.065Z",
+			"createdBy": 10000,
+			"name": "Roads by type",
+			"symbologyName": "roads2"
+		},
+		{
+			"_id": 1321,
+			"active": true,
+			"changed": "2013-05-16T08:37:53.868Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.065Z",
+			"createdBy": 10000,
+			"name": "Road density",
+			"symbologyName": "road_density"
+		},
+		{
+			"_id": 1322,
+			"active": true,
+			"changed": "2013-12-02T10:57:23.032Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.066Z",
+			"createdBy": 10000,
+			"name": "aggregated",
+			"symbologyName": "status_L1",
+			"topic": 1534
+		},
+		{
+			"_id": 1329,
+			"active": true,
+			"changed": "2013-05-16T09:17:46.859Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.069Z",
+			"createdBy": 10000,
+			"name": "Urban sprawl/artificial land 2000 (%)",
+			"symbologyName": "sprawl_percentage"
+		},
+		{
+			"_id": 1337,
+			"active": true,
+			"changed": "2013-05-16T08:38:47.097Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.070Z",
+			"createdBy": 10000,
+			"name": "Population density (persons/ha)",
+			"symbologyName": "population_density"
+		},
+		{
+			"_id": 1339,
+			"active": true,
+			"changed": "2013-12-16T15:44:09.809Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.070Z",
+			"createdBy": 10000,
+			"name": "Change unique",
+			"symbologyName": "change_unique",
+			"topic": 1531
+		},
+		{
+			"_id": 1344,
+			"active": true,
+			"changed": "2013-05-16T08:37:31.923Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.072Z",
+			"createdBy": 10000,
+			"name": "Percentage of change area in AU (%)",
+			"symbologyName": "change_percentage"
+		},
+		{
+			"_id": 1352,
+			"active": true,
+			"changed": "2013-12-16T16:05:27.056Z",
+			"changedBy": 10000,
+			"created": "2013-05-15T12:10:54.073Z",
+			"createdBy": 10000,
+			"name": "Flows",
+			"symbologyName": "change_LCF",
+			"topic": 1531
+		},
+		{
+			"_id": 5148,
+			"active": true,
+			"changed": "2015-05-26T11:30:22.909Z",
+			"changedBy": 10000,
+			"created": "2015-05-14T12:33:45.740Z",
+			"createdBy": 10000,
+			"name": "EOW2 detailed",
+			"symbologyName": "EOW2_status_L3",
+			"topic": 5074
+		},
+		{
+			"_id": 5149,
+			"name": "EOW2 aggregated",
+			"symbologyName": "status_L1",
+			"active": true,
+			"topic": 5074,
+			"created": "2015-05-14T12:34:23.171Z",
+			"createdBy": 10000,
+			"changed": "2015-05-14T12:34:23.171Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5150,
+			"active": true,
+			"changed": "2015-05-26T15:21:05.749Z",
+			"changedBy": 10000,
+			"created": "2015-05-14T12:34:53.159Z",
+			"createdBy": 10000,
+			"name": "EOW2 Urban Fabric",
+			"symbologyName": "EOW2_urban_fabric",
+			"topic": 5074
+		},
+		{
+			"_id": 5484,
+			"name": "EOW2 LCF level1",
+			"symbologyName": "EOW2_LCF_level1",
+			"active": true,
+			"topic": 5290,
+			"created": "2015-05-26T15:46:11.908Z",
+			"createdBy": 10000,
+			"changed": "2015-05-26T15:46:11.908Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5485,
+			"name": "EOW2 LCF level2",
+			"symbologyName": "EOW2_LCF_level2",
+			"active": true,
+			"topic": 5290,
+			"created": "2015-05-26T15:46:20.985Z",
+			"createdBy": 10000,
+			"changed": "2015-05-26T15:46:20.985Z",
+			"changedBy": 10000
+		}
+	],
+	"success": true
+}

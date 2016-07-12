@@ -1,5 +1,5 @@
 module.exports = {
-	localHost       : "127.0.0.1",
+	localHost       : "localhost",
 	localPort       : 4000,
 	localPath       : "/",
 
@@ -30,13 +30,15 @@ module.exports = {
 
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
-	geonodePort		: 80,
-	geonodePath     : "",
-	geonodeHome     : "/",
+	geonodePort			: 80,
+	geonodePath     : "/geonode",
+	geonodeHome     : "/geonode/",
+
+	googleAnalyticsTracker: '',
+	googleAnalyticsCookieDomain: 'auto',
+	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
 
 	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
-
-	debug: true,
 
 	toggles: {
 		noGeoserverLayerGroups: false,
@@ -76,5 +78,12 @@ module.exports = {
 	/*
 	 * UrbanTep - Approximate pixel size in input tif file, m^2
 	 */
-	urbanTepTifPixelSize: 75*75
+	urbanTepTifPixelSize: 75*75,
+
+	/*
+	* Environment in which is the application run. The used libraries will differ.
+	* Allowed values: 'production', 'development'
+	* If no value is present production will be used
+	*/
+	environment: 'production'
 };

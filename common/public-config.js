@@ -6,7 +6,10 @@ module.exports = function(request, response, next){
 		signupAddress: config.geonodeProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + config.geonodePath + '/account/signup/',
 		geoserver2Workspace: config.geoserver2Workspace,
 		initialBaseMap: config.initialBaseMap,
-		toggles: config.toggles
+		toggles: config.toggles,
+		googleAnalyticsTracker: config.googleAnalyticsTracker,
+		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain,
+		environment: config.environment
 	};
 	response.end('var Config = ' + JSON.stringify(Config));
 

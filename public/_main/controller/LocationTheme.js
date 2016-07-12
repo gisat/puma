@@ -95,7 +95,7 @@ Ext.define('PumaMain.controller.LocationTheme', {
             function(rec) {
                 return rec.get('id') == 'custom' || rec.get('dataset')==val || (!rec.get('dataset') && locCount>1);
             }
-        ]); 
+        ]);
         locationCombo.show();
         var first = locStore.findRecord('id','2450_1') || locStore.getAt(0);
         if (first && !cnt.initial) {

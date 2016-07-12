@@ -131,8 +131,7 @@ function wms(params, req, res, callback) {
 			createLayerGroup(layers,style);
 		}
 		method = 'GET';
-		port = null; //// JJJJJ Proc to?
-
+		
 	}else{
 		//console.log("useFirst: ", useFirst, "params[request]:",params['request']);
 	}
