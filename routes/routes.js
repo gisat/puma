@@ -68,22 +68,88 @@ module.exports = function(app) {
 		});
 	});
 
+	/**
+	 * It sets up the object type used in specific collection.
+	 */
+	app.put('/rest/:objectType', function(req, res, next){
+		req.objectType = req.params.objectType;
+		next();
+	});
+
+	app.put('/rest/theme', function(req, res, next){
+		// Whenever you create new theme also create associated topic, which must be used everywhere. What are the dependencies in the backend. In frontend it is relevant to associate correct years and stuff.
+		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
+
+		var parameters = {
+			userId: req.userId,
+			isAdmin: req.isAdmin
+		};
+		var theme = req.body.data;
+		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
+			if (err) {
+				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
+					"With data: ", theme, " Error:", err);
+				return next(err);
+			}
+
+			if(scopes.length > 1) {
+				return next(new Error('Either multiple Scopes with the same Id or multiple Scopes specified for one Theme.'));
+			} else if(scopes.length == 1) {
+				// Use the years from associated Scope, if such Scope already exists. If it doesn't the years are handle by the frontend.
+				theme.years = scopes[0].years;
+			}
+
+			crud.create(req.objectType, theme, parameters, function (err, result) {
+				if (err) {
+					logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
+						"With data: ", theme, " Error:", err);
+					return next(err);
+				} else {
+					res.data = result;
+
+					return next();
+				}
+			});
+		});
+	});
 
 	// new backoffice
-	app.put('/rest/:objType',function(req,res,next) {
-		logger.info("Update object of type: ", req.params.objType, " by User: ", req.userId, "With data: ", req.body.data);
+	function updateStandardRestObject(req,res,next) {
+		logger.info("Update object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
 		var obj = req.body.data;
 
-		crud.update(req.params.objType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
+		crud.update(req.objectType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err){
-				logger.error("It wasn't possible to update object of type: ", req.params.objType, " by User: ", req.userId,
+				logger.error("It wasn't possible to update object of type: ", req.objectType, " by User: ", req.userId,
 					"With data: ", req.body.data, " Error:", err);
 				return next(err);
 			}
 			res.data = result;
 			next();
 		});
-	});
+	}
+
+	app.put('/rest/dataset', updateStandardRestObject);
+	app.put('/rest/scope', updateStandardRestObject);
+
+	app.put('/rest/layergroup', updateStandardRestObject);
+	app.put('/rest/layergroupgs', updateStandardRestObject);
+	app.put('/rest/dataview', updateStandardRestObject);
+	app.put('/rest/chartcfg', updateStandardRestObject);
+	app.put('/rest/viewcfg', updateStandardRestObject);
+	app.put('/rest/userpolygon', updateStandardRestObject);
+	app.put('/rest/topic', updateStandardRestObject);
+	app.put('/rest/analysis', updateStandardRestObject);
+	app.put('/rest/performedanalysis', updateStandardRestObject);
+	app.put('/rest/visualization', updateStandardRestObject);
+	app.put('/rest/location', updateStandardRestObject);
+	app.put('/rest/attributeset', updateStandardRestObject);
+	app.put('/rest/attribute', updateStandardRestObject);
+	app.put('/rest/layerref', updateStandardRestObject);
+	app.put('/rest/areatemplate', updateStandardRestObject);
+	app.put('/rest/year', updateStandardRestObject);
+
+
 	// old backoffice
 	app.put('/rest/:objType/:objId',function(req,res,next) {
 		var obj = req.body.data;
@@ -133,46 +199,10 @@ module.exports = function(app) {
 		});
 	});
 
-	app.post('/rest/theme', function(req, res, next){
-		// Whenever you create new theme also create associated topic, which must be used everywhere. What are the dependencies in the backend. In frontend it is relevant to associate correct years and stuff.
-		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
-
-		var parameters = {
-			userId: req.userId,
-			isAdmin: req.isAdmin
-		};
-		var theme = req.body.data;
-		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
-			if (err) {
-				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
-					"With data: ", theme, " Error:", err);
-				return next(err);
-			}
-
-			if(scopes.length > 1) {
-				return next(new Error('Either multiple Scopes with the same Id or multiple Scopes specified for one Theme.'));
-			} else if(scopes.length == 1) {
-				// Use the years from associated Scope, if such Scope already exists. If it doesn't the years are handle by the frontend.
-				theme.years = scopes[0].years;
-			}
-
-			crud.create(req.objectType, theme, parameters, function (err, result) {
-				if (err) {
-					logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
-						"With data: ", theme, " Error:", err);
-					return next(err);
-				} else {
-					res.data = result;
-
-					return next();
-				}
-			});
-		});
-	});
-
 	app.post('/rest/dataset', createStandardRestObject);
 	app.post('/rest/scope', createStandardRestObject);
 
+	app.post('/rest/theme', createStandardRestObject);
 	app.post('/rest/layergroup', createStandardRestObject);
 	app.post('/rest/layergroupgs', createStandardRestObject);
 	app.post('/rest/dataview', createStandardRestObject);
