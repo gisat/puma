@@ -83,7 +83,7 @@ module.exports = function(app) {
 	 * It sets up the object type used in specific collection.
 	 */
 	app.post('/rest/:objectType', function(req, res, next){
-		req.params.objType = req.params.objectType;
+		req.objectType = req.params.objectType;
 		next();
 	});
 
@@ -132,8 +132,8 @@ module.exports = function(app) {
 	app.post('/rest/year', createStandardRestObject);
 
 	function createStandardRestObject(req, res, next) {
-		logger.info("Create object of type: ", req.params.objType, " by User: ", req.userId, "With data: ", req.body.data);
-		crud.create(req.params.objType,req.body.data,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
+		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
+		crud.create(req.objectType,req.body.data,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err){
 				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
 					"With data: ", req.body.data, " Error:", err);
