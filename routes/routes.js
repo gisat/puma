@@ -133,14 +133,52 @@ module.exports = function(app) {
 		});
 	});
 
+	app.post('/rest/theme', function(req, res, next){
+		// Whenever you create new theme also create associated topic, which must be used everywhere. What are the dependencies in the backend. In frontend it is relevant to associate correct years and stuff.
+		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
+
+		var parameters = {
+			userId: req.userId,
+			isAdmin: req.isAdmin
+		};
+		var theme = req.body.data;
+		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
+			if (err) {
+				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
+					"With data: ", theme, " Error:", err);
+				return next(err);
+			}
+
+			if(scopes.length > 1) {
+				return next(new Error('Either multiple Scopes with the same Id or multiple Scopes specified for one Theme.'));
+			} else if(scopes.length == 0) {
+				return next(new Error('There is no Scope with Id: ' + theme.dataset));
+			}
+
+			theme.years = scopes[0].years;
+			crud.create(req.objectType, theme, parameters, function (err, result) {
+				if (err) {
+					logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
+						"With data: ", theme, " Error:", err);
+					return next(err);
+				} else {
+					res.data = result;
+
+					return next();
+				}
+			});
+		});
+	});
+
+	app.post('/rest/dataset', createStandardRestObject);
+	app.post('/rest/scope', createStandardRestObject);
+
 	app.post('/rest/layergroup', createStandardRestObject);
 	app.post('/rest/layergroupgs', createStandardRestObject);
 	app.post('/rest/dataview', createStandardRestObject);
 	app.post('/rest/chartcfg', createStandardRestObject);
 	app.post('/rest/viewcfg', createStandardRestObject);
 	app.post('/rest/userpolygon', createStandardRestObject);
-	app.post('/rest/dataset', createStandardRestObject);
-	app.post('/rest/scope', createStandardRestObject);
 	app.post('/rest/topic', createStandardRestObject);
 	app.post('/rest/analysis', createStandardRestObject);
 	app.post('/rest/performedanalysis', createStandardRestObject);
@@ -149,14 +187,13 @@ module.exports = function(app) {
 	app.post('/rest/attributeset', createStandardRestObject);
 	app.post('/rest/attribute', createStandardRestObject);
 	app.post('/rest/layerref', createStandardRestObject);
-	app.post('/rest/theme', createStandardRestObject);
 	app.post('/rest/areatemplate', createStandardRestObject);
 	app.post('/rest/year', createStandardRestObject);
 
 	function createStandardRestObject(req, res, next) {
 		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
-		crud.create(req.objectType,req.body.data,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err){
+		crud.create(req.objectType, req.body.data, {userId: req.userId, isAdmin: req.isAdmin}, function (err, result) {
+			if (err) {
 				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
 					"With data: ", req.body.data, " Error:", err);
 				return next(err);
