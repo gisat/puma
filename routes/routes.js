@@ -186,6 +186,11 @@ module.exports = function(app) {
 			next(err);
 		}
 	});
+
+	app.get('/api/verify/scope/:id', function(req, res, next){
+		// Load information about Scope and all associated Entities.
+		// 
+	});
 	
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
