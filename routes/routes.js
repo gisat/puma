@@ -19,6 +19,28 @@ var api = {
 };
 
 module.exports = function(app) {
+	app.get('/restricted/rest/:objectType', function (req, res, next) {
+		var objectType = req.params.objectType;
+		logger.info("Requested restricted collection of type: ", objectType, " By User: ", req.userId);
+
+		if (objectType != 'dataset' && objectType != 'scope') {
+			return next(new Error('It is forbidden to use restricted for different type of objects.'));
+		}
+
+		crud.readRestricted(objectType, {
+			userId: req.userId,
+			justMine: req.query['justMine']
+		}, function (err, result) {
+			if (err) {
+				logger.error("It wasn't possible to read restricted collection:", objectType, " by User:", req.userId, " Error: ", err);
+				next(err);
+			} else {
+				res.data = result;
+				next();
+			}
+		});
+	});
+
 	app.get('/rest/:objType',function(req,res,next) {
 		logger.info("Requested collection of type: ", req.params.objType, " By User: ", req.userId);
 		//var filter = req.query.filter ? JSON.parse(req.query.filter) : {};
