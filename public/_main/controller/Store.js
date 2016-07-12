@@ -114,7 +114,14 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Ext.data.Store',{
             storeId: 'scope',
             autoLoad: true,
-            model: 'Puma.model.Scope'
+            model: 'Puma.model.Scope',
+
+            filters: [
+                {
+                    property: 'active',
+                    value   : true
+                }
+            ]
         })
     
         Ext.create('Ext.data.Store',{
@@ -143,7 +150,14 @@ Ext.define('PumaMain.controller.Store', {
         Ext.create('Ext.data.Store',{
             storeId: 'dataset',
             autoLoad: true,
-            model: 'Puma.model.Dataset'
+            model: 'Puma.model.Dataset',
+
+            filters: [
+                {
+                    property: 'active',
+                    value   : true
+                }
+            ]
         })
         Ext.create('Ext.data.Store',{
             storeId: 'topic',
