@@ -99,7 +99,7 @@ module.exports = function(app) {
 				theme.years = scopes[0].years;
 			}
 
-			crud.create(req.objectType, theme, parameters, function (err, result) {
+			crud.update(req.objectType, theme, parameters, function (err, result) {
 				if (err) {
 					logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
 						"With data: ", theme, " Error:", err);
