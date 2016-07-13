@@ -1,0 +1,63 @@
+{
+	"data": [
+		{
+			"_id": 1532,
+			"active": true,
+			"changed": "2014-10-03T13:50:45.299Z",
+			"changedBy": 10000,
+			"created": "2013-06-13T14:50:14.354Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				279,
+				280,
+				281,
+				282,
+				283
+			],
+			"name": "Local"
+		},
+		{
+			"_id": 2449,
+			"active": true,
+			"changed": "2013-12-03T10:16:21.636Z",
+			"changedBy": 10000,
+			"created": "2013-08-27T17:36:16.718Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				1426,
+				376,
+				377,
+				1503
+			],
+			"name": "National"
+		},
+		{
+			"_id": 3213,
+			"active": true,
+			"changed": "2013-12-03T16:16:49.948Z",
+			"changedBy": 10000,
+			"created": "2013-09-09T13:42:52.873Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				279,
+				376,
+				377
+			],
+			"name": "Regional"
+		},
+		{
+			"_id": 5011,
+			"active": true,
+			"changed": "2015-06-02T15:03:54.092Z",
+			"changedBy": 10000,
+			"created": "2015-04-27T09:06:10.024Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				377,
+				5524
+			],
+			"name": "Local (EOWorld2)"
+		}
+	],
+	"success": true
+}

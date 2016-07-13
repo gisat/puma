@@ -1,0 +1,2343 @@
+{
+	"data": [
+		{
+			"_id": 5962,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					278
+				],
+				"dataset": 1532,
+				"theme": 1365,
+				"visualization": 5937,
+				"location": "1870_16",
+				"expanded": {
+					"1870": {
+						"279": [
+							16
+						]
+					}
+				},
+				"selMap": {
+					"ff4c39": []
+				},
+				"choroplethCfg": [
+					{
+						"as": 343,
+						"attr": 313,
+						"normType": "area",
+						"normAs": "",
+						"normAttr": "",
+						"normYear": "",
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 5,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Share of artificial area (%) ",
+						"topic": "",
+						"parentId": null,
+						"index": 0,
+						"depth": 0,
+						"expanded": false,
+						"expandable": true,
+						"leaf": false,
+						"cls": "",
+						"iconCls": "",
+						"icon": "",
+						"root": false,
+						"isLast": false,
+						"isFirst": false,
+						"allowDrop": true,
+						"allowDrag": true,
+						"loaded": false,
+						"loading": false,
+						"href": "",
+						"hrefTarget": "",
+						"qtip": "",
+						"qtitle": "",
+						"children": null,
+						"attrName": "Artificial areas",
+						"asName": "Aggregated LC classes",
+						"treeNodeText": "Artificial areas"
+					},
+					{
+						"as": 321,
+						"attr": 303,
+						"normType": "area",
+						"normAs": "",
+						"normAttr": "",
+						"normYear": "",
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 5,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Share of agricultural land (%)",
+						"topic": "",
+						"parentId": null,
+						"index": 0,
+						"depth": 0,
+						"expanded": false,
+						"expandable": true,
+						"leaf": false,
+						"cls": "",
+						"iconCls": "",
+						"icon": "",
+						"root": false,
+						"isLast": false,
+						"isFirst": false,
+						"allowDrop": true,
+						"allowDrag": true,
+						"loaded": false,
+						"loading": false,
+						"href": "",
+						"hrefTarget": "",
+						"qtip": "",
+						"qtitle": "",
+						"children": null,
+						"attrName": "Agricultural Land",
+						"asName": "Land Cover classes L3",
+						"treeNodeText": "Agricultural Land"
+					},
+					{
+						"as": 343,
+						"attr": 315,
+						"normType": "area",
+						"normAs": "",
+						"normAttr": "",
+						"normYear": "",
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 5,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Share of (semi) natural areas (%)",
+						"topic": "",
+						"parentId": null,
+						"index": 0,
+						"depth": 0,
+						"expanded": false,
+						"expandable": true,
+						"leaf": false,
+						"cls": "",
+						"iconCls": "",
+						"icon": "",
+						"root": false,
+						"isLast": false,
+						"isFirst": false,
+						"allowDrop": true,
+						"allowDrag": true,
+						"loaded": false,
+						"loading": false,
+						"href": "",
+						"hrefTarget": "",
+						"qtip": "",
+						"qtitle": "",
+						"children": null,
+						"attrName": "Natural and semi-natural areas",
+						"asName": "Aggregated LC classes",
+						"treeNodeText": "Natural and semi-natural areas"
+					},
+					{
+						"as": 321,
+						"attr": 304,
+						"normType": "area",
+						"normAs": "",
+						"normAttr": "",
+						"normYear": "",
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": 3,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Share of forest land (%)",
+						"topic": "",
+						"parentId": null,
+						"index": 0,
+						"depth": 0,
+						"expanded": false,
+						"expandable": true,
+						"leaf": false,
+						"cls": "",
+						"iconCls": "",
+						"icon": "",
+						"root": false,
+						"isLast": false,
+						"isFirst": false,
+						"allowDrop": true,
+						"allowDrag": true,
+						"loaded": false,
+						"loading": false,
+						"href": "",
+						"hrefTarget": "",
+						"qtip": "",
+						"qtitle": "",
+						"children": null,
+						"attrName": "Forest",
+						"asName": "Land Cover classes L3",
+						"treeNodeText": "Forest"
+					}
+				],
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "topiclayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": 652,
+						"symbologyId": "status_L1"
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 11859396.454016,
+						"lat": 2373547.1806413
+					},
+					"zoom": 14
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Land cover types - structure",
+							"type": "piechart",
+							"attrs": [
+								{
+									"as": 343,
+									"attr": 313,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Artificial areas",
+									"asName": "Aggregated LC classes"
+								},
+								{
+									"as": 321,
+									"attr": 303,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Agricultural Land",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 343,
+									"attr": 315,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Natural and semi-natural areas",
+									"asName": "Aggregated LC classes"
+								},
+								{
+									"as": 343,
+									"attr": 316,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Water",
+									"asName": "Aggregated LC classes"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 7945263
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Land cover types - percentage of total area",
+							"type": "grid",
+							"attrs": [
+								{
+									"as": 343,
+									"attr": 313,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Artificial areas",
+									"asName": "Aggregated LC classes"
+								},
+								{
+									"as": 321,
+									"attr": 303,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Agricultural Land",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 343,
+									"attr": 315,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Natural and semi-natural areas",
+									"asName": "Aggregated LC classes"
+								},
+								{
+									"as": 343,
+									"attr": 316,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Water",
+									"asName": "Aggregated LC classes"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 628680
+						},
+						"queryCfg": {
+							"sort": null
+						}
+					},
+					{
+						"cfg": {
+							"title": "Artificial land x Natural areas",
+							"type": "scatterchart",
+							"attrs": [
+								{
+									"as": 343,
+									"attr": 313,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Artificial areas",
+									"asName": "Aggregated LC classes"
+								},
+								{
+									"as": 343,
+									"attr": 315,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Natural and semi-natural areas",
+									"asName": "Aggregated LC classes"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 5359570
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					}
+				]
+			},
+			"created": "2015-10-08T16:38:22.964Z",
+			"createdBy": 1,
+			"changed": "2015-10-08T16:38:22.964Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 5964,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					278
+				],
+				"dataset": 1532,
+				"theme": 1979,
+				"visualization": 5931,
+				"location": "1869_25",
+				"expanded": {
+					"1869": {
+						"279": [
+							25
+						]
+					}
+				},
+				"selMap": {
+					"ff4c39": [
+						{
+							"at": 280,
+							"gid": 456,
+							"loc": 1869
+						}
+					]
+				},
+				"choroplethCfg": [
+					{
+						"as": 2333,
+						"attr": 585,
+						"normType": null,
+						"normAs": null,
+						"normAttr": null,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 3,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Average road width (meters)",
+						"topic": "",
+						"parentId": null,
+						"index": 0,
+						"depth": 0,
+						"expanded": false,
+						"expandable": true,
+						"leaf": false,
+						"cls": "",
+						"iconCls": "",
+						"icon": "",
+						"root": false,
+						"isLast": false,
+						"isFirst": false,
+						"allowDrop": true,
+						"allowDrag": true,
+						"loaded": false,
+						"loading": false,
+						"href": "",
+						"hrefTarget": "",
+						"qtip": "",
+						"qtitle": "",
+						"children": null,
+						"attrName": "Average Road Width",
+						"asName": "Roads length",
+						"treeNodeText": "Average Road Width"
+					},
+					{
+						"as": 2333,
+						"attr": 584,
+						"normType": "area",
+						"normAs": null,
+						"normAttr": null,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 3,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Total length of road network (meters/km2)",
+						"topic": "",
+						"parentId": null,
+						"index": 0,
+						"depth": 0,
+						"expanded": false,
+						"expandable": true,
+						"leaf": false,
+						"cls": "",
+						"iconCls": "",
+						"icon": "",
+						"root": false,
+						"isLast": false,
+						"isFirst": false,
+						"allowDrop": true,
+						"allowDrag": true,
+						"loaded": false,
+						"loading": false,
+						"href": "",
+						"hrefTarget": "",
+						"qtip": "",
+						"qtitle": "",
+						"children": null,
+						"attrName": "Total Road Length",
+						"asName": "Roads length",
+						"treeNodeText": "Total Road Length"
+					}
+				],
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterAttrs": [],
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "chartlayer",
+						"attributeSet": 2333,
+						"attribute": 585,
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 2,
+						"type": "topiclayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": 795,
+						"symbologyId": "#blank#"
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 13789852.246253,
+						"lat": 1162499.6657573
+					},
+					"zoom": 11
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Density of road network",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 591,
+									"attr": 581,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Highway",
+									"asName": "Roads type"
+								},
+								{
+									"as": 591,
+									"attr": 582,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Primary",
+									"asName": "Roads type"
+								},
+								{
+									"as": 591,
+									"attr": 583,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Secondary",
+									"asName": "Roads type"
+								},
+								{
+									"as": 591,
+									"attr": 604,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Local",
+									"asName": "Roads type"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "normal",
+							"chartId": 7914859
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Average road width",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 2333,
+									"attr": 585,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Average Road Width",
+									"asName": "Roads length"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 7979838
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Road lenght by width category",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 2332,
+									"attr": 590,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "5m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 589,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "10m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 588,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "15m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 587,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "20m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 586,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "30m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 2055,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "40m",
+									"asName": "Roads length type"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 1255074
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Road network - summary table",
+							"type": "grid",
+							"attrs": [
+								{
+									"as": 2333,
+									"attr": 585,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Average Road Width",
+									"asName": "Roads length"
+								},
+								{
+									"as": 2333,
+									"attr": 584,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Total Road Length",
+									"asName": "Roads length"
+								},
+								{
+									"as": 2332,
+									"attr": 590,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "5m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 589,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "10m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 588,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "15m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 587,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "20m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 586,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "30m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 2332,
+									"attr": 2055,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "40m",
+									"asName": "Roads length type"
+								},
+								{
+									"as": 591,
+									"attr": 581,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Highway",
+									"asName": "Roads type"
+								},
+								{
+									"as": 591,
+									"attr": 582,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Primary",
+									"asName": "Roads type"
+								},
+								{
+									"as": 591,
+									"attr": 583,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Secondary",
+									"asName": "Roads type"
+								},
+								{
+									"as": 591,
+									"attr": 604,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Local",
+									"asName": "Roads type"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 4233244
+						},
+						"queryCfg": {
+							"sort": null
+						}
+					}
+				]
+			},
+			"created": "2015-10-16T13:13:41.479Z",
+			"createdBy": 1,
+			"changed": "2015-10-16T13:13:41.479Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 6280,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					278
+				],
+				"dataset": 1532,
+				"theme": 1365,
+				"visualization": 4394,
+				"location": "1869_25",
+				"expanded": {
+					"1869": {
+						"279": [
+							25
+						]
+					}
+				},
+				"selMap": {
+					"ff4c39": []
+				},
+				"choroplethCfg": [
+					{
+						"as": 343,
+						"attr": 311,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 313,
+						"normYear": 277,
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 5,
+						"classType": "quantiles",
+						"zeroesAsNull": false,
+						"name": "Share of urban fabric (% of artificial)",
+						"attrName": "Urban fabric",
+						"asName": "Aggregated LC classes"
+					},
+					{
+						"as": 321,
+						"attr": 297,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of continuous urban fabric (% of urban fabric)",
+						"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+						"asName": "Land Cover classes L3"
+					},
+					{
+						"as": 321,
+						"attr": 298,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of high density discontinuous urban fabric (% of urban fabric)",
+						"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+						"asName": "Land Cover classes L3"
+					},
+					{
+						"as": 321,
+						"attr": 299,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of low density discontinuous urban fabric (% of urban fabric)",
+						"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+						"asName": "Land Cover classes L3"
+					}
+				],
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "topiclayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": 652,
+						"symbologyId": "urban_fabric"
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 13782093.887883,
+						"lat": 1160397.6474798
+					},
+					"zoom": 11
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Urban fabric - share and structure",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 298,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								}
+							],
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "normal",
+							"aggregate": "topall",
+							"chartId": 106895
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban fabric - high x low density (size - urban fabric total)",
+							"type": "scatterchart",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 343,
+									"attr": 311,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Urban fabric",
+									"asName": "Aggregated LC classes"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 5365818
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Structure of urban fabric (%) - summary table",
+							"type": "grid",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 298,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 2865765
+						},
+						"queryCfg": {
+							"sort": null
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban fabric footprint",
+							"type": "extentoutline",
+							"attrs": [],
+							"featureLayer": "652_urban_fabric",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 3873268
+						},
+						"queryCfg": {}
+					}
+				]
+			},
+			"created": "2016-04-27T16:16:59.643Z",
+			"createdBy": 1,
+			"changed": "2016-04-27T16:16:59.643Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 6281,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					278
+				],
+				"dataset": 1532,
+				"theme": 1365,
+				"visualization": 4394,
+				"location": "1869_25",
+				"expanded": {
+					"1869": {
+						"279": [
+							25
+						]
+					}
+				},
+				"selMap": {
+					"ff4c39": []
+				},
+				"choroplethCfg": [
+					{
+						"as": 343,
+						"attr": 311,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 313,
+						"normYear": 277,
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 5,
+						"classType": "quantiles",
+						"zeroesAsNull": false,
+						"name": "Share of urban fabric (% of artificial)",
+						"attrName": "Urban fabric",
+						"asName": "Aggregated LC classes"
+					},
+					{
+						"as": 321,
+						"attr": 297,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of continuous urban fabric (% of urban fabric)",
+						"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+						"asName": "Land Cover classes L3"
+					},
+					{
+						"as": 321,
+						"attr": 298,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of high density discontinuous urban fabric (% of urban fabric)",
+						"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+						"asName": "Land Cover classes L3"
+					},
+					{
+						"as": 321,
+						"attr": 299,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of low density discontinuous urban fabric (% of urban fabric)",
+						"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+						"asName": "Land Cover classes L3"
+					}
+				],
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "topiclayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": 652,
+						"symbologyId": "urban_fabric"
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 13782093.887883,
+						"lat": 1160397.6474798
+					},
+					"zoom": 11
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Urban fabric - share and structure",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 298,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								}
+							],
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "normal",
+							"aggregate": "topall",
+							"chartId": 106895
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban fabric - high x low density (size - urban fabric total)",
+							"type": "scatterchart",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 343,
+									"attr": 311,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Urban fabric",
+									"asName": "Aggregated LC classes"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 5365818
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Structure of urban fabric (%) - summary table",
+							"type": "grid",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 298,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 2865765
+						},
+						"queryCfg": {
+							"sort": null
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban fabric footprint",
+							"type": "extentoutline",
+							"attrs": [],
+							"featureLayer": "652_urban_fabric",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 3873268
+						},
+						"queryCfg": {}
+					}
+				]
+			},
+			"created": "2016-04-27T16:17:03.412Z",
+			"createdBy": 1,
+			"changed": "2016-04-27T16:17:03.412Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 6282,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					278
+				],
+				"dataset": 1532,
+				"theme": 1365,
+				"visualization": 4394,
+				"location": "276_1",
+				"expanded": {
+					"276": {
+						"279": [
+							1
+						]
+					}
+				},
+				"selMap": {
+					"ff4c39": []
+				},
+				"choroplethCfg": [
+					{
+						"as": 343,
+						"attr": 311,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 313,
+						"normYear": 277,
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 5,
+						"classType": "quantiles",
+						"zeroesAsNull": false,
+						"name": "Share of urban fabric (% of artificial)",
+						"attrName": "Urban fabric",
+						"asName": "Aggregated LC classes"
+					},
+					{
+						"as": 321,
+						"attr": 297,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of continuous urban fabric (% of urban fabric)",
+						"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+						"asName": "Land Cover classes L3"
+					},
+					{
+						"as": 321,
+						"attr": 298,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of high density discontinuous urban fabric (% of urban fabric)",
+						"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+						"asName": "Land Cover classes L3"
+					},
+					{
+						"as": 321,
+						"attr": 299,
+						"normType": "attribute",
+						"normAs": 343,
+						"normAttr": 311,
+						"normYear": null,
+						"attrNameNormalized": "",
+						"checked": true,
+						"numCategories": "",
+						"classType": "",
+						"zeroesAsNull": "",
+						"name": "Share of low density discontinuous urban fabric (% of urban fabric)",
+						"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+						"asName": "Land Cover classes L3"
+					}
+				],
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "chartlayer",
+						"attributeSet": 321,
+						"attribute": 297,
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 2,
+						"type": "topiclayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": 652,
+						"symbologyId": "urban_fabric"
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 12540962.079381,
+						"lat": -836400.42160085
+					},
+					"zoom": 9
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Urban fabric - share and structure",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 298,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 313,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								}
+							],
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "normal",
+							"aggregate": "topall",
+							"chartId": 106895
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban fabric - high x low density (size - urban fabric total)",
+							"type": "scatterchart",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 343,
+									"attr": 311,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Urban fabric",
+									"asName": "Aggregated LC classes"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 5365818
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Structure of urban fabric (%) - summary table",
+							"type": "grid",
+							"attrs": [
+								{
+									"as": 321,
+									"attr": 297,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Continuous Urban Fabric (S.L. > 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 298,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous High Dense Urban Fabric (S.L. 50% - 80%)",
+									"asName": "Land Cover classes L3"
+								},
+								{
+									"as": 321,
+									"attr": 299,
+									"normType": "attribute",
+									"normAs": 343,
+									"normAttr": 311,
+									"normYear": null,
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"attrName": "Discontinuous Low Dense Urban Fabric (S.L.: 10% - 50%)",
+									"asName": "Land Cover classes L3"
+								}
+							],
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 2865765
+						},
+						"queryCfg": {
+							"sort": null
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban fabric footprint",
+							"type": "extentoutline",
+							"attrs": [],
+							"featureLayer": "652_urban_fabric",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								4
+							],
+							"stacking": "none",
+							"chartId": 3873268
+						},
+						"queryCfg": {}
+					}
+				]
+			},
+			"created": "2016-04-27T16:20:31.774Z",
+			"createdBy": 1,
+			"changed": "2016-04-27T16:20:31.774Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 6301,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					278
+				],
+				"dataset": 2449,
+				"theme": 1372,
+				"visualization": 4653,
+				"location": "2450_1",
+				"expanded": {
+					"2450": {
+						"1426": [
+							1
+						]
+					}
+				},
+				"selMap": {
+					"ff4c39": []
+				},
+				"choroplethCfg": [
+					{
+						"as": 2656,
+						"attr": 383,
+						"normType": "area",
+						"normAs": "",
+						"normAttr": "",
+						"normYear": "",
+						"attrNameNormalized": "",
+						"checked": false,
+						"numCategories": 7,
+						"classType": "quantiles",
+						"zeroesAsNull": true,
+						"name": "Share of built-up land (%)",
+						"attrName": "Built-up land",
+						"asName": "Built-up areas"
+					}
+				],
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterAttrs": [],
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "chartlayer",
+						"attributeSet": 2656,
+						"attribute": 383,
+						"at": "",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 2,
+						"type": "topiclayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": 3664,
+						"symbologyId": "#blank#"
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 3681891.3931051,
+						"lat": 608442.3684306
+					},
+					"zoom": 1
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Share of built-up land (% of total area)",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": 2656,
+									"attr": 383,
+									"normType": "area",
+									"normAs": "",
+									"normAttr": "",
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Built-up land",
+									"asName": "Built-up areas"
+								}
+							],
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								3
+							],
+							"stacking": "none",
+							"chartId": 2527177
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Total area of built-up land",
+							"type": "grid",
+							"attrs": [
+								{
+									"as": 2656,
+									"attr": 383,
+									"normType": null,
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"attrNameNormalized": "",
+									"checked": false,
+									"numCategories": "",
+									"classType": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"attrName": "Built-up land",
+									"asName": "Built-up areas"
+								}
+							],
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "3",
+							"constrainFl": [
+								0,
+								3
+							],
+							"stacking": "none",
+							"chartId": 7474946
+						},
+						"queryCfg": {
+							"sort": null
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban footprint",
+							"type": "extentoutline",
+							"attrs": [],
+							"featureLayer": "3664_#blank#",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								3
+							],
+							"stacking": "none",
+							"chartId": 9950252
+						},
+						"queryCfg": {}
+					}
+				]
+			},
+			"created": "2016-05-12T08:21:38.802Z",
+			"createdBy": 1,
+			"changed": "2016-05-12T08:21:38.802Z",
+			"changedBy": 1
+		}
+	],
+	"success": true
+}

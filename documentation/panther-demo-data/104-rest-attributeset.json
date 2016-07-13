@@ -1,0 +1,1088 @@
+{
+	"data": [
+		{
+			"_id": 321,
+			"active": true,
+			"attributes": [
+				297,
+				298,
+				299,
+				300,
+				301,
+				302,
+				303,
+				304,
+				305,
+				306,
+				307,
+				308
+			],
+			"changed": "2015-05-14T12:27:38.372Z",
+			"changedBy": 10000,
+			"created": "2013-03-29T13:38:33.806Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Land Cover classes L3",
+			"topic": 1534
+		},
+		{
+			"_id": 328,
+			"active": true,
+			"attributes": [
+				297,
+				298,
+				299,
+				300,
+				301,
+				302,
+				303,
+				304,
+				305,
+				306,
+				307,
+				308
+			],
+			"changed": "2013-07-21T13:56:49.703Z",
+			"changedBy": 10000,
+			"created": "2013-03-29T13:44:34.865Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Consumption L3",
+			"topic": 1649
+		},
+		{
+			"_id": 329,
+			"active": true,
+			"attributes": [
+				297,
+				298,
+				299,
+				300,
+				301,
+				302,
+				303,
+				304,
+				305,
+				306,
+				307,
+				308
+			],
+			"changed": "2013-07-21T13:56:52.932Z",
+			"changedBy": 10000,
+			"created": "2013-03-29T13:44:59.999Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Formation L3",
+			"topic": 1649
+		},
+		{
+			"_id": 343,
+			"active": true,
+			"attributes": [
+				311,
+				313,
+				315,
+				316
+			],
+			"changed": "2013-07-21T14:19:19.264Z",
+			"changedBy": 10000,
+			"created": "2013-04-02T08:47:23.845Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Aggregated LC classes",
+			"topic": 1534
+		},
+		{
+			"_id": 369,
+			"active": true,
+			"attributes": [
+				297,
+				298,
+				299,
+				300,
+				301,
+				302
+			],
+			"changed": "2013-07-21T13:58:12.517Z",
+			"changedBy": 10000,
+			"created": "2013-04-03T12:34:31.622Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Sprawl structure - formation L3",
+			"topic": 1654
+		},
+		{
+			"_id": 370,
+			"active": true,
+			"attributes": [
+				303,
+				304,
+				305,
+				306,
+				307,
+				308
+			],
+			"changed": "2013-07-21T13:58:18.455Z",
+			"changedBy": 10000,
+			"created": "2013-04-03T12:37:10.294Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Sprawl structure - consumption L3",
+			"topic": 1654
+		},
+		{
+			"_id": 400,
+			"active": true,
+			"attributes": [
+				382,
+				383,
+				384,
+				385,
+				386,
+				387,
+				388,
+				389,
+				390,
+				391,
+				392,
+				393,
+				394,
+				395,
+				396,
+				397,
+				398,
+				399,
+				462
+			],
+			"changed": "2013-07-21T14:23:33.080Z",
+			"changedBy": 10000,
+			"created": "2013-04-04T10:30:12.289Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Urban Extension Metrics Orig",
+			"topic": 1654
+		},
+		{
+			"_id": 401,
+			"active": true,
+			"attributes": [
+				382,
+				383,
+				384,
+				385,
+				386,
+				387,
+				388,
+				389,
+				390,
+				391,
+				392,
+				393,
+				394,
+				395
+			],
+			"changed": "2013-07-21T13:57:26.292Z",
+			"changedBy": 10000,
+			"created": "2013-04-04T10:32:29.198Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Urban Extension Metrics Change Calc",
+			"topic": 1654
+		},
+		{
+			"_id": 404,
+			"active": true,
+			"attributes": [
+				297,
+				298,
+				299,
+				300,
+				301,
+				302,
+				303,
+				304,
+				305,
+				306,
+				307,
+				308
+			],
+			"changed": "2013-07-21T13:57:00.727Z",
+			"changedBy": 10000,
+			"created": "2013-04-04T14:25:34.126Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Net change L3",
+			"topic": 1649
+		},
+		{
+			"_id": 435,
+			"active": true,
+			"attributes": [
+				432
+			],
+			"changed": "2016-05-23T11:39:30.525Z",
+			"changedBy": 1,
+			"created": "2013-04-05T07:58:42.821Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				652
+			],
+			"name": "Status code",
+			"topic": 1534
+		},
+		{
+			"_id": 436,
+			"active": true,
+			"attributes": [
+				1415,
+				434,
+				433,
+				2149
+			],
+			"changed": "2013-08-26T15:23:34.894Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T07:58:54.848Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				650
+			],
+			"name": "Change code",
+			"topic": 1649
+		},
+		{
+			"_id": 450,
+			"active": true,
+			"attributes": [
+				311
+			],
+			"changed": "2013-08-27T13:31:08.299Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T08:11:48.481Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Aggregated LC classes Formation",
+			"topic": 1649
+		},
+		{
+			"_id": 451,
+			"active": true,
+			"attributes": [
+				311
+			],
+			"changed": "2013-08-27T13:28:42.619Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T08:12:23.272Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Aggregated LC classes Consumption",
+			"topic": 1649
+		},
+		{
+			"_id": 467,
+			"active": true,
+			"attributes": [
+				311
+			],
+			"changed": "2013-08-27T13:40:55.793Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T09:04:12.303Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Aggregated LC classes Net",
+			"topic": 1649
+		},
+		{
+			"_id": 473,
+			"active": true,
+			"attributes": [
+				468,
+				469,
+				470,
+				471,
+				472
+			],
+			"changed": "2013-07-21T13:56:40.037Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T09:17:05.030Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "LCchange + LCF",
+			"topic": 1649
+		},
+		{
+			"_id": 498,
+			"active": true,
+			"attributes": [
+				382,
+				383,
+				384,
+				385,
+				386,
+				388,
+				389,
+				390
+			],
+			"changed": "2013-07-21T14:01:02.003Z",
+			"changedBy": 10000,
+			"created": "2013-04-05T10:49:31.661Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Urban Extension Metrics Change Calc %",
+			"topic": 1654
+		},
+		{
+			"_id": 548,
+			"active": true,
+			"attributes": [
+				546,
+				547
+			],
+			"changed": "2014-01-02T17:08:54.876Z",
+			"changedBy": 10000,
+			"created": "2013-04-11T13:15:59.549Z",
+			"createdBy": null,
+			"featureLayers": [],
+			"name": "Populations1",
+			"topic": 1531
+		},
+		{
+			"_id": 567,
+			"active": true,
+			"attributes": [
+				566
+			],
+			"changed": "2013-07-21T13:58:15.690Z",
+			"changedBy": 10000,
+			"created": "2013-04-13T09:29:51.437Z",
+			"createdBy": null,
+			"featureLayers": [
+				""
+			],
+			"name": "Area",
+			"topic": 1654
+		},
+		{
+			"_id": 591,
+			"active": true,
+			"attributes": [
+				581,
+				582,
+				583,
+				604
+			],
+			"changed": "2013-08-27T14:22:26.702Z",
+			"changedBy": 10000,
+			"created": "2013-04-15T16:41:10.055Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "Roads type",
+			"topic": 1978
+		},
+		{
+			"_id": 656,
+			"active": true,
+			"attributes": [
+				398,
+				309
+			],
+			"changed": "2013-07-21T13:57:39.084Z",
+			"changedBy": 10000,
+			"created": "2013-05-06T13:10:02.993Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Test analysis",
+			"topic": 1654
+		},
+		{
+			"_id": 843,
+			"active": true,
+			"attributes": [
+				842
+			],
+			"changed": "2013-07-21T13:57:29.694Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T12:50:27.950Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Analysis input - Roads",
+			"topic": 1654
+		},
+		{
+			"_id": 844,
+			"active": true,
+			"attributes": [
+				841
+			],
+			"changed": "2013-07-21T13:57:32.917Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T12:50:37.814Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Analysis input - Geology",
+			"topic": 1654
+		},
+		{
+			"_id": 845,
+			"active": true,
+			"attributes": [
+				840
+			],
+			"changed": "2013-07-21T14:02:51.495Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T12:50:52.240Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Analysis input - Hospitals",
+			"topic": 1654
+		},
+		{
+			"_id": 867,
+			"active": true,
+			"attributes": [
+				862,
+				863,
+				864,
+				865,
+				866
+			],
+			"changed": "2013-07-21T13:57:45.814Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T13:07:37.640Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Analysis output - Hospitals",
+			"topic": 1654
+		},
+		{
+			"_id": 932,
+			"active": true,
+			"attributes": [
+				862,
+				863,
+				864,
+				865,
+				866
+			],
+			"changed": "2013-07-21T13:57:50.063Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T15:43:41.564Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Analysis output - Geology",
+			"topic": 1654
+		},
+		{
+			"_id": 933,
+			"active": true,
+			"attributes": [
+				862,
+				863,
+				864,
+				865,
+				866
+			],
+			"changed": "2013-07-21T13:57:53.475Z",
+			"changedBy": 10000,
+			"created": "2013-05-10T15:43:51.167Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "Analysis output - Roads",
+			"topic": 1654
+		},
+		{
+			"_id": 1432,
+			"active": true,
+			"attributes": [
+				1497,
+				386
+			],
+			"changed": "2013-08-28T14:28:19.437Z",
+			"changedBy": 10000,
+			"created": "2013-05-31T14:46:27.160Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "EAPAC - status",
+			"topic": 1654
+		},
+		{
+			"_id": 1444,
+			"active": true,
+			"attributes": [
+				1500,
+				1499,
+				304,
+				316
+			],
+			"changed": "2013-08-28T14:31:40.216Z",
+			"changedBy": 10000,
+			"created": "2013-06-03T09:12:02.276Z",
+			"createdBy": 10000,
+			"featureLayers": [],
+			"name": "EAPAC - development",
+			"topic": 2451
+		},
+		{
+			"_id": 1502,
+			"active": true,
+			"attributes": [
+				1501
+			],
+			"changed": "2013-07-21T13:57:58.770Z",
+			"changedBy": 10000,
+			"created": "2013-06-07T03:33:39.059Z",
+			"createdBy": 10000,
+			"featureLayers": [
+				""
+			],
+			"name": "EAPAC - development GDP",
+			"topic": 1654
+		},
+		{
+			"_id": 1694,
+			"name": "Net formation L3",
+			"attributes": [
+				297,
+				298,
+				299,
+				300,
+				301,
+				302,
+				303,
+				304,
+				305,
+				306,
+				307,
+				308
+			],
+			"active": true,
+			"description": "",
+			"topic": 1649,
+			"featureLayers": [],
+			"created": "2013-08-01T12:32:20.810Z",
+			"createdBy": 10000,
+			"changed": "2013-08-01T12:32:20.810Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 1982,
+			"active": true,
+			"attributes": [
+				1980,
+				2056
+			],
+			"changed": "2013-08-26T12:54:10.863Z",
+			"changedBy": 10000,
+			"created": "2013-08-23T16:11:06.081Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [
+				795
+			],
+			"name": "Road type",
+			"topic": 1978
+		},
+		{
+			"_id": 2332,
+			"name": "Roads length type",
+			"attributes": [
+				590,
+				589,
+				588,
+				587,
+				586,
+				2055
+			],
+			"active": true,
+			"description": "",
+			"topic": 1978,
+			"featureLayers": [],
+			"created": "2013-08-27T14:21:16.611Z",
+			"createdBy": 10000,
+			"changed": "2013-08-27T14:21:16.611Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 2333,
+			"name": "Roads length",
+			"attributes": [
+				585,
+				584
+			],
+			"active": true,
+			"description": "",
+			"topic": 1978,
+			"featureLayers": [],
+			"created": "2013-08-27T14:21:45.502Z",
+			"createdBy": 10000,
+			"changed": "2013-08-27T14:21:45.502Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 2654,
+			"active": true,
+			"attributes": [
+				546,
+				547
+			],
+			"changed": "2014-02-20T13:02:34.912Z",
+			"changedBy": 10000,
+			"created": "2013-09-01T16:19:58.774Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "Population in built-up areas",
+			"topic": 2651
+		},
+		{
+			"_id": 2656,
+			"active": true,
+			"attributes": [
+				2655,
+				383
+			],
+			"changed": "2014-02-20T13:02:42.922Z",
+			"changedBy": 10000,
+			"created": "2013-09-01T16:21:33.502Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "Built-up areas",
+			"topic": 2652
+		},
+		{
+			"_id": 3224,
+			"active": true,
+			"attributes": [
+				3952,
+				3953
+			],
+			"changed": "2014-01-02T17:41:44.224Z",
+			"changedBy": 10000,
+			"created": "2013-09-09T19:37:40.337Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "Total populations",
+			"topic": 3214
+		},
+		{
+			"_id": 4058,
+			"active": true,
+			"attributes": [
+				4056,
+				4057
+			],
+			"changed": "2014-01-13T15:20:50.572Z",
+			"changedBy": 10000,
+			"created": "2014-01-13T11:45:37.090Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "Urban Areas",
+			"topic": 4059
+		},
+		{
+			"_id": 4078,
+			"active": true,
+			"attributes": [
+				4056,
+				3952
+			],
+			"changed": "2014-01-15T12:36:44.348Z",
+			"changedBy": 10000,
+			"created": "2014-01-15T10:39:14.605Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "Urban footprint",
+			"topic": 4074
+		},
+		{
+			"_id": 5073,
+			"active": true,
+			"attributes": [
+				5059,
+				5060,
+				5061,
+				5062,
+				5063,
+				5064,
+				5065,
+				5066,
+				5067,
+				5068,
+				5069,
+				5070,
+				5071,
+				5349,
+				5072
+			],
+			"changed": "2015-05-21T14:11:01.502Z",
+			"changedBy": 10000,
+			"created": "2015-05-11T13:38:26.943Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 Land cover classes ",
+			"topic": 5074
+		},
+		{
+			"_id": 5145,
+			"name": "EOW2 Status code",
+			"attributes": [
+				432
+			],
+			"active": true,
+			"description": "",
+			"topic": 5074,
+			"featureLayers": [
+				5083
+			],
+			"created": "2015-05-14T12:27:03.732Z",
+			"createdBy": 10000,
+			"changed": "2015-05-14T12:29:09.758Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5245,
+			"active": true,
+			"attributes": [
+				5240,
+				5244,
+				5242,
+				5243
+			],
+			"changed": "2015-05-19T12:11:55.378Z",
+			"changedBy": 10000,
+			"created": "2015-05-19T12:11:04.198Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 Aggregated classes ",
+			"topic": 5074
+		},
+		{
+			"_id": 5247,
+			"name": "EOW2 Urban fabric",
+			"attributes": [
+				5239
+			],
+			"active": true,
+			"description": "",
+			"topic": 5074,
+			"featureLayers": [],
+			"created": "2015-05-19T12:16:55.130Z",
+			"createdBy": 10000,
+			"changed": "2015-05-19T12:16:55.130Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5291,
+			"active": true,
+			"attributes": [
+				5293,
+				5294,
+				5295,
+				5296,
+				5297,
+				5298
+			],
+			"changed": "2016-04-27T14:20:23.035Z",
+			"changedBy": 1,
+			"created": "2015-05-20T17:23:41.748Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 LCF level1",
+			"topic": 5290
+		},
+		{
+			"_id": 5300,
+			"active": true,
+			"attributes": [
+				5301,
+				5302,
+				5303,
+				5304,
+				5305,
+				5306,
+				5307,
+				5308,
+				5309,
+				5310,
+				5311
+			],
+			"changed": "2015-05-20T17:34:31.512Z",
+			"changedBy": 10000,
+			"created": "2015-05-20T17:29:43.326Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 LCF level2",
+			"topic": 5290
+		},
+		{
+			"_id": 5317,
+			"active": true,
+			"attributes": [
+				5318,
+				5319,
+				433,
+				434,
+				2149,
+				5372,
+				5373
+			],
+			"changed": "2015-05-21T16:57:17.578Z",
+			"changedBy": 10000,
+			"created": "2015-05-20T17:50:38.386Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [
+				5289
+			],
+			"name": "EOW2 Change",
+			"topic": 5290
+		},
+		{
+			"_id": 5325,
+			"active": true,
+			"attributes": [
+				5292
+			],
+			"changed": "2015-05-21T11:47:47.326Z",
+			"changedBy": 10000,
+			"created": "2015-05-20T18:00:32.361Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 Change total",
+			"topic": 5290
+		},
+		{
+			"_id": 5345,
+			"active": true,
+			"attributes": [
+				5059,
+				5060,
+				5061,
+				5062,
+				5063,
+				5064,
+				5065,
+				5066,
+				5067,
+				5068,
+				5069,
+				5070,
+				5071,
+				5349
+			],
+			"changed": "2015-05-21T14:12:00.798Z",
+			"changedBy": 10000,
+			"created": "2015-05-21T11:52:26.976Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 Consumption",
+			"topic": 5290
+		},
+		{
+			"_id": 5350,
+			"name": "EOW2 Formation",
+			"attributes": [
+				5059,
+				5060,
+				5061,
+				5062,
+				5063,
+				5064,
+				5065,
+				5066,
+				5067,
+				5068,
+				5069,
+				5070,
+				5071,
+				5349
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T14:12:22.598Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T14:12:22.598Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5351,
+			"name": "EOW2 Net change",
+			"attributes": [
+				5059,
+				5060,
+				5061,
+				5062,
+				5063,
+				5064,
+				5065,
+				5066,
+				5067,
+				5068,
+				5069,
+				5070,
+				5071,
+				5349
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T14:13:02.374Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T14:13:02.374Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5352,
+			"name": "EOW2 Consumption - Aggregated classes ",
+			"attributes": [
+				5240,
+				5244,
+				5242,
+				5243
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T14:14:01.751Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T14:14:01.751Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5353,
+			"name": "EOW2 Formation - Aggregated classes ",
+			"attributes": [
+				5240,
+				5244,
+				5242,
+				5243
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T14:14:13.631Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T14:14:13.631Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5354,
+			"name": "EOW2 Net change - Aggregated classes ",
+			"attributes": [
+				5240,
+				5244,
+				5242,
+				5243
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T14:14:24.245Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T14:14:24.245Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5386,
+			"active": true,
+			"attributes": [
+				311
+			],
+			"changed": "2015-05-21T17:04:05.765Z",
+			"changedBy": 10000,
+			"created": "2015-05-21T17:03:29.432Z",
+			"createdBy": 10000,
+			"description": "",
+			"featureLayers": [],
+			"name": "EOW2 Consumption - Urban Fabric",
+			"topic": 5290
+		},
+		{
+			"_id": 5387,
+			"name": "EOW2 Formation - Urban Fabric",
+			"attributes": [
+				311
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T17:04:20.442Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T17:04:20.442Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5388,
+			"name": "EOW2 Net change - Urban Fabric",
+			"attributes": [
+				311
+			],
+			"active": true,
+			"description": "",
+			"topic": 5290,
+			"featureLayers": [],
+			"created": "2015-05-21T17:04:48.983Z",
+			"createdBy": 10000,
+			"changed": "2015-05-21T17:04:48.983Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5594,
+			"name": "EOW2 Population",
+			"attributes": [
+				5593
+			],
+			"active": true,
+			"description": "",
+			"topic": 4089,
+			"featureLayers": [],
+			"created": "2015-06-03T13:34:13.152Z",
+			"createdBy": 10000,
+			"changed": "2015-06-03T13:34:13.152Z",
+			"changedBy": 10000
+		}
+	],
+	"success": true
+}

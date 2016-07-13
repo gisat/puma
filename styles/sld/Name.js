@@ -1,6 +1,7 @@
 var Leaf = require('./common/Leaf');
 
 /**
+ * It represents Name element. This element can be used as a part of multiple other elements to specify Name.
  * @alias Name
  * @param value {String}
  * @augments Leaf

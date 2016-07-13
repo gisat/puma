@@ -5,6 +5,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 module.exports = function(app) {
 
 	app.all('/rest/*',standardResponse);
+	app.all('/restricted/rest/*',standardResponse);
 
 	app.all('/api/*',standardResponse);
 

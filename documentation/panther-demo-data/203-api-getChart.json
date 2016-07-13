@@ -1,0 +1,773 @@
+{
+	"data": {
+		"plotOptions": {
+			"pie": {
+				"point": {
+					"events": {}
+				}
+			},
+			"series": {
+				"point": {
+					"events": {}
+				},
+				"events": {}
+			}
+		},
+		"chart": {
+			"spacingLeft": 0,
+			"spacingBottom": 10,
+			"spacingRight": 0,
+			"height": null
+		},
+		"xAxis": {
+			"categories": [],
+			"title": "Test"
+		},
+		"tooltip": {
+			"borderRadius": 0,
+			"itemStyle": {
+				"fontSize": "12px",
+				"fontFamily": "\"Open Sans\", sans-serif"
+			},
+			"style": {
+				"fontSize": "12px",
+				"fontFamily": "\"Open Sans\", sans-serif"
+			},
+			"valueSuffix": " %"
+		},
+		"series": [
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 17.5113402950571,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 18.5500146071402,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 63.3449819238897,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 0.59375001669574,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Cebu City",
+				"loc": 1869,
+				"at": 280,
+				"gid": 456,
+				"type": "pie",
+				"showInLegend": true,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					66.875,
+					53.333333333333336
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 8.06860598435607,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 21.203930236665,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 70.4290160872467,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 0.298425173884729,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Compostela",
+				"loc": 1869,
+				"at": 280,
+				"gid": 457,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					200.625,
+					53.333333333333336
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 31.3130371036984,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 8.13573587776417,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 58.9719899580453,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 1.57918411431444,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Consolacion",
+				"loc": 1869,
+				"at": 280,
+				"gid": 458,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					334.375,
+					53.333333333333336
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 40.9364138265919,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 1.03704413106004,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 51.569252540652,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 6.45727770955037,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Cordoba",
+				"loc": 1869,
+				"at": 280,
+				"gid": 459,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					468.125,
+					53.333333333333336
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 5.53230659114743,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 24.7347996083398,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 69.0937497360603,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 0.639151011517444,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Danao City",
+				"loc": 1869,
+				"at": 280,
+				"gid": 462,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					66.875,
+					160
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 53.7471977989826,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 0.877222739885702,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 39.557719110006,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 5.81783320553632,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Lapu-Lapu City",
+				"loc": 1869,
+				"at": 280,
+				"gid": 466,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					200.625,
+					160
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 19.8022136017034,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 13.6899838421854,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 63.6496108335217,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 2.85815950608996,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Liloan",
+				"loc": 1869,
+				"at": 280,
+				"gid": 467,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					334.375,
+					160
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 85.5419879014944,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 3.26366900942054,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 9.64675711969924,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 1.54759126069226,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Mandaue City",
+				"loc": 1869,
+				"at": 280,
+				"gid": 470,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					468.125,
+					160
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 13.8845437762859,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 21.069114145524,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 63.9754719541222,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 1.07079649137843,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Minglanilla",
+				"loc": 1869,
+				"at": 280,
+				"gid": 472,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					66.875,
+					266.6666666666667
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 6.55317315672579,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 42.5422339174213,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 50.5549100220122,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 0.349496057319501,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Naga City",
+				"loc": 1869,
+				"at": 280,
+				"gid": 474,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					200.625,
+					266.6666666666667
+				]
+			},
+			{
+				"data": [
+					{
+						"name": "Artificial areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 313,
+						"y": 31.3795146335418,
+						"color": "#AE0214"
+					},
+					{
+						"name": "Agricultural Land",
+						"units": "%",
+						"as": 321,
+						"visible": true,
+						"attr": 303,
+						"y": 14.9983170376025,
+						"color": "#FFDC9B"
+					},
+					{
+						"name": "Natural and semi-natural areas",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 315,
+						"y": 52.5461010996783,
+						"color": "#59B642"
+					},
+					{
+						"name": "Water",
+						"units": "%",
+						"as": 343,
+						"visible": true,
+						"attr": 316,
+						"y": 1.07596835823738,
+						"color": "#56C8EE"
+					}
+				],
+				"year": 278,
+				"yearName": "2010",
+				"name": "Talisay City",
+				"loc": 1869,
+				"at": 280,
+				"gid": 490,
+				"type": "pie",
+				"showInLegend": false,
+				"dataLabels": {
+					"enabled": false
+				},
+				"size": 56.66666666666667,
+				"center": [
+					334.375,
+					266.6666666666667
+				]
+			}
+		],
+		"title": {
+			"text": null
+		},
+		"credits": {
+			"enabled": false
+		},
+		"colors": [
+			"#71A3CB",
+			"#CC716C",
+			"#6EC78F",
+			"#F2DE7E",
+			"#8D97A2"
+		],
+		"labels": {
+			"items": [
+				{
+					"html": "Cebu City",
+					"style": {
+						"left": "53.541666666666664px",
+						"top": "10px"
+					}
+				},
+				{
+					"html": "Compostela",
+					"style": {
+						"left": "187.29166666666666px",
+						"top": "10px"
+					}
+				},
+				{
+					"html": "Consolacion",
+					"style": {
+						"left": "321.0416666666667px",
+						"top": "10px"
+					}
+				},
+				{
+					"html": "Cordoba",
+					"style": {
+						"left": "454.7916666666667px",
+						"top": "10px"
+					}
+				},
+				{
+					"html": "Danao City",
+					"style": {
+						"left": "53.541666666666664px",
+						"top": "116.66666666666666px"
+					}
+				},
+				{
+					"html": "Lapu-Lapu City",
+					"style": {
+						"left": "187.29166666666666px",
+						"top": "116.66666666666666px"
+					}
+				},
+				{
+					"html": "Liloan",
+					"style": {
+						"left": "321.0416666666667px",
+						"top": "116.66666666666666px"
+					}
+				},
+				{
+					"html": "Mandaue City",
+					"style": {
+						"left": "454.7916666666667px",
+						"top": "116.66666666666666px"
+					}
+				},
+				{
+					"html": "Minglanilla",
+					"style": {
+						"left": "53.541666666666664px",
+						"top": "223.33333333333334px"
+					}
+				},
+				{
+					"html": "Naga City",
+					"style": {
+						"left": "187.29166666666666px",
+						"top": "223.33333333333334px"
+					}
+				},
+				{
+					"html": "Talisay City",
+					"style": {
+						"left": "321.0416666666667px",
+						"top": "223.33333333333334px"
+					}
+				}
+			]
+		},
+		"legend": {
+			"layout": "vertical",
+			"backgroundColor": "#FFFFFF",
+			"align": "left",
+			"verticalAlign": "top",
+			"lineHeight": 18,
+			"padding": 10,
+			"borderRadius": 0,
+			"itemStyle": {
+				"fontSize": "12px",
+				"fontFamily": "\"Open Sans\", sans-serif"
+			},
+			"style": {
+				"fontSize": "12px",
+				"fontFamily": "\"Open Sans\", sans-serif"
+			},
+			"x": 60,
+			"y": 10,
+			"floating": true,
+			"shadow": true
+		}
+	},
+	"success": true
+}

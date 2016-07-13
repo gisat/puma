@@ -12,4 +12,11 @@ var PropertyIsEqualTo = function (children) {
 
 PropertyIsEqualTo.prototype = Object.create(Intersection.prototype);
 
+/**
+ * @inheritDoc
+ */
+PropertyIsEqualTo.prototype.validChildren = function() {
+	return ['ogc:PropertyName','ogc:Literal'];
+};
+
 module.exports = PropertyIsEqualTo;

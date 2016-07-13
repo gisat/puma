@@ -4,7 +4,6 @@ var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var dom = require('../common/dom');
 var async = require('async');
-var OpenLayers = require('openlayers').OpenLayers;
 var xmldoc = require('xmldoc');
 var _ = require('underscore');
 var config = require('../config');
@@ -327,13 +326,43 @@ function getLayerDetails(params, req, res, callback) {
 				options, " Error: ", err);
 			return callback(err);
 		}
-		res.data = output;
+
+		res.data = parseWfsDocument(output);
 		return callback();
 	});
 }
 
+function parseWfsDocument(output) {
+	logger.info("Wfs to parse " + output);
+	// TODO: What if the response is invalid or empty.
+	// Parse the response and return JSON to the client. Response is known.
+	var wfsDocument = new xmldoc.XmlDocument(output);
+	logger.info("Wfs document " + wfsDocument);
+	var parentOfAttributes = wfsDocument.descendantWithPath("xsd:complexType.xsd:complexContent.xsd:extension.xsd:sequence");
+	logger.info("Parent of attribtues " + parentOfAttributes);
+	logger.info("Schema " + wfsDocument.descendantWithPath("xsd:complexType"));
+	logger.info("Import " + wfsDocument.descendantWithPath("xsd:complexType.xsd:complexContent"));
+	logger.info("XsdSchema " + wfsDocument.descendantWithPath("xsd:complexType.xsd:complexContent.xsd:extension"));
+	logger.info("XsdImport " + wfsDocument.descendantWithPath("xsd:complexType.xsd:complexContent.xsd:extension.xsd:sequence"));
 
 
+	var attributes = parentOfAttributes.childrenNamed("element");
+	var parsedAttributes = [];
+
+	attributes.forEach(function(attribute){
+		var attributesOfNode = attribute.attr;
+		parsedAttributes.push({
+			minOccurs: attributesOfNode.minOccurs,
+			maxOccurs: attributesOfNode.maxOccurs,
+			name: attributesOfNode.name,
+			type: attributesOfNode.type,
+			nillable: attributesOfNode.nillable,
+			localType: String(attributesOfNode.type).replace("xsd:", "")
+		});
+	});
+
+	return parsedAttributes;
+}
 
 function getLayerRefTable(params,req,res,callback) {
 	var location = parseInt(params['location']);

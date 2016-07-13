@@ -15,10 +15,10 @@ describe('Style', function () {
 	describe('landCover', function () {
 		var landCoverUuid = new UUID().toString();
 		var definitionOfStyle = {
-			"type": "polygon",
-			"filterAttributeKey": 5,
-			"filterAttributeSetKey": 2,
-			"filterType": "attributeCsv",
+			"type": "polygon", // PolygonSymbolizer
+			"filterAttributeKey": 5, // Filter id of attributeset
+			"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+			"filterType": "attributeCsv", // Comma separated values
 			"rules": [
 				{
 					"name": "Urban fabric",
@@ -28,7 +28,7 @@ describe('Style', function () {
 					},
 					"filter": {
 						"attributeCsv": {
-							"values": "111,112,113"
+							"values": "111,112,113" // Values present in the attribute
 						},
 						"attributeInterval": {}
 					}
@@ -83,11 +83,19 @@ describe('Style', function () {
 			should(sldResult).equal("");
 		});
 
-		// Asynchronous
-		describe('#toPostgreSql', function () {
+		// Synchronous
+		describe('#toSql', function () {
 			var sql = landCoverStyle.toPostgreSql(connection);
 
 			should(sql).equal("insert into panther_style ('mongoStyleId', 'sldBody') values (1, '')");
+		});
+
+		describe('#validateDescription', function(){
+			it('#mustContainType', function(){
+				var result = Style.validateDescription({});
+
+				should(result).be.exactly(false);
+			});
 		});
 	});
 });

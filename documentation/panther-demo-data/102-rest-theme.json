@@ -1,0 +1,514 @@
+{
+	"data": [
+		{
+			"_id": 1365,
+			"active": true,
+			"areaTemplates": [
+				279,
+				280,
+				281,
+				282,
+				283
+			],
+			"changed": "2015-08-13T14:17:29.347Z",
+			"changedBy": 1,
+			"created": "2013-05-16T08:46:46.288Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"layerMap": [
+				{
+					"name": "ADM0",
+					"symbologies": [
+						1307
+					],
+					"areaTemplate": 519,
+					"defVisible": "",
+					"bindAt": 279
+				},
+				{
+					"name": "ADM1",
+					"symbologies": [
+						1307
+					],
+					"areaTemplate": 520,
+					"defVisible": "",
+					"bindAt": 280
+				},
+				{
+					"name": "ADM2",
+					"symbologies": [
+						1307
+					],
+					"areaTemplate": 521,
+					"defVisible": "",
+					"bindAt": 281
+				},
+				{
+					"name": "ADM3",
+					"symbologies": [
+						1307
+					],
+					"areaTemplate": 522,
+					"defVisible": "",
+					"bindAt": 282
+				},
+				{
+					"name": "ADM4",
+					"symbologies": [
+						1307
+					],
+					"areaTemplate": 523,
+					"defVisible": "",
+					"bindAt": 283
+				},
+				{
+					"name": "CHANGE",
+					"symbologies": [
+						1339,
+						1352
+					],
+					"areaTemplate": 650,
+					"defVisible": false,
+					"bindAt": null
+				},
+				{
+					"name": "STATUS",
+					"symbologies": [
+						1322,
+						1276
+					],
+					"areaTemplate": 652,
+					"defVisible": true,
+					"bindAt": null
+				},
+				{
+					"name": "PUMA_L7_2000/RE_2011",
+					"symbologies": "",
+					"areaTemplate": 575,
+					"defVisible": "",
+					"bindAt": ""
+				}
+			],
+			"locationExclusion": "",
+			"name": "Land Cover",
+			"scope": 1361,
+			"sortIndex": "",
+			"topics": [
+				1531,
+				1534,
+				1649,
+				1978,
+				3273
+			],
+			"trees": [
+				972
+			],
+			"treesAndAreas": [
+				279,
+				280,
+				281,
+				282,
+				283,
+				972
+			],
+			"visOrder": [
+				5937,
+				5939,
+				4163,
+				4632,
+				4394,
+				4437,
+				4131
+			],
+			"visualizations": "",
+			"years": [
+				277,
+				278
+			]
+		},
+		{
+			"_id": 1369,
+			"active": true,
+			"areaTemplates": [
+				279,
+				280,
+				281,
+				282,
+				283
+			],
+			"changed": "2015-01-16T14:35:05.622Z",
+			"changedBy": 10000,
+			"created": "2013-05-16T09:22:56.900Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"layerMap": [
+				{
+					"name": "ADM0",
+					"symbologies": [
+						1337,
+						1308,
+						1259
+					],
+					"areaTemplate": 519,
+					"defVisible": "",
+					"bindAt": 279
+				},
+				{
+					"name": "ADM1",
+					"symbologies": [
+						1337,
+						1308,
+						1259
+					],
+					"areaTemplate": 520,
+					"defVisible": "",
+					"bindAt": 280
+				},
+				{
+					"name": "ADM2",
+					"symbologies": [
+						1337,
+						1308,
+						1259
+					],
+					"areaTemplate": 521,
+					"defVisible": "",
+					"bindAt": 281
+				},
+				{
+					"name": "ADM3",
+					"symbologies": [
+						1337,
+						1308,
+						1259
+					],
+					"areaTemplate": 522,
+					"defVisible": true,
+					"bindAt": 282
+				},
+				{
+					"name": "ADM4",
+					"symbologies": [
+						1337,
+						1308,
+						1259
+					],
+					"areaTemplate": 523,
+					"defVisible": "",
+					"bindAt": 283
+				},
+				{
+					"name": "CHANGE",
+					"symbologies": [
+						1339,
+						1352
+					],
+					"areaTemplate": 650,
+					"defVisible": "",
+					"bindAt": ""
+				},
+				{
+					"name": "STATUS",
+					"symbologies": [
+						1322,
+						1276
+					],
+					"areaTemplate": 652,
+					"defVisible": "",
+					"bindAt": ""
+				},
+				{
+					"name": "PUMA_L7_2000/RE_2011",
+					"symbologies": "",
+					"areaTemplate": 575,
+					"defVisible": "",
+					"bindAt": ""
+				}
+			],
+			"locationExclusion": "",
+			"name": "Population",
+			"scope": 1361,
+			"sortIndex": "",
+			"topics": [
+				1531,
+				1534,
+				1649,
+				3273,
+				1978
+			],
+			"trees": [
+				972
+			],
+			"treesAndAreas": [
+				279,
+				280,
+				281,
+				282,
+				283,
+				972
+			],
+			"visOrder": [
+				4391,
+				4389
+			],
+			"visualizations": "",
+			"years": [
+				277,
+				278
+			]
+		},
+		{
+			"_id": 1372,
+			"active": true,
+			"areaTemplates": [
+				376,
+				377
+			],
+			"changed": "2015-01-16T14:42:03.333Z",
+			"changedBy": 10000,
+			"created": "2013-05-16T09:45:19.499Z",
+			"createdBy": 10000,
+			"dataset": 2449,
+			"layerMap": [
+				{
+					"name": "Cities of Southeast Asia",
+					"symbologies": [
+						1296
+					],
+					"areaTemplate": 377,
+					"defVisible": true,
+					"bindAt": ""
+				},
+				{
+					"name": "Built-Up Area Extent (Atlas of Urban Expansion)",
+					"symbologies": "",
+					"areaTemplate": 575,
+					"defVisible": "",
+					"bindAt": ""
+				},
+				{
+					"name": "City Footprint Structure (Atlas of Urban Expansion)",
+					"symbologies": "",
+					"areaTemplate": 633,
+					"defVisible": "",
+					"bindAt": ""
+				},
+				{
+					"name": "New Development (Atlas of Urban Expansion)",
+					"symbologies": "",
+					"areaTemplate": 634,
+					"defVisible": "",
+					"bindAt": ""
+				}
+			],
+			"locationExclusion": "",
+			"name": "Urban expansion",
+			"scope": 1368,
+			"sortIndex": "",
+			"topics": [
+				2652,
+				2651,
+				3273
+			],
+			"trees": [
+				1371
+			],
+			"treesAndAreas": [
+				376,
+				377,
+				1371
+			],
+			"visualizations": "",
+			"years": [
+				277,
+				278
+			]
+		},
+		{
+			"_id": 1979,
+			"active": true,
+			"changed": "2014-12-15T12:25:27.196Z",
+			"changedBy": 10000,
+			"created": "2013-08-23T16:08:20.616Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"name": "Transportation",
+			"topics": [
+				1978,
+				1531,
+				3273,
+				1534,
+				1649
+			],
+			"years": [
+				278
+			]
+		},
+		{
+			"_id": 2653,
+			"active": true,
+			"changed": "2014-02-20T11:11:23.823Z",
+			"changedBy": 10000,
+			"created": "2013-09-01T16:19:23.977Z",
+			"createdBy": 10000,
+			"dataset": 2449,
+			"name": "Population in built-up areas",
+			"topics": [
+				2652,
+				3273,
+				2651
+			],
+			"visOrder": [
+				4113,
+				4111
+			],
+			"years": [
+				277,
+				278
+			]
+		},
+		{
+			"_id": 3216,
+			"active": true,
+			"changed": "2015-01-16T14:35:20.168Z",
+			"changedBy": 10000,
+			"created": "2013-09-09T13:47:14.336Z",
+			"createdBy": 10000,
+			"dataset": 3213,
+			"name": "Total population",
+			"topics": [
+				3214,
+				3273
+			],
+			"visOrder": [
+				4346,
+				4147
+			],
+			"years": [
+				277,
+				278
+			]
+		},
+		{
+			"_id": 4060,
+			"active": true,
+			"changed": "2014-01-13T15:20:37.170Z",
+			"changedBy": 10000,
+			"created": "2014-01-13T11:47:35.663Z",
+			"createdBy": 10000,
+			"dataset": 4054,
+			"name": "Urban Areas",
+			"topics": [
+				4059
+			],
+			"visOrder": "",
+			"years": [
+				375,
+				277,
+				278
+			]
+		},
+		{
+			"_id": 4075,
+			"active": true,
+			"changed": "2014-01-16T10:24:40.761Z",
+			"changedBy": 10000,
+			"created": "2014-01-15T10:34:49.200Z",
+			"createdBy": 10000,
+			"dataset": 4073,
+			"name": "Global urban footprint",
+			"topics": [
+				4074,
+				3273
+			],
+			"visOrder": "",
+			"years": [
+				278
+			]
+		},
+		{
+			"_id": 5081,
+			"active": true,
+			"changed": "2015-08-12T13:39:50.835Z",
+			"changedBy": 1,
+			"created": "2015-05-11T14:29:38.771Z",
+			"createdBy": 10000,
+			"dataset": 5011,
+			"name": "EOW2 Land Cover status",
+			"prefTopics": [
+				5074
+			],
+			"topics": [
+				5074,
+				5290,
+				5500,
+				4089,
+				3273
+			],
+			"visOrder": [
+				5922,
+				5607,
+				5609,
+				5610,
+				5616
+			],
+			"years": [
+				5079,
+				5080
+			]
+		},
+		{
+			"_id": 5461,
+			"active": true,
+			"changed": "2015-06-11T13:39:55.115Z",
+			"changedBy": 10000,
+			"created": "2015-05-25T11:46:46.225Z",
+			"createdBy": 10000,
+			"dataset": 5011,
+			"name": "EOW2 Land Cover development",
+			"prefTopics": [
+				5290
+			],
+			"topics": [
+				5074,
+				5290,
+				5500,
+				4089,
+				3273
+			],
+			"visOrder": [
+				5620,
+				5681
+			],
+			"years": [
+				5079,
+				5080
+			]
+		},
+		{
+			"_id": 5595,
+			"active": true,
+			"changed": "2015-06-08T12:59:51.803Z",
+			"changedBy": 10000,
+			"created": "2015-06-03T13:35:11.979Z",
+			"createdBy": 10000,
+			"dataset": 5011,
+			"name": "EOW2 Population",
+			"prefTopics": [
+				4089
+			],
+			"topics": [
+				5074,
+				5290,
+				5500,
+				4089,
+				3273
+			],
+			"visOrder": "",
+			"years": [
+				5080
+			]
+		}
+	],
+	"success": true
+}

@@ -86,13 +86,37 @@ function create(collName,obj,params,callback) {
 	async.auto(opts);
 }
 
+/**
+ * It returns collection restricted by either activeness of element or the person who created the element.
+ * @param columnName {String} Name of one of the collections in the Mongo
+ * @param params {Object} Parameters allowing further filtering.
+ * @param callback {Function} Function called, when the operation ends. Either with result or with error object.
+ */
+function readRestricted(columnName, params, callback) {
+	var filter;
+	if(params.userId) {
+		filter = {
+			$or: [
+				{active: true},
+				{createdBy: params.userId}
+			]
+		};
+	} else {
+		filter = {
+			active: true
+		};
+	}
+
+	read(columnName, filter, params, callback);
+}
 
 function read(collName,filter,params,callback) {
-	logger.info("Read data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
 		logger.warn("Read doesn't have enough parameters for collection: ", collName, " with filter: ", filter, " and Params: ", params);
+	} else {
+		logger.info("Read data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	}
 
 	var db = conn.getMongoDb();
@@ -107,11 +131,12 @@ function read(collName,filter,params,callback) {
 }
 
 function update(collName, obj, params, callback,bypassHooks) {
-	logger.info("Update item in collection: ", collName, " With data: ", obj, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
 		logger.warn("Update doesn't have enough parameters for collection: ", collName, " with data: ", obj, " and Params: ", params);
+	} else {
+		logger.info("Update item in collection: ", collName, " With data: ", obj, " and Params: ", params);
 	}
 
 	if(typeof obj == "string") {
@@ -174,11 +199,12 @@ function update(collName, obj, params, callback,bypassHooks) {
 }
 
 function remove(collName,filter,params,callback) {
-	logger.info("Delete data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	if (typeof(params) === 'function'){
 		callback = params; // todo get rid of this
 		params = {};
 		logger.warn("Delete doesn't have enough parameters for collection: ", collName, " with filter: ", filter, " and Params: ", params);
+	} else {
+		logger.info("Delete data from collection: ", collName, " With filter: ", filter, " and Params: ", params);
 	}
 
 	if(typeof filter == "string") {
@@ -396,6 +422,7 @@ var doPreHooks = function(opType,collName,obj,callback) {
 module.exports = {
 	create: create,
 	read: read,
+	readRestricted: readRestricted,
 	update: update,
 	remove: remove,
 	ensureCollection: ensureCollection

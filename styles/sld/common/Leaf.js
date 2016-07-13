@@ -10,8 +10,8 @@ var Node = require('./Node');
  * @params name {String} Name of the current node.
  * @params value {String} Value
  */
-var Leaf = function (name, value) {
-	Node.call(this, name);
+var Leaf = function (name, value, attributes) {
+	Node.call(this, name, attributes);
 
 	this._value = value;
 };
