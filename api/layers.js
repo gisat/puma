@@ -4,7 +4,6 @@ var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var dom = require('../common/dom');
 var async = require('async');
-var OpenLayers = require('openlayers').OpenLayers;
 var xmldoc = require('xmldoc');
 var _ = require('underscore');
 var config = require('../config');
@@ -327,13 +326,35 @@ function getLayerDetails(params, req, res, callback) {
 				options, " Error: ", err);
 			return callback(err);
 		}
-		res.data = output;
+
+		res.data = parseWfsDocument(output);
 		return callback();
 	});
 }
 
+function parseWfsDocument(output) {
+	// TODO: What if the response is invalid or empty.
+	// Parse the response and return JSON to the client. Response is known.
+	var wfsDocument = new xmldoc.XmlDocument(output);
+	var parentOfAttributes = wfsDocument.descendantWithPath("xsd:import.xsd:complexType.xsd:complexContent.xsd:extension.xsd:sequence");
 
+	var attributes = parentOfAttributes.childrenNamed("xsd:element");
+	var parsedAttributes = [];
 
+	attributes.forEach(function(attribute){
+		var attributesOfNode = attribute.attr;
+		parsedAttributes.push({
+			minOccurs: attributesOfNode.minOccurs,
+			maxOccurs: attributesOfNode.maxOccurs,
+			name: attributesOfNode.name,
+			type: attributesOfNode.type,
+			nillable: attributesOfNode.nillable,
+			localType: String(attributesOfNode.type).replace("xsd:", "")
+		});
+	});
+
+	return parsedAttributes;
+}
 
 function getLayerRefTable(params,req,res,callback) {
 	var location = parseInt(params['location']);
