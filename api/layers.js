@@ -339,7 +339,7 @@ function parseWfsDocument(output) {
 	var wfsDocument = new xmldoc.XmlDocument(output);
 	logger.info("Wfs document " + wfsDocument);
 	var parentOfAttributes = wfsDocument.descendantWithPath("schema.import.complexType.complexContent.extension.sequence");
-	logger.info("Parent of attribtues " + parentOfAtributes);
+	logger.info("Parent of attribtues " + parentOfAttributes);
 
 	var attributes = parentOfAttributes.childrenNamed("element");
 	var parsedAttributes = [];
