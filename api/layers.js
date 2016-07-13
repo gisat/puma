@@ -340,6 +340,11 @@ function parseWfsDocument(output) {
 	logger.info("Wfs document " + wfsDocument);
 	var parentOfAttributes = wfsDocument.descendantWithPath("schema.import.complexType.complexContent.extension.sequence");
 	logger.info("Parent of attribtues " + parentOfAttributes);
+	logger.info("Schema " + wfsDocument.descendantWithPath("schema"));
+	logger.info("Import " + wfsDocument.descendantWithPath("import"));
+	logger.info("XsdSchema " + wfsDocument.descendantWithPath("xsd:schema"));
+	logger.info("XsdImport " + wfsDocument.descendantWithPath("xsd:import"));
+
 
 	var attributes = parentOfAttributes.childrenNamed("element");
 	var parsedAttributes = [];
