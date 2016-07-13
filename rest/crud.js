@@ -93,12 +93,19 @@ function create(collName,obj,params,callback) {
  * @param callback {Function} Function called, when the operation ends. Either with result or with error object.
  */
 function readRestricted(columnName, params, callback) {
-	var filter = {
-		$or: [
-			{active: true},
-			{createdBy: params.userId}
-		]
-	};
+	var filter;
+	if(params.userId) {
+		filter = {
+			$or: [
+				{active: true},
+				{createdBy: params.userId}
+			]
+		};
+	} else {
+		filter = {
+			active: true
+		};
+	}
 
 	read(columnName, filter, params, callback);
 }
