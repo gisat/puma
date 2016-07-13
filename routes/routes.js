@@ -35,6 +35,7 @@ module.exports = function(app) {
 				logger.error("It wasn't possible to read restricted collection:", objectType, " by User:", req.userId, " Error: ", err);
 				next(err);
 			} else {
+				logger.info("Result of loading " + objectType + " " + result);
 				res.data = result;
 				next();
 			}
