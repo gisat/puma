@@ -337,9 +337,9 @@ function parseWfsDocument(output) {
 	// TODO: What if the response is invalid or empty.
 	// Parse the response and return JSON to the client. Response is known.
 	var wfsDocument = new xmldoc.XmlDocument(output);
-	logger.info("Wfs to parse " + wfsDocument);
-	var parentOfAttributes = wfsDocument.descendantWithPath("import.complexType.complexContent.extension.sequence");
-	logger.info("Wfs to parse " + parentOfAtributes);
+	logger.info("Wfs document " + wfsDocument);
+	var parentOfAttributes = wfsDocument.descendantWithPath("schema.import.complexType.complexContent.extension.sequence");
+	logger.info("Parent of attribtues " + parentOfAtributes);
 
 	var attributes = parentOfAttributes.childrenNamed("element");
 	var parsedAttributes = [];
