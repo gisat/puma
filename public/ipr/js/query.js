@@ -12,7 +12,7 @@ $(document).ready(function () {
     searchField.on('keydown', function (event) {
         var keycode = (event.keyCode ? event.keyCode : event.which);
         if (keycode == '13') {
-            executeSearch();
+            //executeSearch();
         }
     });
 

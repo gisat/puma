@@ -7,13 +7,14 @@
     <script src="./js/query.js"></script>
     <style>
         #iprQuerySearchInput {
-            width: 70%;
+            width: 95%;
+            height: 350px;
             border: 1px solid;
         }
 
         #iprQuerySearchForm {
             margin: 0px auto;
-            width: 500px;
+            width: 800px;
             text-align: center;
             border: 1px dotted #7b8b9d;
             padding: 30px;
@@ -32,7 +33,7 @@
 
         #iprQuerySearchOutput {
             margin: 0px auto;
-            width: 800px;
+            /*width: 800px;*/
             text-align: center;
             border: 1px dotted #7b8b9d;
             padding: 25px;
@@ -49,9 +50,10 @@
 <body>
 <div id="iprQuerySearchForm">
     <div id="iprQuerySearchFormTitle">IPR - vyhledávání v datasetech</div>
-    <input type="text" name="iprQuerySearchInput" id="iprQuerySearchInput" autocomplete="off"
-           placeholder="Zadejte hledaný text..." autofocus/>
-    <select name="iprQuerySelect" id="iprQuerySelect"><option value="1"/>1<option value="2"/>2</select>
+    <textarea id="iprQuerySearchInput" name="iprQuerySearchInput" autocomplete="off"
+              placeholder="Zadejte hledaný text..." autofocus></textarea>
+    <br/>
+    <select name="iprQuerySelect" id="iprQuerySelect"><option value="1"/>urban-ontology<option value="2"/>ipr-datasets</select>
     <input type="button" value="Vyhledat..." name="iprQuerySearchButton" id="iprQuerySearchButton"/>
 </div>
 <div id="iprQuerySearchOutput"></div>
