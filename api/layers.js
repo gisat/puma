@@ -333,10 +333,13 @@ function getLayerDetails(params, req, res, callback) {
 }
 
 function parseWfsDocument(output) {
+	logger.info("Wfs to parse " + output);
 	// TODO: What if the response is invalid or empty.
 	// Parse the response and return JSON to the client. Response is known.
 	var wfsDocument = new xmldoc.XmlDocument(output);
+	logger.info("Wfs to parse " + wfsDocument);
 	var parentOfAttributes = wfsDocument.descendantWithPath("import.complexType.complexContent.extension.sequence");
+	logger.info("Wfs to parse " + parentOfAtributes);
 
 	var attributes = parentOfAttributes.childrenNamed("element");
 	var parsedAttributes = [];
