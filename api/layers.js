@@ -336,9 +336,9 @@ function parseWfsDocument(output) {
 	// TODO: What if the response is invalid or empty.
 	// Parse the response and return JSON to the client. Response is known.
 	var wfsDocument = new xmldoc.XmlDocument(output);
-	var parentOfAttributes = wfsDocument.descendantWithPath("xsd:import.xsd:complexType.xsd:complexContent.xsd:extension.xsd:sequence");
+	var parentOfAttributes = wfsDocument.descendantWithPath("import.complexType.complexContent.extension.sequence");
 
-	var attributes = parentOfAttributes.childrenNamed("xsd:element");
+	var attributes = parentOfAttributes.childrenNamed("element");
 	var parsedAttributes = [];
 
 	attributes.forEach(function(attribute){
