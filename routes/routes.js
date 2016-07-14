@@ -119,6 +119,7 @@ module.exports = function(app) {
 		// calcAttributeSet a normAttributeSet u vsech atributu se musi lisit od source attribute setu
 		var analysis = req.body.data;
 		var idOfTemplateForAnalysis = analysis.analysis;
+		logger.info()
 
 		crud.read('analysis', {_id: idOfTemplateForAnalysis}, {userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if(err) {
@@ -126,7 +127,7 @@ module.exports = function(app) {
 			}
 
 			// In spatial analysis it isn't good idea to use the same attribute set for the source data nad result alike.
-			if(result.type = "spatialagg") {
+			if(result.type == "spatialagg") {
 				// Verify only when some attributes are present.
 				var sourceAttributeSetIsntUsedAsResult = true;
 				if (analysis.attributeMap && analysis.attributeMap.length > 0) {
