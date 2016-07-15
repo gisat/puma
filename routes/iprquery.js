@@ -1,6 +1,7 @@
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 var request = require('request');
+var csv = require('csv');
 
 module.exports = function (app) {
 
@@ -11,6 +12,18 @@ module.exports = function (app) {
 
         var url = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/urban-ontology?query=";
         var url2 = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/ipr-datasets?query=";
+
+        var prefixes = [
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
+            "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
+            "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
+            "PREFIX ipr: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/>"
+        ].join(" ");
+
+        searchValue = prefixes + searchValue;
+
         url += encodeURIComponent(searchValue);
         url2 += encodeURIComponent(searchValue);
 
@@ -24,46 +37,25 @@ module.exports = function (app) {
             var jsonRes = {};
             var body = "";
             if (!iprerr && iprres.statusCode == 200) {
-                /*var datasets = iprbody.split(/(?:\r\n|\r|\n)/g);
-                var fields = datasets[0].split(",");
+                csv.parse(iprbody, function (csverr, csvdata) {
+                    body += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
+                    for (var outputLine of csvdata) {
+                        body += "<tr>";
 
-                datasets.splice(0, 1);
-                datasets.splice(-1, 1);
+                        for (var field of outputLine) {
+                            body += "<td>" + field + "</td>";
+                        }
 
-                body += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
-                body += "<tr style='font-weight: bold;'>";
-
-                for (var fID in fields) {
-                    body += "<td>" + fields[fID] + "</td>";
-                }
-
-                body += "</tr>";
-
-                for (var dataset of datasets) {
-                    var matches = dataset.match(/(".*")/g);
-                    if( matches != null ) {
-                        dataset = dataset.replace(/".*"/g, matches[0].replace(/,/g, '&#44;'));
-                        console.log(dataset);
+                        body += "</tr>";
                     }
-                    dataset = dataset.split(",");
-                    body += "<tr>";
-
-                    for (var dID in dataset) {
-                        body += "<td>" + dataset[dID] + "</td>";
-                    }
-
-                    body += "</tr>";
-                }
-
-                body += "</table>";
-                body += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
-                jsonRes['body'] = body;*/
-                jsonRes['body'] = iprbody;
-                console.log(iprbody);
+                    body += "</table>";
+                    body += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
+                    jsonRes['body'] = body;
+                    res.status(200).json(jsonRes);
+                });
             } else {
                 jsonRes['body'] = iprbody;
             }
-            res.status(200).json(jsonRes);
         });
     });
 };
