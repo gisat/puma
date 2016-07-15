@@ -24,7 +24,7 @@ module.exports = function (app) {
             var jsonRes = {};
             var body = "";
             if (!iprerr && iprres.statusCode == 200) {
-                var datasets = iprbody.split(/(?:\r\n|\r|\n)/g);
+                /*var datasets = iprbody.split(/(?:\r\n|\r|\n)/g);
                 var fields = datasets[0].split(",");
 
                 datasets.splice(0, 1);
@@ -57,7 +57,9 @@ module.exports = function (app) {
 
                 body += "</table>";
                 body += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
-                jsonRes['body'] = body;
+                jsonRes['body'] = body;*/
+                jsonRes['body'] = iprbody;
+                console.log(iprbody);
             } else {
                 jsonRes['body'] = iprbody;
             }
