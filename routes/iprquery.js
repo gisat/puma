@@ -49,6 +49,7 @@ module.exports = function (app) {
                         body += "</tr>";
                     }
                     body += "</table>";
+                    body += "<script>$( \"tr:first\" ).css( \"font-weight\", \"bold\" );</script>";
                     body += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
                     jsonRes['body'] = body;
                     res.status(200).json(jsonRes);
