@@ -209,7 +209,7 @@ function getSchemaName(workspaceName) {
 		if (wMap.hasOwnProperty(workspaceName)) {
 			schemaName = wMap[workspaceName];
 		} else {
-			logger.error(util.format("Error: workspace '%s' not found in any map.", workspaceName));
+			logger.error(util.format("Error: Schema name '%s' is not defined in the configuration file.", workspaceName));
 		}
 	}
 	return schemaName;
