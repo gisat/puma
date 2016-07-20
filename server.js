@@ -79,9 +79,10 @@ function initServer(err) {
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-	console.log('Going to listen on port ' + config.localPort + '...');
+
+	logger.info('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);
-	console.log('Listening on port ' + config.localPort);
+	logger.info('Listening on port ' + config.localPort);
 }
 
 async.series([

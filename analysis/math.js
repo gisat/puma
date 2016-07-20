@@ -27,7 +27,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 						}
 						if (!resls.length) {
 							logger.error("Layerref is missing for filter: ", filter);
-							return callback(new Error('missinglayerref'));
+							return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+flTemplate+') Please try to take a look whether you have correctly associated Vector Layer Template with this number to the vector data layer from which the attributes for analysis comes. '));
 						}
 						return mapCallback(null, resls[0]);
 					});
@@ -57,7 +57,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 							if (!map[attrSet]) {
 								logger.error("LayerRef is missing AreaTemplate: ", featureLayerTemplate, " Location: ",
 									location, "Year: ", year, " Analysis: ", analysisObj, " Attribute set: ", attrSet);
-								return callback(new Error('missinglayerref'))
+								return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), Vector Layer Template ('+featureLayerTemplate+') and Attribute Set ('+attrSets+')'))
 							} else {
 								logger.trace("ok\n");
 							}
@@ -106,7 +106,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			var select = 'SELECT gid,';
 			for (var i = 0; i < results.attributes.length; i++) {
 				var attr = results.attributes[i];
-				var sign = analysisObj.useSum ? '+' : '-';
+				sign = analysisObj.useSum ? '+' : '-';
 				select += i != 0 ? ',' : '';
 				for (var j = 0; j < attrSets.length; j++) {
 					select += j != 0 ? sign : '';

@@ -7,7 +7,7 @@ Ext.define('Puma.model.Scope', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Config.url+'/rest/scope',
+        url : Config.url+'/restricted/rest/scope',
         reader: {
             type: 'json',
             root: 'data'

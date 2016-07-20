@@ -7,7 +7,7 @@ Ext.define('Puma.model.Dataset', {
     idProperty: '_id',
     proxy: {
         type: 'rest',
-        url : Config.url+'/rest/dataset',
+        url : Config.url+'/restricted/rest/dataset',
         reader: {
             type: 'json',
             root: 'data'
