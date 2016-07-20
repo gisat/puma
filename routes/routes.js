@@ -118,22 +118,33 @@ module.exports = function(app) {
 		// Verify that the created analysis doesn't have attribute from the same attribute set as the source one.
 		// calcAttributeSet a normAttributeSet u vsech atributu se musi lisit od source attribute setu
 		var analysis = req.body.data;
+		var idOfTemplateForAnalysis = analysis.analysis;
+		logger.info()
 
-		// Verify only when some attributes are present.
-		var sourceAttributeSetIsntUsedAsResult = true;
-		if(analysis.attributeMap && analysis.attributeMap.length > 0) {
-			analysis.attributeMap.forEach(function(attributeToAnalyse){
-				if(attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
-					sourceAttributeSetIsntUsedAsResult = false;
+		crud.read('analysis', {_id: idOfTemplateForAnalysis}, {userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
+			if(err) {
+				return next(new Error("There is no analysis with given id."));
+			}
+
+			// In spatial analysis it isn't good idea to use the same attribute set for the source data nad result alike.
+			if(result.type == "spatialagg") {
+				// Verify only when some attributes are present.
+				var sourceAttributeSetIsntUsedAsResult = true;
+				if (analysis.attributeMap && analysis.attributeMap.length > 0) {
+					analysis.attributeMap.forEach(function (attributeToAnalyse) {
+						if (attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
+							sourceAttributeSetIsntUsedAsResult = false;
+						}
+					});
 				}
-			});
-		}
 
-		if(!sourceAttributeSetIsntUsedAsResult) {
-			return next(new Error("Attributes used in the analysis as a source attribute and as a reult attributes must be from differrent attribute sets."));
-		}
+				if (!sourceAttributeSetIsntUsedAsResult) {
+					return next(new Error("Attributes used in the analysis as a source attribute and as a result attributes must be from different attribute sets."));
+				}
+			}
 
-		updateStandardRestObject(req, res, next);
+			updateStandardRestObject(req, res, next);
+		});
 	});
 
 
