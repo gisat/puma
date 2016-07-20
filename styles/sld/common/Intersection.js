@@ -18,9 +18,41 @@ var Intersection = function (name, children) {
 		children = [children];
 	}
 	this._children = children || [];
+
+	this.validate();
 };
 
 Intersection.prototype = Object.create(Node.prototype);
+
+/**
+ * It validates whether children are correct.
+ * @throws Error If there is invalid children.
+ */
+Intersection.prototype.validate = function() {
+	var validOnes = this.validChildren();
+
+	this._children.forEach(function(child){
+		var isValid = false;
+
+		validOnes.forEach(function(name){
+			if(child.is(name)) {
+				isValid = true;
+			}
+		});
+
+		if(!isValid) {
+			throw new Error('Trying to build invalidate. Wrong element: ' + child.name);
+		}
+	});
+};
+
+/**
+ * It must return an array of valid children of given Intersection node.
+ * @returns {String[]} Array of valid names of children elements.
+ */
+Intersection.prototype.validChildren = function(){
+	throw new Error('Children must override this method');
+};
 
 /**
  * @inheritDoc

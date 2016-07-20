@@ -13,4 +13,8 @@ var And = function (children) {
 
 And.prototype = Object.create(Intersection.prototype);
 
+And.prototype.validChildren = function() {
+	return ['ogc:PropertyIsEqualTo', 'ogc:PropertyIsNull', 'ogc:PropertyIsNotEqualTo', 'ogc:PropertyIsLessThan', 'ogc:PropertyIsLessThanOrEqualTo', 'ogc:PropertyIsGreaterThan', 'ogc:PropertyIsGreaterThanOrEqualTo', 'ogc:PropertyIsLike', 'ogc:PropertyIsBetween', 'ogc:And', 'ogc:Or'];
+};
+
 module.exports = And;

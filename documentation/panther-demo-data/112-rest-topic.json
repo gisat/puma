@@ -1,0 +1,175 @@
+{
+	"data": [
+		{
+			"_id": 1531,
+			"active": true,
+			"changed": "2013-07-21T13:54:42.357Z",
+			"changedBy": 10000,
+			"created": "2013-06-13T14:45:49.870Z",
+			"createdBy": 10000,
+			"name": "Common",
+			"requiresFullRef": false
+		},
+		{
+			"_id": 1534,
+			"active": true,
+			"changed": "2013-07-21T13:54:51.189Z",
+			"changedBy": 10000,
+			"created": "2013-06-13T16:08:35.057Z",
+			"createdBy": 10000,
+			"name": "Land cover structure",
+			"requiresFullRef": true
+		},
+		{
+			"_id": 1649,
+			"active": true,
+			"changed": "2013-07-21T13:55:02.227Z",
+			"changedBy": 10000,
+			"created": "2013-07-02T12:05:59.207Z",
+			"createdBy": 10000,
+			"name": "Land cover development",
+			"requiresFullRef": true
+		},
+		{
+			"_id": 1654,
+			"name": "Other",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2013-07-21T13:56:07.571Z",
+			"createdBy": 10000,
+			"changed": "2013-07-21T13:56:07.571Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 1978,
+			"name": "Roads",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2013-08-23T16:08:05.343Z",
+			"createdBy": 10000,
+			"changed": "2013-08-23T16:08:05.343Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 2451,
+			"name": "China stats",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2013-08-27T17:37:32.975Z",
+			"createdBy": 10000,
+			"changed": "2013-08-27T17:37:32.975Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 2651,
+			"name": "Urban population",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2013-09-01T16:18:25.518Z",
+			"createdBy": 10000,
+			"changed": "2013-12-31T14:17:14.280Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 2652,
+			"active": true,
+			"changed": "2014-01-02T16:51:17.869Z",
+			"changedBy": 10000,
+			"created": "2013-09-01T16:18:47.403Z",
+			"createdBy": 10000,
+			"name": "Urban expansions",
+			"requiresFullRef": false
+		},
+		{
+			"_id": 3214,
+			"active": true,
+			"changed": "2014-01-02T16:51:15.097Z",
+			"changedBy": 10000,
+			"created": "2013-09-09T13:44:43.474Z",
+			"createdBy": 10000,
+			"name": "Total populations",
+			"requiresFullRef": false
+		},
+		{
+			"_id": 3273,
+			"active": true,
+			"changed": "2013-12-04T10:19:12.494Z",
+			"changedBy": 10000,
+			"created": "2013-09-10T12:55:29.639Z",
+			"createdBy": 10000,
+			"name": "Population density grid",
+			"requiresFullRef": false
+		},
+		{
+			"_id": 3274,
+			"name": "Temp",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2013-09-10T12:57:30.037Z",
+			"createdBy": 10000,
+			"changed": "2013-09-10T12:57:30.037Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 4059,
+			"active": true,
+			"changed": "2014-01-13T15:21:29.023Z",
+			"changedBy": 10000,
+			"created": "2014-01-13T11:45:46.010Z",
+			"createdBy": 10000,
+			"name": "Urban Areas",
+			"requiresFullRef": false
+		},
+		{
+			"_id": 4074,
+			"name": "Global urban footprint",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2014-01-15T10:34:27.855Z",
+			"createdBy": 10000,
+			"changed": "2014-01-15T10:34:27.855Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 4089,
+			"name": "Total population",
+			"active": true,
+			"requiresFullRef": false,
+			"created": "2014-01-15T10:59:44.262Z",
+			"createdBy": 10000,
+			"changed": "2014-01-15T10:59:44.262Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5074,
+			"active": true,
+			"changed": "2015-05-12T12:48:21.740Z",
+			"changedBy": 10000,
+			"created": "2015-05-11T13:38:47.474Z",
+			"createdBy": 10000,
+			"name": "EOW2 Land cover structure",
+			"requiresFullRef": true
+		},
+		{
+			"_id": 5290,
+			"name": "EOW2 Land cover development",
+			"active": true,
+			"requiresFullRef": true,
+			"created": "2015-05-20T17:22:00.840Z",
+			"createdBy": 10000,
+			"changed": "2015-05-20T17:22:00.840Z",
+			"changedBy": 10000
+		},
+		{
+			"_id": 5500,
+			"active": true,
+			"changed": "2015-06-08T11:21:48.387Z",
+			"changedBy": 10000,
+			"created": "2015-05-27T09:14:59.765Z",
+			"createdBy": 10000,
+			"name": "EOW2 Common",
+			"requiresFullRef": false
+		}
+	],
+	"success": true
+}

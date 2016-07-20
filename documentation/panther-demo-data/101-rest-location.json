@@ -1,0 +1,173 @@
+{
+	"data": [
+		{
+			"_id": 276,
+			"active": true,
+			"bbox": "112.337169,-7.954641,112.977462,-7.029791",
+			"center": "112.6,-7.5",
+			"changed": "2016-04-19T00:14:04.773Z",
+			"changedBy": 1,
+			"created": "2013-03-28T13:15:09.967Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"name": "Surabaya",
+			"scope": 1361
+		},
+		{
+			"_id": 374,
+			"active": false,
+			"bbox": "",
+			"center": "111,4.2",
+			"changed": "2016-04-18T17:26:17.873Z",
+			"changedBy": 1,
+			"created": "2013-04-03T16:55:55.447Z",
+			"createdBy": 10000,
+			"name": "Southeast Asia",
+			"scope": 1368,
+			"dataset": null
+		},
+		{
+			"_id": 922,
+			"active": false,
+			"bbox": "",
+			"center": "120,15",
+			"changed": "2016-04-18T17:26:24.161Z",
+			"changedBy": 1,
+			"created": "2013-05-10T15:33:07.243Z",
+			"createdBy": 10000,
+			"name": "East Asia + Pacific",
+			"scope": 1527
+		},
+		{
+			"_id": 1645,
+			"active": false,
+			"bbox": "",
+			"center": "",
+			"changed": "2016-04-18T17:26:29.257Z",
+			"changedBy": 1,
+			"created": "2013-07-02T11:06:58.069Z",
+			"createdBy": 10000,
+			"dataset": null,
+			"name": "Surabaya moved"
+		},
+		{
+			"_id": 1828,
+			"active": true,
+			"bbox": "106.276932,10.520894,107.148972,11.430898",
+			"center": "",
+			"changed": "2016-04-20T22:42:58.517Z",
+			"changedBy": 1,
+			"created": "2013-08-20T12:13:49.185Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"name": "Ho Chi Minh City"
+		},
+		{
+			"_id": 1869,
+			"active": true,
+			"bbox": "123.589325,10.116584,124.120102,10.651498",
+			"center": "",
+			"changed": "2016-04-20T22:39:24.192Z",
+			"changedBy": 1,
+			"created": "2013-08-23T13:23:56.182Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"name": "Cebu City"
+		},
+		{
+			"_id": 1870,
+			"active": true,
+			"bbox": "106.488419,20.706344,106.865387,21.026508",
+			"center": "",
+			"changed": "2016-04-20T22:41:11.006Z",
+			"changedBy": 1,
+			"created": "2013-08-23T13:24:14.679Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"name": "Hai Phong"
+		},
+		{
+			"_id": 1872,
+			"active": true,
+			"bbox": "106.276245,47.608015,107.62207,48.288676",
+			"center": "",
+			"changed": "2016-04-19T00:13:33.858Z",
+			"changedBy": 1,
+			"created": "2013-08-23T13:24:48.104Z",
+			"createdBy": 10000,
+			"dataset": 1532,
+			"name": "Ulaanbaatar"
+		},
+		{
+			"_id": 2450,
+			"active": true,
+			"bbox": "",
+			"center": "",
+			"changed": "2016-04-18T17:23:30.246Z",
+			"changedBy": 1,
+			"created": "2013-08-27T17:36:50.848Z",
+			"createdBy": 10000,
+			"dataset": 2449,
+			"name": "All countries"
+		},
+		{
+			"_id": 3215,
+			"active": true,
+			"bbox": "84.375,-19.642587534,170.859375,46.3165841818",
+			"center": "",
+			"changed": "2016-04-19T00:13:40.129Z",
+			"changedBy": 1,
+			"created": "2013-09-09T13:46:39.122Z",
+			"createdBy": 10000,
+			"dataset": 3213,
+			"name": "East Asia and Pacific"
+		},
+		{
+			"_id": 4061,
+			"name": "Global",
+			"bbox": "",
+			"center": "",
+			"active": false,
+			"dataset": null,
+			"created": "2014-01-13T11:49:48.608Z",
+			"createdBy": 10000,
+			"changed": "2016-04-18T17:23:17.191Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 4079,
+			"name": "Central America",
+			"bbox": "",
+			"center": "",
+			"active": false,
+			"dataset": null,
+			"created": "2014-01-15T10:41:10.053Z",
+			"createdBy": 10000,
+			"changed": "2016-04-18T17:23:06.541Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 5255,
+			"name": "EOW2 Cities",
+			"bbox": "",
+			"center": "",
+			"active": true,
+			"dataset": 5011,
+			"created": "2015-05-20T14:48:52.268Z",
+			"createdBy": 10000,
+			"changed": "2016-04-18T17:22:51.047Z",
+			"changedBy": 1
+		},
+		{
+			"_id": 6246,
+			"active": false,
+			"created": "2016-04-05T22:12:40.119Z",
+			"createdBy": 1,
+			"changed": "2016-04-05T23:48:28.369Z",
+			"changedBy": 21,
+			"name": "Port-au-Prince",
+			"dataset": 1532
+		}
+	],
+	"success": true
+}

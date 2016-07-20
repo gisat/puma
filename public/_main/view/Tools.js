@@ -15,28 +15,27 @@ Ext.define('PumaMain.view.Tools', {
             //hideCollapseTool: true
             collapseLeft: true
         }
-        this.items = [
-         {
+        var colourSelection = {
             xtype: 'panel',
             title: 'Selection color',
             itemId: 'selcolor',
             helpId: 'Multipleselectionshighlightedbyc',
             header: {height: 60},
             tools: [{
-               type: 'unselect',
-               cls: 'unselect',
-               tooltip: 'Unselect',
-               itemId: 'unselect'
+                type: 'unselect',
+                cls: 'unselect',
+                tooltip: 'Unselect last added',
+                itemId: 'unselect'
             },{
-               type: 'unselectall',
-               cls: 'unselectall',
-               tooltip: 'Unselect all',
-               itemId: 'unselectall'
+                type: 'unselectall',
+                cls: 'unselectall',
+                tooltip: 'Unselect all',
+                itemId: 'unselectall'
             },{
-               type: 'detach',
-               cls: 'detach',
-               tooltip: 'Detach',
-               itemId: 'undock'
+                type: 'detach',
+                cls: 'detach',
+                tooltip: 'Detach',
+                itemId: 'undock'
             }],
             layout: {
                 type: 'hbox',
@@ -44,77 +43,19 @@ Ext.define('PumaMain.view.Tools', {
             },
             height: 72,
             items: [{
-                    xtype: 'colorpicker',
-                    fieldLabel: 'CP',
-                    value: 'ff4c39',
-                    itemId: 'selectcolorpicker',
-                    height: 22,
-                    margin: '0 10',
-                    flex: 1,
-                    //width: 120,
-                    colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
-                
+                xtype: 'colorpicker',
+                fieldLabel: 'CP',
+                value: 'ff4c39',
+                itemId: 'selectcolorpicker',
+                height: 22,
+                margin: '0 10',
+                flex: 1,
+                //width: 120,
+                colors: ['ff4c39', '34ea81', '39b0ff', 'ffde58', '5c6d7e', 'd97dff']
+
             }]
-             
-             
-         },   
-            
-         {
-            xtype: 'layerpanel',
-            //maxHeight: 500,
-            itemId: 'layerpanel',
-            helpId: 'Layers',
-            tools: [{
-                type: 'gear',
-                tooltip: 'Configure thematic maps',
-                itemId: 'gear'
-            },{
-               type: 'detach',
-               cls: 'detach',
-               tooltip: 'Detach',
-               itemId: 'undock'
-            }],
-            height: 300,
-            title: 'Layers'
-        },   
-        {
-            xtype: 'treepanel',
-            title: 'Areas',
-            itemId: 'areatree',
-            helpId: 'TreeofanalyticalunitsAREAS',
-            collapsed: true,
-            store: Ext.StoreMgr.lookup('area'),
-            selModel: {
-                mode: 'MULTI'
-            },
-            tools: [{
-                type: 'areacollapse',
-                cls: 'areacollapse',
-                tooltip: 'Collapse all',
-                itemId: 'areacollapse'
-            },{
-               type: 'detach',
-               cls: 'detach',
-               tooltip: 'Detach',
-               itemId: 'undock'
-            }],
-            rootVisible: false,
-            displayField: 'name',
-            height: 340
-            //,maxHeight: 500
-        }, {
-            xtype: 'maptools',
-            collapsed: false,
-            itemId: 'maptools',
-            helpId: 'Maptools',
-            tools: [{
-               type: 'detach',
-               cls: 'detach',
-               tooltip: 'Detach',
-               itemId: 'undock'
-            }],
-            title: 'Map tools'
-        },{
+        };
+        var advancedFilters = {
             xtype: 'panel',
             collapsed: true,
             tools: [{
@@ -130,15 +71,15 @@ Ext.define('PumaMain.view.Tools', {
                 tooltip: 'Configure filters',
                 itemId: 'gear'
             },{
-               type: 'detach',
-               tooltip: 'Detach',
-               cls: 'detach',
-               itemId: 'undock'
+                type: 'detach',
+                tooltip: 'Detach',
+                cls: 'detach',
+                itemId: 'undock'
             }],
             layout: {
                 type: 'vbox',
                 align: 'stretch'
-                
+
             },
             itemId: 'advancedfilters',
             helpId: 'Filteringanalyticalunits',
@@ -157,10 +98,72 @@ Ext.define('PumaMain.view.Tools', {
 //                disabled: true,
 //                itemId: 'filterselect'
 //            }],
-            title: 'Advanced filters',
+            title: Config.texts.advancedFiltersName,
             bodyCls: 'tools-filters-list'
-        }]
-        
+        };
+        var layers = {
+            xtype: 'layerpanel',
+            //maxHeight: 500,
+            itemId: 'layerpanel',
+            helpId: 'Layers',
+            tools: [{
+                type: 'gear',
+                tooltip: 'Configure thematic maps',
+                itemId: 'gear'
+            },{
+                type: 'detach',
+                cls: 'detach',
+                tooltip: 'Detach',
+                itemId: 'undock'
+            }],
+            height: 300,
+            title: 'Layers'
+        };
+        var areas = {
+            xtype: 'treepanel',
+            title: Config.texts.areasSectionName,
+            itemId: 'areatree',
+            helpId: 'TreeofanalyticalunitsAREAS',
+            collapsed: true,
+            store: Ext.StoreMgr.lookup('area'),
+            selModel: {
+                mode: 'MULTI'
+            },
+            tools: [{
+                type: 'areacollapse',
+                cls: 'areacollapse',
+                tooltip: 'Collapse all',
+                itemId: 'areacollapse'
+            },{
+                type: 'detach',
+                cls: 'detach',
+                tooltip: 'Detach',
+                itemId: 'undock'
+            }],
+            rootVisible: false,
+            displayField: 'name',
+            height: 340
+            //,maxHeight: 500
+        };
+        var maptools = {
+            xtype: 'maptools',
+            collapsed: false,
+            itemId: 'maptools',
+            helpId: 'Maptools',
+            tools: [{
+                type: 'detach',
+                cls: 'detach',
+                tooltip: 'Detach',
+                itemId: 'undock'
+            }],
+            title: 'Map tools'
+        };
+
+        this.items = [colourSelection,layers,areas,maptools,advancedFilters];
+        if (Config.toggles.advancedFiltersFirst){
+            this.items = [colourSelection,advancedFilters,layers,areas,maptools]
+        }
+
         this.callParent();
         
     }

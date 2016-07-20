@@ -83,7 +83,7 @@ function initServer(err) {
 	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
 	console.log('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);
-	console.log('Listening on port ' + config.localPort);
+	logger.info('Listening on port ' + config.localPort);
 }
 
 async.series([

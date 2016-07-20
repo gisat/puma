@@ -86,6 +86,29 @@ function create(collName,obj,params,callback) {
 	async.auto(opts);
 }
 
+/**
+ * It returns collection restricted by either activeness of element or the person who created the element.
+ * @param columnName {String} Name of one of the collections in the Mongo
+ * @param params {Object} Parameters allowing further filtering.
+ * @param callback {Function} Function called, when the operation ends. Either with result or with error object.
+ */
+function readRestricted(columnName, params, callback) {
+	var filter;
+	if(params.userId) {
+		filter = {
+			$or: [
+				{active: true},
+				{createdBy: params.userId}
+			]
+		};
+	} else {
+		filter = {
+			active: true
+		};
+	}
+
+	read(columnName, filter, params, callback);
+}
 
 function read(collName,filter,params,callback) {
 	if (typeof(params) === 'function'){
@@ -399,6 +422,7 @@ var doPreHooks = function(opType,collName,obj,callback) {
 module.exports = {
 	create: create,
 	read: read,
+	readRestricted: readRestricted,
 	update: update,
 	remove: remove,
 	ensureCollection: ensureCollection

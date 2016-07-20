@@ -26,6 +26,15 @@
 	}
 }
 
+@if $useHeader == true {
+	#header{
+		display: block;
+	}
+	#content-application {
+		top: 30px;
+	}
+}
+
 @if $useWBFooter == true {
 	#footer-bar,
 	#puma-footer-links,
@@ -43,6 +52,12 @@
 
 	#gisat-copyright{
 		display: none;
+	}
+}
+
+@if $useFooterLegal == true {
+	#footer-legal{
+		display: block;
 	}
 }
 

@@ -1,6 +1,9 @@
 var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
 
+var Style = require('../styles/Style');
+var UUID = require('../common/UUID');
+
 var api = {
 	login: require('../api/login'),
 	layers: require('../api/layers'),
@@ -16,9 +19,29 @@ var api = {
 };
 
 module.exports = function(app) {
-	app.post('/rest/:objType', crud.ensureCollection);
-	app.post('/rest/:objType/*', crud.ensureCollection);
-	
+	app.get('/restricted/rest/:objectType', function (req, res, next) {
+		var objectType = req.params.objectType;
+		logger.info("Requested restricted collection of type: ", objectType, " By User: ", req.userId);
+
+		if (objectType != 'dataset' && objectType != 'scope') {
+			return next(new Error('It is forbidden to use restricted for different type of objects.'));
+		}
+
+		crud.readRestricted(objectType, {
+			userId: req.userId,
+			justMine: req.query['justMine']
+		}, function (err, result) {
+			if (err) {
+				logger.error("It wasn't possible to read restricted collection:", objectType, " by User:", req.userId, " Error: ", err);
+				next(err);
+			} else {
+				logger.info("Result of loading " + objectType + " " + result);
+				res.data = result;
+				next();
+			}
+		});
+	});
+
 	app.get('/rest/:objType',function(req,res,next) {
 		logger.info("Requested collection of type: ", req.params.objType, " By User: ", req.userId);
 		//var filter = req.query.filter ? JSON.parse(req.query.filter) : {};
@@ -46,22 +69,121 @@ module.exports = function(app) {
 		});
 	});
 
+	/**
+	 * It sets up the object type used in specific collection.
+	 */
+	app.put('/rest/:objectType', function(req, res, next){
+		req.objectType = req.params.objectType;
+		next();
+	});
+
+	app.put('/rest/theme', function(req, res, next){
+		// Whenever you create new theme also create associated topic, which must be used everywhere. What are the dependencies in the backend. In frontend it is relevant to associate correct years and stuff.
+		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
+
+		var parameters = {
+			userId: req.userId,
+			isAdmin: req.isAdmin
+		};
+		var theme = req.body.data;
+		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
+			if (err) {
+				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
+					"With data: ", theme, " Error:", err);
+				return next(err);
+			}
+
+			if(scopes.length > 1) {
+				return next(new Error('Either multiple Scopes with the same Id or multiple Scopes specified for one Theme.'));
+			} else if(scopes.length == 1) {
+				// Use the years from associated Scope, if such Scope already exists. If it doesn't the years are handle by the frontend.
+				theme.years = scopes[0].years;
+			}
+
+			crud.update(req.objectType, theme, parameters, function (err, result) {
+				if (err) {
+					logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
+						"With data: ", theme, " Error:", err);
+					return next(err);
+				} else {
+					res.data = result;
+
+					return next();
+				}
+			});
+		});
+	});
+
+	app.put('/rest/analysis', function(req, res, next) {
+		// Verify that the created analysis doesn't have attribute from the same attribute set as the source one.
+		// calcAttributeSet a normAttributeSet u vsech atributu se musi lisit od source attribute setu
+		var analysis = req.body.data;
+		var idOfTemplateForAnalysis = analysis.analysis;
+		logger.info()
+
+		crud.read('analysis', {_id: idOfTemplateForAnalysis}, {userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
+			if(err) {
+				return next(new Error("There is no analysis with given id."));
+			}
+
+			// In spatial analysis it isn't good idea to use the same attribute set for the source data nad result alike.
+			if(result.type == "spatialagg") {
+				// Verify only when some attributes are present.
+				var sourceAttributeSetIsntUsedAsResult = true;
+				if (analysis.attributeMap && analysis.attributeMap.length > 0) {
+					analysis.attributeMap.forEach(function (attributeToAnalyse) {
+						if (attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
+							sourceAttributeSetIsntUsedAsResult = false;
+						}
+					});
+				}
+
+				if (!sourceAttributeSetIsntUsedAsResult) {
+					return next(new Error("Attributes used in the analysis as a source attribute and as a result attributes must be from different attribute sets."));
+				}
+			}
+
+			updateStandardRestObject(req, res, next);
+		});
+	});
+
 
 	// new backoffice
-	app.put('/rest/:objType',function(req,res,next) {
-		logger.info("Update object of type: ", req.params.objType, " by User: ", req.userId, "With data: ", req.body.data);
+	function updateStandardRestObject(req,res,next) {
+		logger.info("Update object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
 		var obj = req.body.data;
 
-		crud.update(req.params.objType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
+		crud.update(req.objectType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if (err){
-				logger.error("It wasn't possible to update object of type: ", req.params.objType, " by User: ", req.userId,
+				logger.error("It wasn't possible to update object of type: ", req.objectType, " by User: ", req.userId,
 					"With data: ", req.body.data, " Error:", err);
 				return next(err);
 			}
 			res.data = result;
 			next();
 		});
-	});
+	}
+
+	app.put('/rest/dataset', updateStandardRestObject);
+	app.put('/rest/scope', updateStandardRestObject);
+
+	app.put('/rest/layergroup', updateStandardRestObject);
+	app.put('/rest/layergroupgs', updateStandardRestObject);
+	app.put('/rest/dataview', updateStandardRestObject);
+	app.put('/rest/chartcfg', updateStandardRestObject);
+	app.put('/rest/viewcfg', updateStandardRestObject);
+	app.put('/rest/userpolygon', updateStandardRestObject);
+	app.put('/rest/topic', updateStandardRestObject);
+	app.put('/rest/performedanalysis', updateStandardRestObject);
+	app.put('/rest/visualization', updateStandardRestObject);
+	app.put('/rest/location', updateStandardRestObject);
+	app.put('/rest/attributeset', updateStandardRestObject);
+	app.put('/rest/attribute', updateStandardRestObject);
+	app.put('/rest/layerref', updateStandardRestObject);
+	app.put('/rest/areatemplate', updateStandardRestObject);
+	app.put('/rest/year', updateStandardRestObject);
+
+
 	// old backoffice
 	app.put('/rest/:objType/:objId',function(req,res,next) {
 		var obj = req.body.data;
@@ -79,11 +201,63 @@ module.exports = function(app) {
 		});
 	});
 
+	/**
+	 * It sets up the object type used in specific collection.
+	 */
+	app.post('/rest/:objectType', function(req, res, next){
+		req.objectType = req.params.objectType;
+		next();
+	});
 
-	app.post('/rest/:objType',function(req,res,next) {
-		logger.info("Create object of type: ", req.params.objType, " by User: ", req.userId, "With data: ", req.body.data);
-		crud.create(req.params.objType,req.body.data,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err){
+	app.post('/rest/symbology', function(req, res, next){
+		var receivedData = req.body.data;
+
+		if(!receivedData || !Style.validateDescription(receivedData)) {
+			res.send(400, 'Request must contain valid data for generating SLD.');
+			return;
+		}
+
+		var style = new Style(new UUID().toString(), receivedData);
+
+		var sql = style.toSql();
+		// Save to PostgreSQL;
+
+		// Save to Mongo Database
+
+		Promise.all([sqlPromise, mongoPromise]).then(function(){
+			next();
+		}, function(){
+			next({
+				message: 'Error in saving symbology.'
+			});
+		});
+	});
+
+	app.post('/rest/dataset', createStandardRestObject);
+	app.post('/rest/scope', createStandardRestObject);
+
+	app.post('/rest/theme', createStandardRestObject);
+	app.post('/rest/layergroup', createStandardRestObject);
+	app.post('/rest/layergroupgs', createStandardRestObject);
+	app.post('/rest/dataview', createStandardRestObject);
+	app.post('/rest/chartcfg', createStandardRestObject);
+	app.post('/rest/viewcfg', createStandardRestObject);
+	app.post('/rest/userpolygon', createStandardRestObject);
+	app.post('/rest/topic', createStandardRestObject);
+	app.post('/rest/analysis', createStandardRestObject);
+	app.post('/rest/performedanalysis', createStandardRestObject);
+	app.post('/rest/visualization', createStandardRestObject);
+	app.post('/rest/location', createStandardRestObject);
+	app.post('/rest/attributeset', createStandardRestObject);
+	app.post('/rest/attribute', createStandardRestObject);
+	app.post('/rest/layerref', createStandardRestObject);
+	app.post('/rest/areatemplate', createStandardRestObject);
+	app.post('/rest/year', createStandardRestObject);
+
+	function createStandardRestObject(req, res, next) {
+		logger.info("Create object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
+		crud.create(req.objectType, req.body.data, {userId: req.userId, isAdmin: req.isAdmin}, function (err, result) {
+			if (err) {
 				logger.error("It wasn't possible to create object of type: ", req.params.objType, " by User: ", req.userId,
 					"With data: ", req.body.data, " Error:", err);
 				return next(err);
@@ -91,8 +265,7 @@ module.exports = function(app) {
 			res.data = result;
 			next();
 		});
-	});
-
+	}
 
 	// new backoffice
 	app.delete('/rest/:objType',function(req,res,next) {
@@ -136,18 +309,11 @@ module.exports = function(app) {
 			next(err);
 		}
 	});
-	
-//	app.get('/api/:module/:method',function(req,res,next) {
-//		var mod = api[req.params.module];
-//		var fn = mod[req.params.method];
-//		console.log(fn)
-//		try {
-//			fn(req.query,req,res,next)
-//		}
-//		catch (err) {
-//			next(err);
-//		}
-//	})
+
+	app.get('/api/verify/scope/:id', function(req, res, next){
+		// Load information about Scope and all associated Entities.
+		// 
+	});
 	
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);

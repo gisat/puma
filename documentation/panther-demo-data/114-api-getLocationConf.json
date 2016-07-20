@@ -1,0 +1,305 @@
+{
+	"data": [
+		{
+			"name": "Surabaya",
+			"locGid": 1,
+			"id": "276_1",
+			"dataset": "1532",
+			"location": 276,
+			"at": 279
+		},
+		{
+			"name": "Ho Chi Minh City",
+			"locGid": 247,
+			"id": "1828_247",
+			"dataset": "1532",
+			"location": 1828,
+			"at": 279
+		},
+		{
+			"name": "East Asia and Pacific",
+			"locGid": 44,
+			"id": "3215_44",
+			"dataset": "3213",
+			"location": 3215,
+			"at": 279
+		},
+		{
+			"name": "Cebu City",
+			"locGid": 25,
+			"id": "1869_25",
+			"dataset": "1532",
+			"location": 1869,
+			"at": 279
+		},
+		{
+			"name": "Colombo",
+			"locGid": 1,
+			"id": "5255_1",
+			"dataset": "5011",
+			"location": 5255,
+			"at": 377
+		},
+		{
+			"name": "Chittagong",
+			"locGid": 2,
+			"id": "5255_2",
+			"dataset": "5011",
+			"location": 5255,
+			"at": 377
+		},
+		{
+			"name": "Jalalabad",
+			"locGid": 3,
+			"id": "5255_3",
+			"dataset": "5011",
+			"location": 5255,
+			"at": 377
+		},
+		{
+			"name": "Karachi",
+			"locGid": 4,
+			"id": "5255_4",
+			"dataset": "5011",
+			"location": 5255,
+			"at": 377
+		},
+		{
+			"name": "Hai Phong",
+			"locGid": 16,
+			"id": "1870_16",
+			"dataset": "1532",
+			"location": 1870,
+			"at": 279
+		},
+		{
+			"name": "Kiribati",
+			"locGid": 119,
+			"id": "2450_119",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Marshall Islands",
+			"locGid": 140,
+			"id": "2450_140",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Singapore",
+			"locGid": 203,
+			"id": "2450_203",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "China",
+			"locGid": 1,
+			"id": "2450_1",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Myanmar",
+			"locGid": 2,
+			"id": "2450_2",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Brunei",
+			"locGid": 35,
+			"id": "2450_35",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Cambodia",
+			"locGid": 39,
+			"id": "2450_39",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "East Timor",
+			"locGid": 67,
+			"id": "2450_67",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Fiji",
+			"locGid": 77,
+			"id": "2450_77",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Japan",
+			"locGid": 114,
+			"id": "2450_114",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Laos",
+			"locGid": 123,
+			"id": "2450_123",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Malaysia",
+			"locGid": 136,
+			"id": "2450_136",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Micronesia",
+			"locGid": 146,
+			"id": "2450_146",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Mongolia",
+			"locGid": 149,
+			"id": "2450_149",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "North Korea",
+			"locGid": 166,
+			"id": "2450_166",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Palau",
+			"locGid": 171,
+			"id": "2450_171",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Philippines",
+			"locGid": 177,
+			"id": "2450_177",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Samoa",
+			"locGid": 195,
+			"id": "2450_195",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Solomon Islands",
+			"locGid": 207,
+			"id": "2450_207",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "South Korea",
+			"locGid": 211,
+			"id": "2450_211",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Taiwan",
+			"locGid": 223,
+			"id": "2450_223",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Thailand",
+			"locGid": 226,
+			"id": "2450_226",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Tonga",
+			"locGid": 229,
+			"id": "2450_229",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Vanuatu",
+			"locGid": 244,
+			"id": "2450_244",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Vietnam",
+			"locGid": 247,
+			"id": "2450_247",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Indonesia",
+			"locGid": 106,
+			"id": "2450_106",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Papua New Guinea",
+			"locGid": 174,
+			"id": "2450_174",
+			"dataset": "2449",
+			"location": 2450,
+			"at": 1426
+		},
+		{
+			"name": "Ulaanbaatar",
+			"locGid": 21,
+			"id": "1872_21",
+			"dataset": "1532",
+			"location": 1872,
+			"at": 279
+		},
+		{
+			"name": "All places",
+			"id": "custom"
+		}
+	],
+	"success": true
+}

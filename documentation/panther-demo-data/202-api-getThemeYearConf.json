@@ -1,0 +1,969 @@
+{
+	"data": {
+		"leafMap": {},
+		"auRefMap": {
+			"276": {
+				"279": {
+					"278": {
+						"_id": 2109,
+						"name": "",
+						"columnMap": [],
+						"location": 276,
+						"layer": "geonode:srb_b3_gadm_adm0_final",
+						"fidColumn": "ID_0",
+						"isData": false,
+						"nameColumn": "NAME_0",
+						"parentColumn": null,
+						"areaTemplate": 279,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-26T14:01:24.847Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:21.649Z",
+						"changedBy": 10000
+					}
+				},
+				"280": {
+					"278": {
+						"_id": 2110,
+						"name": "",
+						"columnMap": [],
+						"location": 276,
+						"layer": "geonode:srb_b3_gadm_adm2_final",
+						"fidColumn": "ID_2",
+						"isData": false,
+						"nameColumn": "NAME_2",
+						"parentColumn": "ID_0",
+						"areaTemplate": 280,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-26T14:01:46.283Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:28.802Z",
+						"changedBy": 10000
+					}
+				},
+				"281": {
+					"278": {
+						"_id": 2111,
+						"name": "",
+						"columnMap": [],
+						"location": 276,
+						"layer": "geonode:srb_b3_gadm_adm3_final",
+						"fidColumn": "ID_3",
+						"isData": false,
+						"nameColumn": "NAME_3",
+						"parentColumn": "ID_2",
+						"areaTemplate": 281,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-26T14:02:02.207Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:35.783Z",
+						"changedBy": 10000
+					}
+				},
+				"282": {
+					"278": {
+						"_id": 2112,
+						"name": "",
+						"columnMap": [],
+						"location": 276,
+						"layer": "geonode:srb_b3_gadm_adm4_final",
+						"fidColumn": "ID_4",
+						"isData": false,
+						"nameColumn": "NAME_4",
+						"parentColumn": "ID_3",
+						"areaTemplate": 282,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-26T14:02:16.483Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:38.871Z",
+						"changedBy": 10000
+					}
+				},
+				"283": {}
+			},
+			"1828": {
+				"279": {
+					"278": {
+						"_id": 2164,
+						"name": "",
+						"columnMap": [],
+						"location": 1828,
+						"layer": "geonode:hcmc_b3_gadm_adm0",
+						"fidColumn": "ID_0",
+						"isData": false,
+						"nameColumn": "name_0",
+						"parentColumn": null,
+						"areaTemplate": 279,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-27T12:52:07.520Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:45.276Z",
+						"changedBy": 10000
+					}
+				},
+				"280": {
+					"278": {
+						"_id": 1917,
+						"name": "",
+						"columnMap": [],
+						"location": 1828,
+						"layer": "geonode:hcmc_b3_gadm_adm2",
+						"fidColumn": "ID_2",
+						"isData": false,
+						"nameColumn": "name_2",
+						"parentColumn": "ID_0",
+						"areaTemplate": 280,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:39:36.122Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:47.664Z",
+						"changedBy": 10000
+					}
+				},
+				"281": {
+					"278": {
+						"_id": 1918,
+						"name": "",
+						"columnMap": [],
+						"location": 1828,
+						"layer": "geonode:hcmc_b3_gadm_adm3",
+						"fidColumn": "ID_3",
+						"isData": false,
+						"nameColumn": "name_3",
+						"parentColumn": "ID_2",
+						"areaTemplate": 281,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:39:49.842Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:49.811Z",
+						"changedBy": 10000
+					}
+				},
+				"282": {
+					"278": {
+						"_id": 1919,
+						"name": "",
+						"columnMap": [],
+						"location": 1828,
+						"layer": "geonode:hcmc_b3_gadm_adm4",
+						"fidColumn": "ID_4",
+						"isData": false,
+						"nameColumn": "NAME_4",
+						"parentColumn": "ID_3",
+						"areaTemplate": 282,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:40:04.600Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:51.707Z",
+						"changedBy": 10000
+					}
+				},
+				"283": {}
+			},
+			"1869": {
+				"279": {
+					"278": {
+						"_id": 1885,
+						"name": "",
+						"columnMap": [],
+						"location": 1869,
+						"layer": "geonode:cbct_b3_gadm_adm1",
+						"fidColumn": "ID_1",
+						"isData": false,
+						"nameColumn": "name_1",
+						"parentColumn": null,
+						"areaTemplate": 279,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:15:22.746Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:45:57.681Z",
+						"changedBy": 10000
+					}
+				},
+				"280": {
+					"278": {
+						"_id": 1886,
+						"name": "",
+						"columnMap": [],
+						"location": 1869,
+						"layer": "geonode:cbct_b3_gadm_adm2",
+						"fidColumn": "ID_2",
+						"isData": false,
+						"nameColumn": "NAME_2",
+						"parentColumn": "ID_1",
+						"areaTemplate": 280,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:15:34.567Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:00.093Z",
+						"changedBy": 10000
+					}
+				},
+				"281": {
+					"278": {
+						"_id": 1887,
+						"name": "",
+						"columnMap": [],
+						"location": 1869,
+						"layer": "geonode:cbct_b3_gadm_adm3",
+						"fidColumn": "ID_3",
+						"isData": false,
+						"nameColumn": "NAME_3",
+						"parentColumn": "ID_2",
+						"areaTemplate": 281,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:15:48.463Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:02.580Z",
+						"changedBy": 10000
+					}
+				},
+				"282": {},
+				"283": {}
+			},
+			"1870": {
+				"279": {
+					"278": {
+						"_id": 1907,
+						"name": "",
+						"columnMap": [],
+						"location": 1870,
+						"layer": "geonode:hpng_b3_gadm_adm2",
+						"fidColumn": "ID_2",
+						"isData": false,
+						"nameColumn": "name_2",
+						"parentColumn": null,
+						"areaTemplate": 279,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:33:56.428Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:09.177Z",
+						"changedBy": 10000
+					}
+				},
+				"280": {
+					"278": {
+						"_id": 1908,
+						"name": "",
+						"columnMap": [],
+						"location": 1870,
+						"layer": "geonode:hpng_b3_gadm_adm3",
+						"fidColumn": "ID_3",
+						"isData": false,
+						"nameColumn": "name_3",
+						"parentColumn": "ID_2",
+						"areaTemplate": 280,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:34:13.213Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:11.248Z",
+						"changedBy": 10000
+					}
+				},
+				"281": {
+					"278": {
+						"_id": 1909,
+						"name": "",
+						"columnMap": [],
+						"location": 1870,
+						"layer": "geonode:hpng_b3_gadm_adm4",
+						"fidColumn": "ID_4",
+						"isData": false,
+						"nameColumn": "NAME_4",
+						"parentColumn": "ID_3",
+						"areaTemplate": 281,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:34:32.285Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:13.567Z",
+						"changedBy": 10000
+					}
+				},
+				"282": {},
+				"283": {}
+			},
+			"1872": {
+				"279": {
+					"278": {
+						"_id": 1938,
+						"name": "",
+						"columnMap": [],
+						"location": 1872,
+						"layer": "geonode:ubt_b3_gadm_adm1",
+						"fidColumn": "ID_1",
+						"isData": false,
+						"nameColumn": "NAME_1",
+						"parentColumn": null,
+						"areaTemplate": 279,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:49:23.297Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:19.000Z",
+						"changedBy": 10000
+					}
+				},
+				"280": {
+					"278": {
+						"_id": 1939,
+						"name": "",
+						"columnMap": [],
+						"location": 1872,
+						"layer": "geonode:ubt_b3_gadm_adm2",
+						"fidColumn": "ID_2",
+						"isData": false,
+						"nameColumn": "NAME_2",
+						"parentColumn": "ID_1",
+						"areaTemplate": 280,
+						"attributeSet": null,
+						"year": 278,
+						"wmsAddress": "",
+						"wmsLayers": "",
+						"active": true,
+						"created": "2013-08-23T14:49:36.288Z",
+						"createdBy": 10000,
+						"changed": "2013-09-06T17:46:21.443Z",
+						"changedBy": 10000
+					}
+				},
+				"281": {},
+				"282": {},
+				"283": {}
+			},
+			"6246": {
+				"279": {},
+				"280": {},
+				"281": {},
+				"282": {},
+				"283": {}
+			}
+		},
+		"attrSets": [
+			321,
+			328,
+			329,
+			343,
+			450,
+			451,
+			467,
+			473,
+			548,
+			591,
+			1694,
+			2332,
+			2333
+		],
+		"areas": [
+			{
+				"gid": 1,
+				"parentgid": null,
+				"leaf": false,
+				"idx": 0,
+				"at": 279,
+				"loc": 276,
+				"lr": 2109,
+				"name": "Surabaya",
+				"extent": "POLYGON((112.33812713623 -7.95248937606812,112.33812713623 -7.03116464614868,112.976631164551 -7.03116464614868,112.976631164551 -7.95248937606812,112.33812713623 -7.95248937606812))"
+			},
+			{
+				"gid": 247,
+				"parentgid": null,
+				"leaf": false,
+				"idx": 0,
+				"at": 279,
+				"loc": 1828,
+				"lr": 2164,
+				"name": "Ho Chi Minh City",
+				"extent": "POLYGON((106.345199584961 10.5739946365356,106.345199584961 11.3877592086792,107.099761962891 11.3877592086792,107.099761962891 10.5739946365356,106.345199584961 10.5739946365356))"
+			},
+			{
+				"gid": 25,
+				"parentgid": null,
+				"leaf": false,
+				"idx": 0,
+				"at": 279,
+				"loc": 1869,
+				"lr": 1885,
+				"name": "Cebu City",
+				"extent": "POLYGON((123.663482666016 10.1783399581909,123.663482666016 10.5926609039307,124.089218139648 10.5926609039307,124.089218139648 10.1783399581909,123.663482666016 10.1783399581909))"
+			},
+			{
+				"gid": 16,
+				"parentgid": null,
+				"leaf": false,
+				"idx": 0,
+				"at": 279,
+				"loc": 1870,
+				"lr": 1907,
+				"name": "Hai Phong",
+				"extent": "POLYGON((106.526092529297 20.7507476806641,106.526092529297 20.9805145263672,106.809867858887 20.9805145263672,106.809867858887 20.7507476806641,106.526092529297 20.7507476806641))"
+			},
+			{
+				"gid": 21,
+				"parentgid": null,
+				"leaf": false,
+				"idx": 0,
+				"at": 279,
+				"loc": 1872,
+				"lr": 1938,
+				"name": "Ulaanbaatar",
+				"extent": "POLYGON((106.356376647949 47.6352844238281,106.356376647949 48.2571563720703,107.578170776367 48.2571563720703,107.578170776367 47.6352844238281,106.356376647949 47.6352844238281))"
+			},
+			{
+				"gid": 458,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Consolacion",
+				"extent": "POLYGON((123.924446105957 10.3474988937378,123.924446105957 10.4516305923462,124.003944396973 10.4516305923462,124.003944396973 10.3474988937378,123.924446105957 10.3474988937378))"
+			},
+			{
+				"gid": 472,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Minglanilla",
+				"extent": "POLYGON((123.741851806641 10.2297601699829,123.741851806641 10.3725309371948,123.816299438477 10.3725309371948,123.816299438477 10.2297601699829,123.741851806641 10.2297601699829))"
+			},
+			{
+				"gid": 490,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Talisay City",
+				"extent": "POLYGON((123.782669067383 10.2340087890625,123.782669067383 10.3284502029419,123.875625610352 10.3284502029419,123.875625610352 10.2340087890625,123.782669067383 10.2340087890625))"
+			},
+			{
+				"gid": 459,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Cordoba",
+				"extent": "POLYGON((123.913604736328 10.2027788162231,123.913604736328 10.2780714035034,123.99250793457 10.2780714035034,123.99250793457 10.2027788162231,123.913604736328 10.2027788162231))"
+			},
+			{
+				"gid": 466,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Lapu-Lapu City",
+				"extent": "POLYGON((123.899993896484 10.2018604278564,123.899993896484 10.3505935668945,124.089218139648 10.3505935668945,124.089218139648 10.2018604278564,123.899993896484 10.2018604278564))"
+			},
+			{
+				"gid": 456,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Cebu City",
+				"extent": "POLYGON((123.769729614258 10.2618598937988,123.769729614258 10.4934310913086,123.926231384277 10.4934310913086,123.926231384277 10.2618598937988,123.769729614258 10.2618598937988))"
+			},
+			{
+				"gid": 467,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Liloan",
+				"extent": "POLYGON((123.925331115723 10.3614387512207,123.925331115723 10.4769296646118,124.02140045166 10.4769296646118,124.02140045166 10.3614387512207,123.925331115723 10.3614387512207))"
+			},
+			{
+				"gid": 462,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Danao City",
+				"extent": "POLYGON((123.856956481934 10.4700202941895,123.856956481934 10.5926609039307,124.037139892578 10.5926609039307,124.037139892578 10.4700202941895,123.856956481934 10.4700202941895))"
+			},
+			{
+				"gid": 457,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Compostela",
+				"extent": "POLYGON((123.888809204102 10.4284992218018,123.888809204102 10.5033912658691,124.021049499512 10.5033912658691,124.021049499512 10.4284992218018,123.888809204102 10.4284992218018))"
+			},
+			{
+				"gid": 470,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Mandaue City",
+				"extent": "POLYGON((123.916206359863 10.309868812561,123.916206359863 10.3970603942871,123.974365234375 10.3970603942871,123.974365234375 10.309868812561,123.916206359863 10.309868812561))"
+			},
+			{
+				"gid": 474,
+				"parentgid": 25,
+				"leaf": false,
+				"idx": 1,
+				"at": 280,
+				"loc": 1869,
+				"lr": 1886,
+				"name": "Naga City",
+				"extent": "POLYGON((123.663482666016 10.1783399581909,123.663482666016 10.3057508468628,123.784622192383 10.3057508468628,123.784622192383 10.1783399581909,123.663482666016 10.1783399581909))"
+			}
+		],
+		"layerRefMap": {
+			"575": {
+				"276": {
+					"278": [
+						{
+							"layer": "geonode:srb_rapideye_2011",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1828": {
+					"278": [
+						{
+							"layer": "geonode:hcmc_rapideye_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1869": {
+					"278": [
+						{
+							"layer": "geonode:cbct_rapidexe_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1870": {
+					"278": [
+						{
+							"layer": "geonode:hpng_spot5_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1872": {
+					"278": [
+						{
+							"layer": "geonode:ubt_rapideye_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				}
+			},
+			"650": {
+				"276": {
+					"278": [
+						{
+							"layer": "geonode:puma_srb_lulc_change_2000_2011",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1828": {
+					"278": [
+						{
+							"layer": "geonode:puma_hcmc_lulc_change_2000_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1869": {
+					"278": [
+						{
+							"layer": "geonode:puma_cbct_lulc_change_2001_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1870": {
+					"278": [
+						{
+							"layer": "geonode:puma_hpng_lulc_change_2001_2011",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1872": {
+					"278": [
+						{
+							"layer": "geonode:puma_ubt_lulc_change_2000_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				}
+			},
+			"652": {
+				"276": {
+					"278": [
+						{
+							"layer": "geonode:puma_srb_lulc_status_2011",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1828": {
+					"278": [
+						{
+							"layer": "geonode:puma_hcmc_lulc_status_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1869": {
+					"278": [
+						{
+							"layer": "geonode:puma_cbct_lulc_status_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1870": {
+					"278": [
+						{
+							"layer": "geonode:puma_hpng_lulc_status_2011",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1872": {
+					"278": [
+						{
+							"layer": "geonode:puma_ubt_lulc_status_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				}
+			},
+			"795": {
+				"276": {
+					"278": [
+						{
+							"layer": "geonode:srb_a8_roads_final",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1828": {
+					"278": [
+						{
+							"layer": "geonode:hcmc_a8_roads_final",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1869": {
+					"278": [
+						{
+							"layer": "geonode:cbct_a8_roads_final",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1870": {
+					"278": [
+						{
+							"layer": "geonode:hpng_a8_roads_final",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1872": {
+					"278": [
+						{
+							"layer": "geonode:ubt_a8_roads_final",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				}
+			},
+			"2646": {
+				"276": {
+					"278": [
+						{
+							"layer": "geonode:srb_rapideye_2011",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1828": {
+					"278": [
+						{
+							"layer": "geonode:hcmc_rapideye_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1869": {
+					"278": [
+						{
+							"layer": "geonode:cbct_rapidexe_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1870": {
+					"278": [
+						{
+							"layer": "geonode:hpng_landsat7_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1872": {
+					"278": [
+						{
+							"layer": "geonode:ubt_landsat8_2013",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				}
+			},
+			"3722": {
+				"276": {
+					"278": [
+						{
+							"layer": "geonode:asiapop_raster_idn_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1828": {
+					"278": [
+						{
+							"layer": "geonode:asiapop_raster_vnm_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1869": {
+					"278": [
+						{
+							"layer": "geonode:asiapop_raster_phl_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1870": {
+					"278": [
+						{
+							"layer": "geonode:asiapop_raster_vnm_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				},
+				"1872": {
+					"278": [
+						{
+							"layer": "geonode:asiapop_raster_mng_2010",
+							"wmsAddress": "",
+							"wmsLayers": ""
+						}
+					]
+				}
+			}
+		},
+		"layerNodes": [
+			{
+				"name": "Satellite image - reference",
+				"symbologyId": "#blank#",
+				"leaf": true,
+				"at": 575,
+				"layerGroup": 4124,
+				"topic": 1531,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Satellite image - alternative",
+				"symbologyId": "#blank#",
+				"leaf": true,
+				"at": 2646,
+				"layerGroup": 4124,
+				"topic": 1531,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Land cover-detailed",
+				"symbologyId": "status_L3",
+				"leaf": true,
+				"at": 652,
+				"layerGroup": 4123,
+				"topic": 1534,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Land cover-aggregated",
+				"symbologyId": "status_L1",
+				"leaf": true,
+				"at": 652,
+				"layerGroup": 4123,
+				"topic": 1534,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Land cover-Urban Fabric",
+				"symbologyId": "urban_fabric",
+				"leaf": true,
+				"at": 652,
+				"layerGroup": 4123,
+				"topic": 1534,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Land cover change-Flows",
+				"symbologyId": "change_LCF",
+				"leaf": true,
+				"at": 650,
+				"layerGroup": 4123,
+				"topic": 1649,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Road network",
+				"symbologyId": "#blank#",
+				"leaf": true,
+				"at": 795,
+				"layerGroup": 4123,
+				"topic": 1978,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			},
+			{
+				"name": "Population density grid",
+				"symbologyId": "#blank#",
+				"leaf": true,
+				"at": 3722,
+				"layerGroup": 4123,
+				"topic": 3273,
+				"sortIndex": 2.5,
+				"type": "topiclayer",
+				"checked": false
+			}
+		]
+	},
+	"success": true
+}

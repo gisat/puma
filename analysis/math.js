@@ -106,7 +106,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			var select = 'SELECT gid,';
 			for (var i = 0; i < results.attributes.length; i++) {
 				var attr = results.attributes[i];
-				var sign = analysisObj.useSum ? '+' : '-';
+				sign = analysisObj.useSum ? '+' : '-';
 				select += i != 0 ? ',' : '';
 				for (var j = 0; j < attrSets.length; j++) {
 					select += j != 0 ? sign : '';
