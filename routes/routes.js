@@ -42,33 +42,6 @@ module.exports = function(app) {
 		});
 	});
 
-	app.get('/rest/:objType',function(req,res,next) {
-		logger.info("Requested collection of type: ", req.params.objType, " By User: ", req.userId);
-		//var filter = req.query.filter ? JSON.parse(req.query.filter) : {};
-		var filter = {};
-		crud.read(req.params.objType,filter,{userId: req.userId, justMine: req.query['justMine']},function(err,result) {
-			if (err){
-				logger.error("It wasn't possible to read collection:", req.params.objType," by User:", req.userId, " Error: ", err);
-				return next(err);
-			}
-			res.data = result;
-			next();
-		});
-	});
-	
-	app.get('/rest/:objType/:objId',function(req,res,next) {
-		logger.info("Requested item from collection: ", req.params.objType, " With Id: ", req.params.objId, " By User: ", req.userId);
-		var filter = {_id: parseInt(req.params.objId)};
-		crud.read(req.params.objType,filter,{userId: req.userId, justMine: req.query['justMine']},function(err,result) {
-			if (err){
-				logger.error("It wasn't possible to read item: ", req.params.objId, " from collection:", req.params.objType," by User:", req.userId, " Error: ", err);
-				return next(err);
-			}
-			res.data = result;
-			next();
-		});
-	});
-
 	/**
 	 * It sets up the object type used in specific collection.
 	 */
@@ -147,27 +120,7 @@ module.exports = function(app) {
 	});
 
 	app.put('/rest/symbology', function(req, res, next){
-		var receivedData = req.body.data;
 
-		if(!receivedData || !Style.validateDescriptionUpdate(receivedData.definition)) {
-			res.send(400, 'Request must contain valid data for generating SLD.');
-			return;
-		}
-
-		var style = new Style(new UUID().toString(), receivedData);
-
-		var sql = style.toSql();
-		// Save to PostgreSQL;
-
-		// Save to Mongo Database
-
-		Promise.all([sqlPromise, mongoPromise]).then(function(){
-			next();
-		}, function(){
-			next({
-				message: 'Error in saving symbology.'
-			});
-		});
 	});
 
 
@@ -230,31 +183,6 @@ module.exports = function(app) {
 	app.post('/rest/:objectType', function(req, res, next){
 		req.objectType = req.params.objectType;
 		next();
-	});
-
-	app.post('/rest/symbology', function(req, res, next){
-		var receivedData = req.body.data;
-
-		if(!receivedData || !Style.validateDescriptionCreation(receivedData.definition)) {
-			res.send(400, 'Request must contain valid data for generating SLD.');
-			return;
-		}
-
-		var style = new Style(new UUID().toString(), receivedData.definition);
-
-		var sql = style.toSql();
-		// Save to PostgreSQL;
-
-		// Save to Mongo Database
-
-
-		Promise.all([sqlPromise, mongoPromise]).then(function(){
-			next();
-		}, function(){
-			next({
-				message: 'Error in saving symbology.'
-			});
-		});
 	});
 
 	app.post('/rest/dataset', createStandardRestObject);
