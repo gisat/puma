@@ -35,7 +35,6 @@ body.application #main {
 #puma-wb-copyright,
 #puma-contact{
   display: none;
-  display: none;
 }
 #footer-legal{
 	border: 0 none transparent;
@@ -53,7 +52,7 @@ body.application #main {
 
 
 //$allowPumaHelp == false {
-#help-link{
+.help {
 	display: none;
 }
 
