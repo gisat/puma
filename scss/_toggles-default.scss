@@ -30,10 +30,12 @@ body.application #main {
 
 
 //$useWBFooter == false {
-#footer,
+#footer-bar,
+#footer-legal,
 #puma-wb-copyright,
 #puma-contact{
-	display: none;
+  display: none;
+  display: none;
 }
 #footer-legal{
 	border: 0 none transparent;
