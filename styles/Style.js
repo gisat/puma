@@ -1,4 +1,5 @@
 var StyledLayerDescriptor = require('./sld/StyledLayerDescriptor');
+var logger = require('../common/Logger').applicationWideLogger;
 
 /**
  * This class represents one style. It is possible to load style from the PostgreSQL as well as it is possible to generate SLD from such style as well as it is possible to load the style.
@@ -43,6 +44,7 @@ Style.prototype.save = function (store) {
  * @returns {Boolean} True if the description is valid and contains all relevant parts.
  */
 Style.validateDescriptionCreation = function (description) {
+	logger.info("Style#validateDescriptionCreation Description: ", description);
 	if (!description || !description.type || !description.filterType) {
 		return false;
 	}
@@ -54,6 +56,7 @@ Style.validateDescriptionCreation = function (description) {
  * @returns {Boolean} True if the update of the description is valid. It is more stronger validation then the previous one.
  */
 Style.validateDescriptionUpdate = function (description) {
+	logger.info("Style#validateDescriptionUpdate Description: ", description);
 	if (!description || !description.type || !description.filterAttributeKey || !description.filterAttributeSetKey || !description.filterType || !description.rules) {
 		return false;
 	}
