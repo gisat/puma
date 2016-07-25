@@ -165,6 +165,7 @@ module.exports = function(app) {
 	app.put('/rest/dataset', updateStandardRestObject);
 	app.put('/rest/scope', updateStandardRestObject);
 
+	app.put('/rest/symbology', updateStandardRestObject);
 	app.put('/rest/layergroup', updateStandardRestObject);
 	app.put('/rest/layergroupgs', updateStandardRestObject);
 	app.put('/rest/dataview', updateStandardRestObject);
@@ -209,6 +210,7 @@ module.exports = function(app) {
 
 	app.post('/rest/dataset', createStandardRestObject);
 	app.post('/rest/scope', createStandardRestObject);
+	app.post('/rest/symbology', createStandardRestObject);
 
 	app.post('/rest/theme', createStandardRestObject);
 	app.post('/rest/layergroup', createStandardRestObject);
