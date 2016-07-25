@@ -48,6 +48,8 @@ Style.validateDescriptionCreation = function (description) {
 	if (!description || !description.type || !description.filterType) {
 		return false;
 	}
+
+	return true;
 };
 
 /**
