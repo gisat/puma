@@ -29,9 +29,8 @@ body.application #main {
 }
 
 
-//$useWBFooter == true {
-#footer-bar,
-#puma-footer-links,
+//$useWBFooter == false {
+#footer,
 #puma-wb-copyright,
 #puma-contact{
 	display: none;
