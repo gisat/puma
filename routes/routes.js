@@ -146,31 +146,6 @@ module.exports = function(app) {
 		});
 	});
 
-	app.put('/rest/symbology', function(req, res, next){
-		var receivedData = req.body.data;
-
-		if(!receivedData || !Style.validateDescriptionUpdate(receivedData.definition)) {
-			res.send(400, 'Request must contain valid data for generating SLD.');
-			return;
-		}
-
-		var style = new Style(new UUID().toString(), receivedData);
-
-		var sql = style.toSql();
-		// Save to PostgreSQL;
-
-		// Save to Mongo Database
-
-		Promise.all([sqlPromise, mongoPromise]).then(function(){
-			next();
-		}, function(){
-			next({
-				message: 'Error in saving symbology.'
-			});
-		});
-	});
-
-
 	// new backoffice
 	function updateStandardRestObject(req,res,next) {
 		logger.info("Update object of type: ", req.objectType, " by User: ", req.userId, "With data: ", req.body.data);
@@ -230,31 +205,6 @@ module.exports = function(app) {
 	app.post('/rest/:objectType', function(req, res, next){
 		req.objectType = req.params.objectType;
 		next();
-	});
-
-	app.post('/rest/symbology', function(req, res, next){
-		var receivedData = req.body.data;
-
-		if(!receivedData || !Style.validateDescriptionCreation(receivedData.definition)) {
-			res.send(400, 'Request must contain valid data for generating SLD.');
-			return;
-		}
-
-		var style = new Style(new UUID().toString(), receivedData.definition);
-
-		var sql = style.toSql();
-		// Save to PostgreSQL;
-
-		// Save to Mongo Database
-
-
-		Promise.all([sqlPromise, mongoPromise]).then(function(){
-			next();
-		}, function(){
-			next({
-				message: 'Error in saving symbology.'
-			});
-		});
 	});
 
 	app.post('/rest/dataset', createStandardRestObject);
