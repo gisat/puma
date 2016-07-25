@@ -119,14 +119,13 @@ module.exports = function(app) {
 		// calcAttributeSet a normAttributeSet u vsech atributu se musi lisit od source attribute setu
 		var analysis = req.body.data;
 		var idOfTemplateForAnalysis = analysis.analysis;
-		logger.info()
 
 		crud.read('analysis', {_id: idOfTemplateForAnalysis}, {userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
 			if(err) {
 				return next(new Error("There is no analysis with given id."));
 			}
 
-			// In spatial analysis it isn't good idea to use the same attribute set for the source data nad result alike.
+			// In spatial analysis it isn't good idea to use the same attribute set for the source data and result alike.
 			if(result.type == "spatialagg") {
 				// Verify only when some attributes are present.
 				var sourceAttributeSetIsntUsedAsResult = true;
@@ -144,6 +143,30 @@ module.exports = function(app) {
 			}
 
 			updateStandardRestObject(req, res, next);
+		});
+	});
+
+	app.put('/rest/symbology', function(req, res, next){
+		var receivedData = req.body.data;
+
+		if(!receivedData || !Style.validateDescriptionUpdate(receivedData.definition)) {
+			res.send(400, 'Request must contain valid data for generating SLD.');
+			return;
+		}
+
+		var style = new Style(new UUID().toString(), receivedData);
+
+		var sql = style.toSql();
+		// Save to PostgreSQL;
+
+		// Save to Mongo Database
+
+		Promise.all([sqlPromise, mongoPromise]).then(function(){
+			next();
+		}, function(){
+			next({
+				message: 'Error in saving symbology.'
+			});
 		});
 	});
 
@@ -212,17 +235,18 @@ module.exports = function(app) {
 	app.post('/rest/symbology', function(req, res, next){
 		var receivedData = req.body.data;
 
-		if(!receivedData || !Style.validateDescription(receivedData)) {
+		if(!receivedData || !Style.validateDescriptionCreation(receivedData.definition)) {
 			res.send(400, 'Request must contain valid data for generating SLD.');
 			return;
 		}
 
-		var style = new Style(new UUID().toString(), receivedData);
+		var style = new Style(new UUID().toString(), receivedData.definition);
 
 		var sql = style.toSql();
 		// Save to PostgreSQL;
 
 		// Save to Mongo Database
+
 
 		Promise.all([sqlPromise, mongoPromise]).then(function(){
 			next();
