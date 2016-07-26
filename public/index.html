@@ -18,8 +18,8 @@
 
 			var configuration = Config.environment;
 			if(configuration == 'development') {
-				createScript('devlib/OpenLayers.js');
-				createScript('gisatlib/OpenLayers/Geoserver23.js');
+				createScript('lib/OpenLayers.min.js');
+				//createScript('gisatlib/OpenLayers/Geoserver23.js');
 				createScript('extjs-4.1.3/ext-debug.js');
 				createScript('appde.js');
 			} else {
