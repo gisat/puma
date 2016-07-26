@@ -19,8 +19,9 @@
 			var configuration = Config.environment;
 			if(configuration == 'development') {
 				createScript('lib/OpenLayers.min.js',
-						createScript.bind(this, 'extjs-4.1.3/ext-debug.js',
-							createScript.bind(this, 'appde.js')));
+						createScript.bind(this, 'gisatlib/OpenLayers/Geoserver23.js',
+							createScript.bind(this, 'extjs-4.1.3/ext-debug.js',
+								createScript.bind(this, 'appde.js'))));
 			} else {
 				createScript('lib/OpenLayers.min.js',
 						createScript.bind(this, 'extjs-4.1.3/ext.js',
