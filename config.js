@@ -40,6 +40,8 @@ module.exports = {
 
 	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
 
+	initialMapBounds: [112.4251556396,-7.7001045314,113.0046844482,-6.9809544265],
+
 	toggles: {
 		noGeoserverLayerGroups: false,
 		useWBAgreement: false,

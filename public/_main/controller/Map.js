@@ -572,6 +572,9 @@ Ext.define('PumaMain.controller.Map', {
 	afterRender: function(cmp) {
 		var options = this.getOptions(cmp);
 		var map = new OpenLayers.Map(options);
+		if(Config.initialMapBounds) {
+			map.zoomToExtent(Config.initialMapBounds);
+		}
 		cmp.map = map;
 		var el = Ext.get(cmp.id);
 		el.on('contextmenu',function(e) {
