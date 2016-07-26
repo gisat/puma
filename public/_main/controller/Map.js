@@ -572,9 +572,6 @@ Ext.define('PumaMain.controller.Map', {
 	afterRender: function(cmp) {
 		var options = this.getOptions(cmp);
 		var map = new OpenLayers.Map(options);
-		if(Config.initialMapBounds) {
-			map.zoomToExtent(Config.initialMapBounds);
-		}
 		cmp.map = map;
 		var el = Ext.get(cmp.id);
 		el.on('contextmenu',function(e) {
@@ -682,13 +679,15 @@ Ext.define('PumaMain.controller.Map', {
 		});
 		
 		map.updateSize();
-		//map.zoomToExtent(new OpenLayers.Bounds(-675736.2753,9187051.894,704022.2164,9204621.9448))
-		
+		if(Config.initialMapBounds) {
+			map.zoomToExtent(Config.initialMapBounds);
+		}
+
 		var params = {
 			transparent: true,
 			format: 'image/png',
 			info_format: 'application/vnd.ogc.gml'
-		}
+		};
 		//params.layers = 'puma:layer_260,puma:layer_266'
 		
 
