@@ -5,7 +5,8 @@ var config = require('../config');
 var User = require('../../../data/User').User;
 var TestUser = require('./TestUser').TestUser;
 
-describe('User', function(){
+// This test shouldn't exists.
+xdescribe('User', function(){
     var testUser,
         loadedUser;
 

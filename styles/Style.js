@@ -28,7 +28,7 @@ Style.prototype.toSld = function () {
  * It returns SQL representation of the current style.
  * @returns {String} SQL representation of this entity.
  */
-Style.prototype.toSql = function () {
+Style.prototype.toPostgreSql = function () {
 	if (!this._sld) {
 		this._sld = this.toSld();
 	}

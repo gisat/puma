@@ -6,11 +6,12 @@ var Node = require('./Node');
  * It represents nodes with children nodes instead of the value.
  * @param name {String} Name of the current node.
  * @param children {Node[]} Children nodes
+ * @param attributes {Attribute[]} Attributes associated to the element.
  * @constructor
  * @alias Intersection
  * @augments Node
  */
-var Intersection = function (name, children) {
+var Intersection = function (name, children, attributes) {
 	Node.call(this, name);
 
 	// In case user provides single value transform it into the array.
@@ -18,6 +19,7 @@ var Intersection = function (name, children) {
 		children = [children];
 	}
 	this._children = children || [];
+	this._attributes = attributes || [];
 
 	this.validate();
 };
@@ -63,7 +65,12 @@ Intersection.prototype.toXml = function () {
 		value += node.toXml();
 	});
 
-	return util.format('<%s>%s</%s>', this._name, value, this._name);
+	var attributes = "";
+	this._attributes.forEach(function(attribute){
+		attributes += " " + attribute.toXml();
+	});
+
+	return util.format('<%s%s>%s</%s>', this._name, attributes, value, this._name);
 };
 
 module.exports = Intersection;

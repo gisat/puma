@@ -10,6 +10,20 @@ var Node = function (name, attributes) {
 	this._attributes = attributes || [];
 };
 
+Object.defineProperties(Node.prototype, {
+	name: {
+		get: function(){
+			return this._name;
+		}
+	},
+
+	attributes: {
+		get: function(){
+			return this._attributes;
+		}
+	}
+});
+
 /**
  * To be overridden in all descendants.
  * It should generate valid xml representation of the current node. It should also take into account all the children if

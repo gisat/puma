@@ -33,9 +33,6 @@ StyleController.prototype.create = function(request, response, next) {
 	var sql = style.toSql();
 	// Save to PostgreSQL;
 
-	// Save to Mongo Database
-
-
 	Promise.all([sqlPromise, mongoPromise]).then(function(){
 		next();
 	}, function(){
@@ -60,8 +57,6 @@ StyleController.prototype.update = function(request, response, next) {
 
 	var sql = style.toSql();
 	// Save to PostgreSQL;
-
-	// Save to Mongo Database
 
 	Promise.all([sqlPromise, mongoPromise]).then(function(){
 		next();
