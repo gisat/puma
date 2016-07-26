@@ -17,6 +17,9 @@ var StyleController = function(app){
 
 StyleController.prototype = Object.create(Controller.prototype);
 
+/**
+ * @inheritDoc
+ */
 StyleController.prototype.create = function(request, response, next) {
 	var receivedData = request.body.data;
 
@@ -42,6 +45,9 @@ StyleController.prototype.create = function(request, response, next) {
 	});
 };
 
+/**
+ * @inheritDoc
+ */
 StyleController.prototype.update = function(request, response, next) {
 	var receivedData = request.body.data;
 
@@ -66,10 +72,16 @@ StyleController.prototype.update = function(request, response, next) {
 	});
 };
 
+/**
+ * @inheritDoc
+ */
 StyleController.prototype.read = function(request, response, next) {
 
 };
 
+/**
+ * @inheritDoc
+ */
 StyleController.prototype.delete = function(request, response, next) {
 
 };
