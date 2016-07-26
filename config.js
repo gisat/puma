@@ -38,9 +38,25 @@ module.exports = {
 	googleAnalyticsCookieDomain: 'auto',
 	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
 
-	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
+	/*
+	 * Different options about what map should be shown as the first one.
+     * osm - OpenStreetMap using Mapnik
+     * hybrid - Google hybrid solution
+     * roadmap - Google road map
+     * terrain - Google terrain map
+	 */
+	initialBaseMap: "terrain",
 
-	initialMapBounds: [112.4251556396,-7.7001045314,113.0046844482,-6.9809544265],
+	/*
+	 * It is used to decide about the initial bounds for the map.
+	 * [left, bottom, right, top]
+	 */
+	initialMapBounds: [
+		112.4251556396,
+		-7.7001045314,
+		113.0046844482,
+		-6.9809544265
+	],
 
 	toggles: {
 		noGeoserverLayerGroups: false,
