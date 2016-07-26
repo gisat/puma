@@ -6,11 +6,13 @@
 
 		<script type="text/javascript" src="config.js"></script> <!-- TODO: Move loading into specific class instead if simple dynamic server -->
 		<script type="text/javascript">
-			function createScript(src) {
+			function createScript(src, callback) {
+				callback = callback || function(){};
 				var startupScript = document.createElement("script");
 				startupScript.type = "text/javascript";
 				startupScript.src = src;
 				startupScript.async = 1;
+				startupScript.onload = callback;
 				document.getElementsByTagName('head')[0].appendChild(startupScript);
 			}
 
@@ -21,9 +23,9 @@
 				createScript('extjs-4.1.3/ext-debug.js');
 				createScript('appde.js');
 			} else {
-				createScript('lib/OpenLayers.min.js');
-				createScript('extjs-4.1.3/ext.js');
-				createScript('appde.min.js');
+				createScript('lib/OpenLayers.min.js',
+						createScript.bind(this, 'extjs-4.1.3/ext.js',
+								createScript.bind(this, 'appde.min.js', function(){console.log("Successfully loaded.")})));
 			}
 		</script>
 
