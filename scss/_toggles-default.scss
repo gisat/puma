@@ -52,7 +52,7 @@ body.application #main {
 
 
 //$allowPumaHelp == false {
-#toolbar .group .field.help {
+#help-link, #toolbar .group .field.help {
 	display: none;
 }
 
