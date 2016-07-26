@@ -220,7 +220,7 @@ Ext.define('PumaMain.controller.Export', {
                         window.setTimeout(function() {
                             console.log('loadingdone');
                             
-                            },100)
+                            },2000)
                     }
                 })
             }
@@ -231,7 +231,7 @@ Ext.define('PumaMain.controller.Export', {
                         window.setTimeout(function() {
                             console.log('loadingdone');
                             
-                            },100)
+                            },2000)
                     }
                 });
             }
