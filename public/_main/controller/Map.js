@@ -1010,7 +1010,7 @@ Ext.define('PumaMain.controller.Map', {
 			cmp.map.updateSize();
 			if (!cmp.initialZoom) {
 				if(Config.initialMapBounds) {
-					map.zoomToExtent(Config.initialMapBounds);
+					cmp.map.zoomToExtent(Config.initialMapBounds);
 				} else {
 					// Retain previous default value.
 					cmp.map.zoomToExtent(new OpenLayers.Bounds(12505423.107734384,-888123.2263567317,12576501.051026525,-784677.6168449755));
