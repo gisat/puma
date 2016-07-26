@@ -801,6 +801,13 @@ Ext.define('PumaMain.controller.Map', {
 		if (cmp.itemId == 'map') {
 			map.controls[0].deactivate();
 		}
+
+		if(Config.initialMapBounds) {
+			var proj = new OpenLayers.Projection("EPSG:4326");
+			var bounds = new OpenLayers.Bounds(Config.initialMapBounds);
+			bounds.transform(proj, map.getProjectionObject());
+			map.zoomToExtent(bounds);
+		}
 	},
 
 	onMeasurePartial: function(evt) {
