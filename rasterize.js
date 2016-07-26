@@ -39,7 +39,7 @@ if (system.args.length < 3 || system.args.length > 5) {
 
 		if (msg === 'loadingdone') {
 			window.setInterval(function() {
-				console.log('\n\nWebpage says "loadingdone". We can exit Phantom. Bey!');
+				console.log('\n\nWebpage says "loadingdone". We can exit Phantom. Bye!');
 				page.render(output);
 				phantom.exit();
 			}, 500);

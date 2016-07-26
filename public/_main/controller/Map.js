@@ -551,7 +551,7 @@ Ext.define('PumaMain.controller.Map', {
 			setTimeout(function() {
 				
 				console.log('loadingdone');
-			},150)
+			},2000)
 		}
 	},
 
