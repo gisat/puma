@@ -28,4 +28,13 @@ describe('Fill', function () {
 			}).should.throw('Trying to build invalidate. Wrong element: ogc:And');
 		});
 	});
+
+	describe('#fromDescription', function(){
+		var fillResult = Fill.fromDescription({fillColour: '#ff0000'});
+		var xmlResult = fillResult.toXml();
+
+		it('should return valid Xml', function(){
+			should(xmlResult).equal('<sld:Fill><sld:CssParameter name="fill">#ff0000</sld:CssParameter></sld:Fill>');
+		});
+	});
 });

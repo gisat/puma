@@ -6,9 +6,7 @@ var Attribute = require('../../../../styles/sld/common/Attribute');
 var And = require('../../../../styles/sld/And');
 
 describe('CssParameter', function () {
-	var cssParameterUnderTest = new CssParameter([
-		new Literal('TestValue')
-	], [
+	var cssParameterUnderTest = new CssParameter('#ff0000', [
 		new Attribute('name','stroke')
 	]);
 
@@ -16,17 +14,17 @@ describe('CssParameter', function () {
 		var result = cssParameterUnderTest.toXml();
 
 		it('should return valid Xml', function () {
-			should(result).equal('<sld:CssParameter name="stroke"><ogc:Literal>TestValue</ogc:Literal></sld:CssParameter>');
+			should(result).equal('<sld:CssParameter name="stroke">#ff0000</sld:CssParameter>');
 		});
 	});
 
-	describe('#invalidChildren', function () {
-		it('should fail with exception', function () {
-			(function () {
-				new CssParameter([
-					new And([])
-				]);
-			}).should.throw('Trying to build invalidate. Wrong element: ogc:And');
+	describe('#fromDescription', function(){
+		var result = CssParameter.fromDescription({fillColour: '#ff0000'});
+
+		var xmlResult = result.toXml();
+
+		it('should return valid Xml', function(){
+			should(xmlResult).equal('<sld:CssParameter name="fill">#ff0000</sld:CssParameter>');
 		});
 	});
 });

@@ -26,4 +26,13 @@ describe('PolygonSymbolizer', function () {
 			}).should.throw('Trying to build invalidate. Wrong element: ogc:Literal');
 		});
 	});
+
+	describe('#fromDescription', function(){
+		var symbolizer = PolygonSymbolizer.fromDescription({fillColour: '#ff0000'});
+		var resultXml = symbolizer.toXml();
+
+		it('should return correct Xml', function(){
+			should(resultXml).equal('<sld:PolygonSymbolizer><sld:Fill><sld:CssParameter name="fill">#ff0000</sld:CssParameter></sld:Fill></sld:PolygonSymbolizer>')
+		});
+	})
 });

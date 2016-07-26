@@ -35,6 +35,8 @@ Filter.prototype.validChildren = function() {
 /**
  * It creates new Filter from valid description. In order for filter description to be valid. It must contain at least filterType as a parameter and then some value for given filterType.
  * @param filterDescription {Object} This object contains additional information relevant for filter.
+ * @param filterDescription.attributeCsv {Object} It contains values for the relevant attribute.
+ * @param filterDescription.attributeCsv.values {String} Values supplied as a , denominated String
  * @param filterAttributeKey {String} Id of the attribute to which the style should be applied
  * @param filterType {String} Type of the filter used to retrieve valid values.
  * @returns {Filter}

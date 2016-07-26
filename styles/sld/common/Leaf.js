@@ -9,11 +9,13 @@ var Node = require('./Node');
  * @augments Node
  * @params name {String} Name of the current node.
  * @params value {String} Value
+ * @params attributes {Attribute[]}
  */
 var Leaf = function (name, value, attributes) {
 	Node.call(this, name, attributes);
 
 	this._value = value;
+	this._attributes = attributes || [];
 };
 
 Leaf.prototype = Object.create(Node.prototype);
@@ -22,7 +24,12 @@ Leaf.prototype = Object.create(Node.prototype);
  * @inheritDoc
  */
 Leaf.prototype.toXml = function () {
-	return util.format('<%s>%s</%s>', this._name, this._value, this._name);
+	var attributeValues = '';
+	this._attributes.forEach(function(attribute){
+		attributeValues += ' ' + attribute.toXml();
+	});
+
+	return util.format('<%s%s>%s</%s>', this._name, attributeValues, this._value, this._name);
 };
 
 module.exports = Leaf;

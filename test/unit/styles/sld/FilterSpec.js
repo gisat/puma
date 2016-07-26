@@ -26,4 +26,17 @@ describe('Filter', function () {
 			}).should.throw('Trying to build invalidate. Wrong element: sld:Name');
 		});
 	});
+
+	describe('#fromDescription', function(){
+		var filterResult = Filter.fromDescription({
+			"attributeCsv": {
+				"values": "111,112,113"
+			}
+		}, "1", "attributeCsv");
+		var xmlResult = filterResult.toXml();
+
+		it('should return valid Xml', function(){
+			should(xmlResult).equal('<ogc:Filter><ogc:Or><ogc:PropertyIsEqualTo><ogc:PropertyName>1</ogc:PropertyName><ogc:Literal>111</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>1</ogc:PropertyName><ogc:Literal>112</ogc:Literal></ogc:PropertyIsEqualTo><ogc:PropertyIsEqualTo><ogc:PropertyName>1</ogc:PropertyName><ogc:Literal>113</ogc:Literal></ogc:PropertyIsEqualTo></ogc:Or></ogc:Filter>');
+		});
+	});
 });
