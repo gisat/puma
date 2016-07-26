@@ -679,9 +679,6 @@ Ext.define('PumaMain.controller.Map', {
 		});
 		
 		map.updateSize();
-		if(Config.initialMapBounds) {
-			map.zoomToExtent(Config.initialMapBounds);
-		}
 
 		var params = {
 			transparent: true,
@@ -1012,10 +1009,12 @@ Ext.define('PumaMain.controller.Map', {
 			cmp.setHeight(cmp.container.getHeight());
 			cmp.map.updateSize();
 			if (!cmp.initialZoom) {
-				//console.log('resized')
-				//cmp.map.zoomToExtent(new OpenLayers.Bounds(0, 5000000, 4000000, 8000000));
-				//cmp.map.zoomToExtent(cmp.map.outlineExtent || new OpenLayers.Bounds(10000000, -1000000, 14000000, 5000000));
-				cmp.map.zoomToExtent(new OpenLayers.Bounds(12505423.107734384,-888123.2263567317,12576501.051026525,-784677.6168449755))
+				if(Config.initialMapBounds) {
+					map.zoomToExtent(Config.initialMapBounds);
+				} else {
+					// Retain previous default value.
+					cmp.map.zoomToExtent(new OpenLayers.Bounds(12505423.107734384,-888123.2263567317,12576501.051026525,-784677.6168449755));
+				}
 				cmp.initialZoom = true;
 			}
 		}
