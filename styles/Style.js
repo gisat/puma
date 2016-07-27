@@ -45,7 +45,7 @@ Style.prototype.save = function (store) {
  */
 Style.validateDescriptionCreation = function (description) {
 	logger.info("Style#validateDescriptionCreation Description: ", description);
-	if (!description || !description.type || !description.filterType) {
+	if (!description || !description.type) {
 		return false;
 	}
 
@@ -59,7 +59,7 @@ Style.validateDescriptionCreation = function (description) {
  */
 Style.validateDescriptionUpdate = function (description) {
 	logger.info("Style#validateDescriptionUpdate Description: ", description);
-	if (!description || !description.type || !description.filterAttributeKey || !description.filterAttributeSetKey || !description.filterType || !description.rules) {
+	if (!description || !description.type || !description.filterAttributeKey || !description.filterAttributeSetKey || !description.filterType || !description.rules || !description.rules.length) {
 		return false;
 	}
 

@@ -96,15 +96,192 @@ describe('Style', function () {
 
 		// TODO: Write the necessary prerequisities
 		describe('#validateDescriptionCreation', function(){
-			it('#mustContainType', function(){
-				var result = Style.validateDescription({});
+			it('must contain type', function(){
+				var result = Style.validateDescriptionCreation({
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"title": "Urban fabric",
+							"appearance": {
+								"fillColour": "#D0091D"
+							},
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
 
 				should(result).be.exactly(false);
 			});
 		});
 
 		describe('#validateDescriptionUpdate', function(){
+			it('must contain type', function(){
+				var result = Style.validateDescriptionUpdate({
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"title": "Urban fabric",
+							"appearance": {
+								"fillColour": "#D0091D"
+							},
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
 
+				should(result).be.exactly(false);
+			});
+
+			it('must contain filterType', function(){
+				var result = Style.validateDescriptionUpdate({
+					"type": "polygon", // PolygonSymbolizer
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"title": "Urban fabric",
+							"appearance": {
+								"fillColour": "#D0091D"
+							},
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
+
+				should(result).be.exactly(false);
+			});
+
+			it('must contain filter attribute key', function(){
+				var result = Style.validateDescriptionUpdate({
+					"type": "polygon", // PolygonSymbolizer
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"title": "Urban fabric",
+							"appearance": {
+								"fillColour": "#D0091D"
+							},
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
+
+				should(result).be.exactly(false);
+			});
+
+			it('must contain filter attribute set key', function(){
+				var result = Style.validateDescriptionUpdate({
+					"type": "polygon", // PolygonSymbolizer
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"title": "Urban fabric",
+							"appearance": {
+								"fillColour": "#D0091D"
+							},
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
+
+				should(result).be.exactly(false);
+			});
+
+			it('must contain rules', function(){
+				var result = Style.validateDescriptionUpdate({
+					"type": "polygon", // PolygonSymbolizer
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": []
+				});
+
+				should(result).be.exactly(false);
+			});
+
+			it('must contain valid rules with title', function(){
+				var result = Style.validateDescriptionUpdate({
+					"type": "polygon", // PolygonSymbolizer
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"appearance": {
+								"fillColour": "#D0091D"
+							},
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
+
+				should(result).be.exactly(false);
+			});
+
+			it('must contain valid rules with title', function(){
+				var result = Style.validateDescriptionUpdate({
+					"type": "polygon", // PolygonSymbolizer
+					"filterAttributeKey": 5, // Filter id of attributeset
+					"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
+					"filterType": "attributeCsv", // Comma separated values
+					"rules": [
+						{
+							"name": "Urban fabric",
+							"title": "Urban fabric",
+							"filter": {
+								"attributeCsv": {
+									"values": "111,112,113" // Values present in the attribute
+								},
+								"attributeInterval": {}
+							}
+						}
+					]
+				});
+
+				should(result).be.exactly(false);
+			});
 		});
 	});
 });
