@@ -1,6 +1,5 @@
 var should = require('should');
 
-var connection = require('../../../common/conn');
 var config = require('../config');
 
 var UUID = require('../../../common/UUID');
