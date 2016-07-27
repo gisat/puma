@@ -5,7 +5,7 @@
 
 /**
  * @requires OpenLayers/BaseTypes/Class.js
- * @requires OpenLayers/Style.js
+ * @requires OpenLayers/RestStyle.js
  * @requires OpenLayers/Feature/Vector.js
  */
  

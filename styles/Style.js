@@ -1,77 +1,39 @@
-var StyledLayerDescriptor = require('./sld/StyledLayerDescriptor');
-var logger = require('../common/Logger').applicationWideLogger;
+var Audit = require('../data/Audit');
 
 /**
- * This class represents one style. It is possible to load style from the PostgreSQL as well as it is possible to generate SLD from such style as well as it is possible to load the style.
- * @param uuid {String} Unique identifier for the Style
- * @param definition {Object} Definition of the style, based on which it is necessary to create valid SLD.
+ * This class represents one style. It is more as an interface and every Style shouold implement all the methods available here.
  * @constructor
- * @alias Symbology
+ * @alias Style
+ * @augments Audit
  */
-var Style = function (uuid, definition) {
-	this._uuid = uuid;
-	this._definition = definition;
-
-	this._sld = null;
+var Style = function () {
+	Audit.call(this);
 };
+
+Style.prototype = Object.create(Audit.prototype);
 
 /**
- * It returns this style represented as valid SQL.
- * @returns {SLD}
+ * It returns this style represented as valid sld.
+ * @returns {Promise}
  */
-Style.prototype.toSld = function () {
-	this._sld = StyledLayerDescriptor.fromObjectDescription(this._definition).toXml();
-	return this._sld;
-};
+Style.prototype.sld = function () {};
 
 /**
- * It returns SQL representation of the current style.
- * @returns {String} SQL representation of this entity.
+ * The definition of the Style.
+ * @returns {Promise} JSON representation of the definition of the object.
  */
-Style.prototype.toPostgreSql = function () {
-	if (!this._sld) {
-		this._sld = this.toSld();
-	}
-
-	// Generate SQL representation. Sql contains uuid and the sld as an xml.
-};
-
-Style.prototype.save = function (store) {
-	return store.save(this);
-};
+Style.prototype.definition = function() {};
 
 /**
- * @returns {Boolean} True if the description is valid and contains all relevant parts.
+ * Name of the style. This is displayed to the user.
+ * @returns {Promise} Name
  */
-Style.validateDescriptionCreation = function (description) {
-	logger.info("Style#validateDescriptionCreation Description: ", description);
-	if (!description || !description.type) {
-		return false;
-	}
-
-	return true;
-};
+Style.prototype.name = function() {};
 
 /**
- *
- * @param description {Object} Representation of created SLD.
- * @returns {Boolean} True if the update of the description is valid. It is more stronger validation then the previous one.
+ * Name of the symbology as stored in the geoserver.
+ * @returns {Promise} Symbology name
  */
-Style.validateDescriptionUpdate = function (description) {
-	logger.info("Style#validateDescriptionUpdate Description: ", description);
-	if (!description || !description.type || !description.filterAttributeKey || !description.filterAttributeSetKey || !description.filterType || !description.rules || !description.rules.length) {
-		return false;
-	}
-
-	var areRulesCorrectlyFormed = true;
-
-	description.rules.forEach(function (rule) {
-		if (!rule.appearance || !rule.title) {
-			areRulesCorrectlyFormed = false;
-		}
-	});
-
-	return areRulesCorrectlyFormed;
-};
+Style.prototype.symbologyName = function() {};
 
 module.exports = Style;

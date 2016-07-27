@@ -5,7 +5,7 @@
 
 /**
  * @requires OpenLayers/Format/XML/VersionedOGC.js
- * @requires OpenLayers/Style.js
+ * @requires OpenLayers/RestStyle.js
  * @requires OpenLayers/Rule.js
  * @requires OpenLayers/Filter/FeatureId.js
  * @requires OpenLayers/Filter/Logical.js
