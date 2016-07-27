@@ -1,4 +1,6 @@
 var Controller = require('./Controller');
+var logger = require('../common/Logger').applicationWideLogger;
+var crud = require('../rest/crud');
 
 /**
  * @augments Controller
