@@ -14,67 +14,7 @@ var RestStyle = require('../../../styles/RestStyle');
 describe('Style', function () {
 	describe('landCover', function () {
 		var landCoverUuid = new UUID().toString();
-		var definitionOfStyle = {
-			"type": "polygon", // PolygonSymbolizer
-			"filterAttributeKey": 5, // Filter id of attributeset
-			"filterAttributeSetKey": 2, // Id of attributeset which contains attributes for rules.
-			"filterType": "attributeCsv", // Comma separated values
-			"rules": [
-				{
-					"name": "Urban fabric",
-					"title": "Urban fabric",
-					"appearance": {
-						"fillColour": "#D0091D"
-					},
-					"filter": {
-						"attributeCsv": {
-							"values": "111,112,113" // Values present in the attribute
-						},
-						"attributeInterval": {}
-					}
-				},
-				{
-					"name": "Non-urban artificial areas",
-					"title": "Non-urban artificial areas",
-					"appearance": {
-						"fillColour": "#AE0214"
-					},
-					"filter": {
-						"attributeCsv": {
-							"values": "120,121,130,140"
-						},
-						"attributeInterval": {}
-					}
-				},
-				{
-					"name": "Natural and semi-natural areas",
-					"title": "Natural and semi-natural areas",
-					"appearance": {
-						"fillColour": "#59B642"
-					},
-					"filter": {
-						"attributeCsv": {
-							"values": "310,320,330"
-						},
-						"attributeInterval": {}
-					}
-				},
-				{
-					"name": "Water",
-					"title": "Water",
-					"appearance": {
-						"fillColour": "#56C8EE"
-					},
-					"filter": {
-						"attributeCsv": {
-							"values": "510,512,520"
-						},
-						"attributeInterval": {}
-					}
-				}
-			]
-		};
-		var landCoverStyle = new RestStyle(landCoverUuid, definitionOfStyle);
+		var landCoverStyle = RestStyle.fixture(landCoverUuid);
 
 		// Synchronous
 		describe('#toSld', function () {
@@ -85,7 +25,6 @@ describe('Style', function () {
 			})
 		});
 
-		// TODO: Write the necessary prerequisities
 		describe('#validateDescriptionCreation', function(){
 			it('must contain type', function(){
 				var result = RestStyle.validateDescriptionCreation({
