@@ -17,6 +17,7 @@ process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
+// TODO: Move to the API instead of public.
 function initServer(err) {
 	if (err) {
 		console.log('Error: while initializing server: ', err);
@@ -26,14 +27,11 @@ function initServer(err) {
 
 	// Order is important
 
-	// Log the requests to see then the error occurs.
+	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
 		logger.info("Request: "+ req.method + " - " + req.url);
 		next();
 	});
-
-	//app.use(express.favicon());
-	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
 
 	app.use('/printpublic',function(req,res,next) {
 		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
@@ -50,9 +48,6 @@ function initServer(err) {
 
 	app.use('/app-mng.css', getMngCSS);
 
-
-	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
-	app.use('/printpublic',staticFn(__dirname + '/public'));
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
 	app.use(function(req, res, next){
@@ -78,7 +73,6 @@ function initServer(err) {
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
-	app.use('/', staticFn(__dirname + '/public'));
 
 	logger.info('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);

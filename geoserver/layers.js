@@ -5,6 +5,7 @@ var Timer = require('../common/timer');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
+// Fix creation of attributes when they are in the mapping but not in the template.
 function recreateLayerDb(layerRef, isUpdate, callback) {
 
 	var crud = require('../rest/crud');

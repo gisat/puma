@@ -11,8 +11,6 @@ var UUID = require('../common/UUID');
  */
 var StyleController = function(app){
 	Controller.call(this, app, 'symbology');
-
-
 };
 
 StyleController.prototype = Object.create(Controller.prototype);
