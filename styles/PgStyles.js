@@ -1,3 +1,4 @@
+var Styles = require('./Styles');
 var PgStyle = require('./PgStyle');
 var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
@@ -9,11 +10,15 @@ var Promise = require('promise');
  * @constructor
  */
 var PgStyles = function (connectionPool, schema) {
+	Styles.call(this);
+
 	this._connectionPool = connectionPool;
 	this._pool = connectionPool.pool();
 	this._schema = schema;
 	this._table = this._schema + ".style";
 };
+
+PgStyles.prototype = Object.create(Styles.prototype);
 
 /**
  * @inheritDoc

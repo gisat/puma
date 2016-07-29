@@ -28,6 +28,7 @@
     "promise": "^7.1.1",
     "properties": "0.3.3",
     "request": "latest",
+    "superagent": "^2.1.0",
     "underscore": "1.8.x",
     "xml2json": "0.9.x",
     "xmldoc": "^0.3.2",

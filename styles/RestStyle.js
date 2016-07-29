@@ -96,7 +96,7 @@ RestStyle.validateDescriptionCreation = function (description) {
  * @inheritDoc
  */
 RestStyle.prototype.sld = function () {
-	return StyledLayerDescriptor.fromObjectDescription(this._definition).toXml();
+	return Promise.resolve(StyledLayerDescriptor.fromObjectDescription(this._definition).toXml());
 };
 
 /**

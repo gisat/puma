@@ -47,6 +47,13 @@ PgStyle.prototype = Object.create(Style.prototype);
 /**
  * @inheritDoc
  */
+PgStyle.prototype.uuid = function(){
+	return this.loadAttribute('uuid');
+};
+
+/**
+ * @inheritDoc
+ */
 PgStyle.prototype.definition = function() {
 	return this.loadAttribute('definition');
 };

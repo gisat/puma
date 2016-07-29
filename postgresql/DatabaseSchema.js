@@ -36,7 +36,7 @@ DatabaseSchema.prototype.create = function() {
 		'created_by int,' +
 		'changed timestamp,' +
 		'changed_by int,' +
-		'uuid varchar(32) Unique' +
+		'uuid varchar(64) Unique' +
 		')';
 
 	var self = this;

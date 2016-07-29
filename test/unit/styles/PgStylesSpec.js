@@ -1,5 +1,4 @@
 var should = require('should');
-var Promise = require('promise');
 
 var PgStyles = require('../../../styles/PgStyles');
 var PgPool = require('../../../common/PgPool');

@@ -147,12 +147,15 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
 	var attrSql = '';
 	var layerMap = {};
 
-	// select z pripojenych vrstev
+	// select z pripojenych vrstev. The layerref doesn't the
 	var existingAliases = {};
 	for (var i = 0; i < dataLayerRefs.length; i++) {
 		var layerRef = dataLayerRefs[i];
 		var layerAlias = 'l_' + layerRef['_id'];
-		if (!layerRef.attributeSet) continue;
+		// Ignore base layerrefs.
+		if (!layerRef.attributeSet) {
+			continue;
+		}
 		var name = conn.getLayerTable(layerRef.layer);
 		layerMap[layerAlias] = {name: name, fid: layerRef.fidColumn};
 		for (var j = 0; j < layerRef.columnMap.length; j++) {

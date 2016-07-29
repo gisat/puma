@@ -13,8 +13,9 @@ Styles.prototype.all = function(){};
 
 /**
  *
+ * @param style {Style} Style to add
  * @returns {Promise} It return style which was added to the current data source.
  */
-Styles.prototype.add = function(){};
+Styles.prototype.add = function(style){};
 
 module.exports = Styles;
