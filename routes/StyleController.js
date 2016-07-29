@@ -91,7 +91,7 @@ StyleController.prototype.readAll = function(request, response, next) {
 		});
 
 		Promise.all(promises).then(function(results){
-			response.status(200).json(JSON.stringify(results))
+			response.status(200).json({data: results})
 		});
 	}, function(){
 		next({
@@ -118,7 +118,7 @@ StyleController.prototype.read = function(request, response, next) {
 				result = JSON.parse(result);
 				if(result.uuid == request.params.id){
 					found = true;
-					response.status(200).json(JSON.stringify(result))
+					response.status(200).json({data: result})
 				}
 			});
 

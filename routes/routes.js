@@ -47,28 +47,27 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
-	new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
-		// Set up all relevant controllers.
-		new AnalysisController(app);
-		new AreaTemplateController(app);
-		new AttributeController(app);
-		new AttributeSetController(app);
-		new ChartCfgController(app);
-		new DataSetController(app);
-		new DataViewController(app);
-		new LayerGroupController(app);
-		new LayerRefController(app);
-		new LocationController(app);
-		new PerformedAnalysisController(app);
-		new ScopeController(app);
-		new StyleController(app, pool, config.postgreSqlSchema);
-		new ThemeController(app);
-		new TopicController(app);
-		new UserPolygonController(app);
-		new ViewCfgController(app);
-		new VisualizationController(app);
-		new YearController(app);
-	});
+	new DatabaseSchema(pool, config.postgreSqlSchema).create();
+
+	new StyleController(app, pool, config.postgreSqlSchema);
+	new AnalysisController(app);
+	new AreaTemplateController(app);
+	new AttributeController(app);
+	new AttributeSetController(app);
+	new ChartCfgController(app);
+	new DataSetController(app);
+	new DataViewController(app);
+	new LayerGroupController(app);
+	new LayerRefController(app);
+	new LocationController(app);
+	new PerformedAnalysisController(app);
+	new ScopeController(app);
+	new ThemeController(app);
+	new TopicController(app);
+	new UserPolygonController(app);
+	new ViewCfgController(app);
+	new VisualizationController(app);
+	new YearController(app);
 
 	// old backoffice
 	app.put('/rest/:objType/:objId',function(req,res,next) {
