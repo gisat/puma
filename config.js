@@ -7,8 +7,8 @@ module.exports = {
 	remoteAddress   : "localhost:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5433/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5433/geonode",
 	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
@@ -20,6 +20,10 @@ module.exports = {
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
+	/*
+	 * It contains workspace, which is used when storing and generating things in the geoserver.
+	 */
+	geoserverWorkspace: "puma",
 
 	geoserver2Host  : "localhost",
 	geoserver2Port  : 80,
@@ -62,6 +66,7 @@ module.exports = {
 		noGeoserverLayerGroups: false,
 		useWBAgreement: false,
 		useWBHeader: false,
+		useHeader: false,
 		useWBFooter: false,
 		allowPumaHelp: false,
 		allowDownloadsLink: false,

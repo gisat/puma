@@ -12,10 +12,16 @@ var Styles = function(){};
 Styles.prototype.all = function(){};
 
 /**
- *
+ * It adds style to the current data source.
  * @param style {Style} Style to add
  * @returns {Promise} It return style which was added to the current data source.
  */
 Styles.prototype.add = function(style){};
+
+/**
+ * It updates the style in current data source.
+ * @param style {Style} Style which must be updated.
+ */
+Styles.prototype.update = function(style){};
 
 module.exports = Styles;

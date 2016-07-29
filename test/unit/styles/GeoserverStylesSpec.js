@@ -71,6 +71,18 @@ describe('GeoserverStyles', function(){
 				console.log(err);
 			})
 		});
+
+		it('updates the style', function(done){
+			var styles = new GeoserverStyles(pool, commonSchema);
+			var styleToUpdate = RestStyle.fixture(uuid);
+			styleToUpdate._definition.rules[0].name = "Test Urban";
+
+			styles.update(styleToUpdate).then(function(){
+				done();
+			}).catch(function(err){
+				console.log(err);
+			})
+		});
 	});
 
 	after(function(done){

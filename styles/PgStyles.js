@@ -12,6 +12,12 @@ var Promise = require('promise');
 var PgStyles = function (connectionPool, schema) {
 	Styles.call(this);
 
+	if(!connectionPool || !schema) {
+		throw new Error(
+			logger.error('PgStyles#constructor It is necessary to provide the connectionPool and Schema')
+		);
+	}
+
 	this._connectionPool = connectionPool;
 	this._pool = connectionPool.pool();
 	this._schema = schema;
@@ -22,13 +28,26 @@ PgStyles.prototype = Object.create(Styles.prototype);
 
 /**
  * @inheritDoc
- * @param style {Style} Style to add into the PostgreSQL.
  */
 PgStyles.prototype.add = function (style) {
 	var self = this;
 	return Promise.all([style.uuid(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
 		return self._pool.query(
 			"insert into " + self._table + " (uuid, sld, definition, name, symbology_name, changed, changed_by, created, created_by ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+			results);
+	}).catch(function(err){
+		logger.error("PgStyles#add Error when saving in the database. Error: ", err);
+	});
+};
+
+/**
+ * @inheritDoc
+ */
+PgStyles.prototype.update = function(style) {
+	var self = this;
+	return Promise.all([style.uuid(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
+		return self._pool.query(
+			"update " + self._table + " set sld=$2, definition=$3, name=$4, symbology_name=$5, changed=$6, changed_by=$7, created=$8, created_by=$9 where uuid = $1;",
 			results);
 	}).catch(function(err){
 		logger.error("PgStyles#add Error when saving in the database. Error: ", err);

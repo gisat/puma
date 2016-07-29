@@ -63,4 +63,23 @@ GeoserverStyles.prototype.add = function (style) {
 	});
 };
 
+/**
+ * @inheritDoc
+ */
+GeoserverStyles.prototype.update = function(style){
+	var name;
+
+	return style.uuid().then(function(uuid){
+		name = uuid;
+		return style.sld()
+	}).then(function(sld){
+		return superagent
+			.put(config.geoserver2Host + ':' + config.geoserver2Port + config.geoserver2Path + '/rest/styles/' + name)
+			.auth(config.geoserver2Username, config.geoserver2Password)
+			.set('Accept','*/*')
+			.set('Content-Type', 'application/vnd.ogc.sld+xml; charset=utf-8')
+			.send(sld)
+	});
+};
+
 module.exports = GeoserverStyles;

@@ -88,6 +88,26 @@ describe('PgStyles', function () {
 		});
 	});
 
+	describe('#update', function () {
+		var styles, restStyle;
+		before(function(done){
+			styles = new PgStyles(pool, commonSchema);
+			restStyle = RestStyle.fixture('2a');
+			styles.add(restStyle).then(function() {
+				restStyle._name = 'test1';
+				return styles.update(restStyle)
+			}).then(function(){
+				done();
+			});
+		});
+
+		it('should return updated name', function(){
+			return styles.all().then(allStyles => {
+				return allStyles[1].name();
+			}).should.eventually.equal('test1');
+		});
+	});
+
 	after(function(done){
 		schema.drop().then(function(){
 			done();

@@ -1,5 +1,10 @@
+var Promise = require('promise');
+
 var Controller = require('./Controller');
-var Style = require('../styles/Style');
+var RestStyle = require('../styles/RestStyle');
+var CompoundStyles = require('../styles/CompoundStyles');
+var PgStyles = require('../styles/PgStyles');
+var GeoserverStyles = require('../styles/GeoserverStyles');
 var UUID = require('../common/UUID');
 
 /**
@@ -9,8 +14,15 @@ var UUID = require('../common/UUID');
  * @augments Controller
  * @alias StyleController
  */
-var StyleController = function(app){
+var StyleController = function(app, pgPool, schema){
 	Controller.call(this, app, 'symbology');
+
+	this._styles = new CompoundStyles({
+		styles: [
+			new PgStyles(pgPool, schema),
+			new GeoserverStyles(pgPool, schema)
+		]
+	});
 };
 
 StyleController.prototype = Object.create(Controller.prototype);
@@ -19,20 +31,18 @@ StyleController.prototype = Object.create(Controller.prototype);
  * @inheritDoc
  */
 StyleController.prototype.create = function(request, response, next) {
-	var receivedData = request.body.data;
-
-	if(!receivedData || !Style.validateDescriptionCreation(receivedData.definition)) {
+	var receivedData = request.body;
+	if(!receivedData || !RestStyle.validateDescriptionCreation(receivedData.definition)) {
 		response.send(400, 'Request must contain valid data for generating SLD.');
 		return;
 	}
 
-	var style = new Style(new UUID().toString(), receivedData.definition);
+	var style = new RestStyle(new UUID().toString(), receivedData, request.userId);
 
-	var sql = style.toSql();
-	// Save to PostgreSQL;
-
-	Promise.all([sqlPromise, mongoPromise]).then(function(){
-		next();
+	this._styles.add(style).then(function(){
+		style.json().then(function(json){
+			response.status(201).json(json);
+		});
 	}, function(){
 		next({
 			message: 'Error in saving symbology.'
@@ -44,20 +54,19 @@ StyleController.prototype.create = function(request, response, next) {
  * @inheritDoc
  */
 StyleController.prototype.update = function(request, response, next) {
-	var receivedData = request.body.data;
+	var receivedData = request.body;
 
-	if(!receivedData || !Style.validateDescriptionUpdate(receivedData.definition)) {
+	if(!receivedData || !receivedData.uuid || !RestStyle.validateDescriptionUpdate(receivedData.definition)) {
 		response.send(400, 'Request must contain valid data for generating SLD.');
 		return;
 	}
 
-	var style = new Style(new UUID().toString(), receivedData);
+	var style = new RestStyle(receivedData.uuid, receivedData, request.userId);
 
-	var sql = style.toSql();
-	// Save to PostgreSQL;
-
-	Promise.all([sqlPromise, mongoPromise]).then(function(){
-		next();
+	this._styles.update(style).then(function(){
+		style.json().then(function(json){
+			response.status(200).json(json);
+		});
 	}, function(){
 		next({
 			message: 'Error in saving symbology.'
