@@ -17,9 +17,10 @@ var UUID = require('../common/UUID');
 var StyleController = function(app, pgPool, schema){
 	Controller.call(this, app, 'symbology');
 
+	this._pgStyles = new PgStyles(pgPool, schema);
 	this._styles = new CompoundStyles({
 		styles: [
-			new PgStyles(pgPool, schema),
+			this._pgStyles,
 			new GeoserverStyles(pgPool, schema)
 		]
 	});
@@ -69,7 +70,7 @@ StyleController.prototype.update = function(request, response, next) {
 		});
 	}, function(){
 		next({
-			message: 'Error in saving symbology.'
+			message: 'Error in updating symbology.'
 		});
 	});
 };
@@ -77,8 +78,22 @@ StyleController.prototype.update = function(request, response, next) {
 /**
  * @inheritDoc
  */
-StyleController.prototype.read = function(request, response, next) {
+StyleController.prototype.readAll = function(request, response, next) {
+	this._pgStyles.all().then(function(styles){
+		var promises = [];
 
+		styles.forEach(function(style){
+			promises.push(style.json());
+		});
+
+		Promise.all(promises).then(function(results){
+			response.status(200).json(JSON.stringify(results))
+		});
+	}, function(){
+		next({
+			message: 'Error in reading symbologies.'
+		})
+	});
 };
 
 /**

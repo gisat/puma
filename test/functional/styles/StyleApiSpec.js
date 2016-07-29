@@ -147,6 +147,21 @@ describe('StyleApi', function () {
 		});
 	});
 
+	it('should return existing styles', function(done){
+		supertest(app)
+			.get('/rest/symbology')
+			.set('Accepts', 'application/json')
+			.expect(200)
+			.then(function (response) {
+				var result = JSON.parse(response.body);
+				should(result).have.length(1);
+
+				done();
+			}).catch(function (error) {
+			throw new Error("Error: " + error);
+		});
+	});
+
 	after(function (done) {
 		// TODO: Clean the data in geoserver as well.
 
