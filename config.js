@@ -7,8 +7,8 @@ module.exports = {
 	remoteAddress   : "localhost:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@localhost:5433/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5433/geonode",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
 	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
@@ -108,5 +108,19 @@ module.exports = {
 	* Allowed values: 'production', 'development'
 	* If no value is present production will be used
 	*/
-	environment: 'production'
+	environment: 'production',
+
+	/*
+	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
+	 */
+	postgreSqlSchema: 'data',
+
+	/*
+	Connection String split to pieces for the PostgreSQL.
+	 */
+	pgDataUser: 'geonode',
+	pgDataPassword: 'geonode',
+	pgDataDatabase: 'geonode_data',
+	pgDataHost: 'localhost',
+	pgDataPort: '5432',
 };

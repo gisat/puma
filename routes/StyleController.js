@@ -32,9 +32,11 @@ StyleController.prototype = Object.create(Controller.prototype);
  * @inheritDoc
  */
 StyleController.prototype.create = function(request, response, next) {
-	var receivedData = request.body;
+	var receivedData = request.body.data;
 	if(!receivedData || !RestStyle.validateDescriptionCreation(receivedData.definition)) {
-		response.send(400, 'Request must contain valid data for generating SLD.');
+		response.status(400).json({
+			message:'Request must contain valid data for generating SLD.'
+		});
 		return;
 	}
 
@@ -55,10 +57,12 @@ StyleController.prototype.create = function(request, response, next) {
  * @inheritDoc
  */
 StyleController.prototype.update = function(request, response, next) {
-	var receivedData = request.body;
+	var receivedData = request.body.data;
 
 	if(!receivedData || !receivedData.uuid || !RestStyle.validateDescriptionUpdate(receivedData.definition)) {
-		response.send(400, 'Request must contain valid data for generating SLD.');
+		response.status(400).json({
+			message:'Request must contain valid data for generating SLD.'
+		});
 		return;
 	}
 

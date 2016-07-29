@@ -111,7 +111,7 @@ describe('StyleApi', function () {
 		supertest(app)
 			.post('/rest/symbology')
 			.set('Content-Type', 'application/json')
-			.send(JSON.stringify(style))
+			.send(JSON.stringify({data: style}))
 			.expect(201)
 			.then(function (result) {
 				var objectFromApi = JSON.parse(result.body);
@@ -137,7 +137,7 @@ describe('StyleApi', function () {
 			supertest(app)
 				.put('/rest/symbology')
 				.set('Content-Type', 'application/json')
-				.send(json)
+				.send({data: JSON.parse(json)})
 				.expect(200)
 				.then(function (res) {
 					done();

@@ -1,4 +1,5 @@
 var crud = require('../rest/crud');
+var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
 var AnalysisController = require('./AnalysisController');
@@ -21,6 +22,9 @@ var ViewCfgController = require('./ViewCfgController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 
+var PgPool = require('../common/PgPool');
+var DatabaseSchema = require('../postgresql/DatabaseSchema');
+
 var api = {
 	login: require('../api/login'),
 	layers: require('../api/layers'),
@@ -36,26 +40,35 @@ var api = {
 };
 
 module.exports = function(app) {
-	// Set up all relevant controllers.
-	new AnalysisController(app);
-	new AreaTemplateController(app);
-	new AttributeController(app);
-	new AttributeSetController(app);
-	new ChartCfgController(app);
-	new DataSetController(app);
-	new DataViewController(app);
-	new LayerGroupController(app);
-	new LayerRefController(app);
-	new LocationController(app);
-	new PerformedAnalysisController(app);
-	new ScopeController(app);
-	new StyleController(app);
-	new ThemeController(app);
-	new TopicController(app);
-	new UserPolygonController(app);
-	new ViewCfgController(app);
-	new VisualizationController(app);
-	new YearController(app);
+	var pool = new PgPool({
+		user: config.pgDataUser,
+		database: config.pgDataDatabase,
+		password: config.pgDataPassword,
+		host: config.pgDataHost,
+		port: config.pgDataPort
+	});
+	new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
+		// Set up all relevant controllers.
+		new AnalysisController(app);
+		new AreaTemplateController(app);
+		new AttributeController(app);
+		new AttributeSetController(app);
+		new ChartCfgController(app);
+		new DataSetController(app);
+		new DataViewController(app);
+		new LayerGroupController(app);
+		new LayerRefController(app);
+		new LocationController(app);
+		new PerformedAnalysisController(app);
+		new ScopeController(app);
+		new StyleController(app, pool, config.postgreSqlSchema);
+		new ThemeController(app);
+		new TopicController(app);
+		new UserPolygonController(app);
+		new ViewCfgController(app);
+		new VisualizationController(app);
+		new YearController(app);
+	});
 
 	// old backoffice
 	app.put('/rest/:objType/:objId',function(req,res,next) {
