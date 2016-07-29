@@ -1,6 +1,12 @@
 var logger = require('../common/Logger').applicationWideLogger;
 var crud = require('../rest/crud');
 
+/**
+ * @alias Controller
+ * @param app
+ * @param type
+ * @constructor
+ */
 var Controller = function (app, type) {
 	if(!app || !type) {
 		throw new Error(

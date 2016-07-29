@@ -99,6 +99,41 @@ StyleController.prototype.readAll = function(request, response, next) {
 /**
  * @inheritDoc
  */
+StyleController.prototype.read = function(request, response, next) {
+	this._pgStyles.all().then(function(styles){
+		var promises = [];
+
+		styles.forEach(function(style){
+			promises.push(style.json());
+		});
+
+		Promise.all(promises).then(function(results){
+			var found = false;
+
+			results.forEach(function(result){ // TODO: Clean usage of the results.
+				result = JSON.parse(result);
+				if(result.uuid == request.params.id){
+					found = true;
+					response.status(200).json(JSON.stringify(result))
+				}
+			});
+
+			if(!found){
+				response.status(404).json({
+					message: "Symbology with given uuid doesn't exist."
+				});
+			}
+		});
+	}, function(){
+		next({
+			message: 'Error in reading symbologies.'
+		})
+	});
+};
+
+/**
+ * @inheritDoc
+ */
 StyleController.prototype.delete = function(request, response, next) {
 
 };

@@ -162,6 +162,33 @@ describe('StyleApi', function () {
 		});
 	});
 
+	it('should return style with given uuid', function(done){
+		supertest(app)
+			.get('/rest/symbology/' + createdStyle._uuid)
+			.set('Accepts', 'application/json')
+			.expect(200)
+			.then(function (response) {
+				var result = JSON.parse(response.body);
+				should(result.name).equal('Name');
+
+				done();
+			}).catch(function (error) {
+			throw new Error("Error: " + error);
+		});
+	});
+
+	it('should return 404 when style with given uuid doesnt exist', function(done){
+		supertest(app)
+			.get('/rest/symbology/WrongUUID')
+			.set('Accepts', 'application/json')
+			.expect(404)
+			.then(function () {
+				done();
+			}).catch(function (error) {
+			throw new Error("Error: " + error);
+		});
+	});
+
 	after(function (done) {
 		// TODO: Clean the data in geoserver as well.
 
