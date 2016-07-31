@@ -49,7 +49,7 @@ module.exports = function(app) {
 	new LocationController(app);
 	new PerformedAnalysisController(app);
 	new ScopeController(app);
-	new StyleController(app);
+	//new StyleController(app);
 	new ThemeController(app);
 	new TopicController(app);
 	new UserPolygonController(app);
