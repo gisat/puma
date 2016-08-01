@@ -26,6 +26,8 @@ DatabaseSchema.prototype.drop = function() {
  * @returns {Promise.<T>}
  */
 DatabaseSchema.prototype.create = function() {
+	var createAnalysis = 'create schema IF NOT EXISTS analysis';
+	var createViews = 'create schema IF NOT EXISTS views';
 	var createSchema = 'create schema IF NOT EXISTS ' + this._schema;
 	var createStyleTable = 'create table IF NOT EXISTS ' + this._schema + '.style (' +
 		'sld text,' +
@@ -42,6 +44,10 @@ DatabaseSchema.prototype.create = function() {
 	var self = this;
 	return this._pool.query(createSchema).then(function(){
 		return self._pool.query(createStyleTable);
+	}).then(function(){
+		return self._pool.query(createAnalysis);
+	}).then(function(){
+		return self._pool.query(createViews);
 	}).catch(function(err){
 		logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
 	});

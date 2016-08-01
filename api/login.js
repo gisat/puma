@@ -58,7 +58,7 @@ var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
 		protocol: config.geonodeProtocol,
 		host: config.geonodeHost,
 		port: config.geonodePort || 80,
-		path: config.geonodeHome + '/',
+		path: config.geonodeHome + '/layers',
 		method: 'GET',
 		headers: {
 			'referer': config.geonodeProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + "/"
