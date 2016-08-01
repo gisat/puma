@@ -115,7 +115,7 @@ describe('StyleApi', function () {
 			.expect(201)
 			.then(function (result) {
 				var objectFromApi = JSON.parse(result.body);
-				createdStyle = new RestStyle(objectFromApi.uuid, objectFromApi);
+				createdStyle = new RestStyle(objectFromApi.id, objectFromApi);
 				done();
 			}).catch(function (error) {
 			throw new Error("Error: " + error);
@@ -164,7 +164,7 @@ describe('StyleApi', function () {
 
 	it('should return style with given uuid', function(done){
 		supertest(app)
-			.get('/rest/symbology/' + createdStyle._uuid)
+			.get('/rest/symbology/' + createdStyle._id)
 			.set('Accepts', 'application/json')
 			.expect(200)
 			.then(function (response) {

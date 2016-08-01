@@ -38,10 +38,10 @@ Style.prototype.name = function() {};
 Style.prototype.symbologyName = function() {};
 
 Style.prototype.json = function() {
-	return Promise.all([this.uuid(), this.definition(), this.name(), this.symbologyName(), this.changed(), this.changedBy(), this.created(), this.createdBy()]).then(function (results) {
+	return Promise.all([this.id(), this.definition(), this.name(), this.symbologyName(), this.changed(), this.changedBy(), this.created(), this.createdBy()]).then(function (results) {
 		return {
-			_id: results[0],
-			uuid: results[0],
+			_id: Number(results[0]),
+			id: Number(results[0]),
 			definition: results[1],
 			name: results[2],
 			symbologyName: results[3],

@@ -7,6 +7,7 @@ var Promise = require('promise');
  * @alias PgStyles
  * @augments Styles
  * @param connectionPool {PgPool} Pool of the connections.
+ * @param schema {String} Name of the used Schema.
  * @constructor
  */
 var PgStyles = function (connectionPool, schema) {
@@ -31,9 +32,9 @@ PgStyles.prototype = Object.create(Styles.prototype);
  */
 PgStyles.prototype.add = function (style) {
 	var self = this;
-	return Promise.all([style.uuid(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
+	return Promise.all([style.id(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
 		return self._pool.query(
-			"insert into " + self._table + " (uuid, sld, definition, name, symbology_name, changed, changed_by, created, created_by ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+			"insert into " + self._table + " (id, sld, definition, name, symbology_name, changed, changed_by, created, created_by ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
 			results);
 	}).catch(function(err){
 		logger.error("PgStyles#add Error when saving in the database. Error: ", err);
@@ -45,9 +46,9 @@ PgStyles.prototype.add = function (style) {
  */
 PgStyles.prototype.update = function(style) {
 	var self = this;
-	return Promise.all([style.uuid(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
+	return Promise.all([style.id(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
 		return self._pool.query(
-			"update " + self._table + " set sld=$2, definition=$3, name=$4, symbology_name=$5, changed=$6, changed_by=$7, created=$8, created_by=$9 where uuid = $1;",
+			"update " + self._table + " set sld=$2, definition=$3, name=$4, symbology_name=$5, changed=$6, changed_by=$7, created=$8, created_by=$9 where id = $1;",
 			results);
 	}).catch(function(err){
 		logger.error("PgStyles#add Error when saving in the database. Error: ", err);
@@ -59,12 +60,12 @@ PgStyles.prototype.update = function(style) {
  */
 PgStyles.prototype.all = function () {
 	var self = this;
-	return this._pool.query('select uuid from ' + self._table).then(function (uuids) {
-		uuids = uuids.rows.map(row => row.uuid);
+	return this._pool.query('select id from ' + self._table).then(function (ids) {
+		ids = ids.rows.map(row => row.id);
 		var styles = [];
 
-		uuids.forEach(function (uuid) {
-			styles.push(new PgStyle(self._connectionPool, uuid, self._schema));
+		ids.forEach(function (id) {
+			styles.push(new PgStyle(self._connectionPool, id, self._schema));
 		});
 
 		return styles;

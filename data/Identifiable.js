@@ -6,8 +6,8 @@
 var Identifiable = function() {};
 
 /**
- * @return uuid {Promise} Uuid pf the given identifiable.
+ * @return id {Promise} Uuid pf the given identifiable.
  */
-Identifiable.prototype.uuid = function(){};
+Identifiable.prototype.id = function(){};
 
 module.exports = Identifiable;

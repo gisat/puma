@@ -51,7 +51,7 @@ describe('GeoserverStyles', function(){
 				var uuidFound = false;
 
 				styles.forEach(style => {
-					var promise = style.uuid();
+					var promise = style.id();
 
 					allPromises.push(promise);
 					promise.then(function(uuidOfStyle){

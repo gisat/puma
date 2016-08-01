@@ -122,7 +122,7 @@ function create(params,req,res,callback) {
 			crud.create('performedanalysis',performedAnalysisObj,function(err,result) {
 				var analysisObj = results.analysis;
 				var type = analysisObj.type;
-				result.uuid = uuid;
+				result.id = uuid;
 				res.data = result;
 
 				callback(null);

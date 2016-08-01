@@ -49,8 +49,8 @@ GeoserverStyles.prototype.all = function(){
 GeoserverStyles.prototype.add = function (style) {
 	var name;
 
-	return style.uuid().then(function(uuid){
-		name = uuid;
+	return style.id().then(function(id){
+		name = id;
 		return style.sld()
 	}).then(function(sld){
 		return superagent
@@ -69,8 +69,8 @@ GeoserverStyles.prototype.add = function (style) {
 GeoserverStyles.prototype.update = function(style){
 	var name;
 
-	return style.uuid().then(function(uuid){
-		name = uuid;
+	return style.id().then(function(id){
+		name = id;
 		return style.sld()
 	}).then(function(sld){
 		return superagent

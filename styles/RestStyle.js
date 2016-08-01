@@ -5,17 +5,17 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 /**
  * This class represents one style. It is possible to load style from the PostgreSQL as well as it is possible to generate SLD from such style as well as it is possible to load the style.
- * @param uuid {String} Unique identifier for the Style
+ * @param id {String} Unique identifier for the Style
  * @param jsonObject {Object} Definition of the style, based on which it is necessary to create valid SLD.
  * @param currentUserId {Number} Optional. Id of the current user. Only relevant when creating.
  * @constructor
  * @alias RestStyle
  * @augments Style
  */
-var RestStyle = function (uuid, jsonObject, currentUserId) {
+var RestStyle = function (id, jsonObject, currentUserId) {
 	Style.call(this);
 
-	this._uuid = uuid;
+	this._id = id;
 	this._definition = jsonObject.definition;
 	this._name = jsonObject.name;
 	this._symbologyName = jsonObject.symbologyName;
@@ -31,8 +31,8 @@ RestStyle.prototype = Object.create(Style.prototype);
 /**
  * @inheritDoc
  */
-RestStyle.prototype.uuid = function() {
-	return Promise.resolve(this._uuid);
+RestStyle.prototype.id = function() {
+	return Promise.resolve(this._id);
 };
 
 /**
@@ -121,8 +121,8 @@ RestStyle.validateDescriptionUpdate = function (description) {
 	return areRulesCorrectlyFormed;
 };
 
-RestStyle.fixture = function(uuid) {
-	return new RestStyle(uuid, {
+RestStyle.fixture = function(id) {
+	return new RestStyle(id, {
 		definition: {
 			"type": "polygon", // PolygonSymbolizer
 			"filterAttributeKey": 5, // Filter id of attributeset, PropertyName
