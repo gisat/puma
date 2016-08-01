@@ -59,7 +59,7 @@ StyleController.prototype.create = function(request, response, next) {
 StyleController.prototype.update = function(request, response, next) {
 	var receivedData = request.body.data;
 
-	if(!receivedData || !receivedData.uuid || !RestStyle.validateDescriptionUpdate(receivedData.definition)) {
+	if(!receivedData || !receivedData.uuid || (receivedData.source != 'geoserver' && !RestStyle.validateDescriptionUpdate(receivedData.definition))) {
 		response.status(400).json({
 			message:'Request must contain valid data for generating SLD.'
 		});
@@ -68,14 +68,23 @@ StyleController.prototype.update = function(request, response, next) {
 
 	var style = new RestStyle(receivedData.uuid, receivedData, request.userId);
 
-	this._styles.update(style).then(function(){
-		style.json().then(function(json){
-			response.status(200).json(json);
-		});
-	}, function(){
+	var promiseOfUpdate;
+	if(receivedData.source != 'geoserver') {
+		// Means the style needs to be created and updated in the geoserver.
+		promiseOfUpdate = this._styles.update(style);
+	} else {
+		// Handle geoserver data source.
+		promiseOfUpdate = this._pgStyles.update(style);
+	}
+
+	promiseOfUpdate.then(function () {
+		return style.json();
+	}).then(function(json){
+		response.status(200).json(json)
+	}).catch(function(){
 		next({
 			message: 'Error in updating symbology.'
-		});
+		})
 	});
 };
 
