@@ -7,8 +7,8 @@ module.exports = {
 	remoteAddress   : "localhost:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@localhost:5433/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5433/geonode",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
 	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
@@ -122,5 +122,5 @@ module.exports = {
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: 'localhost',
-	pgDataPort: '5433',
+	pgDataPort: '5432',
 };
