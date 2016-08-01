@@ -22,7 +22,7 @@ DatabaseSchema.prototype.drop = function() {
 };
 
 /**
- * It returns Promise of creation of the schmea and all relevnat objects in it.
+ * It returns Promise of creation of the schema and all relevant objects in it.
  * @returns {Promise.<T>}
  */
 DatabaseSchema.prototype.create = function() {
