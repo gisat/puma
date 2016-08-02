@@ -40,7 +40,6 @@ function initServer(err) {
 		return next(null);
 	});
 
-	app.use('/config.js', publicConfig);
 	app.use('/printpublic/config.js', publicConfig);
 
 	app.use('/app.css', getCSS);
