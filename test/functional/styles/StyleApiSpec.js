@@ -3,7 +3,7 @@ var supertest = require('supertest-as-promised');
 
 var express = require('express');
 
-var PgPool = require('../../../common/PgPool');
+var PgPool = require('../../../postgresql/PgPool');
 var DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 var RestStyle = require('../../../styles/RestStyle');
 var StyleController = require('../../../routes/StyleController');

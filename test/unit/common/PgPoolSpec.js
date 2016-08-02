@@ -1,6 +1,6 @@
 var should = require('should');
 
-var PgPool = require('../../../common/PgPool');
+var PgPool = require('../../../postgresql/PgPool');
 var config = require('../config');
 
 describe('PgPool', function(){

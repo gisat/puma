@@ -1,5 +1,4 @@
 var pg = require('pg');
-var logger = require('./Logger').applicationWideLogger;
 
 /**
  * This class represents pool of PostgreSQL connections.

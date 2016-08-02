@@ -1,10 +1,7 @@
 var express = require('express');
-var app = express();
 var conn = require('./common/conn');
-var publicConfig = require('./common/public-config');
 var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');
-var staticFn = express['static'];
 var session = require('express-session');
 
 var async = require('async');
@@ -17,14 +14,15 @@ process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
+var app;
 // TODO: Move to the API instead of public.
 function initServer(err) {
+	logger.info('server#initServer Initialize the server.');
+
 	if (err) {
 		console.log('Error: while initializing server: ', err);
 		return;
 	}
-	var oneDay = 60*60*24*1000;
-
 	// Order is important
 
 	// Log the requests to see when the error occurs.
@@ -39,8 +37,6 @@ function initServer(err) {
 		}
 		return next(null);
 	});
-
-	app.use('/printpublic/config.js', publicConfig);
 
 	app.use('/app.css', getCSS);
 	app.use('/printpublic/app.css', getCSS);
@@ -78,12 +74,30 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
-async.series([
-	function(callback) {
-		conn.init(app,callback);
-	},
-	function(callback) {
-		loc.init(callback);
-	}],
-	initServer
-);
+var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
+var PgPool = require('./postgresql/PgPool');
+var DatabaseSchema = require('./postgresql/DatabaseSchema');
+
+var pool = new PgPool({
+	user: config.pgDataUser,
+	database: config.pgDataDatabase,
+	password: config.pgDataPassword,
+	host: config.pgDataHost,
+	port: config.pgDataPort
+});
+new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
+	return new SymbologyToPostgreSqlMigration(pool).run();
+}).then(function(){
+	logger.info('Finished Migrations.');
+
+	app = express();
+	async.series([
+			function(callback) {
+				conn.init(app,callback);
+			},
+			function(callback) {
+				loc.init(callback);
+			}],
+		initServer
+	);
+});

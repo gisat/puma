@@ -22,7 +22,7 @@ var ViewCfgController = require('./ViewCfgController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 
-var PgPool = require('../common/PgPool');
+var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 var api = {

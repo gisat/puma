@@ -1,7 +1,7 @@
 var should = require('should');
 
 var PgStyles = require('../../../styles/PgStyles');
-var PgPool = require('../../../common/PgPool');
+var PgPool = require('../../../postgresql/PgPool');
 var RestStyle = require('../../../styles/RestStyle');
 var DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 var config = require('../config');

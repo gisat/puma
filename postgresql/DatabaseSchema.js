@@ -40,10 +40,16 @@ DatabaseSchema.prototype.create = function() {
 		'changed_by int,' +
 		'id varchar(64) Unique' +
 		')';
+	var createMigrationTable = 'create table IF NOT EXISTS ' + this._schema + '.migration (' +
+		'id SERIAL PRIMARY KEY,' +
+		'name varchar(128)' +
+		');'
 
 	var self = this;
 	return this._pool.query(createSchema).then(function(){
 		return self._pool.query(createStyleTable);
+	}).then(function(){
+		return self._pool.query(createMigrationTable);
 	}).then(function(){
 		return self._pool.query(createAnalysis);
 	}).then(function(){

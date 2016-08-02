@@ -3,7 +3,7 @@ var should = require('should');
 var PgStyles = require('../../../styles/PgStyles');
 var GeoserverStyles = require('../../../styles/GeoserverStyles');
 var RestStyle = require('../../../styles/RestStyle');
-var PgPool = require('../../../common/PgPool');
+var PgPool = require('../../../postgresql/PgPool');
 var UUID = require('../../../common/UUID');
 var DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 
