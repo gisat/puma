@@ -107,6 +107,13 @@ PgStyle.prototype.createdBy = function() {
 	return this.loadAttribute('created_by');
 };
 
+/**
+ * @inheritDoc
+ */
+PgStyle.prototype.source = function() {
+	return this.loadAttribute('source');
+};
+
 PgStyle.prototype.loadAttribute = function(name) {
 	var query = util.format("SELECT %s from %s where id=$1", name, this._tableName);
 

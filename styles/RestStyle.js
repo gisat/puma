@@ -19,6 +19,7 @@ var RestStyle = function (id, jsonObject, currentUserId) {
 	this._definition = jsonObject.definition;
 	this._name = jsonObject.name;
 	this._symbologyName = jsonObject.symbologyName;
+	this._source = jsonObject.source;
 
 	this._created = jsonObject.created || new Date();
 	this._createdBy = jsonObject.createdBy || currentUserId;
@@ -82,6 +83,13 @@ RestStyle.prototype.created = function() {
  */
 RestStyle.prototype.createdBy = function() {
 	return Promise.resolve(this._createdBy);
+};
+
+/**
+ * @inheritDoc
+ */
+RestStyle.prototype.source = function() {
+	return Promise.resolve(this._source);
 };
 
 /**

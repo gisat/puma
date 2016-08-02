@@ -33,6 +33,7 @@ DatabaseSchema.prototype.create = function() {
 		'sld text,' +
 		'definition text,' +
 		'name text,' +
+		'source text,' +
 		'symbology_name text,' +
 		'created timestamp,' +
 		'created_by int,' +

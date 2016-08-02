@@ -32,9 +32,9 @@ PgStyles.prototype = Object.create(Styles.prototype);
  */
 PgStyles.prototype.add = function (style) {
 	var self = this;
-	return Promise.all([style.id(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
+	return Promise.all([style.id(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy(), style.source()]).then(function (results) {
 		return self._pool.query(
-			"insert into " + self._table + " (id, sld, definition, name, symbology_name, changed, changed_by, created, created_by ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+			"insert into " + self._table + " (id, sld, definition, name, symbology_name, changed, changed_by, created, created_by, source ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)",
 			results);
 	}).catch(function(err){
 		logger.error("PgStyles#add Error when saving in the database. Error: ", err);
@@ -46,9 +46,9 @@ PgStyles.prototype.add = function (style) {
  */
 PgStyles.prototype.update = function(style) {
 	var self = this;
-	return Promise.all([style.id(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy()]).then(function (results) {
+	return Promise.all([style.id(), style.sld(), style.definition(), style.name(), style.symbologyName(), style.changed(), style.changedBy(), style.created(), style.createdBy(), style.source()]).then(function (results) {
 		return self._pool.query(
-			"update " + self._table + " set sld=$2, definition=$3, name=$4, symbology_name=$5, changed=$6, changed_by=$7, created=$8, created_by=$9 where id = $1;",
+			"update " + self._table + " set sld=$2, definition=$3, name=$4, symbology_name=$5, changed=$6, changed_by=$7, created=$8, created_by=$9, source=$10 where id = $1;",
 			results);
 	}).catch(function(err){
 		logger.error("PgStyles#add Error when saving in the database. Error: ", err);

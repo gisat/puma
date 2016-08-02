@@ -37,6 +37,12 @@ Style.prototype.name = function() {};
  */
 Style.prototype.symbologyName = function() {};
 
+/**
+ * Either geoserver as a source or our own creation.
+ * @returns {Promise} source of the SLD
+ */
+Style.prototype.source = function() {};
+
 Style.prototype.json = function() {
 	return Promise.all([this.id(), this.definition(), this.name(), this.symbologyName(), this.changed(), this.changedBy(), this.created(), this.createdBy()]).then(function (results) {
 		return {
