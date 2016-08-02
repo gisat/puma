@@ -21,6 +21,10 @@ class SymbologyToPostgreSql extends Migration {
 				var promises = [];
 				symbologies.forEach(function (symbology) {
 					symbology.source = 'geoserver';
+					symbology.id = symbology._id;
+					if(!symbology.definition) {
+						symbology.definition = {rules: []}
+					}
 					promises.push(
 						styles.add(new RestStyle(symbology._id, symbology, 1))
 					);
