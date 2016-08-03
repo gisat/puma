@@ -146,7 +146,6 @@ StyleController.prototype.read = function(request, response, next) {
 			var found = false;
 
 			results.forEach(function(result){ // TODO: Clean usage of the results.
-				result = JSON.parse(result);
 				if(result.id == request.params.id){
 					found = true;
 					response.status(200).json({data: result})

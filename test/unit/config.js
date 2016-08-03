@@ -5,8 +5,8 @@ module.exports = {
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: 'localhost',
 	pgDataPort: '5433',
-	pgGeonodeConnString  : "postgres://geonode:TheGeoNodeBigFan@37.205.9.78:5432/geonode",
-	mongoConnString : "mongodb://37.205.9.78:27017/test",
+	pgGeonodeConnString  : "postgres://geonode:geonode@localhost:5432/geonode",
+	mongoConnString : "mongodb://localhost:27017/panther",
 
 	localAddress    : "localhost:4000/tool",
 	remoteAddress   : "localhost:4000/tool",

@@ -1,5 +1,6 @@
 var should = require('should');
 var supertest = require('supertest-as-promised');
+var conn = require('../../../common/conn');
 
 var express = require('express');
 
@@ -13,6 +14,7 @@ describe('StyleApi', function () {
 	// TODO move to the create test server.
 	var schema, pool, app;
 	var commonSchema = 'data_test';
+	var mongoDb;
 	var createdStyle;
 	// Cleanse the database.
 	before(function (done) {
@@ -27,8 +29,12 @@ describe('StyleApi', function () {
 			port: config.pgDataPort
 		});
 
-		schema = new DatabaseSchema(pool, commonSchema);
-		schema.create().then(function () {
+		conn.connectToMongo(config.mongoConnString).then(function(db){
+			mongoDb = db;
+
+			schema = new DatabaseSchema(pool, commonSchema);
+			return schema.create();
+		}).then(function () {
 			done();
 		});
 
@@ -114,7 +120,7 @@ describe('StyleApi', function () {
 			.send(JSON.stringify({data: style}))
 			.expect(201)
 			.then(function (result) {
-				var objectFromApi = JSON.parse(result.body);
+				var objectFromApi = result.body;
 				createdStyle = new RestStyle(objectFromApi.id, objectFromApi);
 				done();
 			}).catch(function (error) {
@@ -137,7 +143,7 @@ describe('StyleApi', function () {
 			supertest(app)
 				.put('/rest/symbology')
 				.set('Content-Type', 'application/json')
-				.send({data: JSON.parse(json)})
+				.send({data: json})
 				.expect(200)
 				.then(function (res) {
 					done();
@@ -153,23 +159,8 @@ describe('StyleApi', function () {
 			.set('Accepts', 'application/json')
 			.expect(200)
 			.then(function (response) {
-				var result = JSON.parse(response.body);
-				should(result).have.length(1);
-
-				done();
-			}).catch(function (error) {
-			throw new Error("Error: " + error);
-		});
-	});
-
-	it('should return style with given uuid', function(done){
-		supertest(app)
-			.get('/rest/symbology/' + createdStyle._id)
-			.set('Accepts', 'application/json')
-			.expect(200)
-			.then(function (response) {
-				var result = JSON.parse(response.body);
-				should(result.name).equal('Name');
+				var result = response.body;
+				should(result.data).have.length(1);
 
 				done();
 			}).catch(function (error) {
@@ -189,10 +180,27 @@ describe('StyleApi', function () {
 		});
 	});
 
+	it('should return style with given uuid', function(done){
+		supertest(app)
+			.get('/rest/symbology/' + createdStyle._id)
+			.set('Accepts', 'application/json')
+			.expect(200)
+			.then(function (response) {
+				var result = response.body.data;
+				should(result.name).equal('Name');
+
+				done();
+			}).catch(function (error) {
+			throw new Error("Error: " + error);
+		});
+	});
+
 	after(function (done) {
 		// TODO: Clean the data in geoserver as well.
 
 		schema.drop().then(function () {
+			return mongoDb.collection('symbology').deleteMany({});
+		}).then(function(){
 			done();
 		});
 	});

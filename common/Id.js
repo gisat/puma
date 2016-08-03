@@ -1,5 +1,9 @@
 var conn = require('./conn');
 
+/**
+ * @alias Id
+ * @constructor
+ */
 var Id = function() {
 	this._id = conn.getNextId();
 };

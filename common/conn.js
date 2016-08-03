@@ -1,6 +1,7 @@
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
+var Promise = require('promise');
 
 var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
@@ -195,6 +196,20 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
+function connectToMongo(connectionString) {
+	return MongoClient.connect(connectionString).then(function(dbs){
+		mongodb = dbs;
+
+		return dbs;
+	}).then(function(){
+		var mongoSettings = mongodb.collection('settings');
+		return mongoSettings.findOne({_id:1});
+	}).then(function(newId){
+		objectId = newId.objectId || 1;
+		return mongodb;
+	});
+}
+
 function getLayerTable(layer){
 	var workspaceDelimiterIndex = layer.indexOf(":");
 	if(workspaceDelimiterIndex == -1){
@@ -216,6 +231,7 @@ module.exports = {
 	getIo: getIo,
 	request: request,
 	connectToPgDb: connectToPgDb,
+	connectToMongo: connectToMongo,
 	initDatabases: initDatabases,
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
