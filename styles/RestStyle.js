@@ -114,14 +114,14 @@ RestStyle.prototype.sld = function () {
  */
 RestStyle.validateDescriptionUpdate = function (description) {
 	logger.info("Style#validateDescriptionUpdate Description: ", description);
-	if (!description || !description.type || !description.filterAttributeKey || !description.filterAttributeSetKey || !description.filterType || !description.rules || !description.rules.length) {
+	if (!description || !description.type || !description.filterType || !description.rules || !description.rules.length) {
 		return false;
 	}
 
 	var areRulesCorrectlyFormed = true;
 
 	description.rules.forEach(function (rule) {
-		if (!rule.appearance || !rule.title) {
+		if (!rule.appearance || !rule.name) {
 			areRulesCorrectlyFormed = false;
 		}
 	});
