@@ -24,8 +24,8 @@ GeoserverStyles.prototype = Object.create(Styles.prototype);
 GeoserverStyles.prototype.all = function(){
 	var self = this;
 	return superagent
-		.get(config.geoserver2Host + ':' + config.geoserver2Port + config.geoserver2Path + '/rest/styles')
-		.auth(config.geoserver2Username, config.geoserver2Password)
+		.get(config.geoserverHost + ':' + config.geoserverPort + config.geoserverPath + '/rest/styles')
+		.auth(config.geoserverUsername, config.geoserverPassword)
 		.set('Accept','application/json; charset=utf-8')
 		.then(function(result){
 			if(!result.body || !result.body.styles || !result.body.styles.style){
@@ -54,8 +54,8 @@ GeoserverStyles.prototype.add = function (style) {
 		return style.sld()
 	}).then(function(sld){
 		return superagent
-			.post(config.geoserver2Host + ':' + config.geoserver2Port + config.geoserver2Path + '/rest/styles')
-			.auth(config.geoserver2Username, config.geoserver2Password)
+			.post(config.geoserverHost + ':' + config.geoserverPort + config.geoserverPath + '/rest/styles')
+			.auth(config.geoserverUsername, config.geoserverPassword)
 			.set('Accept','*/*')
 			.set('Content-Type', 'application/vnd.ogc.sld+xml; charset=utf-8')
 			.query({name: name})
@@ -74,8 +74,8 @@ GeoserverStyles.prototype.update = function(style){
 		return style.sld()
 	}).then(function(sld){
 		return superagent
-			.put(config.geoserver2Host + ':' + config.geoserver2Port + config.geoserver2Path + '/rest/styles/' + name)
-			.auth(config.geoserver2Username, config.geoserver2Password)
+			.put(config.geoserverHost + ':' + config.geoserverPort + config.geoserverPath + '/rest/styles/' + name)
+			.auth(config.geoserverUsername, config.geoserverPassword)
 			.set('Accept','*/*')
 			.set('Content-Type', 'application/vnd.ogc.sld+xml; charset=utf-8')
 			.send(sld)
