@@ -22,9 +22,9 @@ class GeoServerDataStore {
 			host: this._host,
 			port: this._port,
 			database: this._database,
-			user: this.userName,
+			user: this._userName,
 			passwd: this._password,
-			dbType: 'postgis'
+			dbtype: 'postgis'
 		})
 	}
 

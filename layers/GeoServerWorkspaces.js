@@ -17,7 +17,8 @@ class GeoServerWorkspaces {
 				.set('Content-Type', 'application/json; charset=utf-8')
 				.send({
 					workspace: {
-						name: name
+						name: name,
+						enabled: true
 					}
 				})
 		});

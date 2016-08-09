@@ -29,7 +29,9 @@ class GeoServerDataStores {
 				.send({
 					dataStore: {
 						name: results[0],
-						connectionParameters: results[1]
+						connectionParameters: results[1],
+						enabled: true,
+						schema: 'views' // TODO: Parametrize the schema name.
 					}
 				})
 		});

@@ -69,6 +69,12 @@ class MongoAreaTemplate extends Audit {
 		});
 	}
 
+	styles() {
+		return this.load().then(function(wholeEntity){
+			return wholeEntity.styles;
+		});
+	}
+
 	/**
 	 * @inheritDoc
 	 */
