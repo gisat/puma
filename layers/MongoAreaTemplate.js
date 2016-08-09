@@ -5,6 +5,8 @@ var Promise = require('promise');
 var Audit = require('../data/Audit');
 
 /**
+ * Mongo representation of the Area Template entity.
+ * @alias MongoAreaTemplate
  * @augments Audit
  */
 class MongoAreaTemplate extends Audit {
@@ -15,6 +17,8 @@ class MongoAreaTemplate extends Audit {
 	 */
 	constructor (id, database){
 		super();
+		logger.info('MongoAreaTemplate#constructor Create mongo entity with id: ', id);
+
 		this._id = id;
 		this._database = database;
 	}
@@ -46,6 +50,7 @@ class MongoAreaTemplate extends Audit {
 	}
 
 	/**
+	 * It represents the name of the Area template
 	 * @returns {Promise|*|Request|Promise.<String>}
 	 */
 	name() {
@@ -55,6 +60,7 @@ class MongoAreaTemplate extends Audit {
 	}
 
 	/**
+	 * It represents the type of the layer. So far we supports au, vector and raster.
 	 * @returns {Promise|*|Request|Promise.<String>}
 	 */
 	layerType() {
