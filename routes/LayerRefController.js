@@ -14,15 +14,22 @@ class LayerRefController extends Controller {
 		this.layers = new GeoServerLayers();
 	}
 
+	// TODO: Update styles when there is also update in the area template for all associated layerrefs.
+	// Styles are defined in the layer template, which means that we need to update them in the geoserver whenever the layer template changes for all associated layerrefs.
+	// Reasons to change stuff in geoserver
+	//   New layer is mapped. It needs to associate all the styles relevant to the application. DONE
+	//   New style is added to the template - It must add styles to all associated layerrefs.
 	create(request, response, next) {
+		var create = super.create;
 		return this.updateStyles(request).then(function(){
-			return super.create(request, response, next);
+			return create(request, response, next);
 		});
 	}
 
 	update(request, response, next) {
+		var update = super.update;
 		return this.updateStyles(request).then(function(){
-			return super.update(request, response, next);
+			return update(request, response, next);
 		});
 	}
 
