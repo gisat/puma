@@ -52,7 +52,7 @@ class LayerRefController extends Controller {
 			areaTemplate = new MongoAreaTemplate(layerRef.areaTemplate, database);
 			return areaTemplate.styles();
 		}).then(function(pStyles){
-			styles = pStyles;
+			styles = pStyles || [];
 
 			var promises = [];
 			var geoServerLayerStyles = new GeoServerLayerStyles(url, config.geoserverUsername, config.geoserverPassword);
