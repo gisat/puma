@@ -24,7 +24,8 @@ class GeoServerDataStore {
 			database: this._database,
 			user: this._userName,
 			passwd: this._password,
-			dbtype: 'postgis'
+			dbtype: 'postgis',
+			schema: 'views'
 		})
 	}
 

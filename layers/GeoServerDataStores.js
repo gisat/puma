@@ -30,8 +30,7 @@ class GeoServerDataStores {
 					dataStore: {
 						name: results[0],
 						connectionParameters: results[1],
-						enabled: true,
-						schema: 'views' // TODO: Parametrize the schema name.
+						enabled: true
 					}
 				})
 		});
