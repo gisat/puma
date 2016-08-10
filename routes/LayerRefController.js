@@ -1,6 +1,8 @@
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 var Controller = require('./Controller');
 var GeoServerLayers = require('../layers/GeoServerLayers');
+var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
 var MongoAreaTemplate = require('../layers/MongoAreaTemplate');
 var MongoClient = require('mongodb').MongoClient;
 var Promise = require('promise');
@@ -20,16 +22,20 @@ class LayerRefController extends Controller {
 	//   New layer is mapped. It needs to associate all the styles relevant to the application. DONE
 	//   New style is added to the template - It must add styles to all associated layerrefs.
 	create(request, response, next) {
-		var create = super.create;
+		var create = super.create.bind(this);
 		return this.updateStyles(request).then(function(){
 			return create(request, response, next);
+		}).catch(function(error){
+			throw new Error(logger.error('LayerRefController#create Error: ', error));
 		});
 	}
 
 	update(request, response, next) {
-		var update = super.update;
+		var update = super.update.bind(this);
 		return this.updateStyles(request).then(function(){
 			return update(request, response, next);
+		}).catch(function(error){
+			throw new Error(logger.error('LayerRefController#update Error: ', error));
 		});
 	}
 

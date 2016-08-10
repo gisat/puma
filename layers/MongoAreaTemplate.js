@@ -71,7 +71,7 @@ class MongoAreaTemplate extends Audit {
 
 	styles() {
 		return this.load().then(function(wholeEntity){
-			return wholeEntity.styles;
+			return wholeEntity.symbologies; // Older name for styles. It is used throughout the databases.
 		});
 	}
 

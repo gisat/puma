@@ -8,7 +8,7 @@ class FilteredMongoLayerReferences {
 
 	read() {
 		var self = this;
-		return this._database.collection(MongoLayerReference.collectionName()).find(this._filter).then(function(jsonLayerReferences){
+		return this._database.collection(MongoLayerReference.collectionName()).find(this._filter).toArray().then(function(jsonLayerReferences){
 			var results = [];
 
 			jsonLayerReferences.forEach(function(layerReference) {
