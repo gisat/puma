@@ -30,6 +30,7 @@ Controller.prototype.set = function (app) {
 	app.get('/rest/' + this.type, this.readAll.bind(this));
 	app.get('/rest/' + this.type + '/:id', this.read.bind(this));
 	app.delete('/rest/' + this.type + '/:id', this.delete.bind(this));
+	app.delete('/rest/' + this.type, this.deleteObject.bind(this));
 };
 
 /**
@@ -150,6 +151,11 @@ Controller.prototype.delete = function (request, response, next) {
 		}
 		next();
 	});
+};
+
+Controller.prototype.deleteObject = function (request, response, next) {
+	request.params.id = request.body._id;
+	this.delete(request, response, next);
 };
 
 module.exports = Controller;
