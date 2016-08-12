@@ -142,7 +142,7 @@ Controller.prototype.update = function (request, response, next) {
 Controller.prototype.delete = function (request, response, next) {
 	logger.info('Controller#delete Delete instance with id: ',request.params.id,' of type: ', this.type, ' By User: ', request.userId);
 
-	crud.remove(this.type, {_id: parseInt(request.params.objId)}, {
+	crud.remove(this.type, {_id: parseInt(request.params.id)}, {
 		userId: request.userId,
 		isAdmin: request.isAdmin
 	}, function (err, result) {
