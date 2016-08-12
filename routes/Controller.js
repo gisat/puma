@@ -154,7 +154,7 @@ Controller.prototype.delete = function (request, response, next) {
 };
 
 Controller.prototype.deleteObject = function (request, response, next) {
-	logger.info('Controller#deleteObject Delete instance with id: ',request.body._id,' of type: ', this.type, ' By User: ', request.userId);
+	logger.info('Controller#deleteObject Delete instance with id: ',request.body.data._id,' of type: ', this.type, ' By User: ', request.userId);
 	request.params.id = request.body.data._id;
 	this.delete(request, response, next);
 };
