@@ -40,12 +40,12 @@ body.application #main {
 }
 
 
-//$useWBFooter == true {
+//$useWBFooter == false {
 #footer-bar,
-#puma-footer-links,
+#footer-legal,
 #puma-wb-copyright,
 #puma-contact{
-	display: none;
+  display: none;
 }
 #footer-legal{
 	border: 0 none transparent;
@@ -69,7 +69,7 @@ body.application #main{
 
 
 //$allowPumaHelp == false {
-#help-link{
+#help-link, #toolbar .group .field.help {
 	display: none;
 }
 

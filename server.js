@@ -18,22 +18,19 @@ process.on('uncaughtException', function (err) {
 });
 
 function initServer(err) {
+	logger.info('server#initServer Initialize the server.');
+
 	if (err) {
 		console.log('Error: while initializing server: ', err);
 		return;
 	}
-	var oneDay = 60*60*24*1000;
-
 	// Order is important
 
-	// Log the requests to see then the error occurs.
+	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
 		logger.info("Request: "+ req.method + " - " + req.url);
 		next();
 	});
-
-	//app.use(express.favicon());
-	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
 
 	app.use('/printpublic',function(req,res,next) {
 		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
@@ -42,17 +39,11 @@ function initServer(err) {
 		return next(null);
 	});
 
-	app.use('/config.js', publicConfig);
-	app.use('/printpublic/config.js', publicConfig);
-
 	app.use('/app.css', getCSS);
 	app.use('/printpublic/app.css', getCSS);
 
 	app.use('/app-mng.css', getMngCSS);
 
-
-	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
-	app.use('/printpublic',staticFn(__dirname + '/public'));
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
 	app.use(function(req, res, next){
@@ -86,12 +77,30 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
-async.series([
-	function(callback) {
-		conn.init(app,callback);
-	},
-	function(callback) {
-		loc.init(callback);
-	}],
-	initServer
-);
+var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
+var PgPool = require('./postgresql/PgPool');
+var DatabaseSchema = require('./postgresql/DatabaseSchema');
+
+var pool = new PgPool({
+	user: config.pgDataUser,
+	database: config.pgDataDatabase,
+	password: config.pgDataPassword,
+	host: config.pgDataHost,
+	port: config.pgDataPort
+});
+new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
+	return new SymbologyToPostgreSqlMigration(pool).run();
+}).then(function(){
+	logger.info('Finished Migrations.');
+
+	app = express();
+	async.series([
+			function(callback) {
+				conn.init(app,callback);
+			},
+			function(callback) {
+				loc.init(callback);
+			}],
+		initServer
+	);
+});

@@ -1,17 +1,22 @@
-var _ = require('underscore');
+var config = require('../config');
+var pg = require('pg');
+var MongoClient = require('mongodb').MongoClient;
+var Promise = require('promise');
+
+var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
-var MongoClient = require('mongodb').MongoClient;
-var pg = require('pg');
-var pgConnStringParser = require('pg-connection-string').parse;
-var Promise = require('promise');
-var util = require('util');
 
-var config = require('../config');
-var foreign = require('./foreign');
-var logger = require('../common/Logger').applicationWideLogger;
+//maybe one day we can switch to request instead of http and https
+//var requestPackage = require('request'); // request was taken by conn.request
 
+/////// DEBUG
+//var http = require('http-debug').http;
+//var https = require('http-debug').https;
+//http.debug = 2;
+///////
 		
+var async = require('async');
 
 var mongodb = null;
 var pgDataDB = null;
@@ -97,9 +102,7 @@ function initGeoserver() {
 
 function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
-	pgDataDB.connect(function () {
-		foreign.initForeignTables(getPgDataDb(), config.remoteDbSchemas);
-	});
+	pgDataDB.connect();
 	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
 	pgGeonodeDB.connect();
 
@@ -193,119 +196,46 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
-function getSchemaName(workspaceName) {
-	var schemaName = null;
-	if (config.workspaceSchemaMap.hasOwnProperty(workspaceName)) {
-		schemaName = config.workspaceSchemaMap[workspaceName];
-	} else {
-		var wMap = {}
-		_.each(config.remoteDbSchemas, function (remoteServerOptions, remoteServerName) {
-			_.each(remoteServerOptions.workspaceMap, function (mapItem, idx) {
-				if (workspaceName == mapItem.workspace) {
-					wMap[workspaceName] = mapItem.local_schema;
-				}
-			});
-		});
-		if (wMap.hasOwnProperty(workspaceName)) {
-			schemaName = wMap[workspaceName];
-		} else {
-			logger.error(util.format("Error: Schema name '%s' is not defined in the configuration file.", workspaceName));
-		}
-	}
-	return schemaName;
-}
+function connectToMongo(connectionString) {
+	return MongoClient.connect(connectionString).then(function(dbs){
+		mongodb = dbs;
 
-function getLayerTable(layerName) {
-	// Extract workspaceName and tableName.
-	var nameParts = layerName.split(":");
-	var err_msg = "";
-	if (nameParts.length != 2) {
-		err_msg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", nameParts);
-		logger.error(err_msg);
-		return null;
-	}
-	var workspaceName = nameParts[0];
-	var tableName = nameParts[1];
-	if (workspaceName == "" || tableName == "") {
-		err_msg = util.format("Error: layerName has empty workspace or table: '%s'.", nameParts);
-		logger.error(err_msg);
-		return null;
-	}
-
-	// Do lookup for schema.
-	var schemaName = getSchemaName(workspaceName);
-
-	// Return schemaName.tableName optionaly without the schema part.
-	if (schemaName == null) {
-		return tableName;
-	}
-	return util.format("%s.%s", schemaName, tableName);
-}
-
-/**
- * Gets the name of the geometry column used by particular table.
- *
- * @param {string} sourceTableName - The name of the table holding the geometry column.
- *   The value must always keep the format "schemaName.tableName".
- * @return {string} Geometry column name.
- *   If the table has more geometry columns than the column returned is undefined.
- */
-function getGeometryColumnName(sourceTableName) {
-	return new Promise(function (resolve, reject) {
-		// Extract schema name and table name.
-		var nameParts = sourceTableName.split(".");
-		var err_msg = "";
-		if (nameParts.length != 2) {
-			err_msg = util.format("Error: sourceTableName does not keep the format 'schema.table': '%s'.", nameParts);
-			logger.error(err_msg);
-			reject(new Error(err_msg));
-		}
-		var schemaName = nameParts[0];
-		var tableName = nameParts[1];
-		if (schemaName == "" || tableName == "") {
-			err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
-			logger.error(err_msg);
-			reject(new Error(err_msg));
-		}
-	
-		// Do lookup.
-		// geometry_columns is a view created by postgis.
-		// Such view is one only per database and is located in the same schema where postgis extension is located.
-		// Although it is one only it keeps geometry columns of all the tables throughout the database.
-		// We do not want to search for the schema and we expect that such important view must be accessible by 'search_path'.
-		//
-		// FIXME:
-		// Remove such dirty quick fix which is here to deal with situation where table has more than one geometry column.
-		var sql = util.format("SELECT f_geometry_column FROM geometry_columns WHERE f_table_schema = $1 AND f_table_name = $2 AND f_geometry_column LIKE '%s';",
-		                      config.geometryColumnNamePattern);
-		var client = getPgDataDb();
-		client.query(sql, [schemaName, tableName], function(err, results) {
-			if (err) {
-				err_msg = util.format("conn#getGeometryColumnName Sql. %s Error: ", sql, err);
-				logger.error(err_msg);
-				return reject(new Error(err_msg));
-			}
-			if (results.rows.length < 1) {
-				err_msg = util.format("conn#getGeometryColumnName found no item for table %s.", sourceTableName);
-				logger.error(err_msg);
-				return reject(new Error(err_msg));
-			}
-			var colName = results.rows[0]['f_geometry_column'];
-			resolve(colName);
-		});
+		return dbs;
+	}).then(function(){
+		var mongoSettings = mongodb.collection('settings');
+		return mongoSettings.findOne({_id:1});
+	}).then(function(newId){
+		objectId = newId.objectId || 1;
+		return mongodb;
 	});
 }
+
+function getLayerTable(layer){
+	var workspaceDelimiterIndex = layer.indexOf(":");
+	if(workspaceDelimiterIndex == -1){
+		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
+		return layer;
+	}
+	var workspace = layer.substr(0, workspaceDelimiterIndex);
+	var layerName = layer.substr(workspaceDelimiterIndex + 1);
+	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
+		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
+		return workspace + "." + layerName;
+	}
+	return config.workspaceSchemaMap[workspace] + "." + layerName;
+}
+
 
 module.exports = {
 	init: init,
 	getIo: getIo,
 	request: request,
 	connectToPgDb: connectToPgDb,
+	connectToMongo: connectToMongo,
 	initDatabases: initDatabases,
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
 	getNextId: getNextId,
-	getLayerTable: getLayerTable,
-	getGeometryColumnName: getGeometryColumnName
+	getLayerTable: getLayerTable
 };

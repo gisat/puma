@@ -12,7 +12,7 @@ var Intersection = require('./common/Intersection');
  * @constructor
  */
 var UserStyle = function (children) {
-	Intersection.call(this, "", children);
+	Intersection.call(this, "sld:UserStyle", children);
 };
 
 UserStyle.prototype = Object.create(Intersection.prototype);

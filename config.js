@@ -54,6 +54,10 @@ module.exports = {
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
+	/*
+	 * It contains workspace, which is used when storing and generating things in the geoserver.
+	 */
+	geoserverWorkspace: "puma",
 
 	geoserver2Host  : "localhost",
 	geoserver2Port  : 8181,
@@ -72,7 +76,25 @@ module.exports = {
 	googleAnalyticsCookieDomain: 'auto',
 	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
 
-	initialBaseMap: "terrain", // "osm", "hybrid", "roadmap" or "terrain"
+	/*
+	 * Different options about what map should be shown as the first one.
+     * osm - OpenStreetMap using Mapnik
+     * hybrid - Google hybrid solution
+     * roadmap - Google road map
+     * terrain - Google terrain map
+	 */
+	initialBaseMap: "terrain",
+
+	/*
+	 * It is used to decide about the initial bounds for the map.
+	 * [left, bottom, right, top]
+	 */
+	initialMapBounds: [
+		112.4251556396,
+		-7.7001045314,
+		113.0046844482,
+		-6.9809544265
+	],
 
 	debug: true,
 
@@ -138,5 +160,19 @@ module.exports = {
 	* Allowed values: 'production', 'development'
 	* If no value is present production will be used
 	*/
-	environment: 'production'
+	environment: 'production',
+
+	/*
+	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
+	 */
+	postgreSqlSchema: 'data',
+
+	/*
+	Connection String split to pieces for the PostgreSQL.
+	 */
+	pgDataUser: 'geonode',
+	pgDataPassword: 'geonode',
+	pgDataDatabase: 'geonode_data',
+	pgDataHost: 'localhost',
+	pgDataPort: '5432',
 };

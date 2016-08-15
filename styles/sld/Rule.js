@@ -2,6 +2,8 @@ var Intersection = require('./common/Intersection');
 
 var Filter = require('./Filter');
 var PolygonSymbolizer = require('./PolygonSymbolizer');
+var Name = require('./Name');
+var Title = require('./Title');
 
 /**
  * Rules are used to group rendering instructions by feature-property conditions and map scales. Rule definitions are placed immediately inside of feature-style definitions
@@ -26,7 +28,18 @@ Rule.prototype.validChildren = function() {
 
 /**
  * It turns object description in valid SLD rule.
- * @param ruleDescription
+ * @param ruleDescription {Object}
+ * @param ruleDescription.name {String} Name of the rule
+ * @param ruleDescription.title {String} Title of the Rule
+ * @param ruleDescription.appearance {Object}
+ * @param ruleDescription.appearance.fillColour {String} String representing color, which should be used to fill the geometry.
+ * @param ruleDescription.filter {Object}
+ * @param ruleDescription.filter.attributeCsv {Object} It contains values for the relevant attribute.
+ * @param ruleDescription.filter.attributeCsv.values {String} Values supplied as a , denominated String
+ * @param type {String} Type representation of the symbolizer. Currently supported is only 'polygon'
+ * @param filterAttributeKey {String} Filter id of attributeset, PropertyName
+ * @param filterAttributeSetKey {String} Id of attributeset which contains attributes for rules.
+ * @param filterType {String} Name for the attribute in ruleDescription  which contains comma separated values representing values of the attribute.
  */
 Rule.fromObjectDescription = function(ruleDescription, type, filterAttributeKey, filterAttributeSetKey, filterType) {
 	var symbolizer;
@@ -35,10 +48,17 @@ Rule.fromObjectDescription = function(ruleDescription, type, filterAttributeKey,
 		symbolizer = PolygonSymbolizer;
 	}
 
-	return new Rule([
-		Filter.fromDescription(ruleDescription.filter, filterAttributeKey, filterType),
-		symbolizer.fromDescription(ruleDescription.appearance, filterAttributeKey)
-	]);
+	var elements = [
+		new Name(ruleDescription.name),
+		new Title(ruleDescription.title),
+		symbolizer.fromDescription(ruleDescription.appearance)
+	];
+
+	if(ruleDescription.filter && filterType != 'no') {
+		elements.push(Filter.fromDescription(ruleDescription.filter, filterAttributeKey, filterType))
+	}
+
+	return new Rule(elements);
 };
 
 module.exports = Rule;

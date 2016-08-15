@@ -5,12 +5,12 @@ module.exports = function(request, response, next){
 		url: config.remoteProtocol + '://' + config.remoteAddress,
 		signupAddress: config.geonodeProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + config.geonodePath + '/account/signup/',
 		geoserver2Workspace: config.geoserver2Workspace,
-
-		htmlTagClasses: config.htmlTagClasses,
+		initialBaseMap: config.initialBaseMap,
+		initialMapBounds: config.initialMapBounds,
 		toggles: config.toggles,
-		texts: config.texts,
 		googleAnalyticsTracker: config.googleAnalyticsTracker,
-		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain
+		googleAnalyticsCookieDomain: config.googleAnalyticsCookieDomain,
+		environment: config.environment
 	};
 	response.end('var Config = ' + JSON.stringify(Config));
 

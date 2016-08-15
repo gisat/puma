@@ -46,7 +46,8 @@ StyledLayerDescriptor.prototype.toXml = function () {
  */
 StyledLayerDescriptor.fromObjectDescription = function(objectDescription) {
 	var rules = [];
-	objectDescription.rules.forEach(function(rule){
+	var rulesToGenerate = objectDescription.rules || [];
+	rulesToGenerate.forEach(function(rule){
 		rules.push(Rule.fromObjectDescription(rule, objectDescription.type, objectDescription.filterAttributeKey, objectDescription.filterAttributeSetKey, objectDescription.filterType));
 	});
 

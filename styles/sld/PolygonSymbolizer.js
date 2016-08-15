@@ -1,4 +1,6 @@
 var Intersection = require('./common/Intersection');
+var Fill = require('./Fill');
+var Stroke = require('./Stroke');
 
 /**
  * @alias PolygonSymbolizer
@@ -19,9 +21,15 @@ PolygonSymbolizer.prototype.validChildren = function(){
 	return ['sld:Geometry', 'sld:Fill', 'sld:Stroke'];
 };
 
-PolygonSymbolizer.fromDescription = function(appearance, filterAttributeSetKey) {
+/**
+ * It generates PolygonSymbolizer from the description by the
+ * @param appearance {Object}
+ * @param appearance.fillColour {String} String representing color, which should be used to fill the geometry.
+ * @returns {PolygonSymbolizer}
+ */
+PolygonSymbolizer.fromDescription = function(appearance) {
 	return new PolygonSymbolizer([
-
+		Fill.fromDescription(appearance)
 	]);
 };
 
