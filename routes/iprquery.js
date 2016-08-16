@@ -10,6 +10,8 @@ module.exports = function (app) {
         var searchValue = req.body.search;
         var searchSelect = req.body.source;
 
+        //searchValue = searchValue.replace(/[^\x00-\x7F]/g, ".");
+
         var url = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/urban-ontology?query=";
         var url2 = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/ipr-datasets?query=";
 

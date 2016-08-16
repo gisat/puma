@@ -60,17 +60,17 @@ module.exports = {
 	geoserverWorkspace: "puma",
 
 	geoserver2Host  : "localhost",
-	geoserver2Port  : 8181,
+	geoserver2Port  : 8080,
 	geoserver2Path  : "/geoserver_i2",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "puma",
+	geoserver2Workspace : "panter",
 
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
 	geonodePort	    : 80,
-	geonodePath     : "/geonode",
-	geonodeHome     : "/geonode",
+	geonodePath     : "",
+	geonodeHome     : "/",
 
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
