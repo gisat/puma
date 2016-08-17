@@ -2,11 +2,16 @@ $(document).ready(function () {
 
     var searchField = $("#iprQuerySearchInput");
     var searchButton = $("#iprQuerySearchButton");
+    var cleanButton = $("#iprQueryCleanButton");
     var searchOutput = $("#iprQuerySearchOutput");
     var searchSelect = $("#iprQuerySelect");
 
     searchButton.on('click', function () {
         executeSearch();
+    });
+
+    cleanButton.on('click', function () {
+        searchField.val('');
     });
 
     searchField.on('keydown', function (event) {
@@ -26,7 +31,7 @@ $(document).ready(function () {
                 method: "POST",
                 data: { search: searchValue, source: searchSelect.val() },
                 dataType: "json",
-                timeout: 15000
+                timeout: 30000
             });
             searchRequest.always(function (data, statusText, jqXHR) {
                 if ( statusText == "success" ) {

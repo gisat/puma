@@ -7,10 +7,10 @@ module.exports = function (app) {
 
     app.post("/iprquery", function (req, res) {
 
-        var searchValue = req.body.search;
+        var searchString = req.body.search;
         var searchSelect = req.body.source;
-
-        //searchValue = searchValue.replace(/[^\x00-\x7F]/g, ".");
+        searchString = searchString.replace(/ +(?= )/g, '');
+        var searchValues = searchString.split(" ");
 
         var url = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/urban-ontology?query=";
         var url2 = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/ipr-datasets?query=";
@@ -22,42 +22,86 @@ module.exports = function (app) {
             "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
             "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
             "PREFIX ipr: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/>"
-        ].join(" ");
+        ];
 
-        searchValue = prefixes + searchValue;
+        var sparqlQuery = prefixes.slice();
 
-        url += encodeURIComponent(searchValue);
-        url2 += encodeURIComponent(searchValue);
+        sparqlQuery.push("SELECT ?ds ?dsp ?dso");
+        sparqlQuery.push("WHERE {");
+        sparqlQuery.push("?s ?p ?o .");
+        sparqlQuery.push("FILTER (");
 
-        if (searchSelect == 1) {
-            console.log(url);
-        } else {
-            console.log(url2);
+        for (var kwIndex in searchValues) {
+            if (kwIndex > 0) {
+                sparqlQuery.push("&&")
+            }
+            sparqlQuery.push("( " +
+                "regex(STR(?s), \".*" + searchValues[kwIndex] + ".*\", \"i\") || " +
+                "regex(STR(?p), \".*" + searchValues[kwIndex] + ".*\", \"i\") || " +
+                "regex(STR(?o), \".*" + searchValues[kwIndex] + ".*\", \"i\") )");
         }
 
-        request((searchSelect == 1 ? url : url2), function (iprerr, iprres, iprbody) {
+        sparqlQuery.push(")");
+        sparqlQuery.push("?s common:isInContextOfDataset ?ds .");
+        sparqlQuery.push("?ds ?dsp ?dso .");
+        sparqlQuery.push("}");
+
+        var searchValue = sparqlQuery.join(" ");
+        console.log(searchValue);
+        url += encodeURIComponent(searchValue);
+
+        request(url, function (error, response, body) {
             var jsonRes = {};
-            var body = "";
-            if (!iprerr && iprres.statusCode == 200) {
-                csv.parse(iprbody, function (csverr, csvdata) {
-                    body += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
-                    for (var outputLine of csvdata) {
-                        body += "<tr>";
+            var htmlBody = "";
+            if (!error && response.statusCode == 200) {
+                csv.parse(body, function (error, data) {
+                    htmlBody += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
+                    for (var outputLine of data) {
+                        htmlBody += "<tr>";
 
                         for (var field of outputLine) {
-                            body += "<td>" + field + "</td>";
+                            htmlBody += "<td>" + field + "</td>";
                         }
 
-                        body += "</tr>";
+                        htmlBody += "</tr>";
                     }
-                    body += "</table>";
-                    body += "<script>$( \"tr:first\" ).css( \"font-weight\", \"bold\" );</script>";
-                    body += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
-                    jsonRes['body'] = body;
+                    htmlBody += "</table>";
+                    htmlBody += "<script>$( \"tr:first\" ).css( \"font-weight\", \"bold\" );</script>";
+                    htmlBody += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
+                    jsonRes['body'] = htmlBody;
                     res.status(200).json(jsonRes);
+                    /*console.log(data);
+                    var sparqlQuery2 = prefixes;
+                    sparqlQuery2.push("SELECT *");
+                    sparqlQuery2.push("WHERE {");
+                    sparqlQuery2.push("?s ?p ?o");
+                    sparqlQuery2.push("} LIMIT 250");
+                    var searchValue2 = sparqlQuery2.join(" ");
+                    console.log(searchValue2);
+                    url2 += encodeURIComponent(searchValue2);
+                    console.log(url2);*/
+                    /*request(url2, function (error, response, body) {
+                        csv.parse(body, function (error, data) {
+                            htmlBody += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
+                            for (var outputLine of data) {
+                                htmlBody += "<tr>";
+
+                                for (var field of outputLine) {
+                                    htmlBody += "<td>" + field + "</td>";
+                                }
+
+                                htmlBody += "</tr>";
+                            }
+                            htmlBody += "</table>";
+                            htmlBody += "<script>$( \"tr:first\" ).css( \"font-weight\", \"bold\" );</script>";
+                            htmlBody += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
+                            jsonRes['body'] = htmlBody;
+                            res.status(200).json(jsonRes);
+                        });
+                    });*/
                 });
             } else {
-                jsonRes['body'] = iprbody;
+                jsonRes['body'] = body;
             }
         });
     });

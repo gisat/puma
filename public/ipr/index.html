@@ -8,8 +8,9 @@
     <style>
         #iprQuerySearchInput {
             width: 95%;
-            height: 350px;
+            padding: 3px;
             border: 1px solid;
+            margin: 5px;
         }
 
         #iprQuerySearchForm {
@@ -41,7 +42,8 @@
             position: relative;
             display: none;
         }
-        #iprQuerySearchButton, #iprQuerySelect {
+        #iprQuerySearchButton, #iprQuerySelect, #iprQueryCleanButton {
+            width: 125px;
             border: 1px solid;
             background-color: transparent;
         }
@@ -50,11 +52,12 @@
 <body>
 <div id="iprQuerySearchForm">
     <div id="iprQuerySearchFormTitle">IPR - vyhledávání v datasetech</div>
-    <textarea id="iprQuerySearchInput" name="iprQuerySearchInput" autocomplete="off"
-              placeholder="Zadejte hledaný text..." autofocus></textarea>
+    <input type="text" id="iprQuerySearchInput" name="iprQuerySearchInput" autocomplete="off"
+              placeholder="Zadejte hledaný text..." autofocus />
     <br/>
     <select name="iprQuerySelect" id="iprQuerySelect"><option value="1"/>urban-ontology<option value="2"/>ipr-datasets</select>
     <input type="button" value="Vyhledat..." name="iprQuerySearchButton" id="iprQuerySearchButton"/>
+    <input type="button" value="Vyčistit" name="iprQueryCleanButton" id="iprQueryCleanButton"/>
 </div>
 <div id="iprQuerySearchOutput"></div>
 </body>
