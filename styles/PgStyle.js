@@ -55,7 +55,9 @@ PgStyle.prototype.id = function(){
  * @inheritDoc
  */
 PgStyle.prototype.definition = function() {
-	return this.loadAttribute('definition');
+	return this.loadAttribute('definition').then(function(definition){
+		return JSON.parse(definition);
+	});
 };
 
 /**

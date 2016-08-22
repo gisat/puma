@@ -58,6 +58,8 @@ StyleController.prototype.create = function(request, response, next) {
 		return self._styles.add(style);
 	}).then(function(){
 		style.json().then(function(json){
+			/*When new style is created in BO, BE send response in wrong format? Feature of bug?*/
+			json = {data:json};
 			response.status(201).json(json);
 		});
 	}).catch(function(error){
@@ -146,7 +148,6 @@ StyleController.prototype.read = function(request, response, next) {
 			var found = false;
 
 			results.forEach(function(result){ // TODO: Clean usage of the results.
-				result = JSON.parse(result);
 				if(result.id == request.params.id){
 					found = true;
 					response.status(200).json({data: result})

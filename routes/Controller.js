@@ -30,6 +30,7 @@ Controller.prototype.set = function (app) {
 	app.get('/rest/' + this.type, this.readAll.bind(this));
 	app.get('/rest/' + this.type + '/:id', this.read.bind(this));
 	app.delete('/rest/' + this.type + '/:id', this.delete.bind(this));
+	app.delete('/rest/' + this.type, this.deleteObject.bind(this));
 };
 
 /**
@@ -141,7 +142,7 @@ Controller.prototype.update = function (request, response, next) {
 Controller.prototype.delete = function (request, response, next) {
 	logger.info('Controller#delete Delete instance with id: ',request.params.id,' of type: ', this.type, ' By User: ', request.userId);
 
-	crud.remove(this.type, {_id: parseInt(request.params.objId)}, {
+	crud.remove(this.type, {_id: parseInt(request.params.id)}, {
 		userId: request.userId,
 		isAdmin: request.isAdmin
 	}, function (err, result) {
@@ -150,6 +151,12 @@ Controller.prototype.delete = function (request, response, next) {
 		}
 		next();
 	});
+};
+
+Controller.prototype.deleteObject = function (request, response, next) {
+	logger.info('Controller#deleteObject Delete instance with id: ',request.body.data._id,' of type: ', this.type, ' By User: ', request.userId);
+	request.params.id = request.body.data._id;
+	this.delete(request, response, next);
 };
 
 module.exports = Controller;

@@ -48,12 +48,17 @@ Rule.fromObjectDescription = function(ruleDescription, type, filterAttributeKey,
 		symbolizer = PolygonSymbolizer;
 	}
 
-	return new Rule([
+	var elements = [
 		new Name(ruleDescription.name),
 		new Title(ruleDescription.title),
-		Filter.fromDescription(ruleDescription.filter, filterAttributeKey, filterType),
 		symbolizer.fromDescription(ruleDescription.appearance)
-	]);
+	];
+
+	if(ruleDescription.filter && filterType != 'no') {
+		elements.push(Filter.fromDescription(ruleDescription.filter, filterAttributeKey, filterType))
+	}
+
+	return new Rule(elements);
 };
 
 module.exports = Rule;

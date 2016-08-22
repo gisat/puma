@@ -686,7 +686,7 @@ function getThemeYearConf(params, req, res, callback) {
 							var symbology = symbologies[k] != -1 ? results.symbologies[symbologies[k]] : null;
 							var symbNode = {
 								name: layer.name + (symbology ? '-' + symbology.name : ''),
-								symbologyId: symbology ? symbology.symbologyName : '#blank#',
+								symbologyId: symbology ? symbology.symbologyName || symbology.id : '#blank#', // TODO: Fix. Right now it expects that the symbology was correctly created.
 								leaf: true,
 								at: layer._id,
 								layerGroup: layer.layerGroup,
