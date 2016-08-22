@@ -116,11 +116,16 @@ module.exports = {
 	postgreSqlSchema: 'data',
 
 	/*
+	 In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
+	 */
+	postgreSqlSchemaLayers: 'views',
+
+	/*
 	Connection String split to pieces for the PostgreSQL.
 	 */
 	pgDataUser: 'geonode',
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: 'localhost',
-	pgDataPort: '5432',
+	pgDataPort: '5432'
 };

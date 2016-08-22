@@ -10,8 +10,6 @@ var _ = require('underscore');
 
 
 function filter(params, req, res, callback) {
-
-
 //    var params2 = _.clone(params);
 
 	params.filter = null;

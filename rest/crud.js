@@ -121,6 +121,7 @@ function read(collName,filter,params,callback) {
 
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
+
 	if (params['justMine']) {
 		filter['createdBy'] = params['userId'];
 	}
