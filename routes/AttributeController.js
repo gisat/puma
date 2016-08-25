@@ -33,6 +33,7 @@ AttributeController.prototype.read = function(request, response, next){
 
 			result[0].maxValue = Number(attributes[0].max);
 			result[0].minValue = Number(attributes[0].min);
+			result[0].attrSet = Number(params.attrSet);
 
 			response.data = result;
 			next();

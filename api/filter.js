@@ -68,18 +68,18 @@ function filter(params, req, res, callback) {
 					if (filter.inactive) continue;
 					var obj1 = {
 						field: 'as_' + filter.as + '_attr_' + filter.attr,
-						comparison: 'gt',
+						comparison: 'gteq',
 						value: filter.min
 					};
 					var obj2 = {
 						field: 'as_' + filter.as + '_attr_' + filter.attr,
-						comparison: 'lt',
+						comparison: 'lteq',
 						value: filter.max
 					};
 					filterParam.push(obj1);
 					filterParam.push(obj2);
 				}
-
+				console.log("***************************" + JSON.stringify(filterParam));
 				params['filter'] = JSON.stringify(filterParam);
 				data.getData(params, function(err, dataObj) {
 					var newData = [];
@@ -130,12 +130,12 @@ function filter(params, req, res, callback) {
 						}
 						var obj1 = {
 							field: attrName,
-							comparison: 'gt',
+							comparison: 'gteq',
 							value: filter.min
 						};
 						var obj2 = {
 							field: attrName,
-							comparison: 'lt',
+							comparison: 'lteq',
 							value: filter.max
 						};
 						filterParam.push(obj1);
