@@ -58,6 +58,8 @@ StyleController.prototype.create = function(request, response, next) {
 		return self._styles.add(style);
 	}).then(function(){
 		style.json().then(function(json){
+			/*When new style is created in BO, BE send response in wrong format? Feature of bug?*/
+			json = {data:json};
 			response.status(201).json(json);
 		});
 	}).catch(function(error){
