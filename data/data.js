@@ -54,11 +54,18 @@ function getData(params, callback) {
 			case 'gt':
 				compOperator = '>';
 				break;
+			case 'lteq':
+				compOperator = '<=';
+				break;
+			case 'gteq':
+				compOperator = '>=';
+				break;
 			case 'eq':
 				compOperator = '=';
 				break;
 		}
 		filterSql += ' AND ' + f.field + compOperator + f.value + (f.comparison ? '' : '%\'');
+		//console.log("ddddddddddddddddddddd " + filterSql)
 	}
 
 
@@ -458,8 +465,9 @@ function getData(params, callback) {
 				}
 				dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + parseInt(params['limit'])) : '';
 				dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
-				//console.log(dataSql);
+				//console.log("ooooooooooooooooooooooo" + filterSql);
 				client.query(dataSql, function(err, resls) {
+					//console.log("////////////Results: " + resls);
 					if (err) {
 						logger.error('data#getData Read dataset. Sql: ', sql, ' Error: ', err);
 						return callback(new Error('notexistingdata (2)'));
