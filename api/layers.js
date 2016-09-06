@@ -338,6 +338,12 @@ function parseWfsDocument(output) {
 	var wfsDocument = new xmldoc.XmlDocument(output);
 	var parentOfAttributes = wfsDocument.descendantWithPath("xsd:complexType.xsd:complexContent.xsd:extension.xsd:sequence");
 
+	// There is no WFS document. Return no available attributes.
+	if(!parentOfAttributes) {
+		logger.warn("api/layers#parseWfsDocument There isn't a valid WFS response.");
+		return [];
+	}
+
 	var attributes = parentOfAttributes.childrenNamed("xsd:element");
 	var parsedAttributes = [];
 
