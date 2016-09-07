@@ -58,7 +58,7 @@ module.exports = function(app) {
 	new DataSetController(app);
 	new DataViewController(app);
 	new LayerGroupController(app);
-	new LayerRefController(app);
+	new LayerRefController(app, pool);
 	new LocationController(app);
 	new PerformedAnalysisController(app);
 	new ScopeController(app);
