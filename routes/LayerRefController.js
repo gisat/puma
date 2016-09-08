@@ -39,6 +39,7 @@ class LayerRefController extends Controller {
 
 	update(request, response, next) {
 		var update = super.update.bind(this);
+		var self = this;
 		var layerRef = request.body.data;
 		var pgLayer = new PgLayer(layerRef.layer, layerRef.fidColumn, this.pgPool);
 		return pgLayer.validate().then(function(){
