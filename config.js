@@ -1,7 +1,7 @@
 module.exports = {
 	localHost       : "localhost",
 	localPort       : 4000,
-	localPath       : "/",
+	localPath       : "",
 
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
@@ -16,7 +16,7 @@ module.exports = {
 	},
 
 	geoserverHost   : "localhost",
-	geoserverPort   : 80,
+	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
@@ -26,8 +26,8 @@ module.exports = {
 	geoserverWorkspace: "puma",
 
 	geoserver2Host  : "localhost",
-	geoserver2Port  : 80,
-	geoserver2Path  : "/geoserver_i2",
+	geoserver2Port  : 8080,
+	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
 	geoserver2Workspace : "puma",
@@ -114,11 +114,6 @@ module.exports = {
 	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
 	postgreSqlSchema: 'data',
-
-	/*
-	 In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
-	 */
-	postgreSqlSchemaLayers: 'views',
 
 	/*
 	Connection String split to pieces for the PostgreSQL.

@@ -1,11 +1,9 @@
 var Controller = require('./Controller');
 var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
-var PgAttributes = require('../attributes/PgAttributes');
 
 var AttributeController = function(app, pgPool, schema) {
 	Controller.call(this, app, 'attribute');
-	this._pgAttributes = new PgAttributes(pgPool, schema);
 };
 
 AttributeController.prototype = Object.create(Controller.prototype);
@@ -17,8 +15,7 @@ AttributeController.prototype.read = function(request, response, next){
 
 	var params = {
 		attr: request.params.id,
-		attrSet: request.query.attrSet,
-		layer: request.query.layer
+		attrSet: request.query.attrSet
 	};
 
 	var filter = {_id: parseInt(request.params.id)};
@@ -29,15 +26,10 @@ AttributeController.prototype.read = function(request, response, next){
 			return next(err);
 		}
 
-		self._pgAttributes.all(params).then(function(attributes){
+		result[0].attrSet = Number(params.attrSet);
+		response.data = result;
+		next();
 
-			result[0].maxValue = Number(attributes[0].max);
-			result[0].minValue = Number(attributes[0].min);
-			result[0].attrSet = Number(params.attrSet);
-
-			response.data = result;
-			next();
-		});
 	});
 };
 
