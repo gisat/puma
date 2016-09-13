@@ -43,26 +43,11 @@ class GeoServerLayerStyles {
 	 */
 	updateGwcCache(layerName) {
 		return superagent
-			.post(this._url + '/gwc/rest/layers/' + layerName + '.json')
+			.post(this._url + '/gwc/rest/layers/' + layerName + '.xml')
 			.auth(this._userName, this._password)
 			.set('Accept', '*/*')
-			.set('Content-Type', 'application/json; charset=utf-8')
-			.send({
-				"GeoServerLayer": {
-					"enabled": true,
-					"name": layerName,
-					"expireCache": 0,
-					"expireClients": 0,
-					"mimeFormats": [
-						"image/jpeg",
-						"image/png",
-						"image/png8",
-						"image/gif"
-					],
-					"parameterFilters": [{"defaultValue": "", "key": "STYLES"}],
-					"gutter": 0
-				}
-			})
+			.set('Content-Type', 'application/xml; charset=utf-8')
+			.send('<?xml version="1.0" encoding="UTF-8"?><GeoServerLayer><enabled>true</enabled><name>' + layerName+'</name><mimeFormats><string>image/jpeg</string><string>image/png</string><string>image/png8</string><string>image/gif</string></mimeFormats><gridSubsets><gridSubset><gridSetName>EPSG:900913</gridSetName></gridSubset><gridSubset><gridSetName>EPSG:4326</gridSetName></gridSubset></gridSubsets><metaWidthHeight><int>4</int><int>4</int></metaWidthHeight><expireCache>0</expireCache><expireClients>0</expireClients><parameterFilters><styleParameterFilter><key>STYLES</key><defaultValue></defaultValue></styleParameterFilter></parameterFilters><gutter>0</gutter></GeoServerLayer>')
 	}
 }
 
