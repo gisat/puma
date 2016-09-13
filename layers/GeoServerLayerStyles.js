@@ -53,10 +53,6 @@ class GeoServerLayerStyles {
 					"name": layerName,
 					"expireCache": 0,
 					"expireClients": 0,
-					"gridSubsets": [
-						{"gridSetName": "EPSG:900913"},
-						{"gridSetName": "EPSG:4326"}
-					],
 					"mimeFormats": [
 						"image/jpeg",
 						"image/png",
