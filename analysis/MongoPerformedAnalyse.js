@@ -1,4 +1,6 @@
-var logger = require('../common/Logger').applicationWideLogger;
+var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
+var MongoPerformedAnalyse = require('./MongoPerformedAnalyse');
 var Promise = require('promise');
 
 class MongoPerformedAnalyse {
@@ -6,6 +8,7 @@ class MongoPerformedAnalyse {
 		this._connection = connection;
 		this._id = id;
 		this._associatedLayers = new FilteredMongoLayerReferences({analysis: id}, connection);
+		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoPerformedAnalyse.collectionName())
 	}
 
 	id() {
@@ -17,18 +20,7 @@ class MongoPerformedAnalyse {
 	}
 
 	load() {
-		var self = this;
-		return this._database.collection(MongoPerformedAnalyse.collectionName()).find({_id: this._id}).toArray().then(function(performedAnalysis){
-			if(!performedAnalysis || performedAnalysis.length == 0) {
-				logger.error('MongoPerformedAnalyse#load There is no performed analysis with given id: ', self._id);
-				performedAnalysis = [null];
-			} else if(performedAnalysis.length > 1) {
-				logger.warn('MongoLayerReference#load There are more performed analysis with the same id: ', self._id);
-			}
-			return performedAnalysis[0];
-		}).catch(function(error){
-			logger.error('MongoLayerReference#constructor Loading the instance. Error: ', error);
-		});
+		return this._mongoInstance.read();
 	}
 
 	static collectionName() {

@@ -1,22 +1,14 @@
 var MongoPerformedAnalyse = require('./MongoPerformedAnalyse');
+var MongoFilteredCollection = require('../data/MongoFilteredCollection');
 
 class FilteredMongoPerformedAnalysis {
-	constructor(filter, database) {
-		this._filter = filter;
-		this._database = database;
+	constructor(filter, connection) {
+		this._connection = connection;
+		this._filteredCollection = new MongoFilteredCollection(filter, connection. MongoPerformedAnalyse.collectionName(), MongoPerformedAnalyse);
 	}
 
 	read() {
-		var self = this;
-		return this._database.collection(MongoPerformedAnalyse.collectionName()).find(this._filter).toArray().then(function(jsonLayerReferences){
-			var results = [];
-
-			jsonLayerReferences.forEach(function(layerReference) {
-				results.push(new MongoPerformedAnalyse(layerReference._id, self._database));
-			});
-
-			return results;
-		});
+		return this._filteredCollection.read();
 	}
 }
 
