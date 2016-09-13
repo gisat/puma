@@ -50,7 +50,6 @@ class GeoServerLayerStyles {
 			.send({
 				"GeoServerLayer": {
 					"enabled": true,
-					"metaWidthHeight": [4, 4],
 					"name": layerName,
 					"expireCache": 0,
 					"expireClients": 0,
