@@ -43,7 +43,7 @@ class GeoServerLayerStyles {
 	 */
 	updateGwcCache(layerName) {
 		return superagent
-			.post(this._url + '/rest/layers/' + layerName + '/styles')
+			.post(this._url + '/gwc/rest/layers/' + layerName + '.json')
 			.auth(this._userName, this._password)
 			.set('Accept', '*/*')
 			.set('Content-Type', 'application/json; charset=utf-8')
