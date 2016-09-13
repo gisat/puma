@@ -3,6 +3,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 
 var Audit = require('../data/Audit');
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 
 /**
  * Mongo representation of the Area Template entity.
@@ -20,25 +21,15 @@ class MongoAreaTemplate extends Audit {
 		logger.info('MongoAreaTemplate#constructor Create mongo entity with id: ', id);
 
 		this._id = id;
-		this._database = database;
+		this._connection = database;
+		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoAreaTemplate.collectionName());
 	}
 
 	/**
 	 * @private
 	 */
 	load() {
-		var self = this;
-		return this._database.collection(MongoAreaTemplate.collectionName()).find({_id: this._id}).toArray().then(function(allTemplates){
-			if(!allTemplates || allTemplates.length == 0) {
-				logger.error('MongoAreaTemplate#load There is no template with given id: ', self._id);
-				allTemplates = [null];
-			} else if(allTemplates.length > 1) {
-				logger.warn('MongoAreaTemplate#load There are more templates with the same id: ', self._id);
-			}
-			return allTemplates[0];
-		}).catch(function(error){
-			logger.error('MongoAreaTemplate#constructor Loading the instance. Error: ', error);
-		});
+		return this._mongoInstance.read();
 	}
 
 	/**

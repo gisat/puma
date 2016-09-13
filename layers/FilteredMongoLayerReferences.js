@@ -1,22 +1,14 @@
 var MongoLayerReference = require('./MongoLayerReference');
+var MongoFilteredCollection = require('../data/MongoFilteredCollection');
 
 class FilteredMongoLayerReferences {
 	constructor(filter, database) {
-		this._filter = filter;
-		this._database = database;
+		this._connection = database;
+		this._filteredCollection = new MongoFilteredCollection(filter, connection, MongoLayerReference.collectionName(), MongoLayerReference)
 	}
 
 	read() {
-		var self = this;
-		return this._database.collection(MongoLayerReference.collectionName()).find(this._filter).toArray().then(function(jsonLayerReferences){
-			var results = [];
-
-			jsonLayerReferences.forEach(function(layerReference) {
-				results.push(new MongoLayerReference(layerReference._id, self._database));
-			});
-
-			return results;
-		});
+		return this._filteredCollection.read();
 	}
 }
 
