@@ -9,24 +9,41 @@ var Promise = require('promise');
 
 
 /**
- * Prepare filters for filtering
+ * Prepare parameters for filtering
  * @param filters {Array}
  * @returns {Array}
  */
-function prepareFilters(filters){
-	var boolFilters = [];
+function prepareParamsForFiltering(filters){
+	var selectedFilters = [];
 	filters.forEach(function(filter){
-		if (filter.attrType == "boolean"){
+		if (filter.attrType == "boolean" || filter.attrType == "text"){
 			var obj = {
 				field: 'as_' + filter.as + '_attr_' + filter.attr,
 				type: filter.attrType,
 				comparison: '=',
 				value: filter.values.value
 			};
-			boolFilters.push(obj);
+			selectedFilters.push(obj);
 		}
 	});
-	return boolFilters;
+	return selectedFilters;
+}
+
+/**
+ * Prepare parameters for unique values filtering
+ * @param attrs
+ * @returns {Array}
+ */
+function prepareParamsForUniqueValues(attrs){
+	var params = [];
+	attrs.forEach(function(attribute){
+		var obj = {
+			field: 'as_' + attribute.as + '_attr_' + attribute.attr,
+			type: attribute.attrType
+		};
+		params.push(obj);
+	});
+	return params;
 }
 
 /**
@@ -40,10 +57,11 @@ function multifilter(params, req, res, callback){
 	var opts = {
 		data: function(asyncCallback) {
 			var filters = JSON.parse(params.filters);
-			params['filtersReady'] = prepareFilters(filters);
+			params['filtersReady'] = prepareParamsForFiltering(filters);
 
-			datanew.getData(params).then(function(result){
+			datanew.getAreas(params).then(function(result){
 				var output = {};
+				// prepare areas to format {place:{at:[gids]}}
 				result.forEach(function(location){
 					if(location.length > 0){
 						var place = location[0].loc;
@@ -57,6 +75,32 @@ function multifilter(params, req, res, callback){
 					}
 				});
 				return asyncCallback(null,output)
+			});
+		},
+
+		result: ['data', function(asyncCallback, results) {
+			res.data = results;
+			return callback();
+		}]
+	};
+	async.auto(opts);
+}
+
+/**
+ * It returns unique values for given attribute
+ * @param params
+ * @param req
+ * @param res
+ * @param callback
+ */
+function getUniqueValues(params, req, res, callback){
+	var attrs = JSON.parse(params.attrs);
+	params['filtersReady'] = prepareParamsForUniqueValues(attrs);
+
+	var opts = {
+		data: function(asyncCallback) {
+			datanew.getUniqueValues(params).then(function(result){
+				return asyncCallback(null,result)
 			});
 		},
 
@@ -423,5 +467,6 @@ function getFilterConfig(params, req, res, callback) {
 module.exports = {
 	getFilterConfig: getFilterConfig,
 	filter: filter,
-	multifilter: multifilter
+	multifilter: multifilter,
+	getUniqueValues: getUniqueValues
 };

@@ -5,13 +5,18 @@ var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 var Promise = require('promise');
 
-function getData(params) {
+/**
+ * Returns filtered areas
+ * @param params
+ * @returns {*|exports|module.exports}
+ */
+function getAreas(params) {
     var filters = params['filtersReady'];
-    var filterSQL = getFilterSQL(filters);
+    var filterSQL = getAreasFilterSQL(filters);
 
     return new Promise(function(resolve,reject){
         getLayerRefs(params).then(function(layerRefs){
-            getAreas(layerRefs,filterSQL).then(function(result){
+            getAreasFromAllLayers(layerRefs,filterSQL).then(function(result){
                 var areas = result;
                 //var areas = result[0];
                 //for (var i = 1; i < result.length; i++){
@@ -24,16 +29,70 @@ function getData(params) {
 }
 
 /**
+ * Returns unique values of given attribute
+ * @param params
+ * @returns {*|exports|module.exports}
+ */
+function getUniqueValues(params) {
+    var attrs = JSON.parse(params['attrs'])[0];
+    var column = "as_" + attrs.as + "_attr_" + attrs.attr;
+    return new Promise(function(resolve,reject){
+        getLayerRefs(params).then(function(layerRefs){
+            getValuesFromAllLayers(layerRefs, column).then(function(result){
+                var values = result[0];
+                for (var i = 1; i < result.length; i++){
+                    values = values.concat(result[i]);
+                }
+                resolve(values);
+            })
+        });
+    })
+}
+
+/**
  * Bulid the WHERE part of SQL statement
  * @param filters {Array}
  * @returns {string}
  */
-function getFilterSQL(filters){
+function getAreasFilterSQL(filters){
     var filterSQL = '';
-    filters.forEach(function(filter, index){
-        filterSQL += ' AND ' + filter.field + filter.comparison + filter.value;
+    filters.forEach(function(filter){
+        var value = filter.value;
+        if (filter.type == "text"){
+            value = "\'" + value + "\'";
+        }
+        console.log(value);
+        filterSQL += ' AND ' + filter.field + filter.comparison + value;
     });
     return filterSQL;
+}
+
+/**
+ * @param layerRefs
+ */
+function getValuesFromAllLayers(layerRefs, column){
+    var values = [];
+    layerRefs.forEach(function(layer){
+        var selectSQL = "SELECT " + column + " as attr FROM views.layer_" + layer.id + " GROUP BY attr";
+        var prom = getValuesFromLayer(selectSQL, layer);
+        values.push(prom);
+    });
+    return Promise.all(values);
+}
+
+function getValuesFromLayer(selectSQL, layer){
+    var pg = conn.getPgDataDb();
+    return new Promise(
+        function(resolve, reject) {
+            pg.query(selectSQL, function(err, results) {
+                var values = [];
+                results.rows.forEach(function(row){
+                    values.push(row.attr);
+                });
+                resolve(values);
+            });
+        }
+    );
 }
 
 /**
@@ -41,7 +100,7 @@ function getFilterSQL(filters){
  * @param layerRefs
  * @param filterSQL
  */
-function getAreas(layerRefs, filterSQL){
+function getAreasFromAllLayers(layerRefs, filterSQL){
     var filteredAreas = [];
     layerRefs.forEach(function(layer){
         // WHERE 1=1 is for cases, when there is no attribute to filter
@@ -126,5 +185,6 @@ function mongoRequest(mongoQueryParams){
 }
 
 module.exports = {
-    getData: getData
+    getAreas: getAreas,
+    getUniqueValues: getUniqueValues
 };
