@@ -1,13 +1,72 @@
 var logger = require('../common/Logger').applicationWideLogger;
 var conn = require('../common/conn');
 var data = require('../data/data');
+var datanew = require('../data/datanew');
 var async = require('async');
 var crud = require('../rest/crud');
 var _ = require('underscore');
+var Promise = require('promise');
 
 
+/**
+ * Prepare filters for filtering
+ * @param filters {Array}
+ * @returns {Array}
+ */
+function prepareFilters(filters){
+	var boolFilters = [];
+	filters.forEach(function(filter){
+		if (filter.attrType == "boolean"){
+			var obj = {
+				field: 'as_' + filter.as + '_attr_' + filter.attr,
+				type: filter.attrType,
+				comparison: '=',
+				value: filter.values.value
+			};
+			boolFilters.push(obj);
+		}
+	});
+	return boolFilters;
+}
 
+/**
+ * Filter params.areas according to values in params.filters
+ * @param params
+ * @param req
+ * @param res
+ * @param callback
+ */
+function multifilter(params, req, res, callback){
+	var opts = {
+		data: function(asyncCallback) {
+			var filters = JSON.parse(params.filters);
+			params['filtersReady'] = prepareFilters(filters);
 
+			datanew.getData(params).then(function(result){
+				var output = {};
+				result.forEach(function(location){
+					if(location.length > 0){
+						var place = location[0].loc;
+						var areaTemplate = location[0].at;
+						output[place] = {};
+						var areas = [];
+						location.forEach(function(area){
+							areas.push(area.gid);
+						});
+						output[place][areaTemplate] = areas;
+					}
+				});
+				return asyncCallback(null,output)
+			});
+		},
+
+		result: ['data', function(asyncCallback, results) {
+			res.data = results;
+			return callback();
+		}]
+	};
+	async.auto(opts);
+}
 
 function filter(params, req, res, callback) {
 //    var params2 = _.clone(params);
@@ -79,7 +138,6 @@ function filter(params, req, res, callback) {
 					filterParam.push(obj1);
 					filterParam.push(obj2);
 				}
-				console.log("***************************" + JSON.stringify(filterParam));
 				params['filter'] = JSON.stringify(filterParam);
 				data.getData(params, function(err, dataObj) {
 					var newData = [];
@@ -364,5 +422,6 @@ function getFilterConfig(params, req, res, callback) {
 }
 module.exports = {
 	getFilterConfig: getFilterConfig,
-	filter: filter
+	filter: filter,
+	multifilter: multifilter
 };
