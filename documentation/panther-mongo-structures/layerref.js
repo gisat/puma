@@ -1,0 +1,93 @@
+var examples = [
+	{
+		"_id": 64,
+		"location": 7,
+		"year": 6,
+		"areaTemplate": 2,
+		"isData": true,
+		"fidColumn": "gid",
+		"attributeSet": 35,
+		"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
+		"layer": "analysis:an_61_2",
+		"analysis": 61,
+		"created": ISODate("2016-07-14T16:19:14.504Z"),
+		"createdBy": null,
+		"changed": ISODate("2016-07-14T16:19:14.504Z"),
+		"changedBy": null
+	},
+	{
+		"_id": 29,
+		"layer": "geonode:cze_75m_binconnectivity_10km_5km_3km_2_km_1km",
+		"location": 7,
+		"year": 6,
+		"columnMap": [{"attribute": 910, "column": "AREA"}, {"attribute": 16, "column": "NREdg"}, {
+			"attribute": 15,
+			"column": "NRPrimE"
+		}, {"attribute": 17, "column": "NRSecE"}, {"attribute": 18, "column": "SLocSig"}, {
+			"attribute": 19,
+			"column": "S3NearNeig"
+		}],
+		"attributeSet": 14,
+		"active": true,
+		"areaTemplate": 8,
+		"isData": true,
+		"fidColumn": "fid",
+		"created": ISODate("2016-07-14T14:10:28.177Z"),
+		"createdBy": 2,
+		"changed": ISODate("2016-07-28T16:23:08.219Z"),
+		"changedBy": 1,
+		"dataSourceOrigin": "geonode"
+	},
+	{
+		"_id": 24,
+		"layer": "geonode:cz1",
+		"location": 7,
+		"year": 6,
+		"columnMap": [{"attribute": 13, "column": "TOTAL_POP"}],
+		"attributeSet": 12,
+		"active": true,
+		"areaTemplate": 3,
+		"isData": true,
+		"fidColumn": "NUTS_ID",
+		"nameColumn": "NUTS_NAME",
+		"parentColumn": "PARID",
+		"created": ISODate("2016-07-14T14:05:47.757Z"),
+		"createdBy": 2,
+		"changed": ISODate("2016-07-14T14:05:47.757Z"),
+		"changedBy": 2
+	},
+	{
+		"_id": 25,
+		"layer": "geonode:cz2",
+		"location": 7,
+		"year": 6,
+		"active": true,
+		"areaTemplate": 4,
+		"columnMap": [],
+		"isData": false,
+		"fidColumn": "NUTS_ID",
+		"nameColumn": "NUTS_NAME",
+		"parentColumn": "PARID",
+		"created": ISODate("2016-07-14T14:06:53.961Z"),
+		"createdBy": 2,
+		"changed": ISODate("2016-07-14T14:06:53.961Z"),
+		"changedBy": 2
+	},
+	{
+		"_id": 26,
+		"layer": "geonode:cz3",
+		"location": 7,
+		"year": 6,
+		"active": true,
+		"areaTemplate": 5,
+		"columnMap": [],
+		"isData": false,
+		"fidColumn": "NUTS_ID",
+		"nameColumn": "NUTS_NAME",
+		"parentColumn": "PARID",
+		"created": ISODate("2016-07-14T14:07:41.605Z"),
+		"createdBy": 2,
+		"changed": ISODate("2016-07-14T14:07:41.605Z"),
+		"changedBy": 2
+	}
+];
