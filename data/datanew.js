@@ -58,10 +58,7 @@ function getAreasFilterSQL(filters){
     var filterSQL = '';
     filters.forEach(function(filter){
         var value = filter.value;
-        if (filter.type == "text"){
-            value = "\'" + value + "\'";
-        }
-        console.log(value);
+        value = "\'" + value + "\'";
         filterSQL += ' AND ' + filter.field + filter.comparison + value;
     });
     return filterSQL;
@@ -74,6 +71,7 @@ function getValuesFromAllLayers(layerRefs, column){
     var values = [];
     layerRefs.forEach(function(layer){
         var selectSQL = "SELECT " + column + " as attr FROM views.layer_" + layer.id + " GROUP BY attr";
+        //var selectSQL = "SELECT " + column + " as attr, COUNT(" + column + ") as total FROM views.layer_" + layer.id + " GROUP BY attr";
         var prom = getValuesFromLayer(selectSQL, layer);
         values.push(prom);
     });
