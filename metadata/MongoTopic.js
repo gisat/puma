@@ -28,4 +28,4 @@ class MongoTopic {
 	}
 }
 
-mongo.exports = MongoTopic;
+module.exports = MongoTopic;
