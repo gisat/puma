@@ -1,5 +1,6 @@
 var logger = require('../common/Logger').applicationWideLogger;
 var config = require('../config');
+var Promise = require('promise');
 
 class PgLayer {
 	/**
@@ -33,6 +34,8 @@ class PgLayer {
 		 * @type {PgPool}
 		 */
 		this.connectionPool = connectionPool;
+
+		this.type = type;
 	}
 
 	/**
@@ -48,6 +51,10 @@ class PgLayer {
 	 * @returns {Promise.<T>}
 	 */
 	checkId() {
+		if(this.type == 'raster') {
+			return Promise.resolve(true);
+		}
+
 		var self = this;
 		var from = this.tableName();
 		var constraintName = from.replace('.', '') + '_panther_unique';
