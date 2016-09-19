@@ -4,7 +4,7 @@ var Controller = require('./Controller');
 var PgLayer = require('../layers/PgLayer');
 var GeoServerLayers = require('../layers/GeoServerLayers');
 var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
-var MongoAreaTemplate = require('../layers/MongoAreaTemplate');
+var MongoLayerTemplate = require('../layers/MongoLayerTemplate');
 var MongoClient = require('mongodb').MongoClient;
 var Promise = require('promise');
 
@@ -14,7 +14,7 @@ var Promise = require('promise');
 class LayerRefController extends Controller {
 	constructor(app, pgPool) {
 		super(app, 'layerref');
-		this.layers = new GeoServerLayers();
+
 		this.pgPool = pgPool;
 	}
 
@@ -27,7 +27,8 @@ class LayerRefController extends Controller {
 		var create = super.create.bind(this);
 		var self = this;
 		var layerRef = request.body.data;
-		var pgLayer = new PgLayer(layerRef.layer, layerRef.fidColumn, this.pgPool);
+		var layerType = layerRef.isData ? "vector": "raster";
+		var pgLayer = new PgLayer(layerRef.layer, layerRef.fidColumn, layerType ,this.pgPool);
 		return pgLayer.validate().then(function () {
 			return self.updateStyles(layerRef)
 		}).then(function () {
@@ -41,7 +42,8 @@ class LayerRefController extends Controller {
 		var update = super.update.bind(this);
 		var self = this;
 		var layerRef = request.body.data;
-		var pgLayer = new PgLayer(layerRef.layer, layerRef.fidColumn, this.pgPool);
+		var layerType = layerRef.isData ? "vector": "raster";
+		var pgLayer = new PgLayer(layerRef.layer, layerRef.fidColumn, layerType, this.pgPool);
 		return pgLayer.validate().then(function(){
 			return self.updateStyles(layerRef)
 		}).then(function () {
@@ -62,7 +64,7 @@ class LayerRefController extends Controller {
 		var areaTemplate, styles, db;
 		return MongoClient.connect(config.mongoConnString).then(function (database) {
 			db = database;
-			areaTemplate = new MongoAreaTemplate(layerRef.areaTemplate, database);
+			areaTemplate = new MongoLayerTemplate(layerRef.areaTemplate, database);
 			return areaTemplate.styles();
 		}).then(function (pStyles) {
 			styles = pStyles || [];

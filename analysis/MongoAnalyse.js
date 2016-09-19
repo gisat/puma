@@ -6,10 +6,12 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 class MongoAnalyse {
 	constructor(id, connection) {
-		this._connection = connection;
-		this._performedAnalysis = new FilteredMongoPerformedAnalysis({analysis: id}, connection);
-		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoAnalyse.collectionName());
 		this._id = id;
+		this._connection = connection;
+		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoAnalyse.collectionName());
+
+		this._performedAnalysis = new FilteredMongoPerformedAnalysis({analysis: id}, connection);
+		this._layerReferences = new FilteredMongoLayerReferences({analysis: id}, connection);
 	}
 
 	id() {
@@ -18,6 +20,10 @@ class MongoAnalyse {
 
 	performed() {
 		return this._performedAnalysis.read();
+	}
+
+	layerReferences() {
+		return this._layerReferences.read();
 	}
 
 	load() {

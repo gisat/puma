@@ -4,22 +4,22 @@ var config = require('../config');
 var logger = require('../../../common/Logger').applicationWideLogger;
 
 var MongoClient = require('mongodb').MongoClient;
-var MongoAreaTemplate = require('../../../layers/MongoAreaTemplate');
+var MongoLayerTemplate = require('../../../layers/MongoLayerTemplate');
 
-describe('MongoAreaTemplate', function () {
-	var db, collectionName = MongoAreaTemplate.collectionName();
+describe('MongoLayerTemplate', function () {
+	var db, collectionName = MongoLayerTemplate.collectionName();
 
 	before(function (done) {
 		MongoClient.connect(config.mongoConnString).then(function (client) {
 			db = client;
 			return client;
 		}).then(function (client) {
-			return client.collection(collectionName).insertOne(MongoAreaTemplate.example());
+			return client.collection(collectionName).insertOne(MongoLayerTemplate.example());
 		}).then(function () {
 			done();
 		}).catch(function (error) {
 			throw new Error(
-				logger.error('MongoAreaTemplateSpec#before Error: ', error)
+				logger.error('MongoLayerTemplateSpec#before Error: ', error)
 			);
 		});
 	});
@@ -27,7 +27,7 @@ describe('MongoAreaTemplate', function () {
 	describe('#load', function () {
 		var loaded;
 		before(function (done) {
-			new MongoAreaTemplate(MongoAreaTemplate.example()._id, db)
+			new MongoLayerTemplate(MongoLayerTemplate.example()._id, db)
 				.json()
 				.then(
 					function (jsonEntity) {
@@ -54,7 +54,7 @@ describe('MongoAreaTemplate', function () {
 			done();
 		}).catch(function (error) {
 			throw new Error(
-				logger.error('MongoAreaTemplate#after Error: ', error)
+				logger.error('MongoLayerTemplate#after Error: ', error)
 			);
 		});
 	});

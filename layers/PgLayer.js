@@ -5,11 +5,12 @@ class PgLayer {
 	/**
 	 * Name represents the name of the layer.
 	 * @param name {String} Name of the layer as perceived by Geoserver and Geonode.
-	 * @param fidColumn {String} Name of the column which is created
+	 * @param fidColumn {String} Name of the column which is created. In case of raster layer there is no need for this.
+	 * @param type {String} Represents type of the layer - au, vector, raster
 	 * @param connectionPool {PgPool}
 	 */
-	constructor(name, fidColumn, connectionPool) {
-		if(!connectionPool || !name || !fidColumn) {
+	constructor(name, fidColumn, type, connectionPool) {
+		if(!connectionPool || !name || (!fidColumn && type =='vector')) {
 			throw new Error(
 				logger.error('PgLayer#constructor Incomplete data Name: ', name, ' fidColumn: ', fidColumn, ' Pool: ', !!connectionPool)
 			);

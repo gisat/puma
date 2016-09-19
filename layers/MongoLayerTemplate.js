@@ -4,25 +4,35 @@ var Promise = require('promise');
 
 var Audit = require('../data/Audit');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
+var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
+var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
+var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
+var FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
+var FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 
 /**
  * Mongo representation of the Area Template entity.
- * @alias MongoAreaTemplate
+ * @alias MongoLayerTemplate
  * @augments Audit
  */
-class MongoAreaTemplate extends Audit {
+class MongoLayerTemplate extends Audit {
 	/**
 	 *
 	 * @param id {Number} Identifier of this template.
-	 * @param database {Db}
+	 * @param connection {Db}
 	 */
-	constructor (id, database){
+	constructor (id, connection){
 		super();
-		logger.info('MongoAreaTemplate#constructor Create mongo entity with id: ', id);
+		logger.info('MongoLayerTemplate#constructor Create mongo entity with id: ', id);
 
 		this._id = id;
-		this._connection = database;
-		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoAreaTemplate.collectionName());
+		this._connection = connection;
+		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoLayerTemplate.collectionName());
+		this._analysis = new FilteredMongoAnalysis({areaTemplate: id}, connection);
+		this._attributeSets = new FilteredMongoAttributeSets({featureLayers: {$in: [id]}}, connection);
+		this._scope = new FilteredMongoScopes({featureLayers: {$in: [id]}}, connection);
+		this._layerReferences = new FilteredMongoLayerReferences({areaTemplate: id}, connection);
+		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$id: [id]}}, connection);
 	}
 
 	/**
@@ -102,6 +112,26 @@ class MongoAreaTemplate extends Audit {
 		});
 	}
 
+	analysis() {
+		return this._analysis.read();
+	}
+
+	attributeSets() {
+		return this._attributeSets.read();
+	}
+
+	scope() {
+		return this._scope.read();
+	}
+
+	layerReferences() {
+		return this._layerReferences.read();
+	}
+
+	performedAnalysis() {
+		return this._performedAnalysis.read();
+	}
+
 	/**
 	 * It returns json representation of this entity.
 	 * @returns {Promise.<Object>}
@@ -131,4 +161,4 @@ class MongoAreaTemplate extends Audit {
 	}
 }
 
-module.exports = MongoAreaTemplate;
+module.exports = MongoLayerTemplate;
