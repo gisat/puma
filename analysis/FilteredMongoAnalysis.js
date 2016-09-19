@@ -1,4 +1,5 @@
 var MongoAnalyse = require('./MongoAnalyse');
+var MongoFilteredCollection = require('../data/MongoFilteredCollection');
 
 class FilteredMongoAnalysis {
 	constructor(filter, connection) {
