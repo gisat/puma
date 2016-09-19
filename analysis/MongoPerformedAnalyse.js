@@ -1,6 +1,5 @@
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
-var MongoPerformedAnalyse = require('./MongoPerformedAnalyse');
 var Promise = require('promise');
 
 class MongoPerformedAnalyse {
