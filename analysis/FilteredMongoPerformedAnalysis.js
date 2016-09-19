@@ -4,7 +4,7 @@ var MongoFilteredCollection = require('../data/MongoFilteredCollection');
 class FilteredMongoPerformedAnalysis {
 	constructor(filter, connection) {
 		this._connection = connection;
-		this._filteredCollection = new MongoFilteredCollection(filter, connection. MongoPerformedAnalyse.collectionName(), MongoPerformedAnalyse);
+		this._filteredCollection = new MongoFilteredCollection(filter, connection, MongoPerformedAnalyse.collectionName(), MongoPerformedAnalyse);
 	}
 
 	read() {
