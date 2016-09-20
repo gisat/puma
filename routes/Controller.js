@@ -162,20 +162,9 @@ Controller.prototype.delete = function (request, response, next) {
 
 // Default way to delete object.
 Controller.prototype.deleteObject = function (request, response, next) {
-	var id = request.body.data._id;
-	logger.info('Controller#deleteObject Delete instance with id: ', id, ' of type: ', this.type, ' By User: ', request.userId);
-
-	if (!this.service || !this.entity) {
-		next();
-	}
-
-	var self = this;
-	this.service.remove(new this.entity(id, this._connection)).then(function () {
-		next();
-	}).catch(function (error) {
-		logger.error('Controller#deleteObject Type: ', self.type, ' Error: ', error);
-		next('It wasn\'t possible to delete given ' + self.type);
-	});
+	logger.info('Controller#deleteObject Delete instance with id: ',request.body.data._id,' of type: ', this.type, ' By User: ', request.userId);
+	request.params.id = request.body.data._id;
+	this.delete(request, response, next);
 };
 
 module.exports = Controller;
