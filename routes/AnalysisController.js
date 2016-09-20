@@ -22,6 +22,10 @@ class AnalysisController extends Controller {
 		var analysis = request.body.data;
 		var update = super.update.bind(this);
 
+		if(!analysis.analysis) {
+			return Promise.resolve(update(request, response, next));
+		}
+
 		var analyse = new MongoAnalyse(analysis.analysis, this._connection);
 		return analyse.type().then(function(type){
 			if (type == "spatialagg") {

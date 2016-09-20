@@ -16,7 +16,7 @@ class ThemeController extends Controller {
 		super(app, 'theme', MongoThemes, MongoTheme);
 	}
 
-	update() {
+	update(request, response, next) {
 		logger.info("Create object of type: ", this.type, " by User: ", request.userId, "With data: ", request.body.data);
 
 		var parameters = {
