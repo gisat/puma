@@ -1,6 +1,6 @@
 var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
-var MongoScopes = reuire('./MongoScopes');
+var MongoScopes = require('./MongoScopes');
 var MongoPeriod = require('./MongoPeriod');
 var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
