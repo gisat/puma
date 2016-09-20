@@ -20,7 +20,11 @@ class MongoLayerGroups {
 			var promises = [];
 
 			layerTemplates.forEach(function(layerTemplate){
-				this._layerTemplates.update(new MongoUniqueUpdate(layerTemplate, {remove: [{'layerGroup'}]}))
+				self._layerTemplates.update(
+					new MongoUniqueUpdate(layerTemplate, {
+						remove: [{'layerGroup'}]
+					})
+				)
 			});
 
 			return Promise.all(promises);
