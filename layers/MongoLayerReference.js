@@ -1,4 +1,5 @@
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
+var Promise = require('promise');
 
 // TODO: Mongo Layer Reference represents the information about stuff.
 class MongoLayerReference {
@@ -6,6 +7,10 @@ class MongoLayerReference {
 		this._id = id;
 		this._connection = connection;
 		this._mongoInstance = new MongoUniqueInstance(id, connection, name);
+	}
+
+	id() {
+		return Promise.resolve(this._id);
 	}
 
 	/**
