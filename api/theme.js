@@ -402,6 +402,17 @@ function getThemeYearConf(params, req, res, callback) {
 						continue;
 					}
 
+					if(topmostAT && location.bbox) {
+						let parts = location.bbox.split(',');
+						var envelope = '';
+						parts.forEach(function(part){
+							envelope += part + '::double precision,';
+						});
+						if(envelope.length > 0) {
+							envelope = envelope.substr(0, envelope.length - 1)
+						}
+					}
+
 					sql += sql ? ' UNION ' : '';
 					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
