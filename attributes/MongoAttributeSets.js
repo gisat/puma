@@ -44,4 +44,4 @@ class MongoAttributeSets {
 	}
 }
 
-mongo.exports = MongoAttributeSets;
+module.exports = MongoAttributeSets;
