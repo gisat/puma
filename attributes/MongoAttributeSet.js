@@ -4,6 +4,7 @@ var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferenc
 var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
+var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
 var _ = require('underscore');
 
 class MongoAttributeSet {
@@ -21,6 +22,10 @@ class MongoAttributeSet {
 			new FilteredMongoAnalysis({"attributeMap.normAttributeSet": id}, connection),
 			new FilteredMongoAnalysis({"groupAttributeSet": id}, connection)]
 		);
+		this._chartConfiguration = new FilteredCompoundCollection([
+			new FilteredMongoChartConfiguration({"attrs.as": id}, connection),
+			new FilteredMongoChartConfiguration({"attrs.normAs": id}, connection)
+		]);
 	}
 
 	id() {
@@ -44,6 +49,10 @@ class MongoAttributeSet {
 
 	load() {
 		return this._mongoInstance.read();
+	}
+
+	chartConfigurations() {
+		return this._chartConfiguration.read();
 	}
 
 	static collectionName() {

@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
 
-var DataViewController = function(app) {
-	Controller.call(this, app, 'dataview');
-};
+// TODO: Finish removal of Data view.
 
-DataViewController.prototype = Object.create(Controller.prototype);
+class DataViewController extends Controller {
+	constructor(app) {
+		super(app, 'dataview');
+	}
+}
 
 module.exports = DataViewController;

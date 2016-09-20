@@ -1,24 +1,27 @@
 var config = require('../config');
+var conn = require('../common/conn');
 var logger = require('../common/Logger').applicationWideLogger;
+var Promise = require('promise');
+var MongoClient = require('mongodb').MongoClient;
+
 var Controller = require('./Controller');
 var PgLayer = require('../layers/PgLayer');
 var GeoServerLayers = require('../layers/GeoServerLayers');
 var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
 var MongoLayerTemplate = require('../layers/MongoLayerTemplate');
-var MongoClient = require('mongodb').MongoClient;
-var Promise = require('promise');
+var MongoLayerReferences = require('../layers/MongoLayerReferences');
+var MongoLayerReference = require('../layers/MongoLayerReference');
 
 /**
  * @augments Controller
  */
 class LayerRefController extends Controller {
 	constructor(app, pgPool) {
-		super(app, 'layerref');
+		super(app, 'layerref', MongoLayerReferences, MongoLayerReference);
 
 		this.pgPool = pgPool;
 	}
 
-	// TODO: Update styles when there is also update in the area template for all associated layerrefs.
 	// Styles are defined in the layer template, which means that we need to update them in the geoserver whenever the layer template changes for all associated layerrefs.
 	// Reasons to change stuff in geoserver
 	//   New layer is mapped. It needs to associate all the styles relevant to the application. DONE

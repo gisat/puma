@@ -3,6 +3,7 @@ var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoScopes = reuire('./MongoScopes');
 var MongoPeriod = require('./MongoPeriod');
 var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
+var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var Promise = require('promise');
 
 class MongoPeriods {
@@ -12,6 +13,7 @@ class MongoPeriods {
 		this._performedAnalysis = new MongoPerformedAnalysis(connection);
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._scope = new MongoScopes(connection);
+		this._chartConfigurations = new MongoChartConfigurations(connection);
 	}
 
 	update(period) {
@@ -48,6 +50,16 @@ class MongoPeriods {
 			return period.scope();
 		}).then(function(scope){
 			return self._scope.update(new MongoUniqueUpdate(scope, {remove: [{years: [periodId]}]}));
+		}).then(function(){
+			return period.chartConfigurations();
+		}).then(function(chartConfigurations){
+			var promises = [];
+
+			chartConfigurations.forEach(function(chartConfiguration){
+				promises.push(self._chartConfigurations.remove(chartConfiguration))
+			});
+
+			return Promise.all(analysis);
 		}).then(function(){
 			return period.themes();
 		}).then(function(){

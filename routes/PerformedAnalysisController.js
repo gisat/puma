@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
+var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
+var MongoPerformedAnalyse = require('../analysis/MongoPerformedAnalyse');
 
-var PerformedAnalysisController = function(app) {
-	Controller.call(this, app, 'performedanalysis');
-};
-
-PerformedAnalysisController.prototype = Object.create(Controller.prototype);
+class PerformedAnalysisController extends Controller {
+	constructor(app) {
+		super(app, 'performedanalysis', MongoPerformedAnalysis, MongoPerformedAnalyse);
+	}
+}
 
 module.exports = PerformedAnalysisController;

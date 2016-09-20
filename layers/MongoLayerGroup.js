@@ -1,17 +1,19 @@
-/**
- * Created by jbalhar on 13. 9. 2016.
- */
-// areaTemplate contains the Layer group.
-// Otherwise it is single
+var FilteredMongoLayerTemplate = require('../layers/FilteredMongoLayerTemplate');
+
 class MongoLayerGroup {
 	constructor(id, connection) {
 		this._id = id;
 		this._connection = connection;
+		this._layerTemplates = new FilteredMongoLayerTemplate({layerGroup: id}, connection);
 	}
 
-
+	layerTemplates() {
+		return this._layerTemplates.read();
+	}
 
 	static collectionName() {
 		return "layergroup";
 	}
 }
+
+module.exports = MongoLayerGroup;

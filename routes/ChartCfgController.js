@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
+var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
+var MongoChartConfiguration = require('../visualization/MongoChartConfiguration');
 
-var ChartCfgController = function(app) {
-	Controller.call(this, app, 'chartcfg');
-};
-
-ChartCfgController.prototype = Object.create(Controller.prototype);
+class ChartCfgController extends Controller {
+	constructor(app) {
+		super(app, 'chartcfg', MongoChartConfigurations, MongoChartConfiguration);
+	}
+}
 
 module.exports = ChartCfgController;

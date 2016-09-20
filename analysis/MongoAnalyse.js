@@ -30,6 +30,12 @@ class MongoAnalyse {
 		return this._mongoInstance.read();
 	}
 
+	type() {
+		return this.load().then(function(instance){
+			return instance.type;
+		});
+	}
+
 	static collectionName() {
 		return 'analysis';
 	}

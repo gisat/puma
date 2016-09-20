@@ -1,5 +1,6 @@
 var logger = require('../common/Logger').applicationWideLogger;
 var crud = require('../rest/crud');
+var conn = require('../common/conn');
 
 /**
  * @alias Controller
@@ -7,8 +8,8 @@ var crud = require('../rest/crud');
  * @param type
  * @constructor
  */
-var Controller = function (app, type) {
-	if(!app || !type) {
+var Controller = function (app, type, service, entity) {
+	if (!app || !type) {
 		throw new Error(
 			logger.error('Controller#constructor The controller must receive valid type and app')
 		);
@@ -16,6 +17,12 @@ var Controller = function (app, type) {
 
 	this.type = type;
 	this.set(app);
+	if (service && entity) {
+		this.service = new service(conn.getMongoDb());
+		this.entity = entity;
+	} else {
+		logger.warn('Controller#constructor Service or entity wasn\'t specified');
+	}
 };
 
 /**
@@ -140,7 +147,7 @@ Controller.prototype.update = function (request, response, next) {
  * @param next {Function} Function to be called when we want to send it to the next route.
  */
 Controller.prototype.delete = function (request, response, next) {
-	logger.info('Controller#delete Delete instance with id: ',request.params.id,' of type: ', this.type, ' By User: ', request.userId);
+	logger.info('Controller#delete Delete instance with id: ', request.params.id, ' of type: ', this.type, ' By User: ', request.userId);
 
 	crud.remove(this.type, {_id: parseInt(request.params.id)}, {
 		userId: request.userId,
@@ -153,10 +160,22 @@ Controller.prototype.delete = function (request, response, next) {
 	});
 };
 
+// Default way to delete object.
 Controller.prototype.deleteObject = function (request, response, next) {
-	logger.info('Controller#deleteObject Delete instance with id: ',request.body.data._id,' of type: ', this.type, ' By User: ', request.userId);
-	request.params.id = request.body.data._id;
-	this.delete(request, response, next);
+	var id = request.body.data._id;
+	logger.info('Controller#deleteObject Delete instance with id: ', id, ' of type: ', this.type, ' By User: ', request.userId);
+
+	if (!this.service || !this.entity) {
+		next();
+	}
+
+	var self = this;
+	this.service.remove(new this.entity(id, this._connection)).then(function () {
+		next();
+	}).catch(function (error) {
+		logger.error('Controller#deleteObject Type: ', self.type, ' Error: ', error);
+		next('It wasn\'t possible to delete given ' + self.type);
+	});
 };
 
 module.exports = Controller;

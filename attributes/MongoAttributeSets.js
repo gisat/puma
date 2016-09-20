@@ -1,9 +1,11 @@
 var MongoAttributeSet = require('./MongoAttributeSet');
+var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var Promise = require('promise');
 
 class MongoAttributeSets {
 	constructor(connection) {
 		this._connection = connection;
+		this._chartConfigurations = new MongoChartConfigurations(connection);
 	}
 
 	update(attributeSet) {
@@ -25,6 +27,16 @@ class MongoAttributeSets {
 			return Promise.all(promises);
 		}).then(function(){
 			return attributeSet.id();
+		}).then(function(){
+			return attributeSet.chartConfigurations();
+		}).then(function(chartConfigurations){
+			var promises = [];
+
+			chartConfigurations.forEach(function(chartConfiguration){
+				promises.push(self._chartConfigurations.remove(chartConfiguration))
+			});
+
+			return Promise.all(analysis);
 		}).then(function(id){
 			var collection = self._connection.collection(MongoAttributeSet.collectionName());
 			return collection.removeOne({_id: id});

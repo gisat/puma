@@ -3,6 +3,7 @@ var MongoAttribute = require('./MongoAttribute');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoAttributeSets = require('./MongoAttributeSets');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
+var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var Promise = require('promise');
 
 class MongoAttributes {
@@ -11,6 +12,7 @@ class MongoAttributes {
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._attributeSets = new MongoAttributeSets(connection);
 		this._analysis = new MongoAnalysis(connection);
+		this._chartConfigurations = new MongoChartConfigurations(connection);
 	}
 
 	/**
@@ -53,6 +55,16 @@ class MongoAttributes {
 
 			analysis.forEach(function(analyse){
 				promises.push(self._analysis.remove(analyse))
+			});
+
+			return Promise.all(analysis);
+		}).then(function(){
+			return attribute.chartConfigurations();
+		}).then(function(chartConfigurations){
+			var promises = [];
+
+			chartConfigurations.forEach(function(chartConfiguration){
+				promises.push(self._chartConfigurations.remove(chartConfiguration))
 			});
 
 			return Promise.all(analysis);

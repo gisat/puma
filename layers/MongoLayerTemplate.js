@@ -9,6 +9,11 @@ var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformed
 var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 var FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
+var FilteredMongoChartConfigurations = require('../visualization/FilteredMongoChartConfigurations');
+
+// Probably contains the Chart configuration as well.
+// areas
+// selectedAreas
 
 /**
  * Mongo representation of the Area Template entity.
@@ -30,9 +35,10 @@ class MongoLayerTemplate extends Audit {
 		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoLayerTemplate.collectionName());
 		this._analysis = new FilteredMongoAnalysis({areaTemplate: id}, connection);
 		this._attributeSets = new FilteredMongoAttributeSets({featureLayers: {$in: [id]}}, connection);
-		this._scope = new FilteredMongoScopes({featureLayers: {$in: [id]}}, connection);
+		this._scopes = new FilteredMongoScopes({featureLayers: {$in: [id]}}, connection);
 		this._layerReferences = new FilteredMongoLayerReferences({areaTemplate: id}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$id: [id]}}, connection);
+		this._chartConfigurations = new FilteredMongoChartConfigurations({}, connection);
 	}
 
 	/**
@@ -120,8 +126,8 @@ class MongoLayerTemplate extends Audit {
 		return this._attributeSets.read();
 	}
 
-	scope() {
-		return this._scope.read();
+	scopes() {
+		return this._scopes.read();
 	}
 
 	layerReferences() {
@@ -130,6 +136,11 @@ class MongoLayerTemplate extends Audit {
 
 	performedAnalysis() {
 		return this._performedAnalysis.read();
+	}
+
+	chartConfigurations() {
+		// TODO: Find out the link between chart configuration and the layer template.
+		return [];
 	}
 
 	/**

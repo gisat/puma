@@ -3,9 +3,9 @@ var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferenc
 var FilteredMongoScopes = require('./FilteredMongoScopes');
 var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
 var FilteredMongoThemes = require('./FilteredMongoThemes');
-// Remove from dataset
-// Delete performedanalysis
-// Delete associated layerrefs - Update layerrefs
+var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
+var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
+
 class MongoPeriod {
 	constructor(id, connection) {
 		this._id = id;
@@ -15,6 +15,10 @@ class MongoPeriod {
 		this._scope = new FilteredMongoScopes({years: { $in: [id]}}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({year: id}, connection);
 		this._themes = new FilteredMongoThemes({years: {$in: [id]}}, connection);
+		this._chartConfigurations = new FilteredCompoundCollection([
+			new FilteredMongoChartConfiguration({years: {$in: [id]}}, connection),
+			new FilteredMongoChartConfiguration({"attrs.normYear": id}, connection)
+		]);
 	}
 
 	id() {
@@ -35,6 +39,10 @@ class MongoPeriod {
 
 	themes() {
 		return this._themes.read();
+	}
+
+	chartConfiguration() {
+		return this._chartConfigurations.read();
 	}
 
 	static collectionName() {
