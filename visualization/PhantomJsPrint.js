@@ -5,13 +5,11 @@ var requested = 0;
 // Use the requests and received resources to track whether everything was already downloaded.
 page.onResourceRequested = function(request) {
 	requested++;
-	console.log('Request ' + JSON.stringify(request, undefined, 4));
+	console.log('Request ' + requested);
 };
-var lastResourceReceived = Date.now();
 page.onResourceReceived = function(response) {
 	requested--;
-	lastResourceReceived = Date.now();
-	console.log('Receive ' + JSON.stringify(response, undefined, 4));
+	console.log('Request ' + requested);
 };
 
 var address = system.args[1];
@@ -26,6 +24,7 @@ function verifyAllLoaded() {
 	if(requested!=0) {
 		setTimeout(verifyAllLoaded, 1000);
 	} else {
+		console.log("Rendering");
 		page.render(finalLocation);
 		phantom.exit();
 	}
