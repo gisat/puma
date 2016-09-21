@@ -5,11 +5,11 @@ var requested = 0;
 // Use the requests and received resources to track whether everything was already downloaded.
 page.onResourceRequested = function(request) {
 	requested++;
-	console.log('Request ' + requested);
+	console.log('Requested ' + requested);
 };
 page.onResourceReceived = function(response) {
 	requested--;
-	console.log('Request ' + requested);
+	console.log('Received ' + requested);
 };
 
 var address = system.args[1];
