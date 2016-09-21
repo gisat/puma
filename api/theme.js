@@ -417,7 +417,7 @@ function getThemeYearConf(params, req, res, callback) {
 					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
 						sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
-						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+location.bbox+"))) AS extent";
+						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+envelope+"))) AS extent";
 						sql += ", TRUE AS definedplace";
 					} else {
 						sql += ', a.name::text';
