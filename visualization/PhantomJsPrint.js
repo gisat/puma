@@ -2,13 +2,14 @@ var page = require('webpage').create(),
 	system = require('system');
 
 var requested = 0;
+var received = 0;
 // Use the requests and received resources to track whether everything was already downloaded.
 page.onResourceRequested = function(request) {
 	requested++;
 	console.log('Requested ' + requested);
 };
 page.onResourceReceived = function(response) {
-	requested--;
+	received++;
 	console.log('Received ' + requested);
 };
 
@@ -21,7 +22,7 @@ page.open(address, function(status) {
 });
 
 function verifyAllLoaded() {
-	if(requested!=0) {
+	if(requested!=received) {
 		setTimeout(verifyAllLoaded, 1000);
 	} else {
 		console.log("Rendering");
