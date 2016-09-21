@@ -8,7 +8,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 class GeneratedImage {
 	constructor(id) {
-		this.url = config.localHost + ":" + config.localPort + config.localPath + "index.html?id=" + id + "&print";
+		this.url = config.localHost + ":" + config.localPort + config.localPath + "/index.html?id=" + id + "&print";
 		this.id = id;
 
 		var isWin = !!process.platform.match(/^win/);
