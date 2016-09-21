@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
+var MongoLayerGroups = require('../layers/MongoLayerGroups');
+var MongoLayerGroup = require('../layers/MongoLayerGroup');
 
-var LayerGroupController = function(app) {
-	Controller.call(this, app, 'layergroup');
-};
-
-LayerGroupController.prototype = Object.create(Controller.prototype);
+class LayerGroupController extends Controller {
+	constructor(app) {
+		super(app, 'layergroup', MongoLayerGroups, MongoLayerGroup);
+	}
+}
 
 module.exports = LayerGroupController;

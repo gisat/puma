@@ -17,8 +17,6 @@ var ScopeController = require('./ScopeController');
 var StyleController = require('./StyleController');
 var ThemeController = require('./ThemeController');
 var TopicController = require('./TopicController');
-var UserPolygonController = require('./UserPolygonController');
-var ViewCfgController = require('./ViewCfgController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 
@@ -58,14 +56,12 @@ module.exports = function(app) {
 	new DataSetController(app);
 	new DataViewController(app);
 	new LayerGroupController(app);
-	new LayerRefController(app);
+	new LayerRefController(app, pool);
 	new LocationController(app);
 	new PerformedAnalysisController(app);
 	new ScopeController(app);
 	new ThemeController(app);
 	new TopicController(app);
-	new UserPolygonController(app);
-	new ViewCfgController(app);
 	new VisualizationController(app);
 	new YearController(app);
 

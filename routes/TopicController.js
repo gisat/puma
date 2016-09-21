@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
+var MongoTopics = require('../metadata/MongoTopics');
+var MongoTopic = require('../metadata/MongoTopic');
 
-var TopicController = function(app) {
-	Controller.call(this, app, 'topic');
-};
-
-TopicController.prototype = Object.create(Controller.prototype);
+class TopicController extends Controller {
+	constructor(app) {
+		super(app, 'topic', MongoTopics, MongoTopic);
+	}
+}
 
 module.exports = TopicController;

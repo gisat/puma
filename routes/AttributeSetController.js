@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
+var MongoAttributeSets = require('../attributes/MongoAttributeSets');
+var MongoAttributeSet = require('../attributes/MongoAttributeSet');
 
-var AttributeSetController = function(app) {
-	Controller.call(this, app, 'attributeset');
-};
-
-AttributeSetController.prototype = Object.create(Controller.prototype);
+class AttributeSetController extends Controller {
+	constructor(app) {
+		super(app, 'attributeset', MongoAttributeSets, MongoAttributeSet);
+	}
+}
 
 module.exports = AttributeSetController;

@@ -1,10 +1,16 @@
-var logger = require('../common/Logger').applicationWideLogger;
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
+var Promise = require('promise');
 
 // TODO: Mongo Layer Reference represents the information about stuff.
 class MongoLayerReference {
 	constructor(id, connection) {
 		this._id = id;
 		this._connection = connection;
+		this._mongoInstance = new MongoUniqueInstance(id, connection, name);
+	}
+
+	id() {
+		return Promise.resolve(this._id);
 	}
 
 	/**
@@ -18,19 +24,7 @@ class MongoLayerReference {
 	}
 
 	load() {
-		// TODO: Move to generic. Probably a representation of the entity we will use to load the stuff.
-		var self = this;
-		return this._database.collection(MongoLayerReference.collectionName()).find({_id: this._id}).toArray().then(function(allReferences){
-			if(!allReferences || allReferences.length == 0) {
-				logger.error('MongoLayerReference#load There is no template with given id: ', self._id);
-				allReferences = [null];
-			} else if(allReferences.length > 1) {
-				logger.warn('MongoLayerReference#load There are more templates with the same id: ', self._id);
-			}
-			return allReferences[0];
-		}).catch(function(error){
-			logger.error('MongoLayerReference#constructor Loading the instance. Error: ', error);
-		});
+		return this._mongoInstance.read();
 	}
 
 	static collectionName(){

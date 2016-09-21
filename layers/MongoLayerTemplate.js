@@ -3,42 +3,49 @@ var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 
 var Audit = require('../data/Audit');
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
+var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
+var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
+var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
+var FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
+var FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
+var FilteredMongoChartConfigurations = require('../visualization/FilteredMongoChartConfigurations');
+
+// Probably contains the Chart configuration as well.
+// areas
+// selectedAreas
 
 /**
  * Mongo representation of the Area Template entity.
- * @alias MongoAreaTemplate
+ * @alias MongoLayerTemplate
  * @augments Audit
  */
-class MongoAreaTemplate extends Audit {
+class MongoLayerTemplate extends Audit {
 	/**
 	 *
 	 * @param id {Number} Identifier of this template.
-	 * @param database {Db}
+	 * @param connection {Db}
 	 */
-	constructor (id, database){
+	constructor (id, connection){
 		super();
-		logger.info('MongoAreaTemplate#constructor Create mongo entity with id: ', id);
+		logger.info('MongoLayerTemplate#constructor Create mongo entity with id: ', id);
 
 		this._id = id;
-		this._database = database;
+		this._connection = connection;
+		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoLayerTemplate.collectionName());
+		this._analysis = new FilteredMongoAnalysis({areaTemplate: id}, connection);
+		this._attributeSets = new FilteredMongoAttributeSets({featureLayers: {$in: [id]}}, connection);
+		this._scopes = new FilteredMongoScopes({featureLayers: {$in: [id]}}, connection);
+		this._layerReferences = new FilteredMongoLayerReferences({areaTemplate: id}, connection);
+		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$id: [id]}}, connection);
+		this._chartConfigurations = new FilteredMongoChartConfigurations({}, connection);
 	}
 
 	/**
 	 * @private
 	 */
 	load() {
-		var self = this;
-		return this._database.collection(MongoAreaTemplate.collectionName()).find({_id: this._id}).toArray().then(function(allTemplates){
-			if(!allTemplates || allTemplates.length == 0) {
-				logger.error('MongoAreaTemplate#load There is no template with given id: ', self._id);
-				allTemplates = [null];
-			} else if(allTemplates.length > 1) {
-				logger.warn('MongoAreaTemplate#load There are more templates with the same id: ', self._id);
-			}
-			return allTemplates[0];
-		}).catch(function(error){
-			logger.error('MongoAreaTemplate#constructor Loading the instance. Error: ', error);
-		});
+		return this._mongoInstance.read();
 	}
 
 	/**
@@ -111,6 +118,31 @@ class MongoAreaTemplate extends Audit {
 		});
 	}
 
+	analysis() {
+		return this._analysis.read();
+	}
+
+	attributeSets() {
+		return this._attributeSets.read();
+	}
+
+	scopes() {
+		return this._scopes.read();
+	}
+
+	layerReferences() {
+		return this._layerReferences.read();
+	}
+
+	performedAnalysis() {
+		return this._performedAnalysis.read();
+	}
+
+	chartConfigurations() {
+		// TODO: Find out the link between chart configuration and the layer template.
+		return [];
+	}
+
 	/**
 	 * It returns json representation of this entity.
 	 * @returns {Promise.<Object>}
@@ -140,4 +172,4 @@ class MongoAreaTemplate extends Audit {
 	}
 }
 
-module.exports = MongoAreaTemplate;
+module.exports = MongoLayerTemplate;
