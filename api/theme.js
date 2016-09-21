@@ -405,6 +405,9 @@ function getThemeYearConf(params, req, res, callback) {
 					if(topmostAT && location.bbox) {
 						let parts = location.bbox.split(',');
 						var envelope = '';
+						if(parts.length > 4) {
+							console.error('Wrong BBOX. ', location);
+						}
 						parts.forEach(function(part){
 							envelope += part + '::double precision,';
 						});
