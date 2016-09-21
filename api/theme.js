@@ -360,7 +360,7 @@ function getThemeYearConf(params, req, res, callback) {
 			opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
 
 			if(locations.length == 0) {
-				return callback(logger.error("theme#getThemeYearConf/sql No locations found in locations async function."));
+				return callback(new Error(logger.error("theme#getThemeYearConf/sql No locations found in locations async function.")));
 			}
 
 			var sql = '';
@@ -455,8 +455,7 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 
 			if(!sql) {
-				let err = new Error(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates."));
-				return callback(err);
+				return callback(new Error(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates.")));
 			}
 
 			sql += ' ORDER BY idx ASC';
