@@ -122,5 +122,10 @@ module.exports = {
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: 'localhost',
-	pgDataPort: '5432'
+	pgDataPort: '5432',
+	
+	/*
+	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long. 
+	*/
+	snapshotDirectory: '/tmp/'
 };
