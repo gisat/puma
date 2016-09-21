@@ -65,7 +65,6 @@ function getData(params, callback) {
 				break;
 		}
 		filterSql += ' AND ' + f.field + compOperator + f.value + (f.comparison ? '' : '%\'');
-		//console.log("ddddddddddddddddddddd " + filterSql)
 	}
 
 
@@ -209,6 +208,7 @@ function getData(params, callback) {
 
 		}
 	}
+
 	//console.log(select);
 	if (anotherNormYear) {
 		years.push(normalizationYear);
@@ -465,7 +465,7 @@ function getData(params, callback) {
 				}
 				dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + parseInt(params['limit'])) : '';
 				dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
-				//console.log("ooooooooooooooooooooooo" + filterSql);
+
 				client.query(dataSql, function(err, resls) {
 					//console.log("////////////Results: " + resls);
 					if (err) {
