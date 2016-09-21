@@ -455,7 +455,8 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 
 			if(!sql) {
-				return callback(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates."));
+				let err = new Error(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates."));
+				return callback(err);
 			}
 
 			sql += ' ORDER BY idx ASC';
