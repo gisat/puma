@@ -358,6 +358,11 @@ function getThemeYearConf(params, req, res, callback) {
 			var layerRefMap = results.layerRefs;
 			var opened = params['parentgids'] ? JSON.parse(params['parentgids']) : null;
 			opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
+
+			if(locations.length == 0) {
+				return callback(new Error(logger.error("theme#getThemeYearConf/sql No locations found in locations async function.")));
+			}
+
 			var sql = '';
 			for (var i = 0; i < locations.length; i++) {
 				var location = locations[i];
@@ -448,6 +453,11 @@ function getThemeYearConf(params, req, res, callback) {
 					}
 				}
 			}
+
+			if(!sql) {
+				return callback(new Error(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates.")));
+			}
+
 			sql += ' ORDER BY idx ASC';
 			var client = conn.getPgDataDb();
 			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
