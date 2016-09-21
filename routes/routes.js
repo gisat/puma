@@ -19,6 +19,7 @@ var ThemeController = require('./ThemeController');
 var TopicController = require('./TopicController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
+var PrintController = require('./PrintController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -64,6 +65,7 @@ module.exports = function(app) {
 	new TopicController(app);
 	new VisualizationController(app);
 	new YearController(app);
+	new PrintController(app);
 
 	// old backoffice
 	app.put('/rest/:objType/:objId',function(req,res,next) {
@@ -92,16 +94,6 @@ module.exports = function(app) {
 		});
 	});
 
-	
-	app.post('/print/*',function(req,res,next) {
-		logger.info("Print requested by user: ", req.userId);
-		try {
-			api.print.exporter({download:true},req,res,next);
-		} catch (err) {
-			logger.error("It wasn't possible to print data requested by user: ", req.userId, " Error: ", err);
-			next(err);
-		}
-	});
 	app.get('/image/*',function(req,res,next) {
 		logger.info("Image export requested by user: ", req.userId);
 		try {

@@ -9,7 +9,6 @@ module.exports = function(app) {
 
 	app.all('/api/*',standardResponse);
 
-	app.all('/print/*',standardResponse);
 	app.all('/image/*',standardResponse);
 
 	app.use(function(err,req,res,next) {

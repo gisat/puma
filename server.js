@@ -31,16 +31,7 @@ function initServer(err) {
 		next();
 	});
 
-	app.use('/printpublic',function(req,res,next) {
-		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
-			return next(new Error('unauthorized'));
-		}
-		return next(null);
-	});
-
 	app.use('/app.css', getCSS);
-	app.use('/printpublic/app.css', getCSS);
-
 	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
