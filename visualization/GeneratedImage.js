@@ -22,10 +22,12 @@ class GeneratedImage {
 	}
 
 	generate() {
+		logger.info('GeneratedImage#generate Started generation.');
 		var self = this;
 		var pathOfResult;
 		return this.path().then(function(path){
 			pathOfResult = path;
+			logger.info('GeneratedImage#generate Start process. Url: ', self.url, ' Path: ', path);
 			return child_process.execFile(self.phantomName, ['--ssl-protocol=any --ignore-ssl-errors=yes --debug=true', 'visualization/PhantomJsPrint.js', self.url, path, '-', 1], {}).promise;
 		}).then(function(result){
 			logger.info("stderr:  ", result.stderr);
