@@ -9,7 +9,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 class GeneratedImage {
 	constructor(id) {
 		// TODO: Find meaningful solution to the path.
-		this.url = config.remoteAddress + "://" + config.remoteHost + "/tool/index.html?id=" + id + "&print";
+		this.url = config.remoteProtocol + "://" + config.remoteAddress + "/tool/index.html?id=" + id + "&print";
 		this.id = id;
 
 		var isWin = !!process.platform.match(/^win/);
