@@ -10,7 +10,7 @@ page.onResourceRequested = function(request) {
 };
 page.onResourceReceived = function(response) {
 	received++;
-	console.log('Received ' + requested);
+	console.log('Received ' + received);
 };
 
 var address = system.args[1];
