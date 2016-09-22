@@ -34,8 +34,7 @@ var api = {
 	analysis: require('../api/analysis'),
 	userpolygon: require('../api/userpolygon'),
 	urlview: require('../api/urlview'),
-	filter: require('../api/filter'),
-	print: require('../api/print')
+	filter: require('../api/filter')
 };
 
 module.exports = function(app) {
@@ -67,48 +66,6 @@ module.exports = function(app) {
 	new YearController(app);
 	new PrintController(app);
 
-	// old backoffice
-	app.put('/rest/:objType/:objId',function(req,res,next) {
-		var obj = req.body.data;
-
-		// test if URL id equals PUT DATA id
-		if (obj._id != req.params.objId) {
-			return next(new Error('updateid_notcorrect'))
-		}
-		crud.update(req.params.objType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err){
-				return next(err);
-			}
-			res.data = result;
-			next();
-		});
-	});
-
-	// old backoffice
-	app.delete('/rest/:objType/:objId',function(req,res,next) {
-		crud.remove(req.params.objType,{_id: parseInt(req.params.objId)},{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err){
-				return next(err);
-			}
-			next();
-		});
-	});
-
-	app.get('/image/*',function(req,res,next) {
-		logger.info("Image export requested by user: ", req.userId);
-		try {
-			api.print.exporter({},req,res,next);
-		} catch (err) {
-			logger.error("It wasn't possible to export image requested by user: ", req.userId, " Error: ", err);
-			next(err);
-		}
-	});
-
-	app.get('/api/verify/scope/:id', function(req, res, next){
-		// Load information about Scope and all associated Entities.
-		// 
-	});
-	
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
 		var fn = api['chart']['drawChart'];
