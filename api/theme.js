@@ -101,7 +101,7 @@ function getLocationConf(params, req, res, callback) {
 
 			}, function datasetMapIterationFinalCallback(err){
 				if (resultArr.length>1) {
-					resultArr.push({
+					resultArr.unshift({
 						name: 'All places',
 						id: 'custom'
 					});
