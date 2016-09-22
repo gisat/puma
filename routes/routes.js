@@ -64,6 +64,7 @@ module.exports = function(app) {
 	new TopicController(app);
 	new VisualizationController(app);
 	new YearController(app);
+
 	new PrintController(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
