@@ -1,6 +1,8 @@
 var Controller = require('./Controller');
 var logger = require('../common/Logger').applicationWideLogger;
 var crud = require('../rest/crud');
+var config = require('../config');
+var _ = require('underscore');
 
 var MongoScopes = require('../metadata/MongoScopes');
 var MongoScope = require('../metadata/MongoScope');
@@ -27,6 +29,13 @@ class ScopeController extends Controller {
 	 */
 	readRestricted(request, response, next) {
 		logger.info("Requested restricted collection of type: ", this.type, " By User: ", request.userId);
+		if(config.protectScopes) {
+			if(config.allowedUsers && _.isArray(config.allowedUsers)) {
+				if(config.allowedUsers.indexOf(request.userId) == -1) {
+					return next();
+				}
+			}
+		}
 
 		var self = this;
 		crud.readRestricted(this.type, {
