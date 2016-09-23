@@ -31,7 +31,7 @@ class DataSetController extends Controller {
 		logger.info("Requested restricted collection of type: ", this.type, " By User: ", request.userId);
 		if(config.protectScopes) {
 			if(config.allowedUsers && _.isArray(config.allowedUsers)) {
-				if(config.allowedUsers.indexOf(request.userId) == -1) {
+				if(config.allowedUsers.indexOf(Number(request.userId)) == -1) {
 					return next();
 				}
 			}
