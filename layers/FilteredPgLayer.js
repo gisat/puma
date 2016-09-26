@@ -22,8 +22,10 @@ class FilteredPgLayer {
             return self.sql();
         }).then(function(sql){
             console.log(sql, path);
-            return child_process.exec('pgsql2shp', ["-f " + path, "-h " + config.pgDataHost, '-u ' + config.pgDataUser, '-P ' + config.pgDataPassword, config.pgDataDatabase, '"'+sql+'"']).promise;
-        }).then(function(){
+            return child_process.exec('pgsql2shp -f' + path + ' -h ' + config.pgDataHost + ' -u ' + config.pgDataUser + ' -P ' + config.pgDataPassword + ' ' + config.pgDataDatabase + ' "'+sql+'"').promise;
+        }).then(function(results){
+            console.log(results.stdout);
+            console.log(results.stderr);
             return child_process.exec('zip', [path, path + ".*"]);
         }).then(function(){
             return path + '.zip';
