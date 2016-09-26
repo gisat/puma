@@ -1,14 +1,14 @@
 module.exports = {
 	localHost       : "localhost",
 	localPort       : 4000,
-	localPath       : "/",
+	localPath       : "",
 
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@localhost:5433/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5433/geonode",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
 	mongoConnString    : "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
@@ -16,27 +16,27 @@ module.exports = {
 	},
 
 	geoserverHost   : "localhost",
-	geoserverPort   : 80,
+	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
 	/*
 	 * It contains workspace, which is used when storing and generating things in the geoserver.
 	 */
-	geoserverWorkspace: "panther",
+	geoserverWorkspace: "puma",
 
 	geoserver2Host  : "localhost",
-	geoserver2Port  : 80,
+	geoserver2Port  : 8080,
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "panther",
+	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
 	geonodePort			: 80,
-	geonodePath     : "",
-	geonodeHome     : "/",
+	geonodePath     : "/geonode",
+	geonodeHome     : "/geonode/",
 
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
@@ -44,10 +44,10 @@ module.exports = {
 
 	/*
 	 * Different options about what map should be shown as the first one.
-	 * osm - OpenStreetMap using Mapnik
-	 * hybrid - Google hybrid solution
-	 * roadmap - Google road map
-	 * terrain - Google terrain map
+     * osm - OpenStreetMap using Mapnik
+     * hybrid - Google hybrid solution
+     * roadmap - Google road map
+     * terrain - Google terrain map
 	 */
 	initialBaseMap: "terrain",
 
@@ -104,48 +104,28 @@ module.exports = {
 	urbanTepTifPixelSize: 75*75,
 
 	/*
-	 * Environment in which is the application run. The used libraries will differ.
-	 * Allowed values: 'production', 'development'
-	 * If no value is present production will be used
-	 */
+	* Environment in which is the application run. The used libraries will differ.
+	* Allowed values: 'production', 'development'
+	* If no value is present production will be used
+	*/
 	environment: 'production',
 
 	/*
-	 In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
+	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
 	postgreSqlSchema: 'data',
 
 	/*
-	 In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
-	 */
-	postgreSqlSchemaLayers: 'views',
-
-	/*
-	 Connection String split to pieces for the PostgreSQL.
+	Connection String split to pieces for the PostgreSQL.
 	 */
 	pgDataUser: 'geonode',
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: 'localhost',
-	pgDataPort: '5433',
-
+	pgDataPort: '5432',
+	
 	/*
-	 This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long.
-	 */
-	snapshotDirectory: 'C:\\Users\\jbalhar\\',
-
-	/*
-	 This is the directory where will be temporary files for export generated.
-	 */
-	exportDirectory: 'C:\\Users\\jbalhar\\',
-
-	/*
-	 This allows protection of Scopes for instances where access should be limited.
-	 */
-	protectScopes:  false,
-
-	/*
-	It contains list of ids of users who are allowed to access protected scopes.
-	 */
-	allowedUsers: [1,2,3,4,5,6,7]
+	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long. 
+	*/
+	snapshotDirectory: '/tmp/'
 };
