@@ -13,9 +13,9 @@ class ExportController {
     }
 
     shapefile(request, response, next) {
-        var location = request.params.location;
-        var year = request.params.year;
-        var areaTemplate = request.params.areaTemplate;
+        var location = Number(request.query.location);
+        var year = Number(request.query.year);
+        var areaTemplate = Number(request.query.areaTemplate);
         var layerRefsForExport = new FilteredMongoLayerReferences({
             location: location,
             year: year,
@@ -31,7 +31,7 @@ class ExportController {
             if(layerReferences.length > 1) {
                 logger.warn('ExportController#shapefile There are multiple layers for given combination. First one is used. Location: ', location, ' year: ', year, ' areaTemplate: ', areaTemplate);
             }
-            return new FilteredPgLayer(layerReferences[0], request.params.gids).export();
+            return new FilteredPgLayer(layerReferences[0], request.query.gids.split(',')).export();
         }).then(function(path){
             response.download(path);
         })

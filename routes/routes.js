@@ -9,6 +9,7 @@ var AttributeSetController = require('./AttributeSetController');
 var ChartCfgController = require('./ChartCfgController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
+var ExportController = require('./ExportController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -66,6 +67,7 @@ module.exports = function(app) {
 	new YearController(app);
 
 	new PrintController(app);
+	new ExportController(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);

@@ -6,7 +6,7 @@ class MongoLayerReference {
 	constructor(id, connection) {
 		this._id = id;
 		this._connection = connection;
-		this._mongoInstance = new MongoUniqueInstance(id, connection, name);
+		this._mongoInstance = new MongoUniqueInstance(id, connection, MongoLayerReference.collectionName());
 	}
 
 	id() {
