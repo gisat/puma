@@ -21,6 +21,7 @@ class FilteredPgLayer {
             path = pathReturned;
             return self.sql();
         }).then(function(sql){
+            console.log(sql);
             return child_process.execFile('pgsql2shp', ["-f " + path, "-h " + config.pgDataHost, '-u ' + config.pgDataUser, '-P ' + config.pgDataPassword, config.pgDataDatabase, '"' + sql + '"']).promise;
         }).then(function(){
             return child_process.execFile('zip', [path, path + ".*"]);
