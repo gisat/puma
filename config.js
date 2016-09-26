@@ -127,5 +127,10 @@ module.exports = {
 	/*
 	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long. 
 	*/
-	snapshotDirectory: '/tmp/'
+	snapshotDirectory: '/tmp/',
+
+	/*
+	 This is the directory where will be temporary files for export generated.
+	 */
+	exportDirectory: '/tmp/'
 };
