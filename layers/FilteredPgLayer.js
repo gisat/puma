@@ -24,7 +24,7 @@ class FilteredPgLayer {
             console.log(sql);
             return child_process.exec('sudo -u postgres pgsql2shp', ["-f " + path, "-h " + config.pgDataHost, '-u ' + config.pgDataUser, '-P ' + config.pgDataPassword, config.pgDataDatabase, sql]).promise;
         }).then(function(){
-            return child_process.execFile('zip', [path, path + ".*"]);
+            return child_process.exec('zip', [path, path + ".*"]);
         }).then(function(){
             return path + '.zip';
         }).catch(function(err){
