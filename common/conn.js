@@ -7,6 +7,7 @@ var Promise = require('promise');
 var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
+var util = require('util');
 
 //maybe one day we can switch to request instead of http and https
 //var requestPackage = require('request'); // request was taken by conn.request
@@ -324,6 +325,7 @@ module.exports = {
 	connectToPgDb: connectToPgDb,
 	connectToMongo: connectToMongo,
 	initDatabases: initDatabases,
+	getGeometryColumnName: getGeometryColumnName,
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,
