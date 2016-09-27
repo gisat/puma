@@ -12,8 +12,10 @@ class MongoLocations {
 	}
 
 	update(location) {
+		var self = this;
 		return location.json().then(function(jsonLocation){
-			return this._connection.update({_id: jsonLocation._id}, jsonLocation);
+			var collection = self._connection.collection(MongoLocation.collectionName());
+			return collection.update({_id: jsonLocation._id}, jsonLocation);
 		});
 	}
 

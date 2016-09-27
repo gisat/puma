@@ -1,6 +1,8 @@
 var PgShapeFileLayer = require('./PgShapefileLayer');
 var util = require('util');
 var config = require('../config');
+var child_process  = require('pn/child_process');
+
 var logger = require('../common/Logger').applicationWideLogger;
 
 class PgCsvLayer {
@@ -19,7 +21,7 @@ class PgCsvLayer {
         }).then(function(sql){
             console.log(sql, path);
 
-            var command = util.format('psql -U %s %s -c "COPY(%s) TO %s WITH CSV DELIMITER\',\'"', config.pgDataUser, config.pgDataDatabase, sql, path);
+            var command = util.format('psql -U %s %s -c "COPY(%s) TO \'%s\' WITH CSV DELIMITER\',\'"', config.pgDataUser, config.pgDataDatabase, sql, path);
             return child_process.exec(command).promise;
         }).then(function(results){
             console.log(results.stdout);

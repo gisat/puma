@@ -18,6 +18,7 @@ class MongoAttributes {
 	/**
 	 * It removes the attribute from the store.
 	 * TODO: Calc and Norm Attributes deletion should also remove analysis.
+	 * TODO: Updating of attribute set must also to some extent cascade
 	 * @param attribute {MongoAttribute}
 	 */
 	remove(attribute) {
@@ -32,7 +33,7 @@ class MongoAttributes {
 			attributeSets.forEach(function(attributeSet){
 				promises.push(
 					self._attributeSets.update(
-						new MongoUniqueUpdate(attributeSet, {remove: [{attribute: [attributeId]}]})
+						new MongoUniqueUpdate(attributeSet, {remove: [{key: 'attribute', value: [attributeId]}]})
 					)
 				);
 			});
@@ -70,7 +71,7 @@ class MongoAttributes {
 			return Promise.all(promises);
 		}).then(function(){
 			var collection = self._connection.collection(MongoAttribute.collectionName());
-			return collection.removeOne({_id: id});
+			return collection.removeOne({_id: attributeId});
 		});
 	}
 }

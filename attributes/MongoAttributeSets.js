@@ -9,11 +9,14 @@ class MongoAttributeSets {
 	}
 
 	update(attributeSet) {
+		var self = this;
 		return attributeSet.json().then(function(jsonAttributeSet){
-			return this._connection.update({_id: jsonAttributeSet._id}, jsonAttributeSet);
+			var collection = self._connection.collection(MongoAttributeSet.collectionName());
+			return collection.update({_id: jsonAttributeSet._id}, jsonAttributeSet);
 		});
 	}
 
+	// TODO: Remove analysis with given attribute set, Math - remove when any, Spatial - remove all, Level Analysis - update by removing attribute set. When none remaining delete.
 	remove(attributeSet) {
 		var self = this;
 		// Remove associated layer references (layerref table)
@@ -26,8 +29,6 @@ class MongoAttributeSets {
 
 			return Promise.all(promises);
 		}).then(function(){
-			return attributeSet.id();
-		}).then(function(){
 			return attributeSet.chartConfigurations();
 		}).then(function(chartConfigurations){
 			var promises = [];
@@ -37,6 +38,8 @@ class MongoAttributeSets {
 			});
 
 			return Promise.all(promises);
+		}).then(function(){
+			return attributeSet.id();
 		}).then(function(id){
 			var collection = self._connection.collection(MongoAttributeSet.collectionName());
 			return collection.removeOne({_id: id});

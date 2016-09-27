@@ -23,19 +23,7 @@ class MongoScopes {
 
 	remove(scope) {
 		var self = this;
-		return scope.layerReferences().then(function(layerReferences){
-			var promises = [];
-
-			layerReferences.forEach(function(layerReference){
-				promises.push(
-					self._layerReferences.remove(layerReference)
-				);
-			});
-
-			return Promise.all(promises);
-		}).then(function(){
-			return scope.locations();
-		}).then(function(locations){
+		return scope.locations().then(function(locations){
 			var promises = [];
 
 			locations.forEach(function(location){

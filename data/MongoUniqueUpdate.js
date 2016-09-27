@@ -53,6 +53,9 @@ class MongoUniqueUpdate {
 		remove.forEach(function(remove){
 			if(_.isArray(remove.value)) {
 				objectToUpdate[remove.key] = _.difference(objectToUpdate[remove.key], remove.value);
+				if(_.isArray(objectToUpdate[remove.key]) && objectToUpdate[remove.key].length == 0) {
+					delete objectToUpdate[remove.key];
+				}
 			} else {
 				delete objectToUpdate[remove.key];
 			}
