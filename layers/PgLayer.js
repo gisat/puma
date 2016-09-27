@@ -57,20 +57,18 @@ class PgLayer {
 
 		var self = this;
 		var from = this.tableName();
-		var constraintName = from.replace('.', '') + '_panther_unique';
 
 		var pool = this.connectionPool.pool();
-		var dropConstraint = 'ALTER TABLE ' + from + ' DROP CONSTRAINT IF EXISTS ' + constraintName + ';';
-		var addConstraint = 'ALTER TABLE ' + from + ' ADD CONSTRAINT ' + constraintName + ' UNIQUE("' + self.fidColumn + '");';
+		var sql = 'SELECT COUNT(' + self.fidColumn + ') FROM ' + from + ' GROUP BY ' + self.fidColumn + ' HAVING COUNT(' + self.fidColumn + ') > 1';
 		return pool.query({
-			text: dropConstraint
-		}).then(function () {
-			return pool.query({
-				text: addConstraint
-			});
+			text: sql
+		}).then(function (result) {
+			if (result.rowCount > 0) {
+				throw new Error('ID is not unique!');
+			}
 		}).catch(function (err) {
 			throw new Error(
-				logger.error('PgLayer#checkUniquenessId Error: ', err, ' Layer name:', self.name, ' Fid column', self.fidColumn, " Drop: ", dropConstraint, ' Add: ', addConstraint)
+				logger.error('PgLayer#checkUniquenessId Error: ', err, ' Layer name:', self.name, ' Fid column', self.fidColumn)
 			);
 		});
 	}
