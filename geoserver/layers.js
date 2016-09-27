@@ -94,7 +94,7 @@ function checkUniqueId(layerRef, callback) {
     var from = conn.getLayerTable(layerRef.layer);
     var layerName = layerRef.layer.substr(layerRef.layer.indexOf(":") + 1);
 
-    var sql = 'SELECT COUNT(' + layerRef.fidColumn + ') FROM ' + from + ' GROUP BY ' + layerRef.fidColumn + ' HAVING COUNT(' + layerRef.fidColumn + ') > 1';
+    var sql = 'SELECT COUNT("' + layerRef.fidColumn + '") FROM ' + from + ' GROUP BY "' + layerRef.fidColumn + '" HAVING COUNT("' + layerRef.fidColumn + '") > 1';
 
     var client = conn.getPgDataDb();
     client.query(sql, function (err, result) {
