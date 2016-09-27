@@ -2,7 +2,8 @@ var conn = require('../common/conn');
 var logger = require('../common/Logger').applicationWideLogger;
 
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
-var FilteredPgLayer = require('../layers/FilteredPgLayer');
+var PgShapefileLayer = require('../layers/PgShapefileLayer');
+var PgCsvLayer = require('../layers/PgCsvLayer');
 
 class ExportController {
     constructor(app) {
@@ -13,6 +14,22 @@ class ExportController {
     }
 
     shapefile(request, response, next) {
+        return this.layerReferences(request).then(function(layerReference){
+            return new PgShapefileLayer(layerReference, request.query.gids.split(',')).export();
+        }).then(function(path){
+            response.download(path);
+        });
+    }
+
+    csv(request, response, next) {
+        return this.layerReferences(request).then(function(layerReference){
+            return new PgCsvLayer(layerReference, request.query.gids.split(',')).export();
+        }).then(function(path){
+            response.download(path);
+        });
+    }
+
+    layerReferences(request) {
         var location = Number(request.query.location);
         var year = Number(request.query.year);
         var areaTemplate = Number(request.query.areaTemplate);
@@ -31,14 +48,9 @@ class ExportController {
             if(layerReferences.length > 1) {
                 logger.warn('ExportController#shapefile There are multiple layers for given combination. First one is used. Location: ', location, ' year: ', year, ' areaTemplate: ', areaTemplate);
             }
-            return new FilteredPgLayer(layerReferences[0], request.query.gids.split(',')).export();
-        }).then(function(path){
-            response.download(path);
-        })
-    }
 
-    csv(request, response, next) {
-
+            return layerReferences[0];
+        });
     }
 }
 

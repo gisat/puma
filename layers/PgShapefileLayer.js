@@ -7,7 +7,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var UUID = require('../common/UUID');
 var config = require('../config');
 
-class FilteredPgLayer {
+class PgShapefileLayer {
     constructor(layer, gids) {
         this._layer = layer;
         this._gids = gids;
@@ -31,7 +31,7 @@ class FilteredPgLayer {
             return path + '.zip';
         }).catch(function(err){
             throw new Error(
-                logger.error('FilteredPgLayer#export Not possible to export Error: ', err)
+                logger.error('PgShapefileLayer#export Not possible to export Error: ', err)
             );
         });
     }
@@ -50,4 +50,4 @@ class FilteredPgLayer {
     }
 }
 
-module.exports = FilteredPgLayer;
+module.exports = PgShapefileLayer;
