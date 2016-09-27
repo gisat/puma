@@ -22,8 +22,10 @@ class MongoLayerTemplates {
 	}
 
 	update(layerTemplate) {
+		var self = this;
 		return layerTemplate.json().then(function(layerTemplate){
-			return this._connection.update({_id: layerTemplate._id}, layerTemplate);
+			var collection = self._connection.collection(MongoLayerTemplate.collectionName());
+			return collection.update({_id: layerTemplate._id}, layerTemplate);
 		});
 	}
 

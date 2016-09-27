@@ -54,4 +54,4 @@ class MongoAttribute {
 	}
 }
 
-module.export = MongoAttribute;
+module.exports = MongoAttribute;

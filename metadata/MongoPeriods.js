@@ -19,8 +19,10 @@ class MongoPeriods {
 	}
 
 	update(period) {
+		var self = this;
 		return period.json().then(function(jsonPeriod){
-			return this._connection.update({_id: jsonPeriod._id}, jsonPeriod);
+			var collection = self._connection.collection(MongoPeriod.collectionName());
+			return collection.update({_id: jsonPeriod._id}, jsonPeriod);
 		});
 	}
 

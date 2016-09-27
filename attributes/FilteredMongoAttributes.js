@@ -1,10 +1,10 @@
 var MongoFilteredConnection = require('../data/MongoFilteredCollection');
-var MongoAttribute = require('./MongoAttribute');
 
 class FilteredMongoAttributes {
 	constructor(filter, connection) {
 		this._connection = connection;
-		this._filteredCollection = new MongoFilteredConnection(filter, connection, MongoAttribute.collectionName(), MongoAttribute);
+		// TODO: Find better solution for the name.
+		this._filteredCollection = new MongoFilteredConnection(filter, connection, 'attribute', MongoAttribute);
 	}
 
 	read() {
