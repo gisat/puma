@@ -2,6 +2,7 @@ var Promise = require('promise');
 var FilteredMongoThemes = require('./FilteredMongoThemes');
 var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
+var FilteredMongoLayerTemplate = require('../layers/FilteredMongoLayerTemplate');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 
 class MongoTopic {
@@ -12,6 +13,7 @@ class MongoTopic {
 		this._themes = new FilteredMongoThemes({topics: {$in: [id]}}, connection);
 		this._attributeSets = new FilteredMongoAttributeSets({topic: id}, connection);
 		this._chartConfigurations = new FilteredMongoChartConfiguration({"attrs.topic": id}, connection);
+		this._layerTemplates = new FilteredMongoLayerTemplate({topic: id}, connection);
 
 		this._instance = new MongoUniqueInstance(id, connection, MongoTopic.collectionName());
 	}
@@ -30,6 +32,10 @@ class MongoTopic {
 
 	chartConfigurations() {
 		return this._chartConfigurations.read();
+	}
+
+	layerTemplates() {
+		return this._layerTemplates.read();
 	}
 
 	json() {

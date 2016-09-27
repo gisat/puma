@@ -2,6 +2,7 @@ var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoScopes = require('./MongoScopes');
 var MongoPeriod = require('./MongoPeriod');
+var MongoThemes = require('./MongoThemes');
 var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var Promise = require('promise');
@@ -13,6 +14,7 @@ class MongoPeriods {
 		this._performedAnalysis = new MongoPerformedAnalysis(connection);
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._scope = new MongoScopes(connection);
+		this._themes = new MongoThemes(connection);
 		this._chartConfigurations = new MongoChartConfigurations(connection);
 	}
 
@@ -49,9 +51,15 @@ class MongoPeriods {
 			periodId = id;
 			return period.scope();
 		}).then(function(scopes){
-			if(scopes.length == 1) {
-				return self._scope.update(new MongoUniqueUpdate(scopes[0], {remove: [{years: [periodId]}]}));
-			}
+			var promises = [];
+
+			scopes.forEach(function(scope){
+				promises.push(
+					self._scope.update(new MongoUniqueUpdate(scope, {remove: [{key: 'years', value: [periodId]}]}))
+				);
+			});
+
+			return Promise.all(promises);
 		}).then(function(){
 			return period.chartConfigurations();
 		}).then(function(chartConfigurations){
@@ -64,6 +72,16 @@ class MongoPeriods {
 			return Promise.all(promises);
 		}).then(function(){
 			return period.themes();
+		}).then(function(themes){
+			var promises = [];
+
+			themes.forEach(function(theme){
+				promises.push(
+					self._themes.update(new MongoUniqueUpdate(theme, {remove: [{key: 'years', value: [periodId]}]}))
+				);
+			});
+
+			return Promise.all(promises);
 		}).then(function(){
 			var collection = self._connection.collection(MongoPeriod.collectionName());
 			return collection.removeOne({_id: periodId});

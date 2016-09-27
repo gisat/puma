@@ -27,6 +27,7 @@ class MongoLayerTemplates {
 		});
 	}
 
+	// TODO: How does removal of level from the scope which isn't last, influences the rest. It is possible to remove only from last one.
 	remove(layerTemplate) {
 		var templateId, self = this;
 		return layerTemplate.id().then(function(id){
@@ -46,7 +47,7 @@ class MongoLayerTemplates {
 			var promises = [];
 
 			attributeSets.forEach(function(attributeSet){
-				self._attributeSets.update(new MongoUniqueUpdate(attributeSet, {remove: [{"featureLayers": [templateId]}]}))
+				self._attributeSets.update(new MongoUniqueUpdate(attributeSet, {remove: [{key: "featureLayers", value: [templateId]}]}))
 			});
 
 			return Promise.all(promises);
@@ -56,7 +57,7 @@ class MongoLayerTemplates {
 			var promises = [];
 
 			scopes.forEach(function(scope){
-				self._scopes.update(new MongoUniqueUpdate(scope, {remove: [{"featureLayers": [templateId]}]}))
+				self._scopes.update(new MongoUniqueUpdate(scope, {remove: [{key: "featureLayers", value: [templateId]}]}))
 			});
 
 			return Promise.all(promises);

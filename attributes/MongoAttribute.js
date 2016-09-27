@@ -11,8 +11,11 @@ class MongoAttribute {
 	constructor(id, connection) {
 		this._id = id;
 		this._connection = connection;
+		// TODO: Remove attribute from columnMap
 		this._layerReferences = new FilteredMongoLayerReferences({"columnMap.attribute": id}, connection);
 		this._attributeSets = new FilteredMongoAttributeSets({attribute: id}, connection);
+		// TODO: remove attribute if there is more than one.
+		// TODO: remove analysis when there is only one attribute.
 		this._analysis = new FilteredCompoundCollection([
 			new FilteredMongoAnalysis({"attributeMap.attribute": id}, connection),
 			new FilteredMongoAnalysis({"attributeMap.calcAttribute": id}, connection),

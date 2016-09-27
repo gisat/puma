@@ -12,6 +12,7 @@ class MongoThemes {
 	}
 
 	remove(theme) {
+		var self = this;
 		return theme.id().then(function(id){
 			var collection = self._connection.collection(MongoTheme.collectionName());
 			return collection.removeOne({_id: id});

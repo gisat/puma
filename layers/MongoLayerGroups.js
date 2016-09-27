@@ -22,7 +22,7 @@ class MongoLayerGroups {
 			layerTemplates.forEach(function(layerTemplate){
 				self._layerTemplates.update(
 					new MongoUniqueUpdate(layerTemplate, {
-						remove: [{'layerGroup': [groupId]}]
+						remove: [{key: 'layerGroup', value: [groupId]}]
 					})
 				)
 			});
