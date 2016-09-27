@@ -148,7 +148,7 @@ Controller.prototype.update = function (request, response, next) {
  * @param next {Function} Function to be called when we want to send it to the next route.
  */
 Controller.prototype.delete = function (request, response, next) {
-	var id = request.params._id;
+	var id = request.params.id;
 	logger.info('Controller#deleteObject Delete instance with id: ', id, ' of type: ', this.type, ' By User: ', request.userId);
 
 	if (!this.service || !this.entity) {
