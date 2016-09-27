@@ -1,6 +1,8 @@
 var PgShapeFileLayer = require('./PgShapefileLayer');
 var util = require('util');
 var config = require('../config');
+var child_process  = require('pn/child_process');
+
 var logger = require('../common/Logger').applicationWideLogger;
 
 class PgCsvLayer {
