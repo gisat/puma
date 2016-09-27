@@ -26,7 +26,7 @@ class FilteredPgLayer {
         }).then(function(results){
             console.log(results.stdout);
             console.log(results.stderr);
-            return child_process.exec('zip ' + path + ' ' + path + '.*').promise;
+            return child_process.exec('zip -j ' + path + ' ' + path + '.*').promise;
         }).then(function(){
             return path + '.zip';
         }).catch(function(err){
