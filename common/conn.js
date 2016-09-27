@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
@@ -223,6 +224,96 @@ function getLayerTable(layer){
 		return workspace + "." + layerName;
 	}
 	return config.workspaceSchemaMap[workspace] + "." + layerName;
+}
+
+function getLayerTable(layerName) {
+	// Extract workspaceName and tableName.
+	var nameParts = layerName.split(":");
+	if (nameParts.length != 2) {
+		var err_msg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", layerName);
+		logger.error(err_msg);
+		return null;
+	}
+	var [workspaceName, tableName] = nameParts;
+	if (workspaceName == "" || tableName == "") {
+		var err_msg = util.format("Error: layerName has empty workspace or table: '%s'.", layerName);
+		logger.error(err_msg);
+		return null;
+	}
+
+	// Do lookup for schema.
+	var schemaName = getSchemaName(workspaceName);
+
+	return util.format("%s.%s", schemaName, tableName);
+}
+
+function getSchemaName(workspaceName) {
+	var schemaName = null;
+	if (config.workspaceSchemaMap.hasOwnProperty(workspaceName)) {
+		schemaName = config.workspaceSchemaMap[workspaceName];
+	} else {
+		var wMap = {}
+		_.each(config.remoteDbSchemas, function (remoteServerOptions, remoteServerName) {
+			_.each(remoteServerOptions.workspaceMap, function (mapItem, idx) {
+				if (workspaceName == mapItem.workspace) {
+					wMap[workspaceName] = mapItem.local_schema;
+				}
+			});
+		});
+		if (wMap.hasOwnProperty(workspaceName)) {
+			schemaName = wMap[workspaceName];
+		} else {
+			logger.error(util.format("Error: Schema name '%s' is not defined in the configuration file.", workspaceName));
+		}
+	}
+	return schemaName;
+}
+
+/**
+ * Gets the name of the geometry column used by particular table.
+ *
+ * @param {string} sourceTableName - The name of the table holding the geometry column.
+ *   The value must always keep the format "schemaName.tableName".
+ * @return {string} Geometry column name.
+ *   If the table has more geometry columns than the column returned is the first column alphabetically.
+ */
+function getGeometryColumnName(sourceTableName) {
+	return new Promise(function (resolve, reject) {
+		// Extract schema name and table name.
+		var nameParts = sourceTableName.split(".");
+		if (nameParts.length != 2) {
+			var err_msg = util.format("Error: sourceTableName does not keep the format 'schema.table': '%s'.", nameParts);
+			logger.error(err_msg);
+			return reject(new Error(err_msg));
+		}
+		var [schemaName, tableName] = nameParts;
+		if (schemaName == "" || tableName == "") {
+			var err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
+			logger.error(err_msg);
+			return reject(new Error(err_msg));
+		}
+	
+		// Do lookup for geometry column name.
+		var sql = "SELECT column_name"
+                          + " FROM information_schema.columns"
+		          + " WHERE table_schema = $1 AND table_name = $2 AND udt_name = 'geometry'"
+		          + " ORDER BY column_name;"
+		var client = getPgDataDb();
+		client.query(sql, [schemaName, tableName], function(err, results) {
+			if (err) {
+				var err_msg = util.format("Error querying geometry column name, query=%s, error=%s.", sql, err);
+				logger.error(err_msg);
+				return reject(new Error(err_msg));
+			}
+			if (results.rows.length < 1) {
+				var err_msg = util.format("Error: table '%s' has no geometry column.", sourceTableName);
+				logger.error(err_msg);
+				return reject(new Error(err_msg));
+			}
+			var colName = results.rows[0]['column_name'];
+			return resolve(colName);
+		});
+	});
 }
 
 
