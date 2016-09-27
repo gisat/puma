@@ -1,6 +1,8 @@
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var FilteredMongoLocations = require('./FilteredMongoLocations');
 var FilteredMongoThemes = require('./FilteredMongoThemes');
+var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var Promise = require('promise');
 
 // Area templates
@@ -14,6 +16,8 @@ class MongoScope {
 		this._locations = new FilteredMongoLocations({dataset: id}, connection);
 		this._themes = new FilteredMongoThemes({dataset: id}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({dataset: id}, connection);
+
+		this._instance = new MongoUniqueInstance(id, connection, MongoScope.collectionName());
 	}
 
 	id() {
@@ -34,6 +38,10 @@ class MongoScope {
 
 	performedAnalysis() {
 		return this._performedAnalysis.read();
+	}
+
+	json() {
+		return this._instance.read();
 	}
 
 	static collectionName(){

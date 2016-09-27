@@ -67,7 +67,7 @@ class MongoAttributes {
 				promises.push(self._chartConfigurations.remove(chartConfiguration))
 			});
 
-			return Promise.all(analysis);
+			return Promise.all(promises);
 		}).then(function(){
 			var collection = self._connection.collection(MongoAttribute.collectionName());
 			return collection.removeOne({_id: id});

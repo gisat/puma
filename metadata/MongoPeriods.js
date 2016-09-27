@@ -25,7 +25,7 @@ class MongoPeriods {
 	remove(period) {
 		var self = this;
 		var periodId;
-		period.performedAnalysis().then(function(performedAnalysis){
+		return period.performedAnalysis().then(function(performedAnalysis){
 			var promises = [];
 
 			performedAnalysis.forEach(function(performedAnalyse){
@@ -48,8 +48,10 @@ class MongoPeriods {
 		}).then(function(id){
 			periodId = id;
 			return period.scope();
-		}).then(function(scope){
-			return self._scope.update(new MongoUniqueUpdate(scope, {remove: [{years: [periodId]}]}));
+		}).then(function(scopes){
+			if(scopes.length == 1) {
+				return self._scope.update(new MongoUniqueUpdate(scopes[0], {remove: [{years: [periodId]}]}));
+			}
 		}).then(function(){
 			return period.chartConfigurations();
 		}).then(function(chartConfigurations){
@@ -59,7 +61,7 @@ class MongoPeriods {
 				promises.push(self._chartConfigurations.remove(chartConfiguration))
 			});
 
-			return Promise.all(analysis);
+			return Promise.all(promises);
 		}).then(function(){
 			return period.themes();
 		}).then(function(){

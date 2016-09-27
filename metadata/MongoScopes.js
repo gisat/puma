@@ -14,8 +14,10 @@ class MongoScopes {
 	}
 
 	update(scope) {
+		var self = this;
 		return scope.json().then(function(jsonScope){
-			return this._connection.update({_id: jsonScope._id}, jsonScope);
+			var collection = self._connection.collection(MongoScope.collectionName());
+			return collection.update({_id: jsonScope._id}, jsonScope);
 		});
 	}
 

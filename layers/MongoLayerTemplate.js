@@ -37,7 +37,7 @@ class MongoLayerTemplate extends Audit {
 		this._attributeSets = new FilteredMongoAttributeSets({featureLayers: {$in: [id]}}, connection);
 		this._scopes = new FilteredMongoScopes({featureLayers: {$in: [id]}}, connection);
 		this._layerReferences = new FilteredMongoLayerReferences({areaTemplate: id}, connection);
-		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$id: [id]}}, connection);
+		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$in: [id]}}, connection);
 		this._chartConfigurations = new FilteredMongoChartConfigurations({}, connection);
 	}
 

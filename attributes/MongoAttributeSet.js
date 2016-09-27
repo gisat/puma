@@ -5,7 +5,6 @@ var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
-var _ = require('underscore');
 
 class MongoAttributeSet {
 	constructor(id, connection) {
@@ -53,6 +52,10 @@ class MongoAttributeSet {
 
 	chartConfigurations() {
 		return this._chartConfiguration.read();
+	}
+
+	json() {
+		return this._mongoInstance.read();
 	}
 
 	static collectionName() {

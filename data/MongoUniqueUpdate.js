@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var Promise = require('promise');
 
 class MongoUniqueUpdate {
 	/**
@@ -9,10 +10,7 @@ class MongoUniqueUpdate {
 	 * @param options.remove {Object[]} {key} or {key:value} Where in case value is Array it removes all elements in the value array.
 	 */
 	constructor(objectToUpdate, options) {
-		this.createProperties(options.create || [], objectToUpdate);
-		this.updateProperties(options.update || [], objectToUpdate);
-		this.removeProperties(options.remove || [], objectToUpdate);
-
+		this._options = options;
 		this._updatedObject = objectToUpdate;
 	}
 
@@ -21,7 +19,14 @@ class MongoUniqueUpdate {
 	 * @return {Object} Object which was transformed based on the provided rules.
 	 */
 	json() {
-		return this._updatedObject;
+		var self = this;
+		return this._updatedObject.json().then(function(jsonObject){
+			self.createProperties(self._options.create || [], jsonObject);
+			self.updateProperties(self._options.update || [], jsonObject);
+			self.removeProperties(self._options.remove || [], jsonObject);
+
+			return jsonObject;
+		});
 	}
 
 	createProperties(create, objectToUpdate) {

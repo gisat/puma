@@ -27,6 +27,10 @@ class MongoLayerReference {
 		return this._mongoInstance.read();
 	}
 
+	json() {
+		return this._mongoInstance.read();
+	}
+
 	static collectionName(){
 		return 'layerref';
 	}

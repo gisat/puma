@@ -38,6 +38,10 @@ class MongoLocation {
 		})
 	}
 
+	json() {
+		return this._instance.read();
+	}
+
 	static collectionName() {
 		return "location";
 	}

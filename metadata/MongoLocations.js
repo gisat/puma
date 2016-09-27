@@ -20,7 +20,7 @@ class MongoLocations {
 	// TODO: Find a way to remove the entity with associated entities.
 	remove(location) {
 		var self = this;
-		location.performedAnalysis().then(function(performedAnalysis){
+		return location.performedAnalysis().then(function(performedAnalysis){
 			var promises = [];
 
 			performedAnalysis.forEach(function(performedAnalyse){

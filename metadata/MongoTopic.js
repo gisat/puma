@@ -2,6 +2,7 @@ var Promise = require('promise');
 var FilteredMongoThemes = require('./FilteredMongoThemes');
 var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 
 class MongoTopic {
 	constructor(id, connection) {
@@ -11,6 +12,8 @@ class MongoTopic {
 		this._themes = new FilteredMongoThemes({topics: {$in: [id]}}, connection);
 		this._attributeSets = new FilteredMongoAttributeSets({topic: id}, connection);
 		this._chartConfigurations = new FilteredMongoChartConfiguration({"attrs.topic": id}, connection);
+
+		this._instance = new MongoUniqueInstance(id, connection, MongoTopic.collectionName());
 	}
 
 	id() {
@@ -27,6 +30,10 @@ class MongoTopic {
 
 	chartConfigurations() {
 		return this._chartConfigurations.read();
+	}
+
+	json() {
+		return this._instance.read();
 	}
 
 	static collectionName() {

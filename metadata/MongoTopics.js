@@ -2,6 +2,7 @@ var MongoTopic = require('../metadata/MongoTopic');
 var MongoThemes = require('../metadata/MongoThemes');
 var MongoAttributeSets = require('../attributes/MongoAttributeSets');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
+var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
 var Promise = require('promise');
 
 class MongoTopics {
@@ -54,10 +55,10 @@ class MongoTopics {
 				promises.push(self._chartConfigurations.remove(chartConfiguration))
 			});
 
-			return Promise.all(analysis);
+			return Promise.all(promises);
 		}).then(function(){
 			var collection = self._connection.collection(MongoTopic.collectionName());
-			return collection.removeOne({_id: id});
+			return collection.removeOne({_id: topicId});
 		});
 	}
 }

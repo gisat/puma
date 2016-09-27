@@ -29,7 +29,7 @@ class MongoLayerTemplates {
 
 	remove(layerTemplate) {
 		var templateId, self = this;
-		layerTemplate.id().then(function(id){
+		return layerTemplate.id().then(function(id){
 			templateId = id;
 			return layerTemplate.analysis();
 		}).then(function(analysis){

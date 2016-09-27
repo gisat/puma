@@ -1,10 +1,11 @@
 var Promise = require('promise');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
-var FilteredMongoScopes = require('./FilteredMongoScopes');
 var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
-var FilteredMongoThemes = require('./FilteredMongoThemes');
+var FilteredMongoThemes = require('./FilteredMongoThemes.js');
+var FilteredMongoScopes = require('./FilteredMongoScopes.js');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
+var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 
 class MongoPeriod {
 	constructor(id, connection) {
@@ -19,6 +20,8 @@ class MongoPeriod {
 			new FilteredMongoChartConfiguration({years: {$in: [id]}}, connection),
 			new FilteredMongoChartConfiguration({"attrs.normYear": id}, connection)
 		]);
+
+		this._instance = new MongoUniqueInstance(id, connection, MongoPeriod.collectionName());
 	}
 
 	id() {
@@ -41,8 +44,12 @@ class MongoPeriod {
 		return this._themes.read();
 	}
 
-	chartConfiguration() {
+	chartConfigurations() {
 		return this._chartConfigurations.read();
+	}
+
+	json() {
+		return this._instance.read();
 	}
 
 	static collectionName() {
