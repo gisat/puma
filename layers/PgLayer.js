@@ -59,7 +59,7 @@ class PgLayer {
 		var from = this.tableName();
 
 		var pool = this.connectionPool.pool();
-		var sql = 'SELECT COUNT(' + self.fidColumn + ') FROM ' + from + ' GROUP BY ' + self.fidColumn + ' HAVING COUNT(' + self.fidColumn + ') > 1';
+		var sql = 'SELECT COUNT("' + self.fidColumn + '") FROM ' + from + ' GROUP BY "' + self.fidColumn + '" HAVING COUNT("' + self.fidColumn + '") > 1';
 		return pool.query({
 			text: sql
 		}).then(function (result) {
