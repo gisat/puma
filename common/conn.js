@@ -212,35 +212,21 @@ function connectToMongo(connectionString) {
 	});
 }
 
-function getLayerTable(layer){
-	var workspaceDelimiterIndex = layer.indexOf(":");
-	if(workspaceDelimiterIndex == -1){
-		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
-		return layer;
-	}
-	var workspace = layer.substr(0, workspaceDelimiterIndex);
-	var layerName = layer.substr(workspaceDelimiterIndex + 1);
-	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
-		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
-		return workspace + "." + layerName;
-	}
-	return config.workspaceSchemaMap[workspace] + "." + layerName;
-}
-
 function getLayerTable(layerName) {
 	// Extract workspaceName and tableName.
 	var nameParts = layerName.split(":");
 	if (nameParts.length != 2) {
-		var err_msg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", layerName);
-		logger.error(err_msg);
-		return null;
+		let errMsg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", layerName);
+		logger.warn('common/conn.js# getLayerTable: Error: ', errMsg);
+		return layerName;
 	}
 	var workspaceName = nameParts[0];
 	var tableName = nameParts[1];
 	if (workspaceName == "" || tableName == "") {
-		var err_msg = util.format("Error: layerName has empty workspace or table: '%s'.", layerName);
-		logger.error(err_msg);
-		return null;
+		let errMsg = util.format("Error: layerName has empty workspace or table: '%s'.", layerName);
+		throw new Error(
+			logger.error('common/conn.js# getLayerTable: Error: ', errMsg)
+		);
 	}
 
 	// Do lookup for schema.
@@ -254,19 +240,9 @@ function getSchemaName(workspaceName) {
 	if (config.workspaceSchemaMap.hasOwnProperty(workspaceName)) {
 		schemaName = config.workspaceSchemaMap[workspaceName];
 	} else {
-		var wMap = {}
-		_.each(config.remoteDbSchemas, function (remoteServerOptions, remoteServerName) {
-			_.each(remoteServerOptions.workspaceMap, function (mapItem, idx) {
-				if (workspaceName == mapItem.workspace) {
-					wMap[workspaceName] = mapItem.local_schema;
-				}
-			});
-		});
-		if (wMap.hasOwnProperty(workspaceName)) {
-			schemaName = wMap[workspaceName];
-		} else {
-			logger.error(util.format("Error: Schema name '%s' is not defined in the configuration file.", workspaceName));
-		}
+		throw new Error(
+			logger.error("common/conn.js#getSchemaName Error: Schema name '%s' is not defined in the configuration file.", workspaceName)
+		);
 	}
 	return schemaName;
 }
