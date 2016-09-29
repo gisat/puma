@@ -212,6 +212,7 @@ function connectToMongo(connectionString) {
 }
 
 function getLayerTable(layerName) {
+	logger.info('common/conn.js#getLayerTable Name: ', layerName);
 	// Extract workspaceName and tableName.
 	var nameParts = layerName.split(":");
 	if (nameParts.length != 2) {
@@ -240,7 +241,7 @@ function getSchemaName(workspaceName) {
 		schemaName = config.workspaceSchemaMap[workspaceName];
 	} else {
 		throw new Error(
-			logger.error("common/conn.js#getSchemaName Error: Schema name '%s' is not defined in the configuration file.", workspaceName)
+			logger.error("common/conn.js#getSchemaName Error: Workspace name '%s' is not defined in the configuration file.", workspaceName)
 		);
 	}
 	return schemaName;
