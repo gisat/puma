@@ -1,4 +1,3 @@
-var _ = require('underscore');
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;

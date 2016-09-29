@@ -12,7 +12,6 @@ var crud = require('../rest/crud');
 var layers = require('./layers');
 var _ = require('underscore');
 var jsid = null;
-var cacheStyleMap = null;
 var layerGroupMap = null;
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
