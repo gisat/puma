@@ -235,7 +235,8 @@ function getLayerTable(layerName) {
 		logger.error(err_msg);
 		return null;
 	}
-	var [workspaceName, tableName] = nameParts;
+	var workspaceName = nameParts[0];
+	var tableName = nameParts[1];
 	if (workspaceName == "" || tableName == "") {
 		var err_msg = util.format("Error: layerName has empty workspace or table: '%s'.", layerName);
 		logger.error(err_msg);
@@ -287,7 +288,8 @@ function getGeometryColumnName(sourceTableName) {
 			logger.error(err_msg);
 			return reject(new Error(err_msg));
 		}
-		var [schemaName, tableName] = nameParts;
+		var schemaName = nameParts[0];
+		var tableName = nameParts[1];
 		if (schemaName == "" || tableName == "") {
 			var err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
 			logger.error(err_msg);
