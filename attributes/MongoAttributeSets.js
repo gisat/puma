@@ -1,6 +1,7 @@
 var MongoAttributeSet = require('./MongoAttributeSet');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoDataViews = require('../visualization/MongoDataViews');
+var MongoAnalysis = require('../analysis/MongoAnalysis');
 var MongoVisualizations = require('../visualization/MongoVisualization');
 var Promise = require('promise');
 
@@ -10,6 +11,7 @@ class MongoAttributeSets {
 		this._chartConfigurations = new MongoChartConfigurations(connection);
 		this._dataViews = new MongoDataViews(connection);
 		this._visualizations = new MongoVisualizations(connection);
+		this._analysis = new MongoAnalysis(connection);
 	}
 
 	update(attributeSet) {
@@ -42,6 +44,16 @@ class MongoAttributeSets {
 			});
 
 			return Promise.all(promises);
+		}).then(function(){
+			return attributeSet.analysis();
+		}).then(function(analysis){
+			var promises = [];
+
+			analysis.forEach(function(analyse){
+				promises.push(self._analysis.remove(analyse))
+			});
+
+			return Promise.all(analysis);
 		}).then(function(){
 			return attributeSet.dataViews();
 		}).then(function(dataViews){
