@@ -5,6 +5,7 @@ var MongoPeriod = require('./MongoPeriod');
 var MongoThemes = require('./MongoThemes');
 var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
+var MongoDataViews = require('../visualization/MongoDataViews');
 var Promise = require('promise');
 
 class MongoPeriods {
@@ -16,6 +17,7 @@ class MongoPeriods {
 		this._scope = new MongoScopes(connection);
 		this._themes = new MongoThemes(connection);
 		this._chartConfigurations = new MongoChartConfigurations(connection);
+		this._dataViews = new MongoDataViews(connection);
 	}
 
 	update(period) {
@@ -81,6 +83,16 @@ class MongoPeriods {
 				promises.push(
 					self._themes.update(new MongoUniqueUpdate(theme, {remove: [{key: 'years', value: [periodId]}]}))
 				);
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return period.dataViews();
+		}).then(function(dataViews){
+			var promises = [];
+
+			dataViews.forEach(function(dataView){
+				promises.push(self._dataViews.remove(dataView))
 			});
 
 			return Promise.all(promises);

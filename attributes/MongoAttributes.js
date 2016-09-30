@@ -4,6 +4,8 @@ var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoAttributeSets = require('./MongoAttributeSets');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
+var MongoDataViews = require('../visualization/MongoDataViews');
+var MongoVisualizations = require('../visualization/MongoVisualization');
 var Promise = require('promise');
 
 class MongoAttributes {
@@ -13,6 +15,8 @@ class MongoAttributes {
 		this._attributeSets = new MongoAttributeSets(connection);
 		this._analysis = new MongoAnalysis(connection);
 		this._chartConfigurations = new MongoChartConfigurations(connection);
+		this._dataViews = new MongoDataViews(connection);
+		this._visualizations = new MongoVisualizations(connection);
 	}
 
 	/**
@@ -66,6 +70,26 @@ class MongoAttributes {
 
 			chartConfigurations.forEach(function(chartConfiguration){
 				promises.push(self._chartConfigurations.remove(chartConfiguration))
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return attribute.dataViews();
+		}).then(function(dataViews){
+			var promises = [];
+
+			dataViews.forEach(function(dataView){
+				promises.push(self._dataViews.remove(dataView))
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return attribute.visualizations();
+		}).then(function(visualizations){
+			var promises = [];
+
+			visualizations.forEach(function(visualization){
+				self._visualizations.remove(visualization);
 			});
 
 			return Promise.all(promises);

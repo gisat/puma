@@ -10,6 +10,7 @@ var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSe
 var FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 var FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 var FilteredMongoChartConfigurations = require('../visualization/FilteredMongoChartConfigurations');
+var FilteredMongoVisualizations = require('../visualization/FilteredMongoVisualizations');
 
 // Probably contains the Chart configuration as well.
 // areas
@@ -39,6 +40,7 @@ class MongoLayerTemplate extends Audit {
 		this._layerReferences = new FilteredMongoLayerReferences({areaTemplate: id}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$in: [id]}}, connection);
 		this._chartConfigurations = new FilteredMongoChartConfigurations({}, connection);
+		this._visualizations = new FilteredMongoVisualizations({"visibleLayers.at": id}, connection);
 	}
 
 	/**
@@ -136,6 +138,10 @@ class MongoLayerTemplate extends Audit {
 
 	performedAnalysis() {
 		return this._performedAnalysis.read();
+	}
+
+	visualizations() {
+		return this._visualizations.read();
 	}
 
 	chartConfigurations() {

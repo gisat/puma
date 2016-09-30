@@ -5,6 +5,7 @@ var FilteredMongoThemes = require('./FilteredMongoThemes.js');
 var FilteredMongoScopes = require('./FilteredMongoScopes.js');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
+var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 
 class MongoPeriod {
@@ -20,6 +21,7 @@ class MongoPeriod {
 			new FilteredMongoChartConfiguration({years: {$in: [id]}}, connection),
 			new FilteredMongoChartConfiguration({"attrs.normYear": id}, connection)
 		]);
+		this._dataViews = new FilteredMongoDataViews({"conf.years": {$in: [id]}}, connection);
 
 		this._instance = new MongoUniqueInstance(id, connection, MongoPeriod.collectionName());
 	}
@@ -46,6 +48,10 @@ class MongoPeriod {
 
 	chartConfigurations() {
 		return this._chartConfigurations.read();
+	}
+
+	dataViews() {
+		return this._dataViews.read();
 	}
 
 	json() {

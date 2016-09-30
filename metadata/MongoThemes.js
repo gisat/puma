@@ -1,8 +1,14 @@
 var MongoTheme = require('./MongoTheme');
+var MongoDataViews = require('../visualization/MongoDataViews');
+var MongoVisualizations = require('../visualization/MongoVisualization');
+var Promise = require('promise');
 
 class MongoThemes {
 	constructor(connection) {
 		this._connection = connection;
+
+		this._dataViews = new MongoDataViews(connection);
+		this._visualizations = new MongoVisualizations(connection);
 	}
 
 	update(theme) {
@@ -15,7 +21,27 @@ class MongoThemes {
 
 	remove(theme) {
 		var self = this;
-		return theme.id().then(function(id){
+		return theme.dataViews().then(function(dataViews){
+			var promises = [];
+
+			dataViews.forEach(function(dataView){
+				promises.push(self._dataViews.remove(dataView))
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return theme.visualizations();
+		}).then(function(visualizations){
+			var promises = [];
+
+			visualizations.forEach(function(visualization){
+				self._visualizations.remove(visualization);
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return theme.id();
+		}).then(function(id){
 			var collection = self._connection.collection(MongoTheme.collectionName());
 			return collection.removeOne({_id: id});
 		});

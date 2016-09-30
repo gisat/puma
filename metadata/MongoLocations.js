@@ -1,6 +1,7 @@
 var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoLocation = require('./MongoLocation');
+var MongoDataViews = require('../visualization/MongoDataViews');
 var Promise = require('promise');
 
 class MongoLocations {
@@ -9,6 +10,7 @@ class MongoLocations {
 
 		this._performedAnalysis = new MongoPerformedAnalysis(connection);
 		this._layerReferences = new MongoLayerReferences(connection);
+		this._dataViews = new MongoDataViews(connection);
 	}
 
 	update(location) {
@@ -40,6 +42,16 @@ class MongoLocations {
 			});
 
 			Promise.all(promises);
+		}).then(function(){
+			return location.dataViews();
+		}).then(function(dataViews){
+			var promises = [];
+
+			dataViews.forEach(function(dataView){
+				promises.push(self._dataViews.remove(dataView))
+			});
+
+			return Promise.all(promises);
 		}).then(function(){
 			return location.id();
 		}).then(function(id){

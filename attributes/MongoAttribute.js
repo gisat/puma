@@ -2,6 +2,7 @@ var Promise = require('promise');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var FilteredMongoAttributeSets = require('./FilteredMongoAttributeSets');
 var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
+var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
@@ -26,6 +27,16 @@ class MongoAttribute {
 			new FilteredMongoChartConfiguration({"attrs.normAttr": id}, connection)
 		]);
 
+		this._dataViews = new FilteredCompoundCollection([
+			new FilteredMongoDataViews({"conf.choroplethCfg.attr": id}, connection),
+			new FilteredMongoDataViews({"conf.cfgs.cfg.attrs.attr": id}, connection)
+		]);
+
+		this._visualizations = new FilteredCompoundCollection([
+			new FilteredMongoDataViews({"choroplethCfg.attr": id}, connection),
+			new FilteredMongoDataViews({"cfg.attrs.attr": id}, connection)
+		]);
+
 		this._instance = new MongoUniqueInstance(id, connection, MongoAttribute.collectionName());
 	}
 
@@ -47,6 +58,14 @@ class MongoAttribute {
 
 	chartConfigurations() {
 		return this._chartConfigurations.read();
+	}
+
+	dataViews() {
+		return this._dataViews.read();
+	}
+
+	visualizations() {
+		return this._visualizations.read();
 	}
 
 	static collectionName() {

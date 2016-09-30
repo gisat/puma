@@ -2,6 +2,8 @@ var Promise = require('promise');
 var FilteredMongoAttributes = require('./FilteredMongoAttributes');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
+var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
+var FilteredMongoVisualizations = require('../visualization/FilteredMongoVisualizations');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
 var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
@@ -24,6 +26,16 @@ class MongoAttributeSet {
 		this._chartConfiguration = new FilteredCompoundCollection([
 			new FilteredMongoChartConfiguration({"attrs.as": id}, connection),
 			new FilteredMongoChartConfiguration({"attrs.normAs": id}, connection)
+		]);
+		this._dataViews = new FilteredCompoundCollection([
+			new FilteredMongoDataViews({"conf.choroplethCfg.as": id}, connection),
+			new FilteredMongoDataViews({"conf.cfgs.cfg.attrs.as": id}, connection),
+			new FilteredMongoDataViews({"visibleLayers.attribute": id}, connection)
+		]);
+		this._visualizations = new FilteredCompoundCollection([
+			new FilteredMongoVisualizations({"cfg.attrs.as": id}),
+			new FilteredMongoVisualizations({"choroplethCfg.as": id}),
+			new FilteredMongoVisualizations({"visibleLayers.attributeSet": id})
 		]);
 	}
 
@@ -52,6 +64,14 @@ class MongoAttributeSet {
 
 	chartConfigurations() {
 		return this._chartConfiguration.read();
+	}
+
+	dataViews() {
+		return this._dataViews.read();
+	}
+
+	visualizations() {
+		return this._visualizations.read();
 	}
 
 	json() {

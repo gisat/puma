@@ -2,6 +2,7 @@ var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoLocations = require('./MongoLocations');
 var MongoThemes = require('./MongoThemes');
 var MongoScope = require('./MongoScope');
+var MongoDataViews = require('../visualization/MongoDataViews');
 var Promise = require('promise');
 
 class MongoScopes {
@@ -11,6 +12,7 @@ class MongoScopes {
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._locations = new MongoLocations(connection);
 		this._themes = new MongoThemes(connection);
+		this._dataViews = new MongoDataViews(connection);
 	}
 
 	update(scope) {
@@ -42,6 +44,16 @@ class MongoScopes {
 				promises.push(
 					self._themes.remove(theme)
 				)
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return scope.dataViews();
+		}).then(function(dataViews){
+			var promises = [];
+
+			dataViews.forEach(function(dataView){
+				promises.push(self._dataViews.remove(dataView))
 			});
 
 			return Promise.all(promises);

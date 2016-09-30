@@ -1,5 +1,6 @@
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
+var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
 var MongoScope = require('./MongoScope');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var Promise = require('promise');
@@ -10,6 +11,8 @@ class MongoLocation {
 		this._connection = connection;
 		this._layerReferences = new FilteredMongoLayerReferences({location: id}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({location: id}, connection);
+		this._dataViews = new FilteredMongoDataViews({"conf.location": id}, connection);
+
 		this._instance = new MongoUniqueInstance(id, connection, MongoLocation.collectionName());
 	}
 
@@ -36,6 +39,10 @@ class MongoLocation {
 		return this.scopeId().then(function(id){
 			return new MongoScope(id, self._connection);
 		})
+	}
+
+	dataViews() {
+		return this._dataViews.read();
 	}
 
 	json() {

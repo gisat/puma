@@ -2,6 +2,7 @@ var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferenc
 var FilteredMongoLocations = require('./FilteredMongoLocations');
 var FilteredMongoThemes = require('./FilteredMongoThemes');
 var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
+var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var Promise = require('promise');
 
@@ -16,6 +17,7 @@ class MongoScope {
 		this._locations = new FilteredMongoLocations({dataset: id}, connection);
 		this._themes = new FilteredMongoThemes({dataset: id}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({dataset: id}, connection);
+		this._dataViews = new FilteredMongoDataViews({"conf.dataset": id}, connection);
 
 		this._instance = new MongoUniqueInstance(id, connection, MongoScope.collectionName());
 	}
@@ -38,6 +40,10 @@ class MongoScope {
 
 	performedAnalysis() {
 		return this._performedAnalysis.read();
+	}
+
+	dataViews() {
+		return this._dataViews.read();
 	}
 
 	json() {

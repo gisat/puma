@@ -8,6 +8,7 @@ var MongoLayerReferences = require('./MongoLayerReferences');
 var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
 var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoLayerTemplate = require('./MongoLayerTemplate');
+var MongoVisualizations = require('../visualization/MongoVisualization');
 
 class MongoLayerTemplates {
 	constructor(connection) {
@@ -19,6 +20,7 @@ class MongoLayerTemplates {
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._performedAnalysis = new MongoPerformedAnalysis(connection);
 		this._chartConfigurations = new MongoChartConfigurations(connection);
+		this._visualizations = new MongoVisualizations(connection);
 	}
 
 	update(layerTemplate) {
@@ -90,6 +92,16 @@ class MongoLayerTemplates {
 
 			chartConfigurations.forEach(function(chartConfiguration){
 				self._chartConfigurations.remove(chartConfiguration);
+			});
+
+			return Promise.all(promises);
+		}).then(function(){
+			return layerTemplate.visualizations();
+		}).then(function(visualizations){
+			var promises = [];
+
+			visualizations.forEach(function(visualization){
+				self._visualizations.remove(visualization);
 			});
 
 			return Promise.all(promises);
