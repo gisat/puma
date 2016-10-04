@@ -2,19 +2,22 @@ class MellodiesWpsController {
     constructor(app) {
         this._running = [{
             name: 'Prague',
-            year: 2016,
+            from: 2016,
+            to: 2017,
             started: '23/9/2015',
             finished: '22/10/2015',
             status: 'Success'
         },{
             name: 'Rome',
-            year: 2015,
+            from: 2015,
+            to: 2016,
             started: '20/8/2015',
             finished: '21/8/2015',
             status: 'Failed'
         },{
             name: 'London',
-            year: 2016,
+            from: 2014,
+            to: 2016,
             started: '20/8/2015',
             finished: '',
             status: 'Running'
