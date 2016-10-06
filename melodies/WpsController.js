@@ -2,7 +2,7 @@ var superagent = require('superagent');
 var util = require('util');
 var config = require('../config');
 
-class MellodiesWpsController {
+class WpsController {
     constructor(app) {
         this._running = [{
             name: 'Prague',
@@ -34,6 +34,8 @@ class MellodiesWpsController {
     run(request, response, next) {
         var processToStart = request.body;
 
+
+
         return superagent
             .get('http://10.15.27.32:8080/wps/WebProcessingService?dataInputs=')
             .query({service: "wps"})
@@ -49,7 +51,6 @@ class MellodiesWpsController {
             .then(function(){
 
         });
-
         request.body.started = "20/9/2016";
         request.body.status = "Running";
 
@@ -63,4 +64,4 @@ class MellodiesWpsController {
     }
 }
 
-module.exports = MellodiesWpsController;
+module.exports = WpsController;
