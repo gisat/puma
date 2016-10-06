@@ -18,10 +18,6 @@ function getAreas(params) {
         getLayerRefs(params).then(function(layerRefs){
             getAreasFromAllLayers(layerRefs,filterSQL).then(function(result){
                 var areas = result;
-                //var areas = result[0];
-                //for (var i = 1; i < result.length; i++){
-                //    areas = areas.concat(result[i]);
-                //}
                 resolve(areas);
             })
         });
@@ -70,7 +66,7 @@ function getAreasFilterSQL(filters){
 function getValuesFromAllLayers(layerRefs, column){
     var values = [];
     layerRefs.forEach(function(layer){
-        var selectSQL = "SELECT " + column + " as attr FROM views.layer_" + layer.id + " GROUP BY attr";
+        var selectSQL = "SELECT " + column + " as attr FROM views.layer_" + layer.id + " GROUP BY attr ORDER BY attr ASC";
         //var selectSQL = "SELECT " + column + " as attr, COUNT(" + column + ") as total FROM views.layer_" + layer.id + " GROUP BY attr";
         var prom = getValuesFromLayer(selectSQL, layer);
         values.push(prom);

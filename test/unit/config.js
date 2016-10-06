@@ -21,10 +21,10 @@ module.exports = {
 
 	geoserver2Host  : "localhost",
 	geoserver2Port  : 80,
-	geoserver2Path  : "/geoserver_i2",
+	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "puma",
+	geoserver2Workspace : "panther",
 
 	geonodeHost     : "37.205.9.78",
 	geonodePath     : "",

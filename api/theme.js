@@ -355,6 +355,7 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 			var locations = results.locations;
 			var areaTemplates = results.dataset.featureLayers; // areaTemplates renamed from featureLayers
+
 			var layerRefMap = results.layerRefs;
 			var opened = params['parentgids'] ? JSON.parse(params['parentgids']) : null;
 			opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
@@ -369,13 +370,20 @@ function getThemeYearConf(params, req, res, callback) {
 				var locationId = location._id;
 				var locAreaTemplates = params['parentgids'] ? [] : [areaTemplates[0]];
 				var locOpened = opened[locationId];
-				for (var key in locOpened) {
-					var idx = areaTemplates.indexOf(parseInt(key));
-					locAreaTemplates.push(areaTemplates[idx + 1]);
+
+				if(areaTemplates.length > 1){
+					for (var key in locOpened) {
+						var idx = areaTemplates.indexOf(parseInt(key));
+						locAreaTemplates.push(areaTemplates[idx + 1]);
+					}
+
+
+					locAreaTemplates.sort(function(a, b) {
+						return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
+					});
 				}
-				locAreaTemplates.sort(function(a, b) {
-					return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
-				});
+
+
 
 				for (var j = 0; j < locAreaTemplates.length; j++) {
 					var areaTemplateId = locAreaTemplates[j];
@@ -383,7 +391,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
 					var topmostAT = (location.hasOwnProperty("bbox") && location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
 					var leaf = 'FALSE';
-					
+
 					var layerRef = null;
 					try {
 						layerRef = layerRefMap[locationId][areaTemplateId][years[0]];
@@ -525,7 +533,9 @@ function getThemeYearConf(params, req, res, callback) {
 					var idx = featureLayers.indexOf(parseInt(at));
 					var nextAt = featureLayers[idx + 1];
 					var nextLayerRef = null;
+
 					try {
+						if (results.layerRefs[loc].hasOwnProperty(nextAt))
 						nextLayerRef = results.layerRefs[loc][nextAt][years[0]];
 					} catch (e) {
 						logger.warn("theme#getThemeYearConf. An issue with retrieving next layerref. Error: ", e);
