@@ -1,10 +1,13 @@
 var Promise = require('promise');
 
-class PgCachedLayerRow {
-    constructor(data, pgPool, idColumn) {
+class PgCachedRow {
+    constructor(data, pgPool, schema, table, idColumn) {
         this._data = data;
         this._pgPool = pgPool;
         this._idColumn = idColumn;
+
+        this._schema = schema;
+        this._table = table;
     }
 
     id() {
@@ -16,10 +19,12 @@ class PgCachedLayerRow {
     }
 
     add(name, value) {
+        return this.id().then(id => {
+            var sql = `UPDATE ${this._schema}.${this._table} SET ${name} = ${value} WHERE ${this._idColumn}=${id}`;
 
-
-        var sql = `UPDATE`;
+            return this._pgPool.pool().query(sql);
+        });
     }
 }
 
-module.exports = PgCachedLayerRow;
+module.exports = PgCachedRow;

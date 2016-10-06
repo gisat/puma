@@ -24,7 +24,7 @@ class PgLayerViews {
         }
 
         var schema = config.viewsSchema;
-        return this._pgPool.query(`DROP VIEW ${schema}.${this.name(layerReferenceId)}`);
+        return this._pgPool.pool().query(`DROP VIEW ${schema}.${this.name(layerReferenceId)}`);
     }
 
     add(layerReferenceId, sourceTableName, fidColumn, nameColumn, parentColumn, dataLayerReferences = []) {
@@ -57,7 +57,7 @@ class PgLayerViews {
                 ${this.joinedDataTables()}
             `;
 
-            return this._pgPool.query(sql)
+            return this._pgPool.pool().query(sql)
         }).then(() => {
             return this.addAttributes(dataLayerReferences, name);
         })

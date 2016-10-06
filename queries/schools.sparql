@@ -8,7 +8,7 @@ Select
   ?schoolLabel
   ?schoolGeo
   (
-    bif:st_distance (?schoolGeo, bif:st_point (4.892222, 52.373056))
+    bif:st_distance (bif:st_point(bif:st_xmin(?schoolGeo),bif:st_ymin(?schoolGeo)), bif:st_point (4.892222, 52.373056))
   ) as ?proximity
 From <http://linkedgeodata.org> {
     ?school
@@ -19,6 +19,6 @@ From <http://linkedgeodata.org> {
     ] .
 
   Filter (
-    bif:st_intersects (?schoolGeo, bif:st_point (4.892222, 52.373056), 5)
+    bif:st_distance (bif:st_point(bif:st_xmin(?schoolGeo),bif:st_ymin(?schoolGeo)), bif:st_point (4.892222, 52.373056)) < 5
   ) .
 }

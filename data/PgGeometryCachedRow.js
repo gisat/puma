@@ -9,15 +9,22 @@ class PgGeometryCachedRow {
     }
 
     centroid() {
-        return this.column(this._idColumn).then(id => {
-            var sql = `SELECT ST_Centroid(ST_Transform(${this._geometryColumnName}, 4326)) AS centroid 
+        return this._pgCachedRow.id().then(id => {
+            var sql = `SELECT ST_AsText(ST_Centroid(ST_Transform(${this._geometryColumnName}, 4326))) AS centroid 
                 FROM ${this._schema}.${this._table}
-                    WHERE ${this._idColumn} = '${id}'    
+                    WHERE ${this._pgCachedRow._idColumn} = '${id}'    
             `;
 
-            return this._pgPool.query(sql)
+            console.log('Execute Sql ', sql);
+            return this._pgPool.pool().query(sql);
         }).then(results => {
-            return results.rows[0].centroid;
+            console.log('Centroid received.');
+
+            return results.rows[0].centroid
+                .trim()
+                .replace('POINT(', '')
+                .replace(')', '')
+                .replace(' ',',');
         });
     }
 

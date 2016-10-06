@@ -4,13 +4,13 @@ var Promise = require('promise');
 var LodAmenities = require('./LodAmenities');
 
 class LodEnhancedTable {
-    constructor(pgPool, schema, table) {
+    constructor(pgPool, schema, table, idColumn) {
         this._pgPool = pgPool;
         this._schema = schema;
         this._table = table;
 
         // TODO: Configure id and geometry
-        this._pgRows = new PgGeometryRows(schema, table, pgPool, 'the_geom', 'fid');
+        this._pgRows = new PgGeometryRows(schema, table, pgPool, 'the_geom', idColumn);
     }
 
     update() {
@@ -30,17 +30,19 @@ class LodEnhancedTable {
         this._pgRows.addColumn('hospitals_nearest', 'double precision');
         this._pgRows.addColumn('public_transport_stops_nearest', 'double precision');
 
-        var rows = this._pgRows.all();
-        var promises = [];
-        rows.forEach(row => {
-            promises.push(this.handleRow(row))
-        });
+        return this._pgRows.all().then(rows => {
+            var promises = [];
+            rows.forEach(row => {
+                // set timeout on few seconds so that we dont overload the server with requests.
+                promises.push(this.handleRow(row))
+            });
 
-        return Promise.all(promises);
+            return Promise.all(promises);
+        });
     }
 
     handleRow(row) {
-        return row.column('centroid').then(centroid => {
+        return row.centroid().then(centroid => {
             return Promise.all([
                 new LodAmenities('School', centroid, 1).json(),
                 new LodAmenities('School', centroid, 3).json(),
@@ -62,6 +64,9 @@ class LodEnhancedTable {
                 });
             });
 
+            var nearestSchool = results[2] && results[2][0] && results[2][0].proximity && results[2][0].proximity.value || 0;
+            var nearestHospital = results[5] && results[5][0] && results[5][0].proximity && results[5][0].proximity.value || 0;
+            var nearestPublicTransport = results[8] && results[8][0] && results[8][0].proximity && results[8][0].proximity.value || 0;
 
             return Promise.all([
                 row.add('schools_1km', results[0].length),
@@ -76,10 +81,9 @@ class LodEnhancedTable {
                 row.add('public_transport_stops_3km', results[7].length),
                 row.add('public_transport_stops_5km', results[8].length),
 
-                // TODO: What if there is none found in given distance.
-                row.add('schools_nearest', results[2][0].proximity.value),
-                row.add('hospitals_nearest', results[5][0].proximity.value),
-                row.add('public_transport_nearest', results[8][0].proximity.value)
+                row.add('schools_nearest', nearestSchool),
+                row.add('hospitals_nearest', nearestHospital),
+                row.add('public_transport_stops_nearest', nearestPublicTransport)
             ]);
         });
     }

@@ -24,13 +24,14 @@ class LodAmenities {
               ?label 
               ?geo 
               (
-                bif:st_distance (?geo, bif:st_point (${this.point}))
+                bif:st_distance (bif:st_point(bif:st_xmin(?geo),bif:st_ymin(?geo)), bif:st_point (${this.point}))
               ) as ?proximity
             From <http://linkedgeodata.org> 
             {   
             ?name     a lgdo:${this.type} ;     rdfs:label ?label ;     geom:geometry [       ogc:asWKT ?geo     ] .   
             Filter (     
-               bif:st_intersects (?geo, bif:st_point (${this.point}), ${this.distance})   ) . 
+                bif:st_distance (bif:st_point(bif:st_xmin(?geo),bif:st_ymin(?geo)), bif:st_point (${this.point})) < ${this.distance}
+             ) . 
             }`);
     }
 
