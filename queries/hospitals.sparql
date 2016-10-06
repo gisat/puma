@@ -1,0 +1,19 @@
+Prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Prefix ogc: <http://www.opengis.net/ont/geosparql#>
+Prefix geom: <http://geovocab.org/geometry#>
+Prefix lgdo: <http://linkedgeodata.org/ontology/>
+
+Select ?hospital ?hospitalLabel ?hospitalGeo
+From <http://linkedgeodata.org> {
+  ?hospital
+    a lgdo:Hospital ;
+    rdfs:label ?hospitalLabel ;
+    geom:geometry [
+      ogc:asWKT ?hospitalGeo
+    ] .
+
+  Filter (
+    bif:st_intersects (?hospitalGeo, bif:st_point (4.892222, 52.373056), 5)
+  ) .
+}
+LIMIT 10
