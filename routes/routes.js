@@ -22,7 +22,7 @@ var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 var PrintController = require('./PrintController');
 var MellodiesWpsController = require('./MellodiesWpsController');
-var MellodiesLodController = require('../melodies/WpsController');
+var MellodiesLodController = require('../melodies/LodController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
