@@ -3,9 +3,15 @@ Prefix ogc: <http://www.opengis.net/ont/geosparql#>
 Prefix geom: <http://geovocab.org/geometry#>
 Prefix lgdo: <http://linkedgeodata.org/ontology/>
 
-Select ?name ?label ?schoolGeo
-From <http://linkedgeodata.org> {
+Select
   ?school
+  ?schoolLabel
+  ?schoolGeo
+  (
+    bif:st_distance (?schoolGeo, bif:st_point (4.892222, 52.373056))
+  ) as ?proximity
+From <http://linkedgeodata.org> {
+    ?school
     a lgdo:School ;
     rdfs:label ?schoolLabel ;
     geom:geometry [
@@ -16,4 +22,3 @@ From <http://linkedgeodata.org> {
     bif:st_intersects (?schoolGeo, bif:st_point (4.892222, 52.373056), 5)
   ) .
 }
-LIMIT 10

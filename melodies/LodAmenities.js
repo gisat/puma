@@ -15,17 +15,23 @@ class LodAmenities {
     }
 
     query() {
-        return Promise.resolve(util.format('' +
-            'Prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
-            'Prefix ogc: <http://www.opengis.net/ont/geosparql#> ' +
-            'Prefix geom: <http://geovocab.org/geometry#> ' +
-            'Prefix lgdo: <http://linkedgeodata.org/ontology/>  ' +
-            'Select ?name ?label ?geo From <http://linkedgeodata.org> ' +
-            '{   ' +
-            '?name     a lgdo:%s ;     rdfs:label ?label ;     geom:geometry [       ogc:asWKT ?geo     ] .    ' +
-            'Filter (     ' +
-            '   bif:st_intersects (?geo, bif:st_point (%s), %s)   ) . ' +
-            '}', this.type, this.point, this.distance));
+        return Promise.resolve(`Prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+            Prefix ogc: <http://www.opengis.net/ont/geosparql#> 
+            Prefix geom: <http://geovocab.org/geometry#> 
+            Prefix lgdo: <http://linkedgeodata.org/ontology/> 
+            Select 
+              ?name 
+              ?label 
+              ?geo 
+              (
+                bif:st_distance (?geo, bif:st_point (${this.point}))
+              ) as ?proximity
+            From <http://linkedgeodata.org> 
+            {   
+            ?name     a lgdo:${this.type} ;     rdfs:label ?label ;     geom:geometry [       ogc:asWKT ?geo     ] .   
+            Filter (     
+               bif:st_intersects (?geo, bif:st_point (${this.point}), ${this.distance})   ) . 
+            }`);
     }
 
     json() {

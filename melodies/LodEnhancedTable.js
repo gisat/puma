@@ -26,6 +26,10 @@ class LodEnhancedTable {
         this._pgRows.addColumn('public_transport_stops_3km', 'double precision');
         this._pgRows.addColumn('public_transport_stops_5km', 'double precision');
 
+        this._pgRows.addColumn('schools_nearest', 'double precision');
+        this._pgRows.addColumn('hospitals_nearest', 'double precision');
+        this._pgRows.addColumn('public_transport_stops_nearest', 'double precision');
+
         var rows = this._pgRows.all();
         var promises = [];
         rows.forEach(row => {
@@ -51,6 +55,14 @@ class LodEnhancedTable {
                 new LodAmenities('StopPosition', centroid, 5).json()
             ]);
         }).then(results => {
+            // Order to get shortest.
+            results.forEach(result => {
+                result.sort((a,b) => {
+                    a.proximity.value > b.proximity.value
+                });
+            });
+
+
             return Promise.all([
                 row.add('schools_1km', results[0].length),
                 row.add('schools_3km', results[1].length),
@@ -62,7 +74,12 @@ class LodEnhancedTable {
 
                 row.add('public_transport_stops_1km', results[6].length),
                 row.add('public_transport_stops_3km', results[7].length),
-                row.add('public_transport_stops_5km', results[8].length)
+                row.add('public_transport_stops_5km', results[8].length),
+
+                // TODO: What if there is none found in given distance.
+                row.add('schools_nearest', results[2][0].proximity.value),
+                row.add('hospitals_nearest', results[5][0].proximity.value),
+                row.add('public_transport_nearest', results[8][0].proximity.value)
             ]);
         });
     }
