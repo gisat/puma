@@ -21,7 +21,7 @@ var TopicController = require('./TopicController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 var PrintController = require('./PrintController');
-var MellodiesWpsController = require('./MelodiesWpsController');
+var MellodiesWpsController = require('./MellodiesWpsController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
