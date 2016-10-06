@@ -6,7 +6,7 @@ var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
 class AttributeController extends Controller {
-	constructor(app, pgPool, schema) {
+	constructor(app) {
 		super(app, 'attribute', MongoAttributes, MongoAttribute);
 	}
 
