@@ -28,6 +28,14 @@ class MongoAnalysis {
 			return collection.removeOne({_id: id});
 		});
 	}
+
+	add(analyse) {
+		var self = this;
+		return analyse.json().then(function(analyse){
+			var collection = self._connection.collection(MongoAnalyse.collectionName());
+			collection.insert(analyse)
+		});
+	}
 }
 
 module.exports = MongoAnalysis;

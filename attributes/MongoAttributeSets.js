@@ -81,6 +81,14 @@ class MongoAttributeSets {
 			return collection.removeOne({_id: id});
 		})
 	}
+
+	add(attributeSet) {
+		var self = this;
+		return attributeSet.json().then(function(atrtibuteSet){
+			var collection = self._connection.collection(MongoAttributeSet.collectionName());
+			collection.insert(atrtibuteSet)
+		});
+	}
 }
 
 module.exports = MongoAttributeSets;

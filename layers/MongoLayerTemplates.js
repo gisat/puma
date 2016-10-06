@@ -110,6 +110,14 @@ class MongoLayerTemplates {
 			return collection.removeOne({_id: templateId});
 		});
 	}
+
+	add(layerTemplate) {
+		var self = this;
+		return layerTemplate.json().then(function(layerTemplate){
+			var collection = self._connection.collection(MongoLayerTemplate.collectionName());
+			collection.insert(layerTemplate)
+		});
+	}
 }
 
 module.exports = MongoLayerTemplates;

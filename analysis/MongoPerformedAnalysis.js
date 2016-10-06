@@ -1,5 +1,6 @@
 var MongoPerformedAnalyse = require('./MongoPerformedAnalyse');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
+var Promise = require('promise');
 
 class MongoPerformedAnalysis {
 	constructor(connection) {
@@ -26,6 +27,14 @@ class MongoPerformedAnalysis {
 		}).then(function(id){
 			var collection = self._connection.collection(MongoPerformedAnalyse.collectionName());
 			return collection.removeOne({_id: id});
+		});
+	}
+
+	add(performedAnalyse) {
+		var self = this;
+		return performedAnalyse.json().then(function(performedAnalyse){
+			var collection = self._connection.collection(MongoPerformedAnalyse.collectionName());
+			collection.insert(performedAnalyse)
 		});
 	}
 }
