@@ -11,6 +11,15 @@ class MongoChartConfigurations {
 			return collection.removeOne({_id: id});
 		});
 	}
+
+	add(chartConfiguration) {
+		var self = this;
+		return chartConfiguration.json().then(function(chartConfiguration){
+			var collection = self._connection.collection(MongoChartConfiguration.collectionName());
+			collection.insert(chartConfiguration)
+		});
+	}
+
 }
 
 module.exports = MongoChartConfigurations;

@@ -98,6 +98,14 @@ class MongoAttributes {
 			return collection.removeOne({_id: attributeId});
 		});
 	}
+
+	add(attribute) {
+		var self = this;
+		return attribute.json().then(function(attribute){
+			var collection = self._connection.collection(MongoAttribute.collectionName());
+			collection.insert(attribute)
+		});
+	}
 }
 
 module.exports = MongoAttributes;

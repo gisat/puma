@@ -11,6 +11,14 @@ class MongoDataViews {
             return collection.removeOne({_id: id});
         });
     }
+
+    add(dataView) {
+        var self = this;
+        return dataView.json().then(function(dataView){
+            var collection = self._connection.collection(MongoDataView.collectionName());
+            collection.insert(dataView)
+        });
+    }
 }
 
 module.exports = MongoDataViews;

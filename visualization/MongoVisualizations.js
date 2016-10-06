@@ -11,6 +11,14 @@ class MongoVisualizations {
             return collection.removeOne({_id: id});
         });
     }
+
+    add(visualization) {
+        var self = this;
+        return visualization.json().then(function(visualization){
+            var collection = self._connection.collection(MongoVisualization.collectionName());
+            collection.insert(visualization)
+        });
+    }
 }
 
 module.exports = MongoVisualizations;

@@ -1,0 +1,24 @@
+Prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Prefix ogc: <http://www.opengis.net/ont/geosparql#>
+Prefix geom: <http://geovocab.org/geometry#>
+Prefix lgdo: <http://linkedgeodata.org/ontology/>
+
+Select
+  ?school
+  ?schoolLabel
+  ?schoolGeo
+  (
+    bif:st_distance (bif:st_point(bif:st_xmin(?schoolGeo),bif:st_ymin(?schoolGeo)), bif:st_point (4.892222, 52.373056))
+  ) as ?proximity
+From <http://linkedgeodata.org> {
+    ?school
+    a lgdo:School ;
+    rdfs:label ?schoolLabel ;
+    geom:geometry [
+      ogc:asWKT ?schoolGeo
+    ] .
+
+  Filter (
+    bif:st_distance (bif:st_point(bif:st_xmin(?schoolGeo),bif:st_ymin(?schoolGeo)), bif:st_point (4.892222, 52.373056)) < 5
+  ) .
+}

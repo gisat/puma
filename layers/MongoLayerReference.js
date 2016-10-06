@@ -23,6 +23,36 @@ class MongoLayerReference {
 		})
 	}
 
+	layerWorkspace() {
+		return this.load().then(function(layer){
+			return layer.layer.split(':')[0];
+		})
+	}
+
+	layer() {
+		return this.json().then(function(json){
+			return json.layer;
+		})
+	}
+
+	attributeSet() {
+		return this.json().then(function(json){
+			return json.attributeSet;
+		});
+	}
+
+	columnMap() {
+		return this.json().then(function(json){
+			return json.columnMap;
+		});
+	}
+
+	fidColumn() {
+		return this.json().then(function(json){
+			return json.fidColumn;
+		});
+	}
+
 	load() {
 		return this._mongoInstance.read();
 	}

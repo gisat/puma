@@ -33,6 +33,14 @@ class MongoLayerGroups {
 			return collection.removeOne({_id: groupId});
 		});
 	}
+
+	add(layerGroup) {
+		var self = this;
+		return layerGroup.json().then(function(layerGroup){
+			var collection = self._connection.collection(MongoLayerGroup.collectionName());
+			collection.insert(layerGroup)
+		});
+	}
 }
 
 module.exports = MongoLayerGroups;

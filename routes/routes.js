@@ -22,6 +22,7 @@ var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 var PrintController = require('./PrintController');
 var MellodiesWpsController = require('./MellodiesWpsController');
+var MellodiesLodController = require('../melodies/WpsController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -52,7 +53,7 @@ module.exports = function(app) {
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app);
 	new AreaTemplateController(app);
-	new AttributeController(app, pool, config.postgreSqlSchemaLayers);
+	new AttributeController(app);
 	new AttributeSetController(app);
 	new ChartCfgController(app);
 	new DataSetController(app);
@@ -70,6 +71,7 @@ module.exports = function(app) {
 	new PrintController(app);
 	new ExportController(app);
 	new MellodiesWpsController(app);
+	new MellodiesLodController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);

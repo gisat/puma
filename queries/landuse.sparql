@@ -1,0 +1,27 @@
+PREFIX lgd:<http://linkedgeodata.org/triplify/>
+PREFIX lgdgeo:<http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX lgdont:<http://linkedgeodata.org/ontology/>
+PREFIX geonames:<http://www.geonames.org/ontology#>
+PREFIX clc: <http://geo.linkedopendata.gr/corine/ontology#>
+PREFIX gag: <http://geo.linkedopendata.gr/greekadministrativeregion/ontology#>
+PREFIX ogc: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX geor: <http://www.opengis.net/def/rule/geosparql/>
+PREFIX strdf: <http://strdf.di.uoa.gr/ontology#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX cd: <http://melodiesproject.eu/CityDistricts/ontology#>
+PREFIX fa: <http://melodiesproject.eu/floodedAreas/ontology#>
+PREFIX ua: <http://geo.linkedopendata.gr/urban/ontology#>
+Prefix geom: <http://geovocab.org/geometry#>
+PREFIX bif: <http://www.openlinksw.com/schemas/bif#>
+SELECT ?lu ?area ?geo
+WHERE
+{
+  ?part ua:hasCode ?lu .
+  ?part ua:hasArea ?area .
+  ?part ogc:hasGeometry ?geom .
+  ?geom ogc:asWKT ?geo .
+  Filter(geof:sfIntersects (?geo, "POLYGON((14.654388427734375 50.0032362037181,14.659194946289062 50.02662140139294,14.65301513671875 50.045585935694646,14.617996215820312 50.05660838448788,14.563751220703125 50.04514498508358,14.538345336914062 50.0222099710207,14.530792236328125 49.996615685164265,14.531478881835938 49.979839624345196,14.6063232421875 50.00588415586985,14.640655517578125 50.0014708212464,14.654388427734375 50.0032362037181))"^^ogc:wktLiteral)) .
+} Limit 100
