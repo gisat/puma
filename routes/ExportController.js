@@ -48,7 +48,6 @@ class ExportController {
             if(layerReferences.length > 1) {
                 logger.warn('ExportController#shapefile There are multiple layers for given combination. First one is used. Location: ', location, ' year: ', year, ' areaTemplate: ', areaTemplate);
             }
-
             return layerReferences[0];
         });
     }

@@ -30,13 +30,13 @@ module.exports = {
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "puma",
+	geoserver2Workspace : "panther",
 
 	geonodeProtocol : "http",
 	geonodeHost     : "localhost",
 	geonodePort			: 80,
-	geonodePath     : "/geonode",
-	geonodeHome     : "/geonode/",
+	geonodePath     : "",
+	geonodeHome     : "/",
 
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
@@ -115,6 +115,8 @@ module.exports = {
 	 */
 	postgreSqlSchema: 'data',
 
+	postgreSqlSchemaLayers: 'views',
+
 	/*
 	Connection String split to pieces for the PostgreSQL.
 	 */
@@ -123,9 +125,9 @@ module.exports = {
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: 'localhost',
 	pgDataPort: '5432',
-	
+
 	/*
-	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long. 
+	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long.
 	*/
 	snapshotDirectory: '/tmp/',
 
