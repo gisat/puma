@@ -5,8 +5,8 @@ class LodController {
     constructor(app, pgPool) {
         this._pgPool = pgPool;
 
-        app.get('/wps/lod/update', this.update.bind(this));
-        app.get('/wps/lod/create/place', this.create.bind(this));
+        app.get('/rest/wps/lod/update', this.update.bind(this));
+        app.get('/rest/wps/lod/create/place', this.create.bind(this));
     }
 
     update(request, response, next) {
