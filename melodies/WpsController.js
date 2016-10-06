@@ -1,9 +1,10 @@
 var superagent = require('superagent');
 var util = require('util');
 var config = require('../config');
+var LodEnhancedTable = require('./LodEnhancedTable');
 
 class WpsController {
-    constructor(app) {
+    constructor(app, pgPool) {
         this._running = [{
             name: 'Prague',
             from: 2016,
@@ -27,8 +28,16 @@ class WpsController {
             status: 'Running'
         }];
 
-        app.get('/wps/mellodies/status', this.status.bind(this));
-        app.post('/wps/mellodies/run', this.run.bind(this));
+        this._pgPool = pgPool;
+
+        app.get('/wps/mellodies/lod', this.lod.bind(this));
+    }
+
+    lod(request, response, next) {
+        var lodEnhanced = new LodEnhancedTable(this._pgPool, 'public', 'prague_ua2012', 'fid');
+        lodEnhanced.update();
+
+        response.json({status: 'Ok'});
     }
 
     run(request, response, next) {

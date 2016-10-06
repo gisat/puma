@@ -18,7 +18,7 @@ describe('LodEnhancedTable', function(){
             port: config.pgDataPort
         });
 
-        var lodEnhanced = new LodEnhancedTable(pool, 'public', 'cz3', 'fid_1');
+        var lodEnhanced = new LodEnhancedTable(pool, 'public', 'cz3_1', 'fid_1');
         lodEnhanced.update().then(() => {
             done();
         }).catch(err => {

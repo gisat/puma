@@ -15,17 +15,18 @@ class PgGeometryCachedRow {
                     WHERE ${this._pgCachedRow._idColumn} = '${id}'    
             `;
 
-            console.log('Execute Sql ', sql);
             return this._pgPool.pool().query(sql);
         }).then(results => {
-            console.log('Centroid received.');
-
             return results.rows[0].centroid
                 .trim()
                 .replace('POINT(', '')
                 .replace(')', '')
                 .replace(' ',',');
         });
+    }
+
+    id() {
+        return this._pgCachedRow.id();
     }
 
     column(name) {
