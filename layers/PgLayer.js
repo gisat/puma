@@ -51,7 +51,7 @@ class PgLayer {
 	 * @returns {Promise.<T>}
 	 */
 	checkId() {
-		if(this.type == 'raster' && this.type == 'au') {
+		if(this.type == 'raster' || this.type == 'au') {
 			return Promise.resolve(true);
 		}
 
