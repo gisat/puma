@@ -6,6 +6,7 @@ var Controller = require('./Controller');
 
 var Statistics = require('../attributes/Statistics');
 var PgAttribute = require('../attributes/PgAttribute');
+var FilteredPgAttributes = require('../attributes/FilteredPgAttributes');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
@@ -19,7 +20,6 @@ class AttributeController extends Controller {
 		this._pgPool = pgPool;
 
 		// podklad pro layerref - dataset, pole roku, attribute as attribute set and attribute, hodnota atributu
-		// dataset: 5,
 		// years: [2015,2015],
 		// areaTemplate: 11
 		// places: [1,5]
@@ -50,7 +50,6 @@ class AttributeController extends Controller {
 		// }
 		app.get('/rest/attribute/statistics', this.statistics.bind(this));
 
-		// dataset: 5,
 		// years: [2015,2015],
 		// areaTemplate: 11
 		// places: [1,5]
@@ -67,54 +66,11 @@ class AttributeController extends Controller {
 	}
 
 	statistics(request, response, next) {
-		var areaTemplate = request.query.areaTemplate;
-		var periods = request.query.years;
-		var places = request.query.places;
-		var attributeSets = [];
-
-		request.query.attributes.forEach(attribute => {
-			if(attributeSets.indexOf(attribute.attributeSet) == -1) {
-				attributeSets.push(attribute.attributeSet);
-			}
-		});
-
-		var filteredLayerReferences = new FilteredMongoLayerReferences({
-			location: {$in: places},
-			year: {$in: periods},
-			areaTemplate: areaTemplate,
-			attributeSet: {$in: attributeSets},
-		}, conn.getMongoDb());
-
 		var distribution = request.query.distribution;
 		if(distribution.type == 'normal') {
-			let attributes = [];
-			return filteredLayerReferences.read().then(layerReferences => {
-				// TODO: FIXME Hell based on the fact that we need the table which is in specific layerref for specific column.
-				layerReferences.forEach(layerReference => {
-					layerReference.columnMap.forEach(column => {
-						request.query.attributes.forEach(attribute => {
-							if (column.attribute == attribute.attribute && layerReference.attributeSet == attribute.attributeSet) {
-								attributes.push({
-									postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
-									mongo: new MongoAttribute(attribute.attribute, conn.getMongoDb()),
-									attributeSet: layerReference.attributeSet
-								});
-							}
-						});
-					});
-				});
-
-				// Replace all mongo attributes with json version.
-				var mongoPromises = [];
-				attributes.forEach(attribute => {
-					mongoPromises.push(attribute.mongo.json());
-				});
-				return Promise.all(mongoPromises);
-			}).then(mongoAttributes => {
-				mongoAttributes.forEach((attribute, index) => {
-					attributes[index].mongo = attribute;
-				});
-
+			this.layerReferences(request).read().then(layerReferences => {
+				return this.attributes(request, layerReferences);
+			}).then(attributes => {
 				return new Statistics(attributes).json();
 			}).then(json => {
 				response.json(json);
@@ -127,7 +83,72 @@ class AttributeController extends Controller {
 	}
 
 	filter(request, response, next) {
+		this.layerReferences(request).read().then(layerReferences => {
+			return this.attributes(request, layerReferences);
+		}).then(attributes => {
+			new FilteredPgAttributes(attributes).json();
+		}).then(json => {
+			response.json(json)
+		});
+	}
 
+	attributes(request, layerReferences) {
+		var attributes = [];
+
+		// TODO: FIXME Hell based on the fact that we need the table which is in specific layerref for specific column.
+		layerReferences.forEach(layerReference => {
+			layerReference.columnMap.forEach(column => {
+				request.query.attributes.forEach(attribute => {
+					if (column.attribute == attribute.attribute && layerReference.attributeSet == attribute.attributeSet) {
+						attributes.push({
+							postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
+							mongo: new MongoAttribute(attribute.attribute, conn.getMongoDb()),
+							attributeSet: layerReference.attributeSet
+						});
+					}
+				});
+			});
+		});
+
+		var mongoPromises = [];
+		attributes.forEach(attribute => {
+			mongoPromises.push(attribute.mongo.json());
+		});
+
+		return Promise.all(mongoPromises).then(mongoAttributes => {
+			mongoAttributes.forEach((attribute, index) => {
+				attributes[index].mongo = attribute;
+			});
+
+			return attributes;
+		});
+	}
+
+	layerReferences(request) {
+		var areaTemplate = request.query.areaTemplate;
+		var periods = request.query.years;
+		var places = request.query.places;
+		var attributeSets = [];
+
+		request.query.attributes.forEach(attribute => {
+			if(attributeSets.indexOf(attribute.attributeSet) == -1) {
+				attributeSets.push(attribute.attributeSet);
+			}
+		});
+
+		var filter = {
+			year: {$in: periods},
+			areaTemplate: areaTemplate,
+			attributeSet: {$in: attributeSets},
+		};
+
+		if(places.length) {
+			filter.location = {$in: places};
+		}
+
+		var filteredLayerReferences = new FilteredMongoLayerReferences(filter, conn.getMongoDb());
+
+		return filteredLayerReferences.read();
 	}
 
 	read(request, response, next) {
