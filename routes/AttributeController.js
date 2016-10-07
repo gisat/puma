@@ -55,7 +55,6 @@ class AttributeController extends Controller {
 		// areaTemplate: 11
 		// places: [1,5]
 		// attributes: {attribute: 11, attributeSet: 2, value: '' || value: true || value: [min, max]}
-		app.get('/rest/attribute/filter', this.filter.bind(this));
 
 		// Realny filter.
 		// Pole objektu. Kazdy objekt predstavuje jednu analytickou jednotku. AreaTemplate pro objekt, Place, ke kteremu patri. Gid odpovidajici id v tabulce.
@@ -64,6 +63,7 @@ class AttributeController extends Controller {
 		// at: 15
 		// gid: 12
 		// }]
+		app.get('/rest/attribute/filter', this.filter.bind(this));
 	}
 
 	statistics(request, response, next) {
@@ -116,6 +116,8 @@ class AttributeController extends Controller {
 				});
 
 				return new Statistics(attributes).json();
+			}).then(json => {
+				response.json(json);
 			})
 		} else {
 			throw new Error(
