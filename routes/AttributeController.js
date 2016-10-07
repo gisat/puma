@@ -128,9 +128,9 @@ class AttributeController extends Controller {
 	}
 
 	layerReferences(request) {
-		var areaTemplate = request.query.areaTemplate;
-		var periods = request.query.years;
-		var places = request.query.places;
+		var areaTemplate = Number(request.query.areaTemplate);
+		var periods = request.query.periods.map(period => Number(period));
+		var places = request.query.places.map(place => Number(place));
 		var attributeSets = [];
 
 		request.query.attributes.forEach(attribute => {
@@ -139,10 +139,12 @@ class AttributeController extends Controller {
 			}
 		});
 
+		attributeSets = attributeSets.map(attributeSet => Number(attributeSet));
+
 		var filter = {
 			year: {$in: periods},
 			areaTemplate: areaTemplate,
-			attributeSet: {$in: attributeSets},
+			attributeSet: {$in: attributeSets}
 		};
 
 		if(places.length) {
