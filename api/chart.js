@@ -36,6 +36,14 @@ function exporter(params, req, res, callback) {
 }
 
 function getChart(params, req, res, callback) {
+	// New request parameter - tooManyAreas
+	// When existing and areas true; Respect the information and load the gids from the database.
+	// years, start, limit
+	// areas - 1 uroven place
+	// areas - 2 uroven areaTemplate
+	// attributes - {as}
+	// Get all gids for this.
+
 	var type = params['type'];
 	var mod = charts[type];
 	params['userId'] = req.userId;

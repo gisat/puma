@@ -44,6 +44,12 @@ class MongoAttribute {
 		return Promise.resolve(this._id);
 	}
 
+	type() {
+		return this._instance.read().then(json => {
+			return json.type;
+		});
+	}
+
 	layerReferences() {
 		return this._layerReferences.read();
 	}
@@ -66,6 +72,10 @@ class MongoAttribute {
 
 	visualizations() {
 		return this._visualizations.read();
+	}
+
+	json() {
+		return this._instance.read();
 	}
 
 	static collectionName() {
