@@ -53,7 +53,7 @@ module.exports = function(app) {
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app);
 	new AreaTemplateController(app);
-	new AttributeController(app);
+	new AttributeController(app, pool);
 	new AttributeSetController(app);
 	new ChartCfgController(app);
 	new DataSetController(app);
