@@ -149,9 +149,7 @@ class AttributeController extends Controller {
 			filter.location = {$in: places};
 		}
 
-		var filteredLayerReferences = new FilteredMongoLayerReferences(filter, conn.getMongoDb());
-
-		return filteredLayerReferences.read();
+		return new FilteredMongoLayerReferences(filter, conn.getMongoDb());
 	}
 }
 
