@@ -59,7 +59,7 @@ class AttributeController extends Controller {
 		// Pole objektu. Kazdy objekt predstavuje jednu analytickou jednotku. AreaTemplate pro objekt, Place, ke kteremu patri. Gid odpovidajici id v tabulce.
 		// [{
 		// loc: 2,
-		// at: 15
+		// at: 15,
 		// gid: 12
 		// }]
 		app.get('/rest/attribute/filter', this.filter.bind(this));
@@ -103,7 +103,10 @@ class AttributeController extends Controller {
 						attributes.push({
 							postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
 							mongo: new MongoAttribute(attribute.attribute, conn.getMongoDb()),
-							attributeSet: layerReference.attributeSet
+							attributeSet: layerReference.attributeSet,
+							location: layerReference.location,
+							areaTemplate: request.query.areaTemplate,
+							source: attribute
 						});
 					}
 				});
@@ -150,34 +153,6 @@ class AttributeController extends Controller {
 
 		return filteredLayerReferences.read();
 	}
-
-	read(request, response, next) {
-		logger.info('AttributeController#read Read filtered attributes.');
-
-		var self = this;
-
-		var params = {
-			attr: request.params.id,
-			attrSet: request.query.attrSet,
-		};
-
-		var filter = {_id: parseInt(request.params.id)};
-
-		crud.read(this.type, filter, {
-			userId: request.userId,
-			justMine: request.query['justMine']
-		}, function (err, result) {
-			if (err) {
-				logger.error("It wasn't possible to read item: ", request.params.objId, " from collection:", self.type, " by User:", request.userId, " Error: ", err);
-				return next(err);
-			}
-
-			result[0].attrSet = Number(params.attrSet);
-			response.data = result;
-			next();
-
-		});
-	};
 }
 
 module.exports = AttributeController;
