@@ -94,31 +94,37 @@ class AttributeController extends Controller {
 
 	attributes(request, layerReferences) {
 		var attributes = [];
+		var jsonLayerReferencesPromise = [];
+		layerReferences.forEach(layerReference => {
+			jsonLayerReferencesPromise.push(layerReference.json());
+		});
 
 		// TODO: FIXME Hell based on the fact that we need the table which is in specific layerref for specific column.
-		layerReferences.forEach(layerReference => {
-			layerReference.columnMap.forEach(column => {
-				request.query.attributes.forEach(attribute => {
-					if (column.attribute == attribute.attribute && layerReference.attributeSet == attribute.attributeSet) {
-						attributes.push({
-							postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
-							mongo: new MongoAttribute(attribute.attribute, conn.getMongoDb()),
-							attributeSet: layerReference.attributeSet,
-							location: layerReference.location,
-							areaTemplate: request.query.areaTemplate,
-							source: attribute
-						});
-					}
+		return Promise.all(jsonLayerReferencesPromise).then(layerReferences => {
+			layerReferences.forEach(layerReference => {
+				layerReference.columnMap.forEach(column => {
+					request.query.attributes.forEach(attribute => {
+						if (column.attribute == attribute.attribute && layerReference.attributeSet == attribute.attributeSet) {
+							attributes.push({
+								postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
+								mongo: new MongoAttribute(attribute.attribute, conn.getMongoDb()),
+								attributeSet: layerReference.attributeSet,
+								location: layerReference.location,
+								areaTemplate: request.query.areaTemplate,
+								source: attribute
+							});
+						}
+					});
 				});
 			});
-		});
 
-		var mongoPromises = [];
-		attributes.forEach(attribute => {
-			mongoPromises.push(attribute.mongo.json());
-		});
+			var mongoPromises = [];
+			attributes.forEach(attribute => {
+				mongoPromises.push(attribute.mongo.json());
+			});
 
-		return Promise.all(mongoPromises).then(mongoAttributes => {
+			return Promise.all(mongoPromises)
+		}).then(mongoAttributes => {
 			mongoAttributes.forEach((attribute, index) => {
 				attributes[index].mongo = attribute;
 			});
