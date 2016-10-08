@@ -74,6 +74,10 @@ class AttributeController extends Controller {
 				return new Statistics(attributes).json();
 			}).then(json => {
 				response.json(json);
+			}).catch(err => {
+				throw new Error(
+					logger.error(`AttributeController#statistics Error.`, err)
+				)
 			})
 		} else {
 			throw new Error(
@@ -107,7 +111,7 @@ class AttributeController extends Controller {
 						if (column.attribute == attribute.attribute && layerReference.attributeSet == attribute.attributeSet) {
 							attributes.push({
 								postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
-								mongo: new MongoAttribute(attribute.attribute, conn.getMongoDb()),
+								mongo: new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()),
 								attributeSet: layerReference.attributeSet,
 								location: layerReference.location,
 								areaTemplate: request.query.areaTemplate,

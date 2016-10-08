@@ -10,28 +10,28 @@ class Statistics {
         var attributesPromises = [];
 
         this._attributes.forEach(attribute => {
-            if(attribute.type == 'boolean') {
-                attributesPromises.push(Promise.all(
+            if(attribute.mongo.type == 'boolean') {
+                attributesPromises.push(Promise.all([
                     Promise.resolve(attribute.mongo.type),
                     Promise.resolve(attribute.mongo._id),
                     Promise.resolve(attribute.attributeSet)
-                ))
-            } else if(attribute.type == 'text') {
-                attributesPromises.push(Promise.all(
+                ]))
+            } else if(attribute.mongo.type == 'text') {
+                attributesPromises.push(Promise.all([
                     Promise.resolve(attribute.mongo.type),
                     Promise.resolve(attribute.mongo._id),
                     Promise.resolve(attribute.attributeSet),
                     attribute.postgreSql.values()
-                ))
+                ]))
             } else {
-                attributesPromises.push(Promise.all(
+                attributesPromises.push(Promise.all([
                     Promise.resolve(attribute.mongo.type),
                     Promise.resolve(attribute.mongo._id),
                     Promise.resolve(attribute.attributeSet),
                     attribute.postgreSql.min(),
                     attribute.postgreSql.max(),
                     new NormalDistribution(attribute.postgreSql).json()
-                ))
+                ]))
             }
         });
 
