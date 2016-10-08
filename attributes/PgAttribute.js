@@ -53,7 +53,7 @@ class PgAttribute {
                 WHERE ${this._name} > ${value[0]} AND ${this._name} < ${value[1]}`;
         } else {
             sql = `SELECT ${this._name} AS value, gid, ST_AsText(the_geom) as geom FROM ${this._schema}.${this._table} 
-                WHERE ${this._name} = ${value}`;
+                WHERE ${this._name} = '${value}'`;
         }
 
         return this._pgPool.pool().query(sql).then(results => {
