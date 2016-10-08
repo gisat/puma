@@ -13,6 +13,10 @@ class FilteredMongoLayerReferences {
 		return this._filteredCollection.read();
 	}
 
+	json() {
+		return this._filteredCollection.json();
+	}
+
 	remove(layerReference) {
 		this._layerReferences.remove(layerReference);
 	}

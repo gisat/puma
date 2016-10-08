@@ -17,7 +17,11 @@ class NormalDistribution {
             let classSize = (max - min) / this._classes;
 
             values.forEach(value => {
-                distribution[Math.floor((value - min) / classSize)]++;
+                if(Math.floor((value - min) / classSize) == this._classes) {
+                    distribution[this._classes - 1]++;
+                } else {
+                    distribution[Math.floor((value - min) / classSize)]++;
+                }
             });
 
             return distribution;

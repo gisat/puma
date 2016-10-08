@@ -49,11 +49,11 @@ class PgAttribute {
 
         if(value.length) {
             // Numeric value
-            sql = `SELECT ${this._name} AS value, MAX(value) as minimum, MIN(value) as maximum, gid FROM ${this._schema}.${this._table} 
-                WHERE minimum > ${value[0]} AND maximum < ${value[1]}`;
+            sql = `SELECT ${this._name} AS value, gid, ST_AsText(the_geom) as geom FROM ${this._schema}.${this._table} 
+                WHERE ${this._name} > ${value[0]} AND ${this._name} < ${value[1]}`;
         } else {
-            sql = `SELECT ${this._name} AS value, gid FROM ${this._schema}.${this._table} 
-                WHERE value = ${value}`;
+            sql = `SELECT ${this._name} AS value, gid, ST_AsText(the_geom) as geom FROM ${this._schema}.${this._table} 
+                WHERE ${this._name} = ${value}`;
         }
 
         return this._pgPool.pool().query(sql).then(results => {
@@ -64,6 +64,7 @@ class PgAttribute {
             return results.rows.map(row => {
                 return {
                     gid: row.gid,
+                    geom: row.geom,
                     at: areaTemplate,
                     loc: location
                 }

@@ -2,8 +2,9 @@ var Promise = require('promise');
 var NormalDistribution = require('./NormalDistribution');
 
 class Statistics {
-    constructor(attributes) {
+    constructor(attributes, classes) {
         this._attributes = attributes;
+        this._classes = classes;
     }
 
     json() {
@@ -30,7 +31,7 @@ class Statistics {
                     Promise.resolve(attribute.attributeSet),
                     attribute.postgreSql.min(),
                     attribute.postgreSql.max(),
-                    new NormalDistribution(attribute.postgreSql).json()
+                    new NormalDistribution(attribute.postgreSql, this._classes).json()
                 ]))
             }
         });

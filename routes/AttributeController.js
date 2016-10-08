@@ -2,6 +2,7 @@ var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
 var conn = require('../common/conn');
 var Promise = require('promise');
+var _ = require('underscore');
 var Controller = require('./Controller');
 
 var Statistics = require('../attributes/Statistics');
@@ -10,8 +11,8 @@ var FilteredPgAttributes = require('../attributes/FilteredPgAttributes');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
-var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
-
+var JsonMongoAttribute = require('../attributes/JsonMongoAttribute');
+var BaseLayerReference = require('../layers/BaseLayerReference');
 
 class AttributeController extends Controller {
 	constructor(app, pgPool) {
@@ -48,9 +49,9 @@ class AttributeController extends Controller {
 		//   type: 'boolean'
 		// }  ]
 		// }
-		app.get('/rest/attribute/statistics', this.statistics.bind(this));
+		app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
 
-		// years: [2015,2015],
+		// periods: [2015,2015],
 		// areaTemplate: 11
 		// places: [1,5]
 		// attributes: {attribute: 11, attributeSet: 2, value: '' || value: true || value: [min, max]}
@@ -62,21 +63,19 @@ class AttributeController extends Controller {
 		// at: 15,
 		// gid: 12
 		// }]
-		app.get('/rest/attribute/filter', this.filter.bind(this));
+		app.get('/rest/filter/attribute/filter', this.filter.bind(this));
 	}
 
 	statistics(request, response, next) {
 		var distribution = request.query.distribution;
 		if(distribution.type == 'normal') {
-			this.layerReferences(request).read().then(layerReferences => {
-				return this.attributes(request, layerReferences);
-			}).then(attributes => {
-				return new Statistics(attributes).json();
+			this.attributes(request).then(attributes => {
+				return new Statistics(_.flatten(attributes), Number(distribution.classes)).json();
 			}).then(json => {
 				response.json(json);
 			}).catch(err => {
 				throw new Error(
-					logger.error(`AttributeController#statistics Error.`, err)
+					logger.error(`AttributeController#statistics Error: `, err)
 				)
 			})
 		} else {
@@ -87,81 +86,81 @@ class AttributeController extends Controller {
 	}
 
 	filter(request, response, next) {
-		this.layerReferences(request).read().then(layerReferences => {
-			return this.attributes(request, layerReferences);
-		}).then(attributes => {
-			new FilteredPgAttributes(attributes).json();
+		this.attributes(request).then(attributes => {
+			return new FilteredPgAttributes(_.flatten(attributes)).json();
 		}).then(json => {
 			response.json(json)
+		}).catch(err => {
+			throw new Error(
+				logger.error(`AttributeController#filter Error: `, err)
+			)
 		});
 	}
 
-	attributes(request, layerReferences) {
-		var attributes = [];
-		var jsonLayerReferencesPromise = [];
-		layerReferences.forEach(layerReference => {
-			jsonLayerReferencesPromise.push(layerReference.json());
-		});
-
-		// TODO: FIXME Hell based on the fact that we need the table which is in specific layerref for specific column.
-		return Promise.all(jsonLayerReferencesPromise).then(layerReferences => {
-			layerReferences.forEach(layerReference => {
-				layerReference.columnMap.forEach(column => {
-					request.query.attributes.forEach(attribute => {
-						if (column.attribute == attribute.attribute && layerReference.attributeSet == attribute.attributeSet) {
-							attributes.push({
-								postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
-								mongo: new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()),
-								attributeSet: layerReference.attributeSet,
-								location: layerReference.location,
-								areaTemplate: request.query.areaTemplate,
-								source: attribute
-							});
-						}
-					});
-				});
-			});
-
-			var mongoPromises = [];
-			attributes.forEach(attribute => {
-				mongoPromises.push(attribute.mongo.json());
-			});
-
-			return Promise.all(mongoPromises)
-		}).then(mongoAttributes => {
-			mongoAttributes.forEach((attribute, index) => {
-				attributes[index].mongo = attribute;
-			});
-
-			return attributes;
-		});
-	}
-
-	layerReferences(request) {
+	// TODO: Add reference to the base layer to the layer references.
+	attribute(request, attribute) {
 		var areaTemplate = Number(request.query.areaTemplate);
 		var periods = request.query.periods.map(period => Number(period));
 		var places = request.query.places.map(place => Number(place));
-		var attributeSets = [];
+		var baseLayerReferences;
+		var jsonMongoAttribute = new JsonMongoAttribute(new MongoAttribute(attribute.attribute, conn.getMongoDb()), conn.getMongoDb());
 
-		request.query.attributes.forEach(attribute => {
-			if(attributeSets.indexOf(attribute.attributeSet) == -1) {
-				attributeSets.push(attribute.attributeSet);
-			}
+		return jsonMongoAttribute.layerReferences().then(layerReferences => {
+			return layerReferences.filter(layerReference => {
+				let isAreaTemplateEqual = layerReference.areaTemplate == areaTemplate;
+				let isPeriodContained = periods.indexOf(layerReference.year) != -1;
+				let isPlaceContained = !places.length || places.indexOf(layerReference.location) != -1;
+
+				return isAreaTemplateEqual && isPeriodContained && isPlaceContained;
+			});
+		}).then(layerReferences => {
+			// I have list of relevant layer references. Now I need to get the base layer refs.
+			var baseReferences = [];
+
+			layerReferences.forEach(layerReference => {
+				baseReferences.push(
+					new BaseLayerReference(layerReference, conn.getMongoDb()).layerReferences()
+				);
+			});
+
+			return Promise.all(baseReferences)
+		}).then(layerReferences => {
+			layerReferences = _.flatten(layerReferences);
+			// Filter so that there aren't duplicates.
+			let baseReferencesIds = [];
+			baseLayerReferences = layerReferences.filter(layerReference => {
+				if (baseReferencesIds.indexOf(layerReference._id) == -1) {
+					baseReferencesIds.push(layerReference._id);
+					return true;
+				} else {
+					return false;
+				}
+			});
+
+			return jsonMongoAttribute.json();
+		}).then(jsonAttribute =>{
+			return baseLayerReferences.map(layerReference => {
+				return {
+					postgreSql: new PgAttribute(this._pgPool, 'views', `layer_${layerReference._id}`, `as_${attribute.attributeSet}_attr_${attribute.attribute}`),
+					mongo: jsonAttribute,
+					attributeSet: attribute.attributeSet,
+					location: layerReference.location,
+					areaTemplate: layerReference.areaTemplate,
+					source: attribute
+				}
+			})
 		});
+	}
 
-		attributeSets = attributeSets.map(attributeSet => Number(attributeSet));
+	attributes(request) {
+		var promises = [];
+		request.query.attributes.forEach(attribute => {
+			attribute.attribute = Number(attribute.attribute);
+			attribute.attributeSet = Number(attribute.attributeSet);
 
-		var filter = {
-			year: {$in: periods},
-			areaTemplate: areaTemplate,
-			attributeSet: {$in: attributeSets}
-		};
-
-		if(places.length) {
-			filter.location = {$in: places};
-		}
-
-		return new FilteredMongoLayerReferences(filter, conn.getMongoDb());
+			promises.push(this.attribute(request, attribute));
+		});
+		return Promise.all(promises);
 	}
 }
 

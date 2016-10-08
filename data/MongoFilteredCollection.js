@@ -18,6 +18,10 @@ class MongoFilteredCollection {
 			return results;
 		});
 	}
+
+	json() {
+		return this._connection.collection(this._name).find(this._filter).toArray();
+	}
 }
 
 module.exports = MongoFilteredCollection;

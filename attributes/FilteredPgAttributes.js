@@ -1,4 +1,5 @@
 var Promise = require('promise');
+var _ = require('underscore');
 
 class FilteredPgAttributes {
     constructor(attributes) {
@@ -9,11 +10,13 @@ class FilteredPgAttributes {
         var attributes = [];
 
         this._attributes.forEach(attribute => {
-            attributes.push(attribute.postgreSql.filtered(attribute.source.value, attribute.areaTemplate, attribute.location))
+            attributes.push(
+                attribute.postgreSql.filtered(attribute.source.value, attribute.areaTemplate, attribute.location)
+            )
         });
 
         return Promise.all(attributes).then(arrays => {
-            return [].concat(arrays);
+            return _.flatten(arrays);
         })
     }
 }

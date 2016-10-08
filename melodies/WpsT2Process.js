@@ -2,6 +2,10 @@ var superagent = require('superagent');
 var utils = require('utils');
 var Promise = require('promise');
 
+// TODO: Zitra namapovat informace na lu jednotky z ostatnich vrstev z IPRu.
+
+// WPS proces zprovoznim asi spise az o vikendu. Zitra je primarni doer
+
 class WpsT2Process {
     constructor() {
         this.id = null;
@@ -22,10 +26,10 @@ class WpsT2Process {
             .query({storeExecuteResponse: true})
             .query({status: true})
             .query({dataInputs: utils.format('region=%s;start=%s-01-01;end=%s-12-31;lcm=1000;xres=20;yres=20;validpixels=70;ndvi=130;ndwi=100;confidence=50;', processToStart.name, processToStart.from, processToStart.to)})
-            .set('Accept', '*/*')
+            .set('Accept', 'text/xml')
             .end()
-            .then(function(error, response){
-
+            .then(function(response){
+                // Zparsovat ziskane XML.
             });
     }
 

@@ -23,7 +23,7 @@ class LodCreatedTable {
 
         return this._pgPool.pool().query(sql).then(() => {
             return this._landUse.insert();
-        }).then(() => {``
+        }).then(() => {
             return this._enhancedTable.update();
         });
     }
