@@ -19,7 +19,7 @@ class LodEnhancedTable {
     }
 
     update() {
-        this._pgRows.addColumn('current', 'date');
+        this._pgRows.addColumn('last_updated', 'double precision');
 
         this._pgRows.addColumn('schools_1km', 'double precision');
         this._pgRows.addColumn('schools_3km', 'double precision');
@@ -97,7 +97,7 @@ class LodEnhancedTable {
             logger.info(`LodEnhancedTable#handleRow save results. 5km: ${results[0].length} ${results[1].length} ${results[2].length} Nearest: ${nearestPublicTransport} ${nearestHospital} ${nearestSchool}`);
 
             return Promise.all([
-                row.add('current', new Date()),
+                row.add('current', new Date().getTime()),
 
                 row.add('schools_1km', schoolsIn1Km),
                 row.add('schools_3km', schoolsIn3Km),
