@@ -1,5 +1,6 @@
 // TODO: In longer term make this configurable. Preferably from BackOffice.
 var logger = require('../common/Logger').applicationWideLogger;
+var moment = require('moment');
 
 var PgGeometryRows = require('../data/PgGeometryRows');
 var Promise = require('promise');
@@ -18,6 +19,8 @@ class LodEnhancedTable {
     }
 
     update() {
+        this._pgRows.addColumn('current', 'date');
+
         this._pgRows.addColumn('schools_1km', 'double precision');
         this._pgRows.addColumn('schools_3km', 'double precision');
         this._pgRows.addColumn('schools_5km', 'double precision');
@@ -54,6 +57,14 @@ class LodEnhancedTable {
         var row = rows[this._currentRow];
         return row.id().then(id => {
             logger.info(`LodEnhancedTable#handleRow Load row with Id: ${id}.`);
+            return row.column('current');
+        }).then(date => {
+            // Dont recache records younger than day.
+            var now = moment().substract(1, 'days');
+            date = moment(date);
+            if(date && date.isAfter(now)) {
+                return true;
+            }
             return row.centroid();
         }).then(centroid => {
             logger.info('LodEnhancedTable#handleRow loadAmenities.');
@@ -86,6 +97,8 @@ class LodEnhancedTable {
             logger.info(`LodEnhancedTable#handleRow save results. 5km: ${results[0].length} ${results[1].length} ${results[2].length} Nearest: ${nearestPublicTransport} ${nearestHospital} ${nearestSchool}`);
 
             return Promise.all([
+                row.add('current', new Date()),
+
                 row.add('schools_1km', schoolsIn1Km),
                 row.add('schools_3km', schoolsIn3Km),
                 row.add('schools_5km', results[0].length),
