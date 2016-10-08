@@ -47,6 +47,11 @@ class LodEnhancedTable {
             return this.handleRow(rows).then(() => {
                 this._currentRow++;
                 return this.iterativeRow(rows);
+            }).catch(err => {
+                logger.error(`LodEnhancedTable#iterativeRow Error: `, err);
+
+                this._currentRow++;
+                return this.iterativeRow(rows);
             });
         } else {
             return true;
