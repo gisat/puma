@@ -1,4 +1,5 @@
 var logger = require('../common/Logger').applicationWideLogger;
+var _ = require('underscore');
 
 class PgAttribute {
     constructor(pgPool, schema, table, name) {
@@ -47,7 +48,7 @@ class PgAttribute {
     filtered(value, areaTemplate, location) {
         var sql;
 
-        if(value.length) {
+        if(_.isArray(value)) {
             // Numeric value
             sql = `SELECT ${this._name} AS value, gid, ST_AsText(the_geom) as geom FROM ${this._schema}.${this._table} 
                 WHERE ${this._name} > ${value[0]} AND ${this._name} < ${value[1]}`;
