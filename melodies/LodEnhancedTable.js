@@ -60,7 +60,7 @@ class LodEnhancedTable {
             return row.column('current');
         }).then(date => {
             // Dont recache records younger than day.
-            var now = moment().substract(1, 'days');
+            var now = moment().subtract(1, 'days');
             date = moment(date);
             if(date && date.isAfter(now)) {
                 return true;
