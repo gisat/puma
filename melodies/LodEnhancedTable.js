@@ -48,9 +48,8 @@ class LodEnhancedTable {
                 this._currentRow++;
                 return this.iterativeRow(rows);
             }).catch(err => {
-                logger.error(`LodEnhancedTable#iterativeRow Error: `, err);
+                logger.error(`LodEnhancedTable#iterativeRow Trying again. Error: `, err);
 
-                this._currentRow++;
                 return this.iterativeRow(rows);
             });
         } else {
@@ -102,7 +101,7 @@ class LodEnhancedTable {
             logger.info(`LodEnhancedTable#handleRow save results. 5km: ${results[0].length} ${results[1].length} ${results[2].length} Nearest: ${nearestPublicTransport} ${nearestHospital} ${nearestSchool}`);
 
             return Promise.all([
-                row.add('current', new Date().getTime()),
+                row.add('last_updated', new Date().getTime()),
 
                 row.add('schools_1km', schoolsIn1Km),
                 row.add('schools_3km', schoolsIn3Km),
