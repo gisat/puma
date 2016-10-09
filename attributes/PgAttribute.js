@@ -12,6 +12,7 @@ class PgAttribute {
     min() {
         var sql = `SELECT min(${this._name}) FROM ${this._schema}.${this._table}`;
 
+        logger.info(`PgAttribute#min SQL ${sql}`);
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
                 logger.warn(`PgAttribute#min No result found ${this._schema}.${this._table} Name ${this._name}`);
@@ -25,6 +26,7 @@ class PgAttribute {
     max() {
         var sql = `SELECT max(${this._name}) FROM ${this._schema}.${this._table}`;
 
+        logger.info(`PgAttribute#max SQL ${sql}`);
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
                 logger.warn(`PgAttribute#max No result found ${this._schema}.${this._table} Name ${this._name}`);
@@ -38,6 +40,7 @@ class PgAttribute {
     values() {
         var sql = `SELECT ${this._name} AS value FROM ${this._schema}.${this._table} GROUP BY value`;
 
+        logger.info(`PgAttribute#values SQL ${sql}`);
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
                 logger.warn(`PgAttribute#values No result found ${this._schema}.${this._table} Name ${this._name}`);
@@ -60,6 +63,7 @@ class PgAttribute {
                 WHERE ${this._name} = '${value}'`;
         }
 
+        logger.info(`PgAttribute#filtered SQL ${sql}`);
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
                 logger.warn(`PgAttribute#json No result found ${this._schema}.${this._table} Name ${this._name} `);

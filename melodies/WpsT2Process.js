@@ -25,11 +25,12 @@ class WpsT2Process {
             .query({"ResponseDocument": "result_distribution@application/xml;result_osd@application/xml"})
             .query({storeExecuteResponse: true})
             .query({status: true})
-            .query({dataInputs: utils.format('region=%s;start=%s-01-01;end=%s-12-31;lcm=1000;xres=20;yres=20;validpixels=70;ndvi=130;ndwi=100;confidence=50;', processToStart.name, processToStart.from, processToStart.to)})
+            .query({dataInputs: `region=${processToStart.name}};start=${processToStart.from}-01-01;end=${processToStart.to}-12-31;lcm=1000;xres=20;yres=20;validpixels=70;ndvi=130;ndwi=100;confidence=50;`})
             .set('Accept', 'text/xml')
             .end()
             .then(function(response){
                 // Zparsovat ziskane XML.
+
             });
     }
 
