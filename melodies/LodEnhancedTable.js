@@ -68,6 +68,7 @@ class LodEnhancedTable {
             // Dont recache records younger than day.
             var now = moment().subtract(1, 'days');
             date = moment(date);
+            logger.info(`LodEnhancedTable#handleRow Current row: ${this._currentRow} Load row with Id: ${id}. Last updated: ${date}`);
             if(date && date.isAfter(now)) {
                 logger.info(`LodEnhancedTable#handleRow Row ignored. Row: ${this._currentRow} with Id: ${id}.`);
                 return true;
