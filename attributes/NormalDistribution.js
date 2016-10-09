@@ -11,7 +11,7 @@ class NormalDistribution {
             return this._attribute.max();
         }).then(pMax => {
             max = pMax;
-            return this._attribute.json();
+            return this._attribute.values();
         }).then(values => {
             let distribution = Array(this._classes).fill(0);
             let classSize = (max - min) / this._classes;

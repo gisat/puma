@@ -7,6 +7,7 @@ var Controller = require('./Controller');
 
 var Statistics = require('../attributes/Statistics');
 var PgAttribute = require('../attributes/PgAttribute');
+var PgCompoundAttribute = require('../attributes/PgCompoundAttribute');
 var FilteredPgAttributes = require('../attributes/FilteredPgAttributes');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
@@ -69,7 +70,7 @@ class AttributeController extends Controller {
 	statistics(request, response, next) {
 		var distribution = request.query.distribution;
 		if(distribution.type == 'normal') {
-			this.attributes(request).then(attributes => {
+			this.attributes(request, true).then(attributes => {
 				return new Statistics(_.flatten(attributes), Number(distribution.classes)).json();
 			}).then(json => {
 				response.json(json);
@@ -86,7 +87,7 @@ class AttributeController extends Controller {
 	}
 
 	filter(request, response, next) {
-		this.attributes(request).then(attributes => {
+		this.attributes(request, false).then(attributes => {
 			return new FilteredPgAttributes(_.flatten(attributes)).json();
 		}).then(json => {
 			response.json(json)
@@ -110,8 +111,9 @@ class AttributeController extends Controller {
 				let isAreaTemplateEqual = layerReference.areaTemplate == areaTemplate;
 				let isPeriodContained = periods.indexOf(layerReference.year) != -1;
 				let isPlaceContained = !places.length || places.indexOf(layerReference.location) != -1;
+				let isAttributeSetEqual = attribute.attributeSet == layerReference.attributeSet;
 
-				return isAreaTemplateEqual && isPeriodContained && isPlaceContained;
+				return isAreaTemplateEqual && isPeriodContained && isPlaceContained && isAttributeSetEqual;
 			});
 		}).then(layerReferences => {
 			// I have list of relevant layer references. Now I need to get the base layer refs.
@@ -152,15 +154,37 @@ class AttributeController extends Controller {
 		});
 	}
 
-	attributes(request) {
+	attributes(request, forStatistics) {
 		var promises = [];
+		var resolvedAttributes = [];
+
 		request.query.attributes.forEach(attribute => {
 			attribute.attribute = Number(attribute.attribute);
 			attribute.attributeSet = Number(attribute.attributeSet);
 
-			promises.push(this.attribute(request, attribute));
+			promises.push(this.attribute(request, attribute).then(attributes => {
+				if(forStatistics) {
+					if(attributes.length > 1) {
+						let pgAttributes = [];
+						attributes.forEach(attribute => {
+							pgAttributes.push(attribute.postgreSql);
+						});
+						attributes[0].postgreSql = new PgCompoundAttribute(pgAttributes, attributes[0].mongo.type);
+						resolvedAttributes.push(attributes[0]);
+						return attributes[0];
+					} else {
+						resolvedAttributes.push(attributes);
+						return attributes;
+					}
+				} else {
+					resolvedAttributes.push(attributes);
+					return attributes;
+				}
+			}));
 		});
-		return Promise.all(promises);
+		return Promise.all(promises).then(() => {
+			return resolvedAttributes;
+		});
 	}
 }
 

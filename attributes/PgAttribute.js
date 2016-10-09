@@ -14,7 +14,8 @@ class PgAttribute {
 
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
-                logger.warn(`PgAttribute#min No result found Name ${this._name}`);
+                logger.warn(`PgAttribute#min No result found ${this._schema}.${this._table} Name ${this._name}`);
+                return null;
             } else {
                 return results.rows[0].min;
             }
@@ -26,7 +27,8 @@ class PgAttribute {
 
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
-                logger.warn(`PgAttribute#max No result found Name ${this._name}`);
+                logger.warn(`PgAttribute#max No result found ${this._schema}.${this._table} Name ${this._name}`);
+                return null;
             } else {
                 return results.rows[0].max;
             }
@@ -38,7 +40,8 @@ class PgAttribute {
 
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
-                logger.warn(`PgAttribute#values No result found Name ${this._name}`);
+                logger.warn(`PgAttribute#values No result found ${this._schema}.${this._table} Name ${this._name}`);
+                return [];
             }
 
             return results.rows.map(row => row.value);
@@ -59,7 +62,8 @@ class PgAttribute {
 
         return this._pgPool.pool().query(sql).then(results => {
             if(!results.rows.length) {
-                logger.warn(`PgAttribute#json No result found Name ${this._name} `);
+                logger.warn(`PgAttribute#json No result found ${this._schema}.${this._table} Name ${this._name} `);
+                return [];
             }
 
             return results.rows.map(row => {
@@ -70,17 +74,6 @@ class PgAttribute {
                     loc: location
                 }
             });
-        });
-    }
-
-    json() {
-        var sql = `SELECT ${this._name} AS value FROM ${this._schema}.${this._table}`;
-        return this._pgPool.pool().query(sql).then(results => {
-            if(!results.rows.length) {
-                logger.warn(`PgAttribute#json No result found Name ${this._name}`);
-            }
-
-            return results.rows.map(row => row.value);
         });
     }
 }
