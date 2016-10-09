@@ -68,13 +68,17 @@ class LodEnhancedTable {
             // Dont recache records younger than day.
             var now = moment().subtract(1, 'days');
             date = moment(date);
-            logger.info(`LodEnhancedTable#handleRow Current row: ${this._currentRow} Load row with Id: ${id}. Last updated: ${date}`);
+            logger.info(`LodEnhancedTable#handleRow Current row: ${this._currentRow} Load row with Id: ${id}. Last updated: ${date.format()}`);
             if(date && date.isAfter(now)) {
                 logger.info(`LodEnhancedTable#handleRow Row ignored. Row: ${this._currentRow} with Id: ${id}.`);
-                return true;
+                return null;
             }
             return row.centroid();
         }).then(centroid => {
+            if(centroid == null) {
+                return null;
+            }
+
             logger.info('LodEnhancedTable#handleRow loadAmenities.');
             return Promise.all([
                 new LodAmenities('School', centroid, 5).json(),
@@ -82,6 +86,10 @@ class LodEnhancedTable {
                 new LodAmenities('StopPosition', centroid, 5).json()
             ]);
         }).then(results => {
+            if(results == null) {
+                return null;
+            }
+
             // Order to get shortest.
             results.forEach(result => {
                 result.sort((a, b) => {
