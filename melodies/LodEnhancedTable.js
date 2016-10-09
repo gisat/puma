@@ -65,6 +65,7 @@ class LodEnhancedTable {
             logger.info(`LodEnhancedTable#handleRow Current row: ${this._currentRow} Load row with Id: ${id}.`);
             return row.column('current');
         }).then(date => {
+            logger.info(`LodEnhancedTable#handleRow Current row: ${this._currentRow} Load row with Id: ${id}. Last updated: ${date}`);
             // Dont recache records younger than day.
             var now = moment().subtract(1, 'days');
             date = moment(date);
