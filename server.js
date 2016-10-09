@@ -46,7 +46,7 @@ function initServer(err) {
     app.use(function(req, res, next) {
 		// Allow CORS from anywhere.
 		// TODO: Fix security issues.
-		var url = req.headers.origin;
+		var url = req.headers.origin || 'http://localhost:63342';
 		res.header("Access-Control-Allow-Origin", url);
 		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
 		res.header("Access-Control-Allow-Credentials", true);
