@@ -17,7 +17,7 @@ class FilteredPgAttributes {
             logger.info(`FilteredPgAttributes#json UUID: ${uuid} Start: ${moment().format()}`);
             attributes.push(
                 attribute.postgreSql.filtered(attribute.source.value, attribute.areaTemplate, attribute.location).then((array) => {
-                    logger.info(`FilteredPgAttributes#json UUID: ${uuid} End: ${moment().format()}`);
+                    logger.info(`FilteredPgAttributes#json UUID: ${uuid} End of SQL: ${moment().format()}`);
                     return array;
                 })
             )
@@ -32,6 +32,8 @@ class FilteredPgAttributes {
                 }
                 map[`at_${element.at}_gid_${element.gid}_loc_${element.loc}`].value++;
             });
+
+            logger.info(`FilteredPgAttributes#json Intersection done: ${moment().format()}`);
 
             return _.compact(
                 Object.keys(map).map(key => {
