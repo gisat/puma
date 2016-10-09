@@ -56,10 +56,10 @@ class PgAttribute {
 
         if(_.isArray(value)) {
             // Numeric value
-            sql = `SELECT ${this._name} AS value, gid, ST_AsText(the_geom) as geom FROM ${this._schema}.${this._table} 
+            sql = `SELECT ${this._name} AS value, gid, ST_AsText(St_Transform(the_geom, 900913)) as geom FROM ${this._schema}.${this._table} 
                 WHERE ${this._name} > ${value[0]} AND ${this._name} < ${value[1]}`;
         } else {
-            sql = `SELECT ${this._name} AS value, gid, ST_AsText(the_geom) as geom FROM ${this._schema}.${this._table} 
+            sql = `SELECT ${this._name} AS value, gid, ST_AsText(St_Transform(the_geom, 900913)) as geom FROM ${this._schema}.${this._table} 
                 WHERE ${this._name} = '${value}'`;
         }
 
