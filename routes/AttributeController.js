@@ -4,6 +4,8 @@ var conn = require('../common/conn');
 var Promise = require('promise');
 var _ = require('underscore');
 var Controller = require('./Controller');
+var UUID = require('../common/UUID');
+var moment = require('moment');
 
 var Statistics = require('../attributes/Statistics');
 var PgAttribute = require('../attributes/PgAttribute');
@@ -26,12 +28,15 @@ class AttributeController extends Controller {
 	}
 
 	statistics(request, response, next) {
+		var uuid = new UUID().toString();
+		logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()}`);
 		var distribution = request.query.distribution;
 		if(distribution.type == 'normal') {
 			this.attributes(request, true).then(attributes => {
 				return new Statistics(_.flatten(attributes), Number(distribution.classes)).json();
 			}).then(json => {
 				response.json(json);
+				logger.info(`AttributeController#statistics UUID: ${uuid} End: ${moment().format()}`);
 			}).catch(err => {
 				throw new Error(
 					logger.error(`AttributeController#statistics Error: `, err)
@@ -45,10 +50,13 @@ class AttributeController extends Controller {
 	}
 
 	filter(request, response, next) {
+		var uuid = new UUID().toString();
+		logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 		this.attributes(request, false).then(attributes => {
 			return new FilteredPgAttributes(_.flatten(attributes)).json();
 		}).then(json => {
-			response.json(json)
+			response.json(json);
+			logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
 		}).catch(err => {
 			throw new Error(
 				logger.error(`AttributeController#filter Error: `, err)
