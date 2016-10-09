@@ -59,14 +59,17 @@ class LodEnhancedTable {
 
     handleRow(rows) {
         var row = rows[this._currentRow];
-        return row.id().then(id => {
-            logger.info(`LodEnhancedTable#handleRow Load row with Id: ${id}.`);
+        var id;
+        return row.id().then(pId => {
+            id = pId;
+            logger.info(`LodEnhancedTable#handleRow Current row: ${this._currentRow} Load row with Id: ${id}.`);
             return row.column('current');
         }).then(date => {
             // Dont recache records younger than day.
             var now = moment().subtract(1, 'days');
             date = moment(date);
             if(date && date.isAfter(now)) {
+                logger.info(`LodEnhancedTable#handleRow Row ignored. Row: ${this._currentRow} with Id: ${id}.`);
                 return true;
             }
             return row.centroid();
