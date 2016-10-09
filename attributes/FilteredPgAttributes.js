@@ -1,5 +1,8 @@
 var Promise = require('promise');
 var _ = require('underscore');
+var moment = require('moment');
+var UUID = require('../common/UUID');
+var logger = require('../common/Logger').applicationWideLogger;
 
 class FilteredPgAttributes {
     constructor(attributes) {
@@ -10,8 +13,13 @@ class FilteredPgAttributes {
         var attributes = [];
 
         this._attributes.forEach(attribute => {
+            var uuid = new UUID().toString();
+            logger.info(`FilteredPgAttributes#json UUID: ${uuid} Start: ${moment().format()}`);
             attributes.push(
-                attribute.postgreSql.filtered(attribute.source.value, attribute.areaTemplate, attribute.location)
+                attribute.postgreSql.filtered(attribute.source.value, attribute.areaTemplate, attribute.location).then((array) => {
+                    logger.info(`FilteredPgAttributes#json UUID: ${uuid} End: ${moment().format()}`);
+                    return array;
+                })
             )
         });
 
