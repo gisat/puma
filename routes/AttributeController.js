@@ -21,49 +21,7 @@ class AttributeController extends Controller {
 
 		this._pgPool = pgPool;
 
-		// podklad pro layerref - dataset, pole roku, attribute as attribute set and attribute, hodnota atributu
-		// years: [2015,2015],
-		// areaTemplate: 11
-		// places: [1,5]
-		// distribution: {type: 'normal', classes: 12}
-		// attributes: [{attribute: 11, attributeSet: 12}, {}]
-
-		// Vystup min, max a rozdeleni.
-		// Mozne hodnoty v ramci textovych atributu
-		// Min, max, distribution v numerickych atributu
-		// {
-		// attributes: [ {
-		//   attribute: 11,
-		//   attributeSet: 12,
-		//   min: 1
-		//   max: 5,
-		//   type: 'numeric'
-		//   distribution: []
-		// }, {
-		//   attribute: 11,
-		//   attributeSet: 12,
-		//   type: 'text',
-		//   values: []
-		// }, {
-		//   attribute: 11,
-		//   attributeSet: 12,
-		//   type: 'boolean'
-		// }  ]
-		// }
 		app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
-
-		// periods: [2015,2015],
-		// areaTemplate: 11
-		// places: [1,5]
-		// attributes: {attribute: 11, attributeSet: 2, value: '' || value: true || value: [min, max]}
-
-		// Realny filter.
-		// Pole objektu. Kazdy objekt predstavuje jednu analytickou jednotku. AreaTemplate pro objekt, Place, ke kteremu patri. Gid odpovidajici id v tabulce.
-		// [{
-		// loc: 2,
-		// at: 15,
-		// gid: 12
-		// }]
 		app.get('/rest/filter/attribute/filter', this.filter.bind(this));
 	}
 

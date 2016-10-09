@@ -16,7 +16,20 @@ class FilteredPgAttributes {
         });
 
         return Promise.all(attributes).then(arrays => {
-            return _.flatten(arrays);
+            var amountOfTimes = arrays.length;
+            var map = {};
+            _.flatten(arrays).forEach(element => {
+                if(!map[`at_${element.at}_gid_${element.gid}_loc_${element.loc}`]) {
+                    map[`at_${element.at}_gid_${element.gid}_loc_${element.loc}`] = {value: 0, element: element};
+                }
+                map[`at_${element.at}_gid_${element.gid}_loc_${element.loc}`].value++;
+            });
+
+            return _.compact(
+                Object.keys(map).map(key => {
+                    return map[key].value == amountOfTimes ? map[key].element : null;
+                })
+            );
         })
     }
 }
