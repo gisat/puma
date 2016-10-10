@@ -65,6 +65,10 @@ class Filter {
     }
 
     dataView(dataView, attributes) {
+        if(!dataView.rows) {
+            return;
+        }
+
         dataView.rows.forEach(row => {
             Object.keys(row).forEach(key => {
                 if (!attributes[key]) {
