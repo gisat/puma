@@ -59,7 +59,7 @@ class AttributeController extends Controller {
         request.query.attributes.forEach(
             attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
         );
-        new Statistics(request, this._pgPool).statistics().then(attributes => {
+        new Filter(request, this._pgPool).statistics().then(attributes => {
             return attributes.map(attribute => attribute.filter({
                 value: attributesMap[attribute.name()].value,
                 attributeName: attributesMap[attribute.name()].attributeName,

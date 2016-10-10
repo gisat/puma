@@ -1,5 +1,6 @@
 var conn = require('../common/conn');
 var Promise = require('promise');
+var _ = require('underscore');
 var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
@@ -8,16 +9,27 @@ var TextAttribute = require('../attributes/TextAttribute');
 var BooleanAttribute = require('../attributes/BooleanAttribute');
 
 class Filter {
-    constructor(request) {
+    constructor(request, pgPool) {
         this._request = request;
+        this._pgPool = pgPool;
+
+        this._mongoAttributes = {};
     }
 
-    filter() {
+    statistics() {
         return this.statisticAttributes(this._request);
     }
 
     statisticAttributes(request) {
-        return this.dataViews(request).then(dataViews => {
+        return Promise.all(request.query.attributes.map(attribute => {
+            return new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()).json();
+        })).then(attributes => {
+            attributes.forEach(attribute => {
+                this._mongoAttributes[attribute._id] = attribute;
+            });
+
+            return this.dataViews(request);
+        }).then(dataViews => {
             let attributes = {};
 
             dataViews.forEach(dataView => {
@@ -25,22 +37,25 @@ class Filter {
             });
 
             let attributesPromises = Object.keys(attributes)
-                .filter(attribute => attribute != 'geometry')
+                .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate')
                 .map(attribute => {
                     var id = Number(attribute.split('_')[3]);
-                    return new MongoAttribute(id, conn.getMongoDb()).json().then(jsonAttribute => {
-                        jsonAttribute.values = attributes[attribute];
-                        jsonAttribute.geometries = attributes['geometry'];
-                        jsonAttribute.column = attribute;
+                    let jsonAttribute = this._mongoAttributes[id];
 
-                        if (jsonAttribute.type == 'numeric') {
-                            return new NumericAttribute(jsonAttribute);
-                        } else if (jsonAttribute.type == 'boolean') {
-                            return new BooleanAttribute(jsonAttribute);
-                        } else if (jsonAttribute.type == 'text') {
-                            return new TextAttribute(jsonAttribute);
-                        }
-                    });
+                    jsonAttribute.values = attributes[attribute];
+                    jsonAttribute.geometries = attributes['geometry'];
+                    jsonAttribute.gids = attributes['gid'];
+                    jsonAttribute.areaTemplates = attributes['areatemplate'].map(base => Number(base));
+                    jsonAttribute.locations = attributes['location'].map(base => Number(base));
+                    jsonAttribute.column = attribute;
+
+                    if (jsonAttribute.type == 'numeric') {
+                        return new NumericAttribute(jsonAttribute);
+                    } else if (jsonAttribute.type == 'boolean') {
+                        return new BooleanAttribute(jsonAttribute);
+                    } else if (jsonAttribute.type == 'text') {
+                        return new TextAttribute(jsonAttribute);
+                    }
                 });
 
             return Promise.all(attributesPromises);
@@ -58,7 +73,6 @@ class Filter {
         });
     }
 
-    // TODO: Extract duplicity.
     dataViews(request) {
         var areaTemplate = Number(request.query.areaTemplate);
         var periods = request.query.periods.map(period => Number(period));
@@ -80,9 +94,25 @@ class Filter {
                 });
 
             return Promise.all(baseLayers
-                .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, ST_Transform(the_geom, 900913) as geometry FROM views.layer_${baseLayer._id}`)
+                .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id} WHERE 
+                        ${this.generateWhere(baseLayer.queriedColumns).join(' AND ')}`)
                 .map(sql => this._pgPool.pool().query(sql))
             );
+        })
+    }
+
+    generateWhere(columns) {
+        return columns.map(column => {
+            var id = Number(column.split('_')[3]);
+            var attributeSetId = Number(column.split('_')[1]);
+            var filteringValue = this._request.query.attributes.filter(attribute => Number(attribute.attribute) == id && Number(attribute.attributeSet) == attributeSetId)[0].value;
+
+            if(this._mongoAttributes[id].type == 'numeric') {
+                return `${column} > ${filteringValue[0]} AND ${column} < ${filteringValue[1]}`;
+            } else {
+                return `${column}='${filteringValue}'`;
+            }
         })
     }
 }
