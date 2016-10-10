@@ -68,28 +68,8 @@ class AttributeController extends Controller {
         }).then(json => {
             logger.info('AttributeController#filter JSON rows: ', json.length);
             // Get only those that are in all.
-            var responseAttributes = {};
-            json.forEach(filteredAreas => {
-                filteredAreas.forEach(area => {
-                    var key = `at_${area.at}_loc_${area.loc}_gid_${area.gid}`;
-                    if(!responseAttributes[key]) {
-                        responseAttributes[key] = {
-                            value: 0,
-                            area: area
-                        }
-                    }
-                    responseAttributes[key].value++;
-                })
-            });
 
-            var results = [];
-            Object.keys(responseAttributes).forEach(key => {
-                if(responseAttributes[key].value == json.length) {
-                    results.push(responseAttributes[key].area);
-                }
-            });
-
-            response.json(results);
+            response.json(json);
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
             throw new Error(
