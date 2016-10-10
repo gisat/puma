@@ -24,6 +24,7 @@ class AttributeController extends Controller {
     }
 
     statistics(request, response, next) {
+        request.query.attributes = _.toArray(request.query.attributes);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, request.query.attributes);
         var distribution = request.query.distribution;
@@ -54,6 +55,7 @@ class AttributeController extends Controller {
     }
 
     filter(request, response, next) {
+        request.query.attributes = _.toArray(request.query.attributes);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 
@@ -82,6 +84,7 @@ class AttributeController extends Controller {
     }
 
     amount(request, response, next) {
+        request.query.attributes = _.toArray(request.query.attributes);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 
