@@ -65,7 +65,7 @@ class Filter {
     }
 
     dataView(dataView, attributes) {
-        if(!dataView.rows) {
+        if(!dataView || !dataView.rows) {
             return;
         }
 
