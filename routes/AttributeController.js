@@ -25,9 +25,17 @@ class AttributeController extends Controller {
         var uuid = new UUID().toString();
         logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()}`);
         var distribution = request.query.distribution;
+        var attributesMap = {};
+        request.query.attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
         if (distribution.type == 'normal') {
             new Statistics(request, this._pgPool).statistics().then(attributes => {
-                return attributes.map(attribute => attribute.json({classes: request.query.distribution.classes}));
+                return attributes.map(attribute => attribute.json({
+                    classes: Number(distribution.classes),
+                    attributeName: attributesMap[attribute.name()].attributeName,
+                    attributeSetName: attributesMap[attribute.name()].attributeSetName
+                }));
             }).then(json => {
                 response.json({attributes: json});
                 logger.info(`AttributeController#statistics UUID: ${uuid} End: ${moment().format()}`);
@@ -52,7 +60,11 @@ class AttributeController extends Controller {
             attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
         );
         new Statistics(request, this._pgPool).statistics().then(attributes => {
-            return attributes.map(attribute => attribute.filter({value: attributesMap[attribute.name()].value}));
+            return attributes.map(attribute => attribute.filter({
+                value: attributesMap[attribute.name()].value,
+                attributeName: attributesMap[attribute.name()].attributeName,
+                attributeSetName: attributesMap[attribute.name()].attributeSetName
+            }));
         }).then(json => {
             // Get only those that are in all.
             var responseAttributes = {};

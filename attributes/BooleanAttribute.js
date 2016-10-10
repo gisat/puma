@@ -27,10 +27,12 @@ class BooleanAttribute {
         }).filter(value => value);
     }
 
-    json() {
+    json(options) {
         return {
             attribute: this._attribute,
             attributeSet: this._attributeSet,
+            attributeName: options.attributeName,
+            attributeSetName: options.attributeSetName,
             type: 'boolean'
         }
     }

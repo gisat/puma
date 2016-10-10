@@ -85,7 +85,7 @@ class Statistics {
 
             return Promise.all(baseLayers
                 .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
-                        ST_Transform(the_geom, 900913) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id}`)
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id}`)
                 .map(sql => this._pgPool.pool().query(sql))
             );
         })

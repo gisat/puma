@@ -30,10 +30,12 @@ class TextAttribute {
         }).filter(value => value);
     }
 
-    json() {
+    json(options) {
         return {
             attribute: this._attribute,
             attributeSet: this._attributeSet,
+            attributeName: options.attributeName,
+            attributeSetName: options.attributeSetName,
             values: _.uniq(this._values),
             type: 'text'
         }
