@@ -107,7 +107,7 @@ class Filter {
                         ${this.generateWhere(baseLayer.queriedColumns).join(' AND ')}`)
                 .map(sql => {
                     logger.info('Filter#dataViews Sql', sql);
-                    this._pgPool.pool().query(sql)
+                    return this._pgPool.pool().query(sql)
                 })
             );
         })
