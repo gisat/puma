@@ -19,6 +19,7 @@ class AttributeController extends Controller {
 
         app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
         app.get('/rest/filter/attribute/filter', this.filter.bind(this));
+        app.get('/rest/filter/attribute/amount', this.amount.bind(this));
     }
 
     statistics(request, response, next) {
@@ -70,6 +71,33 @@ class AttributeController extends Controller {
             // Get only those that are in all.
 
             response.json(json);
+            logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`AttributeController#filter Error: `, err)
+            )
+        });
+    }
+
+    amount(request, response, next) {
+        var uuid = new UUID().toString();
+        logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
+
+        var attributesMap = {};
+        request.query.attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
+        new Filter(request, this._pgPool).statistics().then(attributes => {
+            return attributes.map(attribute => attribute.filter({
+                value: attributesMap[attribute.name()].value,
+                attributeName: attributesMap[attribute.name()].attributeName,
+                attributeSetName: attributesMap[attribute.name()].attributeSetName
+            }));
+        }).then(json => {
+            logger.info('AttributeController#filter JSON rows: ', json.length);
+            // Get only those that are in all.
+
+            response.json({amount: json.length});
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
             throw new Error(
