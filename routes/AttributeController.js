@@ -3,6 +3,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var conn = require('../common/conn');
 var Controller = require('./Controller');
 var UUID = require('../common/UUID');
+var _ = require('underscore');
 var moment = require('moment');
 
 var Statistics = require('../attributes/Statistics');
@@ -67,10 +68,11 @@ class AttributeController extends Controller {
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
             }));
         }).then(json => {
-            logger.info('AttributeController#filter JSON rows: ', json.length);
+            var result = _.flatten(json);
+            logger.info('AttributeController#filter JSON rows: ', result.length);
             // Get only those that are in all.
 
-            response.json(json);
+            response.json(result);
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
             throw new Error(
@@ -94,10 +96,11 @@ class AttributeController extends Controller {
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
             }));
         }).then(json => {
-            logger.info('AttributeController#filter JSON rows: ', json.length);
+            var result = _.flatten(json);
+            logger.info('AttributeController#filter JSON rows: ', result.length);
             // Get only those that are in all.
 
-            response.json({amount: json.length});
+            response.json({amount: result.length});
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
             throw new Error(
