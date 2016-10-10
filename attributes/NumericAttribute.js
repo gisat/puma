@@ -1,4 +1,7 @@
 var _ = require('underscore');
+var UUID = require('../common/UUID');
+var moment = require('moment');
+var logger = require('../common/Logger').applicationWideLogger;
 
 class NumericAttribute {
     constructor(jsonAttribute) {
@@ -26,9 +29,11 @@ class NumericAttribute {
     }
 
     filter(options) {
+        var uuid = new UUID().toString();
         var alreadyInserted = [];
+        logger.info(`NumericAttribute#filter UUID ${uuid} Start: ${moment().format()}`);
 
-        return this._jsonAttribute.values.map((value, index) => {
+        var result = this._jsonAttribute.values.map((value, index) => {
             var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
             if(value > options.value[0] && value < options.value[1] && alreadyInserted.indexOf(attributeName) == -1) {
                 alreadyInserted.push(attributeName);
@@ -40,6 +45,10 @@ class NumericAttribute {
                 }
             }
         }).filter(value => value);
+
+        logger.info(`NumericAttribute#filter UUID ${uuid} End: ${moment().format()}`);
+
+        return result;
     }
 
     json(options) {

@@ -1,4 +1,7 @@
 var _ = require('underscore');
+var UUID = require('../common/UUID');
+var moment = require('moment');
+var logger = require('../common/Logger').applicationWideLogger;
 
 class TextAttribute {
     constructor(jsonAttribute) {
@@ -14,9 +17,12 @@ class TextAttribute {
     }
 
     filter(options) {
+        var uuid = new UUID().toString();
         var alreadyInserted = [];
 
-        return this._jsonAttribute.values.map((value, index) => {
+        logger.info(`TextAttribute#filter UUID ${uuid} Start: ${moment().format()}`);
+
+        var result =  this._jsonAttribute.values.map((value, index) => {
             var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
             if(value == options.value && alreadyInserted.indexOf(attributeName) == -1) {
                 alreadyInserted.push(attributeName);
@@ -28,6 +34,10 @@ class TextAttribute {
                 }
             }
         }).filter(value => value);
+
+        logger.info(`TextAttribute#filter UUID ${uuid} End: ${moment().format()}`);
+
+        return result;
     }
 
     json(options) {
