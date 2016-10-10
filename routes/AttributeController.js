@@ -66,6 +66,7 @@ class AttributeController extends Controller {
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
             }));
         }).then(json => {
+            logger.info('AttributeController#filter JSON: ', json);
             // Get only those that are in all.
             var responseAttributes = {};
             json.forEach(filteredAreas => {

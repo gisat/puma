@@ -35,7 +35,6 @@ class Filter {
             let attributes = {};
 
             dataViews.forEach(dataView => {
-                logger.info(`Filter#statisticAttributes Data View: `, dataView);
                 this.dataView(dataView, attributes);
             });
 
