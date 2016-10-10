@@ -43,7 +43,9 @@ class PgLayer {
 	 * @returns {Promise}
 	 */
 	validate() {
-		return this.checkId();
+		if(!config.isUrbis) {
+			return this.checkId();
+		}
 	}
 
 	/**
