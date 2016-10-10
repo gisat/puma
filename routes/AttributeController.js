@@ -25,7 +25,7 @@ class AttributeController extends Controller {
 
     statistics(request, response, next) {
         var uuid = new UUID().toString();
-        logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()}`);
+        logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, request.query.attributes);
         var distribution = request.query.distribution;
         var attributesMap = {};
         request.query.attributes.forEach(
