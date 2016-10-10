@@ -35,9 +35,11 @@ class Filter {
             let attributes = {};
 
             dataViews.forEach(dataView => {
+                logger.info(`Filter#statisticAttributes Data View: `, dataView);
                 this.dataView(dataView, attributes);
             });
 
+            logger.info(`Filter#statisticAttributes  Attributes: `, attributes);
             let attributesPromises = Object.keys(attributes)
                 .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate')
                 .map(attribute => {
