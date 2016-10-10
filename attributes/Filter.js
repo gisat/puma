@@ -1,6 +1,8 @@
 var conn = require('../common/conn');
 var Promise = require('promise');
 var _ = require('underscore');
+var logger = require('../common/Logger').applicationWideLogger;
+
 var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
@@ -97,7 +99,10 @@ class Filter {
                 .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
                         ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id} WHERE 
                         ${this.generateWhere(baseLayer.queriedColumns).join(' AND ')}`)
-                .map(sql => this._pgPool.pool().query(sql))
+                .map(sql => {
+                    logger.info('Filter#dataViews Sql', sql);
+                    this._pgPool.pool().query(sql)
+                })
             );
         })
     }
