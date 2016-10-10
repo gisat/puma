@@ -1,5 +1,8 @@
-class MellodiesWpsController {
-    constructor(app) {
+var LodEnhancedTable = require('./LodEnhancedTable');
+var WpsT2Process = require('./WpsT2Process');
+
+class WpsController {
+    constructor(app, pgPool) {
         this._running = [{
             name: 'Prague',
             from: 2016,
@@ -25,11 +28,20 @@ class MellodiesWpsController {
 
         app.get('/wps/mellodies/status', this.status.bind(this));
         app.post('/wps/mellodies/run', this.run.bind(this));
+
+        this._pgPool = pgPool;
     }
 
     run(request, response, next) {
         request.body.started = "20/9/2016";
         request.body.status = "Running";
+
+        // Starts the Lod process.
+        new LodEnhancedTable(this._pgPool, 'public', 'prague_ua2012', 'fid').update().then(() => {
+            return new WpsT2Process();
+        }).then().catch(err => {
+
+        });
 
         this._running.push(request.body);
 
@@ -41,4 +53,4 @@ class MellodiesWpsController {
     }
 }
 
-module.exports = MellodiesWpsController;
+module.exports = WpsController;

@@ -1,5 +1,4 @@
 var superagent = require('superagent');
-var utils = require('utils');
 var Promise = require('promise');
 
 // TODO: Zitra namapovat informace na lu jednotky z ostatnich vrstev z IPRu.

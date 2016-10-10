@@ -1,6 +1,5 @@
 var conn = require('../common/conn');
 var Promise = require('promise');
-var _ = require('underscore');
 var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
@@ -8,13 +7,12 @@ var NumericAttribute = require('../attributes/NumericAttribute');
 var TextAttribute = require('../attributes/TextAttribute');
 var BooleanAttribute = require('../attributes/BooleanAttribute');
 
-class Statistics {
-    constructor(request, pgPool) {
+class Filter {
+    constructor(request) {
         this._request = request;
-        this._pgPool = pgPool;
     }
 
-    statistics() {
+    filter() {
         return this.statisticAttributes(this._request);
     }
 
@@ -27,15 +25,12 @@ class Statistics {
             });
 
             let attributesPromises = Object.keys(attributes)
-                .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate')
+                .filter(attribute => attribute != 'geometry')
                 .map(attribute => {
                     var id = Number(attribute.split('_')[3]);
                     return new MongoAttribute(id, conn.getMongoDb()).json().then(jsonAttribute => {
                         jsonAttribute.values = attributes[attribute];
                         jsonAttribute.geometries = attributes['geometry'];
-                        jsonAttribute.gids = attributes['gid'];
-                        jsonAttribute.areaTemplates = attributes['areatemplate'].map(base => Number(base));
-                        jsonAttribute.locations = attributes['location'].map(base => Number(base));
                         jsonAttribute.column = attribute;
 
                         if (jsonAttribute.type == 'numeric') {
@@ -63,6 +58,7 @@ class Statistics {
         });
     }
 
+    // TODO: Extract duplicity.
     dataViews(request) {
         var areaTemplate = Number(request.query.areaTemplate);
         var periods = request.query.periods.map(period => Number(period));
@@ -84,12 +80,11 @@ class Statistics {
                 });
 
             return Promise.all(baseLayers
-                .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
-                        ST_Transform(the_geom, 900913) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id}`)
+                .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, ST_Transform(the_geom, 900913) as geometry FROM views.layer_${baseLayer._id}`)
                 .map(sql => this._pgPool.pool().query(sql))
             );
         })
     }
 }
 
-module.exports = Statistics;
+module.exports = Filter;
