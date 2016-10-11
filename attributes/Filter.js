@@ -119,7 +119,7 @@ class Filter {
             var filteringValue = this._request.query.attributes.filter(attribute => Number(attribute.attribute) == id && Number(attribute.attributeSet) == attributeSetId)[0].value;
 
             if(this._mongoAttributes[id].type == 'numeric') {
-                return `${column} >= ${filteringValue[0]} AND ${column} <= ${filteringValue[1]}`;
+                return `${column} >= ${Math.floor(filteringValue[0])} AND ${column} <= ${Math.ceil(filteringValue[1])}`;
             } else {
                 return `${column}='${filteringValue}'`;
             }
