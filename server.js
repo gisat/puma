@@ -35,7 +35,7 @@ function initServer(err) {
 	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
-	app.use(express.bodyParser({limit: '50mb'}));
+	app.use(express.bodyParser());
 	app.use(function(req, res, next){
 		req.ssid = req.cookies.ssid || req.ssid || '';
 		next();
