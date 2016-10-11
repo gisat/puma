@@ -1,5 +1,6 @@
 var FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 var Promise = require('promise');
+var logger = require('../common/Logger').applicationWideLogger;
 
 class FilteredBaseLayers {
     constructor(filter, connection) {
@@ -37,6 +38,7 @@ class FilteredBaseLayers {
             baseLayer.columns = dataLayer.columnMap.map(column => {
                 return `as_${dataLayer.attributeSet}_attr_${column.attribute}`;
             });
+            logger.info(`FilteredBaseLayers#addColumns Layer ${dataLayer._id} Columns: `, baseLayer.columns);
         });
 
         return baseLayer;
