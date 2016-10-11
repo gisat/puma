@@ -7,9 +7,6 @@ Select
   ?school
   ?schoolLabel
   ?schoolGeo
-  (
-    bif:st_distance (bif:st_point(bif:st_xmin(?schoolGeo),bif:st_ymin(?schoolGeo)), bif:st_point (4.892222, 52.373056))
-  ) as ?proximity
 From <http://linkedgeodata.org> {
     ?school
     a lgdo:School ;
@@ -19,6 +16,9 @@ From <http://linkedgeodata.org> {
     ] .
 
   Filter (
-    bif:st_distance (bif:st_point(bif:st_xmin(?schoolGeo),bif:st_ymin(?schoolGeo)), bif:st_point (4.892222, 52.373056)) < 5
+    bif:st_intersects (?schoolGeo, bif:st_geomFromText("POLYGON((14.1993833628519 49.9298296420497,14.1993833628519 50.2409404033298,14.7892229832988 50.2409404033298,14.7892229832988 49.9298296420497,14.1993833628519 49.9298296420497))"))
   ) .
 }
+
+// Upload prague gadm as units.
+

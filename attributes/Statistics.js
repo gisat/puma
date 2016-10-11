@@ -1,6 +1,8 @@
 var conn = require('../common/conn');
 var Promise = require('promise');
 var _ = require('underscore');
+var logger = require('../common/Logger').applicationWideLogger;
+
 var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
@@ -75,6 +77,7 @@ class Statistics {
         }, conn.getMongoDb()).read().then(baseLayers => {
             // Store the base layers as they will be needed later.
             baseLayers.forEach(baseLayer => baseLayer.queriedColumns = []);
+            logger.info('Statistics#dataVies Retrieved Base layers: ', baseLayers);
             request.query.attributes
                 .map(attribute => `as_${attribute.attributeSet}_attr_${attribute.attribute}`)
                 .forEach(column => {
