@@ -35,7 +35,7 @@ class NumericAttribute {
 
         var result = this._jsonAttribute.values.map((value, index) => {
             var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
-            if(value > options.value[0] && value < options.value[1] && alreadyInserted.indexOf(attributeName) == -1) {
+            if(value >= options.value[0] && value <= options.value[1] && alreadyInserted.indexOf(attributeName) == -1) {
                 alreadyInserted.push(attributeName);
                 return {
                     loc: this._jsonAttribute.locations[index],
