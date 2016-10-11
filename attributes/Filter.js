@@ -38,7 +38,6 @@ class Filter {
                 this.dataView(dataView, attributes);
             });
 
-            logger.info(`Filter#statisticAttributes  Attributes: `, attributes);
             let attributesPromises = Object.keys(attributes)
                 .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate')
                 .map(attribute => {
@@ -119,7 +118,7 @@ class Filter {
             var filteringValue = this._request.query.attributes.filter(attribute => Number(attribute.attribute) == id && Number(attribute.attributeSet) == attributeSetId)[0].value;
 
             if(this._mongoAttributes[id].type == 'numeric') {
-                return `${column} >= ${Math.floor(filteringValue[0])} AND ${column} <= ${Math.ceil(filteringValue[1])}`;
+                return `${column} >= ${filteringValue[0]} AND ${column} <= ${filteringValue[1]}`;
             } else {
                 return `${column}='${filteringValue}'`;
             }
