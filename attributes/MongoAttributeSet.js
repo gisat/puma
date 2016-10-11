@@ -33,9 +33,9 @@ class MongoAttributeSet {
 			new FilteredMongoDataViews({"visibleLayers.attribute": id}, connection)
 		]);
 		this._visualizations = new FilteredCompoundCollection([
-			new FilteredMongoVisualizations({"cfg.attrs.as": id}),
-			new FilteredMongoVisualizations({"choroplethCfg.as": id}),
-			new FilteredMongoVisualizations({"visibleLayers.attributeSet": id})
+			new FilteredMongoVisualizations({"cfg.attrs.as": id}, connection),
+			new FilteredMongoVisualizations({"choroplethCfg.as": id}, connection),
+			new FilteredMongoVisualizations({"visibleLayers.attributeSet": id}, connection)
 		]);
 	}
 
