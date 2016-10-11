@@ -46,9 +46,11 @@ class Statistics {
                             return new BooleanAttribute(jsonAttribute);
                         } else if (jsonAttribute.type == 'text') {
                             return new TextAttribute(jsonAttribute);
+                        } else {
+                            logger.warn(`Statistics#statisticAttributes Unknown type of attribute. id: ${id}`);
                         }
                     });
-                }).filter(attribute => attribute);
+                });
 
             return Promise.all(attributesPromises);
         });
