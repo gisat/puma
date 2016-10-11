@@ -48,7 +48,7 @@ class Statistics {
                             return new TextAttribute(jsonAttribute);
                         }
                     });
-                });
+                }).filter(attribute => attribute);
 
             return Promise.all(attributesPromises);
         });
