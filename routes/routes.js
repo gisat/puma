@@ -48,12 +48,25 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
+	if(config.pgDataUserRemote) {
+		var poolRemote = new PgPool({
+			user: config.pgDataUserRemote,
+			database: config.pgDataDatabaseRemote,
+			password: config.pgDataPasswordRemote,
+			host: config.pgDataHostRemote,
+			port: config.pgDataPortRemote
+		});
+	}
 	new DatabaseSchema(pool, config.postgreSqlSchema).create();
 
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app);
 	new AreaTemplateController(app);
-	new AttributeController(app, pool);
+	if(poolRemote) {
+		new AttributeController(app, poolRemote);
+	} else {
+		new AttributeController(app, pool);
+	}
 	new AttributeSetController(app);
 	new ChartCfgController(app);
 	new DataSetController(app);
