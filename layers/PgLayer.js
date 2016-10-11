@@ -45,6 +45,8 @@ class PgLayer {
 	validate() {
 		if(!config.isUrbis) {
 			return this.checkId();
+		} else {
+			return Promise.resolve(true);
 		}
 	}
 
