@@ -48,9 +48,11 @@ class Statistics {
                             return new TextAttribute(jsonAttribute);
                         } else {
                             logger.warn(`Statistics#statisticAttributes Unknown type of attribute. id: ${id}`);
+                            return null
                         }
                     });
-                });
+                })
+                .filter(attribute => attribute != null);
 
             return Promise.all(attributesPromises);
         });
