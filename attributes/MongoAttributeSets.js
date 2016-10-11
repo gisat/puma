@@ -4,6 +4,7 @@ var MongoDataViews = require('../visualization/MongoDataViews');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
 var MongoVisualizations = require('../visualization/MongoVisualization');
 var Promise = require('promise');
+var logger = require('../common/Logger').applicationWideLogger;
 
 class MongoAttributeSets {
 	constructor(connection) {
@@ -24,6 +25,7 @@ class MongoAttributeSets {
 
 	// TODO: Remove analysis with given attribute set, Math - remove when any, Spatial - remove all, Level Analysis - update by removing attribute set. When none remaining delete.
 	remove(attributeSet) {
+		logger.info('MongoAttributeSets#remove Remove attributeSet',attributeSet);
 		var self = this;
 		// Remove associated layer references (layerref table)
 		return attributeSet.layerReferences().then(function(layerReferences){
