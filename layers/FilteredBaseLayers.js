@@ -34,10 +34,11 @@ class FilteredBaseLayers {
     }
 
     addColumns(baseLayer, dataLayers) {
+        baseLayer.columns = [];
         dataLayers.forEach(dataLayer => {
             baseLayer.columns = dataLayer.columnMap.map(column => {
                 return `as_${dataLayer.attributeSet}_attr_${column.attribute}`;
-            }) || [];
+            });
             logger.info(`FilteredBaseLayers#addColumns Layer ${dataLayer._id} Columns: `, baseLayer.columns);
         });
 
