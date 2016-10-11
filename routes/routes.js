@@ -70,7 +70,7 @@ module.exports = function(app) {
 
 	new PrintController(app);
 	new ExportController(app);
-	new MellodiesWpsController(app);
+	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
