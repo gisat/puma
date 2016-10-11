@@ -3,8 +3,8 @@ var MongoChartConfigurations = require('../visualization/MongoChartConfiguration
 var MongoDataViews = require('../visualization/MongoDataViews');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
 var MongoVisualizations = require('../visualization/MongoVisualization');
+var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var Promise = require('promise');
-var logger = require('../common/Logger').applicationWideLogger;
 
 class MongoAttributeSets {
 	constructor(connection) {
@@ -13,6 +13,7 @@ class MongoAttributeSets {
 		this._dataViews = new MongoDataViews(connection);
 		this._visualizations = new MongoVisualizations(connection);
 		this._analysis = new MongoAnalysis(connection);
+		this._layerReferences = new MongoLayerReferences(connection);
 	}
 
 	update(attributeSet) {
@@ -25,13 +26,12 @@ class MongoAttributeSets {
 
 	// TODO: Remove analysis with given attribute set, Math - remove when any, Spatial - remove all, Level Analysis - update by removing attribute set. When none remaining delete.
 	remove(attributeSet) {
-		logger.info('MongoAttributeSets#remove Remove attributeSet',attributeSet);
 		var self = this;
 		// Remove associated layer references (layerref table)
-		return attributeSet.layerReferences().then(function(layerReferences){
+		return attributeSet.layerReferences().then(layerReferences => {
 			var promises = [];
 
-			layerReferences.forEach(function(layerReference){
+			layerReferences.forEach(layerReference => {
 				this._layerReferences.remove(layerReference);
 			});
 
