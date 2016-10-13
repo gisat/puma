@@ -65,7 +65,7 @@ function check(analysisObj, performedAnalysisObj, callback) {
 					}
 					if (!resls.length) {
 						logger.error("spatialagg#check LAYERREF missing 2||||| areaTemplate: ",analysisObj.areaTemplate," | location: ",location," | period: ",year, " Filter: ", filter);
-						return callback(new Error('There is no reference layer for combination of period ('+year+'), location ('+location+'), Vector Layer Template ('+featureLayerTemplate+') and Attribute Set ('+attrSet+')'));
+						return callback(new Error('There is no reference layer for combination of period ('+year+'), location ('+location+'), Vector Layer Template ('+analysisObj.areaTemplate+') and Attribute Set ('+attrSet+')'));
 					}
 					return mapCallback(null, resls[0]);
 				});
