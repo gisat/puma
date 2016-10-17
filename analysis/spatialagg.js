@@ -38,12 +38,12 @@ function check(analysisObj, performedAnalysisObj, callback) {
 				var filter =  {areaTemplate: featureLayerTemplate, location: location, year: year, isData: false};
 				crud.read('layerref',filter, function(err, resls) {
 					if (err) {
-						logger.error("It wasn't possible to read layerref with filter: ", filter);
+						logger.error("spatialagg#check It wasn't possible to read layerref with filter: ", filter);
 						return callback(err);
 					}
 					if (!resls.length) {
-						logger.error("LAYERREF missing 1||||| areaTemplate: ",featureLayerTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+featureLayerTemplate+'). Please try to take a look whether you have correctly associated Vector Layer Template with this number to the vector data layer from which the attributes for analysis comes. '));
+						logger.error("spatialagg#check LAYERREF missing 1||||| areaTemplate: ",featureLayerTemplate," | location: ",location," | period: ",year, " Filter: ", filter);
+						return callback(new Error('There is no base reference layer for combination of period ('+year+'), location ('+location+') and Vector Layer Template ('+featureLayerTemplate+'). Please try to take a look whether you have correctly associated Vector Layer Template with this number to the vector data layer from which the attributes for analysis comes. '));
 					}
 					return mapCallback(null, resls[0]);
 				});
@@ -60,12 +60,12 @@ function check(analysisObj, performedAnalysisObj, callback) {
 				var filter = {areaTemplate: analysisObj.areaTemplate, location: location, year: year, attributeSet: attrSet};
 				crud.read('layerref', filter, function(err, resls) {
 					if (err) {
-						logger.error("It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
+						logger.error("spatialagg#check It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
 						return callback(err);
 					}
 					if (!resls.length) {
-						logger.error("LAYERREF missing 2||||| areaTemplate: ",analysisObj.areaTemplate," | location: ",location," | year: ",year, " Filter: ", filter);
-						return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), Vector Layer Template ('+featureLayerTemplate+') and Attribute Set ('+attrSet+')'));
+						logger.error("spatialagg#check LAYERREF missing 2||||| areaTemplate: ",analysisObj.areaTemplate," | location: ",location," | period: ",year, " Filter: ", filter);
+						return callback(new Error('There is no reference layer for combination of period ('+year+'), location ('+location+'), Vector Layer Template ('+analysisObj.areaTemplate+') and Attribute Set ('+attrSet+')'));
 					}
 					return mapCallback(null, resls[0]);
 				});
@@ -87,7 +87,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			var sql = 'SELECT DISTINCT ST_Dimension(the_geom) as dm,ST_SRID(the_geom) as srid FROM views.layer_' + refId+' LIMIT 1';
 			client.query(sql, function(err, results) {
 				if (err){
-					logger.error("Unexpected PG Error! Performing Spatial aggregation. SQL: ", sql, " Error: ",err);
+					logger.error("spatialagg#perform/geomType Unexpected PG Error! Performing Spatial aggregation. SQL: ", sql, " Error: ",err);
 					return callback(err);
 				}
 				asyncCallback(null, results.rows[0]);
@@ -244,11 +244,11 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				client.end();
 				if (performedAnalysisObj.ghost) {
 					//return callback(null);
-					logger.warn("Performed analysis is a ghost: ", performedAnalysisObj);
+					logger.warn("spatialagg#perform Performed analysis is a ghost: ", performedAnalysisObj);
 				}
 				if(!performedAnalysisObj.status){
 					if(err){
-						logger.error("Analysis: ", performedAnalysisObj, " Failed with error: ", err);
+						logger.error("spatialagg#perform Analysis: ", performedAnalysisObj, " Failed with error: ", err);
 						performedAnalysisObj.status = "Failed. "+err;
 					}else{
 						performedAnalysisObj.status = "Successful";
@@ -257,7 +257,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				performedAnalysisObj.finished = new Date();
 				crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId,isAdmin: true}, function(err) {
 					if(err){
-						logger.error("Failed to write in MongoDB performedanalysis. Error:", err);
+						logger.error("spatialagg#perform Failed to write in MongoDB performedanalysis. Error:", err);
 						return callback(err);
 					}
 					return callback(null);
