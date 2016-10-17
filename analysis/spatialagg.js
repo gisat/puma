@@ -207,7 +207,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			sql += performedAnalysisObj.gids ? '' : ')';
 
 
-			logger.trace(`analysis/spatialagg#perform SQL: ${sql}`);
+			logger.info(`analysis/spatialagg#perform SQL: ${sql}`);
 			async.forEachSeries(performedAnalysisObj.featureLayerTemplates, function(item, asyncCallback) {
 				var layerRef = item != -1 ? layerRefMap[item]['_id'] : null;
 				var layerName = item != -1 ? 'views.layer_'+layerRef : performedAnalysisObj.sourceTable;
