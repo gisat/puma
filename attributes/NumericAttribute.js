@@ -69,6 +69,8 @@ class NumericAttribute {
             attributeSet: this._attributeSet,
             attributeName: options.attributeName,
             attributeSetName: options.attributeSetName,
+            units: options.units,
+            standardUnits: options.standardUnits,
             min: this._min,
             max: this._max,
             type: 'numeric',
