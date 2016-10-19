@@ -22,7 +22,11 @@ class PgShapefileLayer {
             return self.sql();
         }).then(function(sql){
             console.log(sql, path);
-            return child_process.exec('pgsql2shp -f' + path + ' -h ' + config.pgDataHost + ' -u ' + config.pgDataUser + ' -P ' + config.pgDataPassword + ' ' + config.pgDataDatabase + ' "'+sql+'"').promise;
+            let host = config.pgDataHostRemote || config.pgDataHost;
+            let user = config.pgDataUserRemote || config.pgDataUser;
+            let password = config.pgDataPasswordRemote || config.pgDataPassword;
+            let database = config.pgDataDatabaseRemote || config.pgDataDatabase;
+            return child_process.exec(`pgsql2shp -f ${path} -h ${host} -u ${user} -P ${password} ${database} "${sql}"`).promise;
         }).then(function(results){
             console.log(results.stdout);
             console.log(results.stderr);

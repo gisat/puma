@@ -37,7 +37,9 @@ class AttributeController extends Controller {
                 return attributes.map(attribute => attribute.json({
                     classes: Number(distribution.classes),
                     attributeName: attributesMap[attribute.name()].attributeName,
-                    attributeSetName: attributesMap[attribute.name()].attributeSetName
+                    attributeSetName: attributesMap[attribute.name()].attributeSetName,
+                    units: attributesMap[attribute.name()].units,
+                    standardUnits: attributesMap[attribute.name()].standardUnits
                 }));
             }).then(json => {
                 response.json({attributes: json});
@@ -74,6 +76,7 @@ class AttributeController extends Controller {
             logger.info('AttributeController#filter JSON rows: ', result.length);
             // Get only those that are in all.
 
+            result = this.deduplicate(result, json.length);
             response.json(result);
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
@@ -103,6 +106,7 @@ class AttributeController extends Controller {
             logger.info('AttributeController#filter JSON rows: ', result.length);
             // Get only those that are in all.
 
+            result = this.deduplicate(result, json.length);
             response.json({amount: result.length});
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
@@ -110,6 +114,17 @@ class AttributeController extends Controller {
                 logger.error(`AttributeController#filter Error: `, err)
             )
         });
+    }
+
+    deduplicate(result, amountOfDuplicated) {
+        let groupedInformation = _.groupBy(result, element => `${element.at}_${element.gid}_${element.loc}`);
+        return Object.keys(groupedInformation).map(key => {
+            return groupedInformation[key] &&
+                groupedInformation[key].length == amountOfDuplicated &&
+                groupedInformation[key].length &&
+                groupedInformation[key][0] ||
+                null;
+        })
     }
 }
 
