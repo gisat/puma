@@ -65,9 +65,11 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
+
 var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
 var PgPool = require('./postgresql/PgPool');
 var DatabaseSchema = require('./postgresql/DatabaseSchema');
+
 
 var pool = new PgPool({
 	user: config.pgDataUser,

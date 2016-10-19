@@ -5,7 +5,9 @@
     </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/public/lib/jquery.min.js" />
+      <root url="file://$PROJECT_DIR$/public/lib/jquery.min.js" />
     </CLASSES>
+    <JAVADOC />
     <SOURCES />
   </library>
 </component>
