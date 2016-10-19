@@ -23,6 +23,7 @@ var YearController = require('./YearController');
 var PrintController = require('./PrintController');
 var MellodiesWpsController = require('./../melodies/WpsController');
 var MellodiesLodController = require('../melodies/LodController');
+var ImportController = require('./ImportController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -83,6 +84,7 @@ module.exports = function(app) {
 
 	new PrintController(app);
 	new ExportController(app);
+	new ImportController(app);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 

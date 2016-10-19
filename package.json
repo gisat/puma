@@ -14,6 +14,7 @@
   "dependencies": {
     "async": "1.5.x",
     "bower": "^1.6.5",
+    "csv-parser": "^1.11.0",
     "deepcopy": "^0.6.1",
     "express": "3.x",
     "express-session": "^1.13.0",
