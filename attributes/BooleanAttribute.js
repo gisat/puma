@@ -46,6 +46,7 @@ class BooleanAttribute {
             attributeSetName: options.attributeSetName,
             units: options.units,
             standardUnits: options.standardUnits,
+            active: options.active,
             type: 'boolean'
         }
     }

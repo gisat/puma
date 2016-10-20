@@ -63,7 +63,6 @@ class NumericAttribute {
                 distribution[Math.floor((value - this._min) / classSize)]++;
             }
         });
-
         return {
             attribute: this._attribute,
             attributeSet: this._attributeSet,
@@ -71,6 +70,7 @@ class NumericAttribute {
             attributeSetName: options.attributeSetName,
             units: options.units,
             standardUnits: options.standardUnits,
+            active: options.active,
             min: this._min,
             max: this._max,
             type: 'numeric',

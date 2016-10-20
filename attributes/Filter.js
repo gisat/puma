@@ -119,7 +119,11 @@ class Filter {
 
             if(this._mongoAttributes[id].type == 'numeric') {
                 return `${column} >= ${filteringValue[0]} AND ${column} <= ${filteringValue[1]}`;
-            } else {
+            }
+            else if (filteringValue.length == 0) {
+                return `${column} IS NOT NULL`;
+            }
+            else {
                 return `${column}='${filteringValue}'`;
             }
         })
