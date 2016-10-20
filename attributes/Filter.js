@@ -116,12 +116,18 @@ class Filter {
             var id = Number(column.split('_')[3]);
             var attributeSetId = Number(column.split('_')[1]);
             var filteringValue = this._request.query.attributes.filter(attribute => Number(attribute.attribute) == id && Number(attribute.attributeSet) == attributeSetId)[0].value;
-
+            debugger;
             if(this._mongoAttributes[id].type == 'numeric') {
                 return `${column} >= ${filteringValue[0]} AND ${column} <= ${filteringValue[1]}`;
             }
-            else if (filteringValue.length == 0) {
+            else if (this._mongoAttributes[id].type == 'text' && filteringValue.length == 0) {
                 return `${column} IS NOT NULL`;
+            }
+            else if (this._mongoAttributes[id].type == 'boolean' && filteringValue == "true") {
+                return `${column}='t'`;
+            }
+            else if (this._mongoAttributes[id].type == 'boolean' && filteringValue == "false") {
+                return `${column}='f'`;
             }
             else {
                 return `${column}='${filteringValue}'`;
