@@ -50,7 +50,7 @@ class PgCsvLayer {
             for (var file of files) {
                 if (file.type == "text/csv") {
                     var csvLines = [];
-                    fs.createReadStream(file.path).pipe(csv({separator: ';'})).on('data', function (data) {
+                    fs.createReadStream(file.path).pipe(csv({separator: ','})).on('data', function (data) {
                         csvLines.push(data);
                     }).on('end', function () {
                         var tableName = file.name.replace(/\W+/g, "_").toLowerCase();
@@ -65,7 +65,7 @@ class PgCsvLayer {
                                 var createTable = `CREATE TABLE ${tableName} (${columns.slice(0, -2)});`;
 
                                 pgPool.pool().query(createTable).then(queryResult => {
-                                    var copyCsvToPsql = `COPY ${tableName} FROM '${file.path}' DELIMITER ';' CSV;`;
+                                    var copyCsvToPsql = `COPY ${tableName} FROM '${file.path}' DELIMITER ',' CSV;`;
                                     console.log(copyCsvToPsql);
                                     pgPool.pool().query(copyCsvToPsql).then(queryResult => {
                                         console.log(queryResult);
