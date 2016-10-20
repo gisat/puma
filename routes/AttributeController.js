@@ -70,7 +70,7 @@ class AttributeController extends Controller {
         logger.info(`AttributeController#amount UUID: ${uuid} Start: ${moment().format()}`);
 
         let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
-        this._filter.statistics(options.attributesMap, attributes, options.attributes).then(json => {
+        this._filter.statistics(attributes, options.attributesMap, options.attributes).then(json => {
             let result = this._deduplicate(_.flatten(json), json.length);
             response.json({amount: result.length});
             logger.info(`AttributeController#amount UUID: ${uuid} End: ${moment().format()}`);
