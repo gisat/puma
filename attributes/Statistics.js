@@ -11,7 +11,10 @@ class Statistics {
             return attributes.map(attribute => attribute.json({
                 classes: Number(distribution.classes),
                 attributeName: attributesMap[attribute.name()].attributeName,
-                attributeSetName: attributesMap[attribute.name()].attributeSetName
+                attributeSetName: attributesMap[attribute.name()].attributeSetName,
+                units: attributesMap[attribute.name()].units,
+                standardUnits: attributesMap[attribute.name()].standardUnits,
+                active: attributesMap[attribute.name()].active
             }));
         });
     }
