@@ -16,6 +16,18 @@ class TextAttribute {
         return this._jsonAttribute.column;
     }
 
+    info(options) {
+        return this._jsonAttribute.values.map((value, index) => {
+            return {
+                gid: this._jsonAttribute.gids[index],
+                name: this._jsonAttribute.names[index],
+                attributeName: options.attributeName,
+                attributeSetName: options.attributeSetName,
+                value: value
+            }
+        }).filter(value => value);
+    }
+
     filter(options) {
         var uuid = new UUID().toString();
         var alreadyInserted = [];
