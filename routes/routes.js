@@ -84,7 +84,7 @@ module.exports = function(app) {
 
 	new PrintController(app);
 	new ExportController(app);
-	new ImportController(app);
+	new ImportController(app, pool);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 

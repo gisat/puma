@@ -7,10 +7,12 @@ class ImportController extends Controller {
         super(app, 'import', PgCsvLayer);
 
         app.post('/rest/import/csv', this.csv.bind(this));
+
+        this._pgPool = pgPool;
     }
 
     csv(request, response, next) {
-        new PgCsvLayer().import(request).then(function (result, error) {
+        new PgCsvLayer().import(request, this._pgPool).then(function (result, error) {
             response.send(result);
         });
     }

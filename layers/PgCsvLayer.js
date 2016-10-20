@@ -42,30 +42,57 @@ class PgCsvLayer {
      * @param request Post request
      * @returns JSON object with informations about imported layers
      */
-    import(request) {
+    import(request, pgPool) {
+        var data = [];
         var files = request.files.file;
         files = this.parseUploadedFiles(files);
         return new Promise(function (result, error) {
             for (var file of files) {
-                if (file.type != "text/csv") {
-                    continue;
+                if (file.type == "text/csv") {
+                    var csvLines = [];
+                    fs.createReadStream(file.path).pipe(csv({separator: ';'})).on('data', function (data) {
+                        csvLines.push(data);
+                    }).on('end', function () {
+                        var tableName = file.name.replace(/\W+/g, "_").toLowerCase();
+                        var keys = Object.keys(csvLines[0]);
+                        var checkExistingTable = `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '${tableName}');`;
+                        pgPool.pool().query(checkExistingTable).then(queryResult => {
+                            if (!queryResult.rows[0].exists) {
+                                var columns = "";
+                                for (var key of keys) {
+                                    columns += `${key} double precision, `;
+                                }
+                                var createTable = `CREATE TABLE ${tableName} (${columns.slice(0, -2)});`;
+
+                                pgPool.pool().query(createTable).then(queryResult => {
+                                    var copyCsvToPsql = `COPY ${tableName} FROM '${file.path}' DELIMITER ';' CSV;`;
+                                    console.log(copyCsvToPsql);
+                                    pgPool.pool().query(copyCsvToPsql).then(queryResult => {
+                                        console.log(queryResult);
+                                    }).catch(error => {
+                                        result({data: {error: error}});
+                                    });
+                                }).catch(error => {
+                                    result({data: {error: error}});
+                                });
+                            } else {
+                                data.push({name: tableName, exists: queryResult.rows[0].exists});
+                                result({data: {data: data}});
+                            }
+                        }).catch(error => {
+                            result({data: {error: error}});
+                        });
+                    });
                 }
-                var csvLines = [];
-                fs.createReadStream(file.path).pipe(csv({separator: ';'})).on('data', function (data) {
-                    csvLines.push(data);
-                }).on('end', function () {
-                    var keys = Object.keys(csvLines[0]);
-                    for (var csvLine of csvLines) {
-                        for (var key of keys) {
-                            data.push(csvLines[0][key]);
-                        }
-                    }
-                    result({data: {data: data}});
-                });
             }
         });
     }
 
+    /**
+     * Parse relevant data of uploaded files
+     * @param files List or object with metadata of uploaded file/s
+     * @returns {Array} List of uploaded files
+     */
     parseUploadedFiles(files) {
         var parsedFiles = [];
         if (files != undefined) {
