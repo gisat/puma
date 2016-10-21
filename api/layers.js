@@ -237,12 +237,17 @@ function getLayers(params, req, res, callback) {
 
                     for (var row of response.rows) {
                         if (row.username != username) {
-                            for(var i = 0; i < pgLayers.length; i++){
-                                if(pgLayers[i].name == row.name){
+                            for (var i = 0; i < pgLayers.length; i++) {
+                                if (pgLayers[i].name == row.name) {
                                     pgLayers.splice(i, 1);
                                 }
                             }
                         }
+                    }
+
+                    //TODO: I have to find better way how to do this ;)
+                    for (var i = 0; i < pgLayers.length; i++) {
+                        pgLayers[i].name = `geonode:${pgLayers[i].name}`;
                     }
 
                     res.data = pgLayers;

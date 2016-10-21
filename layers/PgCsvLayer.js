@@ -63,16 +63,16 @@ class PgCsvLayer {
                                 for (var key of keys) {
                                     columns += `${key} double precision, `;
                                 }
-                                var createTable = `CREATE TABLE ${tableName} (_id serial primary key, ${columns.slice(0, -2)});`;
+                                var createTable = `CREATE TABLE ${tableName} (_id serial primary key, ${columns.slice(0, -2)}, the_geom geometry);`;
 
                                 pgPool.pool().query(createTable).then(queryResult => {
-                                    var csvToPsql = `INSERT INTO ${tableName} (${keys.slice()}) VALUES `;
+                                    var csvToPsql = `INSERT INTO ${tableName} (${keys.slice()}, the_geom) VALUES `;
                                     for(var csvLine of csvLines){
                                         var values = [];
                                         for (var key of keys) {
                                             values.push(csvLine[key]);
                                         }
-                                        csvToPsql += `(${values.slice()}), `;
+                                        csvToPsql += `(${values.slice()}, ST_SetSRID(ST_MakePoint(${csvLine.LON}, ${csvLine.LAT}), 4326)), `;
                                     }
                                     csvToPsql = csvToPsql.slice(0,-2);
                                     pgPool.pool().query(csvToPsql).then(queryResult => {
