@@ -1,5 +1,6 @@
 var Promise = require('promise');
 var logger = require('../common/Logger').applicationWideLogger;
+var _ = require('underscore');
 
 class Info {
     constructor(pgPool) {
