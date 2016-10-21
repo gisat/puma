@@ -101,26 +101,15 @@ class AttributeController extends Controller {
      * Returns values for received attributes for specific polygon.
      * @param request
      * @param response
-     * @param next
      */
-    info(request, response, next) {
-        let location = Number(request.query.location);
-        let year = Number(request.query.year);
-        let areaTemplate = Number(request.query.areaTemplate);
+    info(request, response) {
+        var options = this._parseRequest(request);
         let gid = Number(request.query.gid);
-        // Get Base layer. There will be just one.
-        let attributes = _.toArray(request.query.attributes);
-        var attributesMap = {};
-
-        attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-
         var uuid = new UUID().toString();
         logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
 
-        let attributesObj = new Attributes(areaTemplate, [year], [location], attributes);
-        this._info.statistics(attributesObj, attributesMap, gid).then(json => {
+        let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        this._info.statistics(attributesObj, options.attributesMap, gid).then(json => {
             response.json(json);
             logger.info(`AttributeController#info UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
