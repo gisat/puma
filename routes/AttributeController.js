@@ -104,7 +104,7 @@ class AttributeController extends Controller {
      */
     info(request, response) {
         var options = this._parseRequest(request);
-        let gid = Number(request.query.gid);
+        let gid = request.query.gid;
         var uuid = new UUID().toString();
         logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
 
