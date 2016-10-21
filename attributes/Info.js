@@ -13,6 +13,25 @@ class Info {
                 attributeName: attributesMap[attribute.name()].attributeName,
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
             }));
+        }).then(json => {
+            // Group per gid.
+            var groupedPerRow = _.toArray(_.groupBy(_.flatten(json), element => element.gid));
+            return groupedPerRow.map(group => {
+                if(!group || group.length < 1) {
+                    return;
+                }
+
+                // TODO: What should happen when attribue is twice from different attribute set?
+                var result = {
+                    gid: group[0].gid,
+                    name: group[0].name,
+                    geom: group[0].geom
+                };
+                group.forEach(value=> {
+                    result[value.attributeName] = value.value;
+                });
+                return result;
+            }).filter(value => value);
         });
     }
 
