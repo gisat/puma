@@ -223,11 +223,10 @@ function getLayers(params, req, res, callback) {
 
                 var username = JSON.parse(output).name;
                 var gnClient = conn.getPgGeonodeDb();
-                var ownedLayers = `
-                    SELECT name, username 
-                    FROM layers_layer 
-                    LEFT JOIN layers_uploadsession ON upload_session_id=layers_uploadsession.id 
-                    LEFT JOIN people_profile ON layers_uploadsession.user_id=people_profile.id;`;
+                var ownedLayers = `SELECT name, username 
+                                    FROM base_resourcebase 
+                                    LEFT JOIN people_profile ON people_profile.id=owner_id 
+                                    LEFT JOIN layers_layer ON layers_layer.resourcebase_ptr_id=base_resourcebase.id;`;
 
                 gnClient.query(ownedLayers, [], function (error, response) {
                     if (error) {
