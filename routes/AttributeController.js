@@ -10,7 +10,6 @@ var Statistics = require('../attributes/Statistics');
 var Filter = require('../attributes/Filter');
 var Attributes = require('../attributes/Attributes');
 var Info = require('../attributes/Info');
-var InfoAll = require('../attributes/InfoAll');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
@@ -24,13 +23,11 @@ class AttributeController extends Controller {
         this._statistics = new Statistics(pgPool);
         this._filter = new Filter(pgPool);
         this._info = new Info(pgPool);
-        this._infoAll = new InfoAll(pgPool);
 
         app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
         app.get('/rest/filter/attribute/filter', this.filter.bind(this));
         app.get('/rest/filter/attribute/amount', this.amount.bind(this));
         app.get('/rest/info/attribute', this.info.bind(this));
-        app.get('/rest/info/attribute/all', this.infoAll.bind(this));
     }
 
     statistics(request, response) {
@@ -104,57 +101,15 @@ class AttributeController extends Controller {
      * Returns values for received attributes for specific polygon.
      * @param request
      * @param response
-     * @param next
      */
-    info(request, response, next) {
-        let location = Number(request.query.location);
-        let year = Number(request.query.year);
-        let areaTemplate = Number(request.query.areaTemplate);
-        let gid = Number(request.query.gid);
-        // Get Base layer. There will be just one.
-        let attributes = _.toArray(request.query.attributes);
-        var attributesMap = {};
-
-        attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-
-        var uuid = new UUID().toString();
-        logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
-
-        let attributesObj = new Attributes(areaTemplate, [year], [location], attributes);
-        this._info.statistics(attributesObj, attributesMap, gid).then(json => {
-            let values = _.flatten(json);
-            var result = {
-                gid: values[0].gid,
-                name: values[0].name,
-                attributes: []
-            };
-            values.forEach(value => {
-                result.attributes.push({
-                    attributeName: value.attributeName,
-                    attributeSetName: value.attributeSetName,
-                    value: value.value
-                })
-            });
-
-            response.json(result);
-            logger.info(`AttributeController#info UUID: ${uuid} End: ${moment().format()}`);
-        }).catch(err => {
-            throw new Error(
-                logger.error(`AttributeController#info Error: `, err)
-            )
-        });
-
-    }
-
-    infoAll(request, response) {
+    info(request, response) {
         var options = this._parseRequest(request);
+        let gid = Number(request.query.gid);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
 
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
-        this._infoAll.statistics(attributesObj, options.attributesMap).then(json => {
+        this._info.statistics(attributesObj, options.attributesMap, gid).then(json => {
             response.json(json);
             logger.info(`AttributeController#info UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
