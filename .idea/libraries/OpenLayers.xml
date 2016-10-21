@@ -1,10 +1,5 @@
 <component name="libraryTable">
   <library name="OpenLayers" type="javaScript">
-    <properties>
-      <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/public/devlib/OpenLayers" />
-      </sourceFilesUrls>
-    </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/public/devlib/OpenLayers" />
     </CLASSES>

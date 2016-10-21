@@ -1,10 +1,5 @@
 <component name="libraryTable">
   <library name="Highcharts-3.0.0" type="javaScript">
-    <properties>
-      <sourceFilesUrls>
-        <item url="file://$PROJECT_DIR$/public/lib/Highcharts-3.0.0" />
-      </sourceFilesUrls>
-    </properties>
     <CLASSES>
       <root url="file://$PROJECT_DIR$/public/lib/Highcharts-3.0.0" />
     </CLASSES>

@@ -64,8 +64,10 @@ module.exports = function(app) {
 	new AreaTemplateController(app);
 	if(poolRemote) {
 		new AttributeController(app, poolRemote);
+		new ExportController(app, poolRemote);
 	} else {
 		new AttributeController(app, pool);
+		new ExportController(app, pool);
 	}
 	new AttributeSetController(app);
 	new ChartCfgController(app);
@@ -82,7 +84,6 @@ module.exports = function(app) {
 	new YearController(app);
 
 	new PrintController(app);
-	new ExportController(app);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 

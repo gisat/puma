@@ -29,13 +29,20 @@ class NumericAttribute {
     }
 
     info(options) {
+        var alreadyInserted = [];
+
         return this._jsonAttribute.values.map((value, index) => {
-            return {
-                gid: this._jsonAttribute.gids[index],
-                name: this._jsonAttribute.names[index],
-                attributeName: options.attributeName,
-                attributeSetName: options.attributeSetName,
-                value: value
+            var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
+            if(alreadyInserted.indexOf(attributeName) == -1) {
+                alreadyInserted.push(attributeName);
+                return {
+                    gid: this._jsonAttribute.gids[index],
+                    name: this._jsonAttribute.names[index],
+                    geom: this._jsonAttribute.geometries[index],
+                    attributeName: options.attributeName,
+                    attributeSetName: options.attributeSetName,
+                    value: value
+                }
             }
         }).filter(value => value);
     }
