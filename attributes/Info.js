@@ -26,10 +26,11 @@ class Info {
                 var result = {
                     gid: group[0].gid,
                     name: group[0].name,
-                    geom: group[0].geom
+                    geom: group[0].geom,
+                    attributes: {}
                 };
                 group.forEach(value=> {
-                    result[value.attributeName] = value.value;
+                    result.attributes[value.attributeName] = value.value;
                 });
                 return result;
             }).filter(value => value);
