@@ -5,6 +5,7 @@ var child_process = require('pn/child_process');
 var Promise = require('promise');
 var fs = require('fs');
 var csv = require('csv-parser');
+var superagent = require('superagent');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -67,27 +68,64 @@ class PgCsvLayer {
 
                                 pgPool.pool().query(createTable).then(queryResult => {
                                     var csvToPsql = `INSERT INTO ${tableName} (${keys.slice()}, the_geom) VALUES `;
-                                    for(var csvLine of csvLines){
+                                    for (var csvLine of csvLines) {
                                         var values = [];
                                         for (var key of keys) {
                                             values.push(csvLine[key]);
                                         }
                                         csvToPsql += `(${values.slice()}, ST_SetSRID(ST_MakePoint(${csvLine.LON}, ${csvLine.LAT}), 4326)), `;
                                     }
-                                    csvToPsql = csvToPsql.slice(0,-2);
+                                    csvToPsql = csvToPsql.slice(0, -2);
                                     pgPool.pool().query(csvToPsql).then(queryResult => {
-                                        result({message: `I just created table with this name: ${tableName}`,error: error, success: true});
+                                        superagent
+                                            .get(`http://localhost/cgi-bin/publishlayer?l=${tableName}&d=datastore&p=EPSG:4326`)
+                                            .end(function (error, response) {
+                                                if (error) {
+                                                    result({
+                                                        message: `I was not able to publish layer ${tableName}`,
+                                                        error: error,
+                                                        success: false
+                                                    });
+                                                }
+                                                superagent
+                                                    .get(`http://localhost/cgi-bin/updatelayers?f=${tableName}`)
+                                                    .end(function (error, response) {
+                                                        if (error) {
+                                                            result({
+                                                                message: `I was not able to publish layer ${tableName}`,
+                                                                error: error,
+                                                                success: false
+                                                            });
+                                                        }
+                                                        result({
+                                                            message: `I just publish layer ${tableName}`,
+                                                            success: true
+                                                        });
+                                                    });
+                                            });
                                     }).catch(error => {
-                                        result({message: `I was not able to insert data info ${tableName} table!`,error: error, success: false});
+                                        result({
+                                            message: `I was not able to insert data info ${tableName} table!`,
+                                            error: error,
+                                            success: false
+                                        });
                                     });
                                 }).catch(error => {
-                                    result({message: `I was not able to create table ${tableName}!`,error: error, success: false});
+                                    result({
+                                        message: `I was not able to create table ${tableName}!`,
+                                        error: error,
+                                        success: false
+                                    });
                                 });
                             } else {
                                 result({message: `PostgreSQL: Table ${tableName} aready exists!`, success: false});
                             }
                         }).catch(error => {
-                            result({message: `I was not able to check if table ${tableName} exists!`,error: error, success: false});
+                            result({
+                                message: `I was not able to check if table ${tableName} exists!`,
+                                error: error,
+                                success: false
+                            });
                         });
                     });
                 } else {
