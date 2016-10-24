@@ -41,6 +41,7 @@ class NumericAttribute {
                     geom: this._jsonAttribute.geometries[index],
                     attributeName: options.attributeName,
                     attributeSetName: options.attributeSetName,
+                    units: options.units,
                     value: value
                 }
             }

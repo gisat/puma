@@ -10,6 +10,7 @@ class Info {
     statistics(attributes, attributesMap, gid) {
         return attributes.attributes(this.sql.bind(this, gid)).then(attributes => {
             return attributes.map(attribute => attribute.info({
+                units: attributesMap[attribute.name()].units,
                 value: attributesMap[attribute.name()].value,
                 attributeName: attributesMap[attribute.name()].attributeName,
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
@@ -21,16 +22,20 @@ class Info {
                 if(!group || group.length < 1) {
                     return;
                 }
-
                 // TODO: What should happen when attribue is twice from different attribute set?
                 var result = {
                     gid: group[0].gid,
                     name: group[0].name,
                     geom: group[0].geom,
-                    attributes: {}
+                    attributes: []
                 };
                 group.forEach(value=> {
-                    result.attributes[value.attributeName] = value.value;
+                    var attr = {
+                        name: value.attributeName,
+                        value: value.value,
+                        units: value.units
+                    };
+                    result.attributes.push(attr);
                 });
                 return result;
             }).filter(value => value);
