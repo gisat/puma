@@ -92,6 +92,8 @@ class ExportController {
 
     _parseRequest(request) {
         let attributes = _.toArray(request.query.attributes);
+        let periods = _.toArray(request.query.periods);
+        let places = _.toArray(request.query.places);
 
         var attributesMap = {};
         attributes.forEach(
@@ -101,8 +103,8 @@ class ExportController {
             attributes: attributes,
             attributesMap: attributesMap,
             areaTemplate: Number(request.query.areaTemplate),
-            periods: request.query.periods.map(period => Number(period)),
-            places: request.query.places.map(place => Number(place))
+            periods: periods.map(period => Number(period)),
+            places: places.map(place => Number(place))
         };
     }
 }
