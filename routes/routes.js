@@ -24,6 +24,7 @@ var PrintController = require('./PrintController');
 var MellodiesWpsController = require('./../melodies/WpsController');
 var MellodiesLodController = require('../melodies/LodController');
 var ImportController = require('./ImportController');
+var TemplateDataController = require('./TemplateDataController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -87,6 +88,8 @@ module.exports = function(app) {
 	new ImportController(app, pool);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
+
+	new TemplateDataController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);

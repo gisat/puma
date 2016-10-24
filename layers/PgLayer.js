@@ -91,6 +91,15 @@ class PgLayer {
 		}
 		return config.workspaceSchemaMap[workspace] + "." + layerName;
 	}
+
+	tableData(columns) {
+		var self = this;
+		var pool = this.connectionPool.pool();
+		var sql = `SELECT ${columns.slice()} FROM ${this.tableName()}`;
+		return pool.query({
+			text: sql
+		});
+	}
 }
 
 module.exports = PgLayer;
