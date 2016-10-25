@@ -40,7 +40,8 @@ class BooleanAttribute {
         logger.info(`BooleanAttribute#filter UUID ${uuid} Start: ${moment().format()}`);
         var result = this._jsonAttribute.values.map((value, index) => {
             var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
-            if((value == options.value || value == options.value.charAt(0)) && alreadyInserted.indexOf(attributeName) == -1) {
+            var checkedValue = ((typeof options.value == "boolean" && options.value) || (options.value === "true"));
+            if((value == checkedValue) && alreadyInserted.indexOf(attributeName) == -1) {
                 alreadyInserted.push(attributeName);
                 return {
                     loc: this._jsonAttribute.locations[index],
