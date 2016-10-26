@@ -30,7 +30,7 @@ class GufController {
                             "columnMap": [],
                             "isData": false
                         };
-                        crud.create("layerref", [layerRef], {userId: 1}, function(){});
+                        crud.remove("layerref", layerRef, {userId: 1}, function(){});
                     });
                 });
                 response.json({status: "Ok"})
