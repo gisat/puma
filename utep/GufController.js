@@ -20,16 +20,17 @@ class GufController {
                     return layerName.indexOf('geonode:guf_75m_') == 0
                 });
                 gufLayers.forEach(gufName => {
-                    [4685].forEach(location => {
-                        var layerRef = {
-                            "layer": gufName,
-                            "location": location,
-                            "year": 307,
-                            "areaTemplate": 272,
-                            "isData": false
-                        };
-                        crud.create("layerref", [layerRef], {userId: 1}, function(){});
-                    });
+                    var layerRef = {
+                        "layer": gufName,
+                        "location": 4685,
+                        "year": 307,
+                        "active": true,
+                        "areaTemplate": 272,
+                        "columnMap": [],
+                        "isData": false
+                    };
+                    crud.create("layerref", [layerRef], {userId: 1}, function(){});
+
                 });
                 response.json({status: "Ok"})
             }).catch(error => {
