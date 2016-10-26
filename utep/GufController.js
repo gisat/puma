@@ -8,7 +8,7 @@ class GufController {
         app.get('/utep/map-guf', this.map.bind(this))
     }
 
-    map(request) {
+    map(request, response) {
 
         // Load from geonode all layers I have rights to.
         superagent
@@ -30,7 +30,9 @@ class GufController {
                         "isData": false
                     };
                     crud.create("layerref", [layerRef], {userId: 1}, function(){});
+
                 });
+                response.json({status: "Ok"})
             }).catch(error => {
             console.log(error);
         })
