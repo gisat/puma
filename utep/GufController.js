@@ -9,6 +9,7 @@ class GufController {
     }
 
     map(request) {
+
         // Load from geonode all layers I have rights to.
         superagent
             .get(config.geonodePath + '/layers/acls')
@@ -28,7 +29,7 @@ class GufController {
                         "columnMap": [],
                         "isData": false
                     };
-                    crud.create("layerref", [layerRef], null, function(){});
+                    crud.create("layerref", [layerRef], {userId: 1}, function(){});
                 });
             }).catch(error => {
             console.log(error);
