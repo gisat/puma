@@ -115,7 +115,8 @@ module.exports = {
 	auth: auth,
 	anyUser: anyUser,
 	anyone: anyone,
-	adminOrOwner: adminOrOwner
+	adminOrOwner: adminOrOwner,
+	sessionCache: sessionCache
 };
 
 

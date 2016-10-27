@@ -1,118 +1,190 @@
-var querystring = require('querystring');
-var http = require('http');
-var conn = require('../common/conn');
-var config = require('../config');
+var superagent = require("superagent");
+var Url = require("url").Url;
+
+var config = require("../config");
+var conn = require("../common/conn");
 var logger = require('../common/Logger').applicationWideLogger;
+var sessionCache = require("../common/auth").sessionCache;
 
-function getLoginInfo(params,req,res,callback) {
-	var data = {
-		userId: req.userId,
-		groups: req.groups,
-		userName: req.userName
-	};
-	res.data = req.userId ? data : null;
-	callback();
+class Unauthorized {}
+
+function _getGeonodeHomeUrl(config) {
+	var homeUrl = new Url();
+	homeUrl.protocol = config.geonodeProtocol;
+	homeUrl.hostname = config.geonodeHost;
+	homeUrl.port = config.geonodePort;
+	homeUrl.pathname = config.geonodeHome;
+	return homeUrl;
 }
 
-function login(params,req,res,callback) {
-	geonodeCom(params,true,callback,function(res1) {
-		var cookies = res1.headers['set-cookie'] || [];
-		logger.info("login# login(), Login headers received: ", res1.headers, "\n Cookies: ", cookies);
-		var ssid = null;
-		var csrfToken = null;
-		for (var i=0; i<cookies.length; i++) {
-			var cookieRow = cookies[i].split(';')[0];
-			var name = cookieRow.split('=')[0];
-			if (name == 'sessionid') {
-				ssid = cookieRow.split('=')[1];
+function _parseSetCookieHeaders(headerLines) {
+	var cookies = {};
+	for (let headerLine of headerLines) {
+		// Parse the Set-Cookie header line into key value pairs.
+		let cookie_pairs = [];
+		for (let pair of headerLine.split(";")) {
+			let parts = pair.split("=");
+			let key = parts.shift().trim();
+			let value = true;
+			if (parts.length >= 1) {
+				value = parts.join("=").trim();
 			}
-			if(name == 'csrftoken') {
-				csrfToken = cookieRow.split('=')[1];
-			}
+			cookie_pairs.push([key, value]);
 		}
-		if (!ssid) {
-			// Update to return 400 instead of 500
-			return callback(new Error(logger.info("login# login(), Invalid login")));
+
+		// Extract name, value and attributes.
+		let [name, value] = cookie_pairs.shift();
+		let attributes = {};
+		for (let [key, value] of cookie_pairs) {
+			attributes[key] = value;
 		}
-		res.cookie('ssid',ssid,{httpOnly: true});
-		res.cookie('sessionid',ssid,{httpOnly: true});
-		res.cookie('csrftoken',csrfToken,{httpOnly: true});
 
-		res.data = {status: 'ok', ssid: ssid, csrfToken: csrfToken};
-		callback();
-	})
-
+		// Add the cookie object to cookies index.
+		cookies[name] = {
+			name: name,
+			value: value,
+			attributes: attributes,
+			headerLine: headerLine
+		}
+	}
+	return cookies;
 }
 
-function logout(params,req,res,callback) {
-	geonodeCom(params,false,callback,function() {
-		res.clearCookie('ssid');
-		callback();
-	})
-}
-
-
-var geonodeCom = function(params,isLogin,generalCallback,specificCallback) {
-
-	var options1 = {
-		protocol: config.geonodeProtocol,
-		host: config.geonodeHost,
-		port: config.geonodePort || 80,
-		path: config.geonodeHome + 'layers/',
-		method: 'GET',
-		headers: {
-			'referer': config.geonodeProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + "/"
-		}
-	};
-
-	conn.request(options1,null,function(err,output,res1) {
-		if (err) {
-			logger.error("api/login.js geonodeCom. Options: ", options1, " Error: ", err);
-			return generalCallback(err);
-		}
-		var qsVars = [];
-		if(!('set-cookie' in res1.headers)) return generalCallback({message: 'cookies not set'});
-		res1.headers['set-cookie'][0].split(';').forEach(function(element, index, array){
-			var pair = element.split("=");
-			var key = decodeURIComponent(pair.shift()).trim();
-			var value = decodeURIComponent(pair.join("=")).trim();
-			qsVars[key] = value;
-		});
-		var csrf = qsVars['csrftoken'];
-		var postData = {
-			username: params.username,
-			password: params.password,
-			csrfmiddlewaretoken: csrf,
-			next: ''
-		};
-		if(isLogin){
-			postData['username'] = params.username;
-			postData['password'] = params.password;
-		}
-		postData = querystring.stringify(postData);
-		var options2 = {
-			protocol: config.geonodeProtocol,
-			host: config.geonodeHost,
-			port: config.geonodePort || 80,
-			path: isLogin ? config.geonodePath + '/account/login/' : config.geonodePath + '/account/logout/',
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-				'Content-Length': postData.length,
-				'Cookie':'csrftoken='+csrf,
-				'referer': config.remoteProtocol + '://' + config.geonodeHost + (config.geonodePort==80 ? "" : ":" + config.geonodePort) + '/'
-			}
-		};
-		conn.request(options2,postData,function(err,output,res2) {
-			if (err){
-				logger.error("api/login.js geonodeCom ERROR:", err, " Output:", output, " Options: ", options2);
-				return generalCallback(err);
-			}
-			return specificCallback(res2);
-		});
+function _formatCookieHeader(cookies) {
+	var pairs = Object.keys(cookies).map(key => {
+			return key + "=" + cookies[key].value;
 	});
+	var headerLine = pairs.join("; ");
+	return headerLine;
+}
 
-};
+function _geonodeLogin(username, password, geonodeHomeUrl) {
+	var layersUrl = geonodeHomeUrl.resolveObject("/layers/");
+	var loginUrl = geonodeHomeUrl.resolveObject("/account/login/");
+	var refererUrl = geonodeHomeUrl.resolveObject("/");
+	var cookies = {};
+	// During login request to geonode csrftoken must have been already established .
+	// So we dig Geonode in order to obtain one.
+	return superagent.get(layersUrl.format())
+			.set("Referer", refererUrl.format())
+			.redirects(0)
+	.then(function (res) {
+		// Extract cookies together with csrftoken.
+		cookies = _parseSetCookieHeaders(res.headers["set-cookie"]);
+		if (!cookies.hasOwnProperty("csrftoken")) {
+			throw new Error("Missing csrftoken cookie in response to /layers.")
+		}
+
+		// Send login request.
+		return superagent.post(loginUrl.format())
+			.type("form-data")
+			.send({
+				username: username,
+				password: password,
+				csrfmiddlewaretoken: cookies.csrftoken.value,
+				next: ''
+			})
+			.redirects(0)
+			.set('Referer', refererUrl.format())
+			.set('Cookie', _formatCookieHeader(cookies))
+			.then(function (res) {
+				// Status code 200 OK represents failure in Geonode.
+				// Other success status codes are unknown.
+				if (res.status == 200) {
+					return new Unauthorized();
+				} else {
+					throw new Error(`Unknown status code {res.status} in login response.`);
+				}
+			}).catch(function (err) {
+				// Status code 302 Found represents successful login in Geonode.
+				// Other err status codes are unknown.
+				if (err.response.status == 302) {
+					let new_cookies = _parseSetCookieHeaders(err.response.headers["set-cookie"]);
+					Object.assign(cookies, new_cookies);
+					if (!cookies.hasOwnProperty("csrftoken")) {
+						throw new Error("Missing csrftoken cookie in login response.");
+					} else if (!cookies.hasOwnProperty("sessionid")) {
+						throw new Error("Missing sessionid cookie in login response.");
+					} else {
+						return cookies;
+					}
+				} else {
+					logger.error(err);
+					throw new Error(`Unknown status code {err.response.status} or other error in login response.`);
+				}
+			});
+	});
+}
+
+function _geonodeLogout(cookieHeaderLine, geonodeHomeUrl) {
+	var logoutUrl = geonodeHomeUrl.resolveObject("/account/logout/");
+	var refererUrl = geonodeHomeUrl.resolveObject("/");
+	return superagent.post(logoutUrl.format())
+		.type('form')
+		.set('Referer', refererUrl.format())
+		.set('Cookie', cookieHeaderLine)
+		.then(function (res) {
+			if (res.status == 200) {
+				return true;
+			}
+		}).catch(function (err) {
+			logger.error(err);
+			throw new Error("Error");
+		});
+}
+
+function login(params, req, res, next) {
+	var username = req.body.username;
+	var password = req.body.password;
+	var geonodeHomeUrl = _getGeonodeHomeUrl(config);
+	_geonodeLogin(username, password, geonodeHomeUrl)
+	.then(function (cookies) {
+		if (cookies instanceof Unauthorized) {
+			res.status(401).end();
+		} else {
+			res.status(200);
+
+			// Set session data.
+			var ssid = cookies["sessionid"].value;
+			sessionCache[ssid] = username;
+
+			// Proxy geonode cookies to user agent.
+			for (let name in cookies) {
+				res.set("Set-Cookie", cookies[name].headerLine);
+			}
+
+			// Set panther own ssid cookie.
+			res.cookie("ssid", ssid, {httpOnly: true});
+
+			// Set JSON response data.
+			res.json({status: "ok", ssid: ssid, csrfToken: cookies["csrftoken"].value});
+		}
+	}).catch(function (err) {
+		next(err);
+	});
+}
+
+function logout(params, req, res, next) {
+	_geonodeLogout(req.get('Cookie'), _getGeonodeHomeUrl(config))
+	.then(function (result) {
+		res.clearCookie("ssid");
+		delete sessionCache[ssid];
+	}).catch(function (err) {
+		next(err);
+	});
+}
+
+function getLoginInfo(params, req, res, next) {
+	if (req.userId) {
+		res.json(null);
+	} else {
+		res.json({
+			userId: req.userId,
+			groups: req.groups,
+			userName: req.userName
+		})
+	}
+}
 
 module.exports = {
 	login: login,
