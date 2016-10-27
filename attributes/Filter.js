@@ -38,10 +38,19 @@ class Filter {
                 return `${column} >= ${filteringValue[0]} AND ${column} <= ${filteringValue[1]}`;
             } else if (mongoAttributes[id].type == 'boolean') {
                 return `${column}=${filteringValue}`;
-            } else if (filteringValue.length == 0) {
-                return `${column} IS NOT NULL`;
-            } else {
-                return `${column}='${filteringValue}'`;
+            } else if (mongoAttributes[id].type == 'text') {
+                var whereStatement = `(`;
+                if (filteringValue[0].length == 0) {
+                    return `${column} IS NOT NULL`;
+                } else {
+                    filteringValue.forEach(function (value, index) {
+                        if (index > 0){
+                            whereStatement += ` OR `;
+                        }
+                        whereStatement += `${column}='${value}'`
+                    });
+                    return whereStatement += ')';
+                }
             }
         })
     }
