@@ -10,6 +10,7 @@ var ChartCfgController = require('./ChartCfgController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var ExportController = require('./ExportController');
+var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -62,6 +63,7 @@ module.exports = function(app) {
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app);
 	new AreaTemplateController(app);
+	new GufController(app);
 	if(poolRemote) {
 		new AttributeController(app, poolRemote);
 		new ExportController(app, poolRemote);
