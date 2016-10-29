@@ -16,7 +16,7 @@ class TemplateDataController extends Controller {
         var place = request.body.place;
 
         var templateData = new TemplateData(template, place, this._pool);
-        templateData.getTemplateData().done(function (resolve) {
+        templateData.getTemplateData().then(resolve => {
             response.send(resolve);
         });
     }
