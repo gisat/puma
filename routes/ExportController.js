@@ -6,7 +6,7 @@ var json2csv = require('json2csv');
 var _ = require('underscore');
 var GeoJSON = require('geojson');
 
-var InfoAll = require('../attributes/InfoAll');
+var Info = require('../attributes/Info');
 var Attributes = require('../attributes/Attributes');
 
 /**
@@ -16,7 +16,7 @@ class ExportController {
     constructor(app, pgPool) {
         this._connection = conn.getMongoDb();
 
-        this._infoAll = new InfoAll(pgPool);
+        this._info = new Info(pgPool);
 
         app.get('/export/geojson', this.geojson.bind(this));
         app.get('/export/csv', this.csv.bind(this));
@@ -33,7 +33,7 @@ class ExportController {
         var options = this._parseRequest(request);
 
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
-        this._infoAll.statistics(attributesObj, options.attributesMap).then(json => {
+        this._info.statistics(attributesObj, options.attributesMap, options.gids).then(json => {
             // geom is WKT - It must instead become the geojsonable something.
             // Here create Shapefile from the json.
             json.forEach(value => {
@@ -69,7 +69,7 @@ class ExportController {
         var options = this._parseRequest(request);
 
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
-        this._infoAll.statistics(attributesObj, options.attributesMap).then(json => {
+        this._info.statistics(attributesObj, options.attributesMap, options.gids).then(json => {
             if(json.length > 0) {
                 var csv = json2csv({ data: json, fields: Object.keys(json[0]) });
                 response.set('Content-Type', 'text/csv');
@@ -99,7 +99,10 @@ class ExportController {
 
     _parseRequest(request) {
         var attr = JSON.parse(request.query.attributes);
+        var areas = JSON.parse(request.query.gids);
+
         let attributes = _.toArray(attr);
+        let gids = _.toArray(areas);
         let periods = _.toArray(request.query.periods);
         let places = _.toArray(request.query.places);
 
@@ -111,6 +114,7 @@ class ExportController {
             attributes: attributes,
             attributesMap: attributesMap,
             areaTemplate: Number(request.query.areaTemplate),
+            gids: gids,
             periods: periods.map(period => Number(period)),
             places: places.map(place => Number(place))
         };

@@ -7,8 +7,8 @@ class Info {
         this._pgPool = pgPool;
     }
 
-    statistics(attributes, attributesMap, gid) {
-        return attributes.attributes(this.sql.bind(this, gid)).then(attributes => {
+    statistics(attributes, attributesMap, gids) {
+        return attributes.attributes(this.sql.bind(this, gids)).then(attributes => {
             return attributes.map(attribute => attribute.info({
                 units: attributesMap[attribute.name()].units,
                 value: attributesMap[attribute.name()].value,
@@ -42,11 +42,18 @@ class Info {
         });
     }
 
-    sql(gid, baseLayers) {
+    sql(gids, baseLayers) {
+        var values = [];
+        gids.forEach(function (value) {
+            values.push(value);
+        });
+        var list = "('" + values.join("','") + "')";
+
+
         return Promise.all(baseLayers
             .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
                         ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM views.layer_${baseLayer._id} WHERE 
-                        gid='${gid}'`)
+                        gid IN ${list}`)
             .map(sql => {
                 logger.info('Info#sql Sql', sql);
                 return this._pgPool.pool().query(sql)
