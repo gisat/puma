@@ -40,7 +40,14 @@ class ExportController {
                 value.geom = parse(value.geom);
             });
 
-            var geoJson = GeoJSON.parse(json, {GeoJSON: 'geom'});
+            var crs = {
+                "type": "name",
+                "properties": {
+                    "name": "urn:ogc:def:crs:EPSG::3857"
+                }
+            };
+
+            var geoJson = GeoJSON.parse(json, {GeoJSON: 'geom', crs: crs});
             response.set('Content-Type', 'application/json');
             response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.json`));
             response.end(JSON.stringify(geoJson), 'binary');
