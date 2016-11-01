@@ -7,7 +7,7 @@ class InfoAll {
         this._pgPool = pgPool;
     }
 
-            statistics(attributes, attributesMap) {
+    statistics(attributes, attributesMap) {
         return attributes.attributes(this.sql.bind(this)).then(attributes => {
             return attributes.map(attribute => attribute.info({
                 value: attributesMap[attribute.name()].value,

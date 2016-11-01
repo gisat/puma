@@ -91,7 +91,8 @@ class ExportController {
     }
 
     _parseRequest(request) {
-        let attributes = _.toArray(request.query.attributes);
+        var attr = JSON.parse(request.query.attributes);
+        let attributes = _.toArray(attr);
         let periods = _.toArray(request.query.periods);
         let places = _.toArray(request.query.places);
 
