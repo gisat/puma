@@ -106,11 +106,6 @@ class ExportController {
         let periods = _.toArray(request.query.periods);
         let places = _.toArray(request.query.places);
 
-        logger.info('Export Controller#_parseRequest attributes', attributes);
-        logger.info('Export Controller#_parseRequest gids', gids);
-        logger.info('Export Controller#_parseRequest periods', periods);
-        logger.info('Export Controller#_parseRequest places', places);
-
         var attributesMap = {};
         attributes.forEach(
             attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute

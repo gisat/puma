@@ -32,12 +32,14 @@ class Attributes {
         return Promise.all(this._attributes.map(attribute => {
             return new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()).json();
         })).then(attributes => {
+            logger.info('Attributes#attributes attributes', attributes);
             attributes.forEach(attribute => {
                 mongoAttributes[attribute._id] = attribute;
             });
 
             return this._dataViews(sqlProducer, mongoAttributes);
         }).then(dataViews => {
+            logger.info('Attributes#attributes dataViews', dataViews);
             let attributes = {};
 
             dataViews.forEach(dataView => {
@@ -100,6 +102,7 @@ class Attributes {
             year: {$in: periods},
             location: {$in: places}
         }, conn.getMongoDb()).read().then(baseLayers => {
+            logger.info('Attributes#_dataViews baseLayers', baseLayers);
             // Store the base layers as they will be needed later.
             baseLayers.forEach(baseLayer => baseLayer.queriedColumns = []);
             this._attributes
