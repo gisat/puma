@@ -39,7 +39,6 @@ class Attributes {
 
             return this._dataViews(sqlProducer, mongoAttributes);
         }).then(dataViews => {
-            logger.info('Attributes#attributes dataViews', dataViews);
             let attributes = {};
 
             dataViews.forEach(dataView => {
