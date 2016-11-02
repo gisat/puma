@@ -43,6 +43,7 @@ class Info {
     }
 
     sql(gids, baseLayers) {
+        logger.info('Info#sql baseLayers', baseLayers);
         var values = [];
         gids.forEach(function (value) {
             values.push(value);
