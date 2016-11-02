@@ -38,6 +38,10 @@ class ExportController {
             // Here create Shapefile from the json.
             json.forEach(value => {
                 value.geom = parse(value.geom);
+                value.attributes.forEach(attr => {
+                    value[attr.name] = attr.value;
+                });
+                delete value.attributes;
             });
 
             var crs = {
@@ -71,6 +75,14 @@ class ExportController {
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
         this._info.statistics(attributesObj, options.attributesMap, options.gids).then(json => {
             if(json.length > 0) {
+                json.forEach(value => {
+                    value.attributes.forEach(attr => {
+                        value[attr.name] = attr.value;
+                    });
+                    delete value.attributes;
+                    delete value.geom;
+                });
+
                 var csv = json2csv({ data: json, fields: Object.keys(json[0]) });
                 response.set('Content-Type', 'text/csv');
                 response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.csv`));
