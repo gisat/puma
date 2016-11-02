@@ -100,11 +100,13 @@ class ExportController {
     _parseRequest(request) {
         var attr = JSON.parse(request.query.attributes);
         var areas = JSON.parse(request.query.gids);
+        var per = JSON.parse(request.query.periods);
+        var locations = JSON.parse(request.query.places);
 
         let attributes = _.toArray(attr);
         let gids = _.toArray(areas);
-        let periods = _.toArray(request.query.periods);
-        let places = _.toArray(request.query.places);
+        let periods = _.toArray(per);
+        let places = _.toArray(locations);
 
         logger.info('ExportController#_parseRequest periods', periods);
 
