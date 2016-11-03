@@ -14,6 +14,7 @@ var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
+var LoginController = require('./LoginController');
 var PerformedAnalysisController = require('./PerformedAnalysisController');
 var ScopeController = require('./ScopeController');
 var StyleController = require('./StyleController');
@@ -29,7 +30,6 @@ var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 var api = {
-	login: require('../api/login'),
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
 	data: require('../api/data'),
@@ -78,6 +78,7 @@ module.exports = function(app) {
 	new LayerGroupController(app);
 	new LayerRefController(app, pool);
 	new LocationController(app);
+	new LoginController(app);
 	new PerformedAnalysisController(app);
 	new ScopeController(app);
 	new ThemeController(app);
