@@ -36,8 +36,20 @@ function initServer(err) {
 
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
-	app.use(function(req, res, next){
-		req.ssid = req.cookies.ssid || req.ssid || '';
+	app.use(session({
+		name: "panthersid",
+		secret: "panther",
+		resave: false,
+		saveUninitialized: true
+	}));
+	app.use(function (request, response, next) {
+		response.locals.ssid = request.cookies.sessionid;
+		if (request.session.userId) {
+			request.userId = request.session.userId;
+			request.userName = request.session.userName;
+			request.groups = request.session.groups;
+			request.isAdmin = request.session.groups.indexOf("admingroup") != -1;
+		}
 		next();
 	});
 	app.use(loc.langParser);

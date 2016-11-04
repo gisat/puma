@@ -4,7 +4,6 @@ var Url = require("url").Url;
 var config = require("../config");
 var conn = require('../common/conn');
 var logger = require('../common/Logger').applicationWideLogger;
-var sessionCache = require("../common/auth").sessionCache;
 
 
 function getGeonodeHomeUrl(config) {
@@ -163,8 +162,7 @@ function geonodeFetchUserInfo (username) {
 			var userInfo = {
 				userId: userid,
 				userName: username,
-				groups: groups,
-				isAdmin: groups.indexOf("admingroup") != -1
+				groups: groups
 			};
 			resolve(userInfo);
 		});
@@ -186,43 +184,37 @@ class LoginController {
 	}
 
 	login(request, response, next) {
-		// Clear userInfo from session if exists.
-		var ssid = request.cookies["ssid"];
-		if (ssid) {
-			delete sessionCache[ssid];
-		};
-
-		// Log in geonode.
 		var username = request.body.username;
 		var password = request.body.password;
 		var geonodeHomeUrl = getGeonodeHomeUrl(config);
-		geonodeLogin(username, password, geonodeHomeUrl)
-		.then(function (cookies) {
-			if (cookies instanceof Unauthorized) {
+		return new Promise(function (resolve) {
+			// Destroy current and create a new session.
+			request.session.regenerate(resolve);
+		}).then(function () {
+			// Log in geonode.
+			return geonodeLogin(username, password, geonodeHomeUrl);
+		}).then(function (parsedCookies) {
+			if (parsedCookies instanceof Unauthorized) {
 				response.status(401).end();
 			} else {
 				// Fetch user info from geonode.
 				return geonodeFetchUserInfo(username)
 				.then(function (userInfo) {
 					// Set userInfo into session data.
-					var ssid = cookies["sessionid"].value;
-					sessionCache[ssid] = userInfo;
+					Object.assign(request.session, userInfo);
 
 					// Proxy geonode cookies to user agent.
-					for (let name in cookies) {
-						response.set("Set-Cookie", cookies[name].headerLine);
+					for (let name in parsedCookies) {
+						response.set("Set-Cookie", parsedCookies[name].headerLine);
 					}
-
-					// Set panther's own ssid cookie.
-					response.cookie("ssid", ssid, {httpOnly: true});
 
 					// Set JSON response data.
 					// FIXME: The complicated data structure is here due to old FrontOffice.
 					response.status(200).json({
 						data: {
 							status: "ok",
-							ssid: ssid,
-							csrfToken: cookies["csrftoken"].value
+							ssid: parsedCookies["sessionid"].value,
+							csrfToken: parsedCookies["csrftoken"].value
 						},
 						success: true
 					});
@@ -234,33 +226,28 @@ class LoginController {
 	}
 
 	logout(request, response, next) {
-		var ssid = request.cookies["ssid"];
-		response.clearCookie("ssid");
-		if (ssid) {
-			delete sessionCache[ssid];
-			geonodeLogout(request.get('Cookie'), getGeonodeHomeUrl(config))
+		return new Promise(function (resolve) {
+			// Destroy current session.
+			request.session.destroy(resolve);
+		}).then(function () {
+			return geonodeLogout(request.get('Cookie'), getGeonodeHomeUrl(config))
 			.then(function (result) {
 				// FIXME: The complicated data structure is here due to FrontOffice.
 				response.status(200).json({success: true});
 			}).catch(function (err) {
 				next(err);
 			});
-		} else {
-			// FIXME: The complicated data structure is here due to FrontOffice.
-			response.status(200).json({success: true});
-		}
+		});
 	}
 
 	getLoginInfo(request, response, next) {
-		var ssid = request.cookies["ssid"];
-		if (ssid && sessionCache[ssid]) {
-			let userInfo = sessionCache[ssid];
+		if (request.session.userId) {
 			// FIXME: The complicated data structure is here due to FrontOffice.
 			response.status(200).json({
 				data: {
-					userId: userInfo.userId,
-					groups: userInfo.groups,
-					userName: userInfo.userName
+					userId: request.session.userId,
+					userName: request.session.userName,
+					groups: request.session.groups
 				},
 				success: true
 			});

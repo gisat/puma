@@ -165,7 +165,7 @@ function gatherLayerData(featureInfo, callback) {
 function getLayers(params, req, res, callback) {
 
 	var headers = {
-		'Cookie': 'sessionid=' + (req.ssid || '')
+		'Cookie': 'sessionid=' + (req.cookies.sessionid || '')
 	};
 
 	var options = {
@@ -317,7 +317,7 @@ function getLayerDetails(params, req, res, callback) {
 		path: config.geoserverPath + '/' + workspace + '/ows?' + postData,
 		method: 'GET',
 		headers: {
-			'Cookie': 'ssid=' + req.cookies['ssid']
+			'Cookie': 'ssid=' + response.locals.ssid,
 		}
 	};
 	conn.request(options, null, function(err, output, resl) {
