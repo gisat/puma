@@ -44,12 +44,7 @@ function initServer(err) {
 	}));
 	app.use(function (request, response, next) {
 		response.locals.ssid = request.cookies.sessionid;
-		if (request.session.userId) {
-			request.userId = request.session.userId;
-			request.userName = request.session.userName;
-			request.groups = request.session.groups;
-			request.isAdmin = request.session.groups.indexOf("admingroup") != -1;
-		}
+		response.locals.isAdmin = request.session.groups.indexOf("admingroup") != -1;
 		next();
 	});
 	app.use(loc.langParser);

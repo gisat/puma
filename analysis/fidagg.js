@@ -196,7 +196,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 					}
 				}
 				performedAnalysisObj.finished = new Date();
-				crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId,isAdmin: true}, function(err) {
+				crud.update('performedanalysis', performedAnalysisObj, {userId: req.session.userId, isAdmin: true}, function(err) {
 					if(err){
 						logger.error("Failed to write in MongoDB performedanalysis. Data: ", performedAnalysisObj, " Error" , err);
 						return callback(err);

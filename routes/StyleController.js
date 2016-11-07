@@ -54,7 +54,7 @@ StyleController.prototype.create = function(request, response, next) {
 	var style;
 	var self = this;
 	new Id().toNumber().then(function(id){
-		style = new RestStyle(id, receivedData, request.userId);
+		style = new RestStyle(id, receivedData, request.session.userId);
 		return self._styles.add(style);
 	}).then(function(){
 		style.json().then(function(json){
@@ -85,7 +85,7 @@ StyleController.prototype.update = function(request, response, next) {
 		return;
 	}
 
-	var style = new RestStyle(receivedData.id, receivedData, request.userId);
+	var style = new RestStyle(receivedData.id, receivedData, request.session.userId);
 
 	var promiseOfUpdate;
 	if(receivedData.source != 'geoserver') {

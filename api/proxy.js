@@ -37,10 +37,10 @@ function wms(params, req, res, callback) {
 	if (params['LAYERS'] && params['LAYERS'].indexOf('#userpolygon#')>-1) {
 		useFirst = false;
 		params['LAYERS'] = params['LAYERS'].replace('#userpolygon#','');
-		params['LAYERS'] = params['LAYERS'].replace('#userid#',req.userId);
+		params['LAYERS'] = params['LAYERS'].replace('#userid#', req.session.userId);
 		if (params['QUERY_LAYERS']) {
 			params['QUERY_LAYERS'] = params['QUERY_LAYERS'].replace('#userpolygon#','');
-			params['QUERY_LAYERS'] = params['QUERY_LAYERS'].replace('#userid#',req.userId);
+			params['QUERY_LAYERS'] = params['QUERY_LAYERS'].replace('#userid#', req.session.userId);
 		}
 		if (params['REQUEST'] == 'GetMap') {
 			params['STYLES'] = 'polygon';
@@ -219,8 +219,8 @@ function saveSld(params, req, res, callback) {
 	var oldId = params['oldId'];
 	var sld = params['sldBody'];
 	var legendSld = params['legendSld'] || '';
-	params['userId'] = req.userId;
-	var userLocation = 'user_'+req.userId+'_loc_'+params['location'];
+	params['userId'] = req.session.userId;
+	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
 		var attrs = JSON.parse(params['attrs']);
@@ -331,7 +331,7 @@ function saveSld(params, req, res, callback) {
 					logger.error("api/proxy.js layerRef. It wasn't possible to read Layerref with filter: ", query, " Error: ", err);
 					return callback(err);
 				}
-				var layerName = resls[0] ? resls[0]._id : ('user_'+req.userId+'_loc_'+params['location']+'_y_'+year);
+				var layerName = resls[0] ? resls[0]._id : ('user_' + req.session.userId + '_loc_' + params['location'] + '_y_' + year);
 				//console.log(layerName);
 				//console.log(params['location']);
 				return asyncCallback(null,layerName);

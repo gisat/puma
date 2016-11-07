@@ -17,17 +17,17 @@ class ThemeController extends Controller {
 	}
 
 	update(request, response, next) {
-		logger.info("Create object of type: ", this.type, " by User: ", request.userId, "With data: ", request.body.data);
+		logger.info("Create object of type: ", this.type, " by User: ", request.session.userId, "With data: ", request.body.data);
 
 		var parameters = {
-			userId: request.userId,
-			isAdmin: request.isAdmin
+			userId: request.session.userId,
+			isAdmin: response.locals.isAdmin
 		};
 		var theme = request.body.data;
 		var self = this;
 		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
 			if (err) {
-				logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.userId,
+				logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.session.userId,
 					"With data: ", theme, " Error:", err);
 				return next(err);
 			}
@@ -41,7 +41,7 @@ class ThemeController extends Controller {
 
 			crud.update(self.type, theme, parameters, function (err, result) {
 				if (err) {
-					logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", req.userId,
+					logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.session.userId,
 						"With data: ", theme, " Error:", err);
 					return next(err);
 				} else {

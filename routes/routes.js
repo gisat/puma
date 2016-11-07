@@ -91,7 +91,7 @@ module.exports = function(app) {
 	new MellodiesLodController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
-		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
+		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
 		var fn = api['chart']['drawChart'];
 		req.query = {
 			gid: req.params.gid,
@@ -101,37 +101,37 @@ module.exports = function(app) {
 			fn(req.query,req,res,next);
 		} catch (err) {
 			logger.error("It wasn't possible to draw chart", req.params.gid, "/", req.params.confId, " by User: ",
-				req.userId, " Error: ", err);
+				req.session.userId, " Error: ", err);
 			next(err);
 		}
 	});
 
 	app.get('/api/proxy/wms',function(req,res,next) {
-		logger.info("Call proxy by User: ", req.userId, " With params: ", req.query);
+		logger.info("Call proxy by User: ", req.session.userId, " With params: ", req.query);
 		var mod = api['proxy'];
 		var fn = mod['wms'];
 		try {
 			fn(req.query,req,res,next);
 		} catch (err) {
-			logger.error("Error when calling proxy by User: ", req.userId, " With params: ", req.query, " Error: ", err);
+			logger.error("Error when calling proxy by User: ", req.session.userId, " With params: ", req.query, " Error: ", err);
 			next(err);
 		}
 	});
 
 	app.get('/api/analysis/status', function(request, response, next){
-		logger.info("Call status of analysis User: ", request.userId, " With params: ", request.query);
+		logger.info("Call status of analysis User: ", request.session.userId, " With params: ", request.query);
 
 		api.analysis.status(request, response);
 	});
 
 	app.post('/api/:module/:method',function(req,res,next) {
-		logger.info("Call method of API. Module: ", req.params.module, " Method: ", req.params.method, " by User: ", req.userId);
+		logger.info("Call method of API. Module: ", req.params.module, " Method: ", req.params.method, " by User: ", req.session.userId);
 		var mod = api[req.params.module];
 		var fn = mod[req.params.method];
 		try {
 			fn(req.body,req,res,next);
 		} catch (err) {
-			logger.error("Error when calling: ", req.params.module, "/", req.params.method, " By User: ",req.userId,
+			logger.error("Error when calling: ", req.params.module, "/", req.params.method, " By User: ",req.session.userId,
 				"Error: ", err);
 			next(err);
 		}
