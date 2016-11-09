@@ -70,7 +70,7 @@ module.exports = function (app) {
 			process.status("Processing", logger.info("integration#process Raster has been imported to PostgreSQL and is being analyzed."));
 			processes.store(process);
 			// Run analysis // Async
-			var rasterLayerTableName = "public." + rasterTableName;
+			var rasterLayerTableName = "public.\"" + rasterTableName + "\"";
 			var promises = [];
 			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6292)
 				.run());
