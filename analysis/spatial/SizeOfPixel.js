@@ -9,7 +9,7 @@ var SizeOfPixel = function(rasterLayerTable) {
 };
 
 SizeOfPixel.prototype.get = function() {
-	var sql = util.format("select 100000 * st_pixelheight(rast) as x, 100000 * st_pixelwidth(rast) as y from %s;", this.rasterLayerTable);
+	var sql = util.format("select 100000 * st_pixelheight(rast) as x, 100000 * st_pixelwidth(rast) as y from '%s';", this.rasterLayerTable);
 
 	return new Promise(function(resolve, reject){
 		connection.getPgDataDb().query(sql, function(error, results) {
