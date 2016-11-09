@@ -14,15 +14,34 @@ class BooleanAttribute {
         return this._jsonAttribute.column;
     }
 
+    info(options) {
+        var alreadyInserted = [];
+
+        return this._jsonAttribute.values.map((value, index) => {
+            var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
+            if(alreadyInserted.indexOf(attributeName) == -1) {
+                alreadyInserted.push(attributeName);
+                return {
+                    gid: this._jsonAttribute.gids[index],
+                    name: this._jsonAttribute.names[index],
+                    geom: this._jsonAttribute.geometries[index],
+                    attributeName: options.attributeName,
+                    attributeSetName: options.attributeSetName,
+                    value: value
+                }
+            }
+        }).filter(value => value);
+    }
+
     filter(options) {
         var uuid = new UUID().toString();
         var alreadyInserted = [];
 
         logger.info(`BooleanAttribute#filter UUID ${uuid} Start: ${moment().format()}`);
-
         var result = this._jsonAttribute.values.map((value, index) => {
             var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
-            if((value == options.value || value == options.value.charAt(0)) && alreadyInserted.indexOf(attributeName) == -1) {
+            var checkedValue = ((typeof options.value == "boolean" && options.value) || (options.value === "true"));
+            if((value == checkedValue) && alreadyInserted.indexOf(attributeName) == -1) {
                 alreadyInserted.push(attributeName);
                 return {
                     loc: this._jsonAttribute.locations[index],
@@ -46,6 +65,7 @@ class BooleanAttribute {
             attributeSetName: options.attributeSetName,
             units: options.units,
             standardUnits: options.standardUnits,
+            active: options.active,
             type: 'boolean'
         }
     }

@@ -8,6 +8,8 @@ var moment = require('moment');
 
 var Statistics = require('../attributes/Statistics');
 var Filter = require('../attributes/Filter');
+var Attributes = require('../attributes/Attributes');
+var Info = require('../attributes/Info');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
@@ -18,65 +20,41 @@ class AttributeController extends Controller {
 
         this._pgPool = pgPool;
 
+        this._statistics = new Statistics(pgPool);
+        this._filter = new Filter(pgPool);
+        this._info = new Info(pgPool);
+
         app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
         app.get('/rest/filter/attribute/filter', this.filter.bind(this));
         app.get('/rest/filter/attribute/amount', this.amount.bind(this));
+        app.get('/rest/info/attribute', this.info.bind(this));
     }
 
-    statistics(request, response, next) {
-        request.query.attributes = _.toArray(request.query.attributes);
+    statistics(request, response) {
+        var options = this._parseRequest(request);
         var uuid = new UUID().toString();
-        logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, request.query.attributes);
+        logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, options.attributes);
         var distribution = request.query.distribution;
-        var attributesMap = {};
-        request.query.attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-        if (distribution.type == 'normal') {
-            new Statistics(request, this._pgPool).statistics().then(attributes => {
-                return attributes.map(attribute => attribute.json({
-                    classes: Number(distribution.classes),
-                    attributeName: attributesMap[attribute.name()].attributeName,
-                    attributeSetName: attributesMap[attribute.name()].attributeSetName,
-                    units: attributesMap[attribute.name()].units,
-                    standardUnits: attributesMap[attribute.name()].standardUnits
-                }));
-            }).then(json => {
-                response.json({attributes: json});
-                logger.info(`AttributeController#statistics UUID: ${uuid} End: ${moment().format()}`);
-            }).catch(err => {
-                throw new Error(
-                    logger.error(`AttributeController#statistics Error: `, err)
-                )
-            })
-        } else {
+
+        let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        this._statistics.statistics(attributes, options.attributesMap, distribution).then(json => {
+            response.json({attributes: json});
+            logger.info(`AttributeController#statistics UUID: ${uuid} End: ${moment().format()}`);
+        }).catch(err => {
             throw new Error(
-                logger.error(`AttributeController#statistics Wrong type of distribution.`)
+                logger.error(`AttributeController#statistics Error: `, err)
             )
-        }
+        })
     }
 
-    filter(request, response, next) {
-        request.query.attributes = _.toArray(request.query.attributes);
+    filter(request, response) {
+        var options = this._parseRequest(request);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 
-        var attributesMap = {};
-        request.query.attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-        new Filter(request, this._pgPool).statistics().then(attributes => {
-            return attributes.map(attribute => attribute.filter({
-                value: attributesMap[attribute.name()].value,
-                attributeName: attributesMap[attribute.name()].attributeName,
-                attributeSetName: attributesMap[attribute.name()].attributeSetName
-            }));
-        }).then(json => {
-            var result = _.flatten(json);
-            logger.info('AttributeController#filter JSON rows: ', result.length);
-            // Get only those that are in all.
-
-            result = this.deduplicate(result, json.length);
+        let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        this._filter.statistics(attributes, options.attributesMap, options.attributes).then(json => {
+            let result = this._deduplicate(_.flatten(json), json.length);
             response.json(result);
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
@@ -86,37 +64,70 @@ class AttributeController extends Controller {
         });
     }
 
-    amount(request, response, next) {
-        request.query.attributes = _.toArray(request.query.attributes);
+    amount(request, response) {
+        var options = this._parseRequest(request);
         var uuid = new UUID().toString();
-        logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
+        logger.info(`AttributeController#amount UUID: ${uuid} Start: ${moment().format()}`);
 
-        var attributesMap = {};
-        request.query.attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-        new Filter(request, this._pgPool).statistics().then(attributes => {
-            return attributes.map(attribute => attribute.filter({
-                value: attributesMap[attribute.name()].value,
-                attributeName: attributesMap[attribute.name()].attributeName,
-                attributeSetName: attributesMap[attribute.name()].attributeSetName
-            }));
-        }).then(json => {
-            var result = _.flatten(json);
-            logger.info('AttributeController#filter JSON rows: ', result.length);
-            // Get only those that are in all.
-
-            result = this.deduplicate(result, json.length);
+        let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        this._filter.statistics(attributes, options.attributesMap, options.attributes).then(json => {
+            let result = this._deduplicate(_.flatten(json), json.length);
             response.json({amount: result.length});
-            logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
+            logger.info(`AttributeController#amount UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
             throw new Error(
-                logger.error(`AttributeController#filter Error: `, err)
+                logger.error(`AttributeController#amount Error: `, err)
             )
         });
     }
 
-    deduplicate(result, amountOfDuplicated) {
+    _parseRequest(request) {
+        let attributes = _.toArray(request.query.attributes);
+
+        var attributesMap = {};
+        attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
+        return {
+            attributes: attributes,
+            attributesMap: attributesMap,
+            areaTemplate: Number(request.query.areaTemplate),
+            periods: request.query.periods.map(period => Number(period)),
+            places: request.query.places.map(place => Number(place))
+        };
+    }
+
+    /**
+     * Returns values for received attributes for specific polygon.
+     * @param request
+     * @param response
+     */
+    info(request, response) {
+        var options = this._parseRequest(request);
+        let gid = request.query.gid;
+        var uuid = new UUID().toString();
+        logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
+
+        let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        this._info.statistics(attributesObj, options.attributesMap, gid).then(json => {
+            response.json(json);
+            logger.info(`AttributeController#info UUID: ${uuid} End: ${moment().format()}`);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`AttributeController#info Error: `, err)
+            )
+        });
+
+    }
+
+    /**
+     * Simply removes duplicates from the result.
+     * @param result {Array}
+     * @param amountOfDuplicated Amount of filter criteria.
+     * @returns {Array}
+     * @private
+     */
+    _deduplicate(result, amountOfDuplicated) {
         let groupedInformation = _.groupBy(result, element => `${element.at}_${element.gid}_${element.loc}`);
         return Object.keys(groupedInformation).map(key => {
             return groupedInformation[key] &&

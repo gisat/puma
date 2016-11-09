@@ -4,9 +4,9 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 class FilteredBaseLayers {
     constructor(filter, connection) {
+        logger.info('FilteredBaseLayers#constructor filter', filter);
         this._filter = filter;
         this._connection = connection;
-
         this._collection = new FilteredMongoLayerReferences(filter, connection);
     }
 
@@ -36,9 +36,9 @@ class FilteredBaseLayers {
     addColumns(baseLayer, dataLayers) {
         baseLayer.columns = [];
         dataLayers.forEach(dataLayer => {
-            baseLayer.columns = dataLayer.columnMap.map(column => {
+            baseLayer.columns.push.apply(baseLayer.columns, dataLayer.columnMap.map(column => {
                 return `as_${dataLayer.attributeSet}_attr_${column.attribute}`;
-            });
+            }));
             logger.info(`FilteredBaseLayers#addColumns Layer ${dataLayer._id} Columns: `, baseLayer.columns);
         });
 

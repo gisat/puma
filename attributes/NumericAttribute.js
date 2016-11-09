@@ -28,6 +28,26 @@ class NumericAttribute {
         return this._jsonAttribute.column;
     }
 
+    info(options) {
+        var alreadyInserted = [];
+
+        return this._jsonAttribute.values.map((value, index) => {
+            var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
+            if(alreadyInserted.indexOf(attributeName) == -1) {
+                alreadyInserted.push(attributeName);
+                return {
+                    gid: this._jsonAttribute.gids[index],
+                    name: this._jsonAttribute.names[index],
+                    geom: this._jsonAttribute.geometries[index],
+                    attributeName: options.attributeName,
+                    attributeSetName: options.attributeSetName,
+                    units: options.units,
+                    value: value
+                }
+            }
+        }).filter(value => value);
+    }
+
     filter(options) {
         var uuid = new UUID().toString();
         var alreadyInserted = [];
@@ -35,7 +55,7 @@ class NumericAttribute {
 
         var result = this._jsonAttribute.values.map((value, index) => {
             var attributeName = `at_${this._jsonAttribute.areaTemplates[index]}_loc_${this._jsonAttribute.locations[index]}_gid_${this._jsonAttribute.gids[index]}`;
-            if(value >= options.value[0] && value <= options.value[1] && alreadyInserted.indexOf(attributeName) == -1) {
+            if(value >= Number(options.value[0]) && value <= Number(options.value[1]) && alreadyInserted.indexOf(attributeName) == -1) {
                 alreadyInserted.push(attributeName);
                 return {
                     loc: this._jsonAttribute.locations[index],
@@ -63,7 +83,6 @@ class NumericAttribute {
                 distribution[Math.floor((value - this._min) / classSize)]++;
             }
         });
-
         return {
             attribute: this._attribute,
             attributeSet: this._attributeSet,
@@ -71,6 +90,7 @@ class NumericAttribute {
             attributeSetName: options.attributeSetName,
             units: options.units,
             standardUnits: options.standardUnits,
+            active: options.active,
             min: this._min,
             max: this._max,
             type: 'numeric',
