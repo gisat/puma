@@ -61,7 +61,7 @@ class ImportedPlace {
 			return Promise.all(promises);
 		}).then(() => {
 			logger.info('ImportedPlace#create Result: ', this._layerRefTable);
-			return this._layerRefTable;
+			return {location: locationId, layerRef: this._layerRefTable};
 		});
 	}
 

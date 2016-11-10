@@ -16,6 +16,7 @@ var Processes = require('../integration/Processes');
 var FilterByIdProcesses = require('../integration/FilterByIdProcesses');
 var CenterOfRaster = require('../analysis/spatial/CenterOfRaster');
 var Location = require('../integration/Location');
+var VectorizeAndIntegrateSubset = require('../integration/VectorizeAndIntegrateSubset');
 
 class IntegrationController {
 	constructor(app, pgPool) {
@@ -59,7 +60,7 @@ class IntegrationController {
 
 		var self = this;
 		var promiseOfFile = remoteFile.get();
-		var rasterLayerTable, center, layerRefId;
+		var rasterLayerTable, center, layerRefId, url, location;
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
@@ -79,7 +80,8 @@ class IntegrationController {
 			return new ImportedPlace(self._pgPool, rasterTableName)
 				.create();
 		}).then(function(pLayerRefId){
-			layerRefId = pLayerRefId;
+			layerRefId = pLayerRefId.layerRef;
+			location = pLayerRefId.location;
 			return new CenterOfRaster(rasterLayerTable).center();
 		}).then(function(pCenter){
 			center = pCenter;
@@ -100,7 +102,10 @@ class IntegrationController {
 			};
 			return new ViewResolver(viewProps) // TODO Think of naming
 				.create();
-		}).then(function(url){
+		}).then(function(pUrl){
+			url = pUrl;
+			return new VectorizeAndIntegrateSubset(id, location).process();
+		}).then(function(){
 			logger.info("Finished preparation of Url: ", url);
 			// Set result to the process.
 			process.end("File processing was finished.")
