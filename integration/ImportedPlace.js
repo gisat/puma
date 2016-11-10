@@ -114,13 +114,14 @@ class ImportedPlace {
 		let createTableWithOnlyRelevantAU = `CREATE TABLE ${createdTableName} AS (
                 SELECT analyticalUnits."NUTS_ID" as gid,
                 	${parentId} as parid,
+                    analyticalUnits."NUTS_NAME" as name,
                     analyticalUnits.the_geom as the_geom,
                     0 as urban_area,
                     0 as non_urban_area
                 FROM ${this._rasterLayerTable} AS rasterLayer 
                 INNER JOIN ${analyticalUnitsLayer} AS analyticalUnits 
                     ON ST_Contains(rasterLayer.extent, analyticalUnits.the_geom)    
-                GROUP BY(analyticalUnits."NUTS_ID", parid, ${parentId != null ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
+                GROUP BY(analyticalUnits."NUTS_ID",analyticalUnits."NUTS_NAME", parid, ${parentId != null ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
             )`;
 
 		logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU SQL: ', createTableWithOnlyRelevantAU);
@@ -173,7 +174,7 @@ class ImportedPlace {
 	createMetadata(tableName, areaTemplateId, locationId) {
 		logger.info('ImportedPlace#createMetadata started. TableName: ', tableName, " AreaTemplateId: ", areaTemplateId, " LocationID: ", locationId);
 		// Some of them will have parent columns.
-		return crud.createPromised("layerref", {
+		var baseLayerRef = {
 			"layer": `geonode:${tableName}`,
 			"location": locationId,
 			"year": this._year,
@@ -182,12 +183,41 @@ class ImportedPlace {
 			"columnMap": [],
 			"isData": false,
 			"fidColumn": "gid",
-			"nameColumn": "parid",
+			"nameColumn": "name",
 			"created": "2016-07-14T14:06:53.961Z",
 			"createdBy": 2,
 			"changed": "2016-07-14T14:06:53.961Z",
 			"changedBy": 2
-		}, {userId: 1}).then((result) => {
+		};
+		var dataLayerRef = {
+			"layer": `geonode:${tableName}`,
+			"location": locationId,
+			"year": this._year,
+			"active": true,
+			"areaTemplate": areaTemplateId,
+			"attributeSet": this._attributeSetId,
+			"columnMap": [{
+				attribute: this._urbanId,
+				column: 'urban_area'
+			}, {
+				attribute: this._nonUrbanId,
+				column: 'non_urban_area'
+			}],
+			"isData": true,
+			"fidColumn": "gid",
+			"nameColumn": "name",
+			"created": "2016-07-14T14:06:53.961Z",
+			"createdBy": 2,
+			"changed": "2016-07-14T14:06:53.961Z",
+			"changedBy": 2
+		};
+
+		// Add parent id for all except the first level. Name of the parent column is stable as it is created earlier in this klass.
+		if(this._layerRefTable) {
+			baseLayerRef["parentColumn"] = "parid";
+		}
+
+		return crud.createPromised("layerref", baseLayerRef, {userId: 1}).then((result) => {
 			logger.info('ImportedPlace#createMetadata Result: ', result);
 
 			// I want to keep base layer ref id for the least detailed level available and use it for the view.
@@ -196,28 +226,7 @@ class ImportedPlace {
 				this._layerRefTable = result._id;
 			}
 
-			return crud.createPromised("layerref", {
-				"layer": `geonode:${tableName}`,
-				"location": locationId,
-				"year": this._year,
-				"active": true,
-				"areaTemplate": areaTemplateId,
-				"attributeSet": this._attributeSetId,
-				"columnMap": [{
-					attribute: this._urbanId,
-					column: 'urban_area'
-				}, {
-					attribute: this._nonUrbanId,
-					column: 'non_urban_area'
-				}],
-				"isData": true,
-				"fidColumn": "gid",
-				"nameColumn": "parid",
-				"created": "2016-07-14T14:06:53.961Z",
-				"createdBy": 2,
-				"changed": "2016-07-14T14:06:53.961Z",
-				"changedBy": 2
-			}, {userId: 1});
+			return crud.createPromised("layerref", dataLayerRef, {userId: 1});
 		});
 	}
 }
