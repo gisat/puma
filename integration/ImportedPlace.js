@@ -74,7 +74,7 @@ class ImportedPlace {
 
 	generateTableForLevel(analyticalUnitsLayer, locationId) {
 		logger.info('ImportedPlace#generateTableForLevel analyticalUnitsLayer: ', analyticalUnitsLayer, ' Location: ', locationId);
-		let createdTableName = `imported_au_${analyticalUnitsLayer}_${conn.getNextId()}`;
+		let createdTableName = `imported_au_${analyticalUnitsLayer}_${conn.getNextId()}`.toLowerCase();
 
 		let addExtentToRaster = `ALTER TABLE ${this._rasterLayerTable} ADD COLUMN extent geometry`;
 		return this._connection.query(addExtentToRaster).then(()=> {
