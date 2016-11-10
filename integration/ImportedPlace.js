@@ -54,7 +54,7 @@ class ImportedPlace {
 
 			for(let i = 0;i++,this._amountOfValidLevels > 0; this._amountOfValidLevels--) {
 				// Ids must always start from 2
-				this.createMetadata(this._areaTemplateLevels[this._amountOfValidLevels - 1].tableName, this._areaTemplateIds[i], locationId);
+				promises.push(this.createMetadata(this._areaTemplateLevels[this._amountOfValidLevels - 1].tableName, this._areaTemplateIds[i], locationId));
 			}
 
 			return Promise.all(promises);
