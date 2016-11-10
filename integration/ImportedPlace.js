@@ -47,8 +47,8 @@ class ImportedPlace {
 	}
 
 	createLocation() {
-		logger.info('ImportedPlace#createLocation Started');
 		let extentSql = `SELECT St_Extent(ST_Envelope(rast)) as extent FROM ${this._rasterLayerTable};`;
+		logger.info('ImportedPlace#createLocation Started. SQL: ', extentSql);
 
 		return this._connection.query(extentSql).then((results) => {
 			let extent = results.rows[0].extent
