@@ -52,7 +52,8 @@ class ImportedPlace {
 		}).then(() => {
 			var promises = [];
 
-			for(let i = 0;i++,this._amountOfValidLevels > 0; this._amountOfValidLevels--) {
+			for(let i = 0;this._amountOfValidLevels > 0; i++, this._amountOfValidLevels--) {
+				logger.info('ImportedPlace#create Table Name: ', this._areaTemplateLevels[this._amountOfValidLevels - 1].tableName, " Id: ",  this._areaTemplateIds[i], ' I: ', i, ' Amount of valid: ', this._amountOfValidLevels);
 				// Ids must always start from 2
 				promises.push(this.createMetadata(this._areaTemplateLevels[this._amountOfValidLevels - 1].tableName, this._areaTemplateIds[i], locationId));
 			}
@@ -134,8 +135,9 @@ class ImportedPlace {
 			return this._connection.query(isAtLeastOneAreaContained);
 		}).then((results) => {
 			if (results.rows[0].amount > 0) {
-				logger.info('ImportedPlace#generateTableForLevel Level is valid');
-				this._amountOfValidLevels++;
+				logger.info('ImportedPlace#generateTableForLevel Level is valid. Amount of valid levels. ', this._amountOfValidLevels);
+				this._areaTemplateLevels[this._amountOfValidLevels].tableName = createdTableName;
+				this._amountOfValidLevels++
 			}
 
 			let pixelRatio = 10000000000;
@@ -166,7 +168,6 @@ class ImportedPlace {
 			logger.info('ImportedPlace#generateTableForLevel countNonUrban SQL: ', countNonUrban);
 
 			// Store name of created table for later usage.
-			this._areaTemplateLevels[this._amountOfValidLevels - 1].tableName = createdTableName;
 			return this._connection.query(countNonUrban);
 		});
 	}
