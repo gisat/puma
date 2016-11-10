@@ -37,7 +37,7 @@ class IntegrationController {
 		logger.info("/integration/process, Start remote process. Url: ", request.body.url);
 
 		var urlOfGeoTiff = request.body.url;
-		var id = guid();
+		var id = "a" + guid();
 
 		var remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
 		if (!remoteFile.validateUrl()) {
