@@ -110,7 +110,7 @@ class ImportedPlace {
 
 			return this._connection.query(isAtLeastOneAreaContained);
 		}).then((results) => {
-			if (results.rows(0).amount > 0) {
+			if (results.rows[0].amount > 0) {
 				logger.info('ImportedPlace#generateTableForLevel Level is valid');
 				this._amountOfValidLevels++;
 			}
