@@ -161,9 +161,9 @@ class ImportedPlace {
 			"isData": false,
 			"fidColumn": "gid",
 			"nameColumn": "parid",
-			"created": ISODate("2016-07-14T14:06:53.961Z"),
+			"created": "2016-07-14T14:06:53.961Z",
 			"createdBy": 2,
-			"changed": ISODate("2016-07-14T14:06:53.961Z"),
+			"changed": "2016-07-14T14:06:53.961Z",
 			"changedBy": 2
 		}, {userId: 1}).then((result) => {
 			logger.info('ImportedPlace#createMetadata Result: ', result);
@@ -188,9 +188,9 @@ class ImportedPlace {
 				"isData": true,
 				"fidColumn": "gid",
 				"nameColumn": "parid",
-				"created": ISODate("2016-07-14T14:06:53.961Z"),
+				"created": "2016-07-14T14:06:53.961Z",
 				"createdBy": 2,
-				"changed": ISODate("2016-07-14T14:06:53.961Z"),
+				"changed": "2016-07-14T14:06:53.961Z",
 				"changedBy": 2
 			}, {userId: 1});
 		});
