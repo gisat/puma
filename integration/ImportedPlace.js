@@ -66,7 +66,7 @@ class ImportedPlace {
 				"name": "Imported " + conn.getNextId(),
 				"bbox": extent,
 				"dataset": this._scopeId
-			}, null)
+			}, {userId: 1})
 		}).then((result=> {
 			return result._id;
 		}));
@@ -162,7 +162,7 @@ class ImportedPlace {
 			"createdBy": 2,
 			"changed": ISODate("2016-07-14T14:06:53.961Z"),
 			"changedBy": 2
-		}, null).then((result) => {
+		}, {userId: 1}).then((result) => {
 			logger.info('ImportedPlace#createMetadata Result: ', result);
 
 			// I want to keep base layer ref id for the least detailed level available and use it for the view.
@@ -189,7 +189,7 @@ class ImportedPlace {
 				"createdBy": 2,
 				"changed": ISODate("2016-07-14T14:06:53.961Z"),
 				"changedBy": 2
-			}, null);
+			}, {userId: 1});
 		});
 	}
 }
