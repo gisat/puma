@@ -277,7 +277,7 @@ function getGeometryColumnName(sourceTableName) {
                           + " FROM information_schema.columns"
 		          + " WHERE table_schema = $1 AND table_name = $2 AND udt_name = 'geometry'"
 		          + " ORDER BY column_name;"
-		logger.info('conn#getGeometryColumnName SQL: ', sql);
+		logger.info('conn#getGeometryColumnName SQL: ', sql, ' Schema name: ', schemaName, ' tableName: ', tableName);
 		var client = getPgDataDb();
 		client.query(sql, [schemaName, tableName], function(err, results) {
 			if (err) {
