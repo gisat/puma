@@ -1,6 +1,7 @@
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
+var Promise = require('promise');
 
 /**
  * For now there is assumption that there will be 4 level of analytical units. It wont work otherwise.
@@ -20,9 +21,15 @@ class ImportedPlace {
 		this._nonUrbanId = 4313;
 		this._scopeId = 4309;
 		this._year = 6;
+		// TODO: Dodument this structure. Basically I am starting from the lowest level but storing in mongo from highest levels.
 		this._areaTemplateLevels = [
-			5, 4, 3, 2
+			{id: 5, tableName: null},
+			{id: 4, tableName: null},
+			{id: 3, tableName: null},
+			{id: 2, tableName: null}
 		];
+
+		this._areaTemplateIds = [2,3,4,5];
 
 		this._layerRefTable = null;
 		this._amountOfValidLevels = 0; // It is possible that the area will be too small to be mapped even on one full unit.
@@ -42,6 +49,15 @@ class ImportedPlace {
 			return this.generateTableForLevel(this._level1Name, locationId);
 		}).then(() => {
 			return this.generateTableForLevel(this._level0Name, locationId);
+		}).then(() => {
+			var promises = [];
+
+			for(let i = 0;i++,this._amountOfValidLevels > 0; this._amountOfValidLevels--) {
+				// Ids must always start from 2
+				this.createMetadata(this._areaTemplateLevels[this._amountOfValidLevels - 1], this._areaTemplateIds[i], locationId);
+			}
+
+			return Promise.all(promises);
 		}).then(() => {
 			logger.info('ImportedPlace#create Result: ', this._layerRefTable);
 			return this._layerRefTable;
@@ -148,21 +164,21 @@ class ImportedPlace {
 
 			logger.info('ImportedPlace#generateTableForLevel countNonUrban SQL: ', countNonUrban);
 
+			// Store name of created table for later usage.
+			this._areaTemplateLevels[this._amountOfValidLevels - 1].tableName = createdTableName;
 			return this._connection.query(countNonUrban);
-		}).then(() => {
-			return this.createMetadata(createdTableName, locationId);
 		});
 	}
 
-	createMetadata(tableName, locationId) {
-		logger.info('ImportedPlace#createMetadata started');
+	createMetadata(tableName, areaTemplateId, locationId) {
+		logger.info('ImportedPlace#createMetadata started. TableName: ', tableName, " AreaTemplateId: ", areaTemplateId, " LocationID: ", locationId);
 		// Some of them will have parent columns.
 		return crud.createPromised("layerref", {
 			"layer": `geonode:${tableName}`,
 			"location": locationId,
 			"year": this._year,
 			"active": true,
-			"areaTemplate": this._areaTemplateLevels[this._amountOfValidLevels - 1],
+			"areaTemplate": areaTemplateId,
 			"columnMap": [],
 			"isData": false,
 			"fidColumn": "gid",
@@ -175,14 +191,17 @@ class ImportedPlace {
 			logger.info('ImportedPlace#createMetadata Result: ', result);
 
 			// I want to keep base layer ref id for the least detailed level available and use it for the view.
-			this._layerRefTable = result._id;
+			// The first one is the least detailed level, which is the one I need to use later in creation of view.
+			if(!this._layerRefTable) {
+				this._layerRefTable = result._id;
+			}
 
 			return crud.createPromised("layerref", {
 				"layer": `geonode:${tableName}`,
 				"location": locationId,
 				"year": this._year,
 				"active": true,
-				"areaTemplate": this._areaTemplateLevels[this._amountOfValidLevels - 1],
+				"areaTemplate": areaTemplateId,
 				"attributeSet": this._attributeSetId,
 				"columnMap": [{
 					attribute: this._urbanId,
