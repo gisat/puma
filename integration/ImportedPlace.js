@@ -33,6 +33,8 @@ class ImportedPlace {
 		return this.createLocation().then((pLocationId) => {
 			locationId = pLocationId;
 		}).then(() => {
+			return this.createExtent()
+		}).then(() => {
 			return this.generateTableForLevel(this._level3Name, locationId);
 		}).then(() => {
 			return this.generateTableForLevel(this._level2Name, locationId);
@@ -72,23 +74,28 @@ class ImportedPlace {
 		}));
 	}
 
-	generateTableForLevel(analyticalUnitsLayer, locationId) {
-		logger.info('ImportedPlace#generateTableForLevel analyticalUnitsLayer: ', analyticalUnitsLayer, ' Location: ', locationId);
-		let createdTableName = `imported_au_${analyticalUnitsLayer}_${conn.getNextId()}`.toLowerCase();
-
+	createExtent() {
 		let addExtentToRaster = `ALTER TABLE ${this._rasterLayerTable} ADD COLUMN extent geometry`;
+
+		logger.info('ImportedPlace#generateTableForLevel createExtent. SQL: ', addExtentToRaster);
+
 		return this._connection.query(addExtentToRaster).then(()=> {
 			let fillExtentWithData = `UPDATE ${this._rasterLayerTable} SET extent = subquery.ext FROM (Select St_SetSRID(St_Extent(St_Envelope(${this._rasterLayerTable}.rast))::geometry, 4326) as ext FROM ${this._rasterLayerTable}) AS subquery`;
 
-			logger.info('ImportedPlace#generateTableForLevel Add extent to raster. SQL: ', fillExtentWithData);
+			logger.info('ImportedPlace#generateTableForLevel fillExtentWithData SQL: ', fillExtentWithData);
 
 			return this._connection.query(fillExtentWithData);
-		}).then(() => {
-			let parentId = `analyticalUnits."ParID"`;
-			if (this._amountOfValidLevels == 3) {
-				parentId = 0;
-			}
-			let createTableWithOnlyRelevantAU = `CREATE TABLE ${createdTableName} AS (
+		});
+	}
+
+	generateTableForLevel(analyticalUnitsLayer, locationId) {
+		logger.info('ImportedPlace#generateTableForLevel analyticalUnitsLayer: ', analyticalUnitsLayer, ' Location: ', locationId);
+		let createdTableName = `imported_au_${analyticalUnitsLayer}_${conn.getNextId()}`.toLowerCase();
+		let parentId = `analyticalUnits."ParID"`;
+		if (this._amountOfValidLevels == 3) {
+			parentId = 0;
+		}
+		let createTableWithOnlyRelevantAU = `CREATE TABLE ${createdTableName} AS (
                 SELECT analyticalUnits."NUTS_ID" as gid,
                 	${parentId} as parid,
                     analyticalUnits.the_geom as the_geom,
@@ -97,16 +104,15 @@ class ImportedPlace {
                 FROM ${this._rasterLayerTable} AS rasterLayer 
                 INNER JOIN ${analyticalUnitsLayer} AS analyticalUnits 
                     ON ST_Contains(rasterLayer.extent, analyticalUnits.the_geom)    
-                GROUP BY(analyticalUnits."NUTS_ID", parid, ${parentId != null ? parentId + ',': ''} gid, the_geom, urban_area, non_urban_area)
+                GROUP BY(analyticalUnits."NUTS_ID", parid, ${parentId != null ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
             )`;
 
-			logger.info('ImportedPlace#generateTableForLevel Fill extent with data. SQL: ', createTableWithOnlyRelevantAU);
+		logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU SQL: ', createTableWithOnlyRelevantAU);
 
-			return this._connection.query(createTableWithOnlyRelevantAU);
-		}).then(() => {
+		return this._connection.query(createTableWithOnlyRelevantAU).then(() => {
 			let isAtLeastOneAreaContained = `SELECT count(*) as amount FROM ${createdTableName}`;
 
-			logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU SQL: ', isAtLeastOneAreaContained);
+			logger.info('ImportedPlace#generateTableForLevel isAtLeastOneAreaContained SQL: ', isAtLeastOneAreaContained);
 
 			return this._connection.query(isAtLeastOneAreaContained);
 		}).then((results) => {

@@ -271,7 +271,8 @@ function getGeometryColumnName(sourceTableName) {
 			logger.error(err_msg);
 			return reject(new Error(err_msg));
 		}
-	
+
+		// TODO: FIX It doesnt work with mixed case table names.
 		// Do lookup for geometry column name.
 		var sql = "SELECT column_name"
                           + " FROM information_schema.columns"
