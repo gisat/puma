@@ -3,9 +3,8 @@ var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 var _ = require('underscore');
 
-var SumRasterVectorGuf = require('../analysis/spatial/SumRasterVectorGuf');
 var GeonodeLayer = require('../integration/GeonodeLayer');
-var GufMetadataStructures = require('../integration/GufMetadataStructures');
+var ImportedPlace = require('../integration/ImportedPlace');
 var RasterToPSQL = require('../integration/RasterToPSQL');
 var RunSQL = require('../integration/RunSQL');
 // Careful with renaming to uppercase start. Was created in windows with lowercase first.
@@ -18,9 +17,15 @@ var FilterByIdProcesses = require('../integration/FilterByIdProcesses');
 var CenterOfRaster = require('../analysis/spatial/CenterOfRaster');
 var Location = require('../integration/Location');
 
-module.exports = function (app) {
+class IntegrationController {
+	constructor(app, pgPool) {
+		this._pgPool = pgPool;
 
-	app.post("/integration/process", function (request, response) {
+		app.post("/integration/process", this.process.bind(this));
+		app.get("/integration/status", this.status.bind(this));
+	}
+
+	process(request, response) {
 		if (!request.body.url) {
 			logger.error("Url of the data source must be specified.");
 			response.status(400).json({
@@ -53,7 +58,7 @@ module.exports = function (app) {
 		processes.store(process);
 
 		var promiseOfFile = remoteFile.get();
-		var rasterLayerTable, center;
+		var rasterLayerTable, center, layerRefId;
 		promiseOfFile.then(function () {
 			process.status("Processing", "File was retrieved successfully and is being processed.");
 			processes.store(process);
@@ -65,31 +70,22 @@ module.exports = function (app) {
 			processes.store(process);
 			return new RunSQL(conn.getPgDataDb(), sqlOptions)
 				.process();
-		}).then(function(rasterTableName){
-			rasterLayerTable = rasterTableName;
+		}).then(function(rasterTableName) {
 			process.status("Processing", logger.info("integration#process Raster has been imported to PostgreSQL and is being analyzed."));
 			processes.store(process);
-			// Run analysis // Async
-			var rasterLayerTableName = "public.\"" + rasterTableName + "\"";
-			var promises = [];
-			promises.push(new SumRasterVectorGuf("views.layer_6353", rasterLayerTableName, 6292)
-				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6354", rasterLayerTableName, 6300)
-				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6355", rasterLayerTableName, 6301)
-				.run());
-			promises.push(new SumRasterVectorGuf("views.layer_6356", rasterLayerTableName, 6302)
-				.run());
 
-			return Promise.all(promises);
-		}).then(function(){
+			rasterLayerTable = rasterTableName; // At this point we can find out about relevant area.
+			return new ImportedPlace(conn.getPgDataDb(), rasterTableName)
+				.create();
+		}).then(function(pLayerRefId){
+			layerRefId = pLayerRefId;
 			return new CenterOfRaster(rasterLayerTable).center();
 		}).then(function(pCenter){
 			center = pCenter;
-			return new Location(center).location();
+			return new Location(center, layerRefId).location();
 		}).then(function(locationId){
 			logger.info("integration#process Analysis was finished and view is being prepared.");
-			// In Puma specify FrontOffice view
+			// In Puma specify FrontOffice view. TODO: Fix for dynamic levels.
 			var viewProps = {
 				location: "6294_" + locationId, //placeKey + "_" + areaKey, // place + area (NUTS0)
 				expanded: {
@@ -122,11 +118,9 @@ module.exports = function (app) {
 		});
 
 		response.json({id: id});
-	});
+	}
 
-
-	app.get("/integration/status", function (request, response) {
-
+	status(request, response) {
 		var url = require('url');
 		var url_parts = url.parse(request.url, true);
 		var query = url_parts.query;
@@ -177,17 +171,18 @@ module.exports = function (app) {
 				error: err
 			});
 		});
-
-	});
-
-	function guid() {
-		function s4() {
-			return Math.floor((1 + Math.random()) * 0x10000)
-				.toString(16)
-				.substring(1);
-		}
-
-		return s4() + s4() + '_' + s4() + '_' + s4() + '_' +
-			s4() + '_' + s4() + s4() + s4();
 	}
-};
+}
+
+function guid() {
+	function s4() {
+		return Math.floor((1 + Math.random()) * 0x10000)
+			.toString(16)
+			.substring(1);
+	}
+
+	return s4() + s4() + '_' + s4() + '_' + s4() + '_' +
+		s4() + '_' + s4() + s4() + s4();
+}
+
+module.exports = IntegrationController;

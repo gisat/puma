@@ -55,7 +55,6 @@ function initServer(err) {
     });
     // End of allow CORS.
 	
-	require('./routes/integration')(app);
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);

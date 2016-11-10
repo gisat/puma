@@ -8,18 +8,18 @@ var Promise = require('promise');
 var SizeOfPixel = require('./SizeOfPixel');
 var _ = require('underscore');
 
-var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaTemplateId) {
+var SumRasterVectorGuf = function (analyticalUnitsTable, rasterLayerTable, areaTemplateId, locationId) {
 	this.analyticalUnitsTable = analyticalUnitsTable;
 	this.rasterLayerTable = rasterLayerTable;
 	this.areaTemplateId = areaTemplateId; // Also featureLayerTemplates
 
-	this.analysisId = 6456;
-	this.locationId = 6294;
-	this.yearId = 6460;
-	this.attributeSetId = 6455;
-	this.attributeUrbanizedId = 6307;
-	this.attributeNonUrbanizedId = 6340;
-	this.scopeId = 6291;
+	this.analysisId = 4314; // Irrelevant the counted values will be already part of the new places.
+	this.locationId = locationId; // Will be created based on the information.
+	this.yearId = 6;
+	this.attributeSetId = 4310;
+	this.attributeUrbanizedId = 4312;
+	this.attributeNonUrbanizedId = 4313;
+	this.scopeId = 4309;
 };
 
 SumRasterVectorGuf.prototype.prepareSql = function (analyticalUnitsTable, rasterLayerTable) {

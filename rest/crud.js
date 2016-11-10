@@ -6,6 +6,7 @@ var refs = require('./models').refs;
 var conn = require('../common/conn');
 var collections = require('./models').collections;
 var logger = require('../common/Logger').applicationWideLogger;
+var Promise = require('promise');
 
 function ensureCollection(req,res,next) {
 	if (collections.indexOf(req.params.objType)!=-1) {
@@ -16,6 +17,19 @@ function ensureCollection(req,res,next) {
 	}
 }
 
+
+function createPromised(collName,obj,params) {
+	return new Promise(function(resolve, reject){
+		create(collName, obj, params, function(err, result){
+			if(err) {
+				logger.error(`rest/crud#createPromised Eror: `, err);
+				reject(err);
+			} else {
+				resolve(result);
+			}
+		})
+	});
+}
 
 function create(collName,obj,params,callback) {
 	logger.info("Create new item in collection: ", collName, " With data: ", obj, " and Params: ", params);
@@ -32,13 +46,14 @@ function create(collName,obj,params,callback) {
 	var db = conn.getMongoDb();
 	var opts = {
 		checkRefs: function(asyncCallback) {
-			checkRefs(db,obj,collName,function(err) {
+			asyncCallback(null);
+			/*checkRefs(db,obj,collName,function(err) {
 				if (err){
 					logger.error("crud#create. checkRefs Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null);
-			});
+			});*/
 		},
 		preCreate: ['checkRefs',function(asyncCallback) {
 			obj['_id'] = conn.getNextId();
@@ -422,6 +437,7 @@ var doPreHooks = function(opType,collName,obj,callback) {
 
 module.exports = {
 	create: create,
+	createPromised: createPromised,
 	read: read,
 	readRestricted: readRestricted,
 	update: update,
