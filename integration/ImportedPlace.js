@@ -131,14 +131,14 @@ class ImportedPlace {
 			return this._connection.query(createIntermediaryTableWithValues);
 		}).then(() => {
 			let countUrban = `UPDATE ${createdTableName} set urban_area = subquery.urban 
-            FROM (select gid, sum(amount) * pixelSizeSquareMeters as urban from ${createdTableName}_intermediary WHERE val = 255 group by(gid,area,pixelSizeSquareMeters)) AS subquery 
+            FROM (select gid, sum(amount) * pixelSizeSquareMeters as urban from ${createdTableName}_intermediary WHERE val = 255 group by(gid,pixelSizeSquareMeters)) AS subquery 
             WHERE ${createdTableName}.gid = subquery.gid`;
 
 			logger.info('ImportedPlace#generateTableForLevel countUrban SQL: ', countUrban);
 
 			return this._connection.query(countUrban);
 		}).then(() => {
-			let countNonUrban = `update ${createdTableName} set non_urban_area = subquery.non_urban FROM (select gid, sum(amount) * pixelSizeSquareMeters as non_urban from ${createdTableName}_intermediary WHERE val = 0 group by(gid,area,pixelSizeSquareMeters)) AS subquery where ${createdTableName}.gid = subquery.gid`;
+			let countNonUrban = `update ${createdTableName} set non_urban_area = subquery.non_urban FROM (select gid, sum(amount) * pixelSizeSquareMeters as non_urban from ${createdTableName}_intermediary WHERE val = 0 group by(gid,pixelSizeSquareMeters)) AS subquery where ${createdTableName}.gid = subquery.gid`;
 
 			logger.info('ImportedPlace#generateTableForLevel countNonUrban SQL: ', countNonUrban);
 
