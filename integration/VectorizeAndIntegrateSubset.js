@@ -36,7 +36,7 @@ class VectorizeAndIntegrateSubset {
 		logger.info('VectorizeAndIntegrateSubset#createMetadata started');
 		return crud.createPromised("layerref", {
 			"data": {
-				"layer": "geonode:gufexample",
+				"layer": `geonode:${this._tableName}`,
 				"location": this._locationId,
 				"year": 6,
 				"active": true,
