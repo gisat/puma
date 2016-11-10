@@ -143,7 +143,8 @@ class ImportedPlace {
 			let pixelRatio = 10000000000;
 			let createIntermediaryTableWithValues = `CREATE TABLE ${createdTableName}_intermediary AS (
             SELECT analyticalUnits."NUTS_ID" as gid, 
-                ${pixelRatio} * st_pixelheight(rast) * st_pixelwidth(rast) as pixelSizeSquareMeters,
+            	ST_Area(analyticalUnits.the_geom::geography) as area,
+         		${pixelRatio} * st_pixelheight(rast) * st_pixelwidth(rast) as pixelSizeSquareMeters,
                 (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).value as val,
                 (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).count as amount 
             FROM ${this._rasterLayerTable} AS rasterLayer 
@@ -163,7 +164,7 @@ class ImportedPlace {
 
 			return this._connection.query(countUrban);
 		}).then(() => {
-			let countNonUrban = `update ${createdTableName} set non_urban_area = subquery.non_urban FROM (select gid, sum(amount) * pixelSizeSquareMeters as non_urban from ${createdTableName}_intermediary WHERE val = 0 group by(gid,pixelSizeSquareMeters)) AS subquery where ${createdTableName}.gid = subquery.gid`;
+			let countNonUrban = `update ${createdTableName} set non_urban_area = subquery.non_urban FROM (select gid, area - (sum(amount) * pixelSizeSquareMeters) as non_urban from ${createdTableName}_intermediary WHERE val = 255 group by(area, gid,pixelSizeSquareMeters)) AS subquery where ${createdTableName}.gid = subquery.gid`;
 
 			logger.info('ImportedPlace#generateTableForLevel countNonUrban SQL: ', countNonUrban);
 
