@@ -48,7 +48,7 @@ class ImportedPlace {
 		}).then(() => {
 			return this.generateTableForLevel(this._level1Name, locationId);
 		}).then(() => {
-			return this.generateTableForLevel(this._level0Name, locationId);
+			return this.generateTableForLevel(this._level0Name, locationId, true);
 		}).then(() => {
 			var promises = [];
 
@@ -104,11 +104,11 @@ class ImportedPlace {
 		});
 	}
 
-	generateTableForLevel(analyticalUnitsLayer, locationId) {
+	generateTableForLevel(analyticalUnitsLayer, locationId, isLeastDetailed) {
 		logger.info('ImportedPlace#generateTableForLevel analyticalUnitsLayer: ', analyticalUnitsLayer, ' Location: ', locationId);
 		let createdTableName = `imported_au_${analyticalUnitsLayer}_${conn.getNextId()}`.toLowerCase();
 		let parentId = `analyticalUnits."ParID"`;
-		if (this._amountOfValidLevels == 4) {
+		if (isLeastDetailed) {
 			parentId = 0;
 		}
 		let createTableWithOnlyRelevantAU = `CREATE TABLE ${createdTableName} AS (
