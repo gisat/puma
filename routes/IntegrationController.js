@@ -88,14 +88,8 @@ class IntegrationController {
 			logger.info("integration#process Analysis was finished and view is being prepared.");
 			// In Puma specify FrontOffice view. TODO: Fix for dynamic levels.
 			var viewProps = {
-				location: "6294_" + locationId, //placeKey + "_" + areaKey, // place + area (NUTS0)
-				expanded: {
-					6294: {
-						6292: [
-							locationId // todo cast to string?
-						] // au level
-					} // place
-				},
+				location: locationId, //placeKey + "_" + areaKey, // place + area (NUTS0)
+				expanded: {},
 				mapCfg: {
 					center: {
 						lon: center.x,
