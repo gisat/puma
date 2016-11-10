@@ -121,7 +121,7 @@ class ImportedPlace {
                 FROM ${this._rasterLayerTable} AS rasterLayer 
                 INNER JOIN ${analyticalUnitsLayer} AS analyticalUnits 
                     ON ST_Contains(rasterLayer.extent, analyticalUnits.the_geom)    
-                GROUP BY(analyticalUnits."NUTS_ID",analyticalUnits."NUTS_NAME", parid, ${parentId != null ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
+                GROUP BY(analyticalUnits."NUTS_ID",analyticalUnits."NUTS_NAME", parid, ${parentId != 0 ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
             )`;
 
 		logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU SQL: ', createTableWithOnlyRelevantAU);
