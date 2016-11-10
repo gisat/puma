@@ -117,12 +117,13 @@ class ImportedPlace {
                 	${parentId} as parid,
                     analyticalUnits."NUTS_NAME" as name,
                     analyticalUnits.the_geom as the_geom,
+                    analyticalUnits."TOTAL_POP" as population, 
                     0 as urban_area,
                     0 as non_urban_area
                 FROM ${this._rasterLayerTable} AS rasterLayer 
                 INNER JOIN ${analyticalUnitsLayer} AS analyticalUnits 
                     ON ST_Contains(rasterLayer.extent, analyticalUnits.the_geom)    
-                GROUP BY(analyticalUnits."NUTS_ID",analyticalUnits."NUTS_NAME", parid, ${parentId != 0 ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
+                GROUP BY(analyticalUnits."NUTS_ID",analyticalUnits."TOTAL_POP",analyticalUnits."NUTS_NAME", parid, ${parentId != 0 ? parentId + ',' : ''} gid, the_geom, urban_area, non_urban_area)
             )`;
 
 		logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU SQL: ', createTableWithOnlyRelevantAU);
@@ -204,6 +205,9 @@ class ImportedPlace {
 			}, {
 				attribute: this._nonUrbanId,
 				column: 'non_urban_area'
+			}, {
+				attribute: 13, // Total population.
+				column: 'population'
 			}],
 			"isData": true,
 			"fidColumn": "gid",
