@@ -26,6 +26,7 @@ function createPromised(collName,obj,params) {
 				logger.error(`rest/crud#createPromised Eror: `, err);
 				reject(err);
 			} else {
+				logger.info('rest/crud#createPromised Correctly created ', result);
 				resolve(result);
 			}
 		})
@@ -48,13 +49,13 @@ function create(collName,obj,params,callback) {
 	var opts = {
 		checkRefs: function(asyncCallback) {
 			asyncCallback(null);
-			/*checkRefs(db,obj,collName,function(err) {
+			checkRefs(db,obj,collName,function(err) {
 				if (err){
 					logger.error("crud#create. checkRefs Error: ", err);
 					return callback(err);
 				}
 				asyncCallback(null);
-			});*/
+			});
 		},
 		preCreate: ['checkRefs',function(asyncCallback) {
 			obj['_id'] = conn.getNextId();
