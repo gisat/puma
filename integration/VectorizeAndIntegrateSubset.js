@@ -35,16 +35,14 @@ class VectorizeAndIntegrateSubset {
 	createMetadata() {
 		logger.info('VectorizeAndIntegrateSubset#createMetadata started');
 		return crud.createPromised("layerref", {
-			"data": {
-				"layer": `geonode:${this._tableName}`,
-				"location": this._locationId,
-				"year": 6,
-				"active": true,
-				"areaTemplate": 4315,
-				"columnMap": [],
-				"isData": false,
-				"fidColumn": "ogc_fid"
-			}
+			"layer": `geonode:${this._tableName}`,
+			"location": this._locationId,
+			"year": 6,
+			"active": true,
+			"areaTemplate": 4315,
+			"columnMap": [],
+			"isData": false,
+			"fidColumn": "ogc_fid"
 		}, {userId: 1})
 	}
 }
