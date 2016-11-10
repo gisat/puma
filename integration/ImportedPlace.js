@@ -108,7 +108,7 @@ class ImportedPlace {
 		logger.info('ImportedPlace#generateTableForLevel analyticalUnitsLayer: ', analyticalUnitsLayer, ' Location: ', locationId);
 		let createdTableName = `imported_au_${analyticalUnitsLayer}_${conn.getNextId()}`.toLowerCase();
 		let parentId = `analyticalUnits."ParID"`;
-		if (this._amountOfValidLevels == 3) {
+		if (this._amountOfValidLevels == 4) {
 			parentId = 0;
 		}
 		let createTableWithOnlyRelevantAU = `CREATE TABLE ${createdTableName} AS (
