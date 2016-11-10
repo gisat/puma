@@ -19,6 +19,7 @@ function ensureCollection(req,res,next) {
 
 
 function createPromised(collName,obj,params) {
+	logger.info("Create new item in collection promised: ", collName, " With data: ", obj, " and Params: ", params);
 	return new Promise(function(resolve, reject){
 		create(collName, obj, params, function(err, result){
 			if(err) {

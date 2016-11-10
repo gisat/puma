@@ -78,14 +78,12 @@ class ImportedPlace {
 
 		let addExtentToRaster = `ALTER TABLE ${this._rasterLayerTable} ADD COLUMN extent geometry`;
 		return this._connection.query(addExtentToRaster).then(()=> {
-			logger.info('ImportedPlace#generateTableForLevel Add extent to raster');
-
 			let fillExtentWithData = `UPDATE ${this._rasterLayerTable} SET extent = subquery.ext FROM (Select St_SetSRID(St_Extent(St_Envelope(${this._rasterLayerTable}.rast))::geometry, 4326) as ext FROM ${this._rasterLayerTable}) AS subquery`;
+
+			logger.info('ImportedPlace#generateTableForLevel Add extent to raster. SQL: ', fillExtentWithData);
 
 			return this._connection.query(fillExtentWithData);
 		}).then(() => {
-			logger.info('ImportedPlace#generateTableForLevel Fill extent with data');
-
 			let parentId = `analyticalUnits."ParID"`;
 			if (this._amountOfValidLevels == 3) {
 				parentId = 0;
@@ -102,15 +100,16 @@ class ImportedPlace {
                 GROUP BY(gid, the_geom, urban_area, non_urban_area)
             )`;
 
+			logger.info('ImportedPlace#generateTableForLevel Fill extent with data. SQL: ', createTableWithOnlyRelevantAU);
+
 			return this._connection.query(createTableWithOnlyRelevantAU);
 		}).then(() => {
-			logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU');
-
 			let isAtLeastOneAreaContained = `SELECT count(*) as amount FROM ${createdTableName}`;
+
+			logger.info('ImportedPlace#generateTableForLevel createTableWithOnlyRelevantAU SQL: ', isAtLeastOneAreaContained);
 
 			return this._connection.query(isAtLeastOneAreaContained);
 		}).then((results) => {
-			logger.info('ImportedPlace#generateTableForLevel createIntermediaryTableWithValues');
 			if (results.rows(0).amount > 0) {
 				logger.info('ImportedPlace#generateTableForLevel Level is valid');
 				this._amountOfValidLevels++;
@@ -127,17 +126,21 @@ class ImportedPlace {
                 ON ST_Contains(rasterLayer.extent, analyticalUnits.the_geom)
             )`;
 
+			logger.info('ImportedPlace#generateTableForLevel createIntermediaryTableWithValues SQL: ', createIntermediaryTableWithValues);
+
 			return this._connection.query(createIntermediaryTableWithValues);
 		}).then(() => {
-			logger.info('ImportedPlace#generateTableForLevel countUrban');
 			let countUrban = `UPDATE ${createdTableName} set urban_area = subquery.urban 
             FROM (select gid, sum(amount) * pixelSizeSquareMeters as urban from ${createdTableName}_intermediary WHERE val = 255 group by(gid,area,pixelSizeSquareMeters)) AS subquery 
             WHERE ${createdTableName}.gid = subquery.gid`;
 
+			logger.info('ImportedPlace#generateTableForLevel countUrban SQL: ', countUrban);
+
 			return this._connection.query(countUrban);
 		}).then(() => {
-			logger.info('ImportedPlace#generateTableForLevel countNonUrban');
 			let countNonUrban = `update ${createdTableName} set non_urban_area = subquery.non_urban FROM (select gid, sum(amount) * pixelSizeSquareMeters as non_urban from ${createdTableName}_intermediary WHERE val = 0 group by(gid,area,pixelSizeSquareMeters)) AS subquery where ${createdTableName}.gid = subquery.gid`;
+
+			logger.info('ImportedPlace#generateTableForLevel countNonUrban SQL: ', countNonUrban);
 
 			return this._connection.query(countNonUrban);
 		}).then(() => {
