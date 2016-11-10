@@ -57,6 +57,7 @@ class IntegrationController {
 		});
 		processes.store(process);
 
+		var self = this;
 		var promiseOfFile = remoteFile.get();
 		var rasterLayerTable, center, layerRefId;
 		promiseOfFile.then(function () {
@@ -75,7 +76,7 @@ class IntegrationController {
 			processes.store(process);
 
 			rasterLayerTable = rasterTableName; // At this point we can find out about relevant area.
-			return new ImportedPlace(conn.getPgDataDb(), rasterTableName)
+			return new ImportedPlace(self._pgPool, rasterTableName)
 				.create();
 		}).then(function(pLayerRefId){
 			layerRefId = pLayerRefId;
