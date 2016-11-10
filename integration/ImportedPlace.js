@@ -117,7 +117,7 @@ class ImportedPlace {
 
 			let pixelRatio = 10000000000;
 			let createIntermediaryTableWithValues = `CREATE TABLE ${createdTableName}_intermediary AS (
-            SELECT analyticalUnits.gid as gid, 
+            SELECT analyticalUnits."NUTS_ID" as gid, 
                 ${pixelRatio} * st_pixelheight(rast) * st_pixelwidth(rast) as pixelSizeSquareMeters,
                 (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).value as val,
                 (ST_ValueCount(ST_Clip(rasterLayer.rast, analyticalUnits.the_geom), 1)).count as amount 
