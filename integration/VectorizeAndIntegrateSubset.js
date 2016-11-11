@@ -21,7 +21,7 @@ class VectorizeAndIntegrateSubset {
 
 	vectorize() {
 		logger.info('VectorizeAndIntegrateSubset#vectorize Start');
-		return child_process.exec(`gdal_polygonize.py /opt/utep/${this._tifLocation} -f PostgreSQL PG:"dbname='${config.pgDataDatabase}' user='${config.pgDataUser}'" ${this._tableNameVector}`).promise;
+		return child_process.exec(`gdal_polygonize.py ${config.temporaryDownloadedFilesLocation}${this._tifLocation} -f PostgreSQL PG:"dbname='${config.pgDataDatabase}' user='${config.pgDataUser}'" ${this._tableNameVector}`).promise;
 	}
 
 	importToGeonode() {
