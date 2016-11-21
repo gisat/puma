@@ -64,7 +64,7 @@ class TemplateData {
                                 columnMapAttribute = _.find(filteredLayerref.columnMap, {attribute: attribute});
                                 tableColumns.push(columnMapAttribute.column);
                                 attributes.push({
-                                    _id: attribute,
+                                    attributeKey: attribute,
                                     value: columnMapAttribute.column
                                 });
                             } else {
@@ -74,13 +74,13 @@ class TemplateData {
                                         columnMapAttribute = _.find(ref.columnMap, {attribute: attribute});
                                         tableColumns.push(columnMapAttribute.column);
                                         periods.push({
-                                            _id: ref.year,
+                                            periodKey: ref.year,
                                             value: columnMapAttribute.column
                                         });
                                     }
                                 }
                                 attributes.push({
-                                    _id: attribute,
+                                    attributeKey: attribute,
                                     periods: periods
                                 });
                             }
@@ -93,7 +93,7 @@ class TemplateData {
                 ((attributeSet, attributes) => {
                     attsetpromise.then(() => {
                         featureData.attributeSets.push({
-                            _id: attributeSet._id,
+                            attributeSetKey: attributeSet._id,
                             attributes: attributes
                         });
                     });
@@ -113,7 +113,7 @@ class TemplateData {
             return pgLayer.tableData(tableColumns).then(result => {
                 for (var row of result.rows) {
                     templateData.data.push({
-                        _id: row[fidColumn],
+                        key: row[fidColumn],
                         geometry: {
                             latitude: row.lat,
                             longitude: row.lon
