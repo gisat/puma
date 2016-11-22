@@ -5,10 +5,12 @@ var crud = require('../rest/crud');
 
 class GufController {
     constructor(app) {
-        app.get('/utep/map-guf', this.map.bind(this))
+        app.get('/utep/map-guf-75', this.map.bind(this, 'geonode:guf_75m_', 272));
+        app.get('/utep/map-guf-28', this.map.bind(this, 'geonode:GUF28_', 25300));
+        app.get('/utep/map-guf-10', this.map.bind(this, 'geonode:GUF10-', 25301));
     }
 
-    map(request, response) {
+    map(name, templateId, request, response) {
 
         // Load from geonode all layers I have rights to.
         superagent
@@ -17,7 +19,7 @@ class GufController {
             .then(layers => {
                 var layerNames = layers.body.rw;
                 var gufLayers = layerNames.filter(layerName => {
-                    return layerName.indexOf('geonode:guf_75m_') == 0
+                    return layerName.indexOf(name) == 0
                 });
                 gufLayers.forEach(gufName => {
                     var layerRef = {
@@ -25,7 +27,7 @@ class GufController {
                         "location": 4685,
                         "year": 307,
                         "active": true,
-                        "areaTemplate": 272,
+                        "areaTemplate": templateId,
                         "columnMap": [],
                         "isData": false
                     };
