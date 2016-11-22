@@ -6,8 +6,8 @@ var crud = require('../rest/crud');
 class GufController {
     constructor(app) {
         app.get('/utep/map-guf-75', this.map.bind(this, 'geonode:guf_75m_', 272));
-        app.get('/utep/map-guf-28', this.map.bind(this, 'geonode:GUF28_', 25300));
-        app.get('/utep/map-guf-10', this.map.bind(this, 'geonode:GUF10-', 25301));
+        app.get('/utep/map-guf-28', this.map.bind(this, 'geonode:guf28_', 25300));
+        app.get('/utep/map-guf-10', this.map.bind(this, 'geonode:guf10', 25301));
     }
 
     map(name, templateId, request, response) {
