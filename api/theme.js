@@ -432,7 +432,8 @@ function getThemeYearConf(params, req, res, callback) {
 					sql += sql ? ' UNION ' : '';
 					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
-						sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
+						//sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
+						sql += ', a.name::text';
 						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+envelope+"))) AS extent";
 						sql += ", TRUE AS definedplace";
 					} else {
@@ -467,10 +468,10 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 
 			sql += ' ORDER BY idx ASC';
+
 			var client = conn.getPgDataDb();
 			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
 			client.query(sql, {}, function(err, resls) {
-
 				if (err){
 					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
 					return callback(err);
