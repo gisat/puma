@@ -2,7 +2,6 @@ var http = require('http');
 var querystring = require('querystring');
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
-var dom = require('../common/dom');
 var async = require('async');
 var xmldoc = require('xmldoc');
 var _ = require('underscore');

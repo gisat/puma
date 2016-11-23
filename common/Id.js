@@ -1,4 +1,5 @@
 var conn = require('./conn');
+var Promise = require('promise');
 
 /**
  * @alias Id
