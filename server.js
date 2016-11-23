@@ -62,7 +62,6 @@ function initServer(err) {
     });
     // End of allow CORS.
 	
-	require('./routes/integration')(app);
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
@@ -72,9 +71,11 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
+
 var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
 var PgPool = require('./postgresql/PgPool');
 var DatabaseSchema = require('./postgresql/DatabaseSchema');
+
 
 var pool = new PgPool({
 	user: config.pgDataUser,

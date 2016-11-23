@@ -2,6 +2,7 @@
   <library name="Highcharts-3.0.0" type="javaScript">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/public/lib/Highcharts-3.0.0" />
+      <root url="file://$PROJECT_DIR$/public/lib/Highcharts-3.0.0" />
     </CLASSES>
     <SOURCES />
   </library>

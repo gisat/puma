@@ -4,9 +4,9 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 class FilteredBaseLayers {
     constructor(filter, connection) {
+        logger.info('FilteredBaseLayers#constructor filter', filter);
         this._filter = filter;
         this._connection = connection;
-
         this._collection = new FilteredMongoLayerReferences(filter, connection);
     }
 

@@ -39,17 +39,15 @@ class Filter {
             } else if (mongoAttributes[id].type == 'boolean') {
                 return `${column}=${filteringValue}`;
             } else if (mongoAttributes[id].type == 'text') {
-                var whereStatement = `(`;
                 if (filteringValue[0].length == 0) {
                     return `${column} IS NOT NULL`;
                 } else {
-                    filteringValue.forEach(function (value, index) {
-                        if (index > 0){
-                            whereStatement += ` OR `;
-                        }
-                        whereStatement += `${column}='${value}'`
+                    var values = [];
+                    filteringValue.forEach(function (value) {
+                        values.push(value);
                     });
-                    return whereStatement += ')';
+                    var options = "('" + values.join("','") + "')";
+                    return `${column} IN ${options}`;
                 }
             }
         })
