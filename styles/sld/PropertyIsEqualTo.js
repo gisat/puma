@@ -2,7 +2,7 @@ var Intersection = require('./common/Intersection');
 
 /**
  * @alias PropertyIsEqualTo
- * @augments Leaf
+ * @augments Intersection
  * @param children {Node[]}
  * @constructor
  */

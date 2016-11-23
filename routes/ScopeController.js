@@ -55,3 +55,15 @@ class ScopeController extends Controller {
 }
 
 module.exports = ScopeController;
+
+// V 0.1
+// Create PostgreSQL table containing rights. This table has three columns. userId, scopeId and type
+// readRestricted for Scope and Place will take these information into account.
+
+// V 1.0
+// I will have the rights toward places and scopes. This means that I must somewhere store the information as a collection
+// of SCOPE: userId / scopeId
+// or PLACE: userId / placeId
+// UserId is received with the requests. It is necessary to take these information into account.
+// This information should be taken into account for all concepts and all operations. There are other types of metadata
+// depending on the Scope and Place and these shouldn't be displayed either
