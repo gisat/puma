@@ -4,7 +4,7 @@ var PgStyles = require('../../../styles/PgStyles');
 var PgPool = require('../../../postgresql/PgPool');
 var RestStyle = require('../../../styles/RestStyle');
 var DatabaseSchema = require('../../../postgresql/DatabaseSchema');
-var config = require('../config');
+var config = require('../../unit/config');
 
 describe('PgStyles', function () {
 	var commonSchema = 'data';

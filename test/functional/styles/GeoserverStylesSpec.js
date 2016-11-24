@@ -7,7 +7,7 @@ var PgPool = require('../../../postgresql/PgPool');
 var UUID = require('../../../common/UUID');
 var DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 
-var config = require('../config');
+var config = require('../../unit/config');
 
 describe('GeoserverStyles', function(){
 	var commonSchema = 'data';
