@@ -10,6 +10,7 @@ var ChartCfgController = require('./ChartCfgController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var ExportController = require('./ExportController');
+var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -65,10 +66,13 @@ module.exports = function(app) {
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app);
 	new AreaTemplateController(app);
+	new GufController(app);
 	if(poolRemote) {
 		new AttributeController(app, poolRemote);
+		new ExportController(app, poolRemote);
 	} else {
 		new AttributeController(app, pool);
+		new ExportController(app, pool);
 	}
 	new AttributeSetController(app);
 	new ChartCfgController(app);
@@ -85,8 +89,7 @@ module.exports = function(app) {
 	new YearController(app);
 
 	new PrintController(app);
-	new ExportController(app);
-	new ImportController(app, pool);
+    new ImportController(app);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 

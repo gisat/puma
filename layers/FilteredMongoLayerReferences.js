@@ -1,9 +1,11 @@
 var MongoLayerReference = require('./MongoLayerReference');
 var MongoLayerReferences = require('./MongoLayerReferences');
 var MongoFilteredCollection = require('../data/MongoFilteredCollection');
+var logger = require('../common/Logger').applicationWideLogger;
 
 class FilteredMongoLayerReferences {
 	constructor(filter, connection) {
+		logger.info('FilteredMongoLayerReferences#constructor filter', filter);
 		this._connection = connection;
 		this._filteredCollection = new MongoFilteredCollection(filter, connection, MongoLayerReference.collectionName(), MongoLayerReference);
 		this._layerReferences = new MongoLayerReferences(connection);
