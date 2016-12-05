@@ -25,6 +25,7 @@ var PrintController = require('./PrintController');
 var MellodiesWpsController = require('./../melodies/WpsController');
 var MellodiesLodController = require('../melodies/LodController');
 var ImportController = require('./ImportController');
+var LayerPolygonController = require('./LayerPolygonController');
 var TemplateDataController = require('./TemplateDataController');
 var PlaceTemplatesController = require('./PlaceTemplatesController');
 
@@ -95,6 +96,8 @@ module.exports = function(app) {
 
 	new TemplateDataController(app, pool);
 	new PlaceTemplatesController(app);
+
+	new LayerPolygonController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
