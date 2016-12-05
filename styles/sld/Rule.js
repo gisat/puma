@@ -50,12 +50,12 @@ Rule.fromObjectDescription = function(ruleDescription, type, filterAttributeKey,
 
 	var elements = [
 		new Name(ruleDescription.name),
-		new Title(ruleDescription.title),
+		new Title(ruleDescription.name),
 		symbolizer.fromDescription(ruleDescription.appearance)
 	];
 
 	if(ruleDescription.filter && filterType != 'no') {
-		elements.push(Filter.fromDescription(ruleDescription.filter, filterAttributeKey, filterType))
+		elements.push(Filter.fromDescription(ruleDescription.filter, ruleDescription.name, filterType))
 	}
 
 	return new Rule(elements);

@@ -6,6 +6,7 @@ var refs = require('./models').refs;
 var conn = require('../common/conn');
 var collections = require('./models').collections;
 var logger = require('../common/Logger').applicationWideLogger;
+var Promise = require('promise');
 
 function ensureCollection(req,res,next) {
 	if (collections.indexOf(req.params.objType)!=-1) {
@@ -16,6 +17,21 @@ function ensureCollection(req,res,next) {
 	}
 }
 
+
+function createPromised(collName,obj,params) {
+	logger.info("Create new item in collection promised: ", collName, " With data: ", obj, " and Params: ", params);
+	return new Promise(function(resolve, reject){
+		create(collName, obj, params, function(err, result){
+			if(err) {
+				logger.error(`rest/crud#createPromised Eror: `, err);
+				reject(err);
+			} else {
+				logger.info('rest/crud#createPromised Correctly created ', result);
+				resolve(result);
+			}
+		})
+	});
+}
 
 function create(collName,obj,params,callback) {
 	logger.info("Create new item in collection: ", collName, " With data: ", obj, " and Params: ", params);
@@ -32,6 +48,7 @@ function create(collName,obj,params,callback) {
 	var db = conn.getMongoDb();
 	var opts = {
 		checkRefs: function(asyncCallback) {
+			asyncCallback(null);
 			checkRefs(db,obj,collName,function(err) {
 				if (err){
 					logger.error("crud#create. checkRefs Error: ", err);
@@ -121,6 +138,7 @@ function read(collName,filter,params,callback) {
 
 	var db = conn.getMongoDb();
 	var collection = db.collection(collName);
+
 	if (params['justMine']) {
 		filter['createdBy'] = params['userId'];
 	}
@@ -421,6 +439,7 @@ var doPreHooks = function(opType,collName,obj,callback) {
 
 module.exports = {
 	create: create,
+	createPromised: createPromised,
 	read: read,
 	readRestricted: readRestricted,
 	update: update,

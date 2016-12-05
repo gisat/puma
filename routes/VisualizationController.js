@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
 
-var VisualizationController = function(app) {
-	Controller.call(this, app, 'visualization');
-};
+// TODO: Finish deletion of the visualization
 
-VisualizationController.prototype = Object.create(Controller.prototype);
+class VisualizationController extends Controller {
+	constructor(app) {
+		super(app, 'visualization');
+	}
+}
 
 module.exports = VisualizationController;

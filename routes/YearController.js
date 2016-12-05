@@ -1,9 +1,11 @@
 var Controller = require('./Controller');
+var MongoPeriods = require('../metadata/MongoPeriods');
+var MongoPeriod = require('../metadata/MongoPeriod');
 
-var YearController = function(app) {
-	Controller.call(this, app, 'year');
-};
-
-YearController.prototype = Object.create(Controller.prototype);
+class YearController extends Controller {
+	constructor(app) {
+		super(app, 'year', MongoPeriods, MongoPeriod);
+	}
+}
 
 module.exports = YearController;

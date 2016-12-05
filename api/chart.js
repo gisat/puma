@@ -17,6 +17,7 @@ var conn = require('../common/conn');
 var confMap = {length: 0};
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
+var Promise = require('promise');
 
 function exporter(params, req, res, callback) {
 	var isWin = !!process.platform.match(/^win/);
@@ -35,11 +36,62 @@ function exporter(params, req, res, callback) {
 	}
 }
 
+var FilteredBaseLayerReferences = require('../layers/FilteredBaseLayerReferences');
+var PgAttribute = require('../attributes/PgAttribute');
+var PgPool = require('../postgresql/PgPool');
+
 function getChart(params, req, res, callback) {
+	// New request parameter - tooManyAreas
+	// When existing and areas true; Respect the information and load the gids from the database.
+	// years, start, limit
+	// areas - 1. uroven place
+	// areas - 2. uroven areaTemplate
+	// attributes - {as}
+	// Get all gids for this.
+	if(params.tooManyAreas) {
+		let place = Number(Object.keys(params.areas)[0]);
+		let areaTemplate = Number(Object.keys(params.areas[place])[0]);
+		let year = Number(params.years[0]);
+
+		// TODO: Possible leak.
+		var pool = new PgPool({
+			user: config.pgDataUser,
+			database: config.pgDataDatabase,
+			password: config.pgDataPassword,
+			host: config.pgDataHost,
+			port: config.pgDataPort
+		});
+
+		// Get all gids for given place, areaTemplate and year - This means get the BaseLayerRefs and gids per each.
+		new FilteredBaseLayerReferences({
+			year: year,
+			location: place,
+			areaTemplate: areaTemplate,
+		}, conn.getMongoDb()).layerReferences().then(baseLayerReferences => {
+			return Promise.all(baseLayerReferences.map(layerReference => {
+				return new PgAttribute(pool, 'views', `layer_${layerReference._id}`, `gid`).values();
+			}));
+		}).then(pgAttributeValues => {
+			params.areas[place] = {};
+			params.areas[place][areaTemplate] = _.flatten(pgAttributeValues);
+
+			getChartInternal(params, req, res, callback);
+		}).catch(err => {
+			throw new Error(
+				logger.error('api/chart#getChart Preload gids for tooManyAreas. Error: ', err)
+			);
+		});
+	} else {
+		getChartInternal(params, req, res, callback)
+	}
+}
+
+
+function getChartInternal(params, req, res, callback) {
 	var type = params['type'];
 	var mod = charts[type];
 	params['userId'] = req.userId;
-	mod.getChart(params, function(err, conf) {
+	mod.getChart(params, function (err, conf) {
 		if (err) {
 			logger.error("api/chart.js getChart Error:", err, " Returning nodata");
 			var noDataConf = {
@@ -67,13 +119,12 @@ function getChart(params, req, res, callback) {
 			return callback(null);
 		}
 		if (params['forExport']) {
-			conf = _.extend(conf,require('../data/printchart'));
+			conf = _.extend(conf, require('../data/printchart'));
 		}
 		res.data = conf;
 		callback();
 	});
 }
-
 
 
 

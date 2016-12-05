@@ -9,6 +9,8 @@ var AttributeSetController = require('./AttributeSetController');
 var ChartCfgController = require('./ChartCfgController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
+var ExportController = require('./ExportController');
+var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -17,10 +19,12 @@ var ScopeController = require('./ScopeController');
 var StyleController = require('./StyleController');
 var ThemeController = require('./ThemeController');
 var TopicController = require('./TopicController');
-var UserPolygonController = require('./UserPolygonController');
-var ViewCfgController = require('./ViewCfgController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
+var PrintController = require('./PrintController');
+var MellodiesWpsController = require('./../melodies/WpsController');
+var MellodiesLodController = require('../melodies/LodController');
+var IntegrationController = require('./IntegrationController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -35,8 +39,7 @@ var api = {
 	analysis: require('../api/analysis'),
 	userpolygon: require('../api/userpolygon'),
 	urlview: require('../api/urlview'),
-	filter: require('../api/filter'),
-	print: require('../api/print')
+	filter: require('../api/filter')
 };
 
 module.exports = function(app) {
@@ -47,80 +50,47 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
+	if(config.pgDataUserRemote) {
+		var poolRemote = new PgPool({
+			user: config.pgDataUserRemote,
+			database: config.pgDataDatabaseRemote,
+			password: config.pgDataPasswordRemote,
+			host: config.pgDataHostRemote,
+			port: config.pgDataPortRemote
+		});
+	}
 	new DatabaseSchema(pool, config.postgreSqlSchema).create();
 
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app);
 	new AreaTemplateController(app);
-	new AttributeController(app);
+	new GufController(app);
+	if(poolRemote) {
+		new AttributeController(app, poolRemote);
+		new ExportController(app, poolRemote);
+	} else {
+		new AttributeController(app, pool);
+		new ExportController(app, pool);
+	}
 	new AttributeSetController(app);
 	new ChartCfgController(app);
 	new DataSetController(app);
 	new DataViewController(app);
 	new LayerGroupController(app);
-	new LayerRefController(app);
+	new LayerRefController(app, pool);
 	new LocationController(app);
 	new PerformedAnalysisController(app);
 	new ScopeController(app);
 	new ThemeController(app);
 	new TopicController(app);
-	new UserPolygonController(app);
-	new ViewCfgController(app);
 	new VisualizationController(app);
 	new YearController(app);
+	new IntegrationController(app, pool);
 
-	// old backoffice
-	app.put('/rest/:objType/:objId',function(req,res,next) {
-		var obj = req.body.data;
+	new PrintController(app);
+	new MellodiesWpsController(app, pool);
+	new MellodiesLodController(app, pool);
 
-		// test if URL id equals PUT DATA id
-		if (obj._id != req.params.objId) {
-			return next(new Error('updateid_notcorrect'))
-		}
-		crud.update(req.params.objType,obj,{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err){
-				return next(err);
-			}
-			res.data = result;
-			next();
-		});
-	});
-
-	// old backoffice
-	app.delete('/rest/:objType/:objId',function(req,res,next) {
-		crud.remove(req.params.objType,{_id: parseInt(req.params.objId)},{userId: req.userId,isAdmin:req.isAdmin},function(err,result) {
-			if (err){
-				return next(err);
-			}
-			next();
-		});
-	});
-
-	
-	app.post('/print/*',function(req,res,next) {
-		logger.info("Print requested by user: ", req.userId);
-		try {
-			api.print.exporter({download:true},req,res,next);
-		} catch (err) {
-			logger.error("It wasn't possible to print data requested by user: ", req.userId, " Error: ", err);
-			next(err);
-		}
-	});
-	app.get('/image/*',function(req,res,next) {
-		logger.info("Image export requested by user: ", req.userId);
-		try {
-			api.print.exporter({},req,res,next);
-		} catch (err) {
-			logger.error("It wasn't possible to export image requested by user: ", req.userId, " Error: ", err);
-			next(err);
-		}
-	});
-
-	app.get('/api/verify/scope/:id', function(req, res, next){
-		// Load information about Scope and all associated Entities.
-		// 
-	});
-	
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
 		var fn = api['chart']['drawChart'];

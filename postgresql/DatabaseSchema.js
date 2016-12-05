@@ -44,7 +44,7 @@ DatabaseSchema.prototype.create = function() {
 	var createMigrationTable = 'create table IF NOT EXISTS ' + this._schema + '.migration (' +
 		'id SERIAL PRIMARY KEY,' +
 		'name varchar(128)' +
-		');'
+		');';
 
 	var self = this;
 	return this._pool.query(createSchema).then(function(){

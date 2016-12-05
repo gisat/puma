@@ -1,0 +1,24 @@
+Prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+Prefix ogc: <http://www.opengis.net/ont/geosparql#>
+Prefix geom: <http://geovocab.org/geometry#>
+Prefix lgdo: <http://linkedgeodata.org/ontology/>
+
+Select
+  ?school
+  ?schoolLabel
+  ?schoolGeo
+From <http://linkedgeodata.org> {
+    ?school
+    a lgdo:School ;
+    rdfs:label ?schoolLabel ;
+    geom:geometry [
+      ogc:asWKT ?schoolGeo
+    ] .
+
+  Filter (
+    bif:st_intersects (?schoolGeo, bif:st_geomFromText("POLYGON((14.1993833628519 49.9298296420497,14.1993833628519 50.2409404033298,14.7892229832988 50.2409404033298,14.7892229832988 49.9298296420497,14.1993833628519 49.9298296420497))"))
+  ) .
+}
+
+// Upload prague gadm as units.
+

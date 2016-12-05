@@ -1,6 +1,9 @@
 var Controller = require('./Controller');
-var logger = require('../common/Logger').applicationWideLogger;
-var crud = require('../rest/crud');
+var MongoAnalyse = require('../analysis/MongoAnalyse');
+var MongoAnalysis = require('../analysis/MongoAnalysis');
+
+var conn = require('../common/conn');
+var Promise = require('promise');
 
 /**
  * @augments Controller
@@ -8,48 +11,42 @@ var crud = require('../rest/crud');
  * @param app
  * @constructor
  */
-var AnalysisController = function (app) {
-	Controller.call(this, app, 'analysis');
-};
+class AnalysisController extends Controller {
+	constructor(app) {
+		super(app, 'analysis', MongoAnalysis, MongoAnalyse);
 
-AnalysisController.prototype = Object.create(Controller.prototype);
+		this._connection = conn.getMongoDb();
+	}
 
-/**
- * @inheritDoc
- * Verify that the created analysis doesn't have attribute from the same attribute set as the source one.
- */
-AnalysisController.prototype.update = function (request, response, next) {
-	var analysis = request.body.data;
-	var idOfTemplateForAnalysis = analysis.analysis;
+	update(request, response, next) {
+		var analysis = request.body.data;
+		var update = super.update.bind(this);
 
-	var self = this;
-	crud.read('analysis', {_id: idOfTemplateForAnalysis}, {
-		userId: request.userId,
-		isAdmin: request.isAdmin
-	}, function (err, result) {
-		if (err) {
-			return next(new Error("There is no analysis with given id."));
+		if(!analysis.analysis) {
+			return Promise.resolve(update(request, response, next));
 		}
 
-		// In spatial analysis it isn't good idea to use the same attribute set for the source data and result alike.
-		if (result.type == "spatialagg") {
-			// Verify only when some attributes are present.
-			var sourceAttributeSetIsntUsedAsResult = true;
-			if (analysis.attributeMap && analysis.attributeMap.length > 0) {
-				analysis.attributeMap.forEach(function (attributeToAnalyse) {
-					if (attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
-						sourceAttributeSetIsntUsedAsResult = false;
-					}
-				});
+		var analyse = new MongoAnalyse(analysis.analysis, this._connection);
+		return analyse.type().then(function(type){
+			if (type == "spatialagg") {
+				// Verify only when some attributes are present.
+				var sourceAttributeSetIsntUsedAsResult = true;
+				if (analysis.attributeMap && analysis.attributeMap.length > 0) {
+					analysis.attributeMap.forEach(function (attributeToAnalyse) {
+						if (attributeToAnalyse.calcAttributeSet == analysis.attributeSet || attributeToAnalyse.normAttributeSet == analysis.attributeSet) {
+							sourceAttributeSetIsntUsedAsResult = false;
+						}
+					});
+				}
+
+				if (!sourceAttributeSetIsntUsedAsResult) {
+					return next(new Error("Attributes used in the analysis as a source attribute and as a result attributes must be from different attribute sets."));
+				}
 			}
 
-			if (!sourceAttributeSetIsntUsedAsResult) {
-				return next(new Error("Attributes used in the analysis as a source attribute and as a result attributes must be from different attribute sets."));
-			}
-		}
-
-		Controller.prototype.update.call(self, request, response, next);
-	});
-};
+			return Promise.resolve(update(request, response, next));
+		});
+	}
+}
 
 module.exports = AnalysisController;

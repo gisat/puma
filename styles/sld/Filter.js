@@ -1,8 +1,11 @@
-var Intersection = require('./common/Intersection');
-var Literal = require('./Literal');
-var Or = require('./Or');
-var PropertyIsEqualTo = require('./PropertyIsEqualTo');
-var PropertyName = require('./PropertyName');
+let And = require('./And');
+let Intersection = require('./common/Intersection');
+let Literal = require('./Literal');
+let Or = require('./Or');
+let PropertyIsEqualTo = require('./PropertyIsEqualTo');
+let PropertyIsGreaterThan = require('./PropertyIsGreaterThan');
+let PropertyIsLessThan = require('./PropertyIsLessThan');
+let PropertyName = require('./PropertyName');
 
 /**
  * The Filter and ElseFilter elements of a Rule allow the selection of features in rules to be controlled by attribute conditions. As discussed in the previous section, rule activation may also be controlled by the MinScaleDenominator and the MaxScaleDenominator elements as well as the map-rendering scale. The Filter element has a relatively straightforward meaning. The syntax of the Filter element is defined in the WFS specification and allows both attribute (property) and spatial filtering.
@@ -34,27 +37,44 @@ Filter.prototype.validChildren = function() {
 
 /**
  * It creates new Filter from valid description. In order for filter description to be valid. It must contain at least filterType as a parameter and then some value for given filterType.
- * @param filterDescription {Object} This object contains additional information relevant for filter.
- * @param filterDescription.attributeCsv {Object} It contains values for the relevant attribute.
- * @param filterDescription.attributeCsv.values {String} Values supplied as a , denominated String
+ * @param filterDescription {Object} This object contains additional information relevant for filter. Int support filterCsv as well as filterInterval.
  * @param filterAttributeKey {String} Id of the attribute to which the style should be applied
  * @param filterType {String} Type of the filter used to retrieve valid values.
  * @returns {Filter}
  */
 Filter.fromDescription = function(filterDescription, filterAttributeKey, filterType){
-	var properties = [];
+	let properties = [];
 
-	var relevantAttributeValues = filterDescription[filterType].values.split(',');
-	relevantAttributeValues.forEach(function(value){
-		properties.push(new PropertyIsEqualTo([
-			new PropertyName(filterAttributeKey),
-			new Literal(value)
-		]));
-	});
+	if(filterType == "attributeCsv") {
+        let relevantAttributeValues = filterDescription[filterType].values.split(',');
+        relevantAttributeValues.forEach(function (value) {
+            properties.push(new PropertyIsEqualTo([
+                new PropertyName(filterAttributeKey),
+                new Literal(value)
+            ]));
+        });
 
-	return new Filter([
-		new Or(properties)
-	]);
+        return new Filter([
+            new Or(properties)
+        ]);
+    } else if(filterType == "attributeInterval") {
+        let intervalStart = filterDescription[filterType].intervalStart;
+        let intervalEnd = filterDescription[filterType].intervalEnd;
+
+        properties.push(new PropertyIsGreaterThan([
+            new PropertyName(filterAttributeKey),
+            new Literal(intervalStart)
+        ]));
+
+        properties.push(new PropertyIsLessThan([
+            new PropertyName(filterAttributeKey),
+            new Literal(intervalEnd)
+        ]));
+
+        return new Filter([
+            new And(properties)
+        ]);
+	}
 };
 
 module.exports = Filter;

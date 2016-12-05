@@ -1,16 +1,19 @@
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
+var conn = require('../common/conn');
 
 var Controller = require('./Controller');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
+var MongoLayerTemplate = require('../layers/MongoLayerTemplate');
+var MongoLayerTemplates = require('../layers/MongoLayerTemplates');
 
 var MongoClient = require('mongodb').MongoClient;
 var Promise = require('promise');
 
 class AreaTemplateController extends Controller {
 	constructor(app) {
-		super(app, 'areatemplate');
+		super(app, 'areatemplate', MongoLayerTemplates, MongoLayerTemplate);
 	}
 
 	/**
@@ -21,8 +24,8 @@ class AreaTemplateController extends Controller {
 		var areaTemplate = request.body.data;
 		var styles = areaTemplate.styles;
 		var update = super.update.bind(this);
-		return MongoClient.connect(config.mongoConnString).then(function (database) {
-			return new FilteredMongoLayerReferences({areatemplate: areaTemplate._id}, database).read();
+		return Promise.resolve(conn.getMongoDb()).then(function (connection) {
+			return new FilteredMongoLayerReferences({areatemplate: areaTemplate._id}, connection).read();
 		}).then(function(layerReferences){
 			var promises = [];
 
@@ -45,7 +48,9 @@ class AreaTemplateController extends Controller {
 		}).then(function(){
 			update(request, response, next);
 		}).catch(function(error){
-			throw new Error(logger.error('AreaTemplateController#update Error: ', error));
+			throw new Error(
+				logger.error('AreaTemplateController#update Error: ', error)
+			);
 		});
 	}
 }

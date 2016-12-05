@@ -8,7 +8,7 @@ class GeoServerDataStore {
 
 		this._host = host;
 		this._port = port;
-		this._database = database;
+		this._connection = database;
 		this._userName = userName;
 		this._password = password;
 	}
@@ -21,7 +21,7 @@ class GeoServerDataStore {
 		return Promise.resolve({
 			host: this._host,
 			port: this._port,
-			database: this._database,
+			database: this._connection,
 			user: this._userName,
 			passwd: this._password,
 			dbtype: 'postgis',

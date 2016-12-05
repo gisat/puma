@@ -101,7 +101,7 @@ function getLocationConf(params, req, res, callback) {
 
 			}, function datasetMapIterationFinalCallback(err){
 				if (resultArr.length>1) {
-					resultArr.push({
+					resultArr.unshift({
 						name: 'All places',
 						id: 'custom'
 					});
@@ -355,22 +355,35 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 			var locations = results.locations;
 			var areaTemplates = results.dataset.featureLayers; // areaTemplates renamed from featureLayers
+
 			var layerRefMap = results.layerRefs;
 			var opened = params['parentgids'] ? JSON.parse(params['parentgids']) : null;
 			opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
+
+			if(locations.length == 0) {
+				return callback(new Error(logger.error("theme#getThemeYearConf/sql No locations found in locations async function.")));
+			}
+
 			var sql = '';
 			for (var i = 0; i < locations.length; i++) {
 				var location = locations[i];
 				var locationId = location._id;
 				var locAreaTemplates = params['parentgids'] ? [] : [areaTemplates[0]];
 				var locOpened = opened[locationId];
-				for (var key in locOpened) {
-					var idx = areaTemplates.indexOf(parseInt(key));
-					locAreaTemplates.push(areaTemplates[idx + 1]);
+
+				if(areaTemplates.length > 1){
+					for (var key in locOpened) {
+						var idx = areaTemplates.indexOf(parseInt(key));
+						locAreaTemplates.push(areaTemplates[idx + 1]);
+					}
+
+
+					locAreaTemplates.sort(function(a, b) {
+						return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
+					});
 				}
-				locAreaTemplates.sort(function(a, b) {
-					return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
-				});
+
+
 
 				for (var j = 0; j < locAreaTemplates.length; j++) {
 					var areaTemplateId = locAreaTemplates[j];
@@ -378,7 +391,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var prevAreaTemplate = areaTemplateIndex > 0 ? areaTemplates[areaTemplateIndex - 1] : null;
 					var topmostAT = (location.hasOwnProperty("bbox") && location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
 					var leaf = 'FALSE';
-					
+
 					var layerRef = null;
 					try {
 						layerRef = layerRefMap[locationId][areaTemplateId][years[0]];
@@ -402,11 +415,26 @@ function getThemeYearConf(params, req, res, callback) {
 						continue;
 					}
 
+					if(topmostAT && location.bbox) {
+						let parts = location.bbox.split(',');
+						var envelope = '';
+						if(parts.length > 4) {
+							console.error('Wrong BBOX. ', location);
+						}
+						parts.forEach(function(part){
+							envelope += part + '::double precision,';
+						});
+						if(envelope.length > 0) {
+							envelope = envelope.substr(0, envelope.length - 1)
+						}
+					}
+
 					sql += sql ? ' UNION ' : '';
 					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
-						sql += ", '" + location.name + "'::text AS name";
-						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+location.bbox+"))) AS extent";
+						//sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
+						sql += ', a.name::text';
+						sql += ", ST_AsText(ST_Envelope(ST_MakeEnvelope("+envelope+"))) AS extent";
 						sql += ", TRUE AS definedplace";
 					} else {
 						sql += ', a.name::text';
@@ -434,11 +462,16 @@ function getThemeYearConf(params, req, res, callback) {
 					}
 				}
 			}
+
+			if(!sql) {
+				return callback(new Error(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates.")));
+			}
+
 			sql += ' ORDER BY idx ASC';
+
 			var client = conn.getPgDataDb();
 			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
 			client.query(sql, {}, function(err, resls) {
-
 				if (err){
 					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
 					return callback(err);
@@ -501,7 +534,9 @@ function getThemeYearConf(params, req, res, callback) {
 					var idx = featureLayers.indexOf(parseInt(at));
 					var nextAt = featureLayers[idx + 1];
 					var nextLayerRef = null;
+
 					try {
+						if (results.layerRefs[loc].hasOwnProperty(nextAt))
 						nextLayerRef = results.layerRefs[loc][nextAt][years[0]];
 					} catch (e) {
 						logger.warn("theme#getThemeYearConf. An issue with retrieving next layerref. Error: ", e);

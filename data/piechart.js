@@ -70,7 +70,7 @@ function getChart(params, callback) {
 				var attrConf = results.attrConf.attrMap;
 				var data = _.union(results.data2,results.data);
 				var numRecs = data.length;
-				var numRows = Math.round(Math.sqrt(numRecs * height / width))
+				var numRows = Math.round(Math.sqrt(numRecs * height / width));
 				var numCols = Math.ceil(numRecs / numRows);
 				//width = years.length>1 ? Math.max(width,numRecs*(height/years.length)) : width;
 				var minusHeight = numRecs > 15 ? 5 : 20;

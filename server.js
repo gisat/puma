@@ -32,16 +32,7 @@ function initServer(err) {
 		next();
 	});
 
-	app.use('/printpublic',function(req,res,next) {
-		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
-			return next(new Error('unauthorized'));
-		}
-		return next(null);
-	});
-
 	app.use('/app.css', getCSS);
-	app.use('/printpublic/app.css', getCSS);
-
 	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
@@ -56,7 +47,7 @@ function initServer(err) {
     app.use(function(req, res, next) {
 		// Allow CORS from anywhere.
 		// TODO: Fix security issues.
-		var url = req.headers.origin;
+		var url = req.headers.origin || 'http://localhost:63342';
 		res.header("Access-Control-Allow-Origin", url);
 		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
 		res.header("Access-Control-Allow-Credentials", true);
@@ -65,7 +56,6 @@ function initServer(err) {
     });
     // End of allow CORS.
 	
-	require('./routes/integration')(app);
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
@@ -78,9 +68,11 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
+
 var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
 var PgPool = require('./postgresql/PgPool');
 var DatabaseSchema = require('./postgresql/DatabaseSchema');
+
 
 var pool = new PgPool({
 	user: config.pgDataUser,

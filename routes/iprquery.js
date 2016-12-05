@@ -26,7 +26,7 @@ module.exports = function (app) {
 
         var sparqlQuery = prefixes.slice();
 
-        sparqlQuery.push("SELECT ?ds ?dsp ?dso");
+        sparqlQuery.push("SELECT DISTINCT ?ds");
         sparqlQuery.push("WHERE {");
         sparqlQuery.push("?s ?p ?o .");
         sparqlQuery.push("FILTER (");
@@ -45,10 +45,13 @@ module.exports = function (app) {
         sparqlQuery.push("?s common:isInContextOfDataset ?ds .");
         sparqlQuery.push("?ds ?dsp ?dso .");
         sparqlQuery.push("}");
+        sparqlQuery.push("} LIMIT 150");
 
         var searchValue = sparqlQuery.join(" ");
         console.log(searchValue);
         url += encodeURIComponent(searchValue);
+
+        console.log(url);
 
         request(url, function (error, response, body) {
             var jsonRes = {};
