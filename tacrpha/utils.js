@@ -1,6 +1,18 @@
 var logger = require('../common/Logger').applicationWideLogger;
 
 /**
+ * Replace commas and dots with space
+ * @param str {string}
+ * @returns {string}
+ */
+function replaceInterpunction (str){
+    str = str.replace(/[,;]/gi, ' ');
+    // replace all spaces with single space
+    str = str.replace(/\s\s+/g, ' ');
+    return str;
+}
+
+/**
  * Remove diacritics (accents) from a string
  * @param {string} str The input string from which we will remove strings with diacritics
  * @returns {string}
@@ -102,5 +114,6 @@ function removeDiacritics (str) {
 }
 
 module.exports = {
-    removeDiacritics: removeDiacritics
+    removeDiacritics: removeDiacritics,
+    replaceInterpunction: replaceInterpunction
 };
