@@ -1,5 +1,7 @@
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
+var utils = require('../tacrpha/utils');
+
 var request = require('request');
 var csv = require('csv');
 
@@ -63,8 +65,11 @@ class iprquery {
         var where = [];
         var filter = [];
         values.map((value, index) => {
+            var keyword = utils.removeDiacritics(value);
+            logger.info(`INFO iprquery#prepareDatasetQuery transform: ` + value + ` to: ` + keyword);
+
             where.push('?item' + index + ' common:isInContextOfDataset ?dataset');
-            filter.push('regex(str(?item' + index + '), "' + value + '", "i")');
+            filter.push('regex(str(?item' + index + '), "' + keyword + '", "i")');
         });
         where = where.join(' . ');
         filter = 'FILTER(' + filter.join(' && ') + ')';
