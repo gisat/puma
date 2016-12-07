@@ -29,29 +29,25 @@ class DataSetController extends Controller {
 	 */
 	readRestricted(request, response, next) {
 		logger.info("Requested restricted collection of type: ", this.type, " By User: ", request.session.userId);
-		if(config.protectScopes) {
-			if(config.allowedUsers && _.isArray(config.allowedUsers)) {
-				if(config.allowedUsers.indexOf(Number(request.session.userId)) == -1) {
-					return next();
-				}
-			}
-		}
 
-		var self = this;
 		crud.readRestricted(this.type, {
 			userId: request.session.userId,
 			justMine: request.query['justMine']
-		}, function (err, result) {
+		}, (err, result) => {
 			if (err) {
-				logger.error("It wasn't possible to read restricted collection:", self.type, " by User:", request.session.userId, " Error: ", err);
+				logger.error("It wasn't possible to read restricted collection:", this.type, " by User:", request.session.userId, " Error: ", err);
 				next(err);
 			} else {
-				logger.info("Result of loading " + self.type + " " + result);
-				response.data = result;
+				logger.info("Result of loading " + this.type + " " + result);
+				response.data = result.filter(scope => this.hasRights(request.session.user, 'GET', scope._id));
 				next();
 			}
 		});
 	}
+
+    hasRights(user, method, id) {
+        return user.hasPermission(this.type, method, id);
+    }
 }
 
 module.exports = DataSetController;

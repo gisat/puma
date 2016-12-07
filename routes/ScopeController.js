@@ -1,11 +1,10 @@
-var Controller = require('./Controller');
-var logger = require('../common/Logger').applicationWideLogger;
-var crud = require('../rest/crud');
-var config = require('../config');
-var _ = require('underscore');
+let Controller = require('./Controller');
+let logger = require('../common/Logger').applicationWideLogger;
+let crud = require('../rest/crud');
+let config = require('../config');
 
-var MongoScopes = require('../metadata/MongoScopes');
-var MongoScope = require('../metadata/MongoScope');
+let MongoScopes = require('../metadata/MongoScopes');
+let MongoScope = require('../metadata/MongoScope');
 
 /**
  * @augments Controller
@@ -29,29 +28,24 @@ class ScopeController extends Controller {
 	 */
 	readRestricted(request, response, next) {
 		logger.info("Requested restricted collection of type: ", this.type, " By User: ", request.session.userId);
-		if(config.protectScopes) {
-			if(config.allowedUsers && _.isArray(config.allowedUsers)) {
-				if(config.allowedUsers.indexOf(Number(request.session.userId)) == -1) {
-					return next();
-				}
-			}
-		}
-
-		var self = this;
 		crud.readRestricted(this.type, {
 			userId: request.session.userId,
 			justMine: request.query['justMine']
-		}, function (err, result) {
+		}, (err, result) => {
 			if (err) {
-				logger.error("It wasn't possible to read restricted collection:", self.type, " by User:", request.session.userId, " Error: ", err);
+				logger.error("It wasn't possible to read restricted collection:", this.type, " by User:", request.session.userId, " Error: ", err);
 				next(err);
 			} else {
-				logger.info("Result of loading " + self.type + " " + result);
-				response.data = result;
+				logger.info("Result of loading " + this.type + " " + result);
+				response.data = result.filter(scope => this.hasRights(request.session.user, 'GET', scope._id));
 				next();
 			}
 		});
 	}
+
+    hasRights(user, method, id) {
+        return user.hasPermission(this.type, method, id);
+    }
 }
 
 module.exports = ScopeController;

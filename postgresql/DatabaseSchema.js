@@ -48,10 +48,34 @@ DatabaseSchema.prototype.create = function () {
     var createPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this._schema}.permissions (
 		 id SERIAL PRIMARY KEY,
 	 	 user_id int NOT NULL,
-		 resource_id int NOT NULL,
+		 resource_id int,
 		 resource_type varchar(20),
 		 permission varchar(20)
 	)`;
+    let createGroupPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this._schema}.group_permissions (
+         id SERIAL PRIMARY KEY,
+	 	 group_id int NOT NULL,
+		 resource_id int,
+		 resource_type varchar(20),
+		 permission varchar(20)
+    )`;
+    let createGroup = `CREATE TABLE IF NOT EXISTS ${this._schema}.groups (
+        id SERIAL PRIMARY KEY,
+        name text,
+        created timestamp,
+        created_by int, 
+        changed timestamp, 
+        changed_by int
+    )`;
+    let createGroupHasMembers = `CREATE TABLE IF NOT EXISTS ${this._schema}.group_has_members (
+        id SERIAL PRIMARY KEY,
+        group_id int NOT NULL,
+        user_id int NOT NULL,
+        created timestamp,
+        created_by int, 
+        changed timestamp, 
+        changed_by int
+    )`;
 
     var self = this;
     return this._pool.query(createSchema).then(function () {
@@ -61,6 +85,12 @@ DatabaseSchema.prototype.create = function () {
     }).then(function () {
         return self._pool.query(createPermissionsTable);
     }).then(function () {
+        return self._pool.query(createGroupPermissionsTable);
+    }).then(function () {
+        return self._pool.query(createGroup);
+    }).then(function () {
+		return self._pool.query(createGroupHasMembers);
+	}).then(function () {
         return self._pool.query(createAnalysis);
     }).then(function () {
         return self._pool.query(createViews);

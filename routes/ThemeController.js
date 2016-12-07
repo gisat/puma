@@ -19,11 +19,16 @@ class ThemeController extends Controller {
 	update(request, response, next) {
 		logger.info("Create object of type: ", this.type, " by User: ", request.session.userId, "With data: ", request.body.data);
 
+        var theme = request.body.data;
+        if (!this.hasRights(request.session.user, 'PUT', theme._id, theme)) {
+            response.status(403);
+            return;
+        }
+
 		var parameters = {
 			userId: request.session.userId,
 			isAdmin: response.locals.isAdmin
 		};
-		var theme = request.body.data;
 		var self = this;
 		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
 			if (err) {
@@ -52,6 +57,10 @@ class ThemeController extends Controller {
 			});
 		});
 	}
+
+    hasRights(user, method, id, object) {
+        return user.hasPermission('scope', method, object.dataset);
+    }
 }
 
 module.exports = ThemeController;

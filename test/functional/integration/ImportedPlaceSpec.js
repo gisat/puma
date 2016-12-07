@@ -37,6 +37,8 @@ describe('ImportedPlace', function () {
 	it('creates valid new tables', function(done) {
 		new ImportedPlace(pool, 'gufde').create().then(() => {
 			done();
+		}).catch(function(err){
+			done(err);
 		});
 	});
 
