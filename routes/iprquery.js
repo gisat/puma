@@ -22,6 +22,12 @@ class iprquery {
         ];
     }
 
+    /**
+     * Basic method for searching
+     * @param category {string} type of searching
+     * @param req
+     * @param res
+     */
     searching(category, req, res){
         let sparql;
         let keywords = this.constructor.parseRequestString(req.body.search);
@@ -149,7 +155,7 @@ class iprquery {
     }
 
     /**
-     * Convert type to symbol
+     * Convert type of operator to symbol
      * @param type {string}
      * @returns {string} symbol
      */
