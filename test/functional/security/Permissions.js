@@ -8,6 +8,7 @@ let express = require('express');
 let PgPool = require('../../../postgresql/PgPool');
 let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 let ScopeController = require('../../../routes/DataSetController');
+let LocationController = require('../../../routes/LocationController');
 let User = require('../../../security/User');
 let Group = require('../../../security/Group');
 let PgUsers = require('../../../security/PgUsers');
@@ -31,17 +32,12 @@ describe('User', function () {
 
         app.use((request, response, next) => {
             request.session = {};
-            request.session.userId = 1;
+            request.session.userId = fixture.userId;
             next();
         });
 
         app.use((request, response, next) => {
-            if(fixture.user) {
-                request.session.user = fixture.user;
-                return next();
-            }
-
-            if(request.session.userId) {
+            if (request.session.userId) {
                 let user;
                 new PgUsers(pool, config.postgreSqlSchema).byId(request.session.userId).then(pUser => {
                     user = pUser;
@@ -77,7 +73,7 @@ describe('User', function () {
             return schema.create();
         }).then(function () {
             return permissionFixture.setup();
-        }).then(function(){
+        }).then(function () {
             done();
         }).catch((err) => {
             done(err);
@@ -89,38 +85,58 @@ describe('User', function () {
         });
     });
 
-    describe('as an administrator I see everything regardless of rights', function () {
-        it('returns all', function (done) {
-            fixture.user = new User(0, [], [new Group(1, [], 'admin')]);
-            supertest(app)
-                .get('/rest/dataset')
-                .set('Content-Type', 'application/json')
-                .set('Accepts', 'application/json')
-                .expect(200)
-                .then(function (response) {
-                    should(response.body.data.length).be.exactly(3);
-                    done();
-                }).catch(function (error) {
-                done(error);
+    describe('Dataset', function () {
+        describe('#read', function () {
+            it('as an administrator I see everything regardless of rights', function (done) {
+                fixture.userId = permissionFixture.adminUserId();
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(3);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+
+            it('as a member of iluminati group I see guest and iluminati related', function () {
+                fixture.userId = permissionFixture.iluminatUserId();
+
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+
+            it('as a guest I see only guest related stuff', function (done) {
+                fixture.userId = null;
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(1);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
             });
         });
     });
 
-    describe('as a guest I see only guest related stuff', function () {
-        it('returns all', function (done) {
-            fixture.user = null;
-            supertest(app)
-                .get('/rest/dataset')
-                .set('Content-Type', 'application/json')
-                .set('Accepts', 'application/json')
-                .expect(200)
-                .then(function (response) {
-                    should(response.body.data.length).be.exactly(1);
-                    done();
-                }).catch(function (error) {
-                done(error);
-            });
-        });
+    describe('Location', function () {
+
     });
 
     afterEach(function (done) {
