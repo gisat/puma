@@ -53,6 +53,14 @@ class AreaTemplateController extends Controller {
 			);
 		});
 	}
+
+    hasRights(user, method, id, object) {
+		if(object.layerType != 'raster' && object.layerType == 'vector') {
+			return true;
+		} else {
+            return user.hasPermission('topic', method, object.topic);
+		}
+    }
 }
 
 module.exports = AreaTemplateController;

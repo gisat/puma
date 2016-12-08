@@ -9,6 +9,7 @@ let PgPool = require('../../../postgresql/PgPool');
 let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 let ScopeController = require('../../../routes/DataSetController');
 let LocationController = require('../../../routes/LocationController');
+let TopicController = require('../../../routes/TopicController');
 let User = require('../../../security/User');
 let Group = require('../../../security/Group');
 let PgUsers = require('../../../security/PgUsers');
@@ -81,6 +82,7 @@ describe('User', function () {
 
         new ScopeController(app, pool, commonSchema);
         new LocationController(app, pool, commonSchema);
+        new TopicController(app, pool, commonSchema);
         server = app.listen(config.port, function () {
             console.log('Group app is listening\n');
         });
@@ -262,6 +264,85 @@ describe('User', function () {
                 });
             });
         });
+    });
+
+    describe('Topic', function(){
+        describe('anonymous', function(){
+            it('as a guest I see only guest related stuff', function (done) {
+                fixture.userId = null;
+                supertest(app)
+                    .get('/rest/topic')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data[0]._id).be.exactly(1);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('jbalhar', function(){
+            it('as a user I see all stuff related to me ad my groups', function (done) {
+                fixture.userId = permissionFixture.jbalharUserId();
+                supertest(app)
+                    .get('/rest/topic')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('iluminat', function(){
+            it('as a member of iluminati group I see guest and iluminati related', function (done) {
+                fixture.userId = permissionFixture.iluminatUserId();
+
+                supertest(app)
+                    .get('/rest/topic')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('administrator', function(){
+            it('as an administrator I see everything regardless of rights', function (done) {
+                fixture.userId = permissionFixture.adminUserId();
+                supertest(app)
+                    .get('/rest/topic')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(3);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+    });
+
+    describe('Attribute Set', function(){
+
+    });
+
+    describe('Layers', function(){
+
     });
 
     afterEach(function (done) {

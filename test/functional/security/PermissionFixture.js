@@ -126,6 +126,163 @@ class PermissionFixture {
                     "dataset": 7
                 }]);
         }).then(() => {
+            let topic = this.connection.collection('topic');
+            return topic.insertMany([
+                {
+                    "_id": 1,
+                    "active": false,
+                    "created": "2016-12-07T07:48:06.294Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:48:15.064Z",
+                    "changedBy": 1,
+                    "name": "Everyone has rights"
+                },
+                {
+                    "_id": 2,
+                    "active": false,
+                    "created": "2016-12-07T07:48:16.430Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:48:22.626Z",
+                    "changedBy": 1,
+                    "name": "Iluminati has rights"
+                },
+                {
+                    "_id": 3,
+                    "active": false,
+                    "created": "2016-12-07T07:48:23.711Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:48:28.976Z",
+                    "changedBy": 1,
+                    "name": "jbalhar has rights"
+                }]);
+        }).then(() => {
+            let attributeSet = this.connection.collection('attributeset');
+            return attributeSet.insertMany([
+                {
+                    "_id": 5,
+                    "active": false,
+                    "created": "2016-12-07T07:49:05.040Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:49:52.062Z",
+                    "changedBy": 1,
+                    "name": "Everyone has rights",
+                    "attributes": [6],
+                    "featureLayers": [],
+                    "topic": 1
+                },
+                {
+                    "_id": 7,
+                    "active": false,
+                    "created": "2016-12-07T07:50:04.149Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:50:12.334Z",
+                    "changedBy": 1,
+                    "name": "Iluminat has rights",
+                    "attributes": [6],
+                    "featureLayers": [],
+                    "topic": 2
+                },
+                {
+                    "_id": 8,
+                    "active": false,
+                    "created": "2016-12-07T07:50:13.568Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:50:22.997Z",
+                    "changedBy": 1,
+                    "name": "jbalhar has rights",
+                    "attributes": [6],
+                    "featureLayers": [],
+                    "topic": 3
+                }]);
+        }).then(() => {
+            let areaTemplate = this.connection.collection('areatemplate');
+            return areaTemplate.insertMany([
+                {
+                    "_id": 9,
+                    "active": false,
+                    "layerType": "raster",
+                    "created": "2016-12-07T07:50:58.288Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:51:16.336Z",
+                    "changedBy": 1,
+                    "name": "Everyone has rights",
+                    "justVisualization": true,
+                    "symbologies": [],
+                    "layerGroup": 10,
+                    "topic": 1
+                },
+                {
+                    "_id": 11,
+                    "active": false,
+                    "layerType": "raster",
+                    "created": "2016-12-07T07:51:18.014Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:51:31.591Z",
+                    "changedBy": 1,
+                    "name": "Iluminati has rights",
+                    "justVisualization": true,
+                    "symbologies": [],
+                    "layerGroup": 10,
+                    "topic": 2
+                },
+                {
+                    "_id": 12,
+                    "active": false,
+                    "layerType": "raster",
+                    "created": "2016-12-07T07:51:32.947Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:51:41.968Z",
+                    "changedBy": 1,
+                    "name": "jbalhar has rights",
+                    "justVisualization": true,
+                    "symbologies": [],
+                    "layerGroup": 10,
+                    "topic": 3
+                },
+                {
+                    "_id": 13,
+                    "active": false,
+                    "layerType": "vector",
+                    "created": "2016-12-07T07:51:46.055Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:51:58.320Z",
+                    "changedBy": 1,
+                    "name": "Everyone has rights",
+                    "attributeSets": [],
+                    "symbologies": [],
+                    "layerGroup": 10,
+                    "topic": 1
+                },
+                {
+                    "_id": 14,
+                    "active": false,
+                    "layerType": "vector",
+                    "created": "2016-12-07T07:52:00.059Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:52:08.121Z",
+                    "changedBy": 1,
+                    "name": "iluminati has rights",
+                    "attributeSets": [],
+                    "symbologies": [],
+                    "layerGroup": 10,
+                    "topic": 2
+                },
+                {
+                    "_id": 15,
+                    "active": false,
+                    "layerType": "vector",
+                    "created": "2016-12-07T07:52:09.326Z",
+                    "createdBy": 1,
+                    "changed": "2016-12-07T07:52:18.823Z",
+                    "changedBy": 1,
+                    "name": "jbalhar has rights",
+                    "attributeSets": [],
+                    "symbologies": [],
+                    "layerGroup": 10,
+                    "topic": 3
+                }
+            ]);
+        }).then(() => {
             return this.createGroup('admin');
         }).then(() => {
             return this.createGroup('guest');
@@ -142,11 +299,15 @@ class PermissionFixture {
         }).then(() => {
             return this.addPermissionToGroup(this.guestId(), 'location', 'GET', 8);
         }).then(() => {
+            return this.addPermissionToGroup(this.guestId(), 'topic', 'GET', 1);
+        }).then(() => {
             return this.addPermissionToGroup(this.iluminatiId(), 'dataset', 'GET', 7);
         }).then(() => {
             return this.addPermissionToGroup(this.iluminatiId(), 'location', 'GET', 9);
         }).then(() => {
             return this.addPermissionToGroup(this.iluminatiId(), 'location', 'GET', 12);
+        }).then(() => {
+            return this.addPermissionToGroup(this.iluminatiId(), 'topic', 'GET', 2);
         }).then(() => {
             return this.addPermissionToUser(this.iluminatUserId(), 'location', 'GET', 13);
         }).then(() => {
@@ -155,6 +316,8 @@ class PermissionFixture {
             return this.addPermissionToUser(this.jbalharUserId(), 'location', 'GET', 10);
         }).then(() => {
             return this.addPermissionToUser(this.jbalharUserId(), 'location', 'GET', 11);
+        }).then(() => {
+            return this.addPermissionToUser(this.jbalharUserId(), 'topic', 'GET', 3);
         });
     }
 
@@ -186,16 +349,16 @@ class PermissionFixture {
         return 4;
     }
 
-    async createGroup(name) {
+    createGroup(name) {
         return this.pool.pool().query(`INSERT INTO ${this.schema}.groups (name, created, created_by, changed, changed_by) VALUES ('${name}', '${this.time}', ${this.userId}, '${this.time}', ${this.userId})`);
     }
 
-    async addMemberToGroup(groupId, userId) {
+    addMemberToGroup(groupId, userId) {
         return this.pool.pool().query(`INSERT INTO ${this.schema}.group_has_members (group_id, user_id, created, created_by, changed, changed_by) 
             VALUES (${groupId}, ${userId}, '${this.time}', ${this.userId}, '${this.time}', ${this.userId})`);
     }
 
-    async addPermissionToGroup(groupId, resourceType, permission, resourceId) {
+    addPermissionToGroup(groupId, resourceType, permission, resourceId) {
         if (!resourceId) {
             return this.pool.pool().query(`INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, permission) VALUES (${groupId}, '${resourceType}', '${permission}')`);
         } else {
@@ -203,7 +366,7 @@ class PermissionFixture {
         }
     }
 
-    async addPermissionToUser(userId, resourceType, permission, resourceId) {
+    addPermissionToUser(userId, resourceType, permission, resourceId) {
         if (!resourceId) {
             return this.pool.pool().query(`INSERT INTO ${this.schema}.permissions (user_id, resource_type, permission) VALUES (${userId}, '${resourceType}', '${permission}')`);
         } else {

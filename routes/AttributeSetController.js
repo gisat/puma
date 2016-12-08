@@ -6,6 +6,10 @@ class AttributeSetController extends Controller {
 	constructor(app) {
 		super(app, 'attributeset', MongoAttributeSets, MongoAttributeSet);
 	}
+
+    hasRights(user, method, id, object) {
+        return user.hasPermission('topic', method, object.topic);
+    }
 }
 
 module.exports = AttributeSetController;
