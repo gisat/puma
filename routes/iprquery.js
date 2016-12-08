@@ -28,6 +28,7 @@ class iprquery {
 
         let sparql = this.prepareTermsQuery(this._datasetEndpoint, keywords);
         this.endpointRequest(sparql).then(function(result){
+            result.keywords = keywords;
             res.send(result);
         });
     }
@@ -38,6 +39,7 @@ class iprquery {
 
         let sparql = this.prepareDatasetQuery(this._datasetEndpoint, keywords);
         this.endpointRequest(sparql).then(function(result){
+            result.keywords = keywords;
             res.send(result);
         });
     }
@@ -52,7 +54,9 @@ class iprquery {
 
         reqString = utils.replaceInterpunction(reqString);
         reqString = utils.removeDiacritics(reqString);
-        return reqString.split(" ");
+        var list = reqString.split(" ");
+
+        return utils.removeMonosyllabics(list);
     }
 
     /**

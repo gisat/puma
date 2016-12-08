@@ -1,6 +1,22 @@
 var logger = require('../common/Logger').applicationWideLogger;
 
 /**
+ * Remove all monosyllabic words from array
+ * @param arr {Array}
+ * @returns {Array}
+ */
+function removeMonosyllabics (arr){
+    var list = [];
+    arr.map(item => {
+       if (item.length > 1){
+           list.push(item);
+       }
+    });
+
+    return list;
+}
+
+/**
  * Replace commas and dots with space
  * @param str {string}
  * @returns {string}
@@ -114,6 +130,7 @@ function removeDiacritics (str) {
 }
 
 module.exports = {
+    removeMonosyllabics: removeMonosyllabics,
     removeDiacritics: removeDiacritics,
     replaceInterpunction: replaceInterpunction
 };
