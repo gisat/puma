@@ -9,7 +9,7 @@ class LocationController extends Controller {
 
     hasRights(user, method, id, object) {
         // How do you get the Scope.
-        return user.hasPermission(this.type, method, id) && user.hasPermission('scope', method, object.dataset);
+        return user.hasPermission(this.type, method, id) && user.hasPermission('dataset', method, object.dataset);
     }
 }
 

@@ -16,7 +16,6 @@ var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
 var LoginController = require('./LoginController');
 var PerformedAnalysisController = require('./PerformedAnalysisController');
-var ScopeController = require('./ScopeController');
 var StyleController = require('./StyleController');
 var ThemeController = require('./ThemeController');
 var TopicController = require('./TopicController');
@@ -83,7 +82,6 @@ module.exports = function(app) {
 	new LocationController(app);
 	new LoginController(app);
 	new PerformedAnalysisController(app);
-	new ScopeController(app);
 	new ThemeController(app);
 	new TopicController(app);
 	new VisualizationController(app);

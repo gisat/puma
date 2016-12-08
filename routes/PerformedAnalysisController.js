@@ -8,7 +8,7 @@ class PerformedAnalysisController extends Controller {
 	}
 
     hasRights(user, method, id, object) {
-        return user.hasPermission('scope', method, object.dataset);
+        return user.hasPermission('dataset', method, object.dataset);
     }
 }
 

@@ -80,44 +80,14 @@ describe('User', function () {
         });
 
         new ScopeController(app, pool, commonSchema);
+        new LocationController(app, pool, commonSchema);
         server = app.listen(config.port, function () {
             console.log('Group app is listening\n');
         });
     });
 
     describe('Dataset', function () {
-        describe('#read', function () {
-            it('as an administrator I see everything regardless of rights', function (done) {
-                fixture.userId = permissionFixture.adminUserId();
-                supertest(app)
-                    .get('/rest/dataset')
-                    .set('Content-Type', 'application/json')
-                    .set('Accepts', 'application/json')
-                    .expect(200)
-                    .then(function (response) {
-                        should(response.body.data.length).be.exactly(3);
-                        done();
-                    }).catch(function (error) {
-                    done(error);
-                });
-            });
-
-            it('as a member of iluminati group I see guest and iluminati related', function () {
-                fixture.userId = permissionFixture.iluminatUserId();
-
-                supertest(app)
-                    .get('/rest/dataset')
-                    .set('Content-Type', 'application/json')
-                    .set('Accepts', 'application/json')
-                    .expect(200)
-                    .then(function (response) {
-                        should(response.body.data.length).be.exactly(2);
-                        done();
-                    }).catch(function (error) {
-                    done(error);
-                });
-            });
-
+        describe('anonymous', function(){
             it('as a guest I see only guest related stuff', function (done) {
                 fixture.userId = null;
                 supertest(app)
@@ -133,10 +103,165 @@ describe('User', function () {
                 });
             });
         });
+
+        describe('jbalhar', function(){
+            it('as a user I see all stuff related to me ad my groups', function (done) {
+                fixture.userId = permissionFixture.jbalharUserId();
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('iluminat', function(){
+            it('as a member of iluminati group I see guest and iluminati related', function () {
+                fixture.userId = permissionFixture.iluminatUserId();
+
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('iluminat2', function(){
+            it('as a member of iluminati group I see guest and iluminati related', function () {
+                fixture.userId = permissionFixture.iluminatUserId();
+
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('administrator', function(){
+            it('as an administrator I see everything regardless of rights', function (done) {
+                fixture.userId = permissionFixture.adminUserId();
+                supertest(app)
+                    .get('/rest/dataset')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(3);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
     });
 
     describe('Location', function () {
+        describe('anonymous', function(){
+            it('as a guest I see only guest related stuff', function (done) {
+                fixture.userId = null;
+                supertest(app)
+                    .get('/rest/location')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(1);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
 
+        describe('jbalhar', function(){
+            it('as a user I see all stuff related to me ad my groups', function (done) {
+                fixture.userId = permissionFixture.jbalharUserId();
+                supertest(app)
+                    .get('/rest/location')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(3);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('iluminat', function(){
+            it('as a member of iluminati group I see guest and iluminati related', function () {
+                fixture.userId = permissionFixture.iluminatUserId();
+
+                supertest(app)
+                    .get('/rest/location')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('iluminat2', function(){
+            it('as a member of iluminati group I see guest and iluminati related', function () {
+                fixture.userId = permissionFixture.iluminatUserId();
+
+                supertest(app)
+                    .get('/rest/location')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(2);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
+
+        describe('administrator', function(){
+            it('as an administrator I see everything regardless of rights', function (done) {
+                fixture.userId = permissionFixture.adminUserId();
+                supertest(app)
+                    .get('/rest/location')
+                    .set('Content-Type', 'application/json')
+                    .set('Accepts', 'application/json')
+                    .expect(200)
+                    .then(function (response) {
+                        should(response.body.data.length).be.exactly(6);
+                        done();
+                    }).catch(function (error) {
+                    done(error);
+                });
+            });
+        });
     });
 
     afterEach(function (done) {
