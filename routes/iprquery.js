@@ -8,8 +8,8 @@ var csv = require('csv');
 
 class iprquery {
     constructor (app) {
-        app.post("/iprquery/dataset", this.dataset.bind(this));
-        app.post("/iprquery/terms", this.terms.bind(this));
+        app.post("/iprquery/dataset", this.searching.bind(this, "dataset"));
+        app.post("/iprquery/terms", this.searching.bind(this, "terms"));
 
         this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
         this._prefixes = [
@@ -22,69 +22,44 @@ class iprquery {
         ];
     }
 
-    terms(req,res){
-        let keywords = this.parseRequestString(req.body.search);
+    searching(category, req, res){
+        let sparql;
+        let keywords = this.constructor.parseRequestString(req.body.search);
+        let type = this.constructor.getTypeString(req.body.settings.type);
         logger.info(`INFO iprquery#dataset keywords: ` + keywords);
 
-        let sparql = this.prepareTermsQuery(this._datasetEndpoint, keywords);
+        if (category == "terms"){
+            sparql = this.prepareTermsQuery(this._datasetEndpoint, keywords, type);
+        } else if (category == "dataset"){
+            sparql = this.prepareDatasetQuery(this._datasetEndpoint, keywords, type);
+        }
+
         this.endpointRequest(sparql).then(function(result){
             result.keywords = keywords;
             res.send(result);
         });
-    }
-
-    dataset(req, res){
-        let keywords = this.parseRequestString(req.body.search);
-        logger.info(`INFO iprquery#dataset keywords: ` + keywords);
-
-        let sparql = this.prepareDatasetQuery(this._datasetEndpoint, keywords);
-        this.endpointRequest(sparql).then(function(result){
-            result.keywords = keywords;
-            res.send(result);
-        });
-    }
-
-    /**
-     * Prepare keywords for searching
-     * @param reqString {string} request string
-     * @returns {Array} keywords
-     */
-    parseRequestString(reqString){
-        logger.info(`INFO iprquery#parseRequestString reqString: ` + reqString);
-
-        reqString = utils.replaceInterpunction(reqString);
-        reqString = utils.removeDiacritics(reqString);
-        var list = reqString.split(" ");
-
-        return utils.removeMonosyllabics(list);
     }
 
     /**
      * Prepare sparql query for terms
      * @param url {string} sparql endpoint url
      * @param values {Array} values for searching
+     * @param type {string} operators
      * @returns {string}
      */
-    prepareTermsQuery(url, values){
+    prepareTermsQuery(url, values, type){
         var query = url + '?query=';
-
-        var sparql = ' SELECT ';
-
-        var selects = [];
-        var where = [];
-        var filter = [];
-        values.map((value, index) => {
-            selects.push('?pojem' + index);
-            where.push('?pojem' + index + ' common:isInContextOfDataset ?dataset');
-            filter.push('regex(str(?pojem' + index + '), "' + value + '", "i")');
-        });
-        selects = selects.join(' ') + ' ?dataset ';
-        filter = 'FILTER(' + filter.join(' && ') + ')';
-        where = 'WHERE {' + where.join(' . ') + ' ' + filter + '}';
-        sparql += selects + where;
-        logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
-
         var prefixes = this._prefixes.join(' ');
+        var sparql = ' SELECT ?pojem ?dataset WHERE {?pojem common:isInContextOfDataset ?dataset . ';
+
+        var filter = [];
+        values.map((value) => {
+            filter.push('regex(str(?pojem), "' + value + '", "i")');
+        });
+        filter = 'FILTER(' + filter.join(type) + ')';
+        sparql += filter + '}';
+
+        logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
         logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
 
         return query + encodeURIComponent(prefixes + sparql);
@@ -94,25 +69,25 @@ class iprquery {
      * Prepare sparql query for datasets
      * @param url {string} sparql endpoint url
      * @param values {Array} values for searching
+     * @param type {string} operators
      * @returns {string}
      */
-    prepareDatasetQuery(url, values){
+    prepareDatasetQuery(url, values, type){
         var query = url + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = prefixes + ' SELECT DISTINCT ?dataset WHERE {';
+        var sparql = ' SELECT DISTINCT ?dataset WHERE {?item common:isInContextOfDataset ?dataset . ';
 
-        var where = [];
         var filter = [];
-        values.map((value, index) => {
-            where.push('?item' + index + ' common:isInContextOfDataset ?dataset');
-            filter.push('regex(str(?item' + index + '), "' + value + '", "i")');
+        values.map((value) => {
+            filter.push('regex(str(?item), "' + value + '", "i")');
         });
-        where = where.join(' . ');
-        filter = 'FILTER(' + filter.join(' && ') + ')';
-        sparql += where + ' ' + filter + '}';
-        logger.info(`INFO iprquery#prepareDatasetQuery sparql: ` + sparql);
+        filter = 'FILTER(' + filter.join(type) + ')';
+        sparql += filter + '}';
 
-        return query + ' ' + encodeURIComponent(sparql);
+        logger.info(`INFO iprquery#prepareDatasetQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareDatasetQuery full query: ` + query + prefixes + sparql);
+
+        return query + ' ' + encodeURIComponent(prefixes + sparql);
     }
 
     endpointRequest(sparql){
@@ -156,6 +131,34 @@ class iprquery {
                 }
             });
         });
+    }
+
+    /**
+     * Prepare keywords for searching
+     * @param reqString {string} request string
+     * @returns {Array} keywords
+     */
+    static parseRequestString(reqString){
+        logger.info(`INFO iprquery#parseRequestString reqString: ` + reqString);
+
+        reqString = utils.replaceInterpunction(reqString);
+        reqString = utils.removeDiacritics(reqString);
+        var list = reqString.split(" ");
+
+        return utils.removeMonosyllabics(list);
+    }
+
+    /**
+     * Convert type to symbol
+     * @param type {string}
+     * @returns {string} symbol
+     */
+    static getTypeString(type){
+        var symbol = " && ";
+        if (type == "or"){
+            symbol = " || ";
+        }
+        return symbol;
     }
 }
 
