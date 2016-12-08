@@ -116,24 +116,38 @@ class iprquery {
             request(sparql, function (error, response, body) {
                 let json = {};
                 if (error) {
-                    json.status = "Error: " + error;
+                    json.status = "ERROR";
+                    json.message = "Endpoint není dostupný! (Error message: " + error + " )";
+                    logger.error(`ERROR iprquery#endpointRequest request: ` + error);
+                    resolve(json);
+                } else if (response.statusCode >= 400){
+                    json.status = "ERROR";
+                    json.message = "Endpoint není dostupný! (Error message: " + response.statusCode + ": " + response.statusMessage + " )";
+                    logger.error (`ERROR iprquery#endpointRequest request: ` + response.statusCode + ": " + response.statusMessage);
                     resolve(json);
                 } else {
                     csv.parse(body, function(error, result){
-                        var header = result[0];
-                        json.status = "OK";
-                        json.data = [];
-                        result.map((item, i) => {
-                            var record = {};
-                            header.map((column, j) => {
-                                record[column] = item[j];
-                            });
+                        if(error){
+                            json.status = "ERROR";
+                            json.message = error;
+                            logger.error(`ERROR iprquery#endpointRequest csv.parse:` + error);
+                            resolve(json);
+                        } else {
+                            var header = result[0];
+                            json.status = "OK";
+                            json.data = [];
+                            result.map((item, i) => {
+                                var record = {};
+                                header.map((column, j) => {
+                                    record[column] = item[j];
+                                });
 
-                            if (i > 0){
-                                json.data.push(record);
-                            }
-                        });
-                        resolve(json);
+                                if (i > 0){
+                                    json.data.push(record);
+                                }
+                            });
+                            resolve(json);
+                        }
                     });
                 }
             });
