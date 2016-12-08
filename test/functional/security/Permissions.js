@@ -122,7 +122,7 @@ describe('User', function () {
         });
 
         describe('iluminat', function(){
-            it('as a member of iluminati group I see guest and iluminati related', function () {
+            it('as a member of iluminati group I see guest and iluminati related', function (done) {
                 fixture.userId = permissionFixture.iluminatUserId();
 
                 supertest(app)
@@ -140,8 +140,8 @@ describe('User', function () {
         });
 
         describe('iluminat2', function(){
-            it('as a member of iluminati group I see guest and iluminati related', function () {
-                fixture.userId = permissionFixture.iluminatUserId();
+            it('as a member of iluminati group I see guest and iluminati related', function (done) {
+                fixture.userId = permissionFixture.iluminat2UserId();
 
                 supertest(app)
                     .get('/rest/dataset')
@@ -211,7 +211,7 @@ describe('User', function () {
         });
 
         describe('iluminat', function(){
-            it('as a member of iluminati group I see guest and iluminati related', function () {
+            it('as a member of iluminati group I see guest and iluminati related', function (done) {
                 fixture.userId = permissionFixture.iluminatUserId();
 
                 supertest(app)
@@ -220,7 +220,7 @@ describe('User', function () {
                     .set('Accepts', 'application/json')
                     .expect(200)
                     .then(function (response) {
-                        should(response.body.data.length).be.exactly(2);
+                        should(response.body.data.length).be.exactly(4);
                         done();
                     }).catch(function (error) {
                     done(error);
@@ -229,8 +229,8 @@ describe('User', function () {
         });
 
         describe('iluminat2', function(){
-            it('as a member of iluminati group I see guest and iluminati related', function () {
-                fixture.userId = permissionFixture.iluminatUserId();
+            it('as a member of iluminati group I see guest and iluminati related', function (done) {
+                fixture.userId = permissionFixture.iluminat2UserId();
 
                 supertest(app)
                     .get('/rest/location')
@@ -238,7 +238,7 @@ describe('User', function () {
                     .set('Accepts', 'application/json')
                     .expect(200)
                     .then(function (response) {
-                        should(response.body.data.length).be.exactly(2);
+                        should(response.body.data.length).be.exactly(3);
                         done();
                     }).catch(function (error) {
                     done(error);

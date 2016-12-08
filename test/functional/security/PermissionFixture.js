@@ -112,7 +112,7 @@ class PermissionFixture {
                     "changedBy": 1,
                     "name": "iluminati Keep rights of scope",
                     "bbox": "-99.99588465788855,36.73719041611217,-105.97833473477472,39.07334879398723",
-                    "dataset": 6
+                    "dataset": 7
                 },
                 {
                     "_id": 13,
@@ -147,8 +147,6 @@ class PermissionFixture {
             return this.addPermissionToGroup(this.iluminatiId(), 'location', 'GET', 9);
         }).then(() => {
             return this.addPermissionToGroup(this.iluminatiId(), 'location', 'GET', 12);
-        }).then(() => {
-            return this.addPermissionToGroup(this.iluminatiId(), 'location', 'GET', 13);
         }).then(() => {
             return this.addPermissionToUser(this.iluminatUserId(), 'location', 'GET', 13);
         }).then(() => {
