@@ -12,8 +12,8 @@ var MongoClient = require('mongodb').MongoClient;
 var Promise = require('promise');
 
 class AreaTemplateController extends Controller {
-	constructor(app) {
-		super(app, 'areatemplate', MongoLayerTemplates, MongoLayerTemplate);
+	constructor(app, pool) {
+		super(app, 'areatemplate', pool, MongoLayerTemplates, MongoLayerTemplate);
 	}
 
 	/**

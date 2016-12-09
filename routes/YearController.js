@@ -3,8 +3,8 @@ var MongoPeriods = require('../metadata/MongoPeriods');
 var MongoPeriod = require('../metadata/MongoPeriod');
 
 class YearController extends Controller {
-	constructor(app) {
-		super(app, 'year', MongoPeriods, MongoPeriod);
+	constructor(app, pool) {
+		super(app, 'year', pool, MongoPeriods, MongoPeriod);
 	}
 }
 

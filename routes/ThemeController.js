@@ -12,8 +12,8 @@ var MongoTheme = require('../metadata/MongoTheme');
  * @constructor
  */
 class ThemeController extends Controller {
-	constructor(app) {
-		super(app, 'theme', MongoThemes, MongoTheme);
+	constructor(app, pool) {
+		super(app, 'theme', pool, MongoThemes, MongoTheme);
 	}
 
 	update(request, response, next) {

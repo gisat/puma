@@ -1,6 +1,10 @@
 var logger = require('../common/Logger').applicationWideLogger;
 var crud = require('../rest/crud');
 var conn = require('../common/conn');
+let Promise = require('promise');
+
+let config = require('../config');
+let PgPermissions = require('../security/PgPermissions');
 
 /**
  * @alias Controller
@@ -9,13 +13,14 @@ var conn = require('../common/conn');
  * @constructor
  */
 class Controller {
-    constructor(app, type, service, entity) {
+    constructor(app, type, pool, service, entity) {
         if (!app || !type) {
             throw new Error(
                 logger.error('Controller#constructor The controller must receive valid type and app')
             );
         }
 
+        this.permissions = new PgPermissions(pool, config.postgreSqlSchema);
         this.type = type;
         this.set(app);
         if (service && entity) {
@@ -127,7 +132,21 @@ class Controller {
                 return next(err);
             }
 
-            response.json({data: result.filter(element => this.hasRights(request.session.user, 'GET', element._id, element))});
+            let resultsWithRights = result
+				.filter(element => this.hasRights(request.session.user, 'GET', element._id, element));
+            let promises = resultsWithRights.map(element => {
+				return this.permissions.forType(this.type, element._id).then(permissions => {
+                    element.permissions = permissions;
+				});
+            });
+
+            Promise.all(promises).then(() => {
+				response.json({data: resultsWithRights});
+            }).catch(err => {
+                logger.error('Controller#readAll Error: ', err);
+                response.status(500);
+                return;
+            })
         });
     }
 

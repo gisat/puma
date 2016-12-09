@@ -3,8 +3,8 @@ var MongoTopics = require('../metadata/MongoTopics');
 var MongoTopic = require('../metadata/MongoTopic');
 
 class TopicController extends Controller {
-	constructor(app) {
-		super(app, 'topic', MongoTopics, MongoTopic);
+	constructor(app, pool) {
+		super(app, 'topic', pool, MongoTopics, MongoTopic);
 	}
 
     hasRights(user, method, id) {

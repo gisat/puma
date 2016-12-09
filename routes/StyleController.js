@@ -18,7 +18,7 @@ var Id = require('../common/Id');
  */
 class StyleController extends Controller {
     constructor(app, pgPool, schema) {
-        super(app, 'symbology');
+        super(app, 'symbology', pgPool);
 
         this._pgStyles = new PgStyles(pgPool, schema);
         this._mongoStyles = new MongoStyles();

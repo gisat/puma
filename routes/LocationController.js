@@ -3,8 +3,8 @@ var MongoLocations = require('../metadata/MongoLocations');
 var MongoLocation = require('../metadata/MongoLocation');
 
 class LocationController extends Controller {
-    constructor(app) {
-        super(app, 'location', MongoLocations, MongoLocation);
+    constructor(app, pool) {
+        super(app, 'location', pool, MongoLocations, MongoLocation);
     }
 
     hasRights(user, method, id, object) {

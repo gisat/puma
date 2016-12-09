@@ -14,8 +14,8 @@ var _ = require('underscore');
  * @constructor
  */
 class DataSetController extends Controller {
-	constructor(app) {
-		super(app, 'dataset', MongoScopes, MongoScope);
+	constructor(app, pool) {
+		super(app, 'dataset', pool, MongoScopes, MongoScope);
 
 		app.get('/restricted/rest/dataset', this.readRestricted.bind(this));
 	}

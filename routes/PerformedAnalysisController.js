@@ -3,8 +3,8 @@ var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
 var MongoPerformedAnalyse = require('../analysis/MongoPerformedAnalyse');
 
 class PerformedAnalysisController extends Controller {
-	constructor(app) {
-		super(app, 'performedanalysis', MongoPerformedAnalysis, MongoPerformedAnalyse);
+	constructor(app, pool) {
+		super(app, 'performedanalysis', pool, MongoPerformedAnalysis, MongoPerformedAnalyse);
 	}
 
     hasRights(user, method, id, object) {

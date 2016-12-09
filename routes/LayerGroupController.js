@@ -3,8 +3,8 @@ var MongoLayerGroups = require('../layers/MongoLayerGroups');
 var MongoLayerGroup = require('../layers/MongoLayerGroup');
 
 class LayerGroupController extends Controller {
-	constructor(app) {
-		super(app, 'layergroup', MongoLayerGroups, MongoLayerGroup);
+	constructor(app, pool) {
+		super(app, 'layergroup', pool, MongoLayerGroups, MongoLayerGroup);
 	}
 }
 

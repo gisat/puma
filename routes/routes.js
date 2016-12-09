@@ -63,9 +63,9 @@ module.exports = function(app) {
 	new DatabaseSchema(pool, config.postgreSqlSchema).create();
 
 	new StyleController(app, pool, config.postgreSqlSchema);
-	new AnalysisController(app);
-	new AreaTemplateController(app);
-	new GufController(app);
+	new AnalysisController(app, pool);
+	new AreaTemplateController(app, pool);
+	new GufController(app, pool);
 	if(poolRemote) {
 		new AttributeController(app, poolRemote);
 		new ExportController(app, poolRemote);
@@ -73,19 +73,19 @@ module.exports = function(app) {
 		new AttributeController(app, pool);
 		new ExportController(app, pool);
 	}
-	new AttributeSetController(app);
-	new ChartCfgController(app);
-	new DataSetController(app);
-	new DataViewController(app);
-	new LayerGroupController(app);
+	new AttributeSetController(app, pool);
+	new ChartCfgController(app, pool);
+	new DataSetController(app, pool);
+	new DataViewController(app, pool);
+	new LayerGroupController(app, pool);
 	new LayerRefController(app, pool);
-	new LocationController(app);
-	new LoginController(app);
-	new PerformedAnalysisController(app);
-	new ThemeController(app);
-	new TopicController(app);
-	new VisualizationController(app);
-	new YearController(app);
+	new LocationController(app, pool);
+	new LoginController(app, pool);
+	new PerformedAnalysisController(app, pool);
+	new ThemeController(app, pool);
+	new TopicController(app, pool);
+	new VisualizationController(app, pool);
+	new YearController(app, pool);
 	new IntegrationController(app, pool);
 
 	new PrintController(app);

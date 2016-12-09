@@ -17,7 +17,7 @@ var MongoLayerReference = require('../layers/MongoLayerReference');
  */
 class LayerRefController extends Controller {
 	constructor(app, pgPool) {
-		super(app, 'layerref', MongoLayerReferences, MongoLayerReference);
+		super(app, 'layerref', pgPool, MongoLayerReferences, MongoLayerReference);
 
 		this.pgPool = pgPool;
 	}
