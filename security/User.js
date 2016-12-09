@@ -26,6 +26,14 @@ class User {
                 .filter(permission => permission.resourceType == resourceType && permission.permission == permissionType && (permission.resourceId == resourceId || !resourceId))
                 .length > 0;
     }
+
+    json() {
+        return {
+            _id: this.id,
+            permissions: this.permissions,
+            groups: this.groups
+        }
+    }
 }
 
 module.exports = User;

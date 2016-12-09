@@ -10,6 +10,7 @@ let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 let UserController = require('../../../security/UserController');
 let User = require('../../../security/User');
 let PgUsers = require('../../../security/PgUsers');
+let PermissionFixture = require('./PermissionFixture');
 
 let config = require('../config');
 
@@ -19,6 +20,7 @@ describe('User', function () {
     let commonSchema = 'data_test';
     let mongoDb;
     let fixture = {user: null};
+    let permissionFixture;
     let server;
     // Cleanse the database.
     beforeEach(function (done) {
@@ -42,6 +44,7 @@ describe('User', function () {
         conn.connectToMongo(config.mongoConnString).then(function (db) {
             mongoDb = db;
 
+            permissionFixture = new PermissionFixture(db, pool, commonSchema);
             schema = new DatabaseSchema(pool, commonSchema);
             return schema.create();
         }).then(function () {
@@ -124,6 +127,40 @@ describe('User', function () {
                     done(error);
                 });
             })
+        });
+    });
+
+    describe('load permissions for the user', () => {
+        beforeEach(done => {
+            permissionFixture.setup().then(() => {
+                done();
+            });
+        });
+
+        it('loads user by id', done => {
+            fixture.user = new User(0, [{
+                resourceType: 'user',
+                permission: 'GET',
+                resourceId: permissionFixture.jbalharUserId()
+            }]);
+            supertest(app)
+                .get('/rest/user/' + permissionFixture.jbalharUserId())
+                .set('Content-Type', 'application/json')
+                .set('Accepts', 'application/json')
+                .expect(200)
+            .then((response) => {
+                should(Number(response.body.data._id)).be.exactly(2);
+                should(response.body.data.permissions.length).be.exactly(4);
+                done();
+            }).catch(err => {
+                done(err);
+            })
+        });
+
+        afterEach(done => {
+            permissionFixture.teardown().then(() => {
+                done();
+            });
         });
     });
 
