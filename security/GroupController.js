@@ -34,8 +34,7 @@ class GroupController {
     readAll(request, response, next) {
         this.groups.json().then(groups => {
             groups = groups
-                .filter(group => this.hasRights(request.session.user, 'GET', group.id))
-                .map(group => group.json());
+                .filter(group => this.hasRights(request.session.user, 'GET', group.id));
             response.json({data: groups});
         }).catch(err => {
             logger.error("GroupController#readAll Error: ", err);

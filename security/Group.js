@@ -23,7 +23,8 @@ class Group {
             created: created,
             createdBy: createdBy,
             changed: changed,
-            changedBy: changedBy
+            changedBy: changedBy,
+            permissions: permissions
         }
     }
 

@@ -1,6 +1,7 @@
 let Group = require('./Group');
 let PgPermissions = require('./PgPermissions');
 let moment = require('moment');
+let _ = require('underscore');
 
 class PgGroups {
     constructor(pgPool, schema) {
@@ -23,6 +24,42 @@ class PgGroups {
 
     byIdSql(id) {
         return `SELECT * FROM ${this.schema}.groups WHERE id = ${id}`;
+    }
+
+    json() {
+        return this.pgPool.pool().query(this.jsonSql()).then(result => {
+            let groups = {};
+            result.rows.forEach(row => {
+                if(!groups[row.id]) {
+                    groups[row.id] = {};
+					groups[row.id].name = row.name;
+					groups[row.id].users = [];
+					groups[row.id].permissions = [];
+                }
+
+                if(row.user_id && groups[row.id].users.indexOf(row.user_id) == -1) {
+					groups[row.id].users.push(row.user_id);
+				}
+
+				if(row.resource_type && row.permission) {
+                    groups[row.id].permissions.push({
+                        resourceId: row.resource_id,
+                        resourceType: row.resource_type,
+                        permission: row.permission
+                    });
+                }
+            });
+
+            return _.keys(groups).map(groupId => {
+                return groups[groupId];
+            })
+        });
+    }
+
+    jsonSql() {
+        return `SELECT groups.id as id, groups.name, members.user_id, permissions.resource_id, permissions.resource_type, permissions.permission from ${this.schema}.groups
+         left join ${this.schema}.group_has_members as members on groups.id = members.group_id
+         left join ${this.schema}.group_permissions as permissions on groups.id = permissions.group_id`;
     }
 
     forUser(userId) {

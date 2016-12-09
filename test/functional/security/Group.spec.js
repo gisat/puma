@@ -10,6 +10,7 @@ let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 let GroupController = require('../../../security/GroupController');
 let User = require('../../../security/User');
 let PgUsers = require('../../../security/PgUsers');
+let PermissionFixture = require('./PermissionFixture');
 
 let config = require('../config');
 
@@ -18,6 +19,7 @@ describe('Group Logged In', function () {
     let schema, pool, app;
     let commonSchema = 'data_test';
     let mongoDb;
+    let permissionFixture;
     let fixture = {user: null};
     let server;
     // Cleanse the database.
@@ -43,6 +45,7 @@ describe('Group Logged In', function () {
             mongoDb = db;
 
             schema = new DatabaseSchema(pool, commonSchema);
+            permissionFixture = new PermissionFixture(db, pool, commonSchema);
             return schema.create();
         }).then(function () {
             done();
@@ -51,6 +54,47 @@ describe('Group Logged In', function () {
         new GroupController(app, pool, commonSchema);
         server = app.listen(config.port, function () {
             console.log('Group app is listening\n');
+        });
+    });
+
+    describe('readAll', () => {
+        beforeEach(done => {
+            permissionFixture.setup().then(() => {
+                done();
+            });
+        });
+
+        it('returns all groups', done => {
+            fixture.user = new User(0, [{
+                resourceType: 'group',
+                permission: 'GET',
+                resourceId: 1
+            }, {
+                resourceType: 'group',
+                permission: 'GET',
+                resourceId: 2
+            }, {
+                resourceType: 'group',
+                permission: 'GET',
+                resourceId: 3
+            }]);
+            supertest(app)
+                .get('/rest/group')
+                .set('Content-Type', 'application/json')
+                .set('Accepts', 'application/json')
+                .expect(200)
+                .then((response) => {
+                    should(Number(response.body.data.length)).be.exactly(3);
+                    done();
+                }).catch(err => {
+                done(err);
+            })
+        });
+
+        afterEach(done => {
+            permissionFixture.teardown().then(() => {
+                done();
+            });
         });
     });
 
