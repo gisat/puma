@@ -31,19 +31,29 @@ class iprquery {
     searching(category, req, res){
         let sparql;
         let keywords = this.constructor.parseRequestString(req.body.search);
-        let type = this.constructor.getTypeString(req.body.settings.type);
-        logger.info(`INFO iprquery#dataset keywords: ` + keywords);
+        if (keywords.length == 0){
+            logger.info(`INFO iprquery#dataset keywords: No keywords`);
+            var json = {
+                status: "OK",
+                message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky!",
+                data: []
+            };
+            res.send(json);
+        } else {
+            let type = this.constructor.getTypeString(req.body.settings.type);
+            logger.info(`INFO iprquery#dataset keywords: ` + keywords);
 
-        if (category == "terms"){
-            sparql = this.prepareTermsQuery(this._datasetEndpoint, keywords, type);
-        } else if (category == "dataset"){
-            sparql = this.prepareDatasetQuery(this._datasetEndpoint, keywords, type);
+            if (category == "terms"){
+                sparql = this.prepareTermsQuery(this._datasetEndpoint, keywords, type);
+            } else if (category == "dataset"){
+                sparql = this.prepareDatasetQuery(this._datasetEndpoint, keywords, type);
+            }
+
+            this.endpointRequest(sparql).then(function(result){
+                result.keywords = keywords;
+                res.send(result);
+            });
         }
-
-        this.endpointRequest(sparql).then(function(result){
-            result.keywords = keywords;
-            res.send(result);
-        });
     }
 
     /**
