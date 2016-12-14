@@ -31,6 +31,8 @@ module.exports = {
 	geoserver2Workspace : "puma",
 
 	geonodeHost     : "10.0.75.2",
-	geonodePath     : "",
-	geonodeHome     : "/geonode"
+	geonodePath     : "/",
+	geonodeHome     : "/",
+	geonodeProtocol : "http",
+	geonodePort     : 80
 };

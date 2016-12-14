@@ -31,7 +31,7 @@ class User {
         return {
             _id: this.id,
             permissions: this.permissions,
-            groups: this.groups
+            groups: this.groups.map(group => group.json())
         }
     }
 }

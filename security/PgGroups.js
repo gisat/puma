@@ -14,7 +14,7 @@ class PgGroups {
     byId(id) {
         let groups;
         return this.pgPool.pool().query(this.byIdSql(id)).then((result => {
-            groups = result.rows.map(group => new Group(group.id, null, group.name));
+            groups = result.rows.map(group => new Group(group.id, null, group.name, group.created, group.created_by, group.changed, group.changed_by));
             return this.permissions.forGroup(groups[0].id);
         })).then((permissions => {
             groups[0].permissions = permissions;

@@ -53,7 +53,7 @@ describe('User', function () {
 
         new UserController(app, pool, commonSchema);
         server = app.listen(config.port, function () {
-            console.log('Group app is listening\n');
+            console.log('User app is listening\n');
         });
     });
 
@@ -162,6 +162,22 @@ describe('User', function () {
                 done();
             });
         });
+    });
+
+    describe('Load all users', function(){
+        it('returns all users from Geonode enriched with permissions', function(done){
+			fixture.user = new User(0, [{
+				resourceType: 'user',
+				permission: 'GET'
+			}]);
+			supertest(app)
+                .get('/rest/user')
+                .expect(200).then((response) => {
+			    let users = response.body;
+			    console.log(users);
+			    done();
+            });
+		});
     });
 
     afterEach(function (done) {

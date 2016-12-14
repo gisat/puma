@@ -20,12 +20,16 @@ class Group {
         return {
             _id: this.id,
             name: this.name,
-            created: created,
-            createdBy: createdBy,
-            changed: changed,
-            changedBy: changedBy,
-            permissions: permissions
+            created: this.created,
+            createdBy: this.createdBy,
+            changed: this.changed,
+            changedBy: this.changedBy,
+            permissions: this.permissions
         }
+    }
+
+    static userId() {
+        return 3;
     }
 
     static guestId() {

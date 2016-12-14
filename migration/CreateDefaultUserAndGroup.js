@@ -12,6 +12,8 @@ class CreateDefaultUserAndGroup extends Migration {
 			return pool.pool().query(`INSERT INTO ${this.schema}.group_has_members (user_id, group_id) VALUES (1,1)`);
 		}).then(() => {
 			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('guest')`);
+		}).then(() => {
+			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('user')`);
 		});
 	}
 

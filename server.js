@@ -81,13 +81,8 @@ function initServer(err) {
 	// Make sure that every request knows the current information about user.
 	app.use((request, response, next) => {
 		if(request.session.userId) {
-			let user;
-            new PgUsers(pool, config.postgreSqlSchema).byId(request.session.userId).then(pUser => {
-            	user = pUser;
-                return new PgPermissions(pool, config.postgreSqlSchema).forGroup(Group.guestId())
-            }).then((permissions) => {
-            	user.groups.push(new Group(Group.guestId(), permissions));
-                request.session.user = user;
+			new PgUsers(pool, config.postgreSqlSchema).byId(request.session.userId).then(user => {
+            	request.session.user = user;
                 next();
 			});
         } else {
