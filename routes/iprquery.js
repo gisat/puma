@@ -10,6 +10,7 @@ class iprquery {
     constructor (app) {
         app.post("/iprquery/dataset", this.searching.bind(this, "dataset"));
         app.post("/iprquery/terms", this.searching.bind(this, "terms"));
+        app.post("/iprquery/data", this.iprdata.bind(this));
 
         this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
         this._prefixes = [
@@ -18,8 +19,24 @@ class iprquery {
             "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
             "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
             "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
-            "PREFIX ipr: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/>"
+            "PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>"
         ];
+    }
+
+    iprdata(req, res){
+        let dataset = req.body.dataset;
+        let parameter = req.body.param;
+        let value = "";
+
+        if (req.body.hasOwnProperty("value")){
+            value = req.body.value;
+        }
+
+        var sparql = this.prepareDataQuery(this._datasetEndpoint, dataset, parameter, value);
+        this.endpointRequest(sparql).then(function(result){
+            debugger;
+            res.send(result);
+        });
     }
 
     /**
@@ -54,6 +71,28 @@ class iprquery {
                 res.send(result);
             });
         }
+    };
+
+    prepareDataQuery(url, dataset, parameter, value){
+        var query = url + '?query=';
+        var prefixes = this._prefixes.join(' ') + ' PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/' + dataset + '/>';
+
+        var filter = '(?dataset = ds:' + dataset +')';
+        if (value){
+            var val = value.replace(/[^a-zA-Z0-9]/g, '.');
+            filter += ' && regex(str(?hodnota), "' + val + '", "i")';
+        }
+
+        var sparql = 'SELECT ?objekt ?hodnota ?dataset' +
+            ' WHERE {?objekt rdf:type ?dataset. ?objekt dataset:' + parameter + ' ?hodnota' +
+                ' FILTER (' + filter +
+                ')} LIMIT 100';
+
+
+        logger.info(`INFO iprquery#prepareDataQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareDataQuery full query: ` + query + prefixes + sparql);
+
+        return query + ' ' + encodeURIComponent(prefixes + sparql);
     }
 
     /**
@@ -66,7 +105,7 @@ class iprquery {
     prepareTermsQuery(url, values, type){
         var query = url + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = ' SELECT ?pojem ?dataset WHERE {?pojem common:isInContextOfDataset ?dataset . ';
+        var sparql = ' SELECT ?pojem ?dataset ?kod WHERE {?pojem common:isInContextOfDataset ?dataset . ?pojem common:isRepresentedAsDatabaseTableAttribute ?kod.';
 
         var filter = [];
         values.map((value) => {
