@@ -39,7 +39,6 @@ class UserController {
 			return;
 		}
 
-		// TODO: Retrieve all users from the geonode.
 		let usersUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}api/profiles`;
 		superagent.get(usersUrl)
 			.then((retrieved) => {
