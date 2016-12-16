@@ -39,7 +39,7 @@ for f in *; do
 
         # run raster2pgsql
         if [[ -e ${GEOTIFF} ]] && [[ -f ${GEOTIFF} ]]; then
-            echo ${GEOTIFF}
+            echo "running raster2pgsql on '${GEOTIFF}'"
             raster2pgsql -c -C -t 200x200 -F ${GEOTIFF} ${NAME} > "${SQL_FILE}"
         fi
 
@@ -63,6 +63,7 @@ for f in *; do
 
         # run SQL files
         if [[ -e ${SQL_FILE} ]] && [[ -f ${SQL_FILE} ]]; then
+            echo "psql: Importing '${SQL_FILE}'"
             psql -U ${DB_USER} -d ${DB_DATABASE} -f "${SQL_FILE}"
         fi
     fi
