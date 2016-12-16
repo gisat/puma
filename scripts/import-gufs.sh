@@ -61,13 +61,10 @@ for f in *; do
             continue
         fi
 
-        # set psql loggin level
-        PGOPTIONS='--client-min-messages=warning'
-
         # run SQL files
         if [[ -e ${SQL_FILE} ]] && [[ -f ${SQL_FILE} ]]; then
             echo "psql: Importing '${SQL_FILE}'"
-            psql -q -U ${DB_USER} -d ${DB_DATABASE} -f "${SQL_FILE}"
+            PGOPTIONS='--client-min-messages=warning' psql -q -U ${DB_USER} -d ${DB_DATABASE} -f "${SQL_FILE}"
         fi
         printf "\n"
     fi
