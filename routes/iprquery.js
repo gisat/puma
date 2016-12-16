@@ -26,11 +26,7 @@ class iprquery {
     iprdata(req, res){
         let dataset = req.body.dataset;
         let parameter = req.body.param;
-        let value = "";
-
-        if (req.body.hasOwnProperty("value")){
-            value = req.body.value;
-        }
+        let value = req.body.value;
 
         var sparql = this.prepareDataQuery(this._datasetEndpoint, dataset, parameter, value);
         this.endpointRequest(sparql).then(function(result){
@@ -78,7 +74,7 @@ class iprquery {
         var prefixes = this._prefixes.join(' ') + ' PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/' + dataset + '/>';
 
         var filter = '(?dataset = ds:' + dataset +')';
-        if (value){
+        if (value.length > 0 && typeof value == "string"){
             var val = value.replace(/[^a-zA-Z0-9]/g, '.');
             filter += ' && regex(str(?hodnota), "' + val + '", "i")';
         }
