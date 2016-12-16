@@ -4,6 +4,5 @@
     <file url="PROJECT" libraries="{ExtJS, Highcharts-3.0.0, OpenLayers, jQuery, node_modules}" />
     <includedPredefinedLibrary name="ECMAScript 6" />
     <includedPredefinedLibrary name="Node.js Core" />
-    <excludedPredefinedLibrary name="panther-backoffice/node_modules" />
   </component>
 </project>
