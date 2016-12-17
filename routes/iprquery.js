@@ -27,8 +27,9 @@ class iprquery {
         let dataset = req.body.dataset;
         let parameter = req.body.param;
         let value = req.body.value;
+        let type = req.body.type;
 
-        var sparql = this.prepareDataQuery(this._datasetEndpoint, dataset, parameter, value);
+        var sparql = this.prepareDataQuery(this._datasetEndpoint, dataset, parameter, value, type);
         this.endpointRequest(sparql).then(function(result){
             result.keywords = [parameter];
             res.send(result);
@@ -69,7 +70,7 @@ class iprquery {
         }
     };
 
-    prepareDataQuery(url, dataset, parameter, value){
+    prepareDataQuery(url, dataset, parameter, value, type){
         var query = url + '?query=';
         var prefixes = this._prefixes.join(' ') + ' PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/' + dataset + '/>';
 
@@ -79,10 +80,18 @@ class iprquery {
             filter += ' && regex(str(?hodnota), "' + val + '", "i")';
         }
 
-        var sparql = 'SELECT ?objekt ?hodnota ?dataset' +
+        var select = '?objekt ?hodnota ?dataset';
+        var limit = 'LIMIT 1000';
+
+        if (type == "count"){
+            select = '(COUNT(?objekt) AS ?pocet)';
+            limit = '';
+        }
+
+        var sparql = 'SELECT ' + select +
             ' WHERE {?objekt rdf:type ?dataset. ?objekt dataset:' + parameter + ' ?hodnota' +
                 ' FILTER (' + filter +
-                ')} LIMIT 100';
+                ')} ' + limit;
 
 
         logger.info(`INFO iprquery#prepareDataQuery sparql: ` + sparql);
