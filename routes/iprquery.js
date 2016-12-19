@@ -32,6 +32,7 @@ class iprquery {
         var sparql = this.prepareDataQuery(this._datasetEndpoint, dataset, parameter, value, type);
         this.endpointRequest(sparql).then(function(result){
             result.keywords = [parameter];
+            result.value = value;
             res.send(result);
         });
     }
