@@ -26,9 +26,11 @@ class iprquery {
 
     objectSearching(req, res){
         let dataset = req.body.dataset;
-        let object = req.body.object;
-        logger.info(`INFO iprquery#objectSearching params: ` + dataset + ' ' + object);
-        var sparql = this.prepareObjectQuery(dataset, object);
+        let objectDs = req.body.objectDataset;
+        let objectId = req.body.objectId;
+        logger.info(`INFO iprquery#objectSearching params: ` + dataset + ' ' + objectDs + ' ' + objectId);
+        var sparql = this.prepareObjectQuery(dataset, objectDs, objectId);
+        logger.info(`INFO iprquery#objectSearching sparql: ` + sparql);
         this.endpointRequest(sparql).then(function(result){
             res.send(result);
         });
@@ -91,12 +93,12 @@ class iprquery {
         }
     };
 
-    prepareObjectQuery(dataset, object){
+    prepareObjectQuery(dataset, objectDs, objectId){
         var query = this._datasetEndpoint + '?query=';
-        var prefixes = this._prefixes.join(' ');
+        var prefixes = this._prefixes.join(' ') + ' PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/' + objectDs + '/>';
 
-        var filter = '(?dataset = ds:' + dataset +') && regex(str(?predikat), "' + object + '", "i")';
-        var select = '?subjekt ?predikat ?objekt';
+        var filter = '(?subjekt = uri:' + objectId +')';
+        var select = '?objekt ?predikat ?subjekt';
         var limit = 'LIMIT 100';
 
         var sparql = 'SELECT ' + select +
