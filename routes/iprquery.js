@@ -32,6 +32,7 @@ class iprquery {
         var sparql = this.prepareObjectQuery(dataset, objectDs, objectId);
         logger.info(`INFO iprquery#objectSearching sparql: ` + sparql);
         this.endpointRequest(sparql).then(function(result){
+            result.keywords =[objectDs + "/" + objectId];
             res.send(result);
         });
     }
