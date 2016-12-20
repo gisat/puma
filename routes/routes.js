@@ -27,6 +27,7 @@ var MellodiesLodController = require('../melodies/LodController');
 var IntegrationController = require('./IntegrationController');
 
 var iprquery = require('./iprquery');
+var iprConversion = require('./iprConversion');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -94,6 +95,7 @@ module.exports = function(app) {
 	new MellodiesLodController(app, pool);
 
 	new iprquery(app);
+	new iprConversion(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
