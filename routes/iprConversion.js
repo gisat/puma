@@ -15,7 +15,8 @@ class iprquery {
     }
 
     /**
-     * Convert WKT Geometry in Krovak Eest-North coordinates to a list of WGS-84 coordinates
+     * Convert (if it is necessary) WKT Geometry in Krovak Eest-North coordinates to a list of WGS-84 coordinates
+     * Sometimes are already the coordinates in WGS84
      * @param req
      * @param res
      */
@@ -29,7 +30,14 @@ class iprquery {
 
         let wgsCoord = [];
         krovakCoord.map(point => {
-            var wgsPoint = proj4(this._krovakEastNorth, this._wgs, point);
+            var wgsPoint;
+
+            // check the coordinates, if they are in WGS or Krovak East-North
+            if (Math.abs(point[0]) < 1000){
+                wgsPoint = point;
+            } else {
+                wgsPoint = proj4(this._krovakEastNorth, this._wgs, point);
+            }
             logger.info(`INFO iprConversion#conversion conversion: ` + point + ` => ` + wgsPoint);
             wgsCoord.push(wgsPoint);
         });
