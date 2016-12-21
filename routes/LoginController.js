@@ -178,9 +178,20 @@ class LoginController {
 		if (!app) {
 			throw new Error(logger.error("LoginController#constructor The controller must receive valid app."));
 		}
+		app.get("/rest/logged", this.logged.bind(this));
 		app.post("/api/login/login", this.login.bind(this));
 		app.post("/api/login/logout", this.logout.bind(this));
 		app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
+	}
+
+	logged(request, response) {
+		// It is possible that nobody will be logged. In this case return 404
+		if(request.session.user) {
+			response.json(request.session.user.json());
+		} else {
+			response.status(404);
+			response.json({status: 'Nobody is logged in.'});
+		}
 	}
 
 	login(request, response, next) {
