@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-# Imports GUF rasters to PostgreSQL
+# Imports rasters to PostgreSQL
 
 # configuration
 RASTER_DESTINATION="/var/lib/tomcat7/webapps/geoserver/data/data/geonode"
 SQL_TEMP_DESTINATION="/tmp/guf-sql"
-GUF_FILE_PREFIX="guf_75m_04_"
+FILE_FILTER_PREFIX="guf_75m_04_"
 
 DB_USER="geonode"
 DB_DATABASE="geonode_data"
@@ -32,7 +32,7 @@ fi
 # do raster2pgsql for all rasters
 cd ${RASTER_DESTINATION}
 for f in *; do
-    if [[ -d ${f} ]] && [[ ${f} == ${GUF_FILE_PREFIX}* ]]; then
+    if [[ -d ${f} ]] && [[ ${f} == ${FILE_FILTER_PREFIX}* ]]; then
         NAME=${f}
         GEOTIFF="${NAME}/${NAME}.geotiff"
         SQL_FILE="${SQL_TEMP_DESTINATION}/${NAME}.sql"
