@@ -4,7 +4,6 @@ var logger = require('../common/Logger').applicationWideLogger;
 var request = require('request');
 var Promise = require('promise');
 var UUID = require('../common/UUID');
-//var uuid = new UUID().toString();
 
 class TacrPhaStatistics {
     constructor (pool) {
@@ -12,8 +11,6 @@ class TacrPhaStatistics {
         this._table = "tacr_pha_statistics";
         this.check();
     }
-
-
 
     check(){
         let sql = `SELECT * FROM information_schema.tables` +
@@ -46,16 +43,37 @@ class TacrPhaStatistics {
         });
     }
 
-    update(ip, keywords, result){
-        let numOfRecords;
+    insert(ip, keywords, result){
+        let numOfRecords = 0;
+        let firstRow = "";
+        let id = new UUID().toString();
+        let timestamp = Date.now();
+        let searchString = keywords.toString();
 
         if (result.hasOwnProperty("data")){
             numOfRecords = result.data.length;
-            logger.info(`INFO TacrPhaStatistics#update number of records: ` + numOfRecords);
+            var first = result.data[0];
+            for (var key in first){
+                firstRow += key + ": " + first[key] + ", ";
+            }
         }
 
-        logger.info(`INFO TacrPhaStatistics#update ip: ` + ip);
-        logger.info(`INFO TacrPhaStatistics#update keywords: ` + keywords);
+        logger.info(`INFO TacrPhaStatistics#insert id: ` + id);
+        logger.info(`INFO TacrPhaStatistics#insert ip: ` + ip);
+        logger.info(`INFO TacrPhaStatistics#insert timestamp: ` + timestamp);
+        logger.info(`INFO TacrPhaStatistics#insert keywords: ` + searchString);
+        logger.info(`INFO TacrPhaStatistics#insert number of records: ` + numOfRecords);
+        logger.info(`INFO TacrPhaStatistics#insert first row: ` + firstRow);
+
+        var sql = `INSERT INTO data.` + this._table + ` ` +
+            `(uid, ip, keywords, results_number, results_first_record) ` +
+            `VALUES` +
+            `('` + id + `', '` + ip + `', '` + searchString + `', ` + numOfRecords + `, '` + firstRow + `');`;
+
+        logger.info(`INFO TacrPhaStatistics#insert sql: ` + sql);
+        this._pgPool.pool().query(sql).then(function(res){
+            logger.info(`INFO TacrPhaStatistics#insert : Record was inserted succesfully`);
+        });
     }
 }
 
