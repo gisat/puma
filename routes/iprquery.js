@@ -1,5 +1,6 @@
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
+var TacrPhaStatistics = require('../tacrpha/TacrPhaStatistics');
 var utils = require('../tacrpha/utils');
 
 var request = require('request');
@@ -7,7 +8,7 @@ var Promise = require('promise');
 var csv = require('csv');
 
 class iprquery {
-    constructor (app) {
+    constructor (app, pool) {
         app.post("/iprquery/dataset", this.searching.bind(this, "dataset"));
         app.post("/iprquery/terms", this.searching.bind(this, "terms"));
         app.post("/iprquery/data", this.dataSearching.bind(this));
@@ -22,6 +23,8 @@ class iprquery {
             "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
             "PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>"
         ];
+
+        this._statistics = new TacrPhaStatistics(pool);
     }
 
     objectSearching(req, res){
@@ -69,6 +72,7 @@ class iprquery {
     searching(category, req, res){
         let sparql;
         let keywords = this.constructor.parseRequestString(req.body.search);
+        var self = this;
         if (keywords.length == 0){
             logger.info(`INFO iprquery#dataset keywords: No keywords`);
             var json = {
@@ -90,6 +94,7 @@ class iprquery {
             this.endpointRequest(sparql).then(function(result){
                 result.keywords = keywords;
                 res.send(result);
+                self._statistics.update(req.headers.origin, keywords, result);
             });
         }
     };

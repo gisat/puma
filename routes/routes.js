@@ -94,7 +94,7 @@ module.exports = function(app) {
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 
-	new iprquery(app);
+	new iprquery(app, pool);
 	new iprConversion(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
