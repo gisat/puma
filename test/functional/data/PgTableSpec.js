@@ -24,6 +24,8 @@ describe('PgTable', () => {
 			return pool.pool().query(`insert into ${commonSchema}.groups (name) VALUES ('test')`);
 		}).then(() => {
 			done();
+		}).catch(err => {
+			done(err);
 		});
 	});
 
@@ -36,6 +38,8 @@ describe('PgTable', () => {
 	afterEach(done => {
 		schema.drop().then(function () {
 			done();
+		}).catch(err => {
+			done(err);
 		});
 	})
 });
