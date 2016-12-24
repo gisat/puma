@@ -7,9 +7,9 @@ class PgTable {
 	}
 
 	asSql() {
-		let command = `pg_dump -t '${this.tableName}' --schema-only -U ${config.pgDataUser} ${config.pgDataDatabase}`;
+		let command = `pg_dump -t '${this.tableName}' -U ${config.pgDataUser} ${config.pgDataDatabase}`;
 		return childProcess.exec(command).promise.then(results => {
-			console.log(results);
+			return results.stdout;
 		});
 	}
 }
