@@ -9,7 +9,7 @@ let PgTable = require('../../../data/PgTable');
 describe('PgTable', () => {
 	let schema, pool;
 	let commonSchema = 'data_test';
-	let table = new PgTable(`${commonSchema}.test`);
+	let table = new PgTable(`${commonSchema}.migration`);
 
 	beforeEach(done => {
 		pool = new PgPool({
