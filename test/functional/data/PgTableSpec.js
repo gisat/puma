@@ -1,4 +1,5 @@
 let config = require('../config');
+let os = require('os');
 
 let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 let PgPool = require('../../../postgresql/PgPool');
@@ -31,6 +32,11 @@ describe('PgTable', () => {
 
 	describe('#asSql', () => {
 		it('returns correct sql for the full recreation of the table', (done) => {
+			if(os.platform() != 'linux') {
+				done();
+				return;
+			}
+
 			table.asSql().then(() => {
 				done();
 			}).catch(err => {
