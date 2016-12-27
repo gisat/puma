@@ -26,80 +26,108 @@ function create(collName, obj, params, callback) {
         logger.warn("Create doesn't have enough parameters for collection: ", collName, " with data: ", obj, " and Params: ", params);
     }
 
+    if (!obj) {
+        callback(new Error("CRUD#Create no data"));
+        return;
+    }
+
     if (typeof obj == "string") {
         obj = JSON.parse(obj);
     }
 
     var db = conn.getMongoDb();
-    var opts = {
-        checkRefs: function (asyncCallback) {
-            checkRefs(db, obj, collName, function (dependencies) {
+
+    Promise.resolve().then(() => {
+        // wrap in array if not array
+        return Array.isArray(obj) ? obj : [obj];
+    }).then((data) => {
+        console.log(`#### data`, data);
+        // check references (id & uuid)
+        return new Promise((resolve, reject) => {
+            checkRefs(db, data, collName, function (result) {
                 if (result instanceof Error) {
                     logger.error("crud#create. checkRefs Error: ", err);
-                    return callback(err);
+                    reject(err);
+                } else {
+                    resolve(data);
                 }
-                asyncCallback(null);
             });
-        },
-        createMissingDependencies: ['checkRefs', function (asyncCallback) {
-            var map = refs[collName];
-            var objs = Array.isArray(obj) ? obj : [obj];
-            _.each(objs, object => {
-                _.each(map, modelKey => {
-                    let value = _.get(object, modelKey);
-                    if (_.isObject(value)) {
-                        // push into array
-                    }
-                });
+        });
+    }).then((data) => {
+        console.log(`#### data2`, data);
+        // create missing depencies
+        let promises = [];
+        let map = refs[collName];
+        _.each(data, object => {
+            _.each(map, (modelObject, modelKey) => {
+                let value = _.get(object, modelKey);
+                if (_.isObject(value)) {
+                    promises.push(new Promise((resolve, reject) => {
+                        create(modelObject.coll, value, params, function (err, result) {
+                            if(err) {
+                                logger.error("crud#create. create dependencies Error: ", err);
+                                reject(err);
+                            } else {
+                                _.set(object, modelKey, result['_id']);
+                                resolve();
+                            }
+                        });
+                    }));
+                }
             });
-            //do async magic on array
-            //create(modelKey.coll, value, params, callback);
-        }],
-        // from here on we only work with simple object, not array of
-        preCreate: ['createMissingDependencies', function (asyncCallback) {
-            obj['_id'] = conn.getNextId();
-            ensureIds(obj, collName);
-            var date = new Date();
-            obj['created'] = date;
-            obj['createdBy'] = params.userId;
-            obj['changed'] = date;
-            obj['changedBy'] = params.userId;
-            if (params['bypassHooks']) {
-                return asyncCallback(null);
-            }
-            doHooks("precreate", collName, obj, params, function (err, result) {
+        });
+        return Promise.all(promises).then(() => {return data});
+    }).then((data) => {
+        // unwrap array if single item because from here on, we can't work with arrays
+        if (data.length != 1) {
+            logger.error("crud#create. multiple items in request");
+            return Promise.reject(new Error('multiple items in request'));
+        }
+        return data[0];
+    }).then(object => {
+        //preCreate
+        object['_id'] = conn.getNextId();
+        // ensureIds(obj, collName);
+        let date = new Date();
+        object['created'] = date;
+        object['createdBy'] = params.userId;
+        object['changed'] = date;
+        object['changedBy'] = params.userId;
+        if (params['bypassHooks']) {
+            return asyncCallback(null);
+        }
+        return new Promise((resolve, reject) => {
+            doHooks("precreate", collName, object, params, function (err, result) {
                 if (err) {
                     logger.error("crud#create. preCreate Hooks Error: ", err);
-                    return callback(err);
+                    reject(err);
+                } else {
+                    resolve(result || object);
                 }
-                return asyncCallback(null);
             });
-        }],
-        create: ['preCreate', function (asyncCallback) {
-            var collection = db.collection(collName);
-            collection.insert(obj, function (err, result) {
-                if (err) {
-                    logger.error("crud#create. create Error: ", err);
-                    return callback(err);
-                }
-                return asyncCallback(null, result.ops[0]);
-            });
-        }],
-        hooks: ['create', function (asyncCallback, results) {
-            if (params['bypassHooks']) {
-                return callback(null, results.create);
-            }
-            doHooks("create", collName, results.create, params, function (err, result) {
+        });
+    }).then((object) => {
+        // create
+        let collection = db.collection(collName);
+        return collection.insert(object).then(result => {
+            return result.ops[0];
+        });
+    }).then(object => {
+        if (params['bypassHooks']) {
+            return callback(null, object);
+        }
+        new Promise((resolve, reject) => {
+            doHooks("create", collName, object, params, function (err, result) {
                 if (err) {
                     logger.error("crud#create. hooks Error: ", err);
-                    return callback(err);
+                    reject(err);
                 }
-                return callback(null, results.create);
+                return callback(null, object);
             });
-        }]
-    };
-
-    async.auto(opts);
+        });
+    }).catch(error => {
+        callback(error);
+    });
 }
 
 /**
@@ -322,11 +350,11 @@ var checkRefs = function (db, obj, collName, callback) {
         keys.push(key);
     }
 
-    let error;
+    let modifiedData = _.clone(obj);
 
     async.every(keys, function (key, asyncCallback) {
-        var fields = key.split('.');
-        var objs = Array.isArray(obj) ? obj : [obj];
+        let fields = key.split('.');
+        let objs = obj;
 
         // for (var i=0;i<fields.length;i++) {
         // 	var newObjs = extract(objs,fields[i]);
@@ -349,36 +377,65 @@ var checkRefs = function (db, obj, collName, callback) {
         // objs = noDuplicates;
         objs = _.uniq(objs);
 
-        var dependantCollName = map[key].coll;
-        var collection = db.collection(dependantCollName);
+        let dependantCollName = map[key].coll;
+        let collection = db.collection(dependantCollName);
+
+        console.log(`#### crud#objs`, objs);
 
         // remove dependencies yet to be created
-        let refIDs = _.remove(objs, _.isObject);
+        _.remove(objs, _.isObject);
 
-        let filter = {_id: {$in: refIDs}};
+        let refIDs = objs;
         let length = refIDs.length;
-        let error;
 
-        logger.info("checkRefs collection ", dependantCollName, " count filter:", filter);
-        logger.info("IDs: ", refIDs);
+        console.log(`#### crud#refIDs`, refIDs);
+        console.log(`#### crud#objs`, objs);
 
-        collection.count(filter, function (err, result) {
-            if (err) {
-                logger.error("checkRefs err", err);
-                error = err;
-            } else if (result != length) {
-                logger.error("checkRefs result != length (", result, "!=", length, ")");
-                error = new Error("Non-existing refs found");
+        collection.find({_uuid: {$in: refIDs}}).toArray().then(results => {
+            results.forEach(result => {
+                let index = refIDs.indexOf(result['_uuid']);
+                if(index != -1) {
+                    refIDs[index] = result['_id'];
+                }
+                _.set(_.find(modifiedData, {[key]: result['_uuid']}), key, result['_id']);
+            })
+        }).then(() => {
+            return collection.count({_id: {$in: refIDs}});
+        }).then(count => {
+            if (count != length) {
+                logger.error("checkRefs result != length (", count, "!=", length, ")");
+                asyncCallback(false);
+            } else {
+                asyncCallback(true);
             }
+        }).catch(error => {
+            logger.error("checkRefs err", error);
+            asyncCallback(false);
         });
-        asyncCallback(!error);
+
+        // let filter = {_id: {$in: refIDs}};
+        // let length = refIDs.length;
+        // let error;
+        //
+        // logger.info("checkRefs collection ", dependantCollName, " count filter:", filter);
+        // logger.info("IDs: ", refIDs);
+        //
+        // collection.count(filter, function (err, result) {
+        //     if (err) {
+        //         logger.error("checkRefs err", err);
+        //         error = err;
+        //     } else if (result != length) {
+        //         logger.error("checkRefs result != length (", result, "!=", length, ")");
+        //         error = new Error("Non-existing refs found");
+        //     }
+        // });
 
     }, function(result) {
         if (!result) {
             logger.error("It wasn't possible to check Reference.");
             return callback(new Error('referror'));
         } else {
-            return callback(null);
+            return callback(result);
         }
     });
 
