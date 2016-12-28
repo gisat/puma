@@ -60,23 +60,31 @@ function create(collName, obj, params, callback) {
         let map = refs[collName];
         _.each(data, object => {
             _.each(map, (modelObject, modelKey) => {
-                let value = _.get(object, modelKey);
-                if (_.isObject(value)) {
-                    promises.push(new Promise((resolve, reject) => {
-                        create(modelObject.coll, value, params, function (err, result) {
-                            if(err) {
-                                logger.error("crud#create. create dependencies Error: ", err);
-                                reject(err);
-                            } else {
-                                _.set(object, modelKey, result['_id']);
-                                resolve();
-                            }
-                        });
-                    }));
+                let values = _.get(object, modelKey);
+                if (values) {
+                    values = Array.isArray(values) ? values : [values];
+                    _.each(values, (value, index) => {
+                        if (_.isObject(value)) {
+                            promises.push(new Promise((resolve, reject) => {
+                                create(modelObject.coll, value, params, function (err, result) {
+                                    if (err) {
+                                        logger.error("crud#create. create dependencies Error: ", err);
+                                        reject(err);
+                                    } else {
+                                        values[index] = result['_id'];
+                                        resolve();
+                                    }
+                                });
+                            }));
+                        }
+                    });
+                    _.set(object, modelKey, values.length > 1 ? values : values[0]);
                 }
             });
         });
-        return Promise.all(promises).then(() => {return data});
+        return Promise.all(promises).then(() => {
+            return data
+        });
     }).then((data) => {
         // unwrap array if single item because from here on, we can't work with arrays
         if (data.length != 1) {
@@ -395,7 +403,7 @@ var checkRefs = function (db, obj, collName, callback) {
         collection.find({_uuid: {$in: refIDs}}).toArray().then(results => {
             results.forEach(result => {
                 let index = refIDs.indexOf(result['_uuid']);
-                if(index != -1) {
+                if (index != -1) {
                     refIDs[index] = result['_id'];
                 }
                 _.set(_.find(modifiedData, {[key]: result['_uuid']}), key, result['_id']);
@@ -431,7 +439,7 @@ var checkRefs = function (db, obj, collName, callback) {
         //     }
         // });
 
-    }, function(result) {
+    }, function (result) {
         if (!result) {
             logger.error("It wasn't possible to check Reference.");
             return callback(new Error('referror'));
