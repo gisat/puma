@@ -17,7 +17,7 @@ class TemplateDataController extends Controller {
 
         var templateData = new TemplateData(template, place, this._pool);
         templateData.getTemplateData().then(resolve => {
-            response.send(resolve);
+            response.status(resolve.success ? 200 : 500).send(resolve);
         });
     }
 }
