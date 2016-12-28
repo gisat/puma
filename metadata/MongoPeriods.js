@@ -101,6 +101,11 @@ class MongoPeriods {
 			return collection.removeOne({_id: periodId});
 		});
 	}
+
+	add(period) {
+		let collection = this._connection.collection(MongoPeriod.collectionName());
+		collection.insert(period)
+	}
 }
 
 module.exports = MongoPeriods;

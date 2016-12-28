@@ -1,4 +1,6 @@
 let moment = require('moment');
+let childProcess = require('pn/child_process');
+let config = require('../config');
 
 class DataFixture {
 	constructor(connection, pool, schema) {
@@ -46,9 +48,9 @@ class DataFixture {
 			return location.insertMany([{
 				"_id": 7,
 				"active": true,
-				"created": ISODate("2016-07-14T13:57:04.897Z"),
+				"created": "2016-07-14T13:57:04.897Z",
 				"createdBy": 2,
-				"changed": ISODate("2016-07-21T09:44:50.371Z"),
+				"changed": "2016-07-21T09:44:50.371Z",
 				"changedBy": 1,
 				"name": "Czech republic",
 				"bbox": "10.8765,48.5457,18.8635,51.0483",
@@ -60,9 +62,9 @@ class DataFixture {
 				"_id": 9,
 				"name": "Global Settlements Inventory",
 				"active": false,
-				"created": ISODate("2016-07-14T13:59:19.230Z"),
+				"created": "2016-07-14T13:59:19.230Z",
 				"createdBy": 2,
-				"changed": ISODate("2016-07-14T13:59:19.230Z"),
+				"changed": "2016-07-14T13:59:19.230Z",
 				"changedBy": 2
 			}]);
 		}).then(() => {
@@ -234,9 +236,9 @@ class DataFixture {
 				"isData": false,
 				"fidColumn": "NUTS_ID",
 				"nameColumn": "NUTS_NAME",
-				"created": ISODate("2016-07-14T14:05:05.262Z"),
+				"created": "2016-07-14T14:05:05.262Z",
 				"createdBy": 2,
-				"changed": ISODate("2016-07-14T14:05:05.262Z"),
+				"changed": "2016-07-14T14:05:05.262Z",
 				"changedBy": 2
 			},
 				{
@@ -251,9 +253,9 @@ class DataFixture {
 					"isData": true,
 					"fidColumn": "NUTS_ID",
 					"nameColumn": "NUTS_NAME",
-					"created": ISODate("2016-07-14T14:05:07.541Z"),
+					"created": "2016-07-14T14:05:07.541Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-14T14:05:07.541Z"),
+					"changed": "2016-07-14T14:05:07.541Z",
 					"changedBy": 2
 				},
 				{
@@ -267,9 +269,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
 					"layer": "analysis:an_54_2",
 					"analysis": 54,
-					"created": ISODate("2016-07-14T14:45:31.189Z"),
+					"created": "2016-07-14T14:45:31.189Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:19:14.516Z"),
+					"changed": "2016-07-14T16:19:14.516Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -284,9 +286,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
 					"layer": "analysis:an_61_2",
 					"analysis": 61,
-					"created": ISODate("2016-07-14T16:19:14.504Z"),
+					"created": "2016-07-14T16:19:14.504Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:19:14.504Z"),
+					"changed": "2016-07-14T16:19:14.504Z",
 					"changedBy": null
 				},
 				{
@@ -300,9 +302,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_31_attr_16", "attribute": 16}],
 					"layer": "analysis:an_66_2",
 					"analysis": 66,
-					"created": ISODate("2016-07-14T16:20:13.050Z"),
+					"created": "2016-07-14T16:20:13.050Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:20:13.050Z"),
+					"changed": "2016-07-14T16:20:13.050Z",
 					"changedBy": null
 				},
 				{
@@ -316,9 +318,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_32_attr_15", "attribute": 15}],
 					"layer": "analysis:an_250_2",
 					"analysis": 250,
-					"created": ISODate("2016-07-20T11:11:24.803Z"),
+					"created": "2016-07-20T11:11:24.803Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:24.803Z"),
+					"changed": "2016-07-20T11:11:24.803Z",
 					"changedBy": null
 				},
 				{
@@ -332,9 +334,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_33_attr_17", "attribute": 17}],
 					"layer": "analysis:an_255_2",
 					"analysis": 255,
-					"created": ISODate("2016-07-20T11:11:40.462Z"),
+					"created": "2016-07-20T11:11:40.462Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:40.462Z"),
+					"changed": "2016-07-20T11:11:40.462Z",
 					"changedBy": null
 				},
 				{
@@ -348,9 +350,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_34_attr_18", "attribute": 18}],
 					"layer": "analysis:an_259_2",
 					"analysis": 259,
-					"created": ISODate("2016-07-20T11:11:54.927Z"),
+					"created": "2016-07-20T11:11:54.927Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:54.927Z"),
+					"changed": "2016-07-20T11:11:54.927Z",
 					"changedBy": null
 				},
 				{
@@ -366,9 +368,9 @@ class DataFixture {
 					"location": 7,
 					"areaTemplate": 2,
 					"year": 319,
-					"created": ISODate("2016-07-24T01:14:49.988Z"),
+					"created": "2016-07-24T01:14:49.988Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-07-24T01:14:49.988Z"),
+					"changed": "2016-07-24T01:14:49.988Z",
 					"changedBy": 1
 				},
 				{
@@ -382,9 +384,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4047_2",
 					"analysis": 4047,
-					"created": ISODate("2016-10-17T14:24:06.482Z"),
+					"created": "2016-10-17T14:24:06.482Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.179Z"),
+					"changed": "2016-10-17T16:18:20.179Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -399,9 +401,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4083_2",
 					"analysis": 4083,
-					"created": ISODate("2016-10-17T14:50:42.941Z"),
+					"created": "2016-10-17T14:50:42.941Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.216Z"),
+					"changed": "2016-10-17T16:18:20.216Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -416,9 +418,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4119_2",
 					"analysis": 4119,
-					"created": ISODate("2016-10-17T15:11:46.387Z"),
+					"created": "2016-10-17T15:11:46.387Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.249Z"),
+					"changed": "2016-10-17T16:18:20.249Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -433,9 +435,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4150_2",
 					"analysis": 4150,
-					"created": ISODate("2016-10-17T16:18:20.173Z"),
+					"created": "2016-10-17T16:18:20.173Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.173Z"),
+					"changed": "2016-10-17T16:18:20.173Z",
 					"changedBy": null
 				},
 				{
@@ -450,9 +452,9 @@ class DataFixture {
 					"fidColumn": "NUTS_ID",
 					"nameColumn": "NUTS_NAME",
 					"parentColumn": "PARID",
-					"created": ISODate("2016-07-14T14:05:47.519Z"),
+					"created": "2016-07-14T14:05:47.519Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-14T14:05:47.519Z"),
+					"changed": "2016-07-14T14:05:47.519Z",
 					"changedBy": 2
 				},
 				{
@@ -468,9 +470,9 @@ class DataFixture {
 					"fidColumn": "NUTS_ID",
 					"nameColumn": "NUTS_NAME",
 					"parentColumn": "PARID",
-					"created": ISODate("2016-07-14T14:05:47.757Z"),
+					"created": "2016-07-14T14:05:47.757Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-14T14:05:47.757Z"),
+					"changed": "2016-07-14T14:05:47.757Z",
 					"changedBy": 2
 				},
 				{
@@ -484,9 +486,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
 					"layer": "analysis:an_53_3",
 					"analysis": 53,
-					"created": ISODate("2016-07-14T14:45:18.319Z"),
+					"created": "2016-07-14T14:45:18.319Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:19:14.475Z"),
+					"changed": "2016-07-14T16:19:14.475Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -501,9 +503,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
 					"layer": "analysis:an_61_3",
 					"analysis": 61,
-					"created": ISODate("2016-07-14T16:19:14.461Z"),
+					"created": "2016-07-14T16:19:14.461Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:19:14.461Z"),
+					"changed": "2016-07-14T16:19:14.461Z",
 					"changedBy": null
 				},
 				{
@@ -517,9 +519,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_31_attr_16", "attribute": 16}],
 					"layer": "analysis:an_66_3",
 					"analysis": 66,
-					"created": ISODate("2016-07-14T16:20:13.022Z"),
+					"created": "2016-07-14T16:20:13.022Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:20:13.022Z"),
+					"changed": "2016-07-14T16:20:13.022Z",
 					"changedBy": null
 				},
 				{
@@ -533,9 +535,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_32_attr_15", "attribute": 15}],
 					"layer": "analysis:an_250_3",
 					"analysis": 250,
-					"created": ISODate("2016-07-20T11:11:24.775Z"),
+					"created": "2016-07-20T11:11:24.775Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:24.775Z"),
+					"changed": "2016-07-20T11:11:24.775Z",
 					"changedBy": null
 				},
 				{
@@ -549,9 +551,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_33_attr_17", "attribute": 17}],
 					"layer": "analysis:an_255_3",
 					"analysis": 255,
-					"created": ISODate("2016-07-20T11:11:40.441Z"),
+					"created": "2016-07-20T11:11:40.441Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:40.441Z"),
+					"changed": "2016-07-20T11:11:40.441Z",
 					"changedBy": null
 				},
 				{
@@ -565,9 +567,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_34_attr_18", "attribute": 18}],
 					"layer": "analysis:an_259_3",
 					"analysis": 259,
-					"created": ISODate("2016-07-20T11:11:54.907Z"),
+					"created": "2016-07-20T11:11:54.907Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:54.907Z"),
+					"changed": "2016-07-20T11:11:54.907Z",
 					"changedBy": null
 				},
 				{
@@ -584,9 +586,9 @@ class DataFixture {
 					"location": 7,
 					"areaTemplate": 3,
 					"year": 319,
-					"created": ISODate("2016-07-24T01:14:50.327Z"),
+					"created": "2016-07-24T01:14:50.327Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-07-24T01:14:50.327Z"),
+					"changed": "2016-07-24T01:14:50.327Z",
 					"changedBy": 1
 				},
 				{
@@ -600,9 +602,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4047_3",
 					"analysis": 4047,
-					"created": ISODate("2016-10-17T14:24:06.414Z"),
+					"created": "2016-10-17T14:24:06.414Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.010Z"),
+					"changed": "2016-10-17T16:18:20.010Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -617,9 +619,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4083_3",
 					"analysis": 4083,
-					"created": ISODate("2016-10-17T14:50:42.680Z"),
+					"created": "2016-10-17T14:50:42.680Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.058Z"),
+					"changed": "2016-10-17T16:18:20.058Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -634,9 +636,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4119_3",
 					"analysis": 4119,
-					"created": ISODate("2016-10-17T15:11:46.026Z"),
+					"created": "2016-10-17T15:11:46.026Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.096Z"),
+					"changed": "2016-10-17T16:18:20.096Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -651,9 +653,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4150_3",
 					"analysis": 4150,
-					"created": ISODate("2016-10-17T16:18:20.004Z"),
+					"created": "2016-10-17T16:18:20.004Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:20.004Z"),
+					"changed": "2016-10-17T16:18:20.004Z",
 					"changedBy": null
 				},
 				{
@@ -668,9 +670,9 @@ class DataFixture {
 					"fidColumn": "NUTS_ID",
 					"nameColumn": "NUTS_NAME",
 					"parentColumn": "PARID",
-					"created": ISODate("2016-07-14T14:06:53.961Z"),
+					"created": "2016-07-14T14:06:53.961Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-14T14:06:53.961Z"),
+					"changed": "2016-07-14T14:06:53.961Z",
 					"changedBy": 2
 				},
 				{
@@ -684,9 +686,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
 					"layer": "analysis:an_52_4",
 					"analysis": 52,
-					"created": ISODate("2016-07-14T14:44:45.218Z"),
+					"created": "2016-07-14T14:44:45.218Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:19:14.380Z"),
+					"changed": "2016-07-14T16:19:14.380Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -701,9 +703,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_35_attr_19", "attribute": 19}],
 					"layer": "analysis:an_61_4",
 					"analysis": 61,
-					"created": ISODate("2016-07-14T16:19:14.368Z"),
+					"created": "2016-07-14T16:19:14.368Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:19:14.368Z"),
+					"changed": "2016-07-14T16:19:14.368Z",
 					"changedBy": null
 				},
 				{
@@ -717,9 +719,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_31_attr_16", "attribute": 16}],
 					"layer": "analysis:an_66_4",
 					"analysis": 66,
-					"created": ISODate("2016-07-14T16:20:12.988Z"),
+					"created": "2016-07-14T16:20:12.988Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T16:20:12.988Z"),
+					"changed": "2016-07-14T16:20:12.988Z",
 					"changedBy": null
 				},
 				{
@@ -733,9 +735,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_32_attr_15", "attribute": 15}],
 					"layer": "analysis:an_250_4",
 					"analysis": 250,
-					"created": ISODate("2016-07-20T11:11:24.745Z"),
+					"created": "2016-07-20T11:11:24.745Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:24.745Z"),
+					"changed": "2016-07-20T11:11:24.745Z",
 					"changedBy": null
 				},
 				{
@@ -749,9 +751,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_33_attr_17", "attribute": 17}],
 					"layer": "analysis:an_255_4",
 					"analysis": 255,
-					"created": ISODate("2016-07-20T11:11:40.421Z"),
+					"created": "2016-07-20T11:11:40.421Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:40.421Z"),
+					"changed": "2016-07-20T11:11:40.421Z",
 					"changedBy": null
 				},
 				{
@@ -765,9 +767,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_34_attr_18", "attribute": 18}],
 					"layer": "analysis:an_259_4",
 					"analysis": 259,
-					"created": ISODate("2016-07-20T11:11:54.886Z"),
+					"created": "2016-07-20T11:11:54.886Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-20T11:11:54.886Z"),
+					"changed": "2016-07-20T11:11:54.886Z",
 					"changedBy": null
 				},
 				{
@@ -783,9 +785,9 @@ class DataFixture {
 					"fidColumn": "NUTS_ID",
 					"nameColumn": "NUTS_NAME",
 					"parentColumn": "PARID",
-					"created": ISODate("2016-07-21T08:10:23.803Z"),
+					"created": "2016-07-21T08:10:23.803Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-07-21T08:10:23.803Z"),
+					"changed": "2016-07-21T08:10:23.803Z",
 					"changedBy": 1
 				},
 				{
@@ -802,9 +804,9 @@ class DataFixture {
 					"location": 7,
 					"areaTemplate": 4,
 					"year": 319,
-					"created": ISODate("2016-07-24T01:14:50.599Z"),
+					"created": "2016-07-24T01:14:50.599Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-07-24T01:14:50.599Z"),
+					"changed": "2016-07-24T01:14:50.599Z",
 					"changedBy": 1
 				},
 				{
@@ -818,9 +820,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4047_4",
 					"analysis": 4047,
-					"created": ISODate("2016-10-17T14:24:06.346Z"),
+					"created": "2016-10-17T14:24:06.346Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:19.833Z"),
+					"changed": "2016-10-17T16:18:19.833Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -835,9 +837,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4083_4",
 					"analysis": 4083,
-					"created": ISODate("2016-10-17T14:50:42.394Z"),
+					"created": "2016-10-17T14:50:42.394Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:19.876Z"),
+					"changed": "2016-10-17T16:18:19.876Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -852,9 +854,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4119_4",
 					"analysis": 4119,
-					"created": ISODate("2016-10-17T15:11:45.810Z"),
+					"created": "2016-10-17T15:11:45.810Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:19.912Z"),
+					"changed": "2016-10-17T16:18:19.912Z",
 					"changedBy": null,
 					"active": false
 				},
@@ -869,9 +871,9 @@ class DataFixture {
 					"columnMap": [{"column": "as_4030_attr_910", "attribute": 910}],
 					"layer": "analysis:an_4150_4",
 					"analysis": 4150,
-					"created": ISODate("2016-10-17T16:18:19.823Z"),
+					"created": "2016-10-17T16:18:19.823Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:18:19.823Z"),
+					"changed": "2016-10-17T16:18:19.823Z",
 					"changedBy": null
 				}
 			]);
@@ -883,9 +885,9 @@ class DataFixture {
 					"_id": 13,
 					"name": "Total population",
 					"active": false,
-					"created": ISODate("2016-07-14T14:00:34.223Z"),
+					"created": "2016-07-14T14:00:34.223Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-25T14:53:28.522Z"),
+					"changed": "2016-07-25T14:53:28.522Z",
 					"changedBy": 1,
 					"type": "numeric",
 					"standardUnits": null,
@@ -896,9 +898,9 @@ class DataFixture {
 					"_id": 15,
 					"name": "Primary Neighbours in 5km",
 					"active": false,
-					"created": ISODate("2016-07-14T14:01:19.944Z"),
+					"created": "2016-07-14T14:01:19.944Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-25T14:48:04.640Z"),
+					"changed": "2016-07-25T14:48:04.640Z",
 					"changedBy": 1,
 					"type": "numeric",
 					"standardUnits": null,
@@ -908,9 +910,9 @@ class DataFixture {
 					"_id": 16,
 					"name": "Neighbours in 5km",
 					"active": false,
-					"created": ISODate("2016-07-14T14:01:47.119Z"),
+					"created": "2016-07-14T14:01:47.119Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-25T14:50:34.468Z"),
+					"changed": "2016-07-25T14:50:34.468Z",
 					"changedBy": 1,
 					"type": "numeric",
 					"standardUnits": null,
@@ -920,9 +922,9 @@ class DataFixture {
 					"_id": 17,
 					"name": "Secondary neighbours in 5 km",
 					"active": false,
-					"created": ISODate("2016-07-14T14:02:12.874Z"),
+					"created": "2016-07-14T14:02:12.874Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-26T05:53:45.009Z"),
+					"changed": "2016-07-26T05:53:45.009Z",
 					"changedBy": 2,
 					"type": "numeric",
 					"standardUnits": null,
@@ -932,9 +934,9 @@ class DataFixture {
 					"_id": 18,
 					"name": "Local betweeness",
 					"active": false,
-					"created": ISODate("2016-07-14T14:02:31.161Z"),
+					"created": "2016-07-14T14:02:31.161Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-26T05:53:56.036Z"),
+					"changed": "2016-07-26T05:53:56.036Z",
 					"changedBy": 2,
 					"type": "numeric",
 					"standardUnits": null,
@@ -944,9 +946,9 @@ class DataFixture {
 					"_id": 19,
 					"name": "Nearest neighbors distances",
 					"active": false,
-					"created": ISODate("2016-07-14T14:03:10.071Z"),
+					"created": "2016-07-14T14:03:10.071Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-26T05:54:06.681Z"),
+					"changed": "2016-07-26T05:54:06.681Z",
 					"changedBy": 2,
 					"type": "numeric",
 					"standardUnits": null,
@@ -956,9 +958,9 @@ class DataFixture {
 					"_id": 910,
 					"name": "Area",
 					"active": false,
-					"created": ISODate("2016-07-27T11:45:52.087Z"),
+					"created": "2016-07-27T11:45:52.087Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-10-17T14:58:57.775Z"),
+					"changed": "2016-10-17T14:58:57.775Z",
 					"changedBy": 1,
 					"type": "numeric",
 					"standardUnits": "m2",
@@ -968,9 +970,9 @@ class DataFixture {
 				{
 					"_id": 4447,
 					"active": false,
-					"created": ISODate("2016-11-10T20:17:56.956Z"),
+					"created": "2016-11-10T20:17:56.956Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-11-10T20:18:15.476Z"),
+					"changed": "2016-11-10T20:18:15.476Z",
 					"changedBy": 1,
 					"name": "Density",
 					"type": "numeric",
@@ -988,13 +990,13 @@ class DataFixture {
 				"year": 6,
 				"featureLayerTemplates": [5],
 				"dataset": 1,
-				"created": ISODate("2016-07-25T07:03:15.665Z"),
+				"created": "2016-07-25T07:03:15.665Z",
 				"createdBy": null,
-				"changed": ISODate("2016-07-25T07:03:45.322Z"),
+				"changed": "2016-07-25T07:03:45.322Z",
 				"changedBy": 2,
 				"uuid": "a6e1ddd0-4697-9230-4bd1-383a0690f744",
 				"status": "Successful",
-				"finished": ISODate("2016-07-25T07:03:45.318Z")
+				"finished": "2016-07-25T07:03:45.318Z"
 			},
 				{
 					"_id": 43,
@@ -1003,13 +1005,13 @@ class DataFixture {
 					"year": 6,
 					"featureLayerTemplates": [5],
 					"dataset": 1,
-					"created": ISODate("2016-07-14T14:38:31.767Z"),
+					"created": "2016-07-14T14:38:31.767Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T14:38:54.654Z"),
+					"changed": "2016-07-14T14:38:54.654Z",
 					"changedBy": 2,
 					"uuid": "611a92bc-3390-9dde-9b4f-947327471053",
 					"status": "Successful",
-					"finished": ISODate("2016-07-14T14:38:54.651Z")
+					"finished": "2016-07-14T14:38:54.651Z"
 				},
 				{
 					"_id": 46,
@@ -1018,13 +1020,13 @@ class DataFixture {
 					"year": 6,
 					"featureLayerTemplates": [5],
 					"dataset": 1,
-					"created": ISODate("2016-07-14T14:40:01.462Z"),
+					"created": "2016-07-14T14:40:01.462Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T14:40:24.836Z"),
+					"changed": "2016-07-14T14:40:24.836Z",
 					"changedBy": 2,
 					"uuid": "09b83ef7-4465-3b09-02d7-99c46cb2fa71",
 					"status": "Successful",
-					"finished": ISODate("2016-07-14T14:40:24.833Z")
+					"finished": "2016-07-14T14:40:24.833Z"
 				},
 				{
 					"_id": 59,
@@ -1033,13 +1035,13 @@ class DataFixture {
 					"year": 6,
 					"featureLayerTemplates": [5],
 					"dataset": 1,
-					"created": ISODate("2016-07-14T15:57:50.178Z"),
+					"created": "2016-07-14T15:57:50.178Z",
 					"createdBy": null,
-					"changed": ISODate("2016-07-14T15:58:19.415Z"),
+					"changed": "2016-07-14T15:58:19.415Z",
 					"changedBy": 2,
 					"uuid": "1fb8fe4f-4d84-b04b-cf0a-2899c4100991",
 					"status": "Successful",
-					"finished": ISODate("2016-07-14T15:58:19.411Z")
+					"finished": "2016-07-14T15:58:19.411Z"
 				},
 				{
 					"_id": 4147,
@@ -1048,13 +1050,13 @@ class DataFixture {
 					"year": 6,
 					"featureLayerTemplates": [5],
 					"dataset": 1,
-					"created": ISODate("2016-10-17T16:13:50.317Z"),
+					"created": "2016-10-17T16:13:50.317Z",
 					"createdBy": null,
-					"changed": ISODate("2016-10-17T16:14:06.884Z"),
+					"changed": "2016-10-17T16:14:06.884Z",
 					"changedBy": 1,
 					"id": "42156afa-38d6-5431-0864-0e2b0ae03137",
 					"status": "Successful",
-					"finished": ISODate("2016-10-17T16:14:06.879Z")
+					"finished": "2016-10-17T16:14:06.879Z"
 				}])
 		}).then(() => {
 			let analysis = this.connection.collection('analysis');
@@ -1062,9 +1064,9 @@ class DataFixture {
 				{
 					"_id": 36,
 					"type": "spatialagg",
-					"created": ISODate("2016-07-14T14:13:15.656Z"),
+					"created": "2016-07-14T14:13:15.656Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-07-14T14:15:11.114Z"),
+					"changed": "2016-07-14T14:15:11.114Z",
 					"changedBy": 1,
 					"name": "Nearest 3 distance",
 					"areaTemplate": 8,
@@ -1085,9 +1087,9 @@ class DataFixture {
 				{
 					"_id": 38,
 					"type": "spatialagg",
-					"created": ISODate("2016-07-14T14:15:32.579Z"),
+					"created": "2016-07-14T14:15:32.579Z",
 					"createdBy": 1,
-					"changed": ISODate("2016-07-14T14:17:26.529Z"),
+					"changed": "2016-07-14T14:17:26.529Z",
 					"changedBy": 1,
 					"name": "Neighbours in 5km",
 					"areaTemplate": 8,
@@ -1108,9 +1110,9 @@ class DataFixture {
 				{
 					"_id": 45,
 					"type": "spatialagg",
-					"created": ISODate("2016-07-14T14:39:17.822Z"),
+					"created": "2016-07-14T14:39:17.822Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-14T14:39:48.007Z"),
+					"changed": "2016-07-14T14:39:48.007Z",
 					"changedBy": 2,
 					"name": "Primary neighbours in 5km",
 					"areaTemplate": 8,
@@ -1131,9 +1133,9 @@ class DataFixture {
 				{
 					"_id": 47,
 					"type": "spatialagg",
-					"created": ISODate("2016-07-14T14:40:15.722Z"),
+					"created": "2016-07-14T14:40:15.722Z",
 					"createdBy": 2,
-					"changed": ISODate("2016-07-14T14:40:40.358Z"),
+					"changed": "2016-07-14T14:40:40.358Z",
 					"changedBy": 2,
 					"name": "Secondary neighbours in 5 km",
 					"areaTemplate": 8,
@@ -1152,16 +1154,31 @@ class DataFixture {
 					"groupAttribute": null
 				}
 			]);
+		}).then(() => {
+			return childProcess.exec(`psql -U ${config.pgDataUser} -f utep/text.sql ${config.pgDataDatabase}`).promise;
 		});
-
-		// Create valid Attribute
-	}
-
-	administrativeLayerWithData() {
-		return "geonode:analytical_level_1";
 	}
 
 	teardown() {
+		let clean = this.cleanCollection.bind(this);
+		return this.pool.pool().query(`DROP SCHEMA analysis`)
+			.then(() => clean('analysis'))
+			.then(() => clean('areatemplate'))
+			.then(() => clean('attribute'))
+			.then(() => clean('attributeset'))
+			.then(() => clean('dataset'))
+			.then(() => clean('layergroup'))
+			.then(() => clean('layerref'))
+			.then(() => clean('location'))
+			.then(() => clean('performedanalysis'))
+			.then(() => clean('theme'))
+			.then(() => clean('topic'))
+			.then(() => clean('year'));
+	}
 
+	cleanCollection(name) {
+		return this.connection.collection(name).deleteMany({});
 	}
 }
+
+module.exports = DataFixture;
