@@ -32,6 +32,7 @@ class PgGroups {
             result.rows.forEach(row => {
                 if(!groups[row.id]) {
                     groups[row.id] = {};
+					groups[row.id]._id = row.id;
 					groups[row.id].name = row.name;
 					groups[row.id].users = [];
 					groups[row.id].permissions = [];
