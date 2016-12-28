@@ -1,6 +1,7 @@
 var logger = require('../common/Logger').applicationWideLogger;
 var config = require('../config');
 var Promise = require('promise');
+var _ = require('lodash');
 
 class PgLayer {
 	/**
@@ -93,9 +94,12 @@ class PgLayer {
 	}
 
 	tableData(columns) {
-		var self = this;
-		var pool = this.connectionPool.pool();
-		var sql = `SELECT ${columns.slice()} FROM ${this.tableName()}`;
+		let correctColumns = _.map(columns, column => {
+			return "\"" + column + "\"";
+		});
+		let self = this;
+		let pool = this.connectionPool.pool();
+		let sql = `SELECT ${correctColumns.slice()} FROM ${this.tableName()}`;
 		return pool.query({
 			text: sql
 		});
