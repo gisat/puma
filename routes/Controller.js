@@ -53,18 +53,23 @@ Controller.prototype.set = function (app) {
 Controller.prototype.create = function (request, response, next) {
 	logger.info('Controller#create Create instance of type: ', this.type, ' By User: ', request.userId);
 
-	var self = this;
-	crud.create(this.type, request.body.data, {
-		userId: request.userId,
-		isAdmin: request.isAdmin
-	}, function (err, result) {
-		if (err) {
-			logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.userId,
-				"With data: ", request.body.data, " Error:", err);
-			return next(err);
-		}
-		response.data = result;
-		next();
+	let self = this;
+	return new Promise((resolve, reject) => {
+        crud.create(this.type, request.body.data, {
+            userId: request.userId,
+            isAdmin: request.isAdmin
+        }, function (err, result) {
+            if (err) {
+                logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.userId,
+                    "With data: ", request.body.data, " Error:", err);
+                reject(err);
+                if(next) next(err);
+                return;
+            }
+            response.data = result;
+            if(next) next();
+            resolve(result);
+        });
 	});
 };
 
