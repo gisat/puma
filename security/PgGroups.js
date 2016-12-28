@@ -74,12 +74,14 @@ class PgGroups {
     }
 
     add(name, userId) {
-        return this.pgPool.pool().query(this.addSql(name, userId));
+        return this.pgPool.pool().query(this.addSql(name, userId)).then(result => {
+            return this.byId(result.rows[0].id);
+        });
     }
 
     addSql(name, userId) {
         let time = moment().format('YYYY-MM-DD HH:mm:ss');
-        return `INSERT INTO ${this.schema}.groups (name, created, created_by, changed, changed_by) VALUES ('${name}', '${time}', ${userId}, '${time}', ${userId})`;
+        return `INSERT INTO ${this.schema}.groups (name, created, created_by, changed, changed_by) VALUES ('${name}', '${time}', ${userId}, '${time}', ${userId}) RETURNING id`;
     }
 
     delete(id) {
