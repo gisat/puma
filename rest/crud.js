@@ -384,6 +384,7 @@ var checkRefs = function (db, obj, collName, callback) {
 
         // remove dependencies yet to be created
         _.remove(objs, _.isObject);
+        _.remove(objs, _.isNull);
 
         let refIDs = objs;
         let length = refIDs.length;
