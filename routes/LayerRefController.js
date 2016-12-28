@@ -27,18 +27,21 @@ class LayerRefController extends Controller {
 	//   New layer is mapped. It needs to associate all the styles relevant to the application. DONE
 	//   New style is added to the template - It must add styles to all associated layerrefs.
 	create(request, response, next) {
-		var create = super.create.bind(this);
-		var self = this;
-		var layerRef = request.body.data;
-		var layerType = layerRef.isData ? "vector": "raster";
-		var pgLayer = new PgLayer(layerRef.layer, layerRef.fidColumn, layerType ,this.pgPool);
-		return pgLayer.validate().then(function () {
-			return self.updateStyles(layerRef)
-		}).then(function () {
-			return create(request, response, next);
+		let create = super.create.bind(this);
+		let self = this;
+		create(request, response).then(data => {
+			// In time data should be array
+            let layerRef = response.data;
+            let layerType = layerRef.isData ? "vector": "raster";
+            return new PgLayer(layerRef.layer, layerRef.fidColumn, layerType ,this.pgPool).validate()
+				.then(() => {
+                	return self.updateStyles(response.data)
+				});
+		}).then(() => {
+			next();
 		}).catch(function (error) {
-			throw new Error(logger.error('LayerRefController#create Error: ', error));
-		});
+            throw new Error(logger.error('LayerRefController#create Error: ', error));
+        });
 	}
 
 	update(request, response, next) {
