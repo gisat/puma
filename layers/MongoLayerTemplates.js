@@ -112,11 +112,8 @@ class MongoLayerTemplates {
 	}
 
 	add(layerTemplate) {
-		var self = this;
-		return layerTemplate.json().then(function(layerTemplate){
-			var collection = self._connection.collection(MongoLayerTemplate.collectionName());
-			collection.insert(layerTemplate)
-		});
+		let collection = this._connection.collection(MongoLayerTemplate.collectionName());
+		return collection.insert(layerTemplate)
 	}
 }
 

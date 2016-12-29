@@ -4,6 +4,7 @@
       <root url="file://$PROJECT_DIR$/public/devlib/OpenLayers" />
       <root url="file://$PROJECT_DIR$/public/devlib/OpenLayers" />
     </CLASSES>
+    <JAVADOC />
     <SOURCES />
   </library>
 </component>

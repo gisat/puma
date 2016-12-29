@@ -2,14 +2,14 @@ module.exports = {
 	/* This specifies ports on which the test server will be run. */
 	port: 3000,
 
-	pgDataConnString    : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgDataConnString    : "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
 	pgDataUser: 'geonode',
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
-	pgDataHost: 'localhost',
-	pgDataPort: '5433',
-	pgGeonodeConnString  : "postgres://geonode:geonode@localhost:5432/geonode",
-	mongoConnString : "mongodb://localhost:27017/panther",
+	pgDataHost: '10.0.75.2',
+	pgDataPort: '5432',
+	pgGeonodeConnString  : "postgres://geonode:geonode@10.0.75.2:5432/geonode",
+	mongoConnString : "mongodb://10.0.75.2:27017/panther",
 
 	localAddress    : "localhost:4000/tool",
 	remoteAddress   : "localhost:4000/tool",
