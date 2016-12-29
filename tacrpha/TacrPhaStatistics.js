@@ -101,8 +101,13 @@ class TacrPhaStatistics {
      * Get statistics about searching string
      * @returns {*}
      */
-    getSearchStringFrequency(){
-        var sql = `SELECT keywords, COUNT(keywords) as num FROM data.` + this._table + ` GROUP BY keywords ORDER by num DESC;`;
+    getSearchStringFrequency(type){
+        var where = "";
+        if (type == "successful"){
+            where = ` WHERE result_number > 0 `;
+        }
+
+        var sql = `SELECT keywords, COUNT(keywords) as num FROM data.` + this._table + where + ` GROUP BY keywords ORDER by num DESC;`;
         logger.info(`INFO TacrPhaStatistics#getKeywordsFrequency sql: ` + sql);
 
         return this._pgPool.pool().query(sql);
