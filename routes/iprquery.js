@@ -13,6 +13,7 @@ class iprquery {
         app.post("/iprquery/terms", this.searching.bind(this, "terms"));
         app.post("/iprquery/data", this.dataSearching.bind(this));
         app.post("/iprquery/object", this.objectSearching.bind(this));
+        app.get("/iprquery/statistics", this.statistics.bind(this));
 
         this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
         this._prefixes = [
@@ -25,6 +26,22 @@ class iprquery {
         ];
 
         this._statistics = new TacrPhaStatistics(pool);
+    }
+
+    /**
+     * Return searching history statistics
+     * @param req
+     * @param res
+     */
+    statistics(req, res){
+        this._statistics.getSearchStringFrequency().then(function(result){
+            logger.info(`INFO iprquery#statistics result: ` + result);
+            res.send(result.rows);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`ERROR iprquery#statistics Error: `, err)
+            )
+        });
     }
 
     objectSearching(req, res){

@@ -12,6 +12,9 @@ class TacrPhaStatistics {
         this.check();
     }
 
+    /**
+     * Check if statistics table exists
+     */
     check(){
         let sql = `SELECT * FROM information_schema.tables` +
             ` WHERE table_schema = 'data'` +
@@ -26,6 +29,10 @@ class TacrPhaStatistics {
         });
     }
 
+    /**
+     * Create statistics table
+     * @param name {string} name of the table
+     */
     create(name){
         var sql = `CREATE TABLE data.` + name + `(` +
             `uid text,` +
@@ -47,6 +54,12 @@ class TacrPhaStatistics {
         });
     }
 
+    /**
+     * Insert record into statistics table
+     * @param ip {string}
+     * @param keywords {Array} searching keywords
+     * @param result {Object} searching results
+     */
     insert(ip, keywords, result){
         let numOfRecords = 0;
         let firstRow = "";
@@ -82,6 +95,17 @@ class TacrPhaStatistics {
                 logger.error(`ERROR TacrPhaStatistics#insert Error: `, err)
             )
         });
+    }
+
+    /**
+     * Get statistics about searching string
+     * @returns {*}
+     */
+    getSearchStringFrequency(){
+        var sql = `SELECT keywords, COUNT(keywords) as num FROM data.` + this._table + ` GROUP BY keywords ORDER by num DESC;`;
+        logger.info(`INFO TacrPhaStatistics#getKeywordsFrequency sql: ` + sql);
+
+        return this._pgPool.pool().query(sql);
     }
 }
 
