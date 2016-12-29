@@ -59,11 +59,6 @@ class Controller {
     create(request, response, next) {
         logger.info('Controller#create Create instance of type: ', this.type, ' By User: ', request.session.userId);
 
-        if (!this.hasRights(request.session.user, 'POST', null, request.body.data)) {
-            response.status(403);
-            return;
-        }
-
         var self = this;
         crud.create(this.type, request.body.data, {
             userId: request.session.userId,
