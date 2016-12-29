@@ -36,7 +36,12 @@ class iprquery {
     statistics(req, res){
         this._statistics.getSearchStringFrequency().then(function(result){
             logger.info(`INFO iprquery#statistics result: ` + result);
-            res.send(result.rows);
+            let frequencies = [];
+            result.rows.map(record => {
+                frequencies.push([record.keywords,Number(record.num)]);
+            });
+
+            res.send(frequencies);
         }).catch(err => {
             throw new Error(
                 logger.error(`ERROR iprquery#statistics Error: `, err)
