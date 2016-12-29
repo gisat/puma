@@ -13,7 +13,9 @@ class GroupController {
     constructor(app, pool, schema) {
         app.get('/rest/group', this.readAll.bind(this));
 
-        app.post('/rest/group', this.create.bind(this));
+		app.put('/rest/group/:id', this.update.bind(this));
+
+		app.post('/rest/group', this.create.bind(this));
         app.post('/rest/member/group', this.addUserToGroup.bind(this));
         app.post('/rest/permission/group', this.addPermission.bind(this));
 
@@ -71,6 +73,27 @@ class GroupController {
             response.status(500);
         });
     }
+
+	/**
+	 * If the user have rights to update the group, then this method is used for update of such group.
+	 * @param request
+	 * @param response
+	 * @param next
+	 */
+	update(request, response, next) {
+		if(!this.hasRights(request.session.user, 'PUT')) {
+			response.status(403);
+			response.json({"status": "err"});
+			return;
+		}
+
+		this.groups.update(request.params.id, request.body.name).then(() => {
+			response.json({status: "Ok"});
+		}).catch(err => {
+			logger.error("GroupController#create Error: ", err);
+			response.status(500);
+		});
+	}
 
     /**
      *

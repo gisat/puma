@@ -84,6 +84,7 @@ class PgGroups {
         return `INSERT INTO ${this.schema}.groups (name, created, created_by, changed, changed_by) VALUES ('${name}', '${time}', ${userId}, '${time}', ${userId}) RETURNING id`;
     }
 
+    //TODO: Delete associated members as well as permissions.
     delete(id) {
         return this.pgPool.pool().query(this.deleteSql(id));
     }
@@ -92,7 +93,15 @@ class PgGroups {
         return `DELETE FROM ${this.schema}.groups WHERE id = ${id}`;
     }
 
-    addMember(userId, groupId, creatorId) {
+	update(id, name) {
+		return this.pgPool.pool().query(this.updateSql(id, name));
+	}
+
+	updateSql(id, name) {
+        return `UPDATE ${this.schema}.groups SET name = '${name}' WHERE id = ${id}`;
+    }
+
+	addMember(userId, groupId, creatorId) {
         return this.pgPool.pool().query(this.addMemberSql(userId, groupId, creatorId));
     }
 
