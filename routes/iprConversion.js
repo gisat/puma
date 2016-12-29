@@ -6,7 +6,7 @@ var Promise = require('promise');
 var wellknown = require('wellknown');
 var proj4 = require('proj4');
 
-class iprquery {
+class iprConversion {
     constructor (app) {
         app.post("/iprconversion/krovak2wgs", this.conversion.bind(this));
 
@@ -48,4 +48,4 @@ class iprquery {
     }
 }
 
-module.exports = iprquery;
+module.exports = iprConversion;
