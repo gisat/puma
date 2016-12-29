@@ -40,6 +40,10 @@ class TacrPhaStatistics {
 
         this._pgPool.pool().query(sql).then(function(res){
             logger.info(`INFO TacrPhaStatistics#create : Table was created succesfully`);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`ERROR TacrPhaStatistics#create Error: `, err)
+            )
         });
     }
 
@@ -73,6 +77,10 @@ class TacrPhaStatistics {
         logger.info(`INFO TacrPhaStatistics#insert sql: ` + sql);
         this._pgPool.pool().query(sql).then(function(res){
             logger.info(`INFO TacrPhaStatistics#insert : Record was inserted succesfully`);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`ERROR TacrPhaStatistics#insert Error: `, err)
+            )
         });
     }
 }
