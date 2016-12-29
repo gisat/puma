@@ -1,5 +1,6 @@
 let config = require('../config');
 let logger = require('../common/Logger').applicationWideLogger;
+let Promise = require('promise');
 
 let PgGroups = require('./PgGroups');
 let PgPermissions = require('./PgPermissions');
@@ -32,9 +33,17 @@ class GroupController {
      * @param next
      */
     readAll(request, response, next) {
-        this.groups.json().then(groups => {
-            groups = groups
-                .filter(group => this.hasRights(request.session.user, 'GET', group.id));
+    	let groups;
+        this.groups.json().then(pGroups => {
+			groups = pGroups
+				.filter(group => this.hasRights(request.session.user, 'GET', group.id));
+			let promises = groups.map(element => {
+				return this.permissions.forType(this.type, element._id).then(permissions => {
+					element.permissions = permissions;
+				});
+			});
+			return Promise.all(promises);
+		}).then(() => {
             response.json({data: groups});
         }).catch(err => {
             logger.error("GroupController#readAll Error: ", err);

@@ -35,7 +35,7 @@ class PgGroups {
 					groups[row.id]._id = row.id;
 					groups[row.id].name = row.name;
 					groups[row.id].users = [];
-					groups[row.id].permissions = [];
+					groups[row.id].permissionsTowards = [];
                 }
 
                 if(row.user_id && groups[row.id].users.indexOf(row.user_id) == -1) {
@@ -43,7 +43,7 @@ class PgGroups {
 				}
 
 				if(row.resource_type && row.permission) {
-                    groups[row.id].permissions.push({
+                    groups[row.id].permissionsTowards.push({
                         resourceId: row.resource_id,
                         resourceType: row.resource_type,
                         permission: row.permission
