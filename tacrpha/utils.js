@@ -22,10 +22,28 @@ function removeMonosyllabics (arr){
  * @returns {string}
  */
 function replaceInterpunction (str){
-    str = str.replace(/[,;]/gi, ' ');
+    str = str.replace(/[+.,;]/gi, ' ');
     // replace all spaces with single space
     str = str.replace(/\s\s+/g, ' ');
     return str;
+}
+
+/**
+ * Remove any special character
+ * @param str {string}
+ * @returns {string}
+ */
+function removeSpecialCharacters(str){
+    return str.replace(/[^a-zA-Z0-9 ]/g, '');
+}
+
+/**
+ * Remove last charcter from string
+ * @param str {string}
+ * @returns {string}
+ */
+function removeWordEnding(str){
+    return str.slice(0, -1);
 }
 
 /**
@@ -132,5 +150,7 @@ function removeDiacritics (str) {
 module.exports = {
     removeMonosyllabics: removeMonosyllabics,
     removeDiacritics: removeDiacritics,
+    removeSpecialCharacters: removeSpecialCharacters,
+    removeWordEnding: removeWordEnding,
     replaceInterpunction: replaceInterpunction
 };

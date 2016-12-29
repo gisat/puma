@@ -169,6 +169,7 @@ class iprquery {
 
         var filter = [];
         values.map((value) => {
+            value = utils.removeWordEnding(value);
             filter.push('regex(str(?pojem), "' + value + '", "i")');
         });
         filter = 'FILTER(' + filter.join(type) + ')';
@@ -257,6 +258,7 @@ class iprquery {
 
         reqString = utils.replaceInterpunction(reqString);
         reqString = utils.removeDiacritics(reqString);
+        reqString = utils.removeSpecialCharacters(reqString);
         var list = reqString.split(" ");
 
         return utils.removeMonosyllabics(list);
