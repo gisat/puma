@@ -6,6 +6,7 @@ var Promise = require('promise');
 var fs = require('fs');
 var csv = require('csv-parser');
 var superagent = require('superagent');
+var _ = require('lodash');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -44,33 +45,36 @@ class PgCsvLayer {
      * @returns JSON object with informations about imported layers
      */
     import(request, pgPool) {
-        var files = request.files.file;
+        let files = request.files.file;
         files = this.parseUploadedFiles(files);
         return new Promise(function (result, error) {
-            for (var file of files) {
+            for (let file of files) {
                 if (file.type == "text/csv") {
-                    var csvLines = [];
+                    let csvLines = [];
 
                     fs.createReadStream(file.path).pipe(csv({separator: ','})).on('data', function (data) {
                         csvLines.push(data);
                     }).on('end', function () {
-                        var tableName = file.name.replace(/\W+/g, "_").toLowerCase();
-                        var keys = Object.keys(csvLines[0]);
-                        var checkExistingTable = `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '${tableName}');`;
+                        let tableName = file.name.replace(/\W+/g, "_").toLowerCase();
+                        let keys = Object.keys(csvLines[0]);
+                        let checkExistingTable = `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '${tableName}');`;
 
                         pgPool.pool().query(checkExistingTable).then(queryResult => {
                             if (!queryResult.rows[0].exists) {
-                                var columns = "";
-                                for (var key of keys) {
-                                    columns += `${key} double precision, `;
+                                let columns = "";
+                                for (let key of keys) {
+                                    columns += `"${key}" double precision, `;
                                 }
-                                var createTable = `CREATE TABLE ${tableName} (_id serial primary key, ${columns.slice(0, -2)}, the_geom geometry);`;
+                                let createTable = `CREATE TABLE ${tableName} (_id serial primary key, ${columns.slice(0, -2)}, the_geom geometry);`;
 
                                 pgPool.pool().query(createTable).then(queryResult => {
-                                    var csvToPsql = `INSERT INTO ${tableName} (${keys.slice()}, the_geom) VALUES `;
-                                    for (var csvLine of csvLines) {
-                                        var values = [];
-                                        for (var key of keys) {
+                                    let correctKeys = _.map(keys, key => {
+                                        return `"${key}"`;
+                                    });
+                                    let csvToPsql = `INSERT INTO ${tableName} (${correctKeys.slice()}, the_geom) VALUES `;
+                                    for (let csvLine of csvLines) {
+                                        let values = [];
+                                        for (let key of keys) {
                                             values.push(csvLine[key]);
                                         }
                                         csvToPsql += `(${values.slice()}, ST_SetSRID(ST_MakePoint(${csvLine.LON}, ${csvLine.LAT}), 4326)), `;
@@ -104,8 +108,9 @@ class PgCsvLayer {
                                                     });
                                             });
                                     }).catch(error => {
+                                        pgPool.pool().query(`DROP TABLE ${tableName}`);
                                         result({
-                                            message: `I was not able to insert data info ${tableName} table!`,
+                                            message: `I was not able to insert data into ${tableName} table!\n${csvToPsql.substring(0, 1024)}`,
                                             error: error,
                                             success: false
                                         });
@@ -141,7 +146,7 @@ class PgCsvLayer {
      * @returns {Array} List of uploaded files
      */
     parseUploadedFiles(files) {
-        var parsedFiles = [];
+        let parsedFiles = [];
         if (files != undefined) {
             if (files.length == undefined) {
                 parsedFiles.push({
@@ -151,7 +156,7 @@ class PgCsvLayer {
                     type: files.type
                 })
             } else {
-                for (var file of files) {
+                for (let file of files) {
                     parsedFiles.push({
                         name: file.name,
                         path: file.path,
