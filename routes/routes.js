@@ -90,7 +90,7 @@ module.exports = function(app) {
 	new YearController(app);
 
 	new PrintController(app);
-    new ImportController(app);
+    new ImportController(app, pool);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
 
