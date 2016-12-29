@@ -13,5 +13,11 @@
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://10.0.75.2:5432/geonode_data</jdbc-url>
     </data-source>
+    <data-source source="LOCAL" name="PostgreSQL - geonode_data@10.0.75.2" uuid="5b57ccc0-3de6-4746-945e-6dbbe6b52057">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://10.0.75.2:5432/geonode_data</jdbc-url>
+    </data-source>
   </component>
 </project>

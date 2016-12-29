@@ -26,7 +26,8 @@ class PgPermissions {
 			return {
 				resourceType: row.resource_type,
 				resourceId: row.resource_id,
-				permission: row.permission
+				permission: row.permission,
+				id: row.user_id || row.group_id || null
 			}
 		})
 	}
