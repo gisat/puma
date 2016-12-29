@@ -14,6 +14,8 @@ class ImportController extends Controller {
     csv(request, response, next) {
         new PgCsvLayer().import(request, this._pgPool).then(function (result, error) {
             response.send(result);
+        }).catch(error => {
+            response.status(500).send(error);
         });
     }
 }
