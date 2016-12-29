@@ -66,9 +66,9 @@ class TacrPhaStatistics {
         logger.info(`INFO TacrPhaStatistics#insert first row: ` + firstRow);
 
         var sql = `INSERT INTO data.` + this._table + ` ` +
-            `(uid, ip, keywords, results_number, results_first_record) ` +
+            `(uid, ip, keywords, results_number, results_first_record, date) ` +
             `VALUES` +
-            `('` + id + `', '` + ip + `', '` + searchString + `', ` + numOfRecords + `, '` + firstRow + `');`;
+            `('` + id + `', '` + ip + `', '` + searchString + `', ` + numOfRecords + `, '` + firstRow + `', now());`;
 
         logger.info(`INFO TacrPhaStatistics#insert sql: ` + sql);
         this._pgPool.pool().query(sql).then(function(res){
