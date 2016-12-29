@@ -104,7 +104,7 @@ class TacrPhaStatistics {
     getSearchStringFrequency(type){
         var where = "";
         if (type == "successful"){
-            where = ` WHERE result_number > 0 `;
+            where = ` WHERE results_number > 0 `;
         }
 
         var sql = `SELECT keywords, COUNT(keywords) as num FROM data.` + this._table + where + ` GROUP BY keywords ORDER by num DESC;`;
