@@ -43,7 +43,10 @@ function removeSpecialCharacters(str){
  * @returns {string}
  */
 function removeWordEnding(str){
-    return str.slice(0, -1);
+    if (str.length > 3){
+        return str.slice(0, -1);
+    }
+    return str;
 }
 
 /**
