@@ -34,12 +34,12 @@ class iprquery {
      * @param res
      */
     statistics(req, res){
-        let type = req.body.type;
+        let type = req.query.type;
         this._statistics.getSearchStringFrequency(type).then(function(result){
             logger.info(`INFO iprquery#statistics result: ` + result);
             let frequencies = [];
             result.rows.map(record => {
-                frequencies.push([record.keywords,Number(record.num)]);
+                frequencies.push([record.keywords, Number(record.num)]);
             });
 
             res.send(frequencies);
