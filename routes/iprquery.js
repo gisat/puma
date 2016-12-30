@@ -9,8 +9,8 @@ var csv = require('csv');
 
 class iprquery {
     constructor (app, pool) {
-        app.post("/iprquery/dataset", this.searching.bind(this, "dataset"));
-        app.post("/iprquery/terms", this.searching.bind(this, "terms"));
+        //app.post("/iprquery/dataset", this.searching.bind(this, "dataset"));
+        app.post("/iprquery/terms", this.searching.bind(this));
         app.post("/iprquery/data", this.dataSearching.bind(this));
         app.post("/iprquery/object", this.objectSearching.bind(this));
         app.get("/iprquery/statistics", this.statistics.bind(this));
@@ -88,12 +88,10 @@ class iprquery {
 
     /**
      * Basic method for searching
-     * @param category {string} type of searching
      * @param req
      * @param res
      */
-    searching(category, req, res){
-        let sparql;
+    searching(req, res){
         let keywords = this.constructor.parseRequestString(req.body.search);
         var self = this;
         if (keywords.length == 0){
@@ -108,12 +106,7 @@ class iprquery {
             let type = this.constructor.getTypeString(req.body.settings.type);
             logger.info(`INFO iprquery#dataset keywords: ` + keywords);
 
-            if (category == "terms"){
-                sparql = this.prepareTermsQuery(keywords, type);
-            } else if (category == "dataset"){
-                sparql = this.prepareDatasetQuery(keywords, type);
-            }
-
+            var sparql = this.prepareTermsQuery(keywords, type);
             this.endpointRequest(sparql).then(function(result){
                 result.keywords = keywords;
                 res.send(result);
