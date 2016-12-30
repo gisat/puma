@@ -9,7 +9,7 @@ var csv = require('csv');
 
 class iprquery {
     constructor (app, pool) {
-        //app.post("/iprquery/dataset", this.searching.bind(this, "dataset"));
+        app.post("/iprquery/dataset", this.attributesSearching.bind(this));
         app.post("/iprquery/terms", this.searching.bind(this));
         app.post("/iprquery/data", this.dataSearching.bind(this));
         app.post("/iprquery/object", this.objectSearching.bind(this));
@@ -82,6 +82,22 @@ class iprquery {
         this.endpointRequest(sparql).then(function(result){
             result.keywords = [parameter];
             result.value = value;
+            res.send(result);
+        });
+    }
+
+    /**
+     * Searching in attributes
+     * @param req
+     * @param req.body.dataset {string} name of the dataset
+     * @param res
+     */
+    attributesSearching(req, res){
+        let dataset = req.body.dataset;
+        var sparql = this.prepareDatasetQuery(dataset);
+        debugger;
+        this.endpointRequest(sparql).then(function(result){
+            result.keywords = [dataset];
             res.send(result);
         });
     }
@@ -181,7 +197,7 @@ class iprquery {
     prepareTermsQuery(values, type){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = ' SELECT ?pojem ?dataset ?kod WHERE {?pojem common:isInContextOfDataset ?dataset . ?pojem common:isRepresentedAsDatabaseTableAttribute ?kod.';
+        var sparql = ' SELECT ?pojem ?dataset WHERE {?pojem common:isInContextOfDataset ?dataset . ';
 
         var filter = [];
         values.map((value) => {
@@ -199,26 +215,21 @@ class iprquery {
 
     /**
      * Prepare sparql query for datasets
-     * @param values {Array} values for searching
-     * @param type {string} operators
+     * @param dataset {string} dataset code
      * @returns {string}
      */
-    prepareDatasetQuery(values, type){
+    prepareDatasetQuery(dataset){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = ' SELECT DISTINCT ?dataset WHERE {?item common:isInContextOfDataset ?dataset . ';
+        var sparql = ' SELECT ?atribut ?kod WHERE {?atribut common:isInContextOfDataset ?dataset . ?atribut common:isRepresentedAsDatabaseTableAttribute ?kod. ';
 
-        var filter = [];
-        values.map((value) => {
-            filter.push('regex(str(?item), "' + value + '", "i")');
-        });
-        filter = 'FILTER(' + filter.join(type) + ')';
+        var filter = 'FILTER(regex(str(?dataset), "' + dataset + '", "i"))';
         sparql += filter + '}';
 
-        logger.info(`INFO iprquery#prepareDatasetQuery sparql: ` + sparql);
-        logger.info(`INFO iprquery#prepareDatasetQuery full query: ` + query + prefixes + sparql);
+        logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
 
-        return query + ' ' + encodeURIComponent(prefixes + sparql);
+        return query + encodeURIComponent(prefixes + sparql);
     }
 
     endpointRequest(sparql){
