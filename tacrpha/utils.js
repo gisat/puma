@@ -44,9 +44,16 @@ function removeSpecialCharacters(str){
  */
 function removeWordEnding(str){
     if (str.length > 3){
-        return str.slice(0, -1);
+        var lastChar = str.slice(-1);
+        if (vowelTest(lastChar)){
+            return str.slice(0, -1);
+        }
     }
     return str;
+}
+
+function vowelTest(s) {
+    return (/^[aeiouy]$/i).test(s);
 }
 
 /**
