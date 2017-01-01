@@ -223,7 +223,7 @@ class iprquery {
         var prefixes = this._prefixes.join(' ');
         var sparql = ' SELECT ?atribut ?kod WHERE {?atribut common:isInContextOfDataset ?dataset . ?atribut common:isRepresentedAsDatabaseTableAttribute ?kod. ';
 
-        var filter = 'FILTER(regex(str(?dataset), "' + dataset + '", "i"))';
+        var filter = 'FILTER(regex(str(?dataset), "' + dataset + '", "i") && regex(str(?kod), "' + dataset + '", "i"))';
         sparql += filter + '}';
 
         logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
