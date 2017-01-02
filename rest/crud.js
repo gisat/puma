@@ -46,8 +46,8 @@ function create(collName, obj, params, callback) {
         return new Promise((resolve, reject) => {
             checkRefs(db, data, collName, function (result) {
                 if (result instanceof Error) {
-                    logger.error("crud#create. checkRefs Error: ", err);
-                    reject(err);
+                    logger.error("crud#create. checkRefs Error: ", result);
+                    reject(result);
                 } else {
                     resolve(data);
                 }
@@ -207,10 +207,10 @@ function update(collName, obj, params, callback, bypassHooks) {
     };
     async.auto({
         checkRefs: function (asyncCallback) {
-            checkRefs(db, obj, collName, function (err) {
-                if (err) {
-                    logger.error("crud#update. update checkRefs Error: ", err);
-                    return callback(err);
+            checkRefs(db, obj, collName, function (result) {
+                if (result instanceof Error) {
+                    logger.error("crud#update. update checkRefs Error: ", result);
+                    return callback(result);
                 }
                 asyncCallback(null);
             });
