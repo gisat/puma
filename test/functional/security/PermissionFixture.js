@@ -287,6 +287,8 @@ class PermissionFixture {
         }).then(() => {
             return this.createGroup('guest');
         }).then(() => {
+			return this.createGroup('user');
+		}).then(() => {
             return this.createGroup('iluminati');
         }).then(() => {
             return this.addMemberToGroup(this.adminId(), this.adminUserId());
@@ -329,8 +331,12 @@ class PermissionFixture {
         return 2;
     }
 
-    iluminatiId() {
+    userId() {
         return 3;
+    }
+
+    iluminatiId() {
+        return 4;
     }
 
     adminUserId() {

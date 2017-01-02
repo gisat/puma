@@ -38,7 +38,7 @@ class GroupController {
     	let groups;
         this.groups.json().then(pGroups => {
 			groups = pGroups
-				.filter(group => this.hasRights(request.session.user, 'GET', group.id));
+				.filter(group => this.hasRights(request.session.user, 'GET', group._id));
 			let promises = groups.map(element => {
 				return this.permissions.forType(this.type, element._id).then(permissions => {
 					element.permissions = permissions;

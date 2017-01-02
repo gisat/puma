@@ -53,7 +53,7 @@ class StyleController extends Controller {
         var style;
         var self = this;
         new Id().toNumber().then(function(id){
-            style = new RestStyle(id, receivedData, request.session.userId);
+            style = new RestStyle(id, receivedData, request.session.user.id);
             return self._styles.add(style);
         }).then(function(){
             style.json().then(function(json){

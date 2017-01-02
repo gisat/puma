@@ -21,7 +21,7 @@ let PgPermissions = require('../../../security/PgPermissions');
 
 let config = require('../config');
 
-describe('User', function () {
+describe('Permissions', function () {
     // TODO move to the create test server.
     let schema, pool, app;
     let commonSchema = 'data_test';
@@ -54,8 +54,8 @@ describe('User', function () {
             } else {
                 new PgPermissions(pool, config.postgreSqlSchema).forGroup(Group.guestId()).then((permissions => {
                     request.session.user = new User(0, [], [new Group(Group.guestId(), permissions)]);
+					next();
                 }));
-                next();
             }
         });
 

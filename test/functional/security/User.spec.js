@@ -166,16 +166,19 @@ describe('User', function () {
 
     describe('Load all users', function(){
         it('returns all users from Geonode enriched with permissions', function(done){
-			fixture.user = new User(0, [{
+            this.timeout(5000);
+
+            fixture.user = new User(0, [{
 				resourceType: 'user',
 				permission: 'GET'
 			}]);
 			supertest(app)
                 .get('/rest/user')
-                .expect(200).then((response) => {
-			    let users = response.body;
-			    console.log(users);
-			    done();
+                .expect(200)
+                .then((response) => {
+                    let users = response.body;
+                    console.log(users);
+                    done();
             });
 		});
     });

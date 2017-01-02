@@ -4,7 +4,7 @@ module.exports = {
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
 	pgDataHost: '10.0.75.2',
-	pgDataPort: '5433',
+	pgDataPort: '5432',
 	pgGeonodeConnString  : "postgres://geonode:geonode@10.0.75.2:5432/geonode",
 	mongoConnString : "mongodb://10.0.75.2:27017/panther",
 

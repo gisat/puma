@@ -5,6 +5,7 @@
       <paths name="Mellodies">
         <serverdata>
           <mappings>
+            <mapping local="$USER_HOME$/Projekty/panther-backoffice" web="/" />
             <mapping local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
