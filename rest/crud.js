@@ -62,10 +62,15 @@ function create(collName, obj, params, callback) {
             _.each(map, (modelObject, modelKey) => {
                 let values = _.get(object, modelKey);
                 if (values) {
-                    values = Array.isArray(values) ? values : [values];
+                    let wasArray = true;
+                    if (!Array.isArray(values)) {
+                        values = [values];
+                        wasArray = false;
+                    }
+                    let subpromises = [];
                     _.each(values, (value, index) => {
                         if (_.isObject(value)) {
-                            promises.push(new Promise((resolve, reject) => {
+                            subpromises.push(new Promise((resolve, reject) => {
                                 create(modelObject.coll, value, params, function (err, result) {
                                     if (err) {
                                         logger.error("crud#create. create dependencies Error: ", err);
@@ -78,7 +83,11 @@ function create(collName, obj, params, callback) {
                             }));
                         }
                     });
-                    _.set(object, modelKey, values.length > 1 ? values : values[0]);
+                    promises.push(Promise.all(subpromises));
+                    Promise.all(subpromises).then(() => {
+                        _.set(object, modelKey, wasArray ? values : values[0]);
+                        console.log(object);
+                    });
                 }
             });
         });
