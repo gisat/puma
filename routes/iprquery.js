@@ -168,7 +168,7 @@ class iprquery {
             filter += ' && regex(str(?ipr_h), "' + val + '", "i")';
         }
 
-        var select = '(?ipr_o as ?objekt) (?ipr_h as ?hodnota) (?ipr_d as ?dataset)';
+        var select = '(?ipr_o as ?objekt) (?ipr_h as ?hodnota) (?ipr_d as ?tabulka)';
         var limit = 'LIMIT 1000';
 
         if (type == "count"){
