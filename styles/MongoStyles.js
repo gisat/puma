@@ -45,4 +45,10 @@ MongoStyles.prototype.update = function(style) {
 	});
 };
 
+MongoStyles.prototype.delete = function(id) {
+	let db = conn.getMongoDb();
+	let collection = db.collection('symbology');
+	return collection.deleteMany({_id: id});
+};
+
 module.exports = MongoStyles;

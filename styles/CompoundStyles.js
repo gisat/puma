@@ -40,4 +40,8 @@ CompoundStyles.prototype.update = function(style) {
 	return Promise.all(promises);
 };
 
+CompoundStyles.prototype.delete = function(id) {
+	return Promise.all(this._styles.map(style => style.delete(id)))
+};
+
 module.exports = CompoundStyles;
