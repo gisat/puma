@@ -1,7 +1,6 @@
 var express = require('express');
 var app = express();
 var conn = require('./common/conn');
-var publicConfig = require('./common/public-config');
 var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');
 var staticFn = express['static'];
