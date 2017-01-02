@@ -77,6 +77,11 @@ class MongoTopics {
 			return collection.removeOne({_id: topicId});
 		});
 	}
+
+	add(topic) {
+		let collection = this._connection.collection(MongoTopic.collectionName());
+		collection.insert(topic)
+	}
 }
 
 module.exports = MongoTopics;

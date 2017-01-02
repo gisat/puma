@@ -64,6 +64,11 @@ class MongoScopes {
 			return collection.removeOne({_id: id});
 		});
 	}
+
+	add(scope) {
+		let collection = this._connection.collection(MongoScope.collectionName());
+		collection.insert(scope)
+	}
 }
 
 module.exports = MongoScopes;

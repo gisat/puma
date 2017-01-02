@@ -46,6 +46,11 @@ class MongoThemes {
 			return collection.removeOne({_id: id});
 		});
 	}
+
+	add(theme) {
+		let collection = this._connection.collection(MongoTheme.collectionName());
+		collection.insert(theme)
+	}
 }
 
 module.exports = MongoThemes;
