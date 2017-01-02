@@ -135,12 +135,12 @@ class iprquery {
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ') + ' PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/' + objectDs + '/>';
 
-        var filter = '(?subjekt = uri:' + objectId +')';
-        var select = '?objekt ?predikat ?subjekt';
+        var filter = '(?ipr_sbj = uri:' + objectId +')';
+        var select = '(?ipr_okt as ?hodnota) (?ipr_pkt as ?atribut) (?ipr_sbj as ?objekt)';
         var limit = 'LIMIT 100';
 
         var sparql = 'SELECT ' + select +
-            ' WHERE {?subjekt rdf:type ?dataset. ?subjekt ?predikat ?objekt.' +
+            ' WHERE {?ipr_sbj rdf:type ?dataset. ?ipr_sbj ?ipr_pkt ?ipr_okt.' +
             ' FILTER (' + filter +
             ')} ' + limit;
 
@@ -162,22 +162,22 @@ class iprquery {
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ') + ' PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/' + dataset + '/>';
 
-        var filter = '(?dataset = ds:' + dataset +')';
+        var filter = '(?ipr_d = ds:' + dataset +')';
         if (value.length > 0 && typeof value == "string"){
             var val = value.replace(/[^a-zA-Z0-9]/g, '.');
-            filter += ' && regex(str(?hodnota), "' + val + '", "i")';
+            filter += ' && regex(str(?ipr_h), "' + val + '", "i")';
         }
 
-        var select = '?objekt ?hodnota ?dataset';
+        var select = '(?ipr_o as ?objekt) (?ipr_h as ?hodnota) (?ipr_d as ?dataset)';
         var limit = 'LIMIT 1000';
 
         if (type == "count"){
-            select = '(COUNT(?objekt) AS ?pocet)';
+            select = '(COUNT(?ipr_o) AS ?pocet)';
             limit = '';
         }
 
         var sparql = 'SELECT ' + select +
-            ' WHERE {?objekt rdf:type ?dataset. ?objekt dataset:' + parameter + ' ?hodnota' +
+            ' WHERE {?ipr_o rdf:type ?ipr_d. ?ipr_o dataset:' + parameter + ' ?ipr_h' +
                 ' FILTER (' + filter +
                 ')} ' + limit;
 
@@ -197,12 +197,12 @@ class iprquery {
     prepareTermsQuery(values, type){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = ' SELECT ?pojem ?dataset WHERE {?pojem common:isInContextOfDataset ?dataset . ';
+        var sparql = ' SELECT (?ipr_sub as ?pojem) (?ipr_obj as ?dataset) WHERE {?ipr_sub common:isInContextOfDataset ?ipr_obj . ';
 
         var filter = [];
         values.map((value) => {
             value = utils.removeWordEnding(value);
-            filter.push('regex(str(?pojem), "' + value + '", "i")');
+            filter.push('regex(str(?ipr_sub), "' + value + '", "i")');
         });
         filter = 'FILTER(' + filter.join(type) + ')';
         sparql += filter + '}';
@@ -221,9 +221,9 @@ class iprquery {
     prepareDatasetQuery(dataset){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = ' SELECT ?atribut ?kod WHERE {?atribut common:isInContextOfDataset ?dataset . ?atribut common:isRepresentedAsDatabaseTableAttribute ?kod. ';
+        var sparql = ' SELECT (?ipr_att as ?atribut) (?ipr_code as ?kod) WHERE {?ipr_att common:isInContextOfDataset ?dataset . ?ipr_att common:isRepresentedAsDatabaseTableAttribute ?ipr_code. ';
 
-        var filter = 'FILTER(regex(str(?dataset), "' + dataset + '", "i") && regex(str(?kod), "' + dataset + '", "i"))';
+        var filter = 'FILTER(regex(str(?dataset), "' + dataset + '", "i") && regex(str(?ipr_code), "' + dataset + '", "i"))';
         sparql += filter + '}';
 
         logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
