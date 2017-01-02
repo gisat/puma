@@ -13,6 +13,7 @@
           <option name="userDatabase" value="panther" />
         </ServerConfiguration>
         <ServerConfiguration>
+          <option name="connectOnIdeStartup" value="true" />
           <option name="label" value="Panther windows" />
           <option name="serverUrls">
             <list>

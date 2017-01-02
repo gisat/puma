@@ -173,12 +173,12 @@ class StyleController extends Controller {
      */
 	delete(request, response, next) {
         // Necessary is delete in DB and Mongo
-        this._withoutGeoserver.delete(request.body._id).then(() => {
+        this._withoutGeoserver.delete(Number(request.body.data._id)).then(() => {
 			response.status(200).json({status: "Ok"});
         }).catch(error => {
 			logger.error('StyleController#delete Error: ', error);
 			next({
-				message: 'Error in reading symbologies.'
+				message: 'Error in deleting symbologies.'
 			})
         });
 	}

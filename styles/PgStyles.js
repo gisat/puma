@@ -75,7 +75,7 @@ PgStyles.prototype.all = function () {
 };
 
 PgStyles.prototype.delete = function(id) {
-	return this._pool.query(`delete from ${this._table} WHERE id = ${id}`);
+	return this._pool.query(`delete from ${this._table} WHERE id = $1`, [id]);
 };
 
 module.exports = PgStyles;

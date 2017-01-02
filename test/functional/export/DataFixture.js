@@ -1,5 +1,6 @@
 let moment = require('moment');
 let childProcess = require('pn/child_process');
+let fs = require('pn/fs');
 let config = require('../config');
 
 class DataFixture {
@@ -13,13 +14,6 @@ class DataFixture {
 	}
 
 	setup() {
-		// The data are taken from multiple layerref tables.
-		// Some of the data are from analysis. Is it possible to use multiple layerrefs for generation of one types of the data?
-		// Normalize over attribute set. Everything in the attribute set counts toward 100%
-	}
-
-	// Data make sense only for the attribute sets, which are associated to the analytical units. Internally we don't understand anything else.
-	createMongo() {
 		let datasets = this.connection.collection('dataset');
 		return datasets.insertMany([{
 			"_id": 1,
@@ -1155,7 +1149,9 @@ class DataFixture {
 				}
 			]);
 		}).then(() => {
-			return childProcess.exec(`psql -U ${config.pgDataUser} -f utep/text.sql ${config.pgDataDatabase}`).promise;
+			return this.pool.pool().query(``);
+		}).then(() => {
+			// Create additional tables.
 		});
 	}
 
