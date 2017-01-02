@@ -1,7 +1,10 @@
 var express = require('express');
+var app = express();
 var conn = require('./common/conn');
+var publicConfig = require('./common/public-config');
 var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');
+var staticFn = express['static'];
 var session = require('express-session');
 
 var async = require('async');
@@ -92,10 +95,12 @@ function initServer(err) {
 			next();
 		}
 	});
-	
+
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
+	app.use('/', staticFn(__dirname + '/public'));
+	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
 
 	logger.info('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);

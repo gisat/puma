@@ -10,8 +10,10 @@ module.exports = function(req, res) {
 
 	var scssVariables = {
 		useWBHeader: config.toggles.useWBHeader,
+		useHeader: config.toggles.useHeader,
 		useWBAgreement: config.toggles.useWBAgreement,
 		useWBFooter: config.toggles.useWBFooter,
+		useFooterLegal: config.toggles.useFooterLegal,
 		allowDownloadsLink: config.toggles.allowDownloadsLink,
 		allowPumaHelp: config.toggles.allowPumaHelp,
 		usePumaLogo: config.toggles.usePumaLogo

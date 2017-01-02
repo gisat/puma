@@ -1,110 +1,322 @@
 var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
+var TacrPhaStatistics = require('../tacrpha/TacrPhaStatistics');
+var utils = require('../tacrpha/utils');
+
 var request = require('request');
+var Promise = require('promise');
 var csv = require('csv');
 
-module.exports = function (app) {
+class iprquery {
+    constructor (app, pool) {
+        app.post("/iprquery/dataset", this.attributesSearching.bind(this));
+        app.post("/iprquery/terms", this.searching.bind(this));
+        app.post("/iprquery/data", this.dataSearching.bind(this));
+        app.post("/iprquery/object", this.objectSearching.bind(this));
+        app.get("/iprquery/statistics", this.statistics.bind(this));
 
-    app.post("/iprquery", function (req, res) {
-
-        var searchString = req.body.search;
-        var searchSelect = req.body.source;
-        searchString = searchString.replace(/ +(?= )/g, '');
-        var searchValues = searchString.split(" ");
-
-        var url = "http://onto.fel.cvut.cz/openrdf-sesame/repositories/urban-ontology?query=";
-        var url2 = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets?query=";
-
-        var prefixes = [
+        this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
+        this._prefixes = [
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
             "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
             "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
             "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
             "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
-            "PREFIX ipr: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/>"
+            "PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>"
         ];
 
-        var sparqlQuery = prefixes.slice();
+        this._statistics = new TacrPhaStatistics(pool);
+    }
 
-        sparqlQuery.push("SELECT DISTINCT ?ds");
-        sparqlQuery.push("WHERE {");
-        sparqlQuery.push("?s ?p ?o .");
-        sparqlQuery.push("FILTER (");
+    /**
+     * Return searching history statistics
+     * @param req
+     * @param res
+     */
+    statistics(req, res){
+        let type = req.query.type;
+        this._statistics.getSearchStringFrequency(type).then(function(result){
+            logger.info(`INFO iprquery#statistics result: ` + result);
+            let frequencies = [];
+            result.rows.map(record => {
+                frequencies.push([record.keywords, Number(record.num)]);
+            });
 
-        for (var kwIndex in searchValues) {
-            if (kwIndex > 0) {
-                sparqlQuery.push("&&")
-            }
-            sparqlQuery.push("( " +
-                "regex(STR(?s), \".*" + searchValues[kwIndex] + ".*\", \"i\") || " +
-                "regex(STR(?p), \".*" + searchValues[kwIndex] + ".*\", \"i\") || " +
-                "regex(STR(?o), \".*" + searchValues[kwIndex] + ".*\", \"i\") )");
+            res.send(frequencies);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`ERROR iprquery#statistics Error: `, err)
+            )
+        });
+    }
+
+    /**
+     * Searching in objects
+     * @param req
+     * @param res
+     */
+    objectSearching(req, res){
+        let dataset = req.body.dataset;
+        let objectDs = req.body.objectDataset;
+        let objectId = req.body.objectId;
+        logger.info(`INFO iprquery#objectSearching params: ` + dataset + ' ' + objectDs + ' ' + objectId);
+        var sparql = this.prepareObjectQuery(dataset, objectDs, objectId);
+        logger.info(`INFO iprquery#objectSearching sparql: ` + sparql);
+        this.endpointRequest(sparql).then(function(result){
+            result.keywords =[objectDs + "/" + objectId];
+            res.send(result);
+        });
+    }
+
+    /**
+     * Searching in data
+     * @param req
+     * @param req.body.dataset {string} name of the dataset
+     * @param req.body.param {string} code of parameter
+     * @param req.body.value {string} value of parameter
+     * @param req.body.type {string} type of searching (data or count)
+     * @param res
+     */
+    dataSearching(req, res){
+        let dataset = req.body.dataset;
+        let parameter = req.body.param;
+        let value = req.body.value;
+        let type = req.body.type;
+
+        var sparql = this.prepareDataQuery(dataset, parameter, value, type);
+        this.endpointRequest(sparql).then(function(result){
+            result.keywords = [parameter];
+            result.value = value;
+            res.send(result);
+        });
+    }
+
+    /**
+     * Searching in attributes
+     * @param req
+     * @param req.body.dataset {string} name of the dataset
+     * @param res
+     */
+    attributesSearching(req, res){
+        let dataset = req.body.dataset;
+        var sparql = this.prepareDatasetQuery(dataset);
+        debugger;
+        this.endpointRequest(sparql).then(function(result){
+            result.keywords = [dataset];
+            res.send(result);
+        });
+    }
+
+    /**
+     * Basic method for searching
+     * @param req
+     * @param res
+     */
+    searching(req, res){
+        let keywords = this.constructor.parseRequestString(req.body.search);
+        var self = this;
+        if (keywords.length == 0){
+            logger.info(`INFO iprquery#dataset keywords: No keywords`);
+            var json = {
+                status: "OK",
+                message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky a nesmí obsahovat rezervovaná slova pro SPARQL!",
+                data: []
+            };
+            res.send(json);
+        } else {
+            let type = this.constructor.getTypeString(req.body.settings.type);
+            logger.info(`INFO iprquery#dataset keywords: ` + keywords);
+
+            var sparql = this.prepareTermsQuery(keywords, type);
+            this.endpointRequest(sparql).then(function(result){
+                result.keywords = keywords;
+                res.send(result);
+                self._statistics.insert(req.headers.origin, keywords, result);
+            });
+        }
+    };
+
+    /**
+     * Prepare sparql query for object searching
+     * @param dataset
+     * @param objectDs
+     * @param objectId
+     * @returns {string}
+     */
+    prepareObjectQuery(dataset, objectDs, objectId){
+        var query = this._datasetEndpoint + '?query=';
+        var prefixes = this._prefixes.join(' ') + ' PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/' + objectDs + '/>';
+
+        var filter = '(?ipr_sbj = uri:' + objectId +')';
+        var select = '(?ipr_okt as ?hodnota) (?ipr_pkt as ?atribut) (?ipr_sbj as ?objekt)';
+        var limit = 'LIMIT 100';
+
+        var sparql = 'SELECT ' + select +
+            ' WHERE {?ipr_sbj rdf:type ?dataset. ?ipr_sbj ?ipr_pkt ?ipr_okt.' +
+            ' FILTER (' + filter +
+            ')} ' + limit;
+
+        logger.info(`INFO iprquery#prepareDataQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareDataQuery full query: ` + query + prefixes + sparql);
+
+        return query + ' ' + encodeURIComponent(prefixes + sparql);
+    }
+
+    /**
+     * Prepare SPARQL query for searching in data
+     * @param dataset
+     * @param parameter
+     * @param value
+     * @param type
+     * @returns {string}
+     */
+    prepareDataQuery(dataset, parameter, value, type){
+        var query = this._datasetEndpoint + '?query=';
+        var prefixes = this._prefixes.join(' ') + ' PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/' + dataset + '/>';
+
+        var filter = '(?ipr_d = ds:' + dataset +')';
+        if (value.length > 0 && typeof value == "string"){
+            var val = value.replace(/[^a-zA-Z0-9]/g, '.');
+            val = utils.removeReservedWords(val);
+            filter += ' && regex(str(?ipr_h), "^' + val + '$", "i")';
         }
 
-        sparqlQuery.push(")");
-        sparqlQuery.push("?s common:isInContextOfDataset ?ds .");
-        sparqlQuery.push("?ds ?dsp ?dso .");
-        sparqlQuery.push("} LIMIT 150");
+        var select = '(?ipr_o as ?objekt) (?ipr_h as ?hodnota) (?ipr_d as ?tabulka)';
+        var limit = 'LIMIT 1000';
 
-        var searchValue = sparqlQuery.join(" ");
-        console.log(searchValue);
-        url += encodeURIComponent(searchValue);
+        if (type == "count"){
+            select = '(COUNT(?ipr_o) AS ?pocet)';
+            limit = '';
+        }
 
-        console.log(url);
+        var sparql = 'SELECT ' + select +
+            ' WHERE {?ipr_o rdf:type ?ipr_d. ?ipr_o dataset:' + parameter + ' ?ipr_h' +
+                ' FILTER (' + filter +
+                ')} ' + limit;
 
-        request(url, function (error, response, body) {
-            var jsonRes = {};
-            var htmlBody = "";
-            if (!error && response.statusCode == 200) {
-                csv.parse(body, function (error, data) {
-                    htmlBody += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
-                    for (var outputLine of data) {
-                        htmlBody += "<tr>";
 
-                        for (var field of outputLine) {
-                            htmlBody += "<td>" + field + "</td>";
-                        }
+        logger.info(`INFO iprquery#prepareDataQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareDataQuery full query: ` + query + prefixes + sparql);
 
-                        htmlBody += "</tr>";
-                    }
-                    htmlBody += "</table>";
-                    htmlBody += "<script>$( \"tr:first\" ).css( \"font-weight\", \"bold\" );</script>";
-                    htmlBody += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
-                    jsonRes['body'] = htmlBody;
-                    res.status(200).json(jsonRes);
-                    /*console.log(data);
-                    var sparqlQuery2 = prefixes;
-                    sparqlQuery2.push("SELECT *");
-                    sparqlQuery2.push("WHERE {");
-                    sparqlQuery2.push("?s ?p ?o");
-                    sparqlQuery2.push("} LIMIT 250");
-                    var searchValue2 = sparqlQuery2.join(" ");
-                    console.log(searchValue2);
-                    url2 += encodeURIComponent(searchValue2);
-                    console.log(url2);*/
-                    /*request(url2, function (error, response, body) {
-                        csv.parse(body, function (error, data) {
-                            htmlBody += "<table cellpadding='5px' cellspacing='5px' style='text-align: left;'>";
-                            for (var outputLine of data) {
-                                htmlBody += "<tr>";
+        return query + ' ' + encodeURIComponent(prefixes + sparql);
+    }
 
-                                for (var field of outputLine) {
-                                    htmlBody += "<td>" + field + "</td>";
-                                }
+    /**
+     * Prepare sparql query for terms
+     * @param values {Array} values for searching
+     * @param type {string} operators
+     * @returns {string}
+     */
+    prepareTermsQuery(values, type){
+        var query = this._datasetEndpoint + '?query=';
+        var prefixes = this._prefixes.join(' ');
+        var sparql = ' SELECT (?ipr_sub as ?pojem) (?ipr_obj as ?dataset) WHERE {?ipr_sub common:isInContextOfDataset ?ipr_obj . ';
 
-                                htmlBody += "</tr>";
-                            }
-                            htmlBody += "</table>";
-                            htmlBody += "<script>$( \"tr:first\" ).css( \"font-weight\", \"bold\" );</script>";
-                            htmlBody += "<script>$( \"tr:odd\" ).css( \"background-color\", \"#bbbbff\" );</script>";
-                            jsonRes['body'] = htmlBody;
-                            res.status(200).json(jsonRes);
-                        });
-                    });*/
-                });
-            } else {
-                jsonRes['body'] = body;
-            }
+        var filter = [];
+        values.map((value) => {
+            value = utils.removeWordEnding(value);
+            filter.push('regex(str(?ipr_sub), "' + value + '", "i")');
         });
-    });
-};
+        filter = 'FILTER(' + filter.join(type) + ')';
+        sparql += filter + '}';
+
+        logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
+
+        return query + encodeURIComponent(prefixes + sparql);
+    }
+
+    /**
+     * Prepare sparql query for datasets
+     * @param dataset {string} dataset code
+     * @returns {string}
+     */
+    prepareDatasetQuery(dataset){
+        var query = this._datasetEndpoint + '?query=';
+        var prefixes = this._prefixes.join(' ');
+        var sparql = ' SELECT (?ipr_att as ?atribut) (?ipr_code as ?kod) WHERE {?ipr_att common:isInContextOfDataset ?dataset . ?ipr_att common:isRepresentedAsDatabaseTableAttribute ?ipr_code. ';
+
+        var filter = 'FILTER(regex(str(?dataset), "' + dataset + '", "i") && regex(str(?ipr_code), "' + dataset + '", "i"))';
+        sparql += filter + '}';
+
+        logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
+        logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
+
+        return query + encodeURIComponent(prefixes + sparql);
+    }
+
+    endpointRequest(sparql){
+        return new Promise(function(resolve, reject){
+            request(sparql, function (error, response, body) {
+                let json = {};
+                if (error) {
+                    json.status = "ERROR";
+                    json.message = "Endpoint není dostupný! (Error message: " + error + " )";
+                    logger.error(`ERROR iprquery#endpointRequest request: ` + error);
+                    resolve(json);
+                } else if (response.statusCode >= 400){
+                    json.status = "ERROR";
+                    json.message = "Endpoint není dostupný! (Error message: " + response.statusCode + ": " + response.statusMessage + " )";
+                    logger.error (`ERROR iprquery#endpointRequest request: ` + response.statusCode + ": " + response.statusMessage);
+                    resolve(json);
+                } else {
+                    csv.parse(body, function(error, result){
+                        if(error){
+                            json.status = "ERROR";
+                            json.message = error;
+                            logger.error(`ERROR iprquery#endpointRequest csv.parse:` + error);
+                            resolve(json);
+                        } else {
+                            var header = result[0];
+                            json.status = "OK";
+                            json.data = [];
+                            result.map((item, i) => {
+                                var record = {};
+                                header.map((column, j) => {
+                                    record[column] = item[j];
+                                });
+
+                                if (i > 0){
+                                    json.data.push(record);
+                                }
+                            });
+                            resolve(json);
+                        }
+                    });
+                }
+            });
+        });
+    }
+
+    /**
+     * Prepare keywords for searching
+     * @param reqString {string} request string
+     * @returns {Array} keywords
+     */
+    static parseRequestString(reqString){
+        logger.info(`INFO iprquery#parseRequestString reqString: ` + reqString);
+
+        reqString = utils.replaceInterpunction(reqString);
+        reqString = utils.removeDiacritics(reqString);
+        reqString = utils.removeReservedWords(reqString);
+        reqString = utils.removeSpecialCharacters(reqString);
+        var list = reqString.split(" ");
+
+        return utils.removeMonosyllabics(list);
+    }
+
+    /**
+     * Convert type of operator to symbol
+     * @param type {string}
+     * @returns {string} symbol
+     */
+    static getTypeString(type){
+        var symbol = " && ";
+        if (type == "or"){
+            symbol = " || ";
+        }
+        return symbol;
+    }
+}
+
+module.exports = iprquery;

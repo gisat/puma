@@ -28,6 +28,9 @@ var IntegrationController = require('./IntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
 
+var iprquery = require('./iprquery');
+var iprConversion = require('./iprConversion');
+
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
@@ -93,6 +96,9 @@ module.exports = function(app) {
 	new MellodiesLodController(app, pool);
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
+
+	new iprquery(app, pool);
+	new iprConversion(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
