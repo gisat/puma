@@ -119,7 +119,7 @@ class iprquery {
             logger.info(`INFO iprquery#dataset keywords: No keywords`);
             var json = {
                 status: "OK",
-                message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky!",
+                message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky a nesmí obsahovat rezervovaná slova pro SPARQL!",
                 data: []
             };
             res.send(json);
@@ -177,6 +177,7 @@ class iprquery {
         var filter = '(?ipr_d = ds:' + dataset +')';
         if (value.length > 0 && typeof value == "string"){
             var val = value.replace(/[^a-zA-Z0-9]/g, '.');
+            val = utils.removeReservedWords(val);
             filter += ' && regex(str(?ipr_h), "' + val + '", "i")';
         }
 
