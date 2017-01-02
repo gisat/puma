@@ -178,7 +178,7 @@ class iprquery {
         if (value.length > 0 && typeof value == "string"){
             var val = value.replace(/[^a-zA-Z0-9]/g, '.');
             val = utils.removeReservedWords(val);
-            filter += ' && regex(str(?ipr_h), "' + val + '", "i")';
+            filter += ' && regex(str(?ipr_h), "^' + val + '$", "i")';
         }
 
         var select = '(?ipr_o as ?objekt) (?ipr_h as ?hodnota) (?ipr_d as ?tabulka)';
