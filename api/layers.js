@@ -405,7 +405,7 @@ function parseWfsDocument(output) {
 
 function getLayerRefTable(params, req, res, callback) {
     var location = parseInt(params['location']);
-    var year = parseInt(params['year']);
+    let year = parseInt(params['year']) || params['year'];
     var theme = parseInt(params['theme']);
     var opts = {
         theme: function (asyncCallback) {
