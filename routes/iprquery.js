@@ -50,6 +50,11 @@ class iprquery {
         });
     }
 
+    /**
+     * Searching in objects
+     * @param req
+     * @param res
+     */
     objectSearching(req, res){
         let dataset = req.body.dataset;
         let objectDs = req.body.objectDataset;
@@ -131,6 +136,13 @@ class iprquery {
         }
     };
 
+    /**
+     * Prepare sparql query for object searching
+     * @param dataset
+     * @param objectDs
+     * @param objectId
+     * @returns {string}
+     */
     prepareObjectQuery(dataset, objectDs, objectId){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ') + ' PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/' + objectDs + '/>';
@@ -285,6 +297,7 @@ class iprquery {
 
         reqString = utils.replaceInterpunction(reqString);
         reqString = utils.removeDiacritics(reqString);
+        reqString = utils.removeReservedWords(reqString);
         reqString = utils.removeSpecialCharacters(reqString);
         var list = reqString.split(" ");
 

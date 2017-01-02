@@ -1,6 +1,26 @@
 var logger = require('../common/Logger').applicationWideLogger;
 
 /**
+ * Remove reserved words from search string
+ * @param str {string}
+ * @returns {string}
+ */
+function removeReservedWords (str){
+    str = str.replace(/\bprefix/gi, '');
+    str = str.replace(/\bselect/gi, '');
+    str = str.replace(/\bwhere/gi, '');
+    str = str.replace(/\bfrom/gi, '');
+    str = str.replace(/\binsert/gi, '');
+    str = str.replace(/\bupdate/gi, '');
+    str = str.replace(/\bdelete/gi, '');
+    str = str.replace(/\bdrop/gi, '');
+    str = str.replace(/\bclear/gi, '');
+    str = str.replace(/\bdata/gi, '');
+    str = str.replace(/\bgraph/gi, '');
+    return str;
+}
+
+/**
  * Remove all monosyllabic words from array
  * @param arr {Array}
  * @returns {Array}
@@ -160,6 +180,7 @@ function removeDiacritics (str) {
 module.exports = {
     removeMonosyllabics: removeMonosyllabics,
     removeDiacritics: removeDiacritics,
+    removeReservedWords: removeReservedWords,
     removeSpecialCharacters: removeSpecialCharacters,
     removeWordEnding: removeWordEnding,
     replaceInterpunction: replaceInterpunction
