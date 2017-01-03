@@ -114,8 +114,8 @@ class TemplateData {
                 return Promise.all(promises);
             }).then(() => {
                 tableColumns.push(fidColumn);
-                tableColumns.push('lat');
-                tableColumns.push('lon');
+                tableColumns.push('LAT');
+                tableColumns.push('LON');
                 if (!layer || !fidColumn) {
                     templateData.success = false;
                     templateData.message = `TemplateData #getTemplateData => Undefined => layer: ${layer}, fidColumn: ${fidColumn}`;
@@ -127,8 +127,8 @@ class TemplateData {
                         templateData.data.push({
                             key: row[fidColumn],
                             geometry: {
-                                latitude: row.lat,
-                                longitude: row.lon
+                                latitude: row.LAT,
+                                longitude: row.LON
                             },
                             attributeSets: self.updateCollection(featureData.attributeSets, row)
                         });
