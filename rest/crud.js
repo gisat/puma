@@ -409,19 +409,19 @@ var checkRefs = function (db, obj, collName, callback) {
         console.log(`#### crud#refIDs`, refIDs);
         console.log(`#### crud#objs`, objs);
 
-        collection.find({_uuid: {$in: refIDs}}).toArray().then(results => {
+        collection.find({uuid: {$in: refIDs}}).toArray().then(results => {
             results.forEach(result => {
-                let index = refIDs.indexOf(result['_uuid']);
+                let index = refIDs.indexOf(result['uuid']);
                 if (index != -1) {
                     refIDs[index] = result['_id'];
                 }
-                _.set(_.find(modifiedData, {[key]: result['_uuid']}), key, result['_id']);
+                _.set(_.find(modifiedData, {[key]: result['uuid']}), key, result['_id']);
             })
         }).then(() => {
             return collection.count({_id: {$in: refIDs}});
         }).then(count => {
             if (count != length) {
-                logger.error("checkRefs result != length (", count, "!=", length, ")");
+                logger.error(`crud#checkRefs result != length (${count} != ${length}), refIDs`, refIDs);
                 asyncCallback(false);
             } else {
                 asyncCallback(true);
