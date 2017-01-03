@@ -41,10 +41,24 @@ function recreateLayerDb(layerRef, isUpdate, callback) {
                         }
                     }
                     if (!result) {
-                        logger.error("layers#recreateLayerDb Noareatemplateref. Filter: ", filter, " Results: ", results, " Error: ", err);
-                        return asyncCallback(new Error('noareatemplateref'));
+                        filter.year = null;
+                        crud.read('layerref', filter, function (error2, results2) {
+                            for (var i = 0; i < results2.length; i++) {
+                                if (results2[i].fidColumn) {
+                                    result = results2[i];
+                                    break;
+                                }
+                            }
+                            if(result) {
+                                return asyncCallback(null, result);
+                            } else {
+                                logger.error("layers#recreateLayerDb Noareatemplateref. Filter: ", filter, " Results: ", results, " Error: ", err);
+                                return asyncCallback(new Error('noareatemplateref'));
+                            }
+                        });
+                    } else {
+                        return asyncCallback(null, result);
                     }
-                    return asyncCallback(null, result)
                 })
             },
             // zjisteni navaznych layer ref
