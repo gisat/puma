@@ -90,8 +90,8 @@ function initServer(err) {
         } else {
 			new PgPermissions(pool, config.postgreSqlSchema).forGroup(Group.guestId()).then((permissions => {
                 request.session.user = new User(0, [], [new Group(Group.guestId(), permissions)]);
+				next();
 			}));
-			next();
 		}
 	});
 
