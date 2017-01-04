@@ -263,7 +263,7 @@ class LoginController {
 				success: true
 			});
 		} else {
-			response.status(200).json(null);
+			response.status(200).json({});
 		}
 	}
 }
