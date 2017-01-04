@@ -40,10 +40,9 @@ class UserController {
 		}
 
 		let usersUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}/api/profiles`;
-		console.log(usersUrl);
+		let result = [];
 		superagent.get(usersUrl).then((retrieved) => {
 			let users = retrieved.body.objects;
-			let result = [];
 
 			return Promise.all(users.map(user => {
 				return this.users.byId(user.id).then(loaded => {
