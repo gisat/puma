@@ -40,29 +40,28 @@ class UserController {
 		}
 
 		let usersUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}api/profiles`;
-		superagent.get(usersUrl)
-			.then((retrieved) => {
-				let users = retrieved.body.objects;
-				let result = [];
+		superagent.get(usersUrl).then((retrieved) => {
+			let users = retrieved.body.objects;
+			let result = [];
 
-				Promise.all(users.map(user => {
-					return this.users.byId(user.id).then(loaded => {
-						let json = loaded.json();
-						json.email = user.email;
-						json.firstName = user.first_name;
-						json.lastName = user.last_name;
-						json.username = user.username;
+			return Promise.all(users.map(user => {
+				return this.users.byId(user.id).then(loaded => {
+					let json = loaded.json();
+					json.email = user.email;
+					json.firstName = user.first_name;
+					json.lastName = user.last_name;
+					json.username = user.username;
 
-						result.push(json);
-					}); // email, firstName, lastName, username
-				})).then(() => {
-					response.json(JSON.stringify({data: result}));
-				}).catch(err => {
-					logger.error('UserController#readAll Error: ', err);
-					response.status(500);
-					response.json({status: "err"});
-				});
-			});
+					result.push(json);
+				}); // email, firstName, lastName, username
+			}));
+		}).then(() => {
+			response.json(JSON.stringify({data: result}));
+		}).catch(err => {
+			logger.error('UserController#readAll Error: ', err);
+			response.status(500);
+			response.json({status: "err"});
+		});
 	}
 
 	/**
