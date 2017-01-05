@@ -172,6 +172,7 @@ function getData(params, callback) {
 				normAttrName = 'as_' + currentNormAttrSet + '_attr_' + currentNormAttr;
 				norm = normPre + '"' + normAttrName + '"';
 			}
+			// If normalization is over attribute set.
 			if (currentNorm == 'attributeset') {
 				normAttrName = 'as_' + currentNormAttrSet + '_attr_' + attr.attr;
 				norm = normPre + '"' + normAttrName + '"';

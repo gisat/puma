@@ -9,6 +9,10 @@ class FilteredMongoLocations {
 	read() {
 		return this._filteredCollection.read();
 	}
+
+	json() {
+		return this._filteredCollection.json();
+	}
 }
 
 module.exports = FilteredMongoLocations;

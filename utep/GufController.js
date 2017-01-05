@@ -15,7 +15,7 @@ class GufController {
         // Load from geonode all layers I have rights to.
         superagent
             .get(config.geonodePath + '/layers/acls')
-            .set("Cookie", "sessionid=" + request.ssid || '')
+            .set("Cookie", "sessionid=" + request.cookies.sessionid || '')
             .then(layers => {
                 var layerNames = layers.body.rw;
                 var gufLayers = layerNames.filter(layerName => {

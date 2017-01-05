@@ -90,7 +90,7 @@ function getChart(params, req, res, callback) {
 function getChartInternal(params, req, res, callback) {
 	var type = params['type'];
 	var mod = charts[type];
-	params['userId'] = req.userId;
+	params['userId'] = req.session.userId;
 	mod.getChart(params, function (err, conf) {
 		if (err) {
 			logger.error("api/chart.js getChart Error:", err, " Returning nodata");
@@ -203,7 +203,7 @@ function drawChart(params, req, res, callback) {
 }
 
 function getGridData(params, req, res, callback) {
-	params['userId'] = req.userId;
+	params['userId'] = req.session.userId;
 	async.auto({
 		attrConf: function(asyncCallback) {
 			charts.data.getAttrConf(params, function(err, attrConf) {
@@ -230,7 +230,7 @@ function getGridData(params, req, res, callback) {
 }
 
 function getGridDataCsv(params,req,res,callback) {
-	params['userId'] = req.userId;
+	params['userId'] = req.session.userId;
 	charts.grid.createCsv(params, function(err, fileName) {
 		res.downFile = [fileName,'griddata.csv'];
 		return callback(null);

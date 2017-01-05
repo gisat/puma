@@ -14,11 +14,8 @@ class MongoLayerReferences {
 	}
 
 	add(layerReference) {
-		var self = this;
-		return layerReference.json().then(function(layerReference){
-			var collection = self._connection.collection(MongoLayerReference.collectionName());
-			collection.insert(layerReference)
-		});
+		let collection = this._connection.collection(MongoLayerReference.collectionName());
+		return collection.insert(layerReference);
 	}
 }
 

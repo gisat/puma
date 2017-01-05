@@ -12,8 +12,8 @@ var Promise = require('promise');
  * @constructor
  */
 class AnalysisController extends Controller {
-	constructor(app) {
-		super(app, 'analysis', MongoAnalysis, MongoAnalyse);
+	constructor(app, pool) {
+		super(app, 'analysis', pool, MongoAnalysis, MongoAnalyse);
 
 		this._connection = conn.getMongoDb();
 	}

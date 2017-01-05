@@ -3,8 +3,8 @@ var MongoChartConfigurations = require('../visualization/MongoChartConfiguration
 var MongoChartConfiguration = require('../visualization/MongoChartConfiguration');
 
 class ChartCfgController extends Controller {
-	constructor(app) {
-		super(app, 'chartcfg', MongoChartConfigurations, MongoChartConfiguration);
+	constructor(app, pool) {
+		super(app, 'chartcfg', pool, MongoChartConfigurations, MongoChartConfiguration);
 	}
 }
 

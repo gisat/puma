@@ -31,11 +31,8 @@ class MongoPerformedAnalysis {
 	}
 
 	add(performedAnalyse) {
-		var self = this;
-		return performedAnalyse.json().then(function(performedAnalyse){
-			var collection = self._connection.collection(MongoPerformedAnalyse.collectionName());
-			collection.insert(performedAnalyse)
-		});
+		let collection = this._connection.collection(MongoPerformedAnalyse.collectionName());
+		collection.insert(performedAnalyse)
 	}
 }
 

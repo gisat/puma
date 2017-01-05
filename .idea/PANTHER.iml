@@ -9,5 +9,6 @@
     <orderEntry type="library" name="Highcharts-3.0.0" level="project" />
     <orderEntry type="library" name="jQuery" level="project" />
     <orderEntry type="library" name="OpenLayers" level="project" />
+    <orderEntry type="library" name="puma node_modules" level="project" />
   </component>
 </module>

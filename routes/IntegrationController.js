@@ -3,7 +3,6 @@ var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 var _ = require('underscore');
 
-var GeonodeLayer = require('../integration/GeonodeLayer');
 var ImportedPlace = require('../integration/ImportedPlace');
 var RasterToPSQL = require('../integration/RasterToPSQL');
 var RunSQL = require('../integration/RunSQL');

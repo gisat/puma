@@ -12,7 +12,7 @@ function ensureCollection(req,res,next) {
 	if (collections.indexOf(req.params.objType)!=-1) {
 		next();
 	} else {
-		logger.error("Given collection doesnt exist: ",req.params.objType, " User: ", req.userId);
+		logger.error("Given collection doesnt exist: ",req.params.objType, " User: ", req.session.userId);
 		next(new Error('unknownCollection'));
 	}
 }

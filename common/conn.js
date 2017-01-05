@@ -206,7 +206,7 @@ function connectToMongo(connectionString) {
 		var mongoSettings = mongodb.collection('settings');
 		return mongoSettings.findOne({_id:1});
 	}).then(function(newId){
-		objectId = newId.objectId || 1;
+		objectId = (newId && newId.objectId) || 1;
 		return mongodb;
 	});
 }
