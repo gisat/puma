@@ -186,6 +186,7 @@ describe('User', function () {
     afterEach(function (done) {
         schema.drop().then(function () {
             server.close();
+			pool.end();
             done();
         });
     });

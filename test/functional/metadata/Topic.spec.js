@@ -98,6 +98,7 @@ describe('Topic', () => {
 			server.close();
 		}).then(() => {
 			permissionFixture.teardown();
+			pool.end();
 			done();
 		}).catch(err => {
 			done(err);

@@ -50,6 +50,7 @@ describe('PgTable', () => {
 
 	afterEach(done => {
 		schema.drop().then(function () {
+			pool.end();
 			done();
 		}).catch(err => {
 			done(err);
