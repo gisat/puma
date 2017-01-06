@@ -21,6 +21,19 @@ class DataSetController extends Controller {
 	}
 
 	/**
+	 * Verify that the user has rights to create Scopes
+	 * @inheritDoc
+	 */
+	create(request, response, next) {
+		if (!request.session.user.hasPermission(this.type, 'POST', null)) {
+			response.status(403);
+			return;
+		}
+
+		super.create(request, response, next);
+	}
+
+	/**
 	 * It is possible to use when you want more restricted access to the information. Usually used by all other applications than administration.
 	 * @param request {Request} Request created by the Express framework.
 	 * @param request.session.userId {Number} Id of the user who issued the request.

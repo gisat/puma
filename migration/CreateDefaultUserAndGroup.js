@@ -23,7 +23,7 @@ class CreateDefaultUserAndGroup extends Migration {
 		}).then(() => {
 			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('user')`);
 		}).then(() => {
-			return this.fillDefaultPermissions();
+			return this.fillDefaultPermissions(mongoDatabase, pool);
 		});
 	}
 
@@ -40,8 +40,6 @@ class CreateDefaultUserAndGroup extends Migration {
 		}).then(topics => {
 			return this.preparePermissionsForType(permissions, topics, "topic");
 		});
-		// Load all scopes, locations, groups and topics and after the migration, guest should be able to read all and
-		// user should be able to manage all.
 	}
 
 	/**

@@ -59,18 +59,27 @@ class Controller {
     create(request, response, next) {
         logger.info('Controller#create Create instance of type: ', this.type, ' By User: ', request.session.userId);
 
-        var self = this;
         crud.create(this.type, request.body.data, {
             userId: request.session.userId,
             isAdmin: response.locals.isAdmin
-        }, function (err, result) {
+        }, (err, result) => {
             if (err) {
-                logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.session.userId,
+                logger.error("It wasn't possible to create object of type: ", this.type, " by User: ", request.session.userId,
                     "With data: ", request.body.data, " Error:", err);
                 return next(err);
             }
-            response.data = result;
-            next();
+
+            Promise.all([
+				this.permissions.add(request.session.userId, this.type, result._id, "PUT"),
+			    this.permissions.add(request.session.userId, this.type, result._id, "DELETE")
+			]).then(() => {
+                response.data = result;
+                next();
+            }).catch(err => {
+				logger.error("It wasn't possible to add permissions to the object of type: ", this.type, " by User: ", request.session.userId,
+					"With data: ", request.body.data, " Error:", err);
+				return next(err);
+            });
         });
     }
 
