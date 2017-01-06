@@ -25,7 +25,8 @@ class PgLayers {
 			return Promise.all(result.rows.map(layer => {
 				return new FilteredMongoLayerReferences({layer: layer.name}, this._mongo).json().then(layerReferences => {
 					return {
-						name: layer.path,
+						name: layer.name,
+						path: layer.path,
 						referenced: layerReferences.length > 0
 					};
 				});

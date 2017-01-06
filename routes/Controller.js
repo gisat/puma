@@ -70,6 +70,7 @@ class Controller {
             }
 
             Promise.all([
+				this.permissions.add(request.session.userId, this.type, result._id, "GET"),
 				this.permissions.add(request.session.userId, this.type, result._id, "PUT"),
 			    this.permissions.add(request.session.userId, this.type, result._id, "DELETE")
 			]).then(() => {

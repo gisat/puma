@@ -62,8 +62,11 @@ class LayerController {
 			return;
 		}
 
-		this.pgLayers.add(request.body.name, request.body.path, request.session.user.id).then(created => {
+		let created;
+		this.pgLayers.add(request.body.name, request.body.path, request.session.user.id).then(pCreated => {
+			created = pCreated;
 			return Promise.all([
+				this.permissions.add(request.session.userId, 'layer', created.id, "GET"),
 				this.permissions.add(request.session.userId, 'layer', created.id, "PUT"),
 				this.permissions.add(request.session.userId, 'layer', created.id, "DELETE")
 			]);

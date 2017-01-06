@@ -25,6 +25,7 @@ class GeonodeLayers {
 					return new FilteredMongoLayerReferences({layer: layer}, this._mongo).json().then(layerReferences => {
 						return {
 							name: layer,
+							path: layer,
 							referenced: layerReferences.length > 0
 						};
 					});
