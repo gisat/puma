@@ -221,6 +221,9 @@ function saveSld(params, req, res, callback) {
 	var legendSld = params['legendSld'] || '';
 	params['userId'] = req.session.userId;
 	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
+
+	logger.info(`api/proxy.js#saveSld Save OldId: ${oldId} userLocation: ${userLocation} Sld: ${sld} LegendSld: ${legendSld}`);
+
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
 		var attrs = JSON.parse(params['attrs']);
@@ -257,6 +260,9 @@ function saveSld(params, req, res, callback) {
 			if (!params['showChoropleth'] && !params['showMapChart']) {
 				return asyncCallback(null);
 			}
+
+			logger.info(`api/proxy.js#saveSld#data ShowChoropleth: ${params["showChoropleth"]} AttrConfig: ${results.attrConf}`);
+
 			var dataParams = _.clone(params);
 			dataParams['aggregate'] = 'min,max';
 			if (params['showChoropleth']) {
@@ -358,7 +364,7 @@ function saveSld(params, req, res, callback) {
 			})
 		}],
 		result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
-
+			logger.info(`api/proxy.js#saveSld#result Data: ${results.data} LayerRef: ${results.layerRef} Density: ${results.density} AttrConf: ${results.attrConf}`);
 
 			var topTreeNorm = params['normalization'] == 'toptree';
 			if (params['showMapChart']) {
@@ -437,9 +443,7 @@ function saveSld(params, req, res, callback) {
 					}
 				}
 			}
-			//console.log(sld);
 			if (results.attrConf) {
-				//console.log(results.attrConf.attrMap.units);
 				legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');
 			}
 			sldMap[id] = {
@@ -461,8 +465,7 @@ function saveSld(params, req, res, callback) {
 			if (densityMap[oldId]) {
 				delete densityMap[oldId];
 			}
-
-			//console.log(sld);
+			logger.info(`api/proxy.js#saveSld#result Id: ${id}, Sld: ${sld}, LegendSld: ${legendSld}`);
 
 			res.data = id;
 			return callback(null);
