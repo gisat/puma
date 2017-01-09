@@ -424,7 +424,7 @@ function saveSld(params, req, res, callback) {
 							if (prev!=null && dataLength!=1) {
 								console.log(val);
 								val = prev+(current-prev)/2;
-								val = val.toFixed(fixNum);
+								val = Number(val).toFixed(fixNum);
 								sld = sld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
 								legendSld = legendSld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
 							}
