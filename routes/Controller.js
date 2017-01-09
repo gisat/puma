@@ -148,7 +148,7 @@ class Controller {
             Promise.all(promises).then(() => {
 				response.json({data: resultsWithRights});
             }).catch(err => {
-                logger.error('Controller#readAll Error: ', err);
+                logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
                 response.status(500);
                 return;
             })
