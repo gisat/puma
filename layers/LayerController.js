@@ -11,7 +11,6 @@ let PgPermissions = require('../security/PgPermissions');
 class LayerController {
 	constructor(app, pgPool) {
 		this.mongo = conn.getMongoDb();
-		this.geonodeUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}`;
 
 		this.pgLayers = new PgLayers(pgPool, this.mongo, config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pgPool, config.postgreSqlSchema);
@@ -30,7 +29,7 @@ class LayerController {
 		logger.info('LayerController#readAl Read all layers By User: ', request.session.userId);
 
 		let currentUser = request.session.user;
-		let geonode = new GeonodeLayers(response.locals.ssid, this.geonodeUrl, this.mongo);
+		let geonode = new GeonodeLayers(response.locals.ssid, config.geonodeUrl, this.mongo);
 		let layers = [];
 		// Load actually accessible from the GeoNode
 		geonode.all().then(geonodeLayers => {
