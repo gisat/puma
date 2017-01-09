@@ -412,6 +412,7 @@ function saveSld(params, req, res, callback) {
 					var newRest = restSize;
 					var catIdx = 0;
 					var val = 0;
+					logger.info(`api/proxy.js#saveSld#result Data length: ${dataLength}, Category size: ${catSize}, NumberOfCategories: ${numCat}, RestSize: ${restSize}, Attribute Name: ${attrName}`);
 					for (var i=1;i<dataLength;i++) {
 						var idx = i;
 						var diff = catSize + ((newRest>0) ? 1 : 0);
@@ -421,10 +422,10 @@ function saveSld(params, req, res, callback) {
 							var item = results.data.data[idx];
 							var current = results.data.data[idx][attrName];
 							var prev = results.data.data[idx - 1][attrName];
+							logger.info(`api/proxy.js#saveSld#result Current: ${current}, Previous: ${prev}, ActualValue: ${val}`);
 							if (prev!=null && dataLength!=1) {
-								console.log(val);
 								val = prev+(current-prev)/2;
-								val = Number(val).toFixed(fixNum);
+								val = val.toFixed(fixNum);
 								sld = sld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
 								legendSld = legendSld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
 							}
