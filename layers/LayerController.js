@@ -9,10 +9,10 @@ let PgLayers = require('./PgLayers');
 let PgPermissions = require('../security/PgPermissions');
 
 class LayerController {
-	constructor(app, pgPool, pgPoolRemote) {
+	constructor(app, pgPool) {
 		this.mongo = conn.getMongoDb();
 
-		this.pgLayers = new PgLayers(pgPoolRemote || pgPool, this.mongo, config.postgreSqlSchema);
+		this.pgLayers = new PgLayers(pgPool, this.mongo, config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pgPool, config.postgreSqlSchema);
 
 		app.get('/rest/layer', this.readAll.bind(this));

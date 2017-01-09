@@ -77,7 +77,7 @@ module.exports = function(app) {
 		new ExportController(app, pool);
 	}
 	new AttributeController(app, pool, poolRemote);
-	new LayerController(app, pool, poolRemote);
+	new LayerController(app, pool);
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
