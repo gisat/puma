@@ -172,7 +172,7 @@ function wms(params, req, res, callback) {
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
 		// TODO: Figure out sane solution to handling the legend.
-		if(layers.indexOf(',') == -1 && layers.indexOf('panther:') != 0) {
+		if(layers && layers.indexOf(',') == -1 && layers.indexOf('panther:') != 0) {
 			options.path = options.path.replace('geonode', layers.split(':')[0]);
 		}
 	}
