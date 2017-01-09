@@ -58,28 +58,26 @@ class Controller {
      */
     create(request, response, next) {
         logger.info('Controller#create Create instance of type: ', this.type, ' By User: ', request.session.userId);
+        return new Promise((resolve, reject) => {
+            crud.create(this.type, request.body.data, {
+                userId: request.session.userId,
+                isAdmin: response.locals.isAdmin
+            }, (err, result) => {
+                if (err) {
+                    reject(new Error("It wasn't possible to create object of type: ", this.type, " by User: ", request.session.userId,
+                        "With data: ", request.body.data, " Error:", err));
+                }
 
-        crud.create(this.type, request.body.data, {
-            userId: request.session.userId,
-            isAdmin: response.locals.isAdmin
-        }, (err, result) => {
-            if (err) {
-                logger.error("It wasn't possible to create object of type: ", this.type, " by User: ", request.session.userId,
-                    "With data: ", request.body.data, " Error:", err);
-                return next(err);
-            }
-
-            Promise.all([
-				this.permissions.add(request.session.userId, this.type, result._id, "GET"),
-				this.permissions.add(request.session.userId, this.type, result._id, "PUT"),
-			    this.permissions.add(request.session.userId, this.type, result._id, "DELETE")
-			]).then(() => {
-                response.data = result;
-                next();
-            }).catch(err => {
-				logger.error("It wasn't possible to add permissions to the object of type: ", this.type, " by User: ", request.session.userId,
-					"With data: ", request.body.data, " Error:", err);
-				return next(err);
+                Promise.all([
+                    this.permissions.add(request.session.userId, this.type, result._id, "GET"),
+                    this.permissions.add(request.session.userId, this.type, result._id, "PUT"),
+                    this.permissions.add(request.session.userId, this.type, result._id, "DELETE")
+                ]).then(() => {
+                    response.data = result;
+                    resolve();
+                }).catch(error => {
+                    reject(error);
+                });
             });
         });
     }
@@ -138,15 +136,15 @@ class Controller {
             }
 
             let resultsWithRights = result
-				.filter(element => this.hasRights(request.session.user, 'GET', element._id, element));
+                .filter(element => this.hasRights(request.session.user, 'GET', element._id, element));
             let promises = resultsWithRights.map(element => {
-				return this.permissions.forType(this.type, element._id).then(permissions => {
+                return this.permissions.forType(this.type, element._id).then(permissions => {
                     element.permissions = permissions;
-				});
+                });
             });
 
             Promise.all(promises).then(() => {
-				response.json({data: resultsWithRights});
+                response.json({data: resultsWithRights});
             }).catch(err => {
                 logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
                 response.status(500);
