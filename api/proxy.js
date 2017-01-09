@@ -420,8 +420,8 @@ function saveSld(params, req, res, callback) {
 							newRest--;
 							catIdx++;
 							var item = results.data.data[idx];
-							var current = results.data.data[idx][attrName];
-							var prev = results.data.data[idx - 1][attrName];
+							var current = Number(results.data.data[idx][attrName]);
+							var prev = Number(results.data.data[idx - 1][attrName]);
 							logger.info(`api/proxy.js#saveSld#result Current: ${current}, Previous: ${prev}, ActualValue: ${val}`);
 							if (prev!=null && dataLength!=1) {
 								val = prev+(current-prev)/2;
