@@ -171,6 +171,7 @@ function wms(params, req, res, callback) {
 		options.resEncoding = 'binary';
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
+		// In Urbis the data could be in different workspace.
 		if(layers.indexOf(',') == -1 && !useFirst) {
 			options.path = options.path.replace('geonode', layers.split(':')[0]);
 		}
