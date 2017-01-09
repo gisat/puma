@@ -91,12 +91,12 @@ function wms(params, req, res, callback) {
 	if (params['LAYERS']) {
 		params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
+	var layers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
 	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/' + config.geoserver2Workspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
-	var layers = params['LAYERS'];
 	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[layers]) ? layerGroupMap[layers][style || 'def'] : '';
 
 	
@@ -169,6 +169,9 @@ function wms(params, req, res, callback) {
 
 	if (params['REQUEST'] == 'GetMap' || params['REQUEST']=='GetLegendGraphic') {
 		options.resEncoding = 'binary';
+		if(layers.indexOf(',') == -1) {
+			options.path.replace('geonode', layers.split(':')[0]);
+		}
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
 	}
