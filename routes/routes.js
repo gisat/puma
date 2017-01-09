@@ -72,12 +72,11 @@ module.exports = function(app) {
 	new AreaTemplateController(app, pool);
 	new GufController(app, pool);
 	if(poolRemote) {
-		new AttributeController(app, poolRemote);
 		new ExportController(app, poolRemote);
 	} else {
-		new AttributeController(app, pool);
 		new ExportController(app, pool);
 	}
+	new AttributeController(app, pool, poolRemote);
 	new LayerController(app, pool, poolRemote);
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);

@@ -15,14 +15,14 @@ var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
 class AttributeController extends Controller {
-    constructor(app, pgPool) {
+    constructor(app, pgPool, pgPoolRemote) {
         super(app, 'attribute', pgPool, MongoAttributes, MongoAttribute);
 
-        this._pgPool = pgPool;
+        this._pgPool = pgPoolRemote || pgPool;
 
-        this._statistics = new Statistics(pgPool);
-        this._filter = new Filter(pgPool);
-        this._info = new Info(pgPool);
+        this._statistics = new Statistics(pgPoolRemote || pgPool);
+        this._filter = new Filter(pgPoolRemote || pgPool);
+        this._info = new Info(pgPoolRemote || pgPool);
 
         app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
         app.get('/rest/filter/attribute/filter', this.filter.bind(this));
