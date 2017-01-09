@@ -171,7 +171,7 @@ function wms(params, req, res, callback) {
 		options.resEncoding = 'binary';
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
-		if(layers.indexOf(',') == -1) {
+		if(layers.indexOf(',') == -1 && !useFirst) {
 			options.path = options.path.replace('geonode', layers.split(':')[0]);
 		}
 	}
