@@ -261,7 +261,7 @@ function saveSld(params, req, res, callback) {
 				return asyncCallback(null);
 			}
 
-			logger.info(`api/proxy.js#saveSld#data ShowChoropleth: ${params["showChoropleth"]} AttrConfig: ${results.attrConf}`);
+			logger.info(`api/proxy.js#saveSld#data ShowChoropleth: ${params["showChoropleth"]} AttrConfig: `, results.attrConf);
 
 			var dataParams = _.clone(params);
 			dataParams['aggregate'] = 'min,max';
@@ -364,7 +364,7 @@ function saveSld(params, req, res, callback) {
 			})
 		}],
 		result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
-			logger.info(`api/proxy.js#saveSld#result Data: ${results.data} LayerRef: ${results.layerRef} Density: ${results.density} AttrConf: ${results.attrConf}`);
+			logger.info(`api/proxy.js#saveSld#result Data: `,results.data,` LayerRef: ${results.layerRef} Density: ${results.density} AttrConf: ${results.attrConf}`);
 
 			var topTreeNorm = params['normalization'] == 'toptree';
 			if (params['showMapChart']) {
@@ -422,6 +422,7 @@ function saveSld(params, req, res, callback) {
 							var current = results.data.data[idx][attrName];
 							var prev = results.data.data[idx - 1][attrName];
 							if (prev!=null && dataLength!=1) {
+								console.log(val);
 								val = prev+(current-prev)/2;
 								val = val.toFixed(fixNum);
 								sld = sld.replace(new RegExp('#val_'+catIdx+'#','g'),val);
