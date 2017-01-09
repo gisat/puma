@@ -172,7 +172,7 @@ function wms(params, req, res, callback) {
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
 		if(layers.indexOf(',') == -1) {
-			options.path.replace('geonode', layers.split(':')[0]);
+			options.path = options.path.replace('geonode', layers.split(':')[0]);
 		}
 	}
 	var time = new Date().getTime();
