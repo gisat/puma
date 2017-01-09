@@ -55,8 +55,9 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
+	let poolRemote = null;
 	if(config.pgDataUserRemote) {
-		var poolRemote = new PgPool({
+		poolRemote = new PgPool({
 			user: config.pgDataUserRemote,
 			database: config.pgDataDatabaseRemote,
 			password: config.pgDataPasswordRemote,
@@ -73,12 +74,11 @@ module.exports = function(app) {
 	if(poolRemote) {
 		new AttributeController(app, poolRemote);
 		new ExportController(app, poolRemote);
-		new LayerController(app, poolRemote);
 	} else {
 		new AttributeController(app, pool);
 		new ExportController(app, pool);
-		new LayerController(app, pool);
 	}
+	new LayerController(app, pool, poolRemote);
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
