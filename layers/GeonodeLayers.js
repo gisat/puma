@@ -26,7 +26,8 @@ class GeonodeLayers {
 						return {
 							name: layer,
 							path: layer,
-							referenced: layerReferences.length > 0
+							referenced: layerReferences.length > 0,
+							source: 'geonode'
 						};
 					});
 				}));

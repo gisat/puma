@@ -27,7 +27,8 @@ class PgLayers {
 					return {
 						name: layer.name,
 						path: layer.path,
-						referenced: layerReferences.length > 0
+						referenced: layerReferences.length > 0,
+						source: 'internal'
 					};
 				});
 			}));

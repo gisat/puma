@@ -169,11 +169,11 @@ function wms(params, req, res, callback) {
 
 	if (params['REQUEST'] == 'GetMap' || params['REQUEST']=='GetLegendGraphic') {
 		options.resEncoding = 'binary';
+	}
+	if (params['REQUEST'] == 'GetLegendGraphic') {
 		if(layers.indexOf(',') == -1) {
 			options.path.replace('geonode', layers.split(':')[0]);
 		}
-	}
-	if (params['REQUEST'] == 'GetLegendGraphic') {
 	}
 	var time = new Date().getTime();
 	//console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
