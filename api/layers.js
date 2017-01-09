@@ -2,7 +2,6 @@ var http = require('http');
 var querystring = require('querystring');
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
-var dom = require('../common/dom');
 var async = require('async');
 var xmldoc = require('xmldoc');
 var _ = require('underscore');
@@ -26,7 +25,7 @@ function copyYears(params, req, res, callback) {
             var obj = _.clone(item);
             delete obj['_id'];
             obj.year = 278;
-            crud.create('layerref', obj, {bypassHooks: true, userId: req.userId}, eachCallback);
+            crud.create('layerref', obj, {bypassHooks: true, userId: req.session.userId}, eachCallback);
         }, callback);
     });
 }
@@ -166,7 +165,7 @@ function getLayers(params, req, res, callback) {
     console.log(req);
 
     var headers = {
-        'Cookie': 'sessionid=' + (req.ssid || '')
+        'Cookie': 'sessionid=' + (req.cookies.sessionid || '')
     };
 
     var options = {
@@ -282,7 +281,7 @@ function activateLayerRef(params, req, res, callback) {
                 }
 
                 var id = layerRef._id;
-                crud.update('layerref', layerRef, {userId: req.userId, isAdmin: req.isAdmin}, function (err, result) {
+                crud.update('layerref', layerRef, {userId: req.session.userId, isAdmin: res.locals.isAdmin}, function (err, result) {
                     if (err) {
                         logger.error("/api/layers.js activateLayerRef. It wasn't possible to update layerref: ", layerRef, " Error: ", err);
                         return callback(err);
@@ -326,7 +325,7 @@ function activateLayerRef(params, req, res, callback) {
                 } else {
                     item.active = false;
                 }
-                crud.update('layerref', item, {userId: req.userId, isAdmin: req.isAdmin}, function (err) {
+                crud.update('layerref', item, {userId: req.session.userId, isAdmin: res.locals.isAdmin}, function (err) {
                     if (err) {
                         logger.error("Error: activateLayerRef failed at finish phase. Layerref: ", item, "Error:", err);
                         return callback(err);
@@ -358,7 +357,7 @@ function getLayerDetails(params, req, res, callback) {
         path: config.geoserverPath + '/' + workspace + '/ows?' + postData,
         method: 'GET',
         headers: {
-            'Cookie': 'ssid=' + req.cookies['ssid']
+            'Cookie': 'ssid=' + res.locals.ssid,
         }
     };
     conn.request(options, null, function (err, output, resl) {
@@ -760,7 +759,7 @@ function getSymbologiesFromServer(params, req, res, callback) {
                     active: true,
                     symbologyName: symb
                 };
-                crud.create('symbology', obj, {userId: req.userId}, function (err) {
+                crud.create('symbology', obj, {userId: req.session.userId}, function (err) {
                     if (err) {
                         logger.error("api/layers.js getSymbologiesFromServer. It wasn't possible to create symbology: ", obj, " Error:", err);
                         callback(err);

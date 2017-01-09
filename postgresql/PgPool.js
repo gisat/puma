@@ -30,4 +30,12 @@ PgPool.prototype.pool = function(){
 	return this._pool;
 };
 
+PgPool.prototype.end = function() {
+	this._pool.end();
+};
+
+PgPool.prototype.query = function() {
+	return this._pool.query.apply(this._pool, arguments);
+};
+
 module.exports = PgPool;

@@ -11,7 +11,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 function userPolygon(params,req,res,callback) {
 
-	var userId = req.userId;
+	var userId = req.session.userId;
 	if (!userId) {
 		logger.error("api/userpolygon userPolygon. Anonymous user can't access userpolygon.");
 		return callback({message: 'notloggedin'});
@@ -173,7 +173,7 @@ function userPolygon(params,req,res,callback) {
 				delete conf.geometries[id];
 			}
 
-			crud.update('userpolygon',conf,{userId: userId, isAdmin: req.isAdmin},function(err,resl) {
+			crud.update('userpolygon',conf,{userId: userId, isAdmin: res.locals.isAdmin},function(err,resl) {
 				if (err) {
 					logger.error("api/userpolygon.js userPolygon. It wasn't possible to create userpolygon with Configuration: ", conf);
 					return callback(err);
@@ -188,7 +188,7 @@ function userPolygon(params,req,res,callback) {
 
 
 function checkAnalysis(params,req,res,callback) {
-	var userId = req.userId;
+	var userId = req.session.userId;
 	if (!userId) {
 		return callback({message: 'notloggedin'});
 	}
@@ -431,7 +431,7 @@ function checkAnalysis(params,req,res,callback) {
 			},asyncCallback)
 		}],
 		updateDbRecord: ['performAnalysis',function(asyncCallback,results) {
-			crud.update('userpolygon',results.dbRecord,{userId:userId, isAdmin: req.isAdmin},function(err) {
+			crud.update('userpolygon',results.dbRecord,{userId:userId, isAdmin: res.locals.isAdmin},function(err) {
 				if (err) {
 					logger.error("api/userpolygon.js checkAnalysis. It wasn't possible to update record: ", results.dbRecord,
 						" Error: ", err);

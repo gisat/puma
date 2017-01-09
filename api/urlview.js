@@ -17,7 +17,7 @@ function saveChart(params, req, res, callback) {
 			}
 		}
 	}
-	crud.create(collName, cfg, {userId: req.userId}, function(err, result) {
+	crud.create(collName, cfg, {userId: req.session.userId}, function(err, result) {
 		if (err) {
 			logger.error("api/urlview.js saveChart. It wasn't possible to create: ", collName, " Configuration: ", cfg,
 				" Error: ", err);
@@ -56,7 +56,7 @@ function getChart(params,req,res,callback) {
 			}
 			res.data = cfg;
 			callback(null);
-			crud.update(collName,{_id:cfg._id},{userId: req.userId, isAdmin: req.isAdmin},function(err,r){});
+			crud.update(collName,{_id:cfg._id},{userId: req.session.userId, isAdmin: res.locals.isAdmin},function(err,r){});
 		})
 }
 

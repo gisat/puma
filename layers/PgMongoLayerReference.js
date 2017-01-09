@@ -7,34 +7,44 @@ class PgMongoLayerReference {
     }
 
     attributes() {
-        var columnMap;
-        var self = this;
+        var columnMap, attributeSet;
         return this._layerReference.columnMap().then(pColumnMap => {
             columnMap = pColumnMap;
-            return self._layerReference.attributeSet();
-        }).then(attributeSet => {
-
-            columnMap.forEach(column => {
+            return this._layerReference.attributeSet();
+        }).then(pAttributeSet => {
+            attributeSet = pAttributeSet;
+            return this._layerReference.layerName();
+        }).then(tableName => {
+            let tableAlias = this.tableAlias(tableName);
+            return columnMap.map(column => {
                 return {
                     source: column.column,
-                    target: `as_${attributeSet}_attr_${column.attribute}`
+                    target: `as_${attributeSet}_attr_${column.attribute}`,
+                    tableAlias: tableAlias
                 };
             });
         })
     }
 
     table() {
-        var self = this;
-        var tableName;
+        let tableName, fidColumn;
         return this.tableName().then(pLayerName => {
             tableName = pLayerName;
-            return self._layerReference.fidColumn();
-        }).then(fidColumn => {
+            return this._layerReference.fidColumn();
+        }).then(pFidColumn => {
+            fidColumn = pFidColumn;
+            return this._layerReference.layerName();
+        }).then(tableName => {
             return {
                 name: tableName,
-                fidColumn: fidColumn
+                fidColumn: fidColumn,
+                alias: this.tableAlias(tableName)
             }
         })
+    }
+
+    tableAlias(name) {
+        return `l_${name}`;
     }
 
     /**

@@ -100,11 +100,8 @@ class MongoAttributes {
 	}
 
 	add(attribute) {
-		var self = this;
-		return attribute.json().then(function(attribute){
-			var collection = self._connection.collection(MongoAttribute.collectionName());
-			collection.insert(attribute)
-		});
+		let collection = this._connection.collection(MongoAttribute.collectionName());
+		collection.insert(attribute)
 	}
 }
 

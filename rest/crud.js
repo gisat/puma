@@ -7,16 +7,32 @@ var conn = require('../common/conn');
 var collections = require('./models').collections;
 var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('lodash');
+var Promise = require('promise');
 
 function ensureCollection(req, res, next) {
     if (collections.indexOf(req.params.objType) != -1) {
         next();
     } else {
-        logger.error("Given collection doesnt exist: ", req.params.objType, " User: ", req.userId);
+        logger.error("Given collection doesnt exist: ", req.params.objType, " User: ", req.session.userId);
         next(new Error('unknownCollection'));
     }
 }
 
+
+function createPromised(collName,obj,params) {
+	logger.info("Create new item in collection promised: ", collName, " With data: ", obj, " and Params: ", params);
+	return new Promise(function(resolve, reject){
+		create(collName, obj, params, function(err, result){
+			if(err) {
+				logger.error(`rest/crud#createPromised Eror: `, err);
+				reject(err);
+			} else {
+				logger.info('rest/crud#createPromised Correctly created ', result);
+				resolve(result);
+			}
+		})
+	});
+}
 
 function create(collName, obj, params, callback) {
     logger.info("Create new item in collection: ", collName, " With data: ", obj, " and Params: ", params);
@@ -526,10 +542,10 @@ var doPreHooks = function (opType, collName, obj, callback) {
 };
 
 module.exports = {
-    create: create,
-    read: read,
-    readRestricted: readRestricted,
-    update: update,
-    remove: remove,
-    ensureCollection: ensureCollection
+	create: create,
+	createPromised: createPromised,read: read,
+	readRestricted: readRestricted,
+	update: update,
+	remove: remove,
+	ensureCollection: ensureCollection
 };

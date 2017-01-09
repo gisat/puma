@@ -85,11 +85,8 @@ class MongoAttributeSets {
 	}
 
 	add(attributeSet) {
-		var self = this;
-		return attributeSet.json().then(function(atrtibuteSet){
-			var collection = self._connection.collection(MongoAttributeSet.collectionName());
-			collection.insert(atrtibuteSet)
-		});
+		let collection = this._connection.collection(MongoAttributeSet.collectionName());
+		collection.insert(attributeSet)
 	}
 }
 

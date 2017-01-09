@@ -1,21 +1,22 @@
 module.exports = {
-	localHost       : "localhost",
+	localHost       : "10.0.75.2",
 	localPort       : 4000,
 	localPath       : "",
 
 	remoteProtocol  : "http",
-	remoteAddress   : "localhost:4000",
+	remoteAddress   : "10.0.75.2:4000",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
-	mongoConnString    : "mongodb://localhost:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@10.0.75.2:5432/geonode",
+	mongoConnString    : "mongodb://10.0.75.2:27017/panther",
 
 	workspaceSchemaMap: {
-		geonode: "public"
+		geonode: "public",
+		analysis: "analysis"
 	},
 
-	geoserverHost   : "localhost",
+	geoserverHost   : "10.0.75.2",
 	geoserverPort   : 8080,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
@@ -25,18 +26,23 @@ module.exports = {
 	 */
 	geoserverWorkspace: "puma",
 
-	geoserver2Host  : "localhost",
+	geoserver2Host  : "10.0.75.2",
 	geoserver2Port  : 8080,
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "panther",
+	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "localhost",
+	geonodeHost     : "10.0.75.2",
 	geonodePort			: 80,
-	geonodePath     : "",
+	geonodePath     : "/",
 	geonodeHome     : "/",
+
+	/**
+	 * Full URL of the geonode usable for the requests.
+	 */
+	geonodeUrl: "http://10.0.75.2:80/",
 
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
@@ -113,9 +119,12 @@ module.exports = {
 	/*
 	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
-	postgreSqlSchema: 'data',
+	postgreSqlSchema: 'data_test',
 
-	postgreSqlSchemaLayers: 'views',
+	/*
+	 * Schema containing produced tables and views - base_ and layers_ with the data for usge in Panther.
+	 */
+	viewsSchema: 'views',
 
 	/*
 	Connection String split to pieces for the PostgreSQL.
@@ -123,16 +132,18 @@ module.exports = {
 	pgDataUser: 'geonode',
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
-	pgDataHost: 'localhost',
+	pgDataHost: '10.0.75.2',
 	pgDataPort: '5432',
-
+	
 	/*
-	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long.
+	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long. 
 	*/
 	snapshotDirectory: '/tmp/',
 
 	/*
 	 This is the directory where will be temporary files for export generated.
 	 */
-	exportDirectory: '/tmp/'
+	exportDirectory: '/tmp/',
+
+	isUrbis: false
 };

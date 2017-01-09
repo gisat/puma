@@ -14,8 +14,8 @@ var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
+var LoginController = require('./LoginController');
 var PerformedAnalysisController = require('./PerformedAnalysisController');
-var ScopeController = require('./ScopeController');
 var StyleController = require('./StyleController');
 var ThemeController = require('./ThemeController');
 var TopicController = require('./TopicController');
@@ -28,12 +28,18 @@ var ImportController = require('./ImportController');
 var LayerPolygonController = require('./LayerPolygonController');
 var TemplateDataController = require('./TemplateDataController');
 var PlaceTemplatesController = require('./PlaceTemplatesController');
+var IntegrationController = require('./IntegrationController');
+let PermissionController = require('../security/UserController');
+let GroupController = require('../security/GroupController');
+let LayerController = require('../layers/LayerController');
+
+var iprquery = require('./iprquery');
+var iprConversion = require('./iprConversion');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 var api = {
-	login: require('../api/login'),
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
 	data: require('../api/data'),
@@ -53,8 +59,9 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
+	let poolRemote = null;
 	if(config.pgDataUserRemote) {
-		var poolRemote = new PgPool({
+		poolRemote = new PgPool({
 			user: config.pgDataUserRemote,
 			database: config.pgDataDatabaseRemote,
 			password: config.pgDataPasswordRemote,
@@ -65,34 +72,40 @@ module.exports = function(app) {
 	new DatabaseSchema(pool, config.postgreSqlSchema).create();
 
 	new StyleController(app, pool, config.postgreSqlSchema);
-	new AnalysisController(app);
-	new AreaTemplateController(app);
-	new GufController(app);
+	new AnalysisController(app, pool);
+	new AreaTemplateController(app, pool);
+	new GufController(app, pool);
 	if(poolRemote) {
-		new AttributeController(app, poolRemote);
 		new ExportController(app, poolRemote);
 	} else {
-		new AttributeController(app, pool);
 		new ExportController(app, pool);
 	}
-	new AttributeSetController(app);
-	new ChartCfgController(app);
-	new DataSetController(app);
-	new DataViewController(app);
-	new LayerGroupController(app);
+	new AttributeController(app, pool, poolRemote);
+	new LayerController(app, pool);
+	new AttributeSetController(app, pool);
+	new ChartCfgController(app, pool);
+	new DataSetController(app, pool);
+	new DataViewController(app, pool);
+	new LayerGroupController(app, pool);
 	new LayerRefController(app, pool);
-	new LocationController(app);
-	new PerformedAnalysisController(app);
-	new ScopeController(app);
-	new ThemeController(app);
-	new TopicController(app);
-	new VisualizationController(app);
-	new YearController(app);
+	new LocationController(app, pool);
+	new LoginController(app, pool);
+	new PerformedAnalysisController(app, pool);
+	new ThemeController(app, pool);
+	new TopicController(app, pool);
+	new VisualizationController(app, pool);
+	new YearController(app, pool);
+	new IntegrationController(app, pool);
 
 	new PrintController(app);
     new ImportController(app, pool);
 	new MellodiesWpsController(app, pool);
 	new MellodiesLodController(app, pool);
+	new PermissionController(app, pool);
+	new GroupController(app, pool);
+
+	new iprquery(app, pool);
+	new iprConversion(app);
 
 	new TemplateDataController(app, pool);
 	new PlaceTemplatesController(app);
@@ -100,7 +113,7 @@ module.exports = function(app) {
 	new LayerPolygonController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
-		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.userId);
+		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
 		var fn = api['chart']['drawChart'];
 		req.query = {
 			gid: req.params.gid,
@@ -110,37 +123,37 @@ module.exports = function(app) {
 			fn(req.query,req,res,next);
 		} catch (err) {
 			logger.error("It wasn't possible to draw chart", req.params.gid, "/", req.params.confId, " by User: ",
-				req.userId, " Error: ", err);
+				req.session.userId, " Error: ", err);
 			next(err);
 		}
 	});
 
 	app.get('/api/proxy/wms',function(req,res,next) {
-		logger.info("Call proxy by User: ", req.userId, " With params: ", req.query);
+		logger.info("Call proxy by User: ", req.session.userId, " With params: ", req.query);
 		var mod = api['proxy'];
 		var fn = mod['wms'];
 		try {
 			fn(req.query,req,res,next);
 		} catch (err) {
-			logger.error("Error when calling proxy by User: ", req.userId, " With params: ", req.query, " Error: ", err);
+			logger.error("Error when calling proxy by User: ", req.session.userId, " With params: ", req.query, " Error: ", err);
 			next(err);
 		}
 	});
 
 	app.get('/api/analysis/status', function(request, response, next){
-		logger.info("Call status of analysis User: ", request.userId, " With params: ", request.query);
+		logger.info("Call status of analysis User: ", request.session.userId, " With params: ", request.query);
 
 		api.analysis.status(request, response);
 	});
 
 	app.post('/api/:module/:method',function(req,res,next) {
-		logger.info("Call method of API. Module: ", req.params.module, " Method: ", req.params.method, " by User: ", req.userId);
+		logger.info("Call method of API. Module: ", req.params.module, " Method: ", req.params.method, " by User: ", req.session.userId);
 		var mod = api[req.params.module];
 		var fn = mod[req.params.method];
 		try {
 			fn(req.body,req,res,next);
 		} catch (err) {
-			logger.error("Error when calling: ", req.params.module, "/", req.params.method, " By User: ",req.userId,
+			logger.error("Error when calling: ", req.params.module, "/", req.params.method, " By User: ",req.session.userId,
 				"Error: ", err);
 			next(err);
 		}

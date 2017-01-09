@@ -12,22 +12,27 @@ var MongoTheme = require('../metadata/MongoTheme');
  * @constructor
  */
 class ThemeController extends Controller {
-	constructor(app) {
-		super(app, 'theme', MongoThemes, MongoTheme);
+	constructor(app, pool) {
+		super(app, 'theme', pool, MongoThemes, MongoTheme);
 	}
 
 	update(request, response, next) {
-		logger.info("Create object of type: ", this.type, " by User: ", request.userId, "With data: ", request.body.data);
+		logger.info("Create object of type: ", this.type, " by User: ", request.session.userId, "With data: ", request.body.data);
+
+        var theme = request.body.data;
+        if (!this.hasRights(request.session.user, 'PUT', theme._id, theme)) {
+            response.status(403);
+            return;
+        }
 
 		var parameters = {
-			userId: request.userId,
-			isAdmin: request.isAdmin
+			userId: request.session.userId,
+			isAdmin: response.locals.isAdmin
 		};
-		var theme = request.body.data;
 		var self = this;
 		crud.read('dataset', {_id: theme.dataset}, function(err, scopes){
 			if (err) {
-				logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.userId,
+				logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.session.userId,
 					"With data: ", theme, " Error:", err);
 				return next(err);
 			}
@@ -41,7 +46,7 @@ class ThemeController extends Controller {
 
 			crud.update(self.type, theme, parameters, function (err, result) {
 				if (err) {
-					logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", req.userId,
+					logger.error("It wasn't possible to create object of type: ", self.type, " by User: ", request.session.userId,
 						"With data: ", theme, " Error:", err);
 					return next(err);
 				} else {
@@ -52,6 +57,10 @@ class ThemeController extends Controller {
 			});
 		});
 	}
+
+    hasRights(user, method, id, object) {
+        return user.hasPermission('dataset', method, object.dataset);
+    }
 }
 
 module.exports = ThemeController;

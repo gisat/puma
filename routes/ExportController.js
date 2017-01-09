@@ -3,6 +3,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var UUID = require('../common/UUID');
 var parse = require('wellknown');
 var json2csv = require('json2csv');
+var json2xls = require('json2xls');
 var _ = require('underscore');
 var GeoJSON = require('geojson');
 
@@ -20,6 +21,7 @@ class ExportController {
 
         app.get('/export/geojson', this.geojson.bind(this));
         app.get('/export/csv', this.csv.bind(this));
+        app.get('/export/xls', this.xls.bind(this));
     }
 
     /**
@@ -87,6 +89,34 @@ class ExportController {
                 response.set('Content-Type', 'text/csv');
                 response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.csv`));
                 response.end(csv, 'binary');
+            } else {
+                response.json({});
+            }
+        }).catch(err => {
+            throw new Error(
+                logger.error(`AttributeController#info Error: `, err)
+            )
+        });
+    }
+
+    xls(request, response, next) {
+        var options = this._parseRequest(request);
+
+        let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        this._info.statistics(attributesObj, options.attributesMap, options.gids).then(json => {
+            if(json.length > 0) {
+                json.forEach(value => {
+                    value.attributes.forEach(attr => {
+                        value[attr.name] = attr.value;
+                    });
+                    delete value.attributes;
+                    delete value.geom;
+                });
+
+                var xls = json2xls(json);
+                response.set('Content-Type', 'text/xls');
+                response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.xls`));
+                response.end(xls, 'binary');
             } else {
                 response.json({});
             }

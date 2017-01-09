@@ -59,6 +59,11 @@ class MongoLocations {
 			return collection.removeOne({_id: id});
 		});
 	}
+
+	add(location) {
+		let collection = this._connection.collection(MongoLocation.collectionName());
+		collection.insert(location)
+	}
 }
 
 module.exports = MongoLocations;

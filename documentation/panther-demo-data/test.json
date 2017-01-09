@@ -1,0 +1,268 @@
+{
+  "data": {
+	"name": "Population and Urban",
+	"conf": {
+	  "multipleMaps": false,
+	  "years": [
+		6
+	  ],
+	  "dataset": 4309,
+	  "theme": 4410,
+	  "visualization": null,
+	  "location": 4422,
+	  "expanded": {},
+	  "selMap": {
+		"ff4c39": []
+	  },
+	  "pagingUseSelected": false,
+	  "pagingSelectedColors": [
+		"ff4c39",
+		"34ea81",
+		"39b0ff",
+		"ffde58",
+		"5c6d7e",
+		"d97dff"
+	  ],
+	  "filterMap": {},
+	  "filterActive": false,
+	  "layers": [
+		{
+		  "opacity": 0.7,
+		  "sortIndex": 0,
+		  "type": "selectedareasfilled",
+		  "attributeSet": "",
+		  "attribute": "",
+		  "at": "",
+		  "symbologyId": ""
+		},
+		{
+		  "opacity": 0.7,
+		  "sortIndex": 1,
+		  "type": "areaoutlines",
+		  "attributeSet": "",
+		  "attribute": "",
+		  "at": "",
+		  "symbologyId": ""
+		},
+		{
+		  "opacity": 1,
+		  "sortIndex": 10000,
+		  "type": "terrain",
+		  "attributeSet": "",
+		  "attribute": "",
+		  "at": "",
+		  "symbologyId": ""
+		}
+	  ],
+	  "trafficLayer": false,
+	  "page": 1,
+	  "mapCfg": {
+		"center": {
+		  "lon": 967601.08694684,
+		  "lat": 6254875.6520443
+		},
+		"zoom": 12
+	  },
+	  "cfgs": [
+		{
+		  "cfg": {
+			"title": "Population vs. Urban area",
+			"type": "scatterchart",
+			"attrs": [
+			  {
+				"as": 4310,
+				"attr": 13,
+				"normType": "area",
+				"normAs": "",
+				"normAttr": "",
+				"normYear": "",
+				"attrNameNormalized": "",
+				"checked": true,
+				"numCategories": "",
+				"classType": "",
+				"zeroesAsNull": "",
+				"name": "",
+				"topic": "",
+				"parentId": null,
+				"index": 0,
+				"depth": 0,
+				"expanded": false,
+				"expandable": true,
+				"leaf": false,
+				"cls": "",
+				"iconCls": "",
+				"icon": "",
+				"root": false,
+				"isLast": false,
+				"isFirst": false,
+				"allowDrop": true,
+				"allowDrag": true,
+				"loaded": false,
+				"loading": false,
+				"href": "",
+				"hrefTarget": "",
+				"qtip": "",
+				"qtitle": "",
+				"children": null,
+				"attrName": "Total population",
+				"asName": "Global Urban Footprint",
+				"treeNodeText": "Total population"
+			  },
+			  {
+				"as": 4310,
+				"attr": 4312,
+				"normType": "area",
+				"normAs": "",
+				"normAttr": "",
+				"normYear": "",
+				"attrNameNormalized": "",
+				"checked": true,
+				"numCategories": "",
+				"classType": "",
+				"zeroesAsNull": "",
+				"name": "",
+				"topic": "",
+				"parentId": null,
+				"index": 0,
+				"depth": 0,
+				"expanded": false,
+				"expandable": true,
+				"leaf": false,
+				"cls": "",
+				"iconCls": "",
+				"icon": "",
+				"root": false,
+				"isLast": false,
+				"isFirst": false,
+				"allowDrop": true,
+				"allowDrag": true,
+				"loaded": false,
+				"loading": false,
+				"href": "",
+				"hrefTarget": "",
+				"qtip": "",
+				"qtitle": "",
+				"children": null,
+				"attrName": "Urban area",
+				"asName": "Global Urban Footprint",
+				"treeNodeText": "Urban area"
+			  }
+			],
+			"featureLayerOpacity": "70",
+			"classType": "quantiles",
+			"numCategories": "5",
+			"constrainFl": [
+			  0,
+			  3
+			],
+			"stacking": "none",
+			"chartId": 7165535
+		  },
+		  "queryCfg": {
+			"invisibleAttrs": [],
+			"invisibleYears": []
+		  }
+		},
+		{
+		  "cfg": {
+			"title": "Urban / Non Urban area",
+			"type": "columnchart",
+			"attrs": [
+			  {
+				"as": 4310,
+				"attr": 4312,
+				"normType": "area",
+				"normAs": "",
+				"normAttr": "",
+				"normYear": "",
+				"attrNameNormalized": "",
+				"checked": true,
+				"numCategories": "",
+				"classType": "",
+				"zeroesAsNull": "",
+				"name": "",
+				"topic": "",
+				"parentId": null,
+				"index": 0,
+				"depth": 0,
+				"expanded": false,
+				"expandable": true,
+				"leaf": false,
+				"cls": "",
+				"iconCls": "",
+				"icon": "",
+				"root": false,
+				"isLast": false,
+				"isFirst": false,
+				"allowDrop": true,
+				"allowDrag": true,
+				"loaded": false,
+				"loading": false,
+				"href": "",
+				"hrefTarget": "",
+				"qtip": "",
+				"qtitle": "",
+				"children": null,
+				"attrName": "Urban area",
+				"asName": "Global Urban Footprint",
+				"treeNodeText": "Urban area"
+			  },
+			  {
+				"as": 4310,
+				"attr": 4313,
+				"normType": "area",
+				"normAs": "",
+				"normAttr": "",
+				"normYear": "",
+				"attrNameNormalized": "",
+				"checked": true,
+				"numCategories": "",
+				"classType": "",
+				"zeroesAsNull": "",
+				"name": "",
+				"topic": "",
+				"parentId": null,
+				"index": 0,
+				"depth": 0,
+				"expanded": false,
+				"expandable": true,
+				"leaf": false,
+				"cls": "",
+				"iconCls": "",
+				"icon": "",
+				"root": false,
+				"isLast": false,
+				"isFirst": false,
+				"allowDrop": true,
+				"allowDrag": true,
+				"loaded": false,
+				"loading": false,
+				"href": "",
+				"hrefTarget": "",
+				"qtip": "",
+				"qtitle": "",
+				"children": null,
+				"attrName": "Non Urban area",
+				"asName": "Global Urban Footprint",
+				"treeNodeText": "Non Urban area"
+			  }
+			],
+			"featureLayerOpacity": "70",
+			"classType": "quantiles",
+			"numCategories": "5",
+			"constrainFl": [
+			  0,
+			  3
+			],
+			"stacking": "none",
+			"chartId": 350894
+		  },
+		  "queryCfg": {
+			"invisibleAttrs": [],
+			"invisibleYears": []
+		  }
+		}
+	  ]
+	}
+  }
+}

@@ -2,8 +2,8 @@ var conn = require('../common/conn');
 var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 
 class ChartController {
-    constructor(app) {
-        app.get('/rest/chart/table', this.table.bind(this));
+    constructor(app, pool) {
+        app.get('/rest/chart/table', pool, this.table.bind(this));
     }
 
     table(request, response, next) {

@@ -4,8 +4,8 @@ var util = require('util');
 var logger = require('../common/Logger').applicationWideLogger;
 var conn = require('../common/conn');
 
-var Location = function(center){
-	this.auLayerTable = "views.layer_6353";
+var Location = function(center, auLayerTableId){
+	this.auLayerTable = `views.layer_${auLayerTableId}`;
 	this.auLayerTableGeometryColumn = "the_geom";
 	this.centerLon = center.xWgs;
 	this.centerLat = center.yWgs;

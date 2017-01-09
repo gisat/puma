@@ -6,8 +6,9 @@ class MongoDataViews {
     }
 
     remove(visualization){
+        var self = this;
         return visualization.id().then(function(id){
-            var collection = this._connection.collection(MongoDataView.collectionName());
+            var collection = self._connection.collection(MongoDataView.collectionName());
             return collection.removeOne({_id: id});
         });
     }

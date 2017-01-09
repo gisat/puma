@@ -1,7 +1,9 @@
 var express = require('express');
+var app = express();
 var conn = require('./common/conn');
 var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');
+var staticFn = express['static'];
 var session = require('express-session');
 
 var async = require('async');
@@ -12,6 +14,23 @@ var config = require('./config');
 
 process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
+});
+
+var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
+var PgPool = require('./postgresql/PgPool');
+var DatabaseSchema = require('./postgresql/DatabaseSchema');
+let PgUsers = require('./security/PgUsers');
+let PgPermissions = require('./security/PgPermissions');
+let User = require('./security/User');
+let Group = require('./security/Group');
+let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
+
+var pool = new PgPool({
+    user: config.pgDataUser,
+    database: config.pgDataDatabase,
+    password: config.pgDataPassword,
+    host: config.pgDataHost,
+    port: config.pgDataPort
 });
 
 var app;
@@ -36,15 +55,21 @@ function initServer(err) {
 
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
-	app.use(function(req, res, next){
-		req.ssid = req.cookies.ssid || req.ssid || '';
+	app.use(session({
+		name: "panthersid",
+		secret: "panther",
+		resave: false,
+		saveUninitialized: true
+	}));
+	app.use(function (request, response, next) {
+		response.locals.ssid = request.cookies.sessionid;
+		response.locals.isAdmin = request.session.groups && request.session.groups.indexOf("admingroup") != -1;
 		next();
 	});
 	app.use(loc.langParser);
     
 	// Allow CORS on the node level.
     app.use(function(req, res, next) {
-		// Allow CORS from anywhere.
 		// TODO: Fix security issues.
 		var url = req.headers.origin || 'http://localhost:63342';
 		res.header("Access-Control-Allow-Origin", url);
@@ -54,11 +79,27 @@ function initServer(err) {
 		next();
     });
     // End of allow CORS.
-	
-	require('./routes/integration')(app);
+
+	// Make sure that every request knows the current information about user.
+	app.use((request, response, next) => {
+		if(request.session.userId) {
+			new PgUsers(pool, config.postgreSqlSchema).byId(request.session.userId).then(user => {
+            	request.session.user = user;
+                next();
+			});
+        } else {
+			new PgPermissions(pool, config.postgreSqlSchema).forGroup(Group.guestId()).then((permissions => {
+                request.session.user = new User(0, [], [new Group(Group.guestId(), permissions)]);
+				next();
+			}));
+		}
+	});
+
 	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
+	app.use('/', staticFn(__dirname + '/public'));
+	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
 
 	logger.info('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);
@@ -66,20 +107,10 @@ function initServer(err) {
 }
 
 
-var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
-var PgPool = require('./postgresql/PgPool');
-var DatabaseSchema = require('./postgresql/DatabaseSchema');
-
-
-var pool = new PgPool({
-	user: config.pgDataUser,
-	database: config.pgDataDatabase,
-	password: config.pgDataPassword,
-	host: config.pgDataHost,
-	port: config.pgDataPort
-});
 new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
-	return new SymbologyToPostgreSqlMigration(pool).run();
+	return new SymbologyToPostgreSqlMigration().run();
+}).then(()=>{
+	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
@@ -93,4 +124,6 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 			}],
 		initServer
 	);
+}).catch((err) => {
+	logger.error('Error with Migration. Error: ', err);
 });

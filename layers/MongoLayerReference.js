@@ -53,6 +53,18 @@ class MongoLayerReference {
 		});
 	}
 
+	parentColumn() {
+		return this.json().then(function(json){
+			return json.parentColumn;
+		});
+	}
+
+	nameColumn() {
+		return this.json().then(function(json){
+			return json.nameColumn;
+		});
+	}
+
 	load() {
 		return this._mongoInstance.read();
 	}
