@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/Projekty/panther-backoffice/panther-backoffice.iml" filepath="$USER_HOME$/Projekty/panther-backoffice/panther-backoffice.iml" />
-      <module fileurl="file://$USER_HOME$/Projekty/panther-front-office/panther-front-office.iml" filepath="$USER_HOME$/Projekty/panther-front-office/panther-front-office.iml" />
-      <module fileurl="file://$PROJECT_DIR$/puma.iml" filepath="$PROJECT_DIR$/puma.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/panther-backend.iml" filepath="$PROJECT_DIR$/.idea/panther-backend.iml" />
     </modules>
   </component>
 </project>
