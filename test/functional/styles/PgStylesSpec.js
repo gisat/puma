@@ -104,6 +104,7 @@ describe('PgStyles', function () {
 
 	after(function(done){
 		schema.drop().then(function(){
+			pool.end();
 			done();
 		});
 	});

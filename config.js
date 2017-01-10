@@ -39,6 +39,11 @@ module.exports = {
 	geonodePath     : "/",
 	geonodeHome     : "/",
 
+	/**
+	 * Full URL of the geonode usable for the requests.
+	 */
+	geonodeUrl: "http://10.0.75.2:80/",
+
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
 	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers

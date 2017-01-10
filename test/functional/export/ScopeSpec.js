@@ -57,6 +57,7 @@ describe('DataExportController', () => {
 		schema.drop().then(function () {
 			return dataFixture.teardown();
 		}).then(() => {
+			pool.end();
 			done();
 		}).catch((err) => {
 			done(err);

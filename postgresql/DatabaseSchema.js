@@ -76,6 +76,17 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int
     )`;
+    // Path means the location where the layer resides. It can be something like geonode:stuff or analysis:stuff or even
+    // something else.
+    let createLayers = `CREATE TABLE IF NOT EXISTS ${this._schema}.layers (
+        id SERIAL PRIMARY KEY,
+        name text,
+        path text,
+        created timestamp,
+        created_by int, 
+        changed timestamp, 
+        changed_by int
+    )`;
 
     var self = this;
     return this._pool.query(createSchema).then(function () {
@@ -94,7 +105,9 @@ DatabaseSchema.prototype.create = function () {
         return self._pool.query(createAnalysis);
     }).then(function () {
         return self._pool.query(createViews);
-    }).catch(function (err) {
+    }).then(function () {
+		return self._pool.query(createLayers);
+	}).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });
 };

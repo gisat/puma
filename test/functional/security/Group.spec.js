@@ -277,6 +277,7 @@ describe('Group Logged In', function () {
     afterEach(function (done) {
         schema.drop().then(function () {
             server.close();
+			pool.end();
             done();
         });
     });

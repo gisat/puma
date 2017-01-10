@@ -27,6 +27,7 @@ var MellodiesLodController = require('../melodies/LodController');
 var IntegrationController = require('./IntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
+let LayerController = require('../layers/LayerController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -54,8 +55,9 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
+	let poolRemote = null;
 	if(config.pgDataUserRemote) {
-		var poolRemote = new PgPool({
+		poolRemote = new PgPool({
 			user: config.pgDataUserRemote,
 			database: config.pgDataDatabaseRemote,
 			password: config.pgDataPasswordRemote,
@@ -70,12 +72,12 @@ module.exports = function(app) {
 	new AreaTemplateController(app, pool);
 	new GufController(app, pool);
 	if(poolRemote) {
-		new AttributeController(app, poolRemote);
 		new ExportController(app, poolRemote);
 	} else {
-		new AttributeController(app, pool);
 		new ExportController(app, pool);
 	}
+	new AttributeController(app, pool, poolRemote);
+	new LayerController(app, pool);
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);

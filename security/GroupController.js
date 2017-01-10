@@ -66,7 +66,12 @@ class GroupController {
             return;
         }
 
-        this.groups.add(request.body.name, request.session.user.id).then(() => {
+        this.groups.add(request.body.name, request.session.user.id).then(result => {
+        	return Promise.all([
+				this.permissions.add(request.session.user.id, 'group', result.id, "PUT"),
+				this.permissions.add(request.session.user.id, 'group', result.id, "DELETE")
+			]);
+		}).then(() => {
             response.json({status: "Ok"});
         }).catch(err => {
             logger.error("GroupController#create Error: ", err);

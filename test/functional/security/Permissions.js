@@ -490,6 +490,7 @@ describe('Permissions', function () {
             server.close();
             return permissionFixture.teardown();
         }).then(() => {
+			pool.end();
             done();
         }).catch((err) => {
             done(err);

@@ -17,7 +17,7 @@ class TacrPhaStatistics {
      */
     check(){
         let sql = `SELECT * FROM information_schema.tables` +
-            ` WHERE table_schema = 'data'` +
+            ` WHERE table_schema = '${config.postgreSqlSchema}'` +
             ` AND table_name = '`+ this._table +`';`;
 
         var self = this;
@@ -34,7 +34,7 @@ class TacrPhaStatistics {
      * @param name {string} name of the table
      */
     create(name){
-        var sql = `CREATE TABLE data.` + name + `(` +
+        var sql = `CREATE TABLE ${config.postgreSqlSchema}.` + name + `(` +
             `uid text,` +
             `ip text,` +
             `keywords text,` +
@@ -82,7 +82,7 @@ class TacrPhaStatistics {
         logger.info(`INFO TacrPhaStatistics#insert number of records: ` + numOfRecords);
         logger.info(`INFO TacrPhaStatistics#insert first row: ` + firstRow);
 
-        var sql = `INSERT INTO data.` + this._table + ` ` +
+        var sql = `INSERT INTO ${config.postgreSqlSchema}.` + this._table + ` ` +
             `(uid, ip, keywords, results_number, results_first_record, date) ` +
             `VALUES` +
             `('` + id + `', '` + ip + `', '` + searchString + `', ` + numOfRecords + `, '` + firstRow + `', now());`;
@@ -107,7 +107,7 @@ class TacrPhaStatistics {
             where = ` WHERE results_number > 0 `;
         }
 
-        var sql = `SELECT keywords, COUNT(keywords) as num FROM data.` + this._table + where + ` GROUP BY keywords ORDER by num DESC;`;
+        var sql = `SELECT keywords, COUNT(keywords) as num FROM ${config.postgreSqlSchema}.` + this._table + where + ` GROUP BY keywords ORDER by num DESC;`;
         logger.info(`INFO TacrPhaStatistics#getKeywordsFrequency sql: ` + sql);
 
         return this._pgPool.pool().query(sql);
