@@ -97,7 +97,9 @@ function getChart(params, callback) {
 //                            columnName += '_y_'+year;
 //                        }
 						var attrRec = attrConf[attr.as][attr.attr];
-
+						if (attrRec.color.length == 0){
+							attrRec.color = "#000000";
+						}
 						var obj = {
 							name: attrRec.name,
 							units: attrRec.units,
