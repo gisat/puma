@@ -4,6 +4,8 @@ var async = require('async');
 var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 
+let Units = require('../attributes/Units');
+
 function getData(params, callback) {
 
 	var client = conn.getPgDataDb();
@@ -99,6 +101,7 @@ function getData(params, callback) {
 		attrsWithSort = _.union(attrs, [attrObj]);
 	}
 
+	logger.info('data/data.js#getData Years: ', years, ' attrsWithSort: ', attrsWithSort, ' Normalization: ', params['normalization'], ' Normalization2: ', normalization, ' NormalizationAttribute: ', normalizationAttribute);
 	for (var i = 0; i < years.length; i++) {
 		var yearId = years[i];
 		var pre = 'x_' + yearId + '.';
@@ -142,28 +145,24 @@ function getData(params, callback) {
 			//var prevAttrMap = params.prevAttrMap;
 
 
+			// This represents unit of the target units.
 			if (attrMap && attrMap[attr.as] && attrMap[attr.as][attr.attr]) {
 				attrUnits = attrMap[attr.as][attr.attr].units;
 			}
+			// If there is normalization attribute set, load units from that data set.
 			if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
 				normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
 			}
-			//console.log(attrUnits,normAttrUnits)
-			if (currentNorm=='area') {
+
+			if (currentNorm=='area') { // area is by default in m2
 				normAttrUnits = 'm2';
 			}
-			if (attrUnits && attrUnits=='m2') {
-				factor /= 1000000;
-			}
-			if (normAttrUnits && normAttrUnits=='m2') {
-				factor *= 1000000;
-			}
-			if ((normAttrUnits=='m2' || normAttrUnits=='km2') && (attrUnits=='m2' || attrUnits=='km2')) {
-				factor *= 100;
-			}
-			else if (attrUnits && attrUnits==normAttrUnits) {
-				factor *= 100;
-			}
+
+			units = new Units();
+			factor = units.translate(normAttrUnits, attrUnits);
+			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
+
+			// How do you count factor of difference? The source data set is in one unit.
 
 			if (currentNorm == 'area') {
 				norm = normPre + '"area"';
