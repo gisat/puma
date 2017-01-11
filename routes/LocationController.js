@@ -7,17 +7,21 @@ class LocationController extends Controller {
         super(app, 'location', pool, MongoLocations, MongoLocation);
     }
 
-	/**
-	 * Verify that the user has rights to create Locations.
-	 * @inheritDoc
-	 */
-	create(request, response, next) {
-		if (!request.session.user.hasPermission(this.type, 'POST', null)) {
-			response.status(403);
-			return;
-		}
+    /**
+     * Verify that the user has rights to create Locations.
+     * @inheritDoc
+     */
+    create(request, response, next) {
+        if (!request.session.user.hasPermission(this.type, 'POST', null)) {
+            response.status(403);
+            return;
+        }
 
-		super.create(request, response, next);
+        super.create(request, response, next)
+            .then(() => {
+                next();
+            });
+
     }
 
     hasRights(user, method, id, object) {

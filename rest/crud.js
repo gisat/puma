@@ -102,7 +102,7 @@ function create(collName, obj, params, callback) {
                     promises.push(Promise.all(subpromises));
                     Promise.all(subpromises).then(() => {
                         _.set(object, modelKey, wasArray ? values : values[0]);
-                        console.log(object);
+                        console.log(`#### data3`, data);
                     });
                 }
             });
@@ -111,6 +111,7 @@ function create(collName, obj, params, callback) {
             return data
         });
     }).then((data) => {
+        console.log(`#### data4`, data);
         // unwrap array if single item because from here on, we can't work with arrays
         if (data.length != 1) {
             logger.error("crud#create. multiple items in request");
@@ -118,6 +119,7 @@ function create(collName, obj, params, callback) {
         }
         return data[0];
     }).then(object => {
+        console.log(`#### data5`, object);
         //preCreate
         object['_id'] = conn.getNextId();
         // ensureIds(obj, collName);
@@ -140,12 +142,14 @@ function create(collName, obj, params, callback) {
             });
         });
     }).then((object) => {
+        console.log(`#### data6`, object);
         // create
         let collection = db.collection(collName);
         return collection.insert(object).then(result => {
             return result.ops[0];
         });
     }).then(object => {
+        console.log(`#### data7`, object);
         if (params['bypassHooks']) {
             return callback(null, object);
         }
