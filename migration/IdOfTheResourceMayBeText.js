@@ -9,7 +9,7 @@ class IdOfTheResourceMayBeText extends Migration {
 
 	process(mongo, pool) {
 		return pool.query(`ALTER TABLE ${config.postgreSqlSchema}.permissions ALTER COLUMN resource_id TYPE text`).then(() => {
-			return pool.query(`ALTER TABLE ${config.postgreSqlSchema}.permissions ALTER COLUMN resource_id TYPE text`);
+			return pool.query(`ALTER TABLE ${config.postgreSqlSchema}.group_permissions ALTER COLUMN resource_id TYPE text`);
 		});
 	}
 }
