@@ -24,6 +24,7 @@ let PgPermissions = require('./security/PgPermissions');
 let User = require('./security/User');
 let Group = require('./security/Group');
 let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
+let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 
 var pool = new PgPool({
     user: config.pgDataUser,
@@ -111,6 +112,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 	return new SymbologyToPostgreSqlMigration().run();
 }).then(()=>{
 	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
+}).then(()=>{
+	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

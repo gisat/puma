@@ -61,7 +61,7 @@ class PgPermissions {
 	// Private
 	addSql(userId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this._schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', ${resourceId}, '${permission}')`;
+			return `INSERT INTO ${this._schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', '${resourceId}', '${permission}')`;
 		} else {
 			return `INSERT INTO ${this._schema}.permissions (user_id, resource_type, permission) VALUES (${userId}, '${resourceType}', '${permission}')`;
 		}
@@ -73,7 +73,7 @@ class PgPermissions {
 
 	addGroupSql(groupId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this._schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', ${resourceId}, '${permission}')`;
+			return `INSERT INTO ${this._schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', '${resourceId}', '${permission}')`;
 		} else {
 			return `INSERT INTO ${this._schema}.group_permissions (group_id, resource_type, permission) VALUES (${groupId}, '${resourceType}', '${permission}')`;
 		}
@@ -94,7 +94,7 @@ class PgPermissions {
 	removeSql(userId, resourceType, resourceId, permission) {
 		let andResourceId = '';
 		if (resourceId) {
-			andResourceId = ` AND resource_id = ${resourceId} `;
+			andResourceId = ` AND resource_id = '${resourceId}' `;
 		}
 		return `DELETE FROM ${this._schema}.permissions WHERE user_id = ${userId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
 	}
@@ -106,7 +106,7 @@ class PgPermissions {
 	removeGroupSql(groupId, resourceType, resourceId, permission) {
 		let andResourceId = '';
 		if (resourceId) {
-			andResourceId = ` AND resource_id = ${resourceId} `;
+			andResourceId = ` AND resource_id = '${resourceId}' `;
 		}
 		return `DELETE FROM ${this._schema}.group_permissions WHERE group_id = ${groupId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
 	}
@@ -137,11 +137,11 @@ class PgPermissions {
 	}
 
 	forTypeGroupSql(type, resourceId) {
-		return `SELECT * from ${this._schema}.group_permissions WHERE resource_type = '${type}' AND resource_id=${resourceId}`;
+		return `SELECT * from ${this._schema}.group_permissions WHERE resource_type = '${type}' AND resource_id='${resourceId}'`;
 	}
 
 	forTypeUserSql(type, resourceId) {
-		return `SELECT * from ${this._schema}.permissions WHERE resource_type = '${type}' AND resource_id=${resourceId}`;
+		return `SELECT * from ${this._schema}.permissions WHERE resource_type = '${type}' AND resource_id='${resourceId}'`;
 	}
 }
 
