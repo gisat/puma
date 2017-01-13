@@ -54,12 +54,17 @@ class PgPermissions {
 	 * @param permission {String} One of these GET, POST, PUT, DELETE, ADMINISTER
 	 */
 	add(userId, resourceType, resourceId, permission) {
-		return this.pgPool.pool().query(this.addSql(userId, resourceType, resourceId, permission));
+		let sql = this.addSql(userId, resourceType, resourceId, permission);
+		return this.pgPool.pool().query(sql);
 	}
 
 	// Private
 	addSql(userId, resourceType, resourceId, permission) {
-		return `INSERT INTO ${this._schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', ${resourceId}, '${permission}')`;
+		if(resourceId) {
+			return `INSERT INTO ${this._schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', ${resourceId}, '${permission}')`;
+		} else {
+			return `INSERT INTO ${this._schema}.permissions (user_id, resource_type, permission) VALUES (${userId}, '${resourceType}', '${permission}')`;
+		}
 	}
 
 	addGroup(groupId, resourceType, resourceId, permission) {
@@ -67,7 +72,11 @@ class PgPermissions {
 	}
 
 	addGroupSql(groupId, resourceType, resourceId, permission) {
-		return `INSERT INTO ${this._schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', ${resourceId}, '${permission}')`;
+		if(resourceId) {
+			return `INSERT INTO ${this._schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', ${resourceId}, '${permission}')`;
+		} else {
+			return `INSERT INTO ${this._schema}.group_permissions (group_id, resource_type, permission) VALUES (${groupId}, '${resourceType}', '${permission}')`;
+		}
 	}
 
 	/**
