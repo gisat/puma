@@ -63,6 +63,14 @@ class PgLayers {
 		    return this.byId(result.rows[0].id);
         });
     }
+
+	/**
+	 * It deletes layer with specified id from the persistent store. The layer remains in the source.
+	 * @param id
+	 */
+	delete(id) {
+		return this.pgPool.query(`DELETE FROM ${this._schema}.layers WHERE id = ${id}`);
+	}
 }
 
 module.exports = PgLayers;

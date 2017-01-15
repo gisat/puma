@@ -7,6 +7,8 @@ var crud = require('../rest/crud');
 var config = require('../config');
 var _ = require('underscore');
 
+let Permission = require('../security/Permission');
+
 /**
  * @augments Controller
  * @alias DatasetController
@@ -25,7 +27,7 @@ class DataSetController extends Controller {
 	 * @inheritDoc
 	 */
 	create(request, response, next) {
-		if (!request.session.user.hasPermission(this.type, 'POST', null)) {
+		if (!request.session.user.hasPermission(this.type, Permission.CREATE, null)) {
 			response.status(403);
 			return;
 		}
@@ -52,7 +54,7 @@ class DataSetController extends Controller {
 				next(err);
 			} else {
 				logger.info("Result of loading " + this.type + " " + result);
-				response.data = result.filter(scope => this.hasRights(request.session.user, 'GET', scope._id));
+				response.data = result.filter(scope => this.hasRights(request.session.user, Permission.READ, scope._id));
 				next();
 			}
 		});

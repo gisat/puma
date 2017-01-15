@@ -27,7 +27,7 @@ var MellodiesLodController = require('../melodies/LodController');
 var IntegrationController = require('./IntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
-let LayerController = require('../layers/LayerController');
+let LayerGeonodeController = require('../layers/LayerGeonodeController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -77,7 +77,7 @@ module.exports = function(app) {
 		new ExportController(app, pool);
 	}
 	new AttributeController(app, pool, poolRemote);
-	new LayerController(app, pool);
+	new LayerGeonodeController(app, pool);
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);

@@ -7,8 +7,13 @@ let logger = require('../common/Logger').applicationWideLogger;
 let GeonodeLayers = require('./GeonodeLayers');
 let PgLayers = require('./PgLayers');
 let PgPermissions = require('../security/PgPermissions');
+let Permission = require('../security/Permission');
 
-class LayerController {
+	/**
+ * This controller represents layers where source of the data is in the geonode and therefore also geoserver.
+ * The application will support other types of the layers as well.
+ */
+class LayerGeonodeController {
 	constructor(app, pgPool) {
 		this.mongo = conn.getMongoDb();
 
@@ -17,6 +22,7 @@ class LayerController {
 
 		app.get('/rest/layer', this.readAll.bind(this));
 		app.post('/rest/layer', this.add.bind(this));
+		app.delete('/rest/layer/:id', this.delete.bind(this));
 	}
 
 	/**
@@ -26,7 +32,7 @@ class LayerController {
 	 * @param next
 	 */
 	readAll(request, response, next) {
-		logger.info('LayerController#readAl Read all layers By User: ', request.session.userId);
+		logger.info('LayerGeonodeController#readAl Read all layers By User: ', request.session.userId);
 
 		let currentUser = request.session.user;
 		let geonode = new GeonodeLayers(response.locals.ssid, config.geonodeUrl, this.mongo);
@@ -38,11 +44,11 @@ class LayerController {
 			return this.pgLayers.all();
 		}).then(pgLayers => {
 			layers = layers.concat(pgLayers);
-			layers = layers.filter(layer => currentUser.hasPermission("layer", "GET", layer.id));
+			layers = layers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
 
 			response.json({data: layers});
 		}).catch(err => {
-			logger.error('LayerController#readAll Error: ', err);
+			logger.error('LayerGeonodeController#readAll Error: ', err);
 			response.status(500).json({status: "err"});
 		});
 	}
@@ -51,12 +57,11 @@ class LayerController {
 	 * It adds new layer into the postgreSql storage. It also add rights to update and delete the layer to the user who created the layer.
 	 * @param request
 	 * @param response
-	 * @param next
 	 */
-	add(request, response, next) {
+	add(request, response) {
 		logger.info(`LayerController#add Add new layer: ${request.body} By User: ${request.session.userId} `);
 
-		if (!request.session.user.hasPermission('layer', 'POST', null)) {
+		if (!request.session.user.hasPermission('layer', Permission.CREATE, null)) {
 			response.status(403);
 			return;
 		}
@@ -72,10 +77,26 @@ class LayerController {
 		}).then(() => {
 			response.json({data: created, status: "Ok"});
 		}).catch(error => {
-			logger.error('LayerController#add Error: ', error);
+			logger.error('LayerGeonodeController#add Error: ', error);
+			response.status(500).json({status: "err"});
+		})
+	}
+
+	delete(request, response) {
+		logger.info(`LayerGeonodeController#delete Delete layer with id: ${request.params.id} By User: ${request.session.userId} `);
+
+		if (!request.session.user.hasPermission('layer', Permission.DELETE, null)) {
+			response.status(403);
+			return;
+		}
+
+		this.pgLayers.delete(request.body.name, request.body.path, request.session.user.id).then(() => {
+			response.json({status: "Ok"});
+		}).catch(error => {
+			logger.error('LayerGeonodeController#delete Error: ', error);
 			response.status(500).json({status: "err"});
 		})
 	}
 }
 
-module.exports = LayerController;
+module.exports = LayerGeonodeController;

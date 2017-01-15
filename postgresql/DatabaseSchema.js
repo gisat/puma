@@ -87,6 +87,15 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int
     )`;
+    let createWmsLayers = `CREATE TABLE iF NOT EXISTS ${this._schema}.wms_layers (
+        id SERIAL PRIMARY KEY,
+        name text,
+        url text,
+        created timestamp,
+        created_by int, 
+        changed timestamp, 
+        changed_by int        
+    )`;
 
     var self = this;
     return this._pool.query(createSchema).then(function () {
@@ -107,6 +116,8 @@ DatabaseSchema.prototype.create = function () {
         return self._pool.query(createViews);
     }).then(function () {
 		return self._pool.query(createLayers);
+	}).then(function () {
+		return self._pool.query(createWmsLayers);
 	}).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });

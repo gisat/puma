@@ -2,6 +2,8 @@ var Controller = require('./Controller');
 var MongoLocations = require('../metadata/MongoLocations');
 var MongoLocation = require('../metadata/MongoLocation');
 
+let Permission = require('../security/Permission');
+
 class LocationController extends Controller {
     constructor(app, pool) {
         super(app, 'location', pool, MongoLocations, MongoLocation);
@@ -12,7 +14,7 @@ class LocationController extends Controller {
 	 * @inheritDoc
 	 */
 	create(request, response, next) {
-		if (!request.session.user.hasPermission(this.type, 'POST', null)) {
+		if (!request.session.user.hasPermission(this.type, Permission.CREATE, null)) {
 			response.status(403);
 			return;
 		}
