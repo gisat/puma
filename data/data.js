@@ -467,7 +467,7 @@ function getData(params, callback) {
 				dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
 
 				client.query(dataSql, function(err, resls) {
-					//console.log("////////////Results: " + resls);
+					logger.info('api/data#getData Sql query: ',dataSql,' Results of Sql Query: ', resls.rows);
 					if (err) {
 						logger.error('data#getData Read dataset. Sql: ', sql, ' Error: ', err);
 						return callback(new Error('notexistingdata (2)'));
