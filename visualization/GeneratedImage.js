@@ -17,8 +17,14 @@ class GeneratedImage {
 	}
 
 	path() {
-		var finalPath = path.resolve(config.snapshotDirectory + this.id + '.png');
+		let finalPath = path.resolve(config.snapshotDirectory + this.id + '.png');
 		return Promise.resolve(finalPath);
+	}
+
+	exists() {
+		return this.path().then(path => {
+			return fs.exists(path);
+		})
 	}
 
 	generate() {

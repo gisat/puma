@@ -1,5 +1,5 @@
-var logger = require('../common/Logger').applicationWideLogger;
-var GeneratedImage = require('../visualization/GeneratedImage');
+let logger = require('../common/Logger').applicationWideLogger;
+let GeneratedImage = require('../visualization/GeneratedImage');
 
 class PrintController {
 	constructor(app) {
@@ -9,8 +9,8 @@ class PrintController {
 	}
 
 	snapshot(request, response, next) {
-		var id = request.params.id;
-		var image = new GeneratedImage(id);
+		let id = request.params.id;
+		let image = new GeneratedImage(id);
 		image.generate().then(function(image){
 			response.set('Content-Type','image/png');
 			response.set('Cache-Control','max-age=60000000');
@@ -19,10 +19,20 @@ class PrintController {
 	}
 
 	download(request, response, next) {
-		var id = request.params.id;
-		var image = new GeneratedImage(id);
-		image.path().then(function(path){
-			response.download(path);
+		let id = request.params.id;
+		let image = new GeneratedImage(id);
+		image.exists().then(exists => {
+			if(!exists) {
+				image.generate().then(() => {
+					return image.path();
+				}).then(function (path) {
+					response.download(path);
+				});
+			} else {
+				image.path().then(path=>{
+					response.download(path);
+				})
+			}
 		});
 	}
 }
