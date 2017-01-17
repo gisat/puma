@@ -6,7 +6,7 @@ var received = 0;
 var lastReceived = Date.now();
 // Use the requests and received resources to track whether everything was already downloaded.
 page.onResourceRequested = function(request) {
-	requested+=2;
+	requested++;
 };
 page.onResourceReceived = function(response) {
 	lastReceived = Date.now();
@@ -15,7 +15,7 @@ page.onResourceReceived = function(response) {
 
 var address = system.args[1];
 var finalLocation = system.args[2];
-page.viewportSize = { width: 1600, height: 1200 };
+page.viewportSize = { width: 600, height: 400 };
 page.open(address, function(status) {
 	console.log("Status", status);
 	setTimeout(verifyAllLoaded, 2000);

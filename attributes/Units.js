@@ -12,7 +12,7 @@ class Units {
 			km2: 1000000
 		};
 
-		return units[unitFrom] / units[unitTo];
+		return (units[unitFrom] / units[unitTo]) * 100; // 100 for percentage.
 	}
 }
 
