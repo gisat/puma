@@ -6,7 +6,7 @@ var received = 0;
 var lastReceived = Date.now();
 // Use the requests and received resources to track whether everything was already downloaded.
 page.onResourceRequested = function(request) {
-	requested++;
+	requested+=2;
 };
 page.onResourceReceived = function(response) {
 	lastReceived = Date.now();
@@ -23,15 +23,16 @@ page.open(address, function(status) {
 
 function verifyAllLoaded() {
 	console.log('VerifyAllLoaded Last: ', lastReceived, ' Received: ', received, 'Requested: ', requested);
-	if(requested <= received && olderThanSecond(lastReceived)) {
-		setTimeout(verifyAllLoaded, 1000);
-	} else {
+	// Both must be satisfied
+	if(requested >= received && olderThanThreshold(lastReceived)) {
 		console.log("Rendering");
 		page.render(finalLocation);
 		phantom.exit();
+	} else {
+		setTimeout(verifyAllLoaded, 1000);
 	}
 }
 
-function olderThanSecond(lastReceived) {
+function olderThanThreshold(lastReceived) {
 	return Date.now() - 1000 > lastReceived;
 }
