@@ -696,7 +696,7 @@ function getThemeYearConf(params, req, res, callback) {
 				});
 			}, function(err, map) {
 				var obj = {};
-				logger.info("theme# getThemeYearConf, layerRefs; layerRefMap before save to obj:", layerRefMap);
+				logger.info("theme# getThemeYearConf, layerRefs; layerRefMap before save to obj:", layerRefMap," Err: ", err);
 				obj.layerRefMap = layerRefMap;
 				if (!params['refreshLayers']) {
 					return asyncCallback(null, obj);
