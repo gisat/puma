@@ -2,7 +2,7 @@ class Units {
 	translatePercentage(unitFrom, unitTo) {
 		let allowedUnits = ['m2', 'km2', 'ha'];
 		if(!unitTo || allowedUnits.indexOf(unitFrom) == -1 || allowedUnits.indexOf(unitTo) == -1) {
-			return unitFrom
+			return 100; // Default value meaning that only standardized data are used.
 		}
 
 		// For some unknown reasons is default factor 100 and if it is different it doesn't work correctly.
