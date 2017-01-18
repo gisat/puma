@@ -1,5 +1,5 @@
 class Units {
-	translate(unitFrom, unitTo) {
+	translatePercentage(unitFrom, unitTo) {
 		let allowedUnits = ['m2', 'km2', 'ha'];
 		if(!unitTo || allowedUnits.indexOf(unitFrom) == -1 || allowedUnits.indexOf(unitTo) == -1) {
 			return unitFrom

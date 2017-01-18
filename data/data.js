@@ -159,7 +159,7 @@ function getData(params, callback) {
 			}
 
 			units = new Units();
-			factor = units.translate(normAttrUnits, attrUnits);
+			factor = units.translatePercentage(normAttrUnits, attrUnits);
 			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 
 			// How do you count factor of difference? The source data set is in one unit.
@@ -467,7 +467,7 @@ function getData(params, callback) {
 				dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
 
 				client.query(dataSql, function(err, resls) {
-					logger.info('api/data#getData Sql query: ',dataSql,' Results of Sql Query: ', resls.rows);
+					logger.info('api/data#getData Sql query: ',dataSql,' Results of Sql Query: ', resls && resls.rows);
 					if (err) {
 						logger.error('data#getData Read dataset. Sql: ', sql, ' Error: ', err);
 						return callback(new Error('notexistingdata (2)'));
