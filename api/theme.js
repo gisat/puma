@@ -472,6 +472,7 @@ function getThemeYearConf(params, req, res, callback) {
 			var client = conn.getPgDataDb();
 			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
 			client.query(sql, {}, function(err, resls) {
+				logger.info("theme# getThemeYearConf, auto:sql Results: ", resls.rows);
 				if (err){
 					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
 					return callback(err);
@@ -498,6 +499,7 @@ function getThemeYearConf(params, req, res, callback) {
 		}],
 
 		leafs: ['sql', function(asyncCallback, results) {
+			logger.info('theme# getThemeYearConf auto: leafs Data: ', results.sql);
 			if (!params['refreshAreas'] || params['refreshAreas']=='false' || params['bypassLeafs']) {
 				return asyncCallback(null, null);
 			}
@@ -580,7 +582,9 @@ function getThemeYearConf(params, req, res, callback) {
 				}
 				sql += ' GROUP BY (a.gid)';
 				var client = conn.getPgDataDb();
+				logger.info('api/theme#getThemeYearConf Leafs reload. Sql: ', sql);
 				client.query(sql, {}, function(err, resls) {
+					logger.info('api/theme#getThemeYearConf Leafs reload. Results: ', resls.rows);
 
 					if (err){
 						logger.error("theme#getThemeYearConf. Sql:", sql, " Error: ", err);
@@ -613,6 +617,7 @@ function getThemeYearConf(params, req, res, callback) {
 
 				});
 			},function(err) {
+				logger.error("theme# getThemeYearConf. Leafs  Error: ", err);
 				areas = _.union(areas,newAreas);
 				areas = _.sortBy(areas,'idx');
 				var obj = {
@@ -644,6 +649,7 @@ function getThemeYearConf(params, req, res, callback) {
 		},
 
 		layers: ['theme', 'locations', 'topicMap', 'symbologies', 'layerRefs', function(asyncCallback, results) {
+			logger.info('api/theme#getThemeYearConf layers');
 			if (!results.theme) {
 				return asyncCallback(null);
 			}
@@ -743,6 +749,7 @@ function getThemeYearConf(params, req, res, callback) {
 		}],
 
 		finish: ['layers', 'leafs', function(asyncCallback, results) {
+			logger.info('api/theme#getThemeYearConf finish');
 			res.data = (params['parentgids'] || params['justAreas']) ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
 				add: results.leafs ? results.leafs.add : results.sql.add,
 				leafMap: results.leafs ? results.leafs.leafMap : null,
