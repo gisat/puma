@@ -157,9 +157,14 @@ function getData(params, callback) {
 				normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
 			}
 
-			if (currentNorm=='area') { // area is by default in m2
+			if (currentNorm=='area') {
 				attrUnits = normalizationUnits || 'm2';
 				normAttrUnits = null;
+				percentage = false;
+			}
+
+			if(currentNorm == 'attribute' || currentNorm == 'attributeset') {
+				percentage = true;
 			}
 
 			units = new Units();
