@@ -216,8 +216,8 @@ function getLayers(params, req, res, callback) {
 
 
 
-function activateLayerRef(params, req, res, callback) {
-	let userId = req.session.userId;
+function activateLayerRef(params, user, res, callback) {
+	let userId = user.userId;
 	async.auto({
 		'layerRef': function(asyncCallback) {
 			if (params['obj']) {
@@ -241,7 +241,7 @@ function activateLayerRef(params, req, res, callback) {
 				}
 
 				var id = layerRef._id;
-				crud.update('layerref', layerRef, {userId: userId, isAdmin: res.locals.isAdmin}, function(err, result) {
+				crud.update('layerref', layerRef, {userId: userId, isAdmin: user.isAdmin}, function(err, result) {
 					if (err) {
 						logger.error("/api/layers.js activateLayerRef. It wasn't possible to update layerref: ", layerRef, " Error: ", err);
 						return callback(err);
@@ -285,7 +285,7 @@ function activateLayerRef(params, req, res, callback) {
 				} else {
 					item.active = false;
 				}
-				crud.update('layerref', item, {userId: userId, isAdmin: res.locals.isAdmin}, function(err) {
+				crud.update('layerref', item, {userId: userId, isAdmin: user.isAdmin}, function(err) {
 					if (err) {
 						logger.error("Error: activateLayerRef failed at finish phase. Layerref: ", item,"Error:", err);
 						return callback(err);
