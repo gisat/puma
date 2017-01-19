@@ -30,7 +30,7 @@ class Units {
 		}
 
 		if(!unitTo) {
-			if(allowedUnits.indexOf(unitFrom)) {
+			if(allowedUnits.indexOf(unitFrom) != -1) {
 				// Correct units give correct factor.
 				return units[unitFrom] * percentage;
 			} else {
@@ -39,7 +39,7 @@ class Units {
 		}
 
 		if(!unitFrom) {
-			if(allowedUnits.indexOf(unitTo)) {
+			if(allowedUnits.indexOf(unitTo) != -1) {
 				// Correct units give correct factor.
 				return 1 / (units[unitTo] * percentage);
 			} else {
