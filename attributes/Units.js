@@ -1,5 +1,9 @@
+let logger = require('../common/Logger').applicationWideLogger;
+
 class Units {
 	translatePercentage(unitFrom, unitTo) {
+		logger.info(`Units#translatePercentage From: ${unitFrom} To: ${unitTo}`);
+
 		let allowedUnits = ['m2', 'km2', 'ha'];
 		if(!unitTo || allowedUnits.indexOf(unitFrom) == -1 || allowedUnits.indexOf(unitTo) == -1) {
 			return 100; // Default value meaning that only standardized data are used.
