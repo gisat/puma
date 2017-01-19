@@ -694,11 +694,12 @@ function getAttrConf(params, callback) {
 					prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
 					prevAttrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
 					var normType = attrRec.normType;
+					let normalizationUnits = attRec.normalizationUnits;
 					var units = results.attr[attrRec.attr].units || '';
 					var normUnits = null;
 
 					if (normType == 'area') {
-						normUnits = 'm2';
+						normUnits = normalizationUnits || 'm2';
 					}
 					if (normType == 'year') {
 						normUnits = units;
@@ -720,12 +721,6 @@ function getAttrConf(params, callback) {
 						}
 					}
 
-					if (units == 'm2') {
-						units = 'km2';
-					}
-					if (normUnits == 'm2') {
-						normUnits = 'km2';
-					}
 					var unitsTotal = units.replace('2', '<sup>2</sup>') + (normUnits ? ('/' + normUnits.replace('2', '<sup>2</sup>')) : '');
 					if (units == normUnits) {
 						unitsTotal = '%';
