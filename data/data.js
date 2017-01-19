@@ -714,7 +714,7 @@ function getAttrConf(params, callback) {
 					prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
 					prevAttrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
 					var normType = attrRec.normType;
-					let normalizationUnits = attRec.normalizationUnits;
+					let normalizationUnits = attrRec.normalizationUnits;
 					var units = results.attr[attrRec.attr].units || '';
 					var normUnits = null;
 
