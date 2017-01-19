@@ -101,9 +101,22 @@ function getData(params, callback) {
 		attrsWithSort = _.union(attrs, [attrObj]);
 	}
 
+	// Gather normalization years. This means that we need to get data from all tables where normYears are used.
+	let normalizationYears = [];
+	for (let j = 0; j < attrsWithSort.length; j++) {
+		if(attrsWithSort[j].normYear && normalizationYears.indexOf(attrsWithSort[j].normYear) == -1) {
+			normalizationYears.push(attrsWithSort[j].normYear);
+		}
+	}
+
 	logger.info('data/data.js#getData Years: ', years, ' attrsWithSort: ', attrsWithSort, ' Normalization: ', params['normalization'], ' Normalization2: ', normalization, ' NormalizationAttribute: ', normalizationAttribute);
-	for (var i = 0; i < years.length; i++) {
-		var yearId = years[i];
+
+	let allYears = [];
+	allYears.push.apply(allYears, years);
+	allYears.push.apply(allYears, normalizationYears);
+	allYears = _.uniq(allYears);
+	for (var i = 0; i < allYears.length; i++) {
+		var yearId = allYears[i];
 		var pre = 'x_' + yearId + '.';
 		var normPre = (normalization && normalizationYear) ? ('x_' + normalizationYear + '.') : pre;
 		select += i == 0 ? ('%%gid%% AS gid') : '';
@@ -118,6 +131,10 @@ function getData(params, callback) {
 		}
 		for (var j = 0; j < attrsWithSort.length; j++) {
 			var attr = attrsWithSort[j];
+			if(attr.normYear) {
+				normPre = `x_${attr.normYear}.`;
+			}
+
 			var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
 			var aliasAttrName = moreYears ? (attrName + '_y_' + yearId) : attrName;
 			if (_.contains(attrs,attr)) {
