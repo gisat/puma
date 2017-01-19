@@ -136,6 +136,8 @@ function getData(params, callback) {
 			var currentNorm = attr.normType;
 			var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
 			var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
+			let normalizationUnits = attr.normalizationUnits;
+
 			var normAttrName = null;
 			var norm = '';
 			var attrUnits = null;
@@ -145,21 +147,22 @@ function getData(params, callback) {
 			//var prevAttrMap = params.prevAttrMap;
 
 
-			// This represents unit of the target units.
+			// This represents unit of the source attribute.
 			if (attrMap && attrMap[attr.as] && attrMap[attr.as][attr.attr]) {
 				attrUnits = attrMap[attr.as][attr.attr].units;
 			}
-			// If there is normalization attribute set, load units from that data set.
+			// If there is normalization attribute set, load units from that data set. These represents target units.
 			if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
 				normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
 			}
 
 			if (currentNorm=='area') { // area is by default in m2
-				normAttrUnits = 'm2';
+				attrUnits = 'm2';
+				normAttrUnits = normalizationUnits || 'm2';
 			}
 
 			units = new Units();
-			factor = units.translatePercentage(normAttrUnits, attrUnits);
+			factor = units.translate(attrUnits, normAttrUnits);
 			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 
 			// How do you count factor of difference? The source data set is in one unit.
