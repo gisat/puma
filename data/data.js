@@ -137,6 +137,7 @@ function getData(params, callback) {
 			var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
 			var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
 			let normalizationUnits = attr.normalizationUnits;
+			let percentage = attr.percentage;
 
 			var normAttrName = null;
 			var norm = '';
@@ -162,7 +163,7 @@ function getData(params, callback) {
 			}
 
 			units = new Units();
-			factor = units.translate(attrUnits, normAttrUnits);
+			factor = units.translate(attrUnits, normAttrUnits, percentage);
 			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 
 			// How do you count factor of difference? The source data set is in one unit.
