@@ -13,9 +13,9 @@ class Units {
 	 * @returns {number}
 	 */
 	translate(unitFrom, unitTo, percentage) {
-		logger.info(`Units#translate From: ${unitFrom} To: ${unitTo}`);
-
 		percentage = percentage ? 100: 1;
+
+		logger.info(`Units#translate From: ${unitFrom} To: ${unitTo} Percentage: ${percentage}`);
 
 		let allowedUnits = ['m2', 'km2', 'ha'];
 		let units = {
