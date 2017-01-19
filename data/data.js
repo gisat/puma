@@ -7,7 +7,6 @@ var _ = require('underscore');
 let Units = require('../attributes/Units');
 
 function getData(params, callback) {
-
 	var client = conn.getPgDataDb();
 
 	var areas = JSON.parse(params['areas']);
@@ -19,7 +18,16 @@ function getData(params, callback) {
 	}
 	var years = JSON.parse(params['years']);
 	var normalization = params['normalization'] || null;
-	var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) : null;
+	let normalizationYears = [];
+
+	// Gather normalization years. This means that we need to get data from all tables where normYears are used.
+	for (let j = 0; j < attrs.length; j++) {
+		if(attrs[j].normYear && normalizationYears.indexOf(attrs[j].normYear) == -1) {
+			normalizationYears.push(attrs[j].normYear);
+		}
+	}
+	var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) :
+		normalizationYears.length > 0 && normalizationYears[0] || null;
 	var normalizationAttributeSet = params['normalizationAttributeSet'] ? parseInt(params['normalizationAttributeSet']) : null;
 	var normalizationAttribute = params['normalizationAttribute'] ? parseInt(params['normalizationAttribute']) : null;
 
@@ -101,22 +109,12 @@ function getData(params, callback) {
 		attrsWithSort = _.union(attrs, [attrObj]);
 	}
 
-	// Gather normalization years. This means that we need to get data from all tables where normYears are used.
-	let normalizationYears = [];
-	for (let j = 0; j < attrsWithSort.length; j++) {
-		if(attrsWithSort[j].normYear && normalizationYears.indexOf(attrsWithSort[j].normYear) == -1) {
-			normalizationYears.push(attrsWithSort[j].normYear);
-		}
-	}
+
 
 	logger.info('data/data.js#getData Years: ', years, ' attrsWithSort: ', attrsWithSort, ' Normalization: ', params['normalization'], ' Normalization2: ', normalization, ' NormalizationAttribute: ', normalizationAttribute);
 
-	let allYears = [];
-	allYears.push.apply(allYears, years);
-	allYears.push.apply(allYears, normalizationYears);
-	allYears = _.uniq(allYears);
-	for (var i = 0; i < allYears.length; i++) {
-		var yearId = allYears[i];
+	for (var i = 0; i < years.length; i++) {
+		var yearId = years[i];
 		var pre = 'x_' + yearId + '.';
 		var normPre = (normalization && normalizationYear) ? ('x_' + normalizationYear + '.') : pre;
 		select += i == 0 ? ('%%gid%% AS gid') : '';
@@ -131,10 +129,6 @@ function getData(params, callback) {
 		}
 		for (var j = 0; j < attrsWithSort.length; j++) {
 			var attr = attrsWithSort[j];
-			if(attr.normYear) {
-				normPre = `x_${attr.normYear}.`;
-			}
-
 			var attrName = attr.area ? 'area' : ('as_' + attr.as + '_attr_' + attr.attr);
 			var aliasAttrName = moreYears ? (attrName + '_y_' + yearId) : attrName;
 			if (_.contains(attrs,attr)) {
