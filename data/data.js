@@ -708,14 +708,14 @@ function getAttrConf(params, callback) {
 				var prevAttrMap = {};
 				var unitsArr = [];
 				for (var i = 0; i < attrs.length; i++) {
-					var attrRec = attrs[i];
-					attrMap[attrRec.as] = attrMap[attrRec.as] || {};
-					attrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
-					prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
-					prevAttrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
-					var normType = attrRec.normType;
-					let normalizationUnits = attrRec.normalizationUnits;
-					var units = results.attr[attrRec.attr].units || '';
+					var attrReceived = attrs[i];
+					attrMap[attrReceived.as] = attrMap[attrReceived.as] || {};
+					attrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
+					prevAttrMap[attrReceived.as] = prevAttrMap[attrReceived.as] || {};
+					prevAttrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
+					var normType = attrReceived.normType;
+					let normalizationUnits = attrReceived.normalizationUnits;
+					var units = results.attr[attrReceived.attr].units || '';
 					var normUnits = null;
 
 					if (normType == 'area') {
@@ -728,8 +728,8 @@ function getAttrConf(params, callback) {
 						normUnits = units;
 					}
 					if (normType == 'attribute' || normType == 'attributeset') {
-						var normAttr = attrRec.normAttr || attrRec.attr || params['normalizationAttribute'];
-						var normAttrSet = attrRec.normAs || params['normalizationAttributeSet'];
+						var normAttr = attrReceived.normAttr || attrReceived.attr || params['normalizationAttribute'];
+						var normAttrSet = attrReceived.normAs || params['normalizationAttributeSet'];
 						//console.log(normAttrSet,normAttr)
 						if (normAttr && normAttrSet) {
 							var normAttrRec = results.attr[normAttr];
@@ -741,11 +741,12 @@ function getAttrConf(params, callback) {
 						}
 					}
 
-					var unitsTotal = units.replace('2', '<sup>2</sup>') + (normUnits ? ('/' + normUnits.replace('2', '<sup>2</sup>')) : '');
+					var unitsTotal = units + (normUnits ? ('/' + normUnits) : '');
 					if (units == normUnits) {
 						unitsTotal = '%';
 					}
-					attrMap[attrRec.as][attrRec.attr].units = unitsTotal;
+					logger.info(`data/data#saveSld res Units: ${units} Normalization Units: ${normUnits} Total units: ${unitsTotal}`);
+					attrMap[attrReceived.as][attrReceived.attr].units = unitsTotal;
 					unitsArr.push(unitsTotal);
 				}
 
