@@ -157,8 +157,8 @@ function getData(params, callback) {
 			}
 
 			if (currentNorm=='area') { // area is by default in m2
-				attrUnits = 'm2';
-				normAttrUnits = normalizationUnits || 'm2';
+				attrUnits = normalizationUnits || 'm2';
+				normAttrUnits = null;
 			}
 
 			units = new Units();
