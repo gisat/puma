@@ -1,28 +1,53 @@
 let logger = require('../common/Logger').applicationWideLogger;
 
-// There are actually few important cases to distinguish:
-//  - I want the results in percents
-//  - I want the results in different unit.
+/**
+ * Translates between different units available in the application.
+ */
 class Units {
-	translate(unitFrom, unitTo) {
-		logger.info(`Units#translatePercentage From: ${unitFrom} To: ${unitTo}`);
-		if(unitFrom == 'm2' && unitTo == '%') {
-			return 100;
-		}
+	/**
+	 * It translates from unitFrom to unitTo to receive a factor used to transposing the data. There are certain specific
+	 * use cases. There might
+	 * @param unitFrom Any of standard units
+	 * @param unitTo Any of standard units
+	 * @param percentage If true it means that the data should be returned as percentage.
+	 * @returns {number}
+	 */
+	translate(unitFrom, unitTo, percentage) {
+		logger.info(`Units#translate From: ${unitFrom} To: ${unitTo}`);
+
+		percentage = percentage ? 100: 1;
 
 		let allowedUnits = ['m2', 'km2', 'ha'];
-		if(!unitTo || allowedUnits.indexOf(unitFrom) == -1 || allowedUnits.indexOf(unitTo) == -1) {
-			return 1; // Default value meaning that only standardized data are used.
-		}
-
-		// For some unknown reasons is default factor 100 and if it is different it doesn't work correctly.
 		let units = {
 			m2: 1,
 			ha: 10000,
 			km2: 1000000
 		};
 
-		return (units[unitFrom] / units[unitTo]) * 100; // 100 for percentage.
+		if(!unitFrom && !unitTo) {
+			logger.error(`Units#translate Incorrect units from and to.`);
+			return percentage;
+		}
+
+		if(!unitTo) {
+			if(allowedUnits.indexOf(unitFrom)) {
+				// Correct units give correct factor.
+				return units[unitFrom] * percentage;
+			} else {
+				return percentage;
+			}
+		}
+
+		if(!unitFrom) {
+			if(allowedUnits.indexOf(unitTo)) {
+				// Correct units give correct factor.
+				return 1 / (units[unitTo] * percentage);
+			} else {
+				return 1 / percentage;
+			}
+		}
+
+		return (units[unitFrom] / units[unitTo]) * percentage;
 	}
 }
 
