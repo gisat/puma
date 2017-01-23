@@ -9,6 +9,7 @@ var AttributeSetController = require('./AttributeSetController');
 var ChartCfgController = require('./ChartCfgController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
+var CustomFeaturesController = require('./CustomFeaturesController');
 var ExportController = require('./ExportController');
 var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
@@ -82,6 +83,7 @@ module.exports = function(app) {
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
 	new DataViewController(app, pool);
+	new CustomFeaturesController(app, pool);
 	new LayerGroupController(app, pool);
 	new LayerRefController(app, pool);
 	new LocationController(app, pool);
