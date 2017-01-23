@@ -1,9 +1,11 @@
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
+let conn = require('../common/conn');
 
 var PgBaseLayerTables = require('./PgBaseLayerTables');
 var PgMongoLayerReference = require('./PgMongoLayerReference');
+let MongoLayerReference = require('./MongoLayerReference');
 
 /**
  * This class represents the views for simplification of requests to the various data source tables.
@@ -29,7 +31,7 @@ class PgLayerViews {
 	 */
     update(layerReferenceId, dataLayerReferences = []) {
         return this.remove(layerReferenceId).then(() => {
-            return this.add(layerReferenceId, dataLayerReferences);
+            return this.add(new MongoLayerReference(layerReferenceId, conn), dataLayerReferences);
         })
     }
 
@@ -89,7 +91,7 @@ class PgLayerViews {
             attributes = pAttributes;
             return this.joinedDataTables(dataLayerReferences, tableName, fidColumn);
         }).then(joinedDataTables => {
-            var sql = `CREATE VIEW ${schema}.${PgLayerViews.name(id)} AS SELECT
+			let sql = `CREATE VIEW ${schema}.${PgLayerViews.name(id)} AS SELECT
                 l_${tableName}."${fidColumn}" AS gid,
                 l_${tableName}."${nameColumn}"::text AS name,
                 ${this.parentColumn(tableName, parentColumn)},
@@ -116,14 +118,14 @@ class PgLayerViews {
 
     // TODO: Refactor and find a better solution for this.
     attributes(dataLayerReferences) {
-        var promises = [];
+        let promises = [];
 
         dataLayerReferences.forEach(layerReference =>{
             promises.push(new PgMongoLayerReference(layerReference).attributes());
         });
 
         return Promise.all(promises).then(results => {
-            var attributes = ``;
+			let attributes = ``;
             results.forEach(result =>{
                 result.forEach(attribute => {
                     attributes += `${attribute.tableAlias}."${attribute.source}" AS ${attribute.target}, `;
