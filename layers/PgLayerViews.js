@@ -5,32 +5,56 @@ var Promise = require('promise');
 var PgBaseLayerTables = require('./PgBaseLayerTables');
 var PgMongoLayerReference = require('./PgMongoLayerReference');
 
+/**
+ * This class represents the views for simplification of requests to the various data source tables.
+ */
 class PgLayerViews {
-    constructor(pgPool, schema) {
+	/**
+     * It creates instance representing the views simplifying the querying through the data tables. There is one view
+     * per layer reference which doesn't contain data and is therefore known as Base Layer. This view then contains
+     * geometries and ids of all the polygons with columns representing the columns in the data layers.
+	 * @param pgPool {PgPool} Pool for the PostgreSQL.
+	 * @param schema {String} Name of the schema which should contain the view. Default usually is views.
+	 */
+	constructor(pgPool, schema) {
         this._pgPool = pgPool;
         this.schema = schema;
     }
 
-    update(layerReferenceId, sourceTableName, fidColumn, nameColumn, parentColumn, dataLayerReferences = []) {
+	/**
+     * It removes the view from the database. The layerReferenceId is part of the name of the view. The structure is
+     * layer_{layerReferenceId}
+	 * @param layerReferenceId {Number} Id of the base layer.
+	 * @param dataLayerReferences {MongoLayerReference[]} Layers which contains the data.
+	 */
+    update(layerReferenceId, dataLayerReferences = []) {
         return this.remove(layerReferenceId).then(() => {
-            return this.add(layerReferenceId, sourceTableName, fidColumn, nameColumn, parentColumn, dataLayerReferences);
+            return this.add(layerReferenceId, dataLayerReferences);
         })
     }
 
-    remove(layerReferenceId) {
+	/**
+     * It removes view with the given Id.
+	 * @param layerReferenceId {Number} Id of the base layer.
+	 */
+	remove(layerReferenceId) {
         if(!layerReferenceId) {
             throw new Error(
                 logger.error(`PgLayerViews#remove Wrong parameters: layerReferenceId: ${layerReferenceId}`)
             );
         }
 
-        var schema = config.viewsSchema;
+        let schema = config.viewsSchema;
         return this._pgPool.pool().query(`DROP VIEW ${schema}.${this.name(layerReferenceId)}`);
     }
 
     // TODO: It wont work, when columns with same name from different tables are used.
-    // So the difference is done byt he name of the table so what about actually using the name of the table.
-    add(baseLayerReference, dataLayerReferences) {
+	/**
+     * It adds the view representing base layer with all the data.
+	 * @param baseLayerReference {MongoLayerReference} Id of the base layer.
+	 * @param dataLayerReferences {MongoLayerReference[]} Layers containing the data.
+	 */
+	add(baseLayerReference, dataLayerReferences) {
         if (!baseLayerReference) {
             throw new Error(
                 logger.error(`PgLayerViews Wrong parameters. layerReferenceId: ${baseLayerReference}`)
