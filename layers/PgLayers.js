@@ -1,5 +1,6 @@
 let moment = require('moment');
 let Promise = require('promise');
+let _ = require('underscore');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
@@ -11,7 +12,7 @@ let FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 class PgLayers {
     constructor(pgPool, mongo, schema) {
         this.pgPool = pgPool;
-        this._schema = schema;
+        this.schema = schema;
         this._mongo = mongo;
     }
 
@@ -20,16 +21,14 @@ class PgLayers {
 	 */
 	all() {
         // It returns names of all views representing layers in the PostgreSql.
-        return this.pgPool.query(`SELECT * FROM ${this._schema}.layers`).then(result => {
+        return this.pgPool.query(`SELECT * FROM ${this.schema}.layers`).then(result => {
         	// From the mongo retrieve whether they are referenced. They are referenced when the are used in a layerref.
 			return Promise.all(result.rows.map(layer => {
 				return new FilteredMongoLayerReferences({layer: layer.name}, this._mongo).json().then(layerReferences => {
-					return {
-						name: layer.name,
-						path: layer.path,
+					return _.extend(layer, {
 						referenced: layerReferences.length > 0,
 						source: 'internal'
-					};
+					});
 				});
 			}));
         });
@@ -40,7 +39,7 @@ class PgLayers {
 	 * @param id {Number} Id to look for in layers.
 	 */
 	byId(id) {
-		return this.pgPool.query(`SELECT * FROM ${this._schema}.layers WHERE id = ${id}`).then(result => {
+		return this.pgPool.query(`SELECT * FROM ${this.schema}.layers WHERE id = ${id}`).then(result => {
 			if(result.rows.length == 0) {
 				throw new Error(
 					logger.error(`PgLayers#id NO layer with given id: ${id}`)
@@ -59,17 +58,40 @@ class PgLayers {
     add(name, path, userId) {
 		let time = moment().format('YYYY-MM-DD HH:mm:ss');
 
-		return this.pgPool.query(`INSERT INTO ${this._schema}.layers (name, path, created, created_by, changed, changed_by) VALUES ('${name}', '${path}', '${time}', ${userId}, '${time}', ${userId}) RETURNING id`).then(result => {
+		return this.pgPool.query(`INSERT INTO ${this.schema}.layers (name, path, created, created_by, changed, changed_by) VALUES ('${name}', '${path}', '${time}', ${userId}, '${time}', ${userId}) RETURNING id`).then(result => {
 		    return this.byId(result.rows[0].id);
         });
     }
+
+	/**
+	 * It updates layer with given id. If no id or userId is specified throws Error. Id must be numeric otherwise the SQL update will fail.
+	 * @param id {Number} Id of the layer
+	 * @param name {String} Name of the layer
+	 * @param path {String} Path to the layer as perceived by geonode.
+	 * @param userId {Number} Id of the user must be numeric.
+	 */
+    update(id, name, path, userId) {
+		if(!id || (userId != 0 && !userId)) {
+			throw new Error(`PgLayer#update Incorrect arguments Id: ${id}, UserId: ${userId}`);
+		}
+
+		let time = moment().format('YYYY-MM-DD HH:mm:ss');
+
+		return this.pgPool.query(`UPDATE ${this.schema}.layers SET name = '${name}', path='${path}', created = '${time}', created_by = ${userId} WHERE id = ${id}`).then(result => {
+			return this.byId(id);
+		});
+	}
 
 	/**
 	 * It deletes layer with specified id from the persistent store. The layer remains in the source.
 	 * @param id
 	 */
 	delete(id) {
-		return this.pgPool.query(`DELETE FROM ${this._schema}.layers WHERE id = ${id}`);
+		return this.pgPool.query(`DELETE FROM ${this.schema}.layers WHERE id = ${id}`);
+	}
+
+	static tableName() {
+		return 'layers';
 	}
 }
 

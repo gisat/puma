@@ -6,7 +6,7 @@ class PgGeometryRows {
         this._pgRows = new PgRows(schema, table, idColumn, pgPool);
 
         this._geometryColumnName = geometryColumnName;
-        this._schema = schema;
+        this.schema = schema;
         this._table = table;
         this._pgPool = pgPool;
     }
@@ -17,7 +17,7 @@ class PgGeometryRows {
 
             rows.forEach(row =>{
                 geometryRows.push(
-                    new PgGeometryCachedRow(row, this._schema, this._table, this._geometryColumnName, this._pgPool)
+                    new PgGeometryCachedRow(row, this.schema, this._table, this._geometryColumnName, this._pgPool)
                 );
             });
 

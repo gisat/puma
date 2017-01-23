@@ -4,7 +4,7 @@ var LodEnhancedTable = require('./LodEnhancedTable');
 
 class LodCreatedTable {
     constructor(pgPool, schema, table, place) {
-        this._schema = schema;
+        this.schema = schema;
         this._table = table;
 
         this._pgPool = pgPool;
@@ -14,7 +14,7 @@ class LodCreatedTable {
     }
 
     create() {
-        var sql = `CREATE TABLE ${this._schema}.${this._table} (
+        var sql = `CREATE TABLE ${this.schema}.${this._table} (
             fid SERIAL,        
             lu text,
             area text,

@@ -11,9 +11,19 @@ let config = require('./config');
  * Purpose of this class is to allow me to simply set up and tear down the environment for integration tests.
  */
 class IntegrationEnvironment {
-    constructor(onApplicationReady) {
+	/**
+     * The method must return promise.
+	 * @param onApplicationReady {Function}
+	 * @param fixture {Object} containing relevant information for setting up for example the user.
+	 */
+	constructor(onApplicationReady, fixture) {
         this._onApplicationReady = onApplicationReady; // This function should create valid controllers.
         this._commonSchema = "data_test";
+        this._fixture = fixture;
+
+        this.app = null;
+        this.pool = null;
+        this.server = null;
     }
 
     /**
@@ -21,10 +31,16 @@ class IntegrationEnvironment {
      * @return Promise
      */
     setup() {
-        let app = express();
+        let app = this.app = express();
         app.use(express.bodyParser());
+		app.use((request, response, next) => {
+			request.session = {};
+			request.session.userId = 1;
+			request.session.user = this._fixture.user;
+			next();
+		});
 
-        let pool = new PgPool({
+        let pool = this.pool = new PgPool({
             user: config.pgDataUser,
             database: config.pgDataDatabase,
             password: config.pgDataPassword,
@@ -38,12 +54,13 @@ class IntegrationEnvironment {
             this.schema = new DatabaseSchema(pool, this._commonSchema);
             return this.schema.create();
         }).then(() => {
-            this._onApplicationReady(app, pool, this.schema);
-            return new Promise((resolve) => {
-                app.listen(config.port, function () {
-                    resolve();
-                });
-            });
+            return this._onApplicationReady(app, pool, this.schema, this._mongoDb);
+        }).then(() => {
+        	return new Promise((resolve) => {
+				this.server = app.listen(config.port, function () {
+					resolve();
+				});
+			});
         });
     }
 
@@ -53,10 +70,11 @@ class IntegrationEnvironment {
      * @returns {Promise}
      */
     tearDown() {
-        let collections = ['symbology, analysis, areatemplate, attribute, attributeset, chartcfg, dataset, dataview, ' +
-        'layergroup, layerref, location, performedanalysis, settings, theme, topic, visualization, year'];
+        let collections = ['symbology', 'analysis', 'areatemplate', 'attribute', 'attributeset', 'chartcfg', 'dataset', 'dataview', 'layergroup', 'layerref', 'location', 'performedanalysis', 'settings', 'theme', 'topic', 'visualization', 'year'];
 
         return this.schema.drop().then(() => {
+        	this.server.close();
+
             return Promise.all(collections.map(collection => {
                 return this._mongoDb.collection(collection).deleteMany({});
             }));

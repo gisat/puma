@@ -16,7 +16,7 @@ class Migration {
 			port: config.pgDataPort
 		});
 		this._pool = this._connectionPool.pool();
-		this._schema = config.postgreSqlSchema;
+		this.schema = config.postgreSqlSchema;
 	}
 
 	run() {
@@ -26,7 +26,7 @@ class Migration {
 		return this.verify().then(function (pExists) {
 			exists = pExists;
 		}).then(function () {
-			return new DatabaseSchema(self._connectionPool, self._schema).create()
+			return new DatabaseSchema(self._connectionPool, self.schema).create()
 		}).then(function () {
 			return MongoClient.connect(config.mongoConnString);
 		}).then(function (client) {
@@ -48,7 +48,7 @@ class Migration {
 
 	verify() {
 		logger.info('Migration#verify Started verification');
-		return this._pool.query('select * from ' + this._schema + '.migration where name = \'' + this._name + '\'').then(function (results) {
+		return this._pool.query('select * from ' + this.schema + '.migration where name = \'' + this._name + '\'').then(function (results) {
 			logger.info('Migration#verify Results: ', results.rows);
 			return results.rows.length > 0;
 		}).catch(function (error) {
@@ -58,7 +58,7 @@ class Migration {
 
 	save() {
 		logger.info('Migration#save Started Saving');
-		return this._pool.query('insert into ' + this._schema + '.migration (name) values ($1)', [this._name]).then(function(results){
+		return this._pool.query('insert into ' + this.schema + '.migration (name) values ($1)', [this._name]).then(function(results){
 			logger.info('Migration#save Results: ', results.rows);
 			return true;
 		}).catch(function (error) {

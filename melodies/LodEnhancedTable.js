@@ -9,7 +9,7 @@ var LodAmenities = require('./LodAmenities');
 class LodEnhancedTable {
     constructor(pgPool, schema, table, idColumn) {
         this._pgPool = pgPool;
-        this._schema = schema;
+        this.schema = schema;
         this._table = table;
 
         // TODO: Configure id and geometry

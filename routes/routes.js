@@ -1,6 +1,7 @@
 var crud = require('../rest/crud');
 var config = require('../config');
-var logger = require('../common/Logger').applicationWideLogger;
+let logger = require('../common/Logger').applicationWideLogger;
+let conn = require('../common/conn');
 
 var AnalysisController = require('./AnalysisController');
 var AreaTemplateController = require('./AreaTemplateController');
@@ -28,6 +29,7 @@ var IntegrationController = require('./IntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
 let LayerGeonodeController = require('../layers/LayerGeonodeController');
+let LayerWmsController = require('../layers/wms/LayerWmsController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -78,6 +80,7 @@ module.exports = function(app) {
 	}
 	new AttributeController(app, pool, poolRemote);
 	new LayerGeonodeController(app, pool);
+	new LayerWmsController(app, pool, conn.getMongoDb());
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);

@@ -9,15 +9,16 @@ var logger = require('../common/Logger').applicationWideLogger;
  */
 var DatabaseSchema = function (pool, schema) {
     this._pool = pool.pool();
-    this._schema = schema;
+    this.schema = schema;
 };
+
 
 /**
  * It returns promise of dropping of the schema with all the objects in it.
  * @returns {Promise.<T>}
  */
 DatabaseSchema.prototype.drop = function () {
-    var dropSchema = 'drop schema ' + this._schema + ' CASCADE';
+    var dropSchema = 'drop schema ' + this.schema + ' CASCADE';
     return this._pool.query(dropSchema);
 };
 
@@ -28,8 +29,8 @@ DatabaseSchema.prototype.drop = function () {
 DatabaseSchema.prototype.create = function () {
     var createAnalysis = 'create schema IF NOT EXISTS analysis';
     var createViews = 'create schema IF NOT EXISTS views';
-    var createSchema = 'create schema IF NOT EXISTS ' + this._schema;
-    var createStyleTable = 'create table IF NOT EXISTS ' + this._schema + '.style (' +
+    var createSchema = 'create schema IF NOT EXISTS ' + this.schema;
+    var createStyleTable = 'create table IF NOT EXISTS ' + this.schema + '.style (' +
         'sld text,' +
         'definition text,' +
         'name text,' +
@@ -41,25 +42,25 @@ DatabaseSchema.prototype.create = function () {
         'changed_by int,' +
         'id varchar(64) Unique' +
         ')';
-    var createMigrationTable = 'create table IF NOT EXISTS ' + this._schema + '.migration (' +
+    var createMigrationTable = 'create table IF NOT EXISTS ' + this.schema + '.migration (' +
         'id SERIAL PRIMARY KEY,' +
         'name varchar(128)' +
         ');';
-    var createPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this._schema}.permissions (
+    var createPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this.schema}.permissions (
 		 id SERIAL PRIMARY KEY,
 	 	 user_id int NOT NULL,
 		 resource_id int,
 		 resource_type varchar(20),
 		 permission varchar(20)
 	)`;
-    let createGroupPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this._schema}.group_permissions (
+    let createGroupPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this.schema}.group_permissions (
          id SERIAL PRIMARY KEY,
 	 	 group_id int NOT NULL,
 		 resource_id int,
 		 resource_type varchar(20),
 		 permission varchar(20)
     )`;
-    let createGroup = `CREATE TABLE IF NOT EXISTS ${this._schema}.groups (
+    let createGroup = `CREATE TABLE IF NOT EXISTS ${this.schema}.groups (
         id SERIAL PRIMARY KEY,
         name text,
         created timestamp,
@@ -67,7 +68,7 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int
     )`;
-    let createGroupHasMembers = `CREATE TABLE IF NOT EXISTS ${this._schema}.group_has_members (
+    let createGroupHasMembers = `CREATE TABLE IF NOT EXISTS ${this.schema}.group_has_members (
         id SERIAL PRIMARY KEY,
         group_id int NOT NULL,
         user_id int NOT NULL,
@@ -78,7 +79,7 @@ DatabaseSchema.prototype.create = function () {
     )`;
     // Path means the location where the layer resides. It can be something like geonode:stuff or analysis:stuff or even
     // something else.
-    let createLayers = `CREATE TABLE IF NOT EXISTS ${this._schema}.layers (
+    let createLayers = `CREATE TABLE IF NOT EXISTS ${this.schema}.layers (
         id SERIAL PRIMARY KEY,
         name text,
         path text,
@@ -87,10 +88,13 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int
     )`;
-    let createWmsLayers = `CREATE TABLE iF NOT EXISTS ${this._schema}.wms_layers (
+    let createWmsLayers = `CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layers (
         id SERIAL PRIMARY KEY,
         name text,
         url text,
+        scope int,
+        place int,
+        period int,
         created timestamp,
         created_by int, 
         changed timestamp, 
