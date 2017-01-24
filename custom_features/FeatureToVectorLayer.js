@@ -5,37 +5,65 @@ var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
+var PgPublicTable = require('../layers/PgPublicTable');
 
 /**
  * Class representing adding features to vector layers
  */
 class FeatureToVectorLayer {
-    constructor (filter) {
+    constructor (filter, pool) {
         this._connection = conn.getMongoDb();
+        this._pgPool = pool;
 
         this._mongoRefLayer = new FilteredMongoLayerReferences({
-            location: Number(filter.location),
-            year: Number(filter.period),
+            //location: Number(filter.currentLocation),
+            //year: Number(filter.currentPeriod),
             areaTemplate: Number(filter.areaTemplate),
             isData: false
         }, this._connection);
     }
 
+    /**
+     * Add feature to vector layer
+     * @param data {Object}
+     * @returns {Promise.<T>}
+     */
     addFeature (data){
-        return this.getLayerId().then(function(layerId){
-            console.log(layerId);
+        return this.getLayerInfo().then(this.addFeatureToTable.bind(this, data));
+    }
+
+    /**
+     * Add feature to table in public view
+     * @param data {Object}
+     * @param layers {Array} list of layers
+     */
+    addFeatureToTable (data, layers) {
+        this._pgPublicTable = new PgPublicTable(this._pgPool, layers.name);
+        return this._pgPublicTable.insertRecord(data).then(function(res){
+            console.log(layers);
+            // todo update base layers
+            // todo update views
+            logger.info(`INFO FeatureToVectorLayer#insert : Record was inserted!`);
+        }).catch(err => {
+            throw new Error(
+                logger.error(`ERROR FeatureToVectorLayer#insert Error: `, err)
+            )
         });
     }
 
     /**
-     * Get layer id from Mongo
+     * Get layer id and name from Mongo
      * @returns {Promise|*|Request|Promise.<T>}
      */
-    getLayerId (){
-        return this._mongoRefLayer.read().then(function(result){
-            var id = result[0]._id;
-            logger.info(`INFO FeatureToVectorLayer#getLayerId id: ` + id);
-            return id;
+    getLayerInfo (){
+        return this._mongoRefLayer.json().then(function(result){
+            var name = result[0].layer;
+
+            logger.info(`INFO FeatureToVectorLayer#getLayerId name: ` + name);
+            return {
+                layers: result,
+                name: name
+            };
         });
     }
 }
