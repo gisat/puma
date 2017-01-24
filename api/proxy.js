@@ -91,12 +91,12 @@ function wms(params, req, res, callback) {
 	if (params['LAYERS']) {
 		params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
+	var layers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
 	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/' + config.geoserver2Workspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
-	var layers = params['LAYERS'];
 	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[layers]) ? layerGroupMap[layers][style || 'def'] : '';
 
 	
@@ -171,6 +171,10 @@ function wms(params, req, res, callback) {
 		options.resEncoding = 'binary';
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
+		// TODO: Figure out sane solution to handling the legend.
+		if(layers && layers.indexOf(',') == -1 && layers.indexOf('panther:') != 0) {
+			options.path = options.path.replace('geonode', layers.split(':')[0]);
+		}
 	}
 	var time = new Date().getTime();
 	//console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
@@ -221,6 +225,9 @@ function saveSld(params, req, res, callback) {
 	var legendSld = params['legendSld'] || '';
 	params['userId'] = req.session.userId;
 	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
+
+	logger.info(`api/proxy.js#saveSld Save OldId: ${oldId} userLocation: ${userLocation} Sld: ${sld} LegendSld: ${legendSld}`);
+
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
 		var attrs = JSON.parse(params['attrs']);
@@ -257,6 +264,9 @@ function saveSld(params, req, res, callback) {
 			if (!params['showChoropleth'] && !params['showMapChart']) {
 				return asyncCallback(null);
 			}
+
+			logger.info(`api/proxy.js#saveSld#data ShowChoropleth: ${params["showChoropleth"]} AttrConfig: `, results.attrConf);
+
 			var dataParams = _.clone(params);
 			dataParams['aggregate'] = 'min,max';
 			if (params['showChoropleth']) {
@@ -358,7 +368,7 @@ function saveSld(params, req, res, callback) {
 			})
 		}],
 		result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
-
+			logger.info(`api/proxy.js#saveSld#result Data: `,results.data,` LayerRef: ${results.layerRef} Density: ${results.density} AttrConf: ${results.attrConf}`);
 
 			var topTreeNorm = params['normalization'] == 'toptree';
 			if (params['showMapChart']) {
@@ -406,6 +416,7 @@ function saveSld(params, req, res, callback) {
 					var newRest = restSize;
 					var catIdx = 0;
 					var val = 0;
+					logger.info(`api/proxy.js#saveSld#result Data length: ${dataLength}, Category size: ${catSize}, NumberOfCategories: ${numCat}, RestSize: ${restSize}, Attribute Name: ${attrName}`);
 					for (var i=1;i<dataLength;i++) {
 						var idx = i;
 						var diff = catSize + ((newRest>0) ? 1 : 0);
@@ -413,8 +424,9 @@ function saveSld(params, req, res, callback) {
 							newRest--;
 							catIdx++;
 							var item = results.data.data[idx];
-							var current = results.data.data[idx][attrName];
-							var prev = results.data.data[idx - 1][attrName];
+							var current = Number(results.data.data[idx][attrName]);
+							var prev = Number(results.data.data[idx - 1][attrName]);
+							logger.info(`api/proxy.js#saveSld#result Current: ${current}, Previous: ${prev}, ActualValue: ${val}`);
 							if (prev!=null && dataLength!=1) {
 								val = prev+(current-prev)/2;
 								val = val.toFixed(fixNum);
@@ -437,9 +449,7 @@ function saveSld(params, req, res, callback) {
 					}
 				}
 			}
-			//console.log(sld);
 			if (results.attrConf) {
-				//console.log(results.attrConf.attrMap.units);
 				legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');
 			}
 			sldMap[id] = {
@@ -461,8 +471,7 @@ function saveSld(params, req, res, callback) {
 			if (densityMap[oldId]) {
 				delete densityMap[oldId];
 			}
-
-			//console.log(sld);
+			logger.info(`api/proxy.js#saveSld#result Id: ${id}, Sld: ${sld}, LegendSld: ${legendSld}`);
 
 			res.data = id;
 			return callback(null);

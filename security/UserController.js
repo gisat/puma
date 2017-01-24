@@ -4,6 +4,7 @@ let logger = require('../common/Logger').applicationWideLogger;
 let superagent = require('superagent');
 let Promise = require('promise');
 
+let Permission = require('./Permission');
 let PgPermissions = require('./PgPermissions');
 let PgUsers = require('./PgUsers');
 let User = require('./User');
@@ -33,7 +34,7 @@ class UserController {
 	 * @param next
 	 */
 	readAll(request, response, next) {
-		if (!request.session.user.hasPermission('user', 'GET')) {
+		if (!request.session.user.hasPermission('user', Permission.READ)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
@@ -71,7 +72,7 @@ class UserController {
 	 * @param next
 	 */
 	byId(request, response, next) {
-		if (!request.session.user.hasPermission('user', 'GET', request.params.id)) {
+		if (!request.session.user.hasPermission('user', Permission.READ, request.params.id)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
@@ -95,7 +96,7 @@ class UserController {
 	 * @param response
 	 */
 	addPermission(request, response) {
-		if (!request.session.user.hasPermission('permission', 'POST', request.body.userId)) {
+		if (!request.session.user.hasPermission('permission', Permission.CREATE, request.body.userId)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
@@ -104,6 +105,7 @@ class UserController {
 		let permission = request.body;
 		this.permissions.add(permission.userId, permission.resourceType, permission.resourceId, permission.permission)
 			.then(() => {
+
 				response.json({status: "Ok"});
 			}).catch(err => {
 			logger.error('UserController#addPermission Error: ', err);
@@ -112,7 +114,7 @@ class UserController {
 	}
 
 	removePermission(request, response) {
-		if (!request.session.user.hasPermission('permission', 'DELETE', request.body.userId)) {
+		if (!request.session.user.hasPermission('permission', Permission.DELETE, request.body.userId)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;

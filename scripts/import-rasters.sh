@@ -6,6 +6,8 @@
 RASTER_DESTINATION="/var/lib/tomcat7/webapps/geoserver/data/data/geonode"
 SQL_TEMP_DESTINATION="/tmp/guf-sql"
 FILE_FILTER_PREFIX="guf_75m_04_"
+#FILE_FILTER_PREFIX="guf_75m_04_e16" #### Testing Filter. Testing only on few files.
+NAME="guf_75m_04_all"
 
 DB_USER="geonode"
 DB_DATABASE="geonode_data"
@@ -29,44 +31,37 @@ if [[ ! -d ${SQL_TEMP_DESTINATION} ]]; then
     exit 1
 fi
 
-# do raster2pgsql for all rasters
+SQL_FILE="${SQL_TEMP_DESTINATION}/${NAME}.sql"
+
+# do raster2pgsql for all rasters in ${RASTER_DESTINATION}/${NAME}/${NAME}.geotiff
 cd ${RASTER_DESTINATION}
-for f in *; do
-    if [[ -d ${f} ]] && [[ ${f} == ${FILE_FILTER_PREFIX}* ]]; then
-        NAME=${f}
-        GEOTIFF="${NAME}/${NAME}.geotiff"
-        SQL_FILE="${SQL_TEMP_DESTINATION}/${NAME}.sql"
+raster2pgsql -c -C -t 200x200 -F ./*/${FILE_FILTER_PREFIX}* ${NAME} > "${SQL_FILE}"
 
-        # run raster2pgsql
-        if [[ -e ${GEOTIFF} ]] && [[ -f ${GEOTIFF} ]]; then
-            echo "running raster2pgsql on '${GEOTIFF}'"
-            raster2pgsql -c -C -t 200x200 -F ${GEOTIFF} ${NAME} > "${SQL_FILE}"
-        fi
+# import SQL file
 
-        # file doesn't exist
-        if [[ ! -e ${SQL_FILE} ]]; then
-            echo "Error: SQL file '${SQL_FILE}' doesn't exist."
-            continue
-        fi
+# file doesn't exist
+if [[ ! -e ${SQL_FILE} ]]; then
+		echo "Error: SQL file '${SQL_FILE}' doesn't exist."
+		exit 1
+fi
 
-        # file not file
-        if [[ ! -f ${SQL_FILE} ]]; then
-            echo "Error: SQL file '${SQL_FILE}' is not a file."
-            continue
-        fi
+# file not file
+if [[ ! -f ${SQL_FILE} ]]; then
+		echo "Error: SQL file '${SQL_FILE}' is not a file."
+		exit 1
+fi
 
-        # file has no data
-        if [[ ! -s ${SQL_FILE} ]]; then
-            echo "Error: SQL file '${SQL_FILE}' has no data."
-            continue
-        fi
+# file has no data
+if [[ ! -s ${SQL_FILE} ]]; then
+		echo "Error: SQL file '${SQL_FILE}' has no data."
+		exit 1
+fi
 
-        # run SQL files
-        if [[ -e ${SQL_FILE} ]] && [[ -f ${SQL_FILE} ]]; then
-            echo "psql: Importing '${SQL_FILE}'"
-            PGOPTIONS='--client-min-messages=warning' psql -q -U ${DB_USER} -d ${DB_DATABASE} -f "${SQL_FILE}"
-        fi
-        printf "\n"
-    fi
-done
+# run SQL file
+# NOTE: adding constraint 'same_alignment' will fail here.
+if [[ -e ${SQL_FILE} ]] && [[ -f ${SQL_FILE} ]]; then
+		echo "psql: Importing '${SQL_FILE}'"
+		PGOPTIONS='--client-min-messages=warning' psql -q -U ${DB_USER} -d ${DB_DATABASE} -f "${SQL_FILE}"
+fi
+
 

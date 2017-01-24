@@ -15,7 +15,7 @@ page.onResourceReceived = function(response) {
 
 var address = system.args[1];
 var finalLocation = system.args[2];
-page.viewportSize = { width: 1600, height: 1200 };
+page.viewportSize = { width: 600, height: 400 };
 page.open(address, function(status) {
 	console.log("Status", status);
 	setTimeout(verifyAllLoaded, 2000);
@@ -23,15 +23,16 @@ page.open(address, function(status) {
 
 function verifyAllLoaded() {
 	console.log('VerifyAllLoaded Last: ', lastReceived, ' Received: ', received, 'Requested: ', requested);
-	if(requested <= received && olderThanSecond(lastReceived)) {
-		setTimeout(verifyAllLoaded, 1000);
-	} else {
+	// Both must be satisfied
+	if(requested <= received && olderThanThreshold(lastReceived)) {
 		console.log("Rendering");
 		page.render(finalLocation);
 		phantom.exit();
+	} else {
+		setTimeout(verifyAllLoaded, 1000);
 	}
 }
 
-function olderThanSecond(lastReceived) {
+function olderThanThreshold(lastReceived) {
 	return Date.now() - 1000 > lastReceived;
 }
