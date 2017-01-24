@@ -55,7 +55,7 @@ class PgCsvLayer {
                     fs.createReadStream(file.path).pipe(csv({separator: ','})).on('data', function (data) {
                         csvLines.push(data);
                     }).on('end', function () {
-                        let tableName = file.name.replace(/\W+/g, "_").toLowerCase();
+                        let tableName = request.body.layerName || file.name.replace(/\W+/g, "_").toLowerCase();
                         let keys = Object.keys(csvLines[0]);
                         let checkExistingTable = `SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '${tableName}');`;
 
