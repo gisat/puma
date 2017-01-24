@@ -31,8 +31,12 @@ class PgLayerViews {
 	 */
     update(layerReferenceId, dataLayerReferences = []) {
         return this.remove(layerReferenceId).then(() => {
-            return this.add(new MongoLayerReference(layerReferenceId, conn), dataLayerReferences);
+            return this.add(new MongoLayerReference(layerReferenceId, conn.getMongoDb()), dataLayerReferences);
         })
+    }
+
+    addOnly(layerReferenceId, dataLayerReferences = []) {
+        return this.add(new MongoLayerReference(layerReferenceId, conn.getMongoDb()), dataLayerReferences);
     }
 
 	/**

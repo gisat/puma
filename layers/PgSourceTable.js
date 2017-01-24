@@ -14,7 +14,7 @@ class PgPublicTable {
      * @param data {Object}
      */
     insertRecord(data) {
-        var layer = this._layer.split(":")[1];
+        var layer = this._layer;
 
         // TODO sql injection
         let sql = `INSERT INTO public."${layer}"` +

@@ -22,6 +22,7 @@ class CustomFeaturesController {
 
         let featureToVecorLayer = new FeatureToVectorLayer(params, this._pgPool);
         featureToVecorLayer.addFeature(data).then(function(result){
+            console.log(result);
             res.send({
                 status: "OK"
             })
