@@ -6,56 +6,73 @@ var Promise = require('promise');
 
 var FeatureToVectorLayer = require('../custom_features/FeatureToVectorLayer');
 var GeometryConversion = require('../custom_features/GeometryConversion');
+var LinesSourceTable = require('../custom_features/LinesSourceTable');
 
 class CustomFeaturesController {
     constructor (app, pool) {
-        app.post("/customfeatures/line", this.addLine.bind(this));
+        this._pool = pool;
+        this._linesSourceTable = new LinesSourceTable(this._pool, "custom_lines");
 
-        this._pgPool = pool;
+        app.post("/customfeatures/saveline", this.addLine.bind(this));
+        app.post("/customfeatures/selectlines", this.selectLines.bind(this));
+        app.post("/customfeatures/deleteline", this.deleteLine.bind(this));
     }
 
-    addLine(req, res){
-        var params = req.body.metadata;
-        var data = req.body.data;
+    /**
+     * Add custom line
+     * @param request
+     * @param response
+     */
+    addLine (request, response){
+        var data = request.body.data;
 
-        logger.info('CustomFeaturesController#addLine original geometry:', data.geometry);
-
-        if (config.hasOwnProperty("crs") && config.crs == "EPSG:3035"){
-            this._geometryConversion = new GeometryConversion({
-                sourceCRSProjDef: "EPSG:900913",
-                targetCRSProjDef: "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs"
-            });
-
-            data.geometry = this._geometryConversion.convertWKTLine(data.geometry);
-            logger.info('CustomFeaturesController#addLine geometry coverted to EPSG:3035', data.geometry);
-        }
-
-        data.geometry = this.constructor.convertToMultiLineString(data.geometry);
-        logger.info('CustomFeaturesController#addLine geometry converted to MultiLineString', data.geometry);
-
-        let featureToVecorLayer = new FeatureToVectorLayer(params, this._pgPool);
-        featureToVecorLayer.addFeature(data).then(function(result){
-            console.log(result);
-            res.send({
-                status: "OK"
-            })
+        this._linesSourceTable.insert(data).then(function(result){
+            if (result.status == "OK"){
+                response.send(result);
+            } else {
+                response.send({
+                    status: "Error"
+                })
+            }
         });
     }
 
     /**
-     * Check if geometry is multiLineString, else convert it
-     * @param geometry {string} WKT geometry
-     * @returns {string} WKT multiLineString
+     * Get all custom lines
+     * @param request
+     * @param response
      */
-    static convertToMultiLineString(geometry){
-        var geomParts = geometry.split("(");
-        var finalGeom = "MULTILINESTRING";
+    selectLines (request, response){
+        var params = request.body;
 
-        if (geomParts[0] == "MULTILINESTRING"){
-            return geometry;
-        } else {
-            return finalGeom + "((" + geomParts[1].slice(0,-1) + "))";
-        }
+        this._linesSourceTable.select(params).then(function(result){
+            if (result.status == "OK"){
+                response.send(result);
+            } else {
+                response.send({
+                    status: "Error"
+                })
+            }
+        });
+    }
+
+    /**
+     * Delete custom line
+     * @param request
+     * @param response
+     */
+    deleteLine (request, response){
+        var params = request.body;
+
+        this._linesSourceTable.deleteRecord(params).then(function(result){
+            if (result.status == "OK"){
+                response.send(result);
+            } else {
+                response.send({
+                    status: "Error"
+                })
+            }
+        });
     }
 }
 
