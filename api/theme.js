@@ -316,34 +316,6 @@ function getThemeYearConf(params, req, res, callback) {
 						eachCallback(null);
 					});
 				}, function() {
-					/*for (var loc in layerRefMap) {
-						for (var areaTemplateID in layerRefMap[loc]) {
-							for (var yearID in layerRefMap[loc][areaTemplateID]) {
-								// vyrazovani nevhodnych uzemi na zaklade chybejicich attr referenci
-								for (var i = 0; i < attrSets.length; i++) {
-									var attrLayerRef = null;
-									try {
-										var attrLayerRef = attrLayerRefMap[loc][areaTemplateID][yearID][attrSets[i]];
-									} catch (e) {
-									}
-									if (!attrLayerRef) {
-										layerRefMap[loc][areaTemplateID][yearID] = null;
-										if (areaTemplateID == results.dataset.featureLayers[0]) {
-											for (var j = 0; j < results.locations.length; j++) { // !!! out of date. results.locations now contains location objects instead IDs!
-												var currentLoc = results.locations[j];
-												if (loc == currentLoc) {
-													results.locations = _.difference(results.locations, [currentLoc]);
-													break;
-												}
-											}
-										}
-										break;
-									}
-								}
-							}
-						}
-					}*/
-
 					return asyncCallback(null, layerRefMap);
 				});
 			});
@@ -584,12 +556,12 @@ function getThemeYearConf(params, req, res, callback) {
 				var client = conn.getPgDataDb();
 				logger.info('api/theme#getThemeYearConf Leafs reload. Sql: ', sql);
 				client.query(sql, {}, function(err, resls) {
-					logger.info('api/theme#getThemeYearConf Leafs reload. Results: ', resls.rows);
-
 					if (err){
 						logger.error("theme#getThemeYearConf. Sql:", sql, " Error: ", err);
 						return callback(err);
 					}
+
+					logger.info('api/theme#getThemeYearConf Leafs reload. Results: ', resls.rows);
 					var partLeafMap = {};
 					for (var i=0;i<resls.rows.length;i++) {
 						var row = resls.rows[i];
@@ -696,27 +668,22 @@ function getThemeYearConf(params, req, res, callback) {
 				});
 			}, function(err, map) {
 				var obj = {};
-				logger.info("theme# getThemeYearConf, layerRefs; layerRefMap before save to obj:", layerRefMap," Err: ", err);
+				logger.info("theme# getThemeYearConf, layerRefs; layerRefMap before save to obj:", layerRefMap," Err: ", err, " RefreshLayers: ", params['refreshLayers']);
 				obj.layerRefMap = layerRefMap;
 				if (!params['refreshLayers']) {
 					return asyncCallback(null, obj);
 				}
 				var nodes = [];
+				logger.trace(`theme#getThemeYearConf, layerRefs: QueryTopics: `, params['queryTopics']);
 				var queryTopics = params['queryTopics'] ? JSON.parse(params['queryTopics']) : null;
+				logger.trace(`theme#getThemeYearConf, layerRefs: Go through topics: ${topics.length}`);
 				for (var i = 0; i < topics.length; i++) {
+					logger.trace(`theme#getThemeYearConf, layerRefs. Handle topic: `, topics[i]);
 					var topic = topics[i];
 					if (queryTopics && queryTopics.indexOf(topic) < 0) {
 						continue;
 					}
 					var layers = map[i];
-//                        var node = {
-//                            name: results.topicMap[topic].name,
-//                            expanded: true,
-//                            type: 'topic',
-//                            topic: topic,
-//                            checked: null,
-//                            children: []
-//                        }
 					for (var j = 0; j < layers.length; j++) {
 						var layer = layers[j];
 						var symbologies = layer.symbologies || [];
@@ -736,12 +703,11 @@ function getThemeYearConf(params, req, res, callback) {
 								type: 'topiclayer',
 								checked: false
 							};
-							//node.children.push(symbNode);
 							nodes.push(symbNode);
 						}
 					}
-					//nodes.push(node);
 				}
+				logger.trace(`theme#getThemeYearConf layerRefs: Finished topics handling.`);
 				obj.layerNodes = nodes;
 				return asyncCallback(null, obj);
 			});
