@@ -133,9 +133,6 @@ function getData(params, callback) {
 			var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
 			let normalizationUnits = attr.normalizationUnits;
 			let percentage = attr.normalizationResultInPercentage || true;
-			if(percentage == "false") {
-				percentage = false;
-			}
 
 			var normAttrName = null;
 			var norm = '';
