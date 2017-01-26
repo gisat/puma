@@ -1,7 +1,6 @@
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
 var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
-var MongoScope = require('./MongoScope');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var Promise = require('promise');
 
@@ -26,19 +25,6 @@ class MongoLocation {
 
 	performedAnalysis() {
 		return this._performedAnalysis.read();
-	}
-
-	scopeId() {
-		return this._instance.read().then(function(instance){
-			return instance.dataset;
-		});
-	}
-
-	scope() {
-		var self = this;
-		return this.scopeId().then(function(id){
-			return new MongoScope(id, self._connection);
-		})
 	}
 
 	dataViews() {
