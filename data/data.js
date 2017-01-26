@@ -573,7 +573,7 @@ function getData(params, callback) {
 					if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
 						continue;
 					}
-					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid::text<>' + row.gid + '::text)';
+					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid::text<>\'' + row.gid + '\')';
 				}
 				totalSql += ') as b';
 				client.query(totalSql, function(err, resls) {
