@@ -412,6 +412,7 @@ function saveSld(params, req, res, callback) {
 					var catIdx = 0;
 					var val = 0;
 					logger.info(`api/proxy.js#saveSld#result Data length: ${dataLength}, Category size: ${catSize}, NumberOfCategories: ${numCat}, RestSize: ${restSize}, Attribute Name: ${attrName}`);
+					// In this part we actually decide what amounts will be used for which part of legend.
 					for (var i=1;i<dataLength;i++) {
 						var idx = i;
 						var diff = catSize + ((newRest>0) ? 1 : 0);

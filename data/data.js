@@ -32,22 +32,6 @@ function getData(params, callback) {
 	var normalizationAttribute = params['normalizationAttribute'] ? parseInt(params['normalizationAttribute']) : null;
 
 
-//    var userAggregates = {
-//        276: {
-//            281: {
-//                3507: {
-//                    name: 'Malang',
-//                    gids: [3507, 3514]
-//                },
-//                3515: {
-//                    name: 'Sidoarjo',
-//                    gids: [3515, 3516]
-//                }
-//            }
-//        }
-//    }
-	//params['useAggregation'] = true;
-
 	var sort = params['sort'] ? JSON.parse(params['sort']) : [{property: 'name', direction: 'ASC'}];
 	var sortProperty = sort ? sort[0].property : null;
 	var filter = params['filter'] ? JSON.parse(params['filter']) : [];
@@ -156,7 +140,6 @@ function getData(params, callback) {
 			var normAttrUnits = null;
 			var factor = 1;
 			var attrMap = params.attrMap;
-			//var prevAttrMap = params.prevAttrMap;
 
 
 			// This represents unit of the source attribute.
@@ -171,15 +154,10 @@ function getData(params, callback) {
 			if (currentNorm=='area') {
 				attrUnits = normalizationUnits || 'm2';
 				normAttrUnits = null;
-				percentage = false;
-			}
-
-			if(currentNorm == 'attribute' || currentNorm == 'attributeset') {
-				percentage = true;
 			}
 
 			units = new Units();
-			factor = units.translate(attrUnits, normAttrUnits, percentage);
+			factor = units.translate(attrUnits, normAttrUnits, true);
 			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 
 			// How do you count factor of difference? The source data set is in one unit.
