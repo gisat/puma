@@ -132,7 +132,7 @@ function getData(params, callback) {
 			var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
 			var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
 			let normalizationUnits = attr.normalizationUnits;
-			let percentage = attr.percentage;
+			let percentage = attr.normalizationResultInPercentage || true;
 
 			var normAttrName = null;
 			var norm = '';
@@ -154,10 +154,6 @@ function getData(params, callback) {
 			if (currentNorm=='area') {
 				attrUnits = normalizationUnits || 'm2';
 				normAttrUnits = null;
-			}
-
-			if(currentNorm) {
-				percentage = true;
 			}
 
 			units = new Units();
