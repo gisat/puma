@@ -4,7 +4,7 @@
 
 # configuration
 RASTER_DESTINATION="/var/lib/tomcat7/webapps/geoserver/data/data/geonode"
-SQL_TEMP_DESTINATION="/tmp/guf-sql"
+SQL_TEMP_DESTINATION="/tmp/sql"
 FILE_FILTER_PREFIX="guf_75m_04_"
 #FILE_FILTER_PREFIX="guf_75m_04_e16" #### Testing Filter. Testing only on few files.
 NAME="guf_75m_04_all"
