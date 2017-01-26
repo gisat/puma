@@ -136,6 +136,10 @@ function getData(params, callback) {
 			if(typeof percentage === 'undefined') {
 				percentage = true;
 			}
+			// When no normalization applies don't modify the data.
+			if(!currentNorm) {
+				percentage = false;
+			}
 
 			var normAttrName = null;
 			var norm = '';
