@@ -6,7 +6,7 @@ var request = require('request');
 var UUID = require('../common/UUID');
 var SourceTable = require('./SourceTable');
 
-class LinesSourceTable extends SourceTable {
+class PolygonsSourceTable extends SourceTable {
     constructor (pool, name) {
         super(pool, name);
     }
@@ -21,19 +21,20 @@ class LinesSourceTable extends SourceTable {
             `name text,` +
             `geometry text,` +
             `scope text,` +
+            `place text,` +
             `user_name text,` +
             `PRIMARY KEY(uuid));`;
 
-        logger.info(`INFO LinesSourceTable#create sql: ` + sql);
+        logger.info(`INFO PolygonsSourceTable#create sql: ` + sql);
 
         this._pgPool.pool().query(sql).then(function(res){
-            logger.info(`INFO LinesSourceTable#create : Table was created succesfully`);
+            logger.info(`INFO PolygonsSourceTable#create : Table was created succesfully`);
         }).catch(err => {
             throw new Error(
-                logger.error(`ERROR LinesSourceTable#create Error: `, err)
+                logger.error(`ERROR PolygonsSourceTable#create Error: `, err)
             )
         });
     }
 }
 
-module.exports = LinesSourceTable;
+module.exports = PolygonsSourceTable;
