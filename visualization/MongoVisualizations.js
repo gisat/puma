@@ -6,8 +6,8 @@ class MongoVisualizations {
     }
 
     remove(visualization){
-        return visualization.id().then(function(id){
-            var collection = this._connection.collection(MongoVisualization.collectionName());
+        return visualization.id().then(id => {
+            let collection = this._connection.collection(MongoVisualization.collectionName());
             return collection.removeOne({_id: id});
         });
     }
