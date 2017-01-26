@@ -78,6 +78,14 @@ class SourceTable {
             }
         }
 
+        let user = "admin";
+        if (data.hasOwnProperty("userName")){
+            user = data.userName;
+        }
+        logger.info(`INFO SourceTable#insert pair: user_name: ` + user);
+        keys.push("user_name");
+        values.push(user);
+
         var sql = `INSERT INTO ${config.postgreSqlSchema}.${this._tableName} ` +
             `(${keys.join(",")})` +
             `VALUES` +
