@@ -32,9 +32,9 @@ class Units {
 		if(!unitTo || allowedUnits.indexOf(unitTo) == -1) {
 			if(allowedUnits.indexOf(unitFrom) != -1) {
 				// Correct units give correct factor.
-				return units[unitFrom] * percentage;
+				return 1 / units[unitFrom] * percentage;
 			} else {
-				return percentage;
+				return 1 / percentage;
 			}
 		}
 
