@@ -176,19 +176,13 @@ function wms(params, req, res, callback) {
 			options.path = options.path.replace('geonode', layers.split(':')[0]);
 		}
 	}
-	var time = new Date().getTime();
-	//console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
+
 	conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
 		if (err) {
 			logger.error("Proxy error: ", err, " Options: ", options);
 			return callback(err);
 		}
-		//console.log(new Date().getTime()-time);
-		if (useFirst) {
-			//console.log(req.originalUrl);
-			//console.log(output.length);
 
-		}
 		if (output.length<10000 && (output.indexOf("PNG") == -1 || output.indexOf("PNG") > 8)) {
 			logger.info("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options,"\n\nDATA: "+data);
 		}
@@ -226,7 +220,7 @@ function saveSld(params, req, res, callback) {
 	params['userId'] = req.session.userId;
 	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
 
-	logger.info(`api/proxy.js#saveSld Save OldId: ${oldId} userLocation: ${userLocation} Sld: ${sld} LegendSld: ${legendSld}`);
+	logger.info(`api/proxy.js#saveSld Save OldId: ${oldId} userLocation: ${userLocation}`);
 
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
@@ -244,7 +238,8 @@ function saveSld(params, req, res, callback) {
 			normAttrName = 'as_'+normObj.as+'_attr_'+normObj.attr;
 		}
 	}
-	
+
+	// Why the hell would I do this?
 	legendSld = legendSld.replace(/<sld\:Name>#val_(\d+)# \- #val_(\d+)#<\/sld\:Name>/g, "<sld:Name>#val_$1#—#val_$2#</sld:Name>");
 	legendSld = legendSld.replace(/<sld\:Name>#val_(\d+)# &gt;<\/sld\:Name>/g, "<sld:Name>&gt; #val_$1#</sld:Name>");
 
@@ -450,7 +445,8 @@ function saveSld(params, req, res, callback) {
 				}
 			}
 			if (results.attrConf) {
-				legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');
+				logger.info('api/proxy#saveSld Handle Units: ', results.attrConf.attrMap);
+				legendSld = legendSld.replace(new RegExp('#units#','g'), results.attrConf.attrMap.units);
 			}
 			sldMap[id] = {
 				sld: sld,
@@ -471,7 +467,7 @@ function saveSld(params, req, res, callback) {
 			if (densityMap[oldId]) {
 				delete densityMap[oldId];
 			}
-			logger.info(`api/proxy.js#saveSld#result Id: ${id}, Sld: ${sld}, LegendSld: ${legendSld}`);
+			logger.info(`api/proxy.js#saveSld#result Id: ${id}`);
 
 			res.data = id;
 			return callback(null);
