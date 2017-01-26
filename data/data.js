@@ -391,11 +391,11 @@ function getData(params, callback) {
 									var aggObj = userAggregates[locationId][areaId][aggGid];
 									var aggGids = aggObj.gids;
 									var aggName = aggObj.name;
-									gidSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (\'' + aggGids.join('\',\'') + "\')) THEN " + aggGid + ' ELSE ';
-									nameSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (\'' + aggGids.join('\',\'') + "\')) THEN '" + aggName + "' ELSE ";
+									gidSql += 'CASE WHEN (x_' + years[0] + '."gid"::text IN (\'' + aggGids.join('\',\'') + "\')) THEN " + aggGid + ' ELSE ';
+									nameSql += 'CASE WHEN (x_' + years[0] + '."gid"::text IN (\'' + aggGids.join('\',\'') + "\')) THEN '" + aggName + "' ELSE ";
 									x++;
 								}
-								gidSql += 'x_' + years[0] + '."gid"';
+								gidSql += 'x_' + years[0] + '."gid"::text';
 								nameSql += 'x_' + years[0] + '."name"';
 								if (gidSql) {
 									for (var j = 0; j < x; j++) {
@@ -407,7 +407,7 @@ function getData(params, callback) {
 							}
 
 							if (!gidSql) {
-								gidSql = 'x_' + years[0] + '."gid"';
+								gidSql = 'x_' + years[0] + '."gid"::text';
 								nameSql = 'x_' + years[0] + '."name"';
 							}
 							var prIdx = (sort && sortProperty!='name') ? 1 : i;
@@ -438,7 +438,7 @@ function getData(params, callback) {
 									baseLayerRef = layerRef;
 								} else {
 									oneSql += ' INNER JOIN ' + tableSql + ' x_' + year;
-									oneSql += ' ON x_' + baseYear + '."gid" = x_' + year + '."gid"';
+									oneSql += ' ON x_' + baseYear + '."gid"::text = x_' + year + '."gid"::text';
 								}
 							}
 							if (!atLeastOne) {
@@ -447,7 +447,7 @@ function getData(params, callback) {
 							oneSql += ' WHERE 1=1';
 
 							if (gids !== true) {
-								oneSql += ' AND x_' + baseYear + '."gid" IN ';
+								oneSql += ' AND x_' + baseYear + '."gid"::text IN ';
 								oneSql += '(\'' + gids.join('\',\'') + '\')';
 							}
 							if (params['useAggregation'] || topAll) {
@@ -591,7 +591,7 @@ function getData(params, callback) {
 					if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
 						continue;
 					}
-					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid<>' + row.gid + ')';
+					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid::text<>' + row.gid + ')';
 				}
 				totalSql += ') as b';
 				client.query(totalSql, function(err, resls) {

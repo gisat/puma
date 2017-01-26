@@ -418,15 +418,15 @@ function getThemeYearConf(params, req, res, callback) {
 					for (var k = 1; k < years.length; k++) {
 						var yearLayerRef = layerRefMap[locationId][areaTemplateId][years[k]];
 						if (!yearLayerRef) {
-							sql += ' INNER JOIN views.layer_' + layerRef._id + ' y' + years[k] + ' ON a.gid+1=y' + years[k] + '.gid';
+							sql += ' INNER JOIN views.layer_' + layerRef._id + ' y' + years[k] + ' ON a.gid+1::text=y' + years[k] + '.gid::text';
 							continue;
 						}
-						sql += ' INNER JOIN views.layer_' + yearLayerRef._id + ' y' + years[k] + ' ON a.gid=y' + years[k] + '.gid';
+						sql += ' INNER JOIN views.layer_' + yearLayerRef._id + ' y' + years[k] + ' ON a.gid::text=y' + years[k] + '.gid::text';
 					}
 					sql += ' WHERE 1=1';
 					logger.info("theme# getThemeYearConf, auto:sql prevAreaTemplate:",prevAreaTemplate," locOpened:", locOpened);
 					if (locOpened && prevAreaTemplate && locOpened[prevAreaTemplate] && locOpened[prevAreaTemplate][0] !== null) {
-						sql += ' AND a.parentgid IN (\'' + locOpened[prevAreaTemplate].join('\',\'') + '\')';
+						sql += ' AND a.parentgid::text IN (\'' + locOpened[prevAreaTemplate].join('\',\'') + '\')';
 					}
 					// filter.areaTemplates possibly unused, like in Mongo DB theme.areaTemplates is unused. Jon
 					if (filter && (filter.areaTemplates[areaTemplateId] || params.allAreaTemplates)) {
@@ -444,11 +444,11 @@ function getThemeYearConf(params, req, res, callback) {
 			var client = conn.getPgDataDb();
 			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
 			client.query(sql, {}, function(err, resls) {
-				logger.info("theme# getThemeYearConf, auto:sql Results: ", resls.rows);
 				if (err){
 					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
 					return callback(err);
 				}
+				logger.info("theme# getThemeYearConf, auto:sql Results: ", resls.rows);
 				var obj = {};
 				if (!fids) {
 					obj.areas = resls.rows;
