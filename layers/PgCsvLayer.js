@@ -49,7 +49,7 @@ class PgCsvLayer {
         files = this.parseUploadedFiles(files);
         return new Promise(function (result, error) {
             for (let file of files) {
-                if (file.type == "text/csv") {
+                if (file.type == "text/csv" || file.name.endsWith(".csv")) {
                     let csvLines = [];
 
                     fs.createReadStream(file.path).pipe(csv({separator: ','})).on('data', function (data) {
