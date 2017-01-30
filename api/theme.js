@@ -3,6 +3,7 @@ var _ = require('underscore');
 
 var crud = require('../rest/crud');
 var conn = require('../common/conn');
+var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
 function getLocationConf(params, req, res, callback) {
@@ -404,8 +405,12 @@ function getThemeYearConf(params, req, res, callback) {
 						}
 					}
 
+					let parentGid = 'a.parentgid::text';
+					if (config.toggles.isUrbis && location.name == 'TEst1' || location.name == 'TEst2' || location.name == 'Test3') {
+						parentGid = `'${location._id}' as parentgid`;
+					}
 					sql += sql ? ' UNION ' : '';
-					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
+					sql += 'SELECT a.gid::text, ' + parentGid + ', ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
 						//sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
 						sql += ', a.name::text';
