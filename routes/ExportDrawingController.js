@@ -1,14 +1,14 @@
 var conn = require('../common/conn');
 var logger = require('../common/Logger').applicationWideLogger;
 var UUID = require('../common/UUID');
-var parse = require('wellknown');
 var json2csv = require('json2csv');
 var json2xls = require('json2xls');
 var _ = require('underscore');
 var GeoJSON = require('geojson');
+var Shapefile = require('shp-write');
+var wellknown = require('wellknown');
 
-var Info = require('../attributes/Info');
-var Attributes = require('../attributes/Attributes');
+var Conversion = require('../custom_features/GeometryConversion');
 
 /**
  * It contains endpoints relevant for export of data.
@@ -16,7 +16,24 @@ var Attributes = require('../attributes/Attributes');
 class ExportDrawingController {
     constructor(app, pgPool) {
         app.get('/drawingexport/json', this.geojson.bind(this));
+        app.get('/drawingexport/shapefile', this.shapefile.bind(this));
         app.get('/drawingexport/xls', this.xls.bind(this));
+
+        this._wgs84 = {
+            name: "WGS84",
+            projDef: "WGS84",
+            epsg: "EPSG::4326"
+        };
+        this._webMercator = {
+            name: "GOOGLE",
+            projDef: "GOOGLE",
+            epsg: "EPSG::3857"
+        };
+
+        this._webMercator2wgs84 = new Conversion({
+            sourceCRSProjDef: this._webMercator.projDef,
+            targetCRSProjDef: this._wgs84.projDef
+        });
     }
 
     /**
@@ -29,31 +46,34 @@ class ExportDrawingController {
     geojson(request, response, next) {
         var json = JSON.parse(request.query.records);
         logger.error(`ExportDrawingController#xls Records: `, json.length);
+        var geoJson = this.getGeoJson(json, this._webMercator);
 
-        json.forEach(value => {
-            if (value.hasOwnProperty("scope")){
-                delete value.scope;
-            }
-            if (value.hasOwnProperty("place")){
-                delete value.place;
-            }
-            if (value.hasOwnProperty("user_name")){
-                delete value.user_name;
-            }
-            value.geometry = parse(value.geometry);
-        });
-
-        var crs = {
-            "type": "name",
-            "properties": {
-                "name": "urn:ogc:def:crs:EPSG::3857"
-            }
-        };
-
-        var geoJson = GeoJSON.parse(json, {GeoJSON: 'geometry', crs: crs});
         response.set('Content-Type', 'application/json');
         response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.json`));
         response.end(JSON.stringify(geoJson), 'binary');
+    }
+
+    /**
+     * It creates archive with shapefile and connected files and returns it to the caller.
+     * @param request
+     * @param response
+     * @param next
+     */
+    shapefile(request, response, next){
+        var json = JSON.parse(request.query.records);
+        logger.error(`ExportDrawingController#xls Records: `, json.length);
+        var geoJson = this.getGeoJson(json, this._wgs84);
+
+        let zip = Shapefile.zip(geoJson, {folder: 'myshapes',
+            types: {
+                point: 'mypoints',
+                polygon: 'mypolygons',
+                line: 'mylines'
+            }});
+        // Save geojson into shapefile
+        response.set('Content-Type', 'application/octet-stream');
+        response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.zip`));
+        response.end(zip, 'binary');
     }
 
     /**
@@ -83,6 +103,40 @@ class ExportDrawingController {
         response.set('Content-Type', 'text/xls');
         response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.xls`));
         response.end(xls, 'binary');
+    }
+
+    /**
+     * Get GeoJSON from JSON
+     * @param json {Object}
+     * @param {string} [crs] CRS proj4 definition of output
+     * @returns {Object}
+     */
+    getGeoJson(json, crs){
+        json.forEach(value => {
+            if (value.hasOwnProperty("scope")){
+                delete value.scope;
+            }
+            if (value.hasOwnProperty("place")){
+                delete value.place;
+            }
+            if (value.hasOwnProperty("user_name")){
+                delete value.user_name;
+            }
+            if (crs.name == "WGS84"){
+                value.geometry = this._webMercator2wgs84.convertWKTGeometry(value.geometry, false);
+            } else {
+                value.geometry = wellknown(value.geometry);
+            }
+        });
+
+        var crsDef = {
+            "type": "name",
+            "properties": {
+                "name": "urn:ogc:def:crs:" + crs.epsg
+            }
+        };
+
+        return GeoJSON.parse(json, {GeoJSON: 'geometry', crs: crsDef});
     }
 
     _contentDisposition(filename) {

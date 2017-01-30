@@ -21,14 +21,22 @@ class CustomFeaturesController {
     /**
      * Convert line in WKT format to target projection
      * @param wktGeometry {string} WKT geometry in original projection
-     * @returns {string} WKT geometry in target projection
+     * @param toWKT {boolean} true, if output should be in WKT format
+     * @returns {string|Object} WKT geometry in target projection/JSON
      */
-    convertWKTLine (wktGeometry){
+    convertWKTGeometry (wktGeometry, toWKT){
         let geojson = this.constructor.extractPoints(wktGeometry);
         let points = geojson.coordinates;
         let geometryType = geojson.type;
 
         let convertedPoints = this.convertPoints(points);
+
+        if (!toWKT){
+            return {
+                coordinates: convertedPoints,
+                type: geometryType
+            };
+        }
 
         return this.constructor.geojsonToWKT(convertedPoints, geometryType);
     }
@@ -50,8 +58,15 @@ class CustomFeaturesController {
     convertPoints (points){
         var convertedPoints = [];
         points.map(point => {
-            var converted = this.convertPoint(point);
-            convertedPoints.push(converted);
+            if (point.length == 2){
+                var converted = this.convertPoint(point);
+                convertedPoints.push(converted);
+            } else {
+                point.map(coord => {
+                    var converted = this.convertPoint(coord);
+                    convertedPoints.push(converted);
+                })
+            }
         });
         return convertedPoints;
     }
