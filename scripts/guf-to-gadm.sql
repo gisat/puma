@@ -1,13 +1,36 @@
+-- replace ____autable____ with the table name (5x)
+
 -- 1 ALTER TABLE - add columns
-
-ALTER TABLE gadm_test ADD COLUMN gufstat_uf double precision;
-ALTER TABLE gadm_test ADD COLUMN gufstat_all double precision;
-ALTER TABLE gadm_test ADD COLUMN gufstat_ratio double precision;
-
+DO $$
+  BEGIN
+    BEGIN
+      ALTER TABLE ____autable____ ADD COLUMN gufstat_uf double precision;
+    EXCEPTION
+      WHEN duplicate_column THEN RAISE WARNING 'column gufstat_uf already exists.';
+    END;
+  END;
+$$;
+DO $$
+  BEGIN
+    BEGIN
+      ALTER TABLE ____autable____ ADD COLUMN gufstat_all double precision;
+    EXCEPTION
+      WHEN duplicate_column THEN RAISE WARNING 'column gufstat_all already exists.';
+    END;
+  END;
+$$;
+DO $$
+  BEGIN
+    BEGIN
+      ALTER TABLE ____autable____ ADD COLUMN gufstat_ratio double precision;
+    EXCEPTION
+      WHEN duplicate_column THEN RAISE WARNING 'column gufstat_uf already exists.';
+    END;
+  END;
+$$;
 
 -- 2 UPDATE - add data
-
-UPDATE gadm_test au
+UPDATE ____autable____ au
   SET
     gufstat_uf = gufStats.v255sum,
     gufstat_all = gufStats.v255sum + gufStats.v0sum,
@@ -20,7 +43,7 @@ UPDATE gadm_test au
       gsau.the_geom AS the_geom,
       SUM(ST_ValueCount(ST_Clip(gsguf.rast, gsau.the_geom), 0.0)) AS v0sum,
       SUM(ST_ValueCount(ST_Clip(gsguf.rast, gsau.the_geom), 255.0)) AS v255sum
-      FROM gadm_test gsau
+      FROM ____autable____ gsau
         INNER JOIN guf_75m_04 gsguf ON ST_Intersects(gsguf.rast, gsau.the_geom)
       WHERE ST_Intersects(rast, gsau.the_geom)
       GROUP BY gsau.the_geom
