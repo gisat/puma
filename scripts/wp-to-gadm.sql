@@ -50,7 +50,7 @@ UPDATE ____autable____ au
       SUM(ST_ValueCount(ST_Clip(wswp.rast, wsau.the_geom), 0.0)) AS v0sum,
       SUM(ST_ValueCount(ST_Clip(wswp.rast, wsau.the_geom), 255.0)) AS v255sum
       FROM ____autable____ wsau
-        INNER JOIN "world-pop" wswp ON ST_Intersects(wswp.rast, wsau.the_geom)
+        INNER JOIN worldpop wswp ON ST_Intersects(wswp.rast, wsau.the_geom)
       WHERE ST_Intersects(rast, wsau.the_geom)
       GROUP BY wsau.the_geom
   ) AS wpStats
