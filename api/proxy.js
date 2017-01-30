@@ -215,8 +215,8 @@ function wms(params, req, res, callback) {
 }
 
 function storeTemporarySld(id, sld) {
-	let path = path.resolve(config.temporarySldFilesPath + id + '.sld');
-	return promisedFs.writeFile(path, sld);
+	let pathSld = path.resolve(config.temporarySldFilesPath + id + '.sld');
+	return promisedFs.writeFile(pathSld, sld);
 }
 
 function saveSld(params, req, res, callback) {
