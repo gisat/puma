@@ -404,9 +404,10 @@ function getThemeYearConf(params, req, res, callback) {
 						}
 					}
 
+					// It makes sure that the tree structure keeps in the place when there is one level on units but places are specified.
 					let parentGid = '';
 					if (location.bbox) {
-						parentGid = `coalesce(a.parentgid::text, '${location._id})' as parentgid`;
+						parentGid = `coalesce(a.parentgid::text, '${location._id}') as parentgid`;
 					} else {
 						parentGid = `a.parentgid::text`;
 					}
