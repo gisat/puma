@@ -101,7 +101,7 @@ function getLocationConf(params, req, res, callback) {
 				}); // todo
 
 			}, function datasetMapIterationFinalCallback(err){
-				if (resultArr.length>1) {
+				if (resultArr.length>1 && !config.toggles.isUrbis) {
 					resultArr.unshift({
 						name: 'All places',
 						id: 'custom'
@@ -406,9 +406,6 @@ function getThemeYearConf(params, req, res, callback) {
 					}
 
 					let parentGid = 'a.parentgid::text';
-					if (config.toggles.isUrbis && location.name == 'TEst1' || location.name == 'TEst2' || location.name == 'Test3') {
-						parentGid = `'${location._id}' as parentgid`;
-					}
 					sql += sql ? ' UNION ' : '';
 					sql += 'SELECT a.gid::text, ' + parentGid + ', ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
