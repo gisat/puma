@@ -406,7 +406,7 @@ function getThemeYearConf(params, req, res, callback) {
 
 					let parentGid = '';
 					if (location.bbox) {
-						parentGid = `'${location._id}' as parentgid`;
+						parentGid = `coalesce(a.parentgid::text, '${location._id})' as parentgid`;
 					} else {
 						parentGid = `a.parentgid::text`;
 					}
