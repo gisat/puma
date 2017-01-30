@@ -29,6 +29,11 @@ class CustomFeaturesController {
         let points = geojson.coordinates;
         let geometryType = geojson.type;
 
+        // library doesn't work for multipolygons
+        if (geometryType == "MultiPolygon"){
+            geometryType = "Polygon";
+        }
+
         let convertedPoints = this.convertPoints(points);
 
         if (!toWKT){
@@ -51,7 +56,7 @@ class CustomFeaturesController {
     }
 
     /**
-     * Convert list of points to target CRS
+     * Convert list of points to target CRS (polygons are nested, multipolygons are nested again)
      * @param points {Array} list of points in original CRS
      * @returns {Array} list of points in target CRS
      */
@@ -61,10 +66,21 @@ class CustomFeaturesController {
             if (point.length == 2){
                 var converted = this.convertPoint(point);
                 convertedPoints.push(converted);
-            } else {
+            }
+            // nested polygons
+            else {
                 point.map(coord => {
-                    var converted = this.convertPoint(coord);
-                    convertedPoints.push(converted);
+                    if (coord.length == 2){
+                        var converted = this.convertPoint(coord);
+                        convertedPoints.push(converted);
+                    }
+                    // nested multipolygons
+                    else {
+                        coord.map(coord2 => {
+                            var converted = this.convertPoint(coord2);
+                            convertedPoints.push(converted);
+                        });
+                    }
                 })
             }
         });
