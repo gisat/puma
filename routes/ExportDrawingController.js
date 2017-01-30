@@ -40,16 +40,17 @@ class ExportDrawingController {
             if (value.hasOwnProperty("user_name")){
                 delete value.user_name;
             }
+            value.geometry = parse(value.geometry);
         });
 
         var crs = {
             "type": "name",
             "properties": {
-                "name": "urn:ogc:def:crs:EPSG::900913"
+                "name": "urn:ogc:def:crs:EPSG::3857"
             }
         };
 
-        var geoJson = GeoJSON.parse(json, {GeoJSON: 'geom', crs: crs});
+        var geoJson = GeoJSON.parse(json, {GeoJSON: 'geometry', crs: crs});
         response.set('Content-Type', 'application/json');
         response.set('Content-Disposition', this._contentDisposition(`${new UUID().toString()}.json`));
         response.end(JSON.stringify(geoJson), 'binary');
