@@ -404,16 +404,8 @@ function getThemeYearConf(params, req, res, callback) {
 						}
 					}
 
-					// It makes sure that the tree structure keeps in the place when there is one level on units but places are specified.
-					let parentGid = '';
-					console.log("TESTLocation: ", location);
-					if (topmostAT) {
-						parentGid = `coalesce(a.parentgid::text, '${location._id}') as parentgid`;
-					} else {
-						parentGid = `a.parentgid::text`;
-					}
 					sql += sql ? ' UNION ' : '';
-					sql += 'SELECT a.gid::text, ' + parentGid + ', ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
+					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
 						//sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
 						sql += ', a.name::text';
@@ -461,7 +453,6 @@ function getThemeYearConf(params, req, res, callback) {
 				}
 				logger.info("theme# getThemeYearConf, auto:sql Results: ", resls.rows);
 				var obj = {};
-				// fids are passed on from the client.
 				if (!fids) {
 					obj.areas = resls.rows;
 				} else {
