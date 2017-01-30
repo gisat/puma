@@ -12,6 +12,23 @@ class PgBaseLayerTables {
         })
     }
 
+    updateCascade(layerReferenceId, fidColumn, geometryColumn, sourceTableName) {
+        return this.removeCascade(layerReferenceId).then(() => {
+            return this.add(layerReferenceId, fidColumn, geometryColumn, sourceTableName);
+        })
+    }
+
+    removeCascade(layerReferenceId) {
+        if(!layerReferenceId) {
+            throw new Error(
+                logger.error(`PgBaseLayerTables#remove layerReferenceId: ${layerReferenceId}`)
+            );
+        }
+
+        var schema = config.viewsSchema;
+        return this._pgPool.pool().query(`DROP TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)} CASCADE`);
+    }
+
     remove(layerReferenceId) {
         if(!layerReferenceId) {
             throw new Error(
@@ -38,9 +55,9 @@ class PgBaseLayerTables {
             ST_Centroid(ST_Transform(${geometryColumn}, 4326)) AS centroid,
             ST_Area(ST_Transform(${geometryColumn}, 4326)::geography) AS area,
             ST_Length(ST_Transform(${geometryColumn}, 4326)) as length,
-            Box2D(ST_Transform(${geometryColumn}, 4326)) AS extent,
+            Box2D(ST_Transform(${geometryColumn}, 4326)) AS extent
             FROM ${sourceTableName}
-        `;
+        )`;
 
         return this._pgPool.pool().query(sql);
     }
