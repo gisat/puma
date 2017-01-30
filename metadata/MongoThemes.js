@@ -1,6 +1,6 @@
 var MongoTheme = require('./MongoTheme');
 var MongoDataViews = require('../visualization/MongoDataViews');
-var MongoVisualizations = require('../visualization/MongoVisualization');
+var MongoVisualizations = require('../visualization/MongoVisualizations');
 var Promise = require('promise');
 
 class MongoThemes {

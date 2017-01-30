@@ -13,9 +13,9 @@ class Units {
 	 * @returns {number}
 	 */
 	translate(unitFrom, unitTo, percentage) {
-		percentage = percentage ? 100: 1;
-
 		logger.info(`Units#translate From: ${unitFrom} To: ${unitTo} Percentage: ${percentage}`);
+
+		percentage = percentage ? 100: 1;
 
 		let allowedUnits = ['m2', 'km2', 'ha'];
 		let units = {
@@ -29,7 +29,7 @@ class Units {
 			return percentage;
 		}
 
-		if(!unitTo) {
+		if(!unitTo || allowedUnits.indexOf(unitTo) == -1) {
 			if(allowedUnits.indexOf(unitFrom) != -1) {
 				// Correct units give correct factor.
 				return units[unitFrom] * percentage;
@@ -38,7 +38,7 @@ class Units {
 			}
 		}
 
-		if(!unitFrom) {
+		if(!unitFrom || allowedUnits.indexOf(unitFrom) == -1) {
 			if(allowedUnits.indexOf(unitTo) != -1) {
 				// Correct units give correct factor.
 				return 1 / (units[unitTo] * percentage);

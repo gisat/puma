@@ -37,8 +37,8 @@ class LayerController {
 			layers = layers.concat(geonodeLayers);
 			return this.pgLayers.all();
 		}).then(pgLayers => {
+			pgLayers = pgLayers.filter(layer => currentUser.hasPermission("layer", "GET", layer.id));
 			layers = layers.concat(pgLayers);
-			layers = layers.filter(layer => currentUser.hasPermission("layer", "GET", layer.id));
 
 			response.json({data: layers});
 		}).catch(err => {
