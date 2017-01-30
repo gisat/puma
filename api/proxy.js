@@ -228,9 +228,6 @@ function saveSld(params, req, res, callback) {
 	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
 
 	logger.info(`api/proxy.js#saveSld Save New Id: ${id} OldId: ${oldId} userLocation: ${userLocation}`);
-	storeTemporarySld(id, sld);
-	storeTemporarySld(id + 'legend', legendSld);
-
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
 		var attrs = JSON.parse(params['attrs']);
@@ -478,6 +475,9 @@ function saveSld(params, req, res, callback) {
 				delete densityMap[oldId];
 			}
 			logger.info(`api/proxy.js#saveSld#result Id: ${id}`);
+
+			storeTemporarySld(id, sld);
+			storeTemporarySld(id + 'legend', legendSld);
 
 			res.data = id;
 			return callback(null);
