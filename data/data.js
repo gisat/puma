@@ -163,9 +163,13 @@ function getData(params, callback) {
 				normAttrUnits = null;
 			}
 
-			units = new Units();
-			factor = units.translate(attrUnits, normAttrUnits, percentage);
-			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
+			if(currentNorm) {
+				units = new Units();
+				factor = units.translate(attrUnits, normAttrUnits, percentage);
+				logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
+			} else {
+				factor = percentage ? 100: 1;
+			}
 
 			// How do you count factor of difference? The source data set is in one unit.
 
