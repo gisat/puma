@@ -101,7 +101,7 @@ function getLocationConf(params, req, res, callback) {
 				}); // todo
 
 			}, function datasetMapIterationFinalCallback(err){
-				if (resultArr.length>1 && !config.toggles.isUrbis) {
+				if (resultArr.length>1 && !config.isUrbis) {
 					resultArr.unshift({
 						name: 'All places',
 						id: 'custom'
