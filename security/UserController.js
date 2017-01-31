@@ -34,16 +34,12 @@ class UserController {
 	 * @param next
 	 */
 	readAll(request, response, next) {
-		if (!request.session.user.hasPermission('user', Permission.READ)) {
-			response.status(403);
-			response.json({"status": "err"});
-			return;
-		}
-
 		let usersUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}/api/profiles`;
 		let result = [];
 		superagent.get(usersUrl).then((retrieved) => {
 			let users = retrieved.body.objects;
+			users = users
+				.filter(user => this.hasRights(request.session.user, Permission.READ, user.id));
 
 			return Promise.all(users.map(user => {
 				return this.users.byId(user.id).then(loaded => {
