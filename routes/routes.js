@@ -11,7 +11,6 @@ var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var CustomFeaturesController = require('./CustomFeaturesController');
 var ExportController = require('./ExportController');
-var ExportDrawingController = require('./ExportDrawingController');
 var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
@@ -78,7 +77,6 @@ module.exports = function(app) {
 	} else {
 		new ExportController(app, pool);
 	}
-	new ExportDrawingController(app, pool);
 	new AttributeController(app, pool, poolRemote);
 	new LayerController(app, pool);
 	new AttributeSetController(app, pool);
