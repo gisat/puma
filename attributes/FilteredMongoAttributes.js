@@ -1,4 +1,5 @@
-var MongoFilteredConnection = require('../data/MongoFilteredCollection');
+let MongoFilteredConnection = require('../data/MongoFilteredCollection');
+let MongoAttribute = require('../attributes/MongoAttribute');
 
 class FilteredMongoAttributes {
 	constructor(filter, connection) {

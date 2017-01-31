@@ -45,6 +45,7 @@ class PgNormalization {
 	 * It retrieves the information about the attributes and based on them counts the factor of the result.
 	 * @private
 	 * @param column {Object}
+	 * @param column.type {String} It represents type of the operation performed over this attribute combination.
 	 * @param column.attribute {Number} Id of the result attribute
 	 * @param column.normAttribute {Number} Id of the normalization attribute against area or second attribute
 	 * @param column.calcAttribute {Number} Id of the second attribute used in case of normalizing attribute against
@@ -72,18 +73,18 @@ class PgNormalization {
 				})
 			}
 
-			if(type == 'sumarea' || type == 'avgarea') {
+			if(column.type == 'sumarea' || column.type == 'avgarea') {
 				unitFrom = 'm2'; // It is based on the attribute. Attribute represents result. The area is always in square meters.
 				unitTo = attribute.units;
 
 				return this._units.translate(unitFrom, unitTo, false);
-			} else if(type == 'avgattrarea') {
+			} else if(column.type == 'avgattrarea') {
 				unitFrom = 'm2'; // Source information is area and it is always in square meters.
 				unitTo = normalizationAttribute.units;
 
 				let factor = this._units.translate(unitFrom, unitTo, false);
 				return this._units.translateFromFactorToUnits(factor, attribute.units);
-			} else if(type == 'avgattrattr') {
+			} else if(column.type == 'avgattrattr') {
 				unitFrom = calculationAttribute.units;
 				unitTo = normalizationAttribute.units;
 
