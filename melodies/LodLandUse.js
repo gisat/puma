@@ -8,7 +8,7 @@ class LodLandUse {
         this._units = units;
 
         this._pgPool = pgPool;
-        this._schema = schema;
+        this.schema = schema;
         this._table = table;
     }
 
@@ -85,7 +85,7 @@ class LodLandUse {
         var promises = [];
 
         json.forEach(row => {
-            var sql = `INSERT INTO ${this._schema}.${this._table} (lu, area, the_geom) VALUES ('${row.lu}','${row.area}','${row.geo}')`;
+            var sql = `INSERT INTO ${this.schema}.${this._table} (lu, area, the_geom) VALUES ('${row.lu}','${row.area}','${row.geo}')`;
 
             promises.push(this._pgPool.pool().query(sql));
         });

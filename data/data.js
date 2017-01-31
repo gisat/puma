@@ -18,16 +18,7 @@ function getData(params, callback) {
 	}
 	var years = JSON.parse(params['years']);
 	var normalization = params['normalization'] || null;
-	let normalizationYears = [];
-
-	// Gather normalization years. This means that we need to get data from all tables where normYears are used.
-	for (let j = 0; j < attrs.length; j++) {
-		if(attrs[j].normYear && normalizationYears.indexOf(attrs[j].normYear) == -1) {
-			normalizationYears.push(attrs[j].normYear);
-		}
-	}
-	var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) :
-		normalizationYears.length > 0 && normalizationYears[0] || null;
+	var normalizationYear = params['normalizationYear'] ? parseInt(params['normalizationYear']) : null;
 	var normalizationAttributeSet = params['normalizationAttributeSet'] ? parseInt(params['normalizationAttributeSet']) : null;
 	var normalizationAttribute = params['normalizationAttribute'] ? parseInt(params['normalizationAttribute']) : null;
 
@@ -92,8 +83,6 @@ function getData(params, callback) {
 		}
 		attrsWithSort = _.union(attrs, [attrObj]);
 	}
-
-
 
 	logger.info('data/data.js#getData Years: ', years, ' attrsWithSort: ', attrsWithSort, ' Normalization: ', params['normalization'], ' Normalization2: ', normalization, ' NormalizationAttribute: ', normalizationAttribute);
 

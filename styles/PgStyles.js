@@ -21,8 +21,8 @@ var PgStyles = function (connectionPool, schema) {
 
 	this._connectionPool = connectionPool;
 	this._pool = connectionPool.pool();
-	this._schema = schema;
-	this._table = this._schema + ".style";
+	this.schema = schema;
+	this._table = this.schema + ".style";
 };
 
 PgStyles.prototype = Object.create(Styles.prototype);
@@ -65,7 +65,7 @@ PgStyles.prototype.all = function () {
 		var styles = [];
 
 		ids.forEach(function (id) {
-			styles.push(new PgStyle(self._connectionPool, id, self._schema));
+			styles.push(new PgStyle(self._connectionPool, id, self.schema));
 		});
 
 		return styles;

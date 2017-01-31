@@ -6,7 +6,7 @@ class PgCachedRow {
         this._pgPool = pgPool;
         this._idColumn = idColumn;
 
-        this._schema = schema;
+        this.schema = schema;
         this._table = table;
     }
 
@@ -20,7 +20,7 @@ class PgCachedRow {
 
     add(name, value) {
         return this.id().then(id => {
-            var sql = `UPDATE ${this._schema}.${this._table} SET ${name} = ${value} WHERE ${this._idColumn}=${id}`;
+            var sql = `UPDATE ${this.schema}.${this._table} SET ${name} = ${value} WHERE ${this._idColumn}=${id}`;
 
             return this._pgPool.pool().query(sql);
         });

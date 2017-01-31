@@ -3,7 +3,7 @@ var PgCachedLayerRow = require('./PgCachedRow');
 class PgLayerRows {
     constructor(schema, table, idColumn, pgPool) {
         this._table = table;
-        this._schema = schema;
+        this.schema = schema;
         this._idColumn = idColumn;
 
         this._pgPool = pgPool;
@@ -13,11 +13,11 @@ class PgLayerRows {
      * It returns all rows in given table
      */
     all() {
-        var sql = `SELECT * FROM ${this._schema}.${this._table}`;
+        var sql = `SELECT * FROM ${this.schema}.${this._table}`;
         return this._pgPool.pool().query(sql).then(results => {
             var rows = [];
             results.rows.forEach(row => {
-                rows.push(new PgCachedLayerRow(row, this._pgPool, this._schema, this._table, this._idColumn))
+                rows.push(new PgCachedLayerRow(row, this._pgPool, this.schema, this._table, this._idColumn))
             });
             return rows;
         });
@@ -29,7 +29,7 @@ class PgLayerRows {
             FROM information_schema.columns 
             WHERE table_name='${this._table}' and column_name='${name}';`;
 
-        var sql = `ALTER TABLE ${this._schema}.${this._table} ADD COLUMN ${name} ${type}`;
+        var sql = `ALTER TABLE ${this.schema}.${this._table} ADD COLUMN ${name} ${type}`;
 
         return this._pgPool.pool().query(existsColumn).then(result => {
             // The column already exists.

@@ -2,7 +2,7 @@ class PgGeometryCachedRow {
     constructor(pgCachedRow, schema, table, geometryColumnName, pgPool) {
         this._pgCachedRow = pgCachedRow;
 
-        this._schema = schema;
+        this.schema = schema;
         this._table = table;
         this._geometryColumnName = geometryColumnName;
         this._pgPool = pgPool;
@@ -11,7 +11,7 @@ class PgGeometryCachedRow {
     centroid() {
         return this._pgCachedRow.id().then(id => {
             var sql = `SELECT ST_AsText(ST_Centroid(ST_Transform(${this._geometryColumnName}, 4326))) AS centroid 
-                FROM ${this._schema}.${this._table}
+                FROM ${this.schema}.${this._table}
                     WHERE ${this._pgCachedRow._idColumn} = '${id}'    
             `;
 

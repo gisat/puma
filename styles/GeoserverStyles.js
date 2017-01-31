@@ -16,7 +16,7 @@ var GeoserverStyles = function (pool, schema) {
 	Styles.call(this);
 
 	this._pool = pool;
-	this._schema = schema;
+	this.schema = schema;
 };
 
 GeoserverStyles.prototype = Object.create(Styles.prototype);
@@ -36,7 +36,7 @@ GeoserverStyles.prototype.all = function(){
 
 			var styles = [];
 			result.body.styles.style.forEach(style => {
-				styles.push(new PgStyle(self._pool, style.name, self._schema));
+				styles.push(new PgStyle(self._pool, style.name, self.schema));
 			});
 
 			return styles;

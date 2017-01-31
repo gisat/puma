@@ -5,6 +5,7 @@ let Promise = require('promise');
 
 let config = require('../config');
 let PgPermissions = require('../security/PgPermissions');
+let Permission = require('../security/Permission');
 
 /**
  * @alias Controller
@@ -70,9 +71,9 @@ class Controller {
             }
 
             Promise.all([
-				this.permissions.add(request.session.userId, this.type, result._id, "GET"),
-				this.permissions.add(request.session.userId, this.type, result._id, "PUT"),
-			    this.permissions.add(request.session.userId, this.type, result._id, "DELETE")
+				this.permissions.add(request.session.userId, this.type, result._id, Permission.READ),
+				this.permissions.add(request.session.userId, this.type, result._id, Permission.UPDATE),
+			    this.permissions.add(request.session.userId, this.type, result._id, Permission.DELETE)
 			]).then(() => {
                 response.data = result;
                 next();
@@ -106,7 +107,7 @@ class Controller {
                 return next(err);
             }
 
-            if (!this.hasRights(request.session.user, 'GET', request.params.id, result)) {
+            if (!this.hasRights(request.session.user, Permission.READ, request.params.id, result)) {
                 response.status(403);
                 return;
             }
@@ -138,7 +139,7 @@ class Controller {
             }
 
             let resultsWithRights = result
-				.filter(element => this.hasRights(request.session.user, 'GET', element._id, element));
+				.filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
             let promises = resultsWithRights.map(element => {
 				return this.permissions.forType(this.type, element._id).then(permissions => {
                     element.permissions = permissions;
@@ -168,7 +169,7 @@ class Controller {
         logger.info('Controller#update Update instance of type: ', this.type, ' By User: ', request.session.userId);
         var object = request.body.data;
 
-        if (!this.hasRights(request.session.user, 'PUT', object._id, object)) {
+        if (!this.hasRights(request.session.user, Permission.UPDATE, object._id, object)) {
             response.status(403);
             return;
         }
@@ -206,7 +207,7 @@ class Controller {
 
         let entity = new this.entity(id, this._connection);
         entity.json().then(json => {
-            if (!this.hasRights(request.session.user, 'DELETE', id, json)) {
+            if (!this.hasRights(request.session.user, Permission.DELETE, id, json)) {
                 response.status(403);
                 return;
             }

@@ -2,6 +2,8 @@ var Controller = require('./Controller');
 var MongoTopics = require('../metadata/MongoTopics');
 var MongoTopic = require('../metadata/MongoTopic');
 
+let Permission = require('../security/Permission');
+
 class TopicController extends Controller {
 	constructor(app, pool) {
 		super(app, 'topic', pool, MongoTopics, MongoTopic);
@@ -12,7 +14,7 @@ class TopicController extends Controller {
 	 * @inheritDoc
 	 */
 	create(request, response, next) {
-		if (!request.session.user.hasPermission(this.type, 'POST', null)) {
+		if (!request.session.user.hasPermission(this.type, Permission.CREATE, null)) {
 			response.status(403);
 			return;
 		}

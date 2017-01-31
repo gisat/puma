@@ -30,8 +30,9 @@ var MellodiesLodController = require('../melodies/LodController');
 var IntegrationController = require('./IntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
-let LayerController = require('../layers/LayerController');
 let PgAnalysisController = require('../analysis/PgAnalysisController');
+let LayerGeonodeController = require('../layers/LayerGeonodeController');
+let LayerWmsController = require('../layers/wms/LayerWmsController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -81,7 +82,8 @@ module.exports = function(app) {
 	}
 	new ExportDrawingController(app, pool);
 	new AttributeController(app, pool, poolRemote);
-	new LayerController(app, pool);
+	new LayerGeonodeController(app, pool);
+	new LayerWmsController(app, pool, conn.getMongoDb());
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
