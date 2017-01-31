@@ -125,6 +125,10 @@ class UserController {
 			response.status(500);
 		});
 	}
+
+	hasRights(user, method, id) {
+		return user.hasPermission('user', method, id);
+	}
 }
 
 module.exports = UserController;
