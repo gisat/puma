@@ -32,7 +32,7 @@ class MongoPerformedAnalysis {
 
 	add(performedAnalyse) {
 		let collection = this._connection.collection(MongoPerformedAnalyse.collectionName());
-		collection.insert(performedAnalyse)
+		return collection.insert(performedAnalyse);
 	}
 }
 

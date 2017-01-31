@@ -1,4 +1,5 @@
 var crud = require('../rest/crud');
+let conn = require('../common/conn');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -30,6 +31,7 @@ var IntegrationController = require('./IntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
 let LayerController = require('../layers/LayerController');
+let PgAnalysisController = require('../analysis/PgAnalysisController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -43,7 +45,6 @@ var api = {
 	data: require('../api/data'),
 	chart: require('../api/chart'),
 	proxy: require('../api/proxy'),
-	analysis: require('../api/analysis'),
 	userpolygon: require('../api/userpolygon'),
 	urlview: require('../api/urlview'),
 	filter: require('../api/filter')
@@ -102,6 +103,7 @@ module.exports = function(app) {
 	new MellodiesLodController(app, pool);
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
+	new PgAnalysisController(app, pool, conn.getMongoDb());
 
 	new iprquery(app, pool);
 	new iprConversion(app);
@@ -132,12 +134,6 @@ module.exports = function(app) {
 			logger.error("Error when calling proxy by User: ", req.session.userId, " With params: ", req.query, " Error: ", err);
 			next(err);
 		}
-	});
-
-	app.get('/api/analysis/status', function(request, response, next){
-		logger.info("Call status of analysis User: ", request.session.userId, " With params: ", request.query);
-
-		api.analysis.status(request, response);
 	});
 
 	app.post('/api/:module/:method',function(req,res,next) {
