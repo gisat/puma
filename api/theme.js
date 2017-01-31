@@ -3,6 +3,7 @@ var _ = require('underscore');
 
 var crud = require('../rest/crud');
 var conn = require('../common/conn');
+var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
 function getLocationConf(params, req, res, callback) {
@@ -100,7 +101,7 @@ function getLocationConf(params, req, res, callback) {
 				}); // todo
 
 			}, function datasetMapIterationFinalCallback(err){
-				if (resultArr.length>1) {
+				if (resultArr.length>1 && !config.isUrbis) {
 					resultArr.unshift({
 						name: 'All places',
 						id: 'custom'
@@ -321,6 +322,8 @@ function getThemeYearConf(params, req, res, callback) {
 			});
 		}],
 
+		// Basically at this moment you have all the layerrefs loaded and all locations. From this moment on you should
+		// work basically with all the data in the PostgreSQL database.
 		sql: ['layerRefs', 'locations', function(asyncCallback, results) {
 			if (!params['refreshAreas'] || params['refreshAreas']=='false') {
 				return asyncCallback(null, {});
@@ -328,7 +331,7 @@ function getThemeYearConf(params, req, res, callback) {
 			var locations = results.locations;
 			var areaTemplates = results.dataset.featureLayers; // areaTemplates renamed from featureLayers
 
-			var layerRefMap = results.layerRefs;
+			var layerRefMap = results.layerRefs; // All associated layerrefs to the current combination.
 			var opened = params['parentgids'] ? JSON.parse(params['parentgids']) : null;
 			opened = opened || (params['expanded'] ? JSON.parse(params['expanded']) : {});
 
@@ -349,14 +352,13 @@ function getThemeYearConf(params, req, res, callback) {
 						locAreaTemplates.push(areaTemplates[idx + 1]);
 					}
 
-
 					locAreaTemplates.sort(function(a, b) {
 						return areaTemplates.indexOf(a) > areaTemplates.indexOf(b);
 					});
 				}
 
 
-
+				// Go through all levels, which are associated with the current Scope. Area template here represents analytical units level.
 				for (var j = 0; j < locAreaTemplates.length; j++) {
 					var areaTemplateId = locAreaTemplates[j];
 					var areaTemplateIndex = areaTemplates.indexOf(areaTemplateId);
@@ -364,6 +366,7 @@ function getThemeYearConf(params, req, res, callback) {
 					var topmostAT = (location.hasOwnProperty("bbox") && location.bbox!="" && !prevAreaTemplate); // {bool} topmost area template in normal place (not multiplace)
 					var leaf = 'FALSE';
 
+					// Test whether layerrefs for all combinations including years exists.
 					var layerRef = null;
 					try {
 						layerRef = layerRefMap[locationId][areaTemplateId][years[0]];
@@ -386,6 +389,7 @@ function getThemeYearConf(params, req, res, callback) {
 					if (abort){
 						continue;
 					}
+					// End of testing whether all combinations of layerrefs including years exists.
 
 					if(topmostAT && location.bbox) {
 						let parts = location.bbox.split(',');
@@ -401,8 +405,9 @@ function getThemeYearConf(params, req, res, callback) {
 						}
 					}
 
+					let parentGid = 'a.parentgid::text';
 					sql += sql ? ' UNION ' : '';
-					sql += 'SELECT a.gid::text, a.parentgid::text, ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
+					sql += 'SELECT a.gid::text, ' + parentGid + ', ' + leaf + ' AS leaf,' + j + ' AS idx,' + layerRef.areaTemplate + ' AS at,' + locationId + ' AS loc,' + layerRef._id + ' AS lr';
 					if (topmostAT) {
 						//sql += ", '" + location.name.replace("'", "\\'") + "'::text AS name";
 						sql += ', a.name::text';

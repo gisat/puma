@@ -16,6 +16,8 @@ var layerGroupMap = null;
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
+let promisedFs = require('pn/fs');
+let path = require('path');
 
 function wms(params, req, res, callback) {
 
@@ -212,6 +214,11 @@ function wms(params, req, res, callback) {
 
 }
 
+function storeTemporarySld(id, sld) {
+	let pathSld = path.resolve(config.temporarySldFilesPath + id + '.sld');
+	return promisedFs.writeFile(pathSld, sld);
+}
+
 function saveSld(params, req, res, callback) {
 	var id = generateId();
 	var oldId = params['oldId'];
@@ -220,8 +227,7 @@ function saveSld(params, req, res, callback) {
 	params['userId'] = req.session.userId;
 	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
 
-	logger.info(`api/proxy.js#saveSld Save OldId: ${oldId} userLocation: ${userLocation}`);
-
+	logger.info(`api/proxy.js#saveSld Save New Id: ${id} OldId: ${oldId} userLocation: ${userLocation}`);
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
 		var attrs = JSON.parse(params['attrs']);
@@ -469,6 +475,9 @@ function saveSld(params, req, res, callback) {
 				delete densityMap[oldId];
 			}
 			logger.info(`api/proxy.js#saveSld#result Id: ${id}`);
+
+			storeTemporarySld(id, sld);
+			storeTemporarySld(id + 'legend', legendSld);
 
 			res.data = id;
 			return callback(null);
