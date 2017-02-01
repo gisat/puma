@@ -15,6 +15,8 @@ do
   printf "\n\n===== ${layers[$i]} =====\n"
 
   PGOPTIONS='--client-min-messages=warning' psql -q -U geonode -d geonode_data <<EOF
+BEGIN;
+
 -- 1 ALTER TABLE - add columns
 DO \$\$
   BEGIN
@@ -40,10 +42,11 @@ UPDATE "${layers[$i]}" au
       ROUND(SUM((ST_SummaryStats(ST_Clip(wswp.rast, wsau.the_geom))).sum)::NUMERIC,0) AS popsum
       FROM "${layers[$i]}" wsau
         INNER JOIN worldpop wswp ON ST_Intersects(wswp.rast, wsau.the_geom)
-      WHERE ST_Intersects(rast, wsau.the_geom)
       GROUP BY wsau.the_geom
   ) AS wpStats
   WHERE au.the_geom = wpStats.the_geom;
+
+COMMIT;
 EOF
 
 done

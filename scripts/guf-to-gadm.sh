@@ -16,6 +16,8 @@ do
 
   PGOPTIONS='--client-min-messages=warning' psql -q -U geonode -d geonode_data <<EOF
 -- 1 ALTER TABLE - add columns
+BEGIN;
+
 DO \$\$
 	BEGIN
 		BEGIN
@@ -60,10 +62,11 @@ UPDATE "${layers[$i]}" au
 			SUM(ST_ValueCount(ST_Clip(gsguf.rast, gsau.the_geom), 255.0)) AS v255sum
 			FROM "${layers[$i]}" gsau
 				INNER JOIN guf_75m_04 gsguf ON ST_Intersects(gsguf.rast, gsau.the_geom)
-			WHERE ST_Intersects(rast, gsau.the_geom)
 			GROUP BY gsau.the_geom
 	) AS gufStats
 	WHERE au.the_geom = gufStats.the_geom;
+
+COMMIT;
 EOF
 
 done
