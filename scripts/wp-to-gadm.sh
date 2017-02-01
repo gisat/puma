@@ -15,6 +15,8 @@ do
   printf "\n\n===== ${layers[$i]} =====\n"
 
   PGOPTIONS='--client-min-messages=warning' psql -q -U geonode -d geonode_data <<EOF
+BEGIN;
+
 -- 1 ALTER TABLE - add columns
 DO \$\$
   BEGIN
@@ -44,6 +46,8 @@ UPDATE "${layers[$i]}" au
       GROUP BY wsau.the_geom
   ) AS wpStats
   WHERE au.the_geom = wpStats.the_geom;
+
+COMMIT;
 EOF
 
 done

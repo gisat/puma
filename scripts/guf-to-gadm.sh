@@ -16,6 +16,8 @@ do
 
   PGOPTIONS='--client-min-messages=warning' psql -q -U geonode -d geonode_data <<EOF
 -- 1 ALTER TABLE - add columns
+BEGIN;
+
 DO \$\$
 	BEGIN
 		BEGIN
@@ -64,6 +66,8 @@ UPDATE "${layers[$i]}" au
 			GROUP BY gsau.the_geom
 	) AS gufStats
 	WHERE au.the_geom = gufStats.the_geom;
+
+COMMIT;
 EOF
 
 done
