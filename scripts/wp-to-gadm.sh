@@ -42,7 +42,6 @@ UPDATE "${layers[$i]}" au
       ROUND(SUM((ST_SummaryStats(ST_Clip(wswp.rast, wsau.the_geom))).sum)::NUMERIC,0) AS popsum
       FROM "${layers[$i]}" wsau
         INNER JOIN worldpop wswp ON ST_Intersects(wswp.rast, wsau.the_geom)
-      WHERE ST_Intersects(rast, wsau.the_geom)
       GROUP BY wsau.the_geom
   ) AS wpStats
   WHERE au.the_geom = wpStats.the_geom;
