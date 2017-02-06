@@ -19,20 +19,26 @@ class PgNormalization {
 	 * It receives performed analysis and updates the results based on the units used in the analysis. There are three
 	 * potential attributes: resulting attribute, normalization attribute, calculated attribute.
 	 * @param analysis {Object} It represents the template for the analysis which was performed
-	 * @param analysis.areaTemplate {Number} Id of the analytical unit template.
 	 * @param analysis.attributeMap {Object[]} Array containing information about all used attributes and used types of operations
 	 * @param analysis.type {String} Type of the analysis, which was run. Normalization happens only for spatial aggregation.
  	 * @param performedAnalysis {Object} It represents the analysis which was run in the end.
 	 * @param performedAnalysis._id {Number} Id of the performed analysis. Used as a part of the name of the table.
+	 * @param performedAnalysis.featureLayerTemplates {Number[]} Analytical units to which the analysis belongs.
 	 * @returns {Promise.<*>} After the promise will be resolved the data are already updated
 	 */
 	analysis(analysis, performedAnalysis) {
-		let tableToUpdate = `an_${performedAnalysis._id}_${analysis.areaTemplate}`;
 		let columns = analysis.attributeMap;
+		return Promise.all(performedAnalysis.featureLayerTemplates.map(areaTemplate => {
+			return this.analysisTable(columns, performedAnalysis._id, areaTemplate, analysis.type);
+		}));
+	}
+
+	analysisTable(columns, performedId, areaTemplateId, type) {
+		let tableToUpdate = `an_${performedId}_${areaTemplateId}`;
 		let promises = [];
 		columns.forEach(column => {
 			let columnName = `as_${column.attributeSet}_attr_${column.attribute}`;
-			if(analysis.type == 'spatialagg') {
+			if(type == 'spatialagg') {
 				promises.push(this.getFactorForColumn(column).then(factor => {
 					return this._pool.query(`UPDATE ${this._schema}.${tableToUpdate} SET "${columnName}" = "${columnName}" * ${factor}`);
 				}));

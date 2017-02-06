@@ -1,13 +1,14 @@
 let Promise = require('promise');
 
 let logger = require('../common/Logger').applicationWideLogger;
-let UUID = require('../common/UUID');
+let conn = require('../common/conn');
 
 let spatial = require('./spatialagg');
 let math = require('./math');
 let fidagg = require('./fidagg');
 
 let MongoPerformedAnalysis = require('./MongoPerformedAnalysis');
+let MongoPerformedAnalyse = require('./MongoPerformedAnalyse');
 let FilteredMongoAnalysis = require('./FilteredMongoAnalysis');
 let PgNormalization = require('../attributes/PgNormalization');
 
@@ -22,17 +23,16 @@ class PgAnalysisController {
 	 * @param pool
 	 * @param mongo
 	 */
-	constructor(app, pool, mongo) {
+	constructor(app, pool, mongo, schema) {
 		this._runningAnalysis = {};
 
 		this._performedAnalysis = new MongoPerformedAnalysis(mongo);
 		this._pool = pool;
 		this._mongo = mongo;
-		this._normalization = new PgNormalization(pool);
+		this._normalization = new PgNormalization(pool, mongo, 'analysis');
 
 		app.post('/rest/run/analysis', this.create.bind(this));
 		app.delete('/rest/run/analysis', this.remove.bind(this));
-		app.get('/rest/run/analysis/:id', this.status.bind(this));
 	}
 
 	/**
@@ -41,16 +41,17 @@ class PgAnalysisController {
 	 * @param response
 	 */
 	create(request, response) {
-		let uuid = new UUID().toString();
-		this._runningAnalysis[uuid] = "Started";
+		let id = conn.getNextId();
+		this._runningAnalysis[id] = "Started";
 
 		let performedAnalysis = request.body.data;
 		let analysis, running, mapOfLayerReferences;
-		new FilteredMongoAnalysis({_id: performedAnalysis.analysis}).json().then(pAnalysis => {
-			analysis = pAnalysis;
+		let sent = false;
+		new FilteredMongoAnalysis({_id: performedAnalysis.analysis}, this._mongo).json().then(pAnalysis => {
+			analysis = pAnalysis[0];
 			return new Promise((resolve, reject) => {
 				let type = analysis.type;
-				if(type == 'spatial') {
+				if(type == 'spatialagg') {
 					running = spatial;
 				} else if(type == 'math') {
 					running = math;
@@ -74,9 +75,10 @@ class PgAnalysisController {
 			})
 		}).then(pMapOfLayerReferences => {
 			mapOfLayerReferences = pMapOfLayerReferences;
+			performedAnalysis._id = id;
 			return this._performedAnalysis.add(performedAnalysis);
-		}).then(performedAnalysis => {
-			performedAnalysis.id = uuid;
+		}).then(() => {
+			sent = true;
 			response.json({data: performedAnalysis});
 
 			// This is long running operation. The clients don't wait for the result.
@@ -92,16 +94,24 @@ class PgAnalysisController {
 				})
 			});
 		}).then(() => {
-			if(analysis.type == 'spatial') {
+			if(analysis.type == 'spatialagg') {
 				// Only for spatial.
+				performedAnalysis._id = id;
 				return this._normalization.analysis(analysis, performedAnalysis);
 			} else {
 				return null;
 			}
 		}).catch(err => {
-			this._runningAnalysis[uuid] = "Error";
 			logger.error(`PgAnalysisController#create Error: `, err);
-			response.status(500).json({status: 'err'});
+
+			performedAnalysis.status = "Failed. " + err;
+			performedAnalysis.finished = new Date();
+			performedAnalysis._id = id;
+			this._performedAnalysis.update(performedAnalysis);
+
+			if(!sent){
+				response.status(500).json({status: 'err'});
+			}
 		});
 	}
 
@@ -113,37 +123,6 @@ class PgAnalysisController {
 	remove(request, response) {
 		// Not supported yet.
 		response.status(400).json({status: 'Not supported yet'});
-	}
-
-	/**
-	 * It returns status of analysis.
-	 * @param request
-	 * @param response
-	 */
-	status(request, response) {
-		let id = request.params.id;
-
-		if (!id) {
-			logger.error("PgAnalysisController#status Status analysis request didn't contain id.");
-			response.status(400).json({
-				message: "Status analysis request didn't contain id"
-			});
-			return;
-		}
-
-		if (!this._runningAnalysis[id]) {
-			logger.error("PgAnalysisController#status There is no running analysis with id", id);
-			response.status(400).json({
-				message: "There is no running analysis with id " + id
-			});
-			return;
-		}
-
-		logger.info("PgAnalysisController#status  Requested status of task: ", id);
-
-		response.json({
-			status: this._runningAnalysis[id]
-		});
 	}
 }
 

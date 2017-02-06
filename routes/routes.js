@@ -105,7 +105,7 @@ module.exports = function(app) {
 	new MellodiesLodController(app, pool);
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
-	new PgAnalysisController(app, pool, conn.getMongoDb());
+	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
 
 	new iprquery(app, pool);
 	new iprConversion(app);

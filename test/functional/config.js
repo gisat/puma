@@ -1,6 +1,6 @@
 module.exports = {
 	/* This specifies ports on which the test server will be run. */
-	port: 3000,
+	port: 3103,
 
 	pgDataConnString: "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
 	pgDataUser: 'geonode',

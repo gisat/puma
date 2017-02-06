@@ -38,7 +38,6 @@ describe('NormalizationSpec', () => {
 	describe('analysis', () => {
 		it('correctly normalizes all attributes in spatial analysis', done => {
 			pgNormalization.analysis({
-				areaTemplate: 1,
 				type: 'spatialagg',
 				attributeMap: [{
 					attribute: 1,
@@ -64,7 +63,7 @@ describe('NormalizationSpec', () => {
 					attributeSet: 1,
 					type: 'other'
 				}]
-			}, {_id: 2345}).then(() => {
+			}, {_id: 2345, featureLayerTemplates: [1]}).then(() => {
 				return pgPool.query(`SELECT * FROM ${pgSchema}.an_2345_1`);
 			}).then(result => {
 				should(result.rows.length).be.exactly(1);
@@ -84,14 +83,13 @@ describe('NormalizationSpec', () => {
 
 		it(`doesn't normalise math analysis`, done => {
 			pgNormalization.analysis({
-				areaTemplate: 1,
 				type: 'math',
 				attributeMap: [{
 					attribute: 1,
 					attributeSet: 1,
 					type: 'sumarea'
 				}]
-			}, {_id: 2345}).then(() => {
+			}, {_id: 2345, featureLayerTemplates: [1]}).then(() => {
 				return pgPool.query(`SELECT * FROM ${pgSchema}.an_2345_1`);
 			}).then(result => {
 				shouldntChange(result.rows);
@@ -101,14 +99,13 @@ describe('NormalizationSpec', () => {
 
 		it(`doesn't normalise fidagg analysis`, done => {
 			pgNormalization.analysis({
-				areaTemplate: 1,
 				type: 'fidagg',
 				attributeMap: [{
 					attribute: 1,
 					attributeSet: 1,
 					type: 'sumarea'
 				}]
-			}, {_id: 2345}).then(() => {
+			}, {_id: 2345, featureLayerTemplates: [1]}).then(() => {
 				return pgPool.query(`SELECT * FROM ${pgSchema}.an_2345_1`);
 			}).then(result => {
 				shouldntChange(result.rows);

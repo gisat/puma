@@ -30,6 +30,11 @@ class MongoPerformedAnalysis {
 		});
 	}
 
+	update(performedAnalyse) {
+		let collection = this._connection.collection(MongoPerformedAnalyse.collectionName());
+		return collection.update({_id: performedAnalyse._id}, performedAnalyse);
+	}
+
 	add(performedAnalyse) {
 		let collection = this._connection.collection(MongoPerformedAnalyse.collectionName());
 		return collection.insert(performedAnalyse);
