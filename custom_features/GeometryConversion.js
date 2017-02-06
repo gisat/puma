@@ -21,14 +21,27 @@ class CustomFeaturesController {
     /**
      * Convert line in WKT format to target projection
      * @param wktGeometry {string} WKT geometry in original projection
-     * @returns {string} WKT geometry in target projection
+     * @param toWKT {boolean} true, if output should be in WKT format
+     * @returns {string|Object} WKT geometry in target projection/JSON
      */
-    convertWKTLine (wktGeometry){
+    convertWKTGeometry (wktGeometry, toWKT){
         let geojson = this.constructor.extractPoints(wktGeometry);
         let points = geojson.coordinates;
         let geometryType = geojson.type;
 
+        // library doesn't work for multipolygons
+        if (geometryType == "MultiPolygon"){
+            geometryType = "Polygon";
+        }
+
         let convertedPoints = this.convertPoints(points);
+
+        if (!toWKT){
+            return {
+                coordinates: convertedPoints,
+                type: geometryType
+            };
+        }
 
         return this.constructor.geojsonToWKT(convertedPoints, geometryType);
     }
@@ -43,15 +56,33 @@ class CustomFeaturesController {
     }
 
     /**
-     * Convert list of points to target CRS
+     * Convert list of points to target CRS (polygons are nested, multipolygons are nested again)
      * @param points {Array} list of points in original CRS
      * @returns {Array} list of points in target CRS
      */
     convertPoints (points){
         var convertedPoints = [];
         points.map(point => {
-            var converted = this.convertPoint(point);
-            convertedPoints.push(converted);
+            if (point.length == 2){
+                var converted = this.convertPoint(point);
+                convertedPoints.push(converted);
+            }
+            // nested polygons
+            else {
+                point.map(coord => {
+                    if (coord.length == 2){
+                        var converted = this.convertPoint(coord);
+                        convertedPoints.push(converted);
+                    }
+                    // nested multipolygons
+                    else {
+                        coord.map(coord2 => {
+                            var converted = this.convertPoint(coord2);
+                            convertedPoints.push(converted);
+                        });
+                    }
+                })
+            }
         });
         return convertedPoints;
     }

@@ -34,7 +34,7 @@
     "promise": "^7.1.1",
     "properties": "0.3.3",
     "request": "latest",
-    "shp-write": "^0.2.7",
+    "shp-write": "^0.3.2",
     "superagent": "^2.1.0",
     "supertest-as-promised": "^3.2.0",
     "underscore": "1.8.x",
