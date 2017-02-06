@@ -6,7 +6,7 @@ let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
 let Scope = require('../../../export/Scope');
 let PgPool = require('../../../postgresql/PgPool');
 
-describe('DataExportController', () => {
+xdescribe('DataExportController', () => {
 	let pool, mongoDb, dataFixture, schema;
 	let commonSchema = 'data_test';
 
