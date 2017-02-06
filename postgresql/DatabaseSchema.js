@@ -92,14 +92,22 @@ DatabaseSchema.prototype.create = function () {
         id SERIAL PRIMARY KEY,
         name text,
         url text,
+        layer text,
         scope int,
-        place int,
-        period int,
         created timestamp,
         created_by int, 
         changed timestamp, 
         changed_by int        
-    )`;
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layer_has_places (
+        wms_layer_id int REFERENCES ${this.schema}.wms_layers,
+        place_id int
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layer_has_periods (
+        wms_layer_id int REFERENCES ${this.schema}.wms_layers,
+        period_id int
+    );
+    `;
 
     var self = this;
     return this._pool.query(createSchema).then(function () {

@@ -1,6 +1,7 @@
 let moment = require('moment');
 let Promise = require('promise');
 let _ = require('underscore');
+let logger = require('../../common/Logger').applicationWideLogger;
 
 let FilteredMongoLayerReferences = require('../FilteredMongoLayerReferences');
 
@@ -24,7 +25,42 @@ class PgWmsLayers {
 	 * It returns all stored WMS layer with their details.
 	 */
 	all() {
-		return this._pool.query(`SELECT * FROM ${this.schema}.${PgWmsLayers.tableName()}`).then(result => {
+		return this._pool.query(this.readSql()).then(result => {
+			return this._transformRows(result.rows);
+		});
+	}
+
+	/**
+	 * It returns subset of the layers filtered byb the
+	 * @param scope {Number} Id of the scope on which are the layers filtered.
+	 * @param place {Number} Id of the place on which are the layers filtered.
+	 * @param periods {Number[]} Array of ids of periods relevant for the filtered layers.
+	 */
+	filtered(scope, place, periods) {
+		let restrictions = [];
+		if(scope) {
+			restrictions.push(`scope = '${scope}'`)
+		}
+
+		if(place) {
+			restrictions.push(`wms_layer_has_places.place_id = '${place}'`);
+		}
+
+		if(periods && periods.length) {
+			restrictions.push(`wms_layer_has_periods.period_id in (${periods.join()})`)
+		}
+
+		let restrictionsSql = '';
+		restrictions.map((restriction, index) => {
+			if(index == 0) {
+				restrictionsSql = ' WHERE ';
+			} else {
+				restrictionsSql += ' AND ';
+			}
+
+			restrictionsSql += restriction;
+		});
+		return this._pool.query(`${this.readSql()} ${restrictionsSql}`).then(result => {
 			return this._transformRows(result.rows);
 		});
 	}
@@ -33,26 +69,41 @@ class PgWmsLayers {
 	 * It returns detail of the layer represent by id. If there is no such layer null is returned.
 	 */
 	byId(id) {
-		return this._pool.query(`SELECT * from ${this.schema}.${PgWmsLayers.tableName()} WHERE id = ${id}`).then(result => {
+		return this._pool.query(`${this.readSql()} WHERE id = ${id}`).then(result => {
 			return this._transformRows(result.rows);
 		}).then(rows => {
 			return rows[0];
 		});
 	}
 
+	readSql() {
+		return `SELECT * FROM ${this.schema}.${PgWmsLayers.tableName()} as layer LEFT JOIN ${this.schema}.wms_layer_has_places ON layer.id = wms_layer_has_places.wms_layer_id LEFT JOIN ${this.schema}.wms_layer_has_periods ON layer.id = wms_layer_has_periods.wms_layer_id`;
+	}
+
 	/**
 	 * It transforms rows from database to internal objects.
+	 * The SQL representation and loading vi joins means that there will be multiple rows with the same id with difference
+	 * only in the periods and the places area.
 	 * @private
 	 */
 	_transformRows(rows) {
-		return Promise.all(rows.map(layer => {
-			return new FilteredMongoLayerReferences({layer: layer.name}, this._mongo).json().then(layerReferences => {
-				return _.extend(layer, {
-					referenced: layerReferences.length > 0,
-					source: 'internal'
-				});
-			});
-		}));
+		let layers = {};
+		rows.forEach(layer => {
+			if(!layers[layer.id]) {
+				layers[layer.id] = layer;
+				layer.periods = [];
+				layer.places = [];
+			}
+
+			if(layer.period_id && layers[layer.id].periods.indexOf(layer.period_id) == -1) {
+				layers[layer.id].periods.push(layer.period_id);
+			}
+			if(layer.place_id && layers[layer.id].places.indexOf(layer.place_id) == -1) {
+				layers[layer.id].places.push(layer.place_id);
+			}
+		});
+		let keys = Object.keys(layers);
+		return keys.map(key => layers[key]);
 	}
 
 	/**
@@ -61,8 +112,9 @@ class PgWmsLayers {
 	 * @param layer.name {String} Name of the layer
 	 * @param layer.url {String} Url of the layer
 	 * @param layer.scope {Number} Scope to which the layer belongs.
-	 * @param layer.place {Number} Place to which the layer belongs.
-	 * @param layer.period {Number} Period to which the layer belongs.
+	 * @param layer.places {Number[]} Place to which the layer belongs.
+	 * @param layer.periods {Number[]} Period to which the layer belongs.
+	 * @param layer.layer {String} Name of the layer to use from given WMS Store.
 	 * @param userId {Number} Id of the current user.
 	 */
 	add(layer, userId) {
@@ -72,9 +124,41 @@ class PgWmsLayers {
 
 		let time = moment().format('YYYY-MM-DD HH:mm:ss');
 
-		return this._pool.query(`INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, url, scope, place, period, created, created_by, changed, changed_by) VALUES ('${layer.name}','${layer.url}',${layer.scope}, ${layer.place}, ${layer.period}, '${time}', ${userId}, '${time}', ${userId}) RETURNING id`).then(result => {
-			return this.byId(result.rows[0].id);
+		let scope = '';
+		let scopeValue = '';
+		if(layer.scope) {
+			scope = 'scope, ';
+			scopeValue = `${layer.scope}, `;
+		}
+
+		let id;
+
+		// TODO: Enclose into transaction. Handle Rollback correctly.
+		return this._pool.query(`
+			INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} created, created_by, changed, changed_by) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} '${time}', ${userId}, '${time}', ${userId}) RETURNING id;`).then(result => {
+			id = result.rows[0].id;
+			return this.insertDependencies(id, layer.places, layer.periods);
+		}).then(() => {
+			return this.byId(id);
 		});
+	}
+
+	insertDependencies(id, places, periods) {
+		let periodSql = '';
+		if(periods && periods.length) {
+			periods.forEach(period => {
+				periodSql += `INSERT INTO ${this.schema}.wms_layer_has_periods (period_id, wms_layer_id) VALUES (${period}, ${id});`;
+			});
+		}
+
+		let placeSql = '';
+		if(places && places.length) {
+			places.forEach(place => {
+				placeSql += `INSERT INTO ${this.schema}.wms_layer_has_places (place_id, wms_layer_id) VALUES (${place}, ${id});`;
+			});
+		}
+
+		return this._pool.query(`${periodSql} ${placeSql}`);
 	}
 
 	/**
@@ -84,8 +168,9 @@ class PgWmsLayers {
 	 * @param layer.name {String} Name of the layer.
 	 * @param layer.url {String} Url of the layer
 	 * @param layer.scope {Number} Scope to which the layer belongs.
-	 * @param layer.place {Number} Place to which the layer belongs.
-	 * @param layer.period {Number} Period to which the layer belongs.
+	 * @param layer.places {Number[]} Place to which the layer belongs.
+	 * @param layer.periods {Number[]} Period to which the layer belongs.
+	 * @param layer.layer {String} Name of the layer used from given WMS.
 	 * @param userId {Number} Id of the current user. If nobody is logged in, quest id will apply.
 	 */
 	update(layer, userId) {
@@ -95,9 +180,26 @@ class PgWmsLayers {
 
 		let time = moment().format('YYYY-MM-DD HH:mm:ss');
 
-		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', scope=${layer.scope}, place=${layer.place}, period=${layer.period}, changed='${time}', changed_by=${userId} where id = ${layer.id}`).then(() => {
+		let scopeSql = '';
+		if(layer.scope) {
+			scopeSql = `scope = ${layer.scope},`;
+		}
+
+		logger.info('PgWmsLayer#update Layer: ', layer, ' SQL: ', `UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId} where id = ${layer.id}`);
+		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId} where id = ${layer.id}`).then(() => {
+			return this._pool.query(this.deleteDependenciesSql(layer.id));
+		}).then(() => {
+			return this.insertDependencies(layer.id, layer.places, layer.periods);
+		}).then(() => {
 			return this.byId(layer.id);
-		})
+		});
+	}
+
+	deleteDependenciesSql(id) {
+		return `
+			DELETE FROM ${this.schema}.wms_layer_has_places WHERE wms_layer_id = ${id};
+			DELETE FROM ${this.schema}.wms_layer_has_periods WHERE wms_layer_id = ${id};
+		`;
 	}
 
 	/**
@@ -109,7 +211,10 @@ class PgWmsLayers {
 			throw new Error(`PgWmsLayer#delete Incorrect arguments Id: ${id}`);
 		}
 
-		return this._pool.query(`DELETE from ${this.schema}.${PgWmsLayers.tableName()} WHERE id = ${id}`);
+		return this._pool.query(`
+				${this.deleteDependenciesSql(id)}
+				DELETE from ${this.schema}.${PgWmsLayers.tableName()} WHERE id = ${id};
+		`);
 	}
 
 	static tableName() {

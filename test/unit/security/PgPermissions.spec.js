@@ -17,7 +17,7 @@ describe('PgPermissions', () => {
             let pgPermissions = new PgPermissions({pool: function(){}}, 'test');
 
             let result = pgPermissions.addSql(10, 'scope', 5, 'PUT');
-            should(result).be.exactly(`INSERT INTO test.permissions (user_id, resource_type, resource_id, permission) VALUES (10, 'scope', 5, 'PUT')`);
+            should(result).be.exactly(`INSERT INTO test.permissions (user_id, resource_type, resource_id, permission) VALUES (10, 'scope', '5', 'PUT')`);
         });
     });
 
@@ -26,7 +26,7 @@ describe('PgPermissions', () => {
             let pgPermissions = new PgPermissions({pool: function(){}}, 'test');
 
             let result = pgPermissions.removeSql(10, 'scope', 5, 'PUT');
-            should(result).be.exactly(`DELETE FROM test.permissions WHERE user_id = 10 AND resource_type = 'scope'  AND resource_id = 5  AND permission = 'PUT'`);
+            should(result).be.exactly(`DELETE FROM test.permissions WHERE user_id = 10 AND resource_type = 'scope'  AND resource_id = '5'  AND permission = 'PUT'`);
         })
     });
 

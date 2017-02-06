@@ -15,7 +15,8 @@ let Permission = require('../../security/Permission');
 class LayerWmsController {
 	constructor(app, pool, mongo, schema){
 		this._pgLayers = new PgWmsLayers(pool, mongo, schema || config.postgreSqlSchema);
-		this.permissions = new PgPermissions(pool, schema);
+		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
+		this.type = "layer_wms";
 
 		app.get('/rest/wms/layer', this.readAll.bind(this));
 		app.post('/rest/wms/layer', this.add.bind(this));
@@ -30,13 +31,13 @@ class LayerWmsController {
 	 * @param response
 	 */
 	readAll(request, response) {
-		logger.info('LayerWmsController#readAll Read all layers By User: ', request.session.userId);
+		logger.info('LayerWmsController#readAll Read all layers By User: ', request.session.userId, 'With params: ', request.query);
 
 		let currentUser = request.session.user;
 		let layers;
 		// Load actually accessible from the GeoNode
-		return this._pgLayers.all().then(pgLayers => {
-			layers = pgLayers.filter(layer => currentUser.hasPermission("layer_wms", Permission.READ, layer.id));
+		return this._pgLayers.filtered(request.query.scope, request.query.place, request.query.periods).then(pgLayers => {
+			layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
 
 			let promises = layers.map(layer => {
 				return this.permissions.forType("layer", layer.id).then(permissions => {
@@ -61,20 +62,40 @@ class LayerWmsController {
 	add(request, response) {
 		logger.info(`LayerWmsController#add Create new layer: ${request.body.name} url: ${request.body.url} By User: ${request.session.userId}`);
 
-		if (!request.session.user.hasPermission('layer_wms', Permission.CREATE, null)) {
+		if (!request.session.user.hasPermission(this.type, Permission.CREATE, null)) {
 			logger.error(`LayerWmsController#add User: ${request.session.userId} doesnt have permissions to create WMS layer`);
 			response.status(403).json({"status": "err"});
 			return;
 		}
-
+		this.defaultsForLayer(request.body);
 
 		let currentUser = request.session.user;
+		let layer;
 		return this._pgLayers.add(request.body, currentUser.id).then(pgLayer => {
-			response.json({data: pgLayer});
+			layer = pgLayer;
+
+			return Promise.all([
+				this.permissions.add(currentUser.id, this.type, pgLayer.id, Permission.READ),
+				this.permissions.add(currentUser.id, this.type, pgLayer.id, Permission.UPDATE),
+				this.permissions.add(currentUser.id, this.type, pgLayer.id, Permission.DELETE)
+			]);
+		}).then(() => {
+			response.json({data: layer});
 		}).catch(err => {
 			logger.error('LayerWmsController#add Error: ', err);
 			response.status(500).json({status: "err"});
 		});
+	}
+
+	/**
+	 * It supplies default values for the layer instead of stuff such as undefined.
+	 * @param layer
+	 */
+	defaultsForLayer(layer) {
+		layer.name = layer.name || '';
+		layer.url = layer.url || '';
+		layer.layer = layer.layer || '';
+
 	}
 
 	/**
@@ -86,7 +107,7 @@ class LayerWmsController {
 		logger.info(`LayerWmsController#update Update Layer: ${request.body.id} By User: ${request.session.userId}`);
 
 		let layerToUpdate = request.body;
-		if (!request.session.user.hasPermission('layer_wms', Permission.UPDATE, layerToUpdate.id)) {
+		if (!request.session.user.hasPermission(this.type, Permission.UPDATE, layerToUpdate.id)) {
 			logger.error(`LayerWmsController#update User: ${request.session.userId} doesnt have permissions to update WMS layer: ${request.body.id}`);
 			response.status(403).json({"status": "err"});
 			return;
@@ -109,7 +130,7 @@ class LayerWmsController {
 	delete(request, response) {
 		logger.info(`LayerWmsController#add Delete layer: ${request.params.id} By User: ${request.session.userId}`);
 
-		if (!request.session.user.hasPermission('layer_wms', Permission.DELETE, request.params.id)) {
+		if (!request.session.user.hasPermission(this.type, Permission.DELETE, request.params.id)) {
 			logger.error(`LayerWmsController#delete User: ${request.session.userId} doesnt have permissions to update WMS layer: ${request.params.id}`);
 			response.status(403).json({"status": "err"});
 			return;

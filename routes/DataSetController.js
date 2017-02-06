@@ -16,8 +16,8 @@ let Permission = require('../security/Permission');
  * @constructor
  */
 class DataSetController extends Controller {
-	constructor(app, pool) {
-		super(app, 'dataset', pool, MongoScopes, MongoScope);
+	constructor(app, pool, schema) {
+		super(app, 'dataset', pool, MongoScopes, MongoScope, schema);
 
 		app.get('/restricted/rest/dataset', this.readRestricted.bind(this));
 	}

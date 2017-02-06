@@ -14,14 +14,14 @@ let Permission = require('../security/Permission');
  * @constructor
  */
 class Controller {
-    constructor(app, type, pool, service, entity) {
+    constructor(app, type, pool, service, entity, schema) {
         if (!app || !type) {
             throw new Error(
                 logger.error('Controller#constructor The controller must receive valid type and app')
             );
         }
 
-        this.permissions = new PgPermissions(pool, config.postgreSqlSchema);
+        this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
         this.type = type;
         this.set(app);
         if (service && entity) {

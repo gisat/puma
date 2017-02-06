@@ -16,8 +16,12 @@ describe('LayerWmsControllerSpec', () => {
 			new LayerWmsController(app, pool, mongoDb, schema.schema);
 
 			return pool.query(`
-				INSERT INTO ${schema.schema}.wms_layers (id, name, url, scope, place, period) VALUES (10, 'TestName', 'http://localhost/geoserver/wms', 1, 1, 1);
-				INSERT INTO ${schema.schema}.wms_layers (id, name, url, scope, place, period) VALUES (11, 'TestName2', 'http://localhost/geoserver/wms', 1, 1, 1);
+				INSERT INTO ${schema.schema}.wms_layers (id, name, url, layer, scope) VALUES (10, 'TestName', 'http://localhost/geoserver/wms', 'guf_75m', 1);
+				INSERT INTO ${schema.schema}.wms_layer_has_periods (wms_layer_id, period_id) VALUES (10, 1);
+				INSERT INTO ${schema.schema}.wms_layer_has_places (wms_layer_id, place_id) VALUES (10, 1);
+				INSERT INTO ${schema.schema}.wms_layers (id, name, url, layer, scope) VALUES (11, 'TestName2', 'http://localhost/geoserver/wms', 'guf12', 1);
+				INSERT INTO ${schema.schema}.wms_layer_has_periods (wms_layer_id, period_id) VALUES (11, 1);
+				INSERT INTO ${schema.schema}.wms_layer_has_places (wms_layer_id, place_id) VALUES (11, 1);
 			`);
 		}, fixture);
 		integrationEnvironment.setup().then(() => {
@@ -43,6 +47,8 @@ describe('LayerWmsControllerSpec', () => {
 				.then((response) => {
 					should(response.body.data.length).be.exactly(1);
 					should(response.body.data[0].id).be.exactly(10);
+					should(response.body.data[0].periods.length).be.exactly(1);
+					should(response.body.data[0].places.length).be.exactly(1);
 					done();
 				}).catch(err => {
 				done(err);
@@ -62,10 +68,12 @@ describe('LayerWmsControllerSpec', () => {
 				.post('/rest/wms/layer')
 				.set('Content-Type', 'application/json')
 				.set('Accepts', 'application/json')
-				.send({name: 'Eumetsat WMS', url: 'http://geoserver/', scope: 1, place: 1, period: 1})
+				.send({name: 'Eumetsat WMS', url: 'http://geoserver/', scope: 1, places: [1], periods: [1]})
 				.expect(200)
 				.then((response) => {
 					should(response.body.data.name).be.exactly('Eumetsat WMS');
+					should(response.body.data.places.length).be.exactly(1);
+					should(response.body.data.periods.length).be.exactly(1);
 					done();
 				}).catch(err => {
 				done(err);
@@ -79,7 +87,7 @@ describe('LayerWmsControllerSpec', () => {
 				.post('/rest/wms/layer')
 				.set('Content-Type', 'application/json')
 				.set('Accepts', 'application/json')
-				.send({name: 'Eumetsat WMS', url: 'http://geoserver/', scope: 1, place: 1, period: 1})
+				.send({name: 'Eumetsat WMS', url: 'http://geoserver/', scope: 1, places: [1], periods: [1]})
 				.expect(403)
 				.then(() => {
 					done();
@@ -101,10 +109,12 @@ describe('LayerWmsControllerSpec', () => {
 				.put('/rest/wms/layer')
 				.set('Content-Type', 'application/json')
 				.set('Accepts', 'application/json')
-				.send({id: 10, name: 'Eumetsat WMS', url: 'http://geoserver/', scope: 1, place: 1, period: 1})
+				.send({id: 10, name: 'Eumetsat WMS', url: 'http://geoserver/', scope: 1, places: [1], periods: [1]})
 				.expect(200)
 				.then((response) => {
 					should(response.body.data.name).be.exactly('Eumetsat WMS');
+					should(response.body.data.places.length).be.exactly(1);
+					should(response.body.data.periods.length).be.exactly(1);
 					done();
 				}).catch(err => {
 				done(err);
@@ -142,9 +152,15 @@ describe('LayerWmsControllerSpec', () => {
 				.set('Accepts', 'application/json')
 				.expect(200)
 				.then(() => {
-					return integrationEnvironment.pool.query(`SELECT * FROM ${integrationEnvironment.schema.schema}.${PgWmsLayers.tableName()}`)
+					return integrationEnvironment.pool.query(`SELECT * FROM ${integrationEnvironment.schema.schema}.${PgWmsLayers.tableName()} WHERE id = 11`)
 				}).then(result => {
-				should(result.rows.length).be.exactly(1);
+				should(result.rows.length).be.exactly(0);
+				return integrationEnvironment.pool.query(`SELECT * FROM ${integrationEnvironment.schema.schema}.wms_layer_has_periods where wms_layer_id = 11`)
+			}).then(result => {
+				should(result.rows.length).be.exactly(0);
+				return integrationEnvironment.pool.query(`SELECT * FROM ${integrationEnvironment.schema.schema}.wms_layer_has_places where wms_layer_id = 11`)
+			}).then(result => {
+				should(result.rows.length).be.exactly(0);
 				done();
 			}).catch(err => {
 				done(err);
