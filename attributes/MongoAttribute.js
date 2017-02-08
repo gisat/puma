@@ -1,6 +1,5 @@
 var Promise = require('promise');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
-var FilteredMongoAttributeSets = require('./FilteredMongoAttributeSets');
 var FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
 var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
@@ -14,7 +13,6 @@ class MongoAttribute {
 		this._connection = connection;
 		// TODO: Remove attribute from columnMap
 		this._layerReferences = new FilteredMongoLayerReferences({"columnMap.attribute": id}, connection);
-		this._attributeSets = new FilteredMongoAttributeSets({attribute: id}, connection);
 		// TODO: remove attribute if there is more than one.
 		// TODO: remove analysis when there is only one attribute.
 		this._analysis = new FilteredCompoundCollection([
@@ -52,10 +50,6 @@ class MongoAttribute {
 
 	layerReferences() {
 		return this._layerReferences.read();
-	}
-
-	attributeSets() {
-		return this._attributeSets.read();
 	}
 
 	analysis() {
