@@ -693,7 +693,7 @@ function getAttrConf(params, callback) {
 					prevAttrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
 					var normType = attrReceived.normType;
 					let normalizationUnits = attrReceived.normalizationUnits;
-					let percentage = attr.normalizationResultInPercentage;
+					let percentage = attrReceived.normalizationResultInPercentage;
 					if(typeof percentage === 'undefined') {
 						percentage = true;
 					}
