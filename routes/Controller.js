@@ -107,7 +107,7 @@ class Controller {
                 return next(err);
             }
 
-            if (!this.hasRights(request.session.user, Permission.READ, request.params.id, result)) {
+            if (!self.hasRights(request.session.user, Permission.READ, request.params.id, result)) {
                 response.status(403);
                 return;
             }
