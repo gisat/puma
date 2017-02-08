@@ -693,6 +693,11 @@ function getAttrConf(params, callback) {
 					prevAttrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
 					var normType = attrReceived.normType;
 					let normalizationUnits = attrReceived.normalizationUnits;
+					let percentage = attr.normalizationResultInPercentage;
+					if(typeof percentage === 'undefined') {
+						percentage = true;
+					}
+
 					var units = results.attr[attrReceived.attr].units || '';
 					var normUnits = null;
 
@@ -720,7 +725,7 @@ function getAttrConf(params, callback) {
 					}
 
 					var unitsTotal = units + (normUnits ? ('/' + normUnits) : '');
-					if (units == normUnits) {
+					if (percentage) {
 						unitsTotal = '%';
 					}
 					logger.info(`data/data#saveSld res Units: ${units} Normalization Units: ${normUnits} Total units: ${unitsTotal}`);
