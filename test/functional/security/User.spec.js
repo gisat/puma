@@ -170,15 +170,22 @@ describe('User', function () {
 
             fixture.user = new User(0, [{
 				resourceType: 'user',
-				permission: 'GET'
+				permission: 'GET',
+                resourceId: 1
+			}, {
+				resourceType: 'user',
+				permission: 'GET',
+				resourceId: 2
 			}]);
 			supertest(app)
                 .get('/rest/user')
                 .expect(200)
                 .then((response) => {
-                    let users = response.body;
-                    console.log(users);
+                    let users = JSON.parse(response.body).data;
+                    should(users.length).be.exactly(2);
                     done();
+            }).catch(error => {
+                done(error);
             });
 		});
     });

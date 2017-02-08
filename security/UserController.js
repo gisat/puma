@@ -38,8 +38,8 @@ class UserController {
 		let result = [];
 		superagent.get(usersUrl).then((retrieved) => {
 			let users = retrieved.body.objects;
-			users = users
-				.filter(user => this.hasRights(request.session.user, Permission.READ, user.id));
+			users = users && users.length && users
+				.filter(user => this.hasRights(request.session.user, Permission.READ, user.id)) || [];
 
 			return Promise.all(users.map(user => {
 				return this.users.byId(user.id).then(loaded => {
