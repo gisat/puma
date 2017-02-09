@@ -66,6 +66,14 @@ class Units {
 
 		return factor / this.units[units];
 	}
+
+	translateFromFactorToUnitsNormalization(factor, units) {
+		if(!units || this.allowedUnits.indexOf(units) == -1) {
+			return factor;
+		}
+
+		return factor * this.units[units];
+	}
 }
 
 module.exports = Units;

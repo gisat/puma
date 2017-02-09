@@ -160,7 +160,7 @@ function getData(params, callback) {
 				factor = units.translate(attrUnits, normAttrUnits, percentage);
 				logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 				if(attrUnits && normAttrUnits && normalizationUnits) {
-					factor = units.translateFromFactorToUnits(factor, normalizationUnits);
+					factor = units.translateFromFactorToUnitsNormalization(factor, normalizationUnits);
 				}
 			} else {
 				factor = percentage ? 100: 1;
