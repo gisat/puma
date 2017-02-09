@@ -4,6 +4,7 @@ var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
 var AnalysisController = require('./AnalysisController');
+var AnalyticalUnitsController = require('../layers/AnalyticalUnitsController');
 var AreaTemplateController = require('./AreaTemplateController');
 var AttributeController = require('./AttributeController');
 var AttributeSetController = require('./AttributeSetController');
@@ -72,6 +73,7 @@ module.exports = function(app) {
 
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app, pool);
+	new AnalyticalUnitsController(app, pool, conn.getMongoDb());
 	new AreaTemplateController(app, pool);
 	new GufController(app, pool);
 	if(poolRemote) {
