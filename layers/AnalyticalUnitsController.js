@@ -6,6 +6,8 @@ var _ = require('underscore');
 let FilteredBaseLayers = require('./FilteredBaseLayers');
 let PgAnalyticalUnits = require('./PgAnalyticalUnits');
 
+let GeometryConversion = require('../custom_features/GeometryConversion');
+
 /**
  *
  */
@@ -13,6 +15,11 @@ class AnalyticalUnitsController {
 	constructor(app, pgPool, mongoDb) {
 		this._pool = pgPool;
 		this._mongo = mongoDb;
+
+		this._geometryConversion = new GeometryConversion({
+			sourceCRSProjDef: 'EPSG:3857', // web Mercator
+			targetCRSProjDef: 'EPSG:4326' // wgs84
+		});
 
 		app.get('/rest/au', this.read.bind(this));
 	}
@@ -23,6 +30,7 @@ class AnalyticalUnitsController {
 	 * @param response
 	 */
 	read(request, response) {
+		var self = this;
 		var loc = JSON.parse(request.query.locations);
 		let locations = loc && loc.length && loc.map(location => Number(location));
 		new FilteredBaseLayers({
@@ -37,17 +45,33 @@ class AnalyticalUnitsController {
 		}).then(results => {
 			let all = [];
 			let deduplicated = [];
+			let converted = [];
 			results.forEach(units => {
 				if(units.length) {
 					all = all.concat(units);
 					deduplicated = _.uniq(all, 'gid');
 				}
 			});
-			response.json({data: deduplicated});
+			converted = self.convert(deduplicated);
+			response.json({data: converted});
 		}).catch(error => {
 			logger.error('AnalyticalUnitsController#read Error: ', error);
 			response.status(500).json({status: 'Err'});
 		});
+	}
+
+	/**
+	 * Convert geometries from one CRS to another
+	 * @param units {Array} geometry has to be in st_astext
+	 * @returns {Array} converted units
+     */
+	convert(units){
+		let converted = [];
+		units.map(unit => {
+			unit["geom"] = this._geometryConversion.convertWKTGeometry(unit["st_astext"],false);
+			converted.push(unit);
+		});
+		return converted;
 	}
 }
 
