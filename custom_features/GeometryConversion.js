@@ -6,7 +6,7 @@ var proj4 = require('proj4');
 /**
  * Class for converting geometries from one projection to another one
  */
-class CustomFeaturesController {
+class GeometryConversion {
     /**
      * @param options {Object}
      * @param options.sourceCRSProjDef {string} proj4 definiton of source projection
@@ -116,4 +116,4 @@ class CustomFeaturesController {
     }
 }
 
-module.exports = CustomFeaturesController;
+module.exports = GeometryConversion;
