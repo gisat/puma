@@ -481,8 +481,6 @@ function getData(params, callback) {
 					var locAggDataMap = {};
 
 					if (topLoc || topAll || aggSelect) {
-						var aggColorPassed = false;
-							//console.log(originalSelected);
 						for (var i = 0; i < resls.rows.length; i++) {
 							var row = resls.rows[i];
 
@@ -502,9 +500,7 @@ function getData(params, callback) {
 								locAggDataMap[row.loc] = aggRow;
 
 							} else if (aggSelect && defSelectedArea && defSelectedArea.at==row.at && defSelectedArea.loc==row.loc && defSelectedArea.gid==row.gid) {
-								//if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
-									normalData.push(row);
-								//}
+								normalData.push(row);
 								var aggRow = _.clone(row);
 								aggData.push(aggRow);
 								locAggDataMap['select'] = aggRow;
@@ -546,7 +542,10 @@ function getData(params, callback) {
 					} else {
 						normalData = resls.rows;
 					}
-					if (!normalData.length) return callback(new Error('nodata'));
+					if (!normalData.length) {
+						logger.error(``);
+						return callback(new Error('nodata'));
+					}
 					return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
 				});
 			}],
@@ -555,7 +554,6 @@ function getData(params, callback) {
 				var aggregate = params['aggregate'];
 				var aggregates = aggregate ? aggregate.split(',') : null;
 				var aggData = results.data.aggData;
-				//console.log(aliases)
 				var totalSql = 'SELECT COUNT(*) as cnt';
 				if (aggregates && aggregates[0] in {min: true, avg: true, max: true}) {
 					for (var i = 0; i < aliases.length; i++) {

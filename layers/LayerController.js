@@ -30,14 +30,17 @@ class LayerController {
 		let geonode = new GeonodeLayers(response.locals.ssid, config.geonodeUrl, this.mongo);
 		let layers = [];
 		// Load actually accessible from the GeoNode
-		geonode.all().then(geonodeLayers => {
+		geonode.all().then(geoNodeLayers => {
+			logger.info(`LayerController#readAll GeoNode Loaded: ${geoNodeLayers.length}`);
 			// Name and path needs to be returned. For the ones from geonode it will be the same. For the ones in pg it can differ.
-			layers = layers.concat(geonodeLayers);
+			layers = layers.concat(geoNodeLayers);
 			return this.pgLayers.all();
 		}).then(pgLayers => {
+			logger.info(`LayerController#readAll PostgreSQL Loaded: ${pgLayers.length}`);
 			pgLayers = pgLayers.filter(layer => currentUser.hasPermission("layer", "GET", layer.id));
 			layers = layers.concat(pgLayers);
 
+			logger.info(`LayerController#readAll All To Return: ${layers.length}`);
 			response.json({data: layers});
 		}).catch(err => {
 			logger.error('LayerController#readAll Error: ', err);
