@@ -550,7 +550,7 @@ function getData(params, callback) {
 				});
 			}],
 		total: ['sql', 'data', function(asyncCallback, results) {
-
+				logger.info(`data/data#getData total`);
 				var aggregate = params['aggregate'];
 				var aggregates = aggregate ? aggregate.split(',') : null;
 				var aggData = results.data.aggData;
@@ -613,7 +613,7 @@ function getData(params, callback) {
 				})
 			}],
 		res: ['data', 'total', 'sql', function(asyncCallback, results) {
-				//console.log(results.data.normalData)
+				logger.info(`data/data#getData res`);
 				var data = {
 					data: results.data.normalData,
 					aggData: results.data.aggData,
