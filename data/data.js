@@ -734,7 +734,7 @@ function getAttrConf(params, callback) {
 					if (percentage) {
 						unitsTotal = '%';
 					}
-					logger.info(`data/data#saveSld res Units: ${units} Normalization Units: ${normUnits} Total units: ${unitsTotal}`);
+					logger.info(`data/data#getAttrConf res Units: ${units} Normalization Units: ${normUnits} Total units: ${unitsTotal}`);
 					attrMap[attrReceived.as][attrReceived.attr].units = unitsTotal;
 					unitsArr.push(unitsTotal);
 				}

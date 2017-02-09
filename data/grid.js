@@ -127,7 +127,7 @@ function createCsv(params, callback) {
 					return callback(err);
 				}
 
-				logger.info();
+				logger.info(`data/grid#createCsv attrConf Result.`);
 				return asyncCallback(null, attrMap)
 			})
 		},
