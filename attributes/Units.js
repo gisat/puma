@@ -43,9 +43,9 @@ class Units {
 		if(!unitFrom || this.allowedUnits.indexOf(unitFrom) == -1) {
 			if(this.allowedUnits.indexOf(unitTo) != -1) {
 				// Correct units give correct factor.
-				return this.units[unitTo] * percentage;
+				return 1 / this.units[unitTo] * percentage;
 			} else {
-				return percentage;
+				return 1 / percentage;
 			}
 		}
 
