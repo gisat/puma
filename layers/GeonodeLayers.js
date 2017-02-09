@@ -1,6 +1,8 @@
 let superagent = require('superagent');
 let Promise = require('promise');
 
+let logger = require('../common/Logger').applicationWideLogger;
+
 let FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 
 /**
@@ -17,6 +19,7 @@ class GeonodeLayers {
 	 * It returns all layers from the geonode to which the current user has read and write access.
 	 */
 	all() {
+		logger.info(`GeonodeLayers#all SessionId: ${this._sessionId}, URL: ${this._url}`);
 		return superagent
 			.get(`${this._url}layers/acls`)
 			.set('Cookie', `sessionid=${this._sessionId}`)
