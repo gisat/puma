@@ -232,6 +232,10 @@ function getGridData(params, req, res, callback) {
 function getGridDataCsv(params,req,res,callback) {
 	params['userId'] = req.session.userId;
 	charts.grid.createCsv(params, function(err, fileName) {
+		if(err) {
+			logger.error(`api/chart#getGridDataCsv FileName: ${fileName}, Error: `, err);
+		}
+
 		res.downFile = [fileName,'griddata.csv'];
 		return callback(null);
 	});

@@ -1,8 +1,10 @@
 var dataMod = require('./data');
-var fs = require('fs')
-var async = require('async')
-var crud = require('../rest/crud')
-var _ = require('underscore')
+var fs = require('fs');
+var async = require('async');
+var crud = require('../rest/crud');
+var _ = require('underscore');
+let logger = require('../common/Logger').applicationWideLogger;
+
 function getChart(params, callback) {
 
 	var years = JSON.parse(params['years']);
@@ -109,26 +111,30 @@ function createCsv(params, callback) {
 		data: ['attrConf',function(asyncCallback,results) {
 			params.attrMap = results.attrConf.prevAttrMap;
 			dataMod.getData(params, function(err, dataObj) {
-				if (err)
+				if (err) {
+					logger.error(`data/grid#createCsv data Error: `, err);
 					return callback(err);
-				//console.log(dataObj)
+				}
 				return asyncCallback(null, dataObj);
 			})
 		}],
 		attrConf: function(asyncCallback) {
-
-
 				dataMod.getAttrConf(params, function(err, attrMap) {
-					if (err)
+					if (err) {
+						logger.error(`data/grid#createCsv attrConf Error: `, err);
 						return callback(err);
+					}
 
 					return asyncCallback(null, attrMap)
 				})
 			},
 		yearMap: function(asyncCallback) {
 			crud.read('year', {_id: {$in: years}}, function(err, resls) {
-				if (err)
+				if (err) {
+					logger.error(`data/grid#yearMap attrConf Error: `, err);
 					return callback(err);
+				}
+
 				var yearMap = {};
 				for (var i=0;i<resls.length;i++) {
 					yearMap[resls[i]._id] = resls[i];
@@ -190,8 +196,10 @@ function createCsv(params, callback) {
 					fileText += rowText+'\n';
 				}
 				fs.writeFile(fileName,fileText,function(err) {
-					if (err)
+					if (err) {
+						logger.error(`data/grid#createCsv result Error: `, err);
 						return callback(err);
+					}
 					return callback(null,fileName);
 				})
 
