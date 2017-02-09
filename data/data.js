@@ -152,10 +152,16 @@ function getData(params, callback) {
 				normAttrUnits = null;
 			}
 
+			// Specific use case is when I normalize over attribute. In this case, it is necessary to first handle the
+			// Basic factor handling and then use normalizationUnits to get final.
+
 			if(currentNorm) {
 				units = new Units();
 				factor = units.translate(attrUnits, normAttrUnits, percentage);
 				logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
+				if(attrUnits && normAttrUnits && normalizationUnits) {
+					factor = this._units.translateFromFactorToUnits(factor, normalizationUnits);
+				}
 			} else {
 				factor = percentage ? 100: 1;
 			}
