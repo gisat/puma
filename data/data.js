@@ -658,10 +658,11 @@ function getAttrConf(params, callback) {
 
 	var opts = {
 		attrSet: function(asyncCallback) {
+			logger.info(`data/data#getAttrConf attrSet AttrSetIds `, attrSetIds);
 			crud.read('attributeset', {_id: {$in: attrSetIds}}, function(err, resls) {
 				var attrSetMap = {};
 				if (err) {
-					logger.error('data#getData Read attributeset. Error: ', err);
+					logger.error('data#getAttrConf Read attributeset. Error: ', err);
 					return callback(err);
 				}
 				for (var i = 0; i < resls.length; i++) {
@@ -672,10 +673,11 @@ function getAttrConf(params, callback) {
 			})
 		},
 		attr: function(asyncCallback) {
+			logger.info(`data/data#getAttrConf attr AttrIds: `, attrIds);
 			crud.read('attribute', {_id: {$in: attrIds}}, function(err, resls) {
 				var attrMap = {};
 				if (err) {
-					logger.error('data#getData Read attribute. Error: ', err);
+					logger.error('data#getAttrConf Read attribute. Error: ', err);
 					return callback(err);
 				}
 				for (var i = 0; i < resls.length; i++) {
@@ -686,6 +688,7 @@ function getAttrConf(params, callback) {
 			})
 		},
 		res: ['attr', 'attrSet', function(asyncCallback, results) {
+				logger.info(`data/data#getAttrConf res Attrs: `, attrs);
 				var attrMap = {};
 				var prevAttrMap = {};
 				var unitsArr = [];
@@ -717,7 +720,6 @@ function getAttrConf(params, callback) {
 					if (normType == 'attribute' || normType == 'attributeset') {
 						var normAttr = attrReceived.normAttr || attrReceived.attr || params['normalizationAttribute'];
 						var normAttrSet = attrReceived.normAs || params['normalizationAttributeSet'];
-						//console.log(normAttrSet,normAttr)
 						if (normAttr && normAttrSet) {
 							var normAttrRec = results.attr[normAttr];
 							normUnits = normAttrRec.units || '';

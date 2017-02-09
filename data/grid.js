@@ -127,6 +127,7 @@ function createCsv(params, callback) {
 					return callback(err);
 				}
 
+				logger.info();
 				return asyncCallback(null, attrMap)
 			})
 		},
