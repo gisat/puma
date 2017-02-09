@@ -109,6 +109,7 @@ function createCsv(params, callback) {
 	var opts = {
 
 		data: ['attrConf',function(asyncCallback,results) {
+			logger.info(`data/grid#createCsv data`);
 			params.attrMap = results.attrConf.prevAttrMap;
 			dataMod.getData(params, function(err, dataObj) {
 				if (err) {
@@ -118,17 +119,19 @@ function createCsv(params, callback) {
 				return asyncCallback(null, dataObj);
 			})
 		}],
-		attrConf: function(asyncCallback) {
-				dataMod.getAttrConf(params, function(err, attrMap) {
-					if (err) {
-						logger.error(`data/grid#createCsv attrConf Error: `, err);
-						return callback(err);
-					}
+		attrConf: function (asyncCallback) {
+			logger.info(`data/grid#createCsv attrConf Params: `, params);
+			dataMod.getAttrConf(params, function (err, attrMap) {
+				if (err) {
+					logger.error(`data/grid#createCsv attrConf Error: `, err);
+					return callback(err);
+				}
 
-					return asyncCallback(null, attrMap)
-				})
-			},
+				return asyncCallback(null, attrMap)
+			})
+		},
 		yearMap: function(asyncCallback) {
+			logger.info(`data/grid#createCsv yearMap Years: `, years);
 			crud.read('year', {_id: {$in: years}}, function(err, resls) {
 				if (err) {
 					logger.error(`data/grid#yearMap attrConf Error: `, err);
@@ -143,70 +146,71 @@ function createCsv(params, callback) {
 			})
 		},
 		file: function(asyncCallback) {
+			logger.info(`data/grid#createCsv file Trying to open file. FileName: ${fileName}`);
 			fs.open(fileName, 'w', asyncCallback);
 		},
-		result: ['data', 'attrConf','yearMap','file', function(asyncCallback, results) {
+		result: ['data', 'attrConf', 'yearMap', 'file', function (asyncCallback, results) {
 			logger.info(`data/grid#createCsv result Started.`);
-				var data = results.data.data;
-				var attrs = JSON.parse(params['attrs']);
-				var attrArray = [];
-				var firstRow = '"GID","NAME"';
-				var normalization = params['normalization'];
-				var normText = '';
-				var fileText = '';
-				if (normalization && normalization != 'none') {
-					var text = '';
-					if (normalization == 'area') {
-						text = 'area'
-					}
-					if (normalization == 'toptree') {
-						text = results.data.aggData[0].name
-					}
-					if (normalization == 'attributeset' || normalization == 'attributeset') {
-						text = results.attrConf.attrSetMap[params['normalizationAttributeSet']].name;
-					}
-					if (normalization == 'attribute') {
-						text += '-' + results.attrConf.attrMap[params['normalizationAttributeSet']][params['normalizationAttribute']].name;
-					}
-					normText = '(norm. by ' + text + ')';
+			var data = results.data.data;
+			var attrs = JSON.parse(params['attrs']);
+			var attrArray = [];
+			var firstRow = '"GID","NAME"';
+			var normalization = params['normalization'];
+			var normText = '';
+			var fileText = '';
+			if (normalization && normalization != 'none') {
+				var text = '';
+				if (normalization == 'area') {
+					text = 'area'
 				}
-				for (var i = 0; i < attrs.length; i++) {
-					var attr = attrs[i];
-					for (var j = 0; j < years.length; j++) {
-						var year = years[j];
-						attrArray.push('as_' + attr.as + '_attr_' + attr.attr + (years.length > 1 ? '_y_' + year : ''))
-						firstRow += ',"';
-						firstRow += results.attrConf.attrSetMap[attr.as].name + '-';
-						firstRow += results.attrConf.attrMap[attr.as][attr.attr].name;
-						firstRow += ' '+results.yearMap[year].name+' ';
-						firstRow += normText+' ('
-						firstRow += results.attrConf.attrMap.units+')"';
-					}
+				if (normalization == 'toptree') {
+					text = results.data.aggData[0].name
 				}
-				fileText += firstRow + '\n';
-
-				for (var i=0;i<data.length;i++) {
-					var row = data[i];
-					var rowText = row.gid+','+row.name;
-					for (var j=0;j<attrArray.length;j++) {
-						var attrName = attrArray[j];
-						rowText += ',';
-						rowText += row[attrName];
-					}
-
-					fileText += rowText+'\n';
+				if (normalization == 'attributeset' || normalization == 'attributeset') {
+					text = results.attrConf.attrSetMap[params['normalizationAttributeSet']].name;
 				}
-				logger.info(`data/grid#createCsv Write File. Name: ${fileName}, Text: `, fileText);
-				fs.writeFile(fileName,fileText,function(err) {
-					if (err) {
-						logger.error(`data/grid#createCsv result Error: `, err);
-						return callback(err);
-					}
-					return callback(null,fileName);
-				})
+				if (normalization == 'attribute') {
+					text += '-' + results.attrConf.attrMap[params['normalizationAttributeSet']][params['normalizationAttribute']].name;
+				}
+				normText = '(norm. by ' + text + ')';
+			}
+			for (var i = 0; i < attrs.length; i++) {
+				var attr = attrs[i];
+				for (var j = 0; j < years.length; j++) {
+					var year = years[j];
+					attrArray.push('as_' + attr.as + '_attr_' + attr.attr + (years.length > 1 ? '_y_' + year : ''))
+					firstRow += ',"';
+					firstRow += results.attrConf.attrSetMap[attr.as].name + '-';
+					firstRow += results.attrConf.attrMap[attr.as][attr.attr].name;
+					firstRow += ' ' + results.yearMap[year].name + ' ';
+					firstRow += normText + ' ('
+					firstRow += results.attrConf.attrMap.units + ')"';
+				}
+			}
+			fileText += firstRow + '\n';
 
-			}]
-	}
+			for (var i = 0; i < data.length; i++) {
+				var row = data[i];
+				var rowText = row.gid + ',' + row.name;
+				for (var j = 0; j < attrArray.length; j++) {
+					var attrName = attrArray[j];
+					rowText += ',';
+					rowText += row[attrName];
+				}
+
+				fileText += rowText + '\n';
+			}
+			logger.info(`data/grid#createCsv Write File. Name: ${fileName}, Text: `, fileText);
+			fs.writeFile(fileName, fileText, function (err) {
+				if (err) {
+					logger.error(`data/grid#createCsv result Error: `, err);
+					return callback(err);
+				}
+				return callback(null, fileName);
+			})
+
+		}]
+	};
 	async.auto(opts);
 }
 
