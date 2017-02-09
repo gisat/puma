@@ -151,7 +151,14 @@ function createCsv(params, callback) {
 		},
 		file: function(asyncCallback) {
 			logger.info(`data/grid#createCsv file Trying to open file. FileName: ${fileName}`);
-			fs.open(fileName, 'w', asyncCallback);
+			fs.open(fileName, 'w', function(err, fd) {
+				if(err) {
+					logger.error(`data/grid#createCsv file Error: `, err);
+					return callback(err);
+				}
+
+				return asyncCallback(null, fd);
+			});
 		},
 		result: ['data', 'attrConf', 'yearMap', 'file', function (asyncCallback, results) {
 			logger.info(`data/grid#createCsv result Started.`);
