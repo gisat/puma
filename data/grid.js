@@ -100,7 +100,7 @@ function getChart(params, callback) {
 }
 
 function createCsv(params, callback) {
-	var fileName = 'tmp/' + generateId() + '.csv';
+	var fileName = '/tmp/' + generateId() + '.csv';
 	var attrs = JSON.parse(params['attrs']);
 	var years = JSON.parse(params['years']);
 	params['limit'] = null;
@@ -116,6 +116,8 @@ function createCsv(params, callback) {
 					logger.error(`data/grid#createCsv data Error: `, err);
 					return callback(err);
 				}
+
+				logger.info(`data/grid#createCsv data Result. `, dataObj);
 				return asyncCallback(null, dataObj);
 			})
 		}],
@@ -127,6 +129,7 @@ function createCsv(params, callback) {
 					return callback(err);
 				}
 
+				logger.info(`data/grid#createCsv attrConf Result.`);
 				return asyncCallback(null, attrMap)
 			})
 		},
@@ -138,6 +141,7 @@ function createCsv(params, callback) {
 					return callback(err);
 				}
 
+				logger.info(`data/grid#createCsv yearMap Result. `, resls);
 				var yearMap = {};
 				for (var i=0;i<resls.length;i++) {
 					yearMap[resls[i]._id] = resls[i];
@@ -147,7 +151,14 @@ function createCsv(params, callback) {
 		},
 		file: function(asyncCallback) {
 			logger.info(`data/grid#createCsv file Trying to open file. FileName: ${fileName}`);
-			fs.open(fileName, 'w', asyncCallback);
+			fs.open(fileName, 'w', function(err, fd) {
+				if(err) {
+					logger.error(`data/grid#createCsv file Error: `, err);
+					return callback(err);
+				}
+
+				return asyncCallback(null, fd);
+			});
 		},
 		result: ['data', 'attrConf', 'yearMap', 'file', function (asyncCallback, results) {
 			logger.info(`data/grid#createCsv result Started.`);
