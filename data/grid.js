@@ -100,7 +100,7 @@ function getChart(params, callback) {
 }
 
 function createCsv(params, callback) {
-	var fileName = 'tmp/' + generateId() + '.csv';
+	var fileName = '/tmp/' + generateId() + '.csv';
 	var attrs = JSON.parse(params['attrs']);
 	var years = JSON.parse(params['years']);
 	params['limit'] = null;
