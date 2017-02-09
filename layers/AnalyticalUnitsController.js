@@ -21,8 +21,8 @@ class AnalyticalUnitsController {
 	 * @param response
 	 */
 	read(request, response) {
-		let locations = request.query.locations && request.query.locations.length && request.query.locations.map(location => Number(location));
-
+		var loc = JSON.parse(request.query.locations);
+		let locations = loc && loc.length && loc.map(location => Number(location));
 		new FilteredBaseLayers({
 			location: {$in: locations},
 			areaTemplate: request.query.areaTemplate && Number(request.query.areaTemplate),
