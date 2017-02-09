@@ -1,3 +1,5 @@
+let logger = require('../common/Logger').applicationWideLogger;
+
 class AuthController {
 	anyUser(request, response, next) {
 		if (request.session.userId) {
