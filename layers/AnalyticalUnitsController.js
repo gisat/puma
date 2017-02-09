@@ -1,6 +1,8 @@
 let Promise = require('promise');
 let logger = require('../common/Logger').applicationWideLogger;
 
+var _ = require('underscore');
+
 let FilteredBaseLayers = require('./FilteredBaseLayers');
 let PgAnalyticalUnits = require('./PgAnalyticalUnits');
 
@@ -34,12 +36,14 @@ class AnalyticalUnitsController {
 			}));
 		}).then(results => {
 			let all = [];
+			let deduplicated = [];
 			results.forEach(units => {
 				if(units.length) {
 					all = all.concat(units);
+					deduplicated = _.uniq(all, 'gid');
 				}
 			});
-			response.json({data: all});
+			response.json({data: deduplicated});
 		}).catch(error => {
 			logger.error('AnalyticalUnitsController#read Error: ', error);
 			response.status(500).json({status: 'Err'});
