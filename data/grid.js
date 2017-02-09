@@ -146,6 +146,7 @@ function createCsv(params, callback) {
 			fs.open(fileName, 'w', asyncCallback);
 		},
 		result: ['data', 'attrConf','yearMap','file', function(asyncCallback, results) {
+			logger.info(`data/grid#createCsv result Started.`);
 				var data = results.data.data;
 				var attrs = JSON.parse(params['attrs']);
 				var attrArray = [];
@@ -195,6 +196,7 @@ function createCsv(params, callback) {
 
 					fileText += rowText+'\n';
 				}
+				logger.info(`data/grid#createCsv Write File. Name: ${fileName}, Text: `, fileText);
 				fs.writeFile(fileName,fileText,function(err) {
 					if (err) {
 						logger.error(`data/grid#createCsv result Error: `, err);
