@@ -116,6 +116,8 @@ function createCsv(params, callback) {
 					logger.error(`data/grid#createCsv data Error: `, err);
 					return callback(err);
 				}
+
+				logger.info(`data/grid#createCsv data Result. `, dataObj);
 				return asyncCallback(null, dataObj);
 			})
 		}],
@@ -139,6 +141,7 @@ function createCsv(params, callback) {
 					return callback(err);
 				}
 
+				logger.info(`data/grid#createCsv yearMap Result. `, resls);
 				var yearMap = {};
 				for (var i=0;i<resls.length;i++) {
 					yearMap[resls[i]._id] = resls[i];
