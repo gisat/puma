@@ -22,6 +22,7 @@
     "jsdom": "7.x.x",
     "json2csv": "^3.7.0",
     "json2xls": "^0.1.2",
+    "lodash": "^4.17.4",
     "moment": "^2.15.1",
     "mongodb": "~2.0",
     "node-sass": "^3.7.0",
