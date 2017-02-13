@@ -7,7 +7,7 @@ class PgAnalyticalUnits {
 	}
 
 	all(analyticalUnitId) {
-		return this._pool.query(`SELECT gid, name, ST_AsText(St_Transform(the_geom, 900913)) FROM views.layer_${analyticalUnitId};`).then(result => {
+		return this._pool.query(`SELECT gid, name, ST_AsText(St_Transform(the_geom, 4326)) FROM views.layer_${analyticalUnitId};`).then(result => {
 			return result.rows;
 		});
 	}

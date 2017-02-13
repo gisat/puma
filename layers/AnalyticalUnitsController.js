@@ -6,8 +6,6 @@ var _ = require('underscore');
 let FilteredBaseLayers = require('./FilteredBaseLayers');
 let PgAnalyticalUnits = require('./PgAnalyticalUnits');
 
-let GeometryConversion = require('../custom_features/GeometryConversion');
-
 /**
  *
  */
@@ -15,11 +13,6 @@ class AnalyticalUnitsController {
 	constructor(app, pgPool, mongoDb) {
 		this._pool = pgPool;
 		this._mongo = mongoDb;
-
-		this._geometryConversion = new GeometryConversion({
-			sourceCRSProjDef: 'EPSG:3857', // web Mercator
-			targetCRSProjDef: 'EPSG:4326' // wgs84
-		});
 
 		app.get('/rest/au', this.read.bind(this));
 	}
@@ -44,16 +37,14 @@ class AnalyticalUnitsController {
 			}));
 		}).then(results => {
 			let all = [];
-			let deduplicated = [];
-			let converted = [];
+			let deduplicated;
 			results.forEach(units => {
 				if(units.length) {
 					all = all.concat(units);
-					deduplicated = _.uniq(all, 'gid');
 				}
 			});
-			converted = self.convert(deduplicated);
-			response.json({data: converted});
+			deduplicated = self.deduplicate(all);
+			response.json({data: deduplicated});
 		}).catch(error => {
 			logger.error('AnalyticalUnitsController#read Error: ', error);
 			response.status(500).json({status: 'Err'});
@@ -61,17 +52,29 @@ class AnalyticalUnitsController {
 	}
 
 	/**
-	 * Convert geometries from one CRS to another
-	 * @param units {Array} geometry has to be in st_astext
-	 * @returns {Array} converted units
+	 * Remove duplicates
+	 * @param units {Array}
+	 * @returns {Array}
      */
-	convert(units){
-		let converted = [];
+	deduplicate(units){
+		let deduplicated = [];
 		units.map(unit => {
-			unit["geom"] = this._geometryConversion.convertWKTGeometry(unit["st_astext"],false);
-			converted.push(unit);
+			if (deduplicated.length > 0){
+				let duplicate = false;
+				deduplicated.map(dedup => {
+					if ((unit.gid == dedup.gid) && (unit.name == dedup.name)){
+						duplicate = true;
+					}
+				});
+				if (!duplicate){
+					deduplicated.push(unit);
+				}
+
+			} else {
+				deduplicated.push(unit);
+			}
 		});
-		return converted;
+		return deduplicated;
 	}
 }
 
