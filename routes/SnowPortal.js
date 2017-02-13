@@ -26,26 +26,26 @@ class SnowPortal {
                 throw new Error("Unable to get time from database...");
             }
             options.time = rows.rows;
-            return this._pgPool.pool().query(`select distinct m.source_id, s.satellite, s.satelliteKey, s.sensor, s.sensorKey from metadata as m join source as s on (m.source_id=s.id);`)
+            return this._pgPool.pool().query(`select distinct m.source_id, s.satellite, s.satellite_key, s.sensor, s.sensor_key from metadata as m join source as s on (m.source_id=s.id);`)
         }).then(rows => {
             if (!rows.rows) {
                 throw new Error("Unable to get satellites and sensors from database...");
             }
             let sensors = [];
             _.each(rows.rows, row => {
-                let sensor = _.find(sensors, {key: row.sensorKey});
+                let sensor = _.find(sensors, {key: row.sensor_key});
                 if (!sensor) {
                     sensor = {
-                        key: row.sensorKey,
+                        key: row.sensor_key,
                         name: row.sensor,
                         satellites: []
                     };
                     sensors.push(sensor);
                 }
-                let satellite = _.find(sensor.satellites, {key: row.satelliteKey});
+                let satellite = _.find(sensor.satellites, {key: row.satellite_key});
                 if (!satellite) {
                     sensor.satellites.push({
-                        key: row.satelliteKey,
+                        key: row.satellite_key,
                         name: row.satellite
                     });
                 }
