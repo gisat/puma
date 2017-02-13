@@ -22,6 +22,7 @@ class PolygonsSourceTable extends SourceTable {
             `geometry text,` +
             `scope text,` +
             `place text,` +
+            `theme text,` +
             `user_name text,` +
             `PRIMARY KEY(uuid));`;
 
