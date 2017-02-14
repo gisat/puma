@@ -15,7 +15,7 @@ class SnowPortal {
     getScopeOptions(request, response) {
         let options = {};
 
-        this._pgPool.pool().query(`SELECT DISTINCT name FROM areas`).then(rows => {
+        this._pgPool.pool().query(`SELECT DISTINCT "NAME" as name FROM areas`).then(rows => {
             if (!rows.rows) {
                 throw new Error("Unable to get areas from database...");
             }
