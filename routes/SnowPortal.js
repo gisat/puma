@@ -30,7 +30,7 @@ class SnowPortal {
             if (!rows.rows) {
                 throw new Error("Unable to get time from database...");
             }
-            options.time = rows.rows;
+            options.time = rows.rows[0];
             return this._pgPool.pool().query(`select distinct m.source_id, s.satellite, s.satellite_key, s.sensor, s.sensor_key from metadata as m join source as s on (m.source_id=s.id);`)
         }).then(rows => {
             if (!rows.rows) {
