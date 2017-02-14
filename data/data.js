@@ -155,16 +155,18 @@ function getData(params, callback) {
 			// Specific use case is when I normalize over attribute. In this case, it is necessary to first handle the
 			// Basic factor handling and then use normalizationUnits to get final.
 
+			units = new Units();
 			if(currentNorm) {
-				units = new Units();
 				factor = units.translate(attrUnits, normAttrUnits, percentage);
-				logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
-				if(attrUnits && normAttrUnits && normalizationUnits) {
-					factor = units.translateFromFactorToUnitsNormalization(factor, normalizationUnits);
-				}
 			} else {
 				factor = percentage ? 100: 1;
 			}
+			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
+
+			if(normalizationUnits) {
+				factor = units.translateFromFactorToUnitsNormalization(factor, normalizationUnits);
+			}
+			logger.info('data/data#getData Factor: ', factor, ' Normalization units: ', normalizationUnits);
 
 			// How do you count factor of difference? The source data set is in one unit.
 

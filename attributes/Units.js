@@ -72,7 +72,7 @@ class Units {
 			return factor;
 		}
 
-		return factor * this.units[units];
+		return factor / this.units[units];
 	}
 }
 
