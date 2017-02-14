@@ -5,12 +5,17 @@ class SnowPortal {
         this._pgPool = pool;
 
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
+        app.post("/api/snowportal/scenes", this.getScenesByScope.bind(this));
+    }
+
+    getScenesByScope(request, response) {
+
     }
 
     getScopeOptions(request, response) {
         let options = {};
 
-        this._pgPool.pool().query(`SELECT DISTINCT "NAME" as name FROM areas`).then(rows => {
+        this._pgPool.pool().query(`SELECT DISTINCT name FROM areas`).then(rows => {
             if (!rows.rows) {
                 throw new Error("Unable to get areas from database...");
             }
