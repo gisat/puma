@@ -15,9 +15,9 @@ do
   printf "\n\n===== ${layers[$i]} ====="
 
   PGOPTIONS='--client-min-messages=warning' psql -q -U geonode -d geonode_data <<EOF
--- 1 ALTER TABLE - add columns
 BEGIN;
 
+-- 1 ALTER TABLE - add columns
 DO \$\$
 	BEGIN
 		BEGIN
