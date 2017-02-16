@@ -13,7 +13,6 @@ var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var CustomFeaturesController = require('./CustomFeaturesController');
 var ExportController = require('./ExportController');
-var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -75,7 +74,6 @@ module.exports = function(app) {
 	new AnalysisController(app, pool);
 	new AnalyticalUnitsController(app, pool, conn.getMongoDb());
 	new AreaTemplateController(app, pool);
-	new GufController(app, pool);
 	if(poolRemote) {
 		new ExportController(app, poolRemote);
 	} else {
