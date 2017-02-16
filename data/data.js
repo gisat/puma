@@ -140,16 +140,20 @@ function getData(params, callback) {
 				normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
 			}
 
-			// Area is always in square meters.
+			units = new Units();
+			customFactor = customFactor || 1;
 			if (currentNorm=='area') {
-				normAttrUnits = attrMap[attr.as][attr.attr].areaUnits || 'm2';
+				normAttrUnits = attr.areaUnits || 'm2';
+				// Special case when we need to transform the results from custom/m2 to custom/km2 or custom/ha
+				if(units.allowedUnits.indexOf(attrUnits) == -1) {
+					customFactor *= units.translate('m2',normAttrUnits,false);
+				}
 			}
 
 			// Specific use case is when I normalize over attribute. In this case, it is necessary to first handle the
 			// Basic factor handling and then use normalizationUnits to get final.
 			// TODO: Make sure that the units are correctly counted.
 
-			units = new Units();
 			if(currentNorm) {
 				factor = units.translate(attrUnits, normAttrUnits, false);
 			} else {
@@ -157,7 +161,6 @@ function getData(params, callback) {
 			}
 			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 
-			customFactor = customFactor || 1;
 			factor = factor * customFactor;
 			logger.info('data/data#getData Factor: ', factor, ' Normalization units: ', normalizationUnits);
 
