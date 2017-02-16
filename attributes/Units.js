@@ -32,21 +32,11 @@ class Units {
 		}
 
 		if(!unitTo || this.allowedUnits.indexOf(unitTo) == -1) {
-			if(this.allowedUnits.indexOf(unitFrom) != -1) {
-				// Correct units give correct factor.
-				return this.units[unitFrom] * percentage;
-			} else {
-				return percentage;
-			}
+			return percentage;
 		}
 
 		if(!unitFrom || this.allowedUnits.indexOf(unitFrom) == -1) {
-			if(this.allowedUnits.indexOf(unitTo) != -1) {
-				// Correct units give correct factor.
-				return 1 / this.units[unitTo] * percentage;
-			} else {
-				return 1 / percentage;
-			}
+			return 1 / percentage;
 		}
 
 		return (this.units[unitFrom] / this.units[unitTo]) * percentage;

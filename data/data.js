@@ -121,14 +121,7 @@ function getData(params, callback) {
 			var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
 			var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
 			let normalizationUnits = attr.normalizationUnits;
-			let percentage = attr.normalizationResultInPercentage;
-			if(typeof percentage === 'undefined') {
-				percentage = true;
-			}
-			// When no normalization applies don't modify the data.
-			if(!currentNorm) {
-				percentage = false;
-			}
+			let customFactor = attr.customFactor;
 
 			var normAttrName = null;
 			var norm = '';
@@ -147,25 +140,25 @@ function getData(params, callback) {
 				normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
 			}
 
+			// Area is always in square meters.
 			if (currentNorm=='area') {
-				attrUnits = normalizationUnits || 'm2';
-				normAttrUnits = null;
+				normAttrUnits = 'm2';
 			}
 
 			// Specific use case is when I normalize over attribute. In this case, it is necessary to first handle the
 			// Basic factor handling and then use normalizationUnits to get final.
+			// TODO: Make sure that the units are correctly counted.
 
 			units = new Units();
 			if(currentNorm) {
-				factor = units.translate(attrUnits, normAttrUnits, percentage);
+				factor = units.translate(attrUnits, normAttrUnits, false);
 			} else {
-				factor = percentage ? 100: 1;
+				factor = 1;
 			}
 			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
 
-			if(normalizationUnits) {
-				factor = units.translateFromFactorToUnitsNormalization(factor, normalizationUnits);
-			}
+			customFactor = customFactor || 1;
+			factor = factor * customFactor;
 			logger.info('data/data#getData Factor: ', factor, ' Normalization units: ', normalizationUnits);
 
 			// How do you count factor of difference? The source data set is in one unit.
@@ -632,10 +625,13 @@ function getData(params, callback) {
 
 }
 
-
+/**
+ * One of the most important roles of this function is to return units, which will be displayed to the user in the case
+ * of the charts and thematic maps.
+ * @param params
+ * @param callback
+ */
 function getAttrConf(params, callback) {
-
-
 	var attrs = JSON.parse(params['attrs']);
 	var attrSetIds = [];
 	var attrIds = [];
@@ -702,10 +698,6 @@ function getAttrConf(params, callback) {
 					prevAttrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
 					var normType = attrReceived.normType;
 					let normalizationUnits = attrReceived.normalizationUnits;
-					let percentage = attrReceived.normalizationResultInPercentage;
-					if(typeof percentage === 'undefined') {
-						percentage = true;
-					}
 
 					var units = results.attr[attrReceived.attr].units || '';
 					var normUnits = null;
@@ -732,9 +724,16 @@ function getAttrConf(params, callback) {
 						}
 					}
 
+					var areaUnits = ['m2', 'km2', 'ha'];
 					var unitsTotal = units + (normUnits ? ('/' + normUnits) : '');
-					if (percentage) {
+					if(units == normUnits ||
+						(areaUnits.indexOf(units) != -1 && areaUnits.indexOf(normUnits) != -1)) {
 						unitsTotal = '%';
+					}
+
+					// The normalization units are change units and override the other types.
+					if(normalizationUnits) {
+						unitsTotal = normalizationUnits;
 					}
 					logger.info(`data/data#getAttrConf res Units: ${units} Normalization Units: ${normUnits} Total units: ${unitsTotal}`);
 					attrMap[attrReceived.as][attrReceived.attr].units = unitsTotal;
