@@ -142,7 +142,7 @@ function getData(params, callback) {
 
 			// Area is always in square meters.
 			if (currentNorm=='area') {
-				normAttrUnits = 'm2';
+				normAttrUnits = attrMap[attr.as][attr.attr].areaUnits || 'm2';
 			}
 
 			// Specific use case is when I normalize over attribute. In this case, it is necessary to first handle the
@@ -703,7 +703,7 @@ function getAttrConf(params, callback) {
 					var normUnits = null;
 
 					if (normType == 'area') {
-						normUnits = normalizationUnits || 'm2';
+						normUnits = normalizationUnits || attrReceived.areaUnits;
 					}
 					if (normType == 'year') {
 						normUnits = units;
