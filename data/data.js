@@ -145,8 +145,9 @@ function getData(params, callback) {
 			if (currentNorm=='area') {
 				normAttrUnits = attr.areaUnits || 'm2';
 				// Special case when we need to transform the results from custom/m2 to custom/km2 or custom/ha
+				// TODO: Clean this part. Current state is hell.
 				if(units.allowedUnits.indexOf(attrUnits) == -1) {
-					customFactor *= units.translate('m2',normAttrUnits,false);
+					customFactor *= units.translate(normAttrUnits,'m2',false);
 				}
 			}
 
