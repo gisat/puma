@@ -1,31 +1,42 @@
 # Units
 
-## Without normalization
+The source unit for an attribute is set in the BackOffice. This source unit says what unit is the representation of the data in. 
+ 
+In the FrontOffice, it is possible to display the values stored under the attributes using different type of charts. There are multiple ways how the values could be adapted before the final display of the chart to the user. The simplest way is to simply show the values using table. 
+ 
+## Show the values without changes
 
-Default settings is for the unit to be displayed as percentage. This means that displayed units will be % and the values will be displayed multiplied by 100. 
+For this use case it is enough to open the configuration of the chart. Choose the correct type of the chart and select the attributes, which will be visualised. The units which will be shown in the legend are the same as in the BackOffice. For the reference they are also displayed in the table of atributes to display in the chart.  
 
-It is possible to override the default setting by choosing normalization and setting the result in percentage to No. 
+### Table
 
-## Normalizations
- 
- In every normalization there are at least two units that are in the play. The exact behavior differs based on the type of the normalization. 
- 
-### Area
+![Showing values](readme/simpleTableWithoutNormalization.png)
 
- Everytime there is the area unit, attribute unit and possibly normalization units. Area unit is always square meters. Attribute unit can be either standard or non-standard and normalization units can be from the list: m2, ha, km2. The result can be also displayed in percentage. Percentage is applied on top of others and works the same as for not normalized.  
- 
- Possible choices
- 
- * Normalize over the area while having non standard unit for attribute and without normalization unit. In this case the result will be in {customUnit} / m2 and the value will be the same as in the database.
- * Normalize over the area while having standard unit for attribute and without normalization unit. In this case the result will be in {standardUnit} / m2 and the value will be multiplied by the factor of difference between standard units. If the attribute is in km2 then the value will be multiplied by 1 000 000.
- * Normalize over the area with standard units and with normalization units. In this case the result will be in normalization units and the value will be multiplied by the factor of difference between standard units. If the attribute is in km2 then the value will be multiplied by 1 000 000. Afterwards this number is divided by the factor of standard units / normalization units. In example where we normalize over the area on attribute with km2 and normalize it on ha. The value will be multiplied by 10 000 
- 
-### Attribute and Attribute set
- 
- It is actually quite similar to the normalization over area. Only difference is that instead of m2 which represented the area, the units of normalization attribute will be used. 
- 
- Possible choices
-  
-  * Normalize while having non standard unit for both attributes attribute and without normalization unit. In this case the result will be in {customSourceUnit} / {customNormalizationUnit} and the value will be the same as in the database. It is possible to get units to display m2/m2 here. 
-  * Normalize while having standard unit for attribute and normalization attribute and without normalization unit. In this case the result will be in {standardSourceUnit} / {standardNormalizationUnit} and the value will be multiplied by the factor of difference between standard units. If the source attribute is in km2 and the result in m2 then the value will be multiplied by 1 000 000. If it is the other way round the value will be multiplied by 1 / 1 000 000
-  * Normalize over the area with standard units, normalization attribute units and with normalization units. It works the same way as the previous one, the only difference is that  afterwards this number is divided by the factor of standard units / normalization units. In example where we normalize over the area on attribute with km2 and normalize it on ha. The value will be multiplied by 10 000 
+### Column
+
+![Showing values](readme/simpleColumnChartWithoutNormalization.png)
+
+## Show the values changed to different display unit. 
+
+This use case allows you to display the data in different units than the source one provided to the attribute in the BackOffice. First example will show how to update all shown attributes so that they are displayed in the km2 instead of the default units. 
+
+There two important things that these settings does. The first one is changing the unit in the legend. This is done via the select Change Units. If you select some unit here, this is the unit which will be displayed in the legend. The second one is to update the values to a different one before showing the value to the user. This is handled via the Custom Factor field. This scenario has two options. First is that the source units are recognized by the system in which case the custom factor will be filled by the default factor. If the source units aren't recognized by the system the factor will be filled by 1 by default. It is possible to use any factor as long as it is number. The value is simply multiplied by the factor before being returned for display. 
+
+### Table
+
+![Show in custom units](readme/simpleTableChartWithCustomUnits.png)
+
+## Show the values normalized to the area
+
+In this use case you have attribute in any units and want to show the statistical information based upon the area. This have again two possible ways to be displayed. First is that the units of the source attribute is standard supported by the system. Second is that the  
+
+The modification of the units and values using normalization. 
+
+The modification of the units and values using custom factor and change of units. Changing units sets the units, which will be used and adds custom factor which will be used to adapt values. The user then will always see the units, which were set. It happens regardless of normalization, if it is set.    
+
+There are four basic use cases. First is no normalization, Second is no normalization with update to another place. Third is normalization without update of units. Fourth is normalization with update of units. Let's move on after this area changes. 
+
+## Show the values normalized to another attribute
+
+## Show the values normalized to another attribute set
+
