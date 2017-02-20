@@ -27,7 +27,26 @@ class SnowPortal {
                     })
                 );
             });
-            return Promise.all(queries);
+            return Promise.all(queries).then(results => {
+                return _.map(rows.rows, (row, index) => {
+                    let classDistribution = {};
+                    let total = 0;
+                    _.each(results[index].rows, row => {
+                        total += Number(row.count);
+                    });
+                    _.each(results[index].rows, row => {
+                        classDistribution[row.pixel] = (Number(row.count) / total) * 100;
+                    });
+                    return {
+                        key: row.id,
+                        date: row.date,
+                        sensor: row.sensor,
+                        satellite: row.satellite,
+                        aoiIntersect: row.perct,
+                        classDistribution: classDistribution
+                    }
+                });
+            });
         }).then(data => {
             response.send({
                 data: data,
@@ -122,8 +141,8 @@ class SnowPortal {
                     SELECT 
                         m.id,
                         m.filename,
-                        s.satellite,
-                        s.sensor,
+                        s.satellite_key,
+                        s.sensor_key,
                         m.date,
                         100 * ST_Area(ST_Intersection(m.cxhull, a.the_geom)) / ST_Area(a.the_geom) AS perct
                     FROM
@@ -140,8 +159,8 @@ class SnowPortal {
                     GROUP BY
                         m.id,
                         m.filename,
-                        s.satellite,
-                        s.sensor,
+                        s.satellite_key,
+                        s.sensor_key,
                         m.date,
                         m.cxhull,
                         a.the_geom
@@ -175,33 +194,31 @@ class SnowPortal {
                 }).join(",");
 
                 let sql = `
-                    SELECT 
-                        l.classified_as AS pixel, 
-                        Sum((pvc).count) AS count 
-                    FROM (SELECT DISTINCT 
-                            ST_ValueCount(ST_Clip(t.rast, a.the_geom)) AS pvc 
-                        FROM 
-                            metadata AS m 
-                        JOIN 
-                            rasters AS r ON (m.id=r.metadata_id) 
-                        JOIN 
-                            tile AS t ON (r.rid=t.rid)
-                        JOIN
-                            areas AS a ON (a."KEY" = '${scope.area.value}')
-                        WHERE 
-                            m.id=${scene.id}) AS foo
-                    JOIN 
-                        legend AS l ON (l.value=(pvc).value)
-                    JOIN 
+                    SELECT
+                        l.classified_as AS pixel,
+                        Sum((pvc).count) AS count
+                    FROM (SELECT DISTINCT ST_ValueCount(ST_Clip(t.rast, a.the_geom)) AS pvc
+                            FROM
+                                metadata AS m
+                            JOIN
+                                rasters AS r ON (m.id=r.metadata_id)
+                            JOIN
+                                tile AS t ON (r.rid=t.rid)
+                            JOIN
+                                areas AS a ON (a."KEY" = '${scope.area.value}')
+                    WHERE
+                        m.id=${scene.id}) AS foo
+                    JOIN
+                        legend AS l ON ((pvc).value BETWEEN l.value_from AND l.value_to)
+                    JOIN
                         source AS s ON (l.source_id=s.id)
-                    JOIN 
+                    JOIN
                         metadata AS m ON (m.source_id=s.id)
-                    WHERE 
+                    WHERE
                         m.id=${scene.id}
-                    GROUP BY 
+                    GROUP BY
                         l.classified_as;
                 `;
-                console.log(sql);
                 return sql;
             } else {
                 throw new Error("Unknown area type...");
