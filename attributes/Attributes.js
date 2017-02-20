@@ -54,6 +54,7 @@ class Attributes {
                     jsonAttribute.geometries = attributes['geometry'];
                     jsonAttribute.names = attributes['name'];
                     jsonAttribute.gids = attributes['gid'];
+                    jsonAttribute.color = attributes['color'];
                     jsonAttribute.areaTemplates = attributes['areatemplate'].map(base => Number(base));
                     jsonAttribute.locations = attributes['location'].map(base => Number(base));
                     jsonAttribute.column = attribute;
