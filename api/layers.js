@@ -340,7 +340,7 @@ function parseWfsDocument(output) {
 
 	// There is no WFS document. Return no available attributes.
 	if(!parentOfAttributes) {
-		logger.warn("api/layers#parseWfsDocument There isn't a valid WFS response.");
+		logger.warn("api/layers#parseWfsDocument There isn't a valid WFS response.", output);
 		return [];
 	}
 
