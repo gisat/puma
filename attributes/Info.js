@@ -15,6 +15,7 @@ class Info {
                 value: attributesMap[attribute.name()].value,
                 attributeId: attributesMap[attribute.name()].attribute,
                 attributeName: attributesMap[attribute.name()].attributeName,
+                attributeSetId: attributesMap[attribute.name()].attributeSet,
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
             }));
         }).then(json => {
@@ -35,6 +36,7 @@ class Info {
                     var attr = {
                         id: value.attributeId,
                         name: value.attributeName,
+                        asId: value.attributeSetId,
                         value: value.value,
                         units: value.units,
                         color: value.color
