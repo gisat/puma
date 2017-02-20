@@ -25,7 +25,7 @@ DO \$\$
     BEGIN
       ALTER TABLE "${layers[$i]}" ADD COLUMN wpstat_pop10 double precision;
     EXCEPTION
-      WHEN duplicate_column THEN RAISE WARNING 'column gufstat_uf already exists.';
+      WHEN duplicate_column THEN RAISE WARNING 'column wpstat_pop10 already exists.';
     END;
   END;
 \$\$;
