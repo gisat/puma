@@ -11,7 +11,9 @@ class Info {
         return attributes.attributes(this.sql.bind(this, gids)).then(attributes => {
             return attributes.map(attribute => attribute.info({
                 units: attributesMap[attribute.name()].units,
+                color: attributesMap[attribute.name()].color,
                 value: attributesMap[attribute.name()].value,
+                attributeId: attributesMap[attribute.name()].attribute,
                 attributeName: attributesMap[attribute.name()].attributeName,
                 attributeSetName: attributesMap[attribute.name()].attributeSetName
             }));
@@ -31,9 +33,11 @@ class Info {
                 };
                 group.forEach(value=> {
                     var attr = {
+                        id: value.attributeId,
                         name: value.attributeName,
                         value: value.value,
-                        units: value.units
+                        units: value.units,
+                        color: value.color
                     };
                     result.attributes.push(attr);
                 });
