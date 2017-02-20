@@ -143,7 +143,7 @@ class SnowPortal {
                         m.filename,
                         s.satellite_key,
                         s.sensor_key,
-                        m.date,
+                        m.date::varchar,
                         100 * ST_Area(ST_Intersection(m.cxhull, a.the_geom)) / ST_Area(a.the_geom) AS perct
                     FROM
                         tile AS t
@@ -154,7 +154,7 @@ class SnowPortal {
                     WHERE
                         s.satellite_key IN (${satellites})
                         AND s.sensor_key IN (${sensors})
-                        AND m.date BETWEEN '${scope.timeRange.from}' AND '${scope.timeRange.to}'
+                        AND m.date BETWEEN '${scope.timeRange.start}' AND '${scope.timeRange.end}'
                         AND ST_Intersects(ST_SetSRID(r.extent::geometry, 3035), a.the_geom)
                     GROUP BY
                         m.id,
