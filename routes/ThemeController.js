@@ -20,12 +20,7 @@ class ThemeController extends Controller {
 		logger.info("Create object of type: ", this.type, " by User: ", request.session.userId, "With data: ", request.body.data);
 
         var theme = request.body.data;
-        if (!this.hasRights(request.session.user, 'PUT', theme._id, theme)) {
-            response.status(403);
-            return;
-        }
-
-		var parameters = {
+        var parameters = {
 			userId: request.session.userId,
 			isAdmin: response.locals.isAdmin
 		};
