@@ -12,7 +12,7 @@ layers=("gadm_test")
 
 for ((i=0; i < ${#layers[@]}; i++))
 do
-  printf "\n\n===== ${layers[$i]} ====="
+  printf "\n\n===== ${layers[$i]} =====\n"
 
   PGOPTIONS='--client-min-messages=warning' psql -q -U geonode -d geonode_data <<EOF
 BEGIN;
