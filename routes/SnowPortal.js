@@ -1,5 +1,8 @@
 let _ = require("lodash");
 let Promise = require("promise");
+let UUID = require("../common/UUID");
+
+let operations = {};
 
 class SnowPortal {
     constructor(app, pool) {
@@ -7,9 +10,53 @@ class SnowPortal {
 
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenesByScope.bind(this));
+        app.get("/api/snowportal/scenes", this.getOperations.bind(this));
+        app.get("/api/snowportal/scenes/:uuid", this.getOperationResultByUuid.bind(this));
     }
-
+    
+    /**
+     * Return list of operations
+     * @param request
+     * @param response
+     */
+    getOperations(request, response) {
+        response.send({
+            data: operations,
+            success: true
+        });
+    }
+    
+    /**
+     * Return operation for given uuid or return error if nothing found
+     * @param request
+     * @param response
+     */
+    getOperationResultByUuid(request, response) {
+        let uuid = request.params["uuid"];
+        let res = {
+            data: "Operation was not found!",
+            success: false
+        };
+        
+        if(uuid && operations.hasOwnProperty(uuid)) {
+            res = {
+                data: operations[uuid],
+                success: true
+            };
+            delete operations[uuid];
+        }
+        
+        response.send(res);
+    }
+    
+    /**
+     * Start data retriving operation and return its uuid
+     * @param request
+     * @param response
+     */
     getScenesByScope(request, response) {
+        let uuid = new UUID().value;
+        
         let scope = request.body;
         this.getScenesSqlByScope(
             scope
@@ -48,18 +95,34 @@ class SnowPortal {
                 });
             });
         }).then(data => {
-            response.send({
-                data: data,
-                success: true
-            });
+            let operation = operations[uuid];
+            operation.ended = Date.now();
+            operation.response = data;
         }).catch(error => {
-            response.send({
-                message: error.message,
-                success: false
-            });
+            let operation = operations[uuid];
+            operation.ended = Date.now();
+            operation.error = error;
+        });
+    
+        operations[uuid] = {
+            started: Date.now(),
+            scope: scope
+        };
+    
+        response.send({
+            data: {
+                uuid: uuid,
+                scope: scope
+            },
+            success: true
         });
     }
-
+    
+    /**
+     * Return scope options based on existing data
+     * @param request
+     * @param response
+     */
     getScopeOptions(request, response) {
         let options = {};
 
@@ -116,7 +179,11 @@ class SnowPortal {
             });
         });
     }
-
+    
+    /**
+     * Build PGSQL query based on given scope
+     * @param scope
+     */
     getScenesSqlByScope(scope) {
         return Promise.resolve().then(() => {
             if (scope.area.type === "polygon") {
@@ -172,7 +239,12 @@ class SnowPortal {
             }
         });
     }
-
+    
+    /**
+     * Build PGSQL query based on combination of scope and scenes
+     * @param scene
+     * @param scope
+     */
     getScenesDataSqlBySceneAndScope(scene, scope) {
         return Promise.resolve().then(() => {
             if (scope.area.type === "polygon") {
