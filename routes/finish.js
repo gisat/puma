@@ -43,6 +43,9 @@ var standardResponse = function(req,res,next) {
 		res.set('Content-Type', res.contType);
 		var buffer = new Buffer(res.data,res.encType || 'binary');
 		res.send(buffer);
+	} else if (res.isJson) {
+		res.set('Content-Type', 'application/json');
+		res.send(res.data);
 	} else if (!res.noJson) {
 		res.json(status,obj);
 	} else {

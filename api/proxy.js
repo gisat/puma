@@ -200,6 +200,8 @@ function wms(params, req, res, callback) {
 					return callback(null);
 				});
 				return;
+			} else if (params['EXPECTJSON']) {
+				res.isJson = true;
 			} else {
 				res.noJson = true;
 			}
