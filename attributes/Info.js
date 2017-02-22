@@ -37,6 +37,7 @@ class Info {
                         id: value.attributeId,
                         name: value.attributeName,
                         asId: value.attributeSetId,
+                        asName: value.attributeSetName,
                         value: value.value,
                         units: value.units,
                         color: value.color
