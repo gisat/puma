@@ -26,6 +26,7 @@
     "moment": "^2.15.1",
     "mongodb": "~2.0",
     "node-sass": "^3.7.0",
+    "object-hash": "^1.1.5",
     "onecolor": "2.3.4",
     "openlayers": "3.0.0",
     "pg": "6.0.3",
