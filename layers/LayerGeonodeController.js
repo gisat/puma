@@ -47,13 +47,7 @@ class LayerGeonodeController {
 			pgLayers = pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
 			layers = layers.concat(pgLayers);
 
-			let promises = layers.map(layer => {
-				return this.permissions.forType("layer", layer.id).then(permissions => {
-					layer.permissions = permissions;
-				});
-			});
-
-			return Promise.all(promises);
+			return this.permissions.forTypeCollection("layer", layers);
 		}).then(() => {
 			response.json({data: layers});
 		}).catch(err => {
@@ -80,9 +74,9 @@ class LayerGeonodeController {
 		this.pgLayers.add(request.body.name, request.body.path, request.session.user.id).then(pCreated => {
 			created = pCreated;
 			return Promise.all([
-				this.permissions.add(request.session.userId, 'layer', created.id, "GET"),
-				this.permissions.add(request.session.userId, 'layer', created.id, "PUT"),
-				this.permissions.add(request.session.userId, 'layer', created.id, "DELETE")
+				this.permissions.add(request.session.userId, 'layer', created.id, Permission.READ),
+				this.permissions.add(request.session.userId, 'layer', created.id, Permission.UPDATE),
+				this.permissions.add(request.session.userId, 'layer', created.id, Permission.DELETE)
 			]);
 		}).then(() => {
 			response.json({data: created, status: "Ok"});

@@ -1,5 +1,5 @@
 This package should contain most of the security related code. It is mainly focused on the authorization of the users
-coming into the system.
+coming into the system. The authentication itself is handled via GeoNode. The data about users are loaded from GeoNode, which means that those requests take far more time. 
 
 Architecture:
 For each request we need to make sure that either the resource could be accessed without authentication, with
@@ -10,7 +10,7 @@ Authentication is solved via session bassed information for logged in user. In t
 about currently logged users.
 
 Authorization:
-Certain resourcs might require authorization in order to be shown to the user. There are two main places, where the
+Certain resources might require authorization in order to be shown to the user. There are two main places, where the
 resources will be shown only based on the authentication. First is FrontOffice. Second is BackOffice.
 The Main resources used to receive the rights and privileges are Scope and Place. With respect to that you as a user can
 see only these resources which you have rights toward.

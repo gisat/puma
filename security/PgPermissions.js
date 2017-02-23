@@ -1,3 +1,5 @@
+let Promise = require('promise');
+
 /**
  * It represents permissions stored in the PostgreSQL database.
  * @alias PgPermissions
@@ -114,14 +116,14 @@ class PgPermissions {
 	forType(type, resourceId) {
 		let groupPermissions = [];
 		let userPermissions = [];
-		return this.pgPool.pool().query(this.forTypeUserSql(type, resourceId))
+		return this.pgPool.pool().query(this.forTypeUserCollectionSql(type, [{id: resourceId}]))
 			.then(this.transformFromRowsToPermissions)
 			.then((transformedPermissions => {
 				userPermissions = transformedPermissions;
 				return userPermissions;
 			}))
 			.then(() => {
-				return this.pgPool.pool().query(this.forTypeGroupSql(type, resourceId))
+				return this.pgPool.pool().query(this.forTypeGroupCollectionSql(type, [{id: resourceId}]))
 			})
 			.then(this.transformFromRowsToPermissions)
 			.then((transformedPermissions => {
@@ -136,12 +138,68 @@ class PgPermissions {
 			});
 	}
 
-	forTypeGroupSql(type, resourceId) {
-		return `SELECT * from ${this.schema}.group_permissions WHERE resource_type = '${type}' AND resource_id='${resourceId}'`;
+	/**
+	 *
+	 * @param type {String} Type for retrieval of the permissions from the database.
+	 * @param resources {Object[]} Resources to be handled. If none are supplied then empty array is returned.
+	 * @param resources[].id {Number} Filter the resources that have no id or in a different column.
+	 */
+	forTypeCollection(type, resources) {
+		if (!resources.length) {
+			return Promise.resolve([]);
+		}
+
+		resources = resources.filter(resource => resource.id);
+		if (!resources.length) {
+			return Promise.resolve([]);
+		}
+
+		let groupPermissions;
+		return this.pgPool.query(this.forTypeGroupCollectionSql(type, resources))
+			.then(this.transformFromRowsToPermissions)
+			.then(pGroupPermissions => {
+				groupPermissions = pGroupPermissions;
+				return this.pgPool.query(this.forTypeUserCollectionSql(type, resources));
+			})
+			.then(this.transformFromRowsToPermissions)
+			.then(userPermissions => {
+			// How do we effectively map the information to the resources.
+			resources.forEach(resource => {
+				resource.permissions = {
+					user: userPermissions.filter(permission => permission.resourceId == resource.id),
+					group: groupPermissions.filter(permission => permission.resourceId == resource.id),
+				};
+			});
+
+			return resources;
+		});
+		// Load all the data and map them towards the data for retrieval.
 	}
 
-	forTypeUserSql(type, resourceId) {
-		return `SELECT * from ${this.schema}.permissions WHERE resource_type = '${type}' AND resource_id='${resourceId}'`;
+	/**
+	 * SQL for handling retrieving data about permissions for full collection, all items. With respect to groups.
+	 * @private
+	 * @param type {String} Type name used in the database.
+	 * @param resources {Object[]}
+	 * @param resources[].id {Number}
+	 * @returns {string}
+	 */
+	forTypeGroupCollectionSql(type, resources) {
+		let ids = resources.map(layer => layer.id);
+		return `SELECT * FROM ${this.schema}.group_permissions WHERE resource_type = '${type}' AND resource_id IN (${ids.join(`,`)})`;
+	}
+
+	/**
+	 * SQL for handling retrieving data about permissions for full collection, all items. With respect to groups.
+	 * @private
+	 * @param type {String} Type name used in the database.
+	 * @param resources {Object[]}
+	 * @param resources[].id {Number} Id of the given resource.
+	 * @returns {string}
+	 */
+	forTypeUserCollectionSql(type, resources) {
+		let ids = resources.map(layer => layer.id);
+		return `SELECT * FROM ${this.schema}.permissions WHERE resource_type = '${type}' AND resource_id IN (${ids.join(`,`)})`;
 	}
 }
 
