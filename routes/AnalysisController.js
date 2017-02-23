@@ -51,7 +51,7 @@ class AnalysisController extends Controller {
 	hasRights(user, method, id, object) {
 		// Verify permissions for topics for all attribute sets and
 		// If user has rights towards at least one topic, it works for all attribute sets.
-		return user.hasPermission('topic', method, object.topic);
+		return true;
 	}
 }
 
