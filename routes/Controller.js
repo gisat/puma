@@ -71,16 +71,16 @@ class Controller {
             }
 
             Promise.all([
-				this.permissions.add(request.session.userId, this.type, result._id, Permission.READ),
-				this.permissions.add(request.session.userId, this.type, result._id, Permission.UPDATE),
-			    this.permissions.add(request.session.userId, this.type, result._id, Permission.DELETE)
-			]).then(() => {
+                this.permissions.add(request.session.userId, this.type, result._id, Permission.READ),
+                this.permissions.add(request.session.userId, this.type, result._id, Permission.UPDATE),
+                this.permissions.add(request.session.userId, this.type, result._id, Permission.DELETE)
+            ]).then(() => {
                 response.data = result;
                 next();
             }).catch(err => {
-				logger.error("It wasn't possible to add permissions to the object of type: ", this.type, " by User: ", request.session.userId,
-					"With data: ", request.body.data, " Error:", err);
-				return next(err);
+                logger.error("It wasn't possible to add permissions to the object of type: ", this.type, " by User: ", request.session.userId,
+                    "With data: ", request.body.data, " Error:", err);
+                return next(err);
             });
         });
     }
@@ -139,15 +139,15 @@ class Controller {
             }
 
             let resultsWithRights = result
-				.filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
+                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
             let promises = resultsWithRights.map(element => {
-				return this.permissions.forType(this.type, element._id).then(permissions => {
+                return this.permissions.forType(this.type, element._id).then(permissions => {
                     element.permissions = permissions;
-				});
+                });
             });
 
             Promise.all(promises).then(() => {
-				response.json({data: resultsWithRights});
+                response.json({data: resultsWithRights});
             }).catch(err => {
                 logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
                 response.status(500).json({status: 'err'});
