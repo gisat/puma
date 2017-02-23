@@ -8,7 +8,7 @@ class AttributeSetController extends Controller {
 	}
 
     hasRights(user, method, id, object) {
-        return user.hasPermission('topic', method, object.topic);
+        return true;
     }
 }
 
