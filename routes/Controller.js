@@ -49,10 +49,10 @@ class Controller {
     }
 
     /**
-     * Default implementation of creation for rest objects. This implementation doesn't verifies anything. It simply creates the specified object.
+     * Default implementation of creation for rest objects. This implementation doesn't verify anything. It simply creates the specified object.
      * @param request {Request} Request created by the Express framework.
      * @param request.body.data {Object} Payload for object, which should be updated.
-     * @param request.session.userId {Number} Id of the user who issued the request.
+     * @param request.session.user.id {Number} Id of the user who issued the request.
      * @param response.locals.isAdmin {Boolean} Whether the user is admin
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
