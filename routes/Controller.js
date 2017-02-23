@@ -150,8 +150,7 @@ class Controller {
 				response.json({data: resultsWithRights});
             }).catch(err => {
                 logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
-                response.status(500);
-                return;
+                response.status(500).json({status: 'err'});
             })
         });
     }
