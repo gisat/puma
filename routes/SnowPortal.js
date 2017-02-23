@@ -1,63 +1,45 @@
 let _ = require("lodash");
 let Promise = require("promise");
-let UUID = require("../common/UUID");
+let hash = require("object-hash");
 
-let operations = {};
+let processes = {};
 
 class SnowPortal {
     constructor(app, pool) {
         this._pgPool = pool;
-
+        
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenesByScope.bind(this));
-        app.get("/api/snowportal/scenes", this.getOperations.bind(this));
-        app.get("/api/snowportal/scenes/:uuid", this.getOperationResultByUuid.bind(this));
     }
     
-    /**
-     * Return list of operations
-     * @param request
-     * @param response
-     */
-    getOperations(request, response) {
-        response.send({
-            data: operations,
-            success: true
-        });
-    }
-    
-    /**
-     * Return operation for given uuid or return error if nothing found
-     * @param request
-     * @param response
-     */
-    getOperationResultByUuid(request, response) {
-        let uuid = request.params["uuid"];
-        let res = {
-            data: "Operation was not found!",
-            success: false
-        };
+    getScenesByScope(request, response) {
+        let scope = request.body;
+        let scopeHash = hash(scope);
         
-        if(uuid && operations.hasOwnProperty(uuid)) {
-            res = {
-                data: operations[uuid],
-                success: true
+        if (processes[scopeHash]) {
+            let responseObject = {};
+            if (processes[scopeHash].data) {
+                responseObject.data = processes[scopeHash].data;
+                responseObject.success = true;
+            } else if (processes[scopeHash].error) {
+                responseObject.message = processes[scopeHash].error;
+                responseObject.success = false;
+            } else {
+                responseObject.ticket = scopeHash;
+                responseObject.success = true;
+            }
+            response.send(responseObject);
+            return;
+        } else {
+            processes[scopeHash] = {
+                started: Date.now(),
+                ended: null,
+                scope: scope,
+                data: null,
+                error: null
             };
-            delete operations[uuid];
         }
         
-        response.send(res);
-    }
-    
-    /**
-     * Start data retriving operation and return its uuid
-     * @param request
-     * @param response
-     */
-    getScenesByScope(request, response) {
-        let uuid = new UUID().value;
-        
-        let scope = request.body;
         this.getScenesSqlByScope(
             scope
         ).then(sql => {
@@ -95,25 +77,15 @@ class SnowPortal {
                 });
             });
         }).then(data => {
-            let operation = operations[uuid];
-            operation.ended = Date.now();
-            operation.response = data;
+            processes[scopeHash].ended = Date.now();
+            processes[scopeHash].data = data;
         }).catch(error => {
-            let operation = operations[uuid];
-            operation.ended = Date.now();
-            operation.error = error;
+            processes[scopeHash].ended = Date.now();
+            processes[scopeHash].error = error;
         });
-    
-        operations[uuid] = {
-            started: Date.now(),
-            scope: scope
-        };
-    
+        
         response.send({
-            data: {
-                uuid: uuid,
-                scope: scope
-            },
+            ticket: scopeHash,
             success: true
         });
     }
@@ -125,7 +97,7 @@ class SnowPortal {
      */
     getScopeOptions(request, response) {
         let options = {};
-
+        
         this._pgPool.pool().query(`SELECT DISTINCT "NAME" as name, "KEY" as key FROM areas ORDER BY "NAME"`).then(rows => {
             if (!rows.rows) {
                 throw new Error("Unable to get areas from database...");
@@ -195,15 +167,15 @@ class SnowPortal {
                     sensors.push(sensorKey);
                     satellites = _.concat(satellites, sensorSats);
                 });
-
+                
                 satellites = satellites.map(sattelite => {
                     return `'${sattelite}'`
                 }).join(",");
-
+                
                 sensors = sensors.map(sensor => {
                     return `'${sensor}'`
                 }).join(",");
-
+                
                 return (`
                     SELECT 
                         m.id,
@@ -256,15 +228,15 @@ class SnowPortal {
                     sensors.push(sensorKey);
                     satellites = _.concat(satellites, sensorSats);
                 });
-
+                
                 satellites = satellites.map(sattelite => {
                     return `'${sattelite}'`
                 }).join(",");
-
+                
                 sensors = sensors.map(sensor => {
                     return `'${sensor}'`
                 }).join(",");
-
+                
                 let sql = `
                     SELECT
                         l.classified_as AS pixel,
