@@ -186,7 +186,7 @@ class PgPermissions {
 	 */
 	forTypeGroupCollectionSql(type, resources) {
 		let ids = resources.map(layer => layer.id);
-		return `SELECT * FROM ${this.schema}.group_permissions WHERE resource_type = '${type}' AND resource_id IN (${ids.join(`,`)})`;
+		return `SELECT * FROM ${this.schema}.group_permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
 	}
 
 	/**
@@ -199,7 +199,7 @@ class PgPermissions {
 	 */
 	forTypeUserCollectionSql(type, resources) {
 		let ids = resources.map(layer => layer.id);
-		return `SELECT * FROM ${this.schema}.permissions WHERE resource_type = '${type}' AND resource_id IN (${ids.join(`,`)})`;
+		return `SELECT * FROM ${this.schema}.permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
 	}
 }
 

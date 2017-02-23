@@ -6,7 +6,7 @@ let logger = require('../../../common/Logger').applicationWideLogger;
 let PgPermissions = require('../../../security/PgPermissions');
 let Permission = require('../../../security/Permission');
 
-describe('NormalizationSpec', () => {
+describe('PgPermissionsSpec', () => {
 	let integrationEnvironment, fixture = {user: null};
 	let pgPermissions, pgPool, pgSchema;
 	beforeEach(done => {
