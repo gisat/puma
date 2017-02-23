@@ -127,7 +127,7 @@ class UserController {
 	}
 
 	hasRights(user, method, id) {
-		return user.hasPermission('user', method, id);
+		return user.hasPermission('user', method, id) || user.id == id;
 	}
 }
 
