@@ -9,15 +9,18 @@ class Info {
 
     statistics(attributes, attributesMap, gids) {
         return attributes.attributes(this.sql.bind(this, gids)).then(attributes => {
-            return attributes.map(attribute => attribute.info({
-                units: attributesMap[attribute.name()].units,
-                color: attributesMap[attribute.name()].color,
-                value: attributesMap[attribute.name()].value,
-                attributeId: attributesMap[attribute.name()].attribute,
-                attributeName: attributesMap[attribute.name()].attributeName,
-                attributeSetId: attributesMap[attribute.name()].attributeSet,
-                attributeSetName: attributesMap[attribute.name()].attributeSetName
-            }));
+            return attributes.map(attribute => {
+                var id = "as_" + attribute._attributeSet + "_attr_" + attribute._attribute;
+                return attribute.info({
+                    units: attributesMap[id].units,
+                    color: attributesMap[id].color,
+                    value: attributesMap[id].value,
+                    attributeId: attributesMap[id].attribute,
+                    attributeName: attributesMap[id].attributeName,
+                    attributeSetId: attributesMap[id].attributeSet,
+                    attributeSetName: attributesMap[id].attributeSetName
+                })
+            });
         }).then(json => {
             // Group per gid.
             var groupedPerRow = _.toArray(_.groupBy(_.flatten(json), element => element.gid));

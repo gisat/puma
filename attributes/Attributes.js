@@ -48,7 +48,7 @@ class Attributes {
                 .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate' && attribute != 'name')
                 .map(attribute => {
                     var id = Number(attribute.split('_')[3]);
-                    let jsonAttribute = mongoAttributes[id];
+                    let jsonAttribute = JSON.parse(JSON.stringify(mongoAttributes[id])); // deep clone of the object
 
                     jsonAttribute.values = attributes[attribute];
                     jsonAttribute.geometries = attributes['geometry'];
@@ -70,7 +70,9 @@ class Attributes {
                         return null
                     }
                 })
-                .filter(attribute => attribute != null);
+                .filter(attribute => {
+                    return attribute != null
+                });
 
             return Promise.all(attributesPromises);
         });
