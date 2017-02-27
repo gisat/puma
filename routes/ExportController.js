@@ -20,10 +20,10 @@ class ExportController {
         this._connection = conn.getMongoDb();
         this._info = new Info(pgPool);
 
-        app.get('/export/json', this.selection2geojson.bind(this));
-        app.get('/export/shp', this.selection2shapefile.bind(this));
-        app.get('/export/csv', this.selection2csv.bind(this));
-        app.get('/export/xls', this.selection2xls.bind(this));
+        app.post('/export/json', this.selection2geojson.bind(this));
+        app.post('/export/shp', this.selection2shapefile.bind(this));
+        app.post('/export/csv', this.selection2csv.bind(this));
+        app.post('/export/xls', this.selection2xls.bind(this));
 
         app.get('/drawingexport/json', this.drawing2geojson.bind(this));
         app.get('/drawingexport/shapefile', this.drawing2shapefile.bind(this));
@@ -72,7 +72,7 @@ class ExportController {
      * @param next
      */
     selection2shapefile(request, response, next){
-        var options = this.parseRequest(request);
+        var options = this.parseRequest(request.body);
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
 
         var self = this;
@@ -123,7 +123,7 @@ class ExportController {
      * @returns {*}
      */
     selection2geojson(request, response, next) {
-        var options = this.parseRequest(request);
+        var options = this.parseRequest(request.body);
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
 
         var self = this;
@@ -153,7 +153,7 @@ class ExportController {
      * @returns {*}
      */
     selection2csv(request, response, next) {
-        var options = this.parseRequest(request);
+        var options = this.parseRequest(request.body);
 
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
         this._info.statistics(attributesObj, options.attributesMap, options.gids).then(json => {
@@ -187,7 +187,7 @@ class ExportController {
      * @param next
      */
     selection2xls(request, response, next) {
-        var options = this.parseRequest(request);
+        var options = this.parseRequest(request.body);
 
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
         var self = this;
@@ -331,11 +331,11 @@ class ExportController {
         return ret;
     }
 
-    parseRequest(request) {
-        var attr = JSON.parse(request.query.attributes);
-        var areas = JSON.parse(request.query.gids);
-        var per = JSON.parse(request.query.periods);
-        var locations = JSON.parse(request.query.places);
+    parseRequest(data) {
+        var attr = JSON.parse(data.attributes);
+        var areas = JSON.parse(data.gids);
+        var per = JSON.parse(data.periods);
+        var locations = JSON.parse(data.places);
 
         let attributes = _.toArray(attr);
         let gids = _.toArray(areas);
@@ -351,7 +351,7 @@ class ExportController {
         return {
             attributes: attributes,
             attributesMap: attributesMap,
-            areaTemplate: Number(request.query.areaTemplate),
+            areaTemplate: Number(data.areaTemplate),
             gids: gids,
             periods: periods.map(period => Number(period)),
             places: places.map(place => Number(place))
