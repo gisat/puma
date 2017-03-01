@@ -42,8 +42,8 @@ class SnowPortal {
         }
         
         Promise.resolve().then(() => {
-            let dateFrom = new Date(requestData.timeRange.from);
-            let dateTo = new Date(requestData.timeRange.to);
+            let dateFrom = new Date(requestData.timeRange.start);
+            let dateTo = new Date(requestData.timeRange.end);
             let sensors = Object.keys(requestData.sensors);
             let period = requestData.period;
             let area = requestData.area.value;
