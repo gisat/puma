@@ -10,6 +10,103 @@ class SnowPortal {
         
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenesByScope.bind(this));
+        app.post("/api/snowportal/composites", this.getComposites.bind(this));
+    }
+    
+    getComposites(request, response) {
+        let requestData = request.body;
+        let requestHash = hash(requestData);
+        
+        if (processes[requestHash]) {
+            let responseObject = {};
+            if (processes[requestHash].data) {
+                responseObject.data = processes[requestHash].data;
+                responseObject.success = true;
+            } else if (processes[requestHash].error) {
+                responseObject.message = processes[requestHash].error;
+                responseObject.success = false;
+            } else {
+                responseObject.ticket = requestHash;
+                responseObject.success = true;
+            }
+            response.send(responseObject);
+            return;
+        } else {
+            processes[requestHash] = {
+                started: Date.now(),
+                ended: null,
+                request: requestData,
+                data: null,
+                error: null
+            };
+        }
+        
+        Promise.resolve().then(() => {
+            let dateFrom = new Date(requestData.timeRange.from);
+            let dateTo = new Date(requestData.timeRange.to);
+            let sensors = Object.keys(requestData.sensors);
+            let period = requestData.period;
+            let area = requestData.area.value;
+            
+            let sql = "SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'composite_europe_%'";
+            
+            return this._pgPool.pool().query(sql).then(result => {
+                let promises = [];
+                
+                _.each(result.rows, row => {
+                    let table_name = row.table_name;
+                    let table_date_str = table_name.replace("composite_europe_", "");
+                    table_date_str = table_date_str.replace(/_/g, "-");
+                    let table_date = new Date(table_date_str);
+                    
+                    if (table_date >= dateFrom && table_date <= dateTo) {
+                        promises.push(new Promise((resolve, reject) => {
+                            let sql = `SELECT
+                                    l.classified_as AS class,
+                                    sum((foo.pvc).count) AS count
+                                FROM (SELECT ST_ValueCount(ST_Clip(c.rast, a.the_geom)) AS pvc
+                                FROM ${table_name} AS c
+                                JOIN areas AS a ON (a."KEY" = '${area}')) AS foo
+                                JOIN source AS s ON (s.sensor_key='modis')
+                                JOIN legend AS l ON (l.source_id=s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
+                                GROUP BY class;`;
+                            let query = this._pgPool.pool().query(sql).then((results) => {
+                                let classDistribution = {};
+                                let total = 0;
+                                _.each(results.rows, row => {
+                                    classDistribution[row.class] = row.count;
+                                    total += Number(row.count);
+                                });
+                                _.each(results.rows, row => {
+                                    classDistribution[row.class] = (row.count / total) * 100;
+                                });
+                                resolve({
+                                    key: table_name,
+                                    dateFrom: table_date.toISOString(),
+                                    period: period,
+                                    sensors: sensors,
+                                    classDistribution: classDistribution
+                                })
+                            }).catch(error => {
+                                reject(error);
+                            });
+                        }));
+                    }
+                });
+                return Promise.all(promises);
+            });
+        }).then(data => {
+            processes[requestHash].ended = Date.now();
+            processes[requestHash].data = data;
+        }).catch(error => {
+            processes[requestHash].ended = Date.now();
+            processes[requestHash].error = error;
+        });
+        
+        response.send({
+            ticket: requestHash,
+            success: true
+        });
     }
     
     getScenesByScope(request, response) {
