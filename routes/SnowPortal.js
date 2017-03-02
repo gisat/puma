@@ -42,30 +42,36 @@ class SnowPortal {
         }
         
         Promise.resolve().then(() => {
-            let dateFrom = new Date(requestData.timeRange.start);
-            let dateTo = new Date(requestData.timeRange.end);
+            let dateStart = requestData.timeRange.start;
+            let dateEnd = requestData.timeRange.end;
             let sensors = Object.keys(requestData.sensors);
             let period = requestData.period;
             let area = requestData.area.value;
             
-            let sql = "SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'composite_europe_%'";
+            sensors = sensors.map(function (sensor) {
+                return '"' + sensor + '"';
+            }).join(",");
+            
+            let sql = `
+                SELECT key, date_start 
+                FROM composites.metadata 
+                WHERE (date_start BETWEEN '${dateStart}' AND '${dateEnd}' OR date_end BETWEEN '${dateStart}' AND '${dateEnd}') 
+                        AND period = '${period}'
+                        AND sensors <@ '{${sensors}}';`;
             
             return this._pgPool.pool().query(sql).then(result => {
                 let promises = [];
-                
-                _.each(result.rows, row => {
-                    let table_name = row.table_name;
-                    let table_date_str = table_name.replace("composite_europe_", "");
-                    table_date_str = table_date_str.replace(/_/g, "-");
-                    let table_date = new Date(table_date_str);
-                    
-                    if (table_date >= dateFrom && table_date <= dateTo) {
+                if(!result.rows.length) {
+                    throw new Error("no results was found");
+                } else {
+                    _.each(result.rows, row => {
+                        let table_name = row.key;
                         promises.push(new Promise((resolve, reject) => {
                             let sql = `SELECT
                                     l.classified_as AS class,
                                     sum((foo.pvc).count) AS count
                                 FROM (SELECT ST_ValueCount(ST_Clip(c.rast, a.the_geom)) AS pvc
-                                FROM ${table_name} AS c
+                                FROM composites."${table_name}" AS c
                                 JOIN areas AS a ON (a."KEY" = '${area}')) AS foo
                                 JOIN source AS s ON (s.sensor_key='modis')
                                 JOIN legend AS l ON (l.source_id=s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
@@ -82,7 +88,7 @@ class SnowPortal {
                                 });
                                 resolve({
                                     key: table_name,
-                                    dateFrom: table_date.toISOString(),
+                                    dateFrom: row.date_start,
                                     period: period,
                                     sensors: sensors,
                                     aoiCoverage: 100,
@@ -92,16 +98,20 @@ class SnowPortal {
                                 reject(error);
                             });
                         }));
-                    }
-                });
-                return Promise.all(promises);
+                    });
+                    return Promise.all(promises);
+                }
+            }).catch(error => {
+                throw error;
             });
         }).then(data => {
+            console.log(data);
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
         }).catch(error => {
+            console.log(error);
             processes[requestHash].ended = Date.now();
-            processes[requestHash].error = error;
+            processes[requestHash].error = error.message;
         });
         
         response.send({
