@@ -85,6 +85,7 @@ class SnowPortal {
                                     dateFrom: table_date.toISOString(),
                                     period: period,
                                     sensors: sensors,
+                                    aoiCoverage: 100,
                                     classDistribution: classDistribution
                                 })
                             }).catch(error => {
@@ -168,7 +169,7 @@ class SnowPortal {
                         date: row.date,
                         sensor: row.sensor_key,
                         satellite: row.satellite_key,
-                        aoiIntersect: row.perct,
+                        aoiCoverage: row.perct,
                         classDistribution: classDistribution
                     }
                 });
