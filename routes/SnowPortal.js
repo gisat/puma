@@ -105,11 +105,9 @@ class SnowPortal {
                 throw error;
             });
         }).then(data => {
-            console.log(data);
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
         }).catch(error => {
-            console.log(error);
             processes[requestHash].ended = Date.now();
             processes[requestHash].error = error.message;
         });
