@@ -108,7 +108,6 @@ class AttributeController extends Controller {
      * @param response
      */
     info(request, response) {
-        debugger;
         var options = this._parseRequest(request.body);
         let gid = request.body.gid;
         var uuid = new UUID().toString();
