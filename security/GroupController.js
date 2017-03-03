@@ -120,7 +120,7 @@ class GroupController {
     }
 
     addUserToGroup(request, response) {
-		if(!request.session.user.hasPermission('group_member', Permission.CREATE, request.body.groupId)) {
+		if(!request.session.user.hasPermission('group', Permission.UPDATE, request.body.groupId)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
@@ -135,7 +135,7 @@ class GroupController {
     }
 
     removeUserFromGroup(request, response) {
-		if(!request.session.user.hasPermission('group_member', Permission.DELETE, request.body.groupId)) {
+		if(!request.session.user.hasPermission('group', Permission.UPDATE, request.body.groupId)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
