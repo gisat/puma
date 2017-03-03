@@ -200,6 +200,7 @@ class ExportController {
                             units = " (" + attr.units + ") ";
                         }
                         var id = attr.name + units + " (" + attr.asName + ") ";
+                        id = id.replace(/\./g,' ');
                         value[id] = attr.value;
                     });
                     delete value.attributes;
