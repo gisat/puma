@@ -195,7 +195,12 @@ class ExportController {
             if(json.length > 0) {
                 json.forEach(value => {
                     value.attributes.forEach(attr => {
-                        value[attr.name] = attr.value;
+                        var units = "";
+                        if (attr.hasOwnProperty("units") && attr.units != undefined && attr.units.length > 0){
+                            units = " (" + attr.units + ") ";
+                        }
+                        var id = attr.name + units + " (" + attr.asName + ") ";
+                        value[id] = attr.value;
                     });
                     delete value.attributes;
                     delete value.geom;
