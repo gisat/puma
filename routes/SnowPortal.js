@@ -9,9 +9,100 @@ class SnowPortal {
         this._pgPool = pool;
         
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
-        app.post("/api/snowportal/scenes", this.getScenesByScope.bind(this));
+        app.post("/api/snowportal/scenes", this.getScenes.bind(this));
         app.post("/api/snowportal/composites", this.getComposites.bind(this));
     }
+    
+    getScenes(request, response) {
+        let areaType = request.body.area.type;
+        let area = request.body.area.value;
+        let dateStart = request.body.timeRange.start;
+        let dateEnd = request.body.timeRange.end;
+        let sensors = [];
+        let satellites = [];
+    
+        let requestData = request.body;
+        let requestHash = hash(requestData);
+    
+        if (processes[requestHash]) {
+            let responseObject = {};
+            if (processes[requestHash].data) {
+                responseObject.data = processes[requestHash].data;
+                responseObject.success = true;
+            } else if (processes[requestHash].error) {
+                responseObject.message = processes[requestHash].error;
+                responseObject.success = false;
+            } else {
+                responseObject.ticket = requestHash;
+                responseObject.success = true;
+            }
+            response.send(responseObject);
+            return;
+        } else {
+            processes[requestHash] = {
+                started: Date.now(),
+                ended: null,
+                request: requestData,
+                data: null,
+                error: null
+            };
+        }
+        
+        _.each(request.body.sensors, (sensorSatellites, sensorKey) => {
+            sensors.push(sensorKey);
+            satellites = satellites.concat(sensorSatellites);
+        });
+        
+        let sql = this.getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd);
+        
+        this._pgPool.pool().query(sql).then(results => {
+            let totals = {};
+            let scenes = {};
+            
+            _.each(results.rows, row => {
+                let scene = scenes[row.key] || {};
+                let classDistribution = scene.classDistribution || {};
+                
+                scene.key = row.key;
+                scene.satellite = row.satellite;
+                scene.sensor = row.sensor;
+                scene.date = row.date;
+                scene.aoiCoverage = row.coverage;
+    
+                classDistribution[row.class] = row.count;
+    
+                let total = Number(totals[scene.key]) || 0;
+                total += Number(row.count);
+                totals[scene.key] = total;
+                
+                scene.classDistribution = classDistribution;
+                
+                scenes[row.key] = scene;
+            });
+            
+            _.each(scenes, scene => {
+                _.each(scene.classDistribution, (value, key) => {
+                    scene.classDistribution[key] = 100 * (Number(value) / Number(totals[scene.key]));
+                });
+            });
+            
+            return _.map(scenes, scene => {
+                return scene;
+            });
+        }).then(data => {
+            processes[requestHash].ended = Date.now();
+            processes[requestHash].data = data;
+        }).catch(error => {
+            processes[requestHash].ended = Date.now();
+            processes[requestHash].error = error.message;
+        });
+    
+        response.send({
+            ticket: requestHash,
+            success: true
+        });
+    }
+    
     
     getComposites(request, response) {
         let requestData = request.body;
@@ -46,36 +137,19 @@ class SnowPortal {
             let dateEnd = requestData.timeRange.end;
             let sensors = Object.keys(requestData.sensors);
             let period = requestData.period;
-            let area = requestData.area.value;
+            let area = requestData.area;
             
-            sensors = sensors.map(function (sensor) {
-                return '"' + sensor + '"';
-            }).join(",");
-            
-            let sql = `
-                SELECT key, date_start 
-                FROM composites.metadata 
-                WHERE (date_start BETWEEN '${dateStart}' AND '${dateEnd}' OR date_end BETWEEN '${dateStart}' AND '${dateEnd}') 
-                        AND period = '${period}'
-                        AND sensors @> '{${sensors}}';`;
+            let sql = this.getCompositesMetadataSql(dateStart, dateEnd, period, sensors);
             
             return this._pgPool.pool().query(sql).then(result => {
                 let promises = [];
-                if(!result.rows.length) {
+                if (!result.rows.length) {
                     throw new Error("no results was found");
                 } else {
                     _.each(result.rows, row => {
-                        let table_name = row.key;
+                        let tableName = row.key;
                         promises.push(new Promise((resolve, reject) => {
-                            let sql = `SELECT
-                                    l.classified_as AS class,
-                                    sum((foo.pvc).count) AS count
-                                FROM (SELECT ST_ValueCount(ST_Clip(c.rast, a.the_geom)) AS pvc
-                                FROM composites."${table_name}" AS c
-                                JOIN areas AS a ON (a."KEY" = '${area}')) AS foo
-                                JOIN source AS s ON (s.sensor_key = ANY('{${sensors}}'))
-                                JOIN legend AS l ON (l.source_id=s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
-                                GROUP BY class;`;
+                            let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors);
                             let query = this._pgPool.pool().query(sql).then((results) => {
                                 let classDistribution = {};
                                 let total = 0;
@@ -114,84 +188,6 @@ class SnowPortal {
         
         response.send({
             ticket: requestHash,
-            success: true
-        });
-    }
-    
-    getScenesByScope(request, response) {
-        let scope = request.body;
-        let scopeHash = hash(scope);
-        
-        if (processes[scopeHash]) {
-            let responseObject = {};
-            if (processes[scopeHash].data) {
-                responseObject.data = processes[scopeHash].data;
-                responseObject.success = true;
-            } else if (processes[scopeHash].error) {
-                responseObject.message = processes[scopeHash].error;
-                responseObject.success = false;
-            } else {
-                responseObject.ticket = scopeHash;
-                responseObject.success = true;
-            }
-            response.send(responseObject);
-            return;
-        } else {
-            processes[scopeHash] = {
-                started: Date.now(),
-                ended: null,
-                scope: scope,
-                data: null,
-                error: null
-            };
-        }
-        
-        this.getScenesSqlByScope(
-            scope
-        ).then(sql => {
-            return this._pgPool.pool().query(sql);
-        }).then(rows => {
-            if (!rows.rows || !rows.rows.length) {
-                throw new Error("Unable to get data for given scope...");
-            }
-            let queries = [];
-            _.each(rows.rows, row => {
-                queries.push(
-                    this.getScenesDataSqlBySceneAndScope(row, scope).then(sql => {
-                        return this._pgPool.pool().query(sql)
-                    })
-                );
-            });
-            return Promise.all(queries).then(results => {
-                return _.map(rows.rows, (row, index) => {
-                    let classDistribution = {};
-                    let total = 0;
-                    _.each(results[index].rows, row => {
-                        total += Number(row.count);
-                    });
-                    _.each(results[index].rows, row => {
-                        classDistribution[row.pixel] = (Number(row.count) / total) * 100;
-                    });
-                    return {
-                        key: row.id,
-                        date: row.date,
-                        sensor: row.sensor_key,
-                        satellite: row.satellite_key,
-                        aoiCoverage: row.perct,
-                        classDistribution: classDistribution
-                    }
-                });
-            });
-        }).then(data => {
-            processes[scopeHash].ended = Date.now();
-            processes[scopeHash].data = data;
-        }).catch(error => {
-            processes[scopeHash].ended = Date.now();
-            processes[scopeHash].error = error;
-        });
-        
-        response.send({
-            ticket: scopeHash,
             success: true
         });
     }
@@ -258,122 +254,117 @@ class SnowPortal {
         });
     }
     
-    /**
-     * Build PGSQL query based on given scope
-     * @param scope
-     */
-    getScenesSqlByScope(scope) {
-        return Promise.resolve().then(() => {
-            if (scope.area.type === "polygon") {
-                return `polygon`;
-            } else if (scope.area.type === "key") {
-                let sensors = [];
-                let satellites = [];
-                _.each(scope.sensors, (sensorSats, sensorKey) => {
-                    sensors.push(sensorKey);
-                    satellites = _.concat(satellites, sensorSats);
-                });
-                
-                satellites = satellites.map(sattelite => {
-                    return `'${sattelite}'`
-                }).join(",");
-                
-                sensors = sensors.map(sensor => {
-                    return `'${sensor}'`
-                }).join(",");
-                
-                return (`
-                    SELECT 
-                        m.id,
-                        m.filename,
-                        s.satellite_key,
-                        s.sensor_key,
-                        m.date::varchar,
-                        100 * ST_Area(ST_Intersection(m.cxhull, a.the_geom)) / ST_Area(a.the_geom) AS perct
-                    FROM
-                        tile AS t
-                        JOIN rasters AS r ON (t.rid = r.rid)
-                        JOIN metadata AS m ON (r.metadata_id = m.id)
-                        JOIN source AS s ON (s.id = m.source_id)
-                        JOIN areas AS a ON (a."KEY" = '${scope.area.value}')
-                    WHERE
-                        s.satellite_key IN (${satellites})
-                        AND s.sensor_key IN (${sensors})
-                        AND m.date BETWEEN '${scope.timeRange.start}' AND '${scope.timeRange.end}'
-                        AND ST_Intersects(ST_SetSRID(r.extent::geometry, 3035), a.the_geom)
-                    GROUP BY
-                        m.id,
-                        m.filename,
-                        s.satellite_key,
-                        s.sensor_key,
-                        m.date,
-                        m.cxhull,
-                        a.the_geom
-                    ORDER BY
-                        m.date
-                `);
-            } else {
-                throw new Error("Unknown area type...");
-            }
-        });
+    convertArrayToSqlArray(array) {
+        return "ARRAY [" + array.map(function (value) {
+                return '\'' + value + '\'';
+            }).join(",") + "] :: VARCHAR []";
     }
     
-    /**
-     * Build PGSQL query based on combination of scope and scenes
-     * @param scene
-     * @param scope
-     */
-    getScenesDataSqlBySceneAndScope(scene, scope) {
-        return Promise.resolve().then(() => {
-            if (scope.area.type === "polygon") {
-                return `polygon`;
-            } else if (scope.area.type === "key") {
-                let sensors = [];
-                let satellites = [];
-                _.each(scope.sensors, (sensorSats, sensorKey) => {
-                    sensors.push(sensorKey);
-                    satellites = _.concat(satellites, sensorSats);
-                });
-                
-                satellites = satellites.map(sattelite => {
-                    return `'${sattelite}'`
-                }).join(",");
-                
-                sensors = sensors.map(sensor => {
-                    return `'${sensor}'`
-                }).join(",");
-                
-                let sql = `
+    getCompositesMetadataSql(dateStart, dateEnd, period, sensors) {
+        return `
+            SELECT
+                key,
+                date_start
+            FROM composites.metadata
+            WHERE (date_start BETWEEN '${dateStart}' AND '${dateEnd}' OR date_end BETWEEN '${dateStart}' AND '${dateEnd}')
+                AND period = '${period}'
+                AND sensors @> '${this.convertArrayToSqlArray(sensors)}';`
+    }
+    
+    getCompositeDataSql(tableName, areaType, area, sensors) {
+        switch (areaType) {
+            case "polygon":
+                return `
                     SELECT
-                        l.classified_as AS pixel,
-                        Sum((pvc).count) AS count
-                    FROM (SELECT DISTINCT ST_ValueCount(ST_Clip(t.rast, a.the_geom)) AS pvc
-                            FROM
-                                metadata AS m
-                            JOIN
-                                rasters AS r ON (m.id=r.metadata_id)
-                            JOIN
-                                tile AS t ON (r.rid=t.rid)
-                            JOIN
-                                areas AS a ON (a."KEY" = '${scope.area.value}')
-                    WHERE
-                        m.id=${scene.id}) AS foo
-                    JOIN
-                        legend AS l ON ((pvc).value BETWEEN l.value_from AND l.value_to)
-                    JOIN
-                        source AS s ON (l.source_id=s.id)
-                    JOIN
-                        metadata AS m ON (m.source_id=s.id)
-                    WHERE
-                        m.id=${scene.id}
-                    GROUP BY
-                        l.classified_as;
-                `;
-                return sql;
-            } else {
-                throw new Error("Unknown area type...");
-            }
-        });
+                        l.classified_as      AS class,
+                        sum((foo.pvc).count) AS count
+                    FROM (SELECT ST_ValueCount(ST_Clip(c.rast, a.the_geom)) AS pvc
+                            FROM composites."${tableName}" AS c
+                                JOIN areas AS a ON (a."KEY" = '${area}')) AS foo
+                                JOIN source AS s ON (s.sensor_key = ANY ('${this.convertArrayToSqlArray(sensors)}'))
+                        JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
+                    GROUP BY class;`;
+            case "noLimit":
+                return `
+                    SELECT
+                        l.classified_as      AS class,
+                        sum((foo.pvc).count) AS count
+                    FROM (SELECT ST_ValueCount(ST_Clip(c.rast, e.the_geom)) AS pvc
+                            FROM composites."${tableName}" AS c
+                                JOIN europe AS e ON (e.the_geom IS NOT NULL)) AS foo
+                                JOIN source AS s ON (s.sensor_key = ANY ('${this.convertArrayToSqlArray(sensors)}'))
+                        JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
+                    GROUP BY class;`;
+        }
+    }
+    
+    getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
+        let geometryTable;
+        let geometryTableCondition;
+        
+        switch (areaType) {
+            case "key":
+                geometryTable = "areas";
+                geometryTableCondition = `g."KEY" = '${area}'`;
+                break;
+            case "noLimit":
+                geometryTable = "europe";
+                geometryTableCondition = `g.the_geom IS NOT NULL`;
+                break;
+            default:
+                return null;
+        }
+        
+        let satellitesSql = satellites && satellites.length ? `s.satellite_key = ANY (${this.convertArrayToSqlArray(satellites)})` : ``;
+        let sensorsSql = sensors && sensors.length ? `s.sensor_key = ANY (${this.convertArrayToSqlArray(sensors)})` : ``;
+        
+        return `
+        WITH scenes AS (SELECT
+                            m.filename,
+                            m.date,
+                            m.source_id,
+                            s.satellite_key,
+                            s.sensor_key,
+                            100 * (st_area(st_intersection(m.cxhull :: GEOMETRY, g.the_geom)) /
+                            st_area(g.the_geom)) AS aoi_coverage
+                        FROM rasters AS r
+                            INNER JOIN metadata AS m ON m.id = r.metadata_id
+                            INNER JOIN source AS s ON s.id = m.source_id
+                            INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
+                        WHERE ${satellitesSql} ${satellitesSql ? "AND" : ""} ${sensorsSql} 
+                            ${satellitesSql || sensorsSql ? "AND" : ""} m.date BETWEEN '${dateStart}' AND '${dateEnd}'
+                            AND r.extent && g.the_geom
+                            AND st_intersects(st_setsrid(r.extent, 3035), g.the_geom)
+                        GROUP BY
+                            m.filename,
+                            m.date,
+                            m.source_id,
+                            s.satellite_key,
+                            s.sensor_key,
+                            m.cxhull,
+                            g.the_geom)
+    
+        SELECT
+            l.classified_as  AS class,
+            sum((pvc).count) AS count,
+            foo.coverage     AS coverage,
+            foo.key          AS key,
+            foo.satellite    AS satellite,
+            foo.sensor       AS sensor,
+            foo.date              AS date
+        FROM (SELECT
+                    st_valuecount(t.rast) AS pvc,
+                    s2.source_id          AS source,
+                    s2.satellite_key      AS satellite,
+                    s2.sensor_key         AS sensor,
+                    s2.aoi_coverage       AS coverage,
+                    m2.id                 AS key,
+                    m2.date :: VARCHAR    AS date
+                FROM tile AS t
+                    INNER JOIN scenes AS s2 ON s2.filename = t.filename
+                    INNER JOIN metadata AS m2 ON m2.filename = t.filename) AS foo
+            INNER JOIN legend AS l ON l.source_id = foo.source AND (foo.pvc).value BETWEEN l.value_from AND l.value_to
+        GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
 }
 
