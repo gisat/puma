@@ -57,7 +57,7 @@ class SnowPortal {
                 FROM composites.metadata 
                 WHERE (date_start BETWEEN '${dateStart}' AND '${dateEnd}' OR date_end BETWEEN '${dateStart}' AND '${dateEnd}') 
                         AND period = '${period}'
-                        AND sensors <@ '{${sensors}}';`;
+                        AND sensors @> '{${sensors}}';`;
             
             return this._pgPool.pool().query(sql).then(result => {
                 let promises = [];
@@ -73,7 +73,7 @@ class SnowPortal {
                                 FROM (SELECT ST_ValueCount(ST_Clip(c.rast, a.the_geom)) AS pvc
                                 FROM composites."${table_name}" AS c
                                 JOIN areas AS a ON (a."KEY" = '${area}')) AS foo
-                                JOIN source AS s ON (s.sensor_key='modis')
+                                JOIN source AS s ON (s.sensor_key = ANY('{${sensors}}'))
                                 JOIN legend AS l ON (l.source_id=s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
                                 GROUP BY class;`;
                             let query = this._pgPool.pool().query(sql).then((results) => {
