@@ -325,6 +325,7 @@ class SnowPortal {
                             m.source_id,
                             s.satellite_key,
                             s.sensor_key,
+                            g.the_geom,
                             100 * (st_area(st_intersection(m.cxhull :: GEOMETRY, g.the_geom)) /
                             st_area(g.the_geom)) AS aoi_coverage
                         FROM rasters AS r
@@ -353,7 +354,7 @@ class SnowPortal {
             foo.sensor       AS sensor,
             foo.date              AS date
         FROM (SELECT
-                    st_valuecount(t.rast) AS pvc,
+                    st_valuecount(st_clip(t.rast, s2.the_geom)) AS pvc,
                     s2.source_id          AS source,
                     s2.satellite_key      AS satellite,
                     s2.sensor_key         AS sensor,
@@ -362,7 +363,8 @@ class SnowPortal {
                     m2.date :: VARCHAR    AS date
                 FROM tile AS t
                     INNER JOIN scenes AS s2 ON s2.filename = t.filename
-                    INNER JOIN metadata AS m2 ON m2.filename = t.filename) AS foo
+                    INNER JOIN metadata AS m2 ON m2.filename = t.filename
+                WHERE s2.aoi_coverage > 0) AS foo
             INNER JOIN legend AS l ON l.source_id = foo.source AND (foo.pvc).value BETWEEN l.value_from AND l.value_to
         GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
