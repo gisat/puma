@@ -161,7 +161,7 @@ class SnowPortal {
                                     classDistribution[row.class] = (row.count / total) * 100;
                                 });
                                 resolve({
-                                    key: table_name,
+                                    key: tableName,
                                     dateFrom: row.date_start,
                                     period: period,
                                     sensors: sensors,
@@ -254,48 +254,59 @@ class SnowPortal {
         });
     }
     
+    convertArrayToSqlAny(array) {
+        return "ANY (ARRAY [" + array.map(function (value) {
+                return '\'' + value + '\'';
+            }).join(",") + "] :: VARCHAR [])";
+    }
+    
     convertArrayToSqlArray(array) {
         return "ARRAY [" + array.map(function (value) {
                 return '\'' + value + '\'';
-            }).join(",") + "] :: VARCHAR []";
+            }).join(",") + "]";
     }
     
     getCompositesMetadataSql(dateStart, dateEnd, period, sensors) {
         return `
             SELECT
-                key,
-                date_start
-            FROM composites.metadata
-            WHERE (date_start BETWEEN '${dateStart}' AND '${dateEnd}' OR date_end BETWEEN '${dateStart}' AND '${dateEnd}')
-                AND period = '${period}'
-                AND sensors @> '${this.convertArrayToSqlArray(sensors)}';`
+                m.key,
+                m.date_start :: VARCHAR
+            FROM composites.metadata AS m
+            WHERE m.period = '${period}'
+                  AND m.sensors <@ ${this.convertArrayToSqlArray(sensors)}
+                  AND m.sensors @> ${this.convertArrayToSqlArray(sensors)}
+                  AND (('${dateStart}', '${dateEnd}') OVERLAPS (m.date_start, m.date_end) 
+                        OR m.date_start BETWEEN '${dateStart}' AND '${dateEnd}' 
+                        OR m.date_end BETWEEN '${dateStart}' AND '${dateEnd}');`
     }
     
     getCompositeDataSql(tableName, areaType, area, sensors) {
+        let geometryTable;
+        let geometryTableCondition;
+    
         switch (areaType) {
-            case "polygon":
-                return `
-                    SELECT
-                        l.classified_as      AS class,
-                        sum((foo.pvc).count) AS count
-                    FROM (SELECT ST_ValueCount(ST_Clip(c.rast, a.the_geom)) AS pvc
-                            FROM composites."${tableName}" AS c
-                                JOIN areas AS a ON (a."KEY" = '${area}')) AS foo
-                                JOIN source AS s ON (s.sensor_key = ANY ('${this.convertArrayToSqlArray(sensors)}'))
-                        JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
-                    GROUP BY class;`;
+            case "key":
+                geometryTable = "areas";
+                geometryTableCondition = `g."KEY" = '${area}'`;
+                break;
             case "noLimit":
-                return `
-                    SELECT
-                        l.classified_as      AS class,
-                        sum((foo.pvc).count) AS count
-                    FROM (SELECT ST_ValueCount(ST_Clip(c.rast, e.the_geom)) AS pvc
-                            FROM composites."${tableName}" AS c
-                                JOIN europe AS e ON (e.the_geom IS NOT NULL)) AS foo
-                                JOIN source AS s ON (s.sensor_key = ANY ('${this.convertArrayToSqlArray(sensors)}'))
-                        JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
-                    GROUP BY class;`;
+                geometryTable = "europe";
+                geometryTableCondition = `g.the_geom IS NOT NULL`;
+                break;
+            default:
+                return null;
         }
+    
+        return `
+        SELECT
+            l.classified_as      AS class,
+            sum((foo.pvc).count) AS count
+        FROM (SELECT ST_ValueCount(ST_Clip(c.rast, g.the_geom)) AS pvc
+                FROM composites."${tableName}" AS c
+                    JOIN ${geometryTable} AS g ON (${geometryTableCondition})) AS foo
+            JOIN source AS s ON (s.sensor_key = ${this.convertArrayToSqlAny(sensors)})
+            JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
+        GROUP BY class;`;
     }
     
     getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
@@ -315,8 +326,8 @@ class SnowPortal {
                 return null;
         }
         
-        let satellitesSql = satellites && satellites.length ? `s.satellite_key = ANY (${this.convertArrayToSqlArray(satellites)})` : ``;
-        let sensorsSql = sensors && sensors.length ? `s.sensor_key = ANY (${this.convertArrayToSqlArray(sensors)})` : ``;
+        let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
+        let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
         
         return `
         WITH scenes AS (SELECT
