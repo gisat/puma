@@ -86,7 +86,7 @@ class PgNormalization {
 				return this._units.translate(unitFrom, unitTo, false);
 			} else if(column.type == 'avgattrarea') {
 				unitFrom = 'm2'; // Source information is area and it is always in square meters.
-				unitTo = normalizationAttribute.units;
+				unitTo = calculationAttribute.units;
 
 				let factor = this._units.translate(unitFrom, unitTo, false);
 				return this._units.translateFromFactorToUnits(factor, attribute.units);
