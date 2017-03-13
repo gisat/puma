@@ -94,7 +94,7 @@ module.exports = function(app) {
 	new PerformedAnalysisController(app, pool);
 	new ThemeController(app, pool);
 	new TopicController(app, pool);
-	new VisualizationController(app, pool);
+	new VisualizationController(app, pool, conn.getMongoDb());
 	new YearController(app, pool);
 	new IntegrationController(app, pool);
 
