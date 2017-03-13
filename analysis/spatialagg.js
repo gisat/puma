@@ -185,7 +185,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 
 			select += ' FROM $LAYERREF$ a';
 			select += ' JOIN views.layer_' + refId + ' b';
-			select += ' ON ST_Intersects(ST_Transform(b.the_geom, '+results.geomType.srid || 4326 +'),ST_Transform(a.the_geom,'+results.geomType.srid || 4326 +'))';
+			select += ' ON ST_Intersects(ST_Transform(b.the_geom, 4326), ST_Transform(a.the_geom,4326))';
 			select += performedAnalysisObj.gids ? (' WHERE a.gid IN ('+performedAnalysisObj.gids.join(',')+')') : '';
 			select += ' GROUP BY a.gid';
 			select += groupAttr ? ',b.' + groupAttr : '';
