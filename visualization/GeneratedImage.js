@@ -38,7 +38,7 @@ class GeneratedImage {
 
 			pathOfResult = path;
 			logger.info('GeneratedImage#generate Start process. Url: ', self.url, ' Path: ', path);
-			return superagent.get(`http://api.screenshotmachine.com/?key=a647a7&dimension=1024x768&format=png&timeout=1000&url=https%3A%2F%2Fpuma.worldbank.org%2Ftool%2Findex.html%3Fid%3D${self.id}%26print`);
+			return superagent.get(`http://api.screenshotmachine.com/?key=a647a7&dimension=1024x768&format=png&timeout=5000&url=https%3A%2F%2Fpuma.worldbank.org%2Ftool%2Findex.html%3Fid%3D${self.id}%26print`);
 		}).then(function(result){
 			body = result.body;
 			return fs.writeFile(pathOfResult, body);
