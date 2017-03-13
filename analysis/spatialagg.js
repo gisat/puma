@@ -213,7 +213,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				var layerName = item != -1 ? 'views.layer_'+layerRef : performedAnalysisObj.sourceTable;
 				var currentSql = sql.replace('$INDEX$', item);
 				currentSql = currentSql.replace('$LAYERREF$', layerName);
-				logger.trace("spatialagg#perform Sql to perform: ", currentSql);
+				logger.info("spatialagg#perform Sql to perform: ", currentSql);
 				client.query(currentSql, function(err, results) {
 					if (err) {
 						logger.error("spatialagg#perform Unexpected PG Error! Performing Spatial aggregation. SQL: ", currentSql, " Error: ",err);
