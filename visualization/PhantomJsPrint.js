@@ -25,9 +25,10 @@ function verifyAllLoaded() {
 	console.log('VerifyAllLoaded Last: ', lastReceived, ' Received: ', received, 'Requested: ', requested);
 	// Both must be satisfied
 	if(requested <= received && olderThanThreshold(lastReceived)) {
-		console.log("Rendering");
-		page.render(finalLocation);
-		phantom.exit();
+		setTimeout(function() {
+			page.render(finalLocation);
+			phantom.exit();
+		}, 60000);
 	} else {
 		setTimeout(verifyAllLoaded, 1000);
 	}
