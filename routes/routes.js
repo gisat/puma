@@ -32,6 +32,7 @@ let GroupController = require('../security/GroupController');
 let PgAnalysisController = require('../analysis/PgAnalysisController');
 let LayerGeonodeController = require('../layers/LayerGeonodeController');
 let LayerWmsController = require('../layers/wms/LayerWmsController');
+let WpsController = require('../integration/WpsController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -107,6 +108,8 @@ module.exports = function(app) {
 
 	new iprquery(app, pool);
 	new iprConversion(app);
+	
+	new WpsController(app, pool, conn.getMongoDb(), null);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
