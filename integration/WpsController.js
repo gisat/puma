@@ -28,9 +28,9 @@ class WpsController {
 	 * @param response
 	 */
 	wpsGet(request, response) {
-		if(request.query.request == 'GetCapabilities') {
+		if(request.query.request == 'GetCapabilities'.toLowerCase()) {
 			this.getCapabilities(response);
-		} else if(request.query.request == 'DescribeProcess') {
+		} else if(request.query.request == 'DescribeProcess'.toLowerCase()) {
 			this.describeProcess(request.query.identifier, response);
 		} else {
 			response.status(400).json({status: "Incorrect request. Valid choices are GetCapabilities and DescribeProcess for GET request."})
@@ -43,11 +43,11 @@ class WpsController {
 	 * @param response
 	 */
 	wpsPost(request, response) {
-		if(request.body.request == 'GetCapabilities') {
+		if(request.body.request == 'GetCapabilities'.toLowerCase()) {
 			this.getCapabilities(response);
-		} else if(request.body.request == 'DescribeProcess') {
+		} else if(request.body.request == 'DescribeProcess'.toLowerCase()) {
 			this.describeProcess(request.body.identifier, response);
-		} else if(request.body.request == 'Execute') {
+		} else if(request.body.request == 'Execute'.toLowerCase()) {
 			this.execute(request, response);
 		} else {
 			response.status(400).json({status: "Incorrect request. Valid choices are GetCapabilities, DescribeProcess and Execute for POST request."})
