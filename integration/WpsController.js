@@ -1,5 +1,9 @@
 let MapToAllPlaces = require('./MapToAllPlaces');
 let conn = require('../common/conn');
+let MongoLocations = require('../metadata/MongoLocations');
+let MongoScopes = require('../metadata/MongoScopes');
+let config = require('../config');
+
 
 let currentProcess = {
 
@@ -74,7 +78,7 @@ class WpsController {
 					<wps:Input>
 						<ows:Identifier>data</ows:Identifier>
 						<ows:Title>Data</ows:Title>
-						<wps:Reference xlink:href="http://urban-tep.gisat.cz/inputs/wps/${id}" method="GET" mimeType="application/zip" encoding="UTF-8" />
+						<wps:Reference xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/inputs/wps/${id}" method="GET" mimeType="application/zip" encoding="UTF-8" />
 					</wps:Input>
 				`;
 			}
@@ -116,15 +120,15 @@ class WpsController {
 					service="WPS"
 					version="1.0.0"
 					xml:lang="en-CA"
-					serviceInstance="http://urban-tep.gisat.cz/wps"
-					statusLocation="http://urban-tep.gisat.cz/status/wps/${id} ">
+					serviceInstance="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/wps"
+					statusLocation="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/status/wps/${id} ">
 				<wps:Process wps:processVersion="1">
 					<ows:Identifier>ImportToExistingScope</ows:Identifier>
 					<ows:Title>Import new data to existing Scope</ows:Title>
 					<ows:Abstract>There must be valid User in the application. It also assumes that there is at least one valid Scope in the application with associated analytical units. It is always running asynchronously.</ows:Abstract>
 				</wps:Process>
 				<wps:Status creationTime="2016-04-18T12:13:14Z">
-					<wps:ProcessSucceeded>http://urban-tep.gisat.cz/tool/?id=2343</wps:ProcessSucceeded>
+					<wps:ProcessSucceeded>${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/?id=2343</wps:ProcessSucceeded>
 				</wps:Status>
 				<wps:DataInputs>
 					${data}
@@ -165,8 +169,8 @@ class WpsController {
 					service="WPS"
 					version="1.0.0"
 					xml:lang="en-CA"
-					serviceInstance="http://urban-tep.gisat.cz/wps"
-					statusLocation="http://urban-tep.gisat.cz/status/wps/${id} ">
+					serviceInstance="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/wps"
+					statusLocation="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/status/wps/${id} ">
 				<wps:Process wps:processVersion="1">
 					<ows:Identifier>ImportToExistingScope</ows:Identifier>
 					<ows:Title>Import new data to existing Scope</ows:Title>
@@ -179,7 +183,7 @@ class WpsController {
 					<wps:Input>
 						<ows:Identifier>data</ows:Identifier>
 						<ows:Title>Data</ows:Title>
-						<wps:Reference xlink:href="http://urban-tep.gisat.cz/inputs/wps/${id}" method="GET" mimeType="application/zip" encoding="UTF-8" />
+						<wps:Reference xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/inputs/wps/${id}" method="GET" mimeType="application/zip" encoding="UTF-8" />
 					</wps:Input>
 					<wps:Input>
 						<ows:Identifier>scope</ows:Identifier>
@@ -244,23 +248,23 @@ class WpsController {
 					<ows:Operation name="GetCapabilities">
 						<ows:DCP>
 							<ows:HTTP>
-								<ows:Get xlink:href="https://puma.worldbank.org/geoserver/wps"/>
-								<ows:Post xlink:href="https://puma.worldbank.org/geoserver/wps"/>
+								<ows:Get xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
+								<ows:Post xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
 							</ows:HTTP>
 						</ows:DCP>
 					</ows:Operation>
 					<ows:Operation name="DescribeProcess">
 						<ows:DCP>
 							<ows:HTTP>
-								<ows:Get xlink:href="https://puma.worldbank.org/geoserver/wps"/>
-								<ows:Post xlink:href="https://puma.worldbank.org/geoserver/wps"/>
+								<ows:Get xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
+								<ows:Post xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
 							</ows:HTTP>
 						</ows:DCP>
 					</ows:Operation>
 					<ows:Operation name="Execute">
 						<ows:DCP>
 							<ows:HTTP>
-								<ows:Post xlink:href="https://puma.worldbank.org/geoserver/wps"/>
+								<ows:Post xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
 							</ows:HTTP>
 						</ows:DCP>
 					</ows:Operation>
