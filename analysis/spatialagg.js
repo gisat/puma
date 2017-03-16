@@ -185,7 +185,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 
 			select += ' FROM $LAYERREF$ a';
 			select += ' JOIN views.layer_' + refId + ' b';
-			select += ' ON ST_Intersects(b.the_geom,ST_Transform(a.the_geom,'+results.geomType.srid+'))';
+			select += ' ON ST_Intersects(ST_Transform(b.the_geom, 4326), ST_Transform(a.the_geom,4326))';
 			select += performedAnalysisObj.gids ? (' WHERE a.gid IN ('+performedAnalysisObj.gids.join(',')+')') : '';
 			select += ' GROUP BY a.gid';
 			select += groupAttr ? ',b.' + groupAttr : '';
@@ -213,7 +213,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				var layerName = item != -1 ? 'views.layer_'+layerRef : performedAnalysisObj.sourceTable;
 				var currentSql = sql.replace('$INDEX$', item);
 				currentSql = currentSql.replace('$LAYERREF$', layerName);
-				logger.trace("spatialagg#perform Sql to perform: ", currentSql);
+				logger.info("spatialagg#perform Sql to perform: ", currentSql);
 				client.query(currentSql, function(err, results) {
 					if (err) {
 						logger.error("spatialagg#perform Unexpected PG Error! Performing Spatial aggregation. SQL: ", currentSql, " Error: ",err);
