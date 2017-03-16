@@ -46,6 +46,9 @@ function initServer(err) {
 		return;
 	}
 	// Order is important
+    
+    // Limit size of uploaded files
+    app.use(express.limit('256mb'));
 
 	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
