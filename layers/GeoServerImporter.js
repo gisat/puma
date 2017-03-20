@@ -95,7 +95,7 @@ class GeoServerImporter {
                             .get(`${this._importPath}/${id}/tasks/0/layer`)
                             .auth(this._userName, this._password)
                             .then(response => {
-                                return response.body;
+                                return response.body.layer;
                             })
                     });
             }
