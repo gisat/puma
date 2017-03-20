@@ -80,16 +80,23 @@ class GeoServerImporter {
                             .post(`${this._importPath}/${id}/tasks`)
                             .auth(this._userName, this._password)
                             .attach('filedata', newFilePath)
-                    }).then((response) => {
+                    }).then(() => {
                         return request
                             .put(`${this._importPath}/${id}/tasks/0/target`)
                             .set('Content-Type', 'application/json')
                             .auth(this._userName, this._password)
                             .send(importShpTemplate.targetStore)
-                    }).then((response) => {
+                    }).then(() => {
                         return request
                             .post(`${this._importPath}/${id}`)
                             .auth(this._userName, this._password)
+                    }).then(() => {
+                        return request
+                            .get(`${this._importPath}/${id}/tasks/0/layer`)
+                            .auth(this._userName, this._password)
+                            .then(response => {
+                                return response.body;
+                            })
                     });
             }
         });
