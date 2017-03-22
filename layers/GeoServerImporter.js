@@ -1,6 +1,4 @@
 let request = require('superagent');
-let fs = require('fs');
-let path = require('path');
 let Promise = require('promise');
 
 /**
@@ -18,9 +16,8 @@ class GeoServerImporter {
     
     // TODO: Configure the name of the workspace to import into.
     // TODO: Configure the name of the target data store.
-    importLayer(file) {
+    importLayer(layer) {
         let id;
-        let fileExtension = file.name.slice((file.name.lastIndexOf(".") - 1 >>> 0) + 2).toLowerCase();
         
         let importShpTemplate = {
             targetWorkspace: {
@@ -42,18 +39,8 @@ class GeoServerImporter {
             }
         };
         
-        return new Promise((resolve, reject) => {
-            let fileDirectory = path.dirname(file.path);
-            let newFilePath = `${fileDirectory}/${file.name}`;
-            fs.rename(file.path, newFilePath, (error) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(newFilePath);
-                }
-            });
-        }).then(newFilePath => {
-            if (fileExtension.includes('tif')) {
+        return Promise.resolve().then(() => {
+            if (layer.extension.includes('tif')) {
                 return request
                     .post(this._importPath)
                     .set('Content-Type', 'application/json')
@@ -63,7 +50,7 @@ class GeoServerImporter {
                         return request
                             .post(`${this._importPath}/${id}/tasks`)
                             .auth(this._userName, this._password)
-                            .attach('filedata', newFilePath)
+                            .attach('filedata', layer.path)
                     }).then(() => {
                         return request
                             .post(`${this._importPath}/${id}`)
@@ -73,7 +60,9 @@ class GeoServerImporter {
                             .get(`${this._importPath}/${id}/tasks/0/layer`)
                             .auth(this._userName, this._password)
                             .then(response => {
-                                return response.body.layer;
+                                layer.name = response.body.layer.name;
+                                layer.geoserverImportOutput = response.body;
+                                return layer;
                             });
                     });
             } else {
@@ -86,7 +75,7 @@ class GeoServerImporter {
                         return request
                             .post(`${this._importPath}/${id}/tasks`)
                             .auth(this._userName, this._password)
-                            .attach('filedata', newFilePath)
+                            .attach('filedata', layer.path)
                     }).then(() => {
                         return request
                             .put(`${this._importPath}/${id}/tasks/0/target`)
@@ -102,7 +91,9 @@ class GeoServerImporter {
                             .get(`${this._importPath}/${id}/tasks/0/layer`)
                             .auth(this._userName, this._password)
                             .then(response => {
-                                return response.body.layer;
+                                layer.name = response.body.layer.name;
+                                layer.geoserverImportOutput = response.body;
+                                return layer;
                             });
                     });
             }
