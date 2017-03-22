@@ -4,7 +4,10 @@ let config = require('../config');
 let conn = require('../common/conn');
 let logger = require('../common/Logger').applicationWideLogger;
 
+let FilteredMongoLayerGroups = require('./FilteredMongoLayerGroups');
+let FrontOfficeLayers = require('./FrontOfficeLayers');
 let GeonodeLayers = require('./GeonodeLayers');
+let MongoLayerReferences = require('./MongoLayerReferences');
 let PgLayers = require('./PgLayers');
 let PgPermissions = require('../security/PgPermissions');
 let Permission = require('../security/Permission');
@@ -20,10 +23,13 @@ class LayerGeonodeController {
 		this.pgLayers = new PgLayers(pgPool, this.mongo, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pgPool, schema || config.postgreSqlSchema);
 
+		this.layerReferences = new FrontOfficeLayers(this.mongo);
+
 		app.get('/rest/layer', this.readAll.bind(this));
 		app.post('/rest/layer', this.add.bind(this));
 		app.put('/rest/layer', this.update.bind(this));
 		app.delete('/rest/layer/:id', this.delete.bind(this));
+		app.get('/rest/filtered/layer', this.getFiltered.bind(this));
 	}
 
 	/**
@@ -118,7 +124,7 @@ class LayerGeonodeController {
 		logger.info(`LayerGeonodeController#delete Delete layer with id: ${request.params.id} By User: ${request.session.userId} `);
 
 		if (!request.session.user.hasPermission('layer', Permission.DELETE, request.params.id)) {
-			logger.error(`LayerGeonodeController#add User: ${request.session.userId} doesn't have permissions to delete layer: ${request.session.userId}`);
+			logger.error(`LayerGeonodeController#add User: ${request.session.userId} doesn't have permissions to delete layer: ${request.params.id}`);
 			response.status(403).json({status: "err"});
 			return;
 		}
@@ -129,6 +135,32 @@ class LayerGeonodeController {
 			logger.error('LayerGeonodeController#delete Error: ', error);
 			response.status(500).json({status: "err"});
 		})
+	}
+
+	/**
+	 * It returns filtered layers available in the system. The returned information contains: path, name, layerGroup
+	 * The filters that are supported are:
+	 * {
+	 *   scope: {idOfScope},
+	 *   year: [{idOfFirstYear}, {idOfSecondYear}]
+	 *   place: [] or nothing, if there is no place filter, then layers for all places
+	 * }
+	 */
+	getFiltered(request, response) {
+		logger.info(`LayerGeonodeController#getFiltered Get filtered layers for scope: ${request.body.scope}, theme: ${request.body.theme}, years: ${request.body.year}, place: ${request.body.place} by  User: ${request.session.userId}`);
+
+		if (!request.session.user.hasPermission('scope', Permission.READ, request.body.scope)) {
+			logger.error(`LayerGeonodeController#getFiltered User: ${request.session.userId} doesn't have permissions to read layers for give scope: ${request.body.scope}`);
+			response.status(403).json({status: "err"});
+			return;
+		}
+
+		this.layerReferences.withAreaTemplateNameAndLayerGroup(request.body.scope, request.body.year, request.body.place).then(layers => {
+			response.json({data: layers});
+		}).catch(error => {
+			logger.error('LayerGeonodeController#getFiltered Error: ', error);
+			response.status(500).json({status: 'err'});
+		});
 	}
 }
 

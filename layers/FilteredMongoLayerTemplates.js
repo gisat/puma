@@ -1,7 +1,7 @@
 var MongoFilteredCollection = require('../data/MongoFilteredCollection');
 var MongoLayerTemplate = require('./MongoLayerTemplate');
 
-class FilteredMongoLayerTemplate {
+class FilteredMongoLayerTemplates {
 	constructor(filter, connection) {
 		this._filteredCollection = new MongoFilteredCollection(filter, connection, MongoLayerTemplate.collectionName(), MongoLayerTemplate)
 	}
@@ -15,4 +15,4 @@ class FilteredMongoLayerTemplate {
 	}
 }
 
-module.exports = FilteredMongoLayerTemplate;
+module.exports = FilteredMongoLayerTemplates;
