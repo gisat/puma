@@ -220,7 +220,6 @@ describe('LayersGeonode', () => {
 				.expect(200)
 				.then((response) => {
 					should(response.body.data.length).be.exactly(1);
-					should(response.body.data[0].id).be.exactly(10);
 					done();
 				}).catch(err => {
 				done(err);

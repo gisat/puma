@@ -26,7 +26,7 @@ class FrontOfficeLayers {
 			promise = Promise.resolve(place);
 		}
 
-		promise.then(place => {
+		return promise.then(place => {
 			var filter = {
 				year: {$in: year},
 				location: {$in: place},
