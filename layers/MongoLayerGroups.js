@@ -35,10 +35,10 @@ class MongoLayerGroups {
 	}
 
 	add(layerGroup) {
-		var self = this;
+		let self = this;
 		return layerGroup.json().then(function(layerGroup){
 			var collection = self._connection.collection(MongoLayerGroup.collectionName());
-			collection.insert(layerGroup)
+			return collection.insert(layerGroup)
 		});
 	}
 }
