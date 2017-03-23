@@ -35,11 +35,8 @@ class MongoLayerGroups {
 	}
 
 	add(layerGroup) {
-		let self = this;
-		return layerGroup.json().then(function(layerGroup){
-			var collection = self._connection.collection(MongoLayerGroup.collectionName());
-			return collection.insert(layerGroup)
-		});
+	    let collection = this._connection.collection(MongoLayerGroup.collectionName());
+        return collection.insert(layerGroup);
 	}
 }
 
