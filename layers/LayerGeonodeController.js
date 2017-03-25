@@ -147,15 +147,15 @@ class LayerGeonodeController {
 	 * }
 	 */
 	getFiltered(request, response) {
-		logger.info(`LayerGeonodeController#getFiltered Get filtered layers for scope: ${request.body.scope}, theme: ${request.body.theme}, years: ${request.body.year}, place: ${request.body.place} by  User: ${request.session.userId}`);
+		logger.info(`LayerGeonodeController#getFiltered Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
 
-		if (!request.session.user.hasPermission('scope', Permission.READ, request.body.scope)) {
+		if (!request.session.user.hasPermission('scope', Permission.READ, request.query.scope)) {
 			logger.error(`LayerGeonodeController#getFiltered User: ${request.session.userId} doesn't have permissions to read layers for give scope: ${request.body.scope}`);
 			response.status(403).json({status: "err"});
 			return;
 		}
 
-		this.layerReferences.withAreaTemplateNameAndLayerGroup(request.body.scope, request.body.year, request.body.place).then(layers => {
+		this.layerReferences.withAreaTemplateNameAndLayerGroup(request.query.scope, request.query.year, request.query.place).then(layers => {
 			response.json({data: layers});
 		}).catch(error => {
 			logger.error('LayerGeonodeController#getFiltered Error: ', error);

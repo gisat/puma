@@ -5,10 +5,14 @@ let FilteredMongoLayerGroups = require('./FilteredMongoLayerGroups');
 let FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 let FilteredMongoLayerTemplates = require('./FilteredMongoLayerTemplates');
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
+let FilteredPgStyles = require('../styles/FilteredPgStyles');
+let PgStyles = require('../styles/PgStyles');
 
 class FrontOfficeLayers {
-	constructor(mongo) {
+	constructor(mongo, postgreSql, schema) {
 		this.mongo = mongo;
+		this.postgreSql = postgreSql;
+		this.schema = schema;
 	}
 
 	/**
@@ -18,7 +22,7 @@ class FrontOfficeLayers {
 	 * @param place {Number[]} Ids of the places
 	 */
 	withAreaTemplateNameAndLayerGroup(scope, year, place) {
-		let filteredReferences, layerTemplates;
+		let filteredReferences, layerTemplates = {}, layerGroups = {}, stylesIds = [];
 		let promise;
 		if (!place) {
 			promise = new FilteredMongoLocations({dataset: scope}, this.mongo).json();
@@ -41,22 +45,33 @@ class FrontOfficeLayers {
 				_id: {$in: areaTemplates}
 			}, this.mongo).json();
 		}).then(pLayerTemplates => {
-			layerTemplates = {};
 			pLayerTemplates.forEach(layerTemplate => {
 				layerTemplates[layerTemplate._id] = layerTemplate;
+				stylesIds.push(layerTemplate.symbologies);
 			});
 
+			stylesIds = _.flatten(stylesIds);
+
+			// Every syle brings another layer from the FO perspective.
 			let layerGroups = pLayerTemplates.map(template => template.layerGroup);
 			return new FilteredMongoLayerGroups({
 				_id: {$in: layerGroups}
 			}, this.mongo).json();
 		}).then(pLayerGroups => {
-			let layerGroups = {};
 			pLayerGroups.forEach(layerGroup => {
 				layerGroups[layerGroup._id] = layerGroup;
 			});
 
-			return this.groupLayersByNameAndPath(filteredReferences, layerGroups, layerTemplates);
+			new FilteredPgStyles(this.postgreSql, this.schema, {
+				id: stylesIds
+			})
+		}).then(pStyles => {
+			let styles = {};
+			pStyles.forEach(style => {
+				styles[style.id] = style;
+			});
+
+			return this.groupLayersByNamePath(filteredReferences, layerGroups, layerTemplates, styles);
 		})
 	}
 
@@ -66,19 +81,29 @@ class FrontOfficeLayers {
 	 * @param references
 	 * @param layerGroups
 	 * @param layerTemplates
+	 * @param styles
 	 * @returns {Array}
 	 */
-	groupLayersByNameAndPath(references, layerGroups, layerTemplates) {
+	groupLayersByNamePath(references, layerGroups, layerTemplates, styles) {
 		var layers = references.map(reference => {
 			let layerTemplate = layerTemplates[reference.areaTemplate];
 			let layerGroup = layerGroups[layerTemplate.layerGroup];
+			let layerStyles = styles.filter(style => layerTemplate.symbologies.indexOf(style.id)).map(style => {
+				return {
+					name: style.name,
+					path: style.symbology_name
+				}
+			});
 			return {
 				id: reference._id,
 				name: layerTemplate.name,
 				layerGroup: layerGroup,
-				path: reference.layer
+				path: reference.layer,
+				styles: layerStyles
 			}
 		});
+
+		layers = _.flatten(layers);
 
 		var grouped = _.groupBy(layers, (layer) => {
 			return layer.path + "_" + layer.name;
