@@ -110,9 +110,20 @@ class FrontOfficeLayers {
 			return layer.path + "_" + layer.name;
 		});
 
-		return Object.keys(grouped).map(key => {
+		var uniqueLayers = Object.keys(grouped).map(key => {
 			return grouped[key][0];
 		});
+
+		var groupedByLayerGroup = _.groupBy(uniqueLayers, (layer) => {
+			return layer.layerGroup.name;
+		});
+
+		return Object.keys(groupedByLayerGroup).map(key => {
+			return {
+				name: key,
+				layers: groupedByLayerGroup[key]
+			}
+		})
 	}
 }
 
