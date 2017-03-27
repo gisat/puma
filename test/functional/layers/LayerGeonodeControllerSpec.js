@@ -216,7 +216,7 @@ describe('LayersGeonode', () => {
 				.get('/rest/filtered/layer')
 				.set('Content-Type', 'application/json')
 				.set('Accepts', 'application/json')
-				.send({scope: 1, year: [1], place: [2]})
+				.query({scope: 1, year: [1], place: [2]})
 				.expect(200)
 				.then((response) => {
 					should(response.body.data.length).be.exactly(1);

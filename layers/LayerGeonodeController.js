@@ -23,7 +23,7 @@ class LayerGeonodeController {
 		this.pgLayers = new PgLayers(pgPool, this.mongo, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pgPool, schema || config.postgreSqlSchema);
 
-		this.layerReferences = new FrontOfficeLayers(this.mongo);
+		this.layerReferences = new FrontOfficeLayers(this.mongo, pgPool, schema || config.postgreSqlSchema);
 
 		app.get('/rest/layer', this.readAll.bind(this));
 		app.post('/rest/layer', this.add.bind(this));
