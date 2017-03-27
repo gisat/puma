@@ -27,10 +27,20 @@ function wms(params, req, res, callback) {
 		params['SRS'] = params['CRS'];
 		delete params['CRS'];
 	}
+	// it solves an issue with choropleths in 3D
+	if (params.hasOwnProperty('VERSION')){
+		params['VERSION'] = params['1.1.1'];
+	}
 	// it solves wrong bbox for combination geoserver-web world wind
 	if (params.hasOwnProperty('SRS') && params['SRS'] == "EPSG:4326"){
 		var bounbox = params['BBOX'].split(',');
 		params['BBOX'] = bounbox[1] + "," + bounbox[0] + "," + bounbox[3] + "," + bounbox[2];
+
+		// it adds sld_id parametr to wms request for world wind
+		if (params.hasOwnProperty('STYLES')){
+			params['SLD_ID'] = params['STYLES'];
+			params['STYLES'] = "";
+		}
 	}
 
 
