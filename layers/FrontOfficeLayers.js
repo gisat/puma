@@ -25,10 +25,14 @@ class FrontOfficeLayers {
 		let filteredReferences, layerTemplates = {}, layerGroups = {}, stylesIds = [];
 		let promise;
 		if (!place) {
+			scope = Number(scope);
 			promise = new FilteredMongoLocations({dataset: scope}, this.mongo).json();
 		} else {
-			promise = Promise.resolve(place);
+			promise = Promise.resolve([Number(place)]);
 		}
+
+		// TODO: Probably move elsewhere
+		year = _.isArray(year.length) && year.map(period => Number(period)) || [Number(year)];
 
 		return promise.then(place => {
 			var filter = {
@@ -50,7 +54,7 @@ class FrontOfficeLayers {
 				stylesIds.push(layerTemplate.symbologies);
 			});
 
-			stylesIds = _.flatten(stylesIds);
+			stylesIds = _.compact(_.flatten(stylesIds));
 
 			// Every syle brings another layer from the FO perspective.
 			let layerGroups = pLayerTemplates.map(template => template.layerGroup);
@@ -62,14 +66,11 @@ class FrontOfficeLayers {
 				layerGroups[layerGroup._id] = layerGroup;
 			});
 
-			new FilteredPgStyles(this.postgreSql, this.schema, {
+			return new FilteredPgStyles(this.postgreSql, this.schema, {
 				id: stylesIds
-			})
-		}).then(pStyles => {
-			let styles = {};
-			pStyles.forEach(style => {
-				styles[style.id] = style;
-			});
+			}).all();
+		}).then(result => {
+			let styles = result.rows;
 
 			return this.groupLayersByNamePath(filteredReferences, layerGroups, layerTemplates, styles);
 		})

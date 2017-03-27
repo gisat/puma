@@ -23,7 +23,7 @@ class FilteredPgCollection {
 	}
 
 	all() {
-		return this.pgPool.query(`SELECT * FROM ${this.table} ${this.getWhereClause()};`);
+		return this.pgPool.query(`SELECT * FROM ${this.schema}.${this.table} ${this.getWhereClause()};`);
 	}
 
 	/**
@@ -54,7 +54,11 @@ class FilteredPgCollection {
 
 				inSequence = inSequence.filter(limitation => limitation !== null);
 
-				return ` ${key} IN [${inSequence.join(',')}] `;
+				if (inSequence.length === 0) {
+					return ``;
+				} else {
+					return ` ${key} IN [${inSequence.join(',')}] `;
+				}
 			} else if (_.isString(value)) {
 				return ` ${key} = '${value}'`;
 			} else {
@@ -62,9 +66,13 @@ class FilteredPgCollection {
 			}
 		});
 
-		limitations = limitations.filter(limitation => limitation !== null);
+		limitations = _.compact(limitations.filter(limitation => limitation !== null));
 
-		return ` WHERE ${limitations.join(' AND ')} `;
+		if (limitations.length > 0) {
+			return ` WHERE ${limitations.join(' AND ')} `;
+		} else {
+			return ``;
+		}
 	}
 }
 
