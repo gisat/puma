@@ -112,7 +112,7 @@ class FrontOfficeLayers {
 		layers = _.flatten(layers);
 
 		var grouped = _.groupBy(layers, (layer) => {
-			return layer.path + "_" + layer.name;
+			return layer && layer.path + "_" + layer.name;
 		});
 
 		var uniqueLayers = Object.keys(grouped).map(key => {
