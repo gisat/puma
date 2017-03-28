@@ -28,16 +28,16 @@ class FrontOfficeLayers {
 			scope = Number(scope);
 			promise = new FilteredMongoLocations({dataset: scope}, this.mongo).json();
 		} else {
-			promise = Promise.resolve([Number(place)]);
+			promise = Promise.resolve([{_id: Number(place)}]);
 		}
 
 		// TODO: Probably move elsewhere
 		year = _.isArray(year.length) && year.map(period => Number(period)) || [Number(year)];
 
-		return promise.then(place => {
+		return promise.then(places => {
 			var filter = {
 				year: {$in: year},
-				location: {$in: place},
+				location: {$in: places.map(place => place._id)},
 				isData: false /* We want only base layer references */
 			};
 
@@ -96,12 +96,16 @@ class FrontOfficeLayers {
 					path: style.symbology_name
 				}
 			});
-			return {
-				id: reference._id,
-				name: layerTemplate.name,
-				layerGroup: layerGroup,
-				path: reference.layer,
-				styles: layerStyles
+			if(layerTemplate.layerType != 'au') {
+				return {
+					id: reference._id,
+					name: layerTemplate.name,
+					layerGroup: layerGroup,
+					path: reference.layer,
+					styles: layerStyles
+				}
+			} else {
+				return null;
 			}
 		});
 

@@ -64,6 +64,17 @@ describe('LayersGeonode', () => {
 					_id: 3,
 					name: 'Template 1'
 				}])
+			}).then(() => {
+				return mongoDb.collection('location').insertMany([{
+					_id: 1,
+					dataset: 1
+				}, {
+					_id: 2,
+					dataset: 1
+				}, {
+					_id: 3,
+					dataset: 2
+				}]);
 			});
 		}, fixture);
 		integrationEnvironment.setup().then(() => {
@@ -227,6 +238,27 @@ describe('LayersGeonode', () => {
 				.set('Content-Type', 'application/json')
 				.set('Accepts', 'application/json')
 				.query({scope: 1, year: [1], place: [2]})
+				.expect(200)
+				.then((response) => {
+					should(response.body.data.length).be.exactly(2);
+					done();
+				}).catch(err => {
+				done(err);
+			});
+		});
+
+		it('returns filtered layers available for all places if no specified', done => {
+			fixture.user = new User(0, [{
+				resourceType: 'scope',
+				permission: Permission.READ,
+				resourceId: 1
+			}]);
+
+			supertest(integrationEnvironment.app)
+				.get('/rest/filtered/layer')
+				.set('Content-Type', 'application/json')
+				.set('Accepts', 'application/json')
+				.query({scope: 1, year: [1]})
 				.expect(200)
 				.then((response) => {
 					should(response.body.data.length).be.exactly(2);
