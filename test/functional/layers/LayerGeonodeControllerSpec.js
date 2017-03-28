@@ -40,6 +40,13 @@ describe('LayersGeonode', () => {
 					year: 1,
 					areaTemplate: 3,
 					isData: false
+				}, {
+					_id: 4,
+					layer: "geonode:test2",
+					location: 2,
+					year: 1,
+					areaTemplate: 4,
+					isData: false
 				}]);
 			}).then(() => {
 				return mongoDb.collection('layergroup').insertMany([{
@@ -63,6 +70,10 @@ describe('LayersGeonode', () => {
 				}, {
 					_id: 3,
 					name: 'Template 1'
+				}, {
+					_id: 4,
+					name: 'Template 1',
+					layerType: 'au'
 				}])
 			}).then(() => {
 				return mongoDb.collection('location').insertMany([{
