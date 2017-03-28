@@ -123,12 +123,24 @@ class FrontOfficeLayers {
 			return (layer.layerGroup && layer.layerGroup.name) || 'Other';
 		});
 
-		return Object.keys(groupedByLayerGroup).map(key => {
+		var groupedLayers = Object.keys(groupedByLayerGroup).map(key => {
 			return {
 				name: key,
 				layers: groupedByLayerGroup[key]
 			}
-		})
+		});
+
+		return groupedLayers.sort((a, b) => {
+			let layerGroupA = a.layers.length && a.layers[0].layerGroup && a.layers[0].layerGroup.priority || Number.MAX_SAFE_INTEGER;
+			let layerGroupB = b.layers.length && b.layers[0].layerGroup && b.layers[0].layerGroup.priority || Number.MAX_SAFE_INTEGER;
+			if(layerGroupA < layerGroupB) {
+				return -1
+			} else if(layerGroupB < layerGroupA) {
+				return 1;
+			} else {
+				return 0;
+			}
+		});
 	}
 }
 
