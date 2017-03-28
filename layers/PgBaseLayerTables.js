@@ -47,7 +47,7 @@ class PgBaseLayerTables {
             );
         }
 
-        var schema = config.viewsSchema;
+        var schema = config.postgreSqlSchemaLayers;
 
         // TODO: Find a way in Sql to do the transformation only once.
         var sql = `CREATE TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)} AS ( 
