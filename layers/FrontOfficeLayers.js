@@ -58,6 +58,7 @@ class FrontOfficeLayers {
 
 			// Every syle brings another layer from the FO perspective.
 			let layerGroups = pLayerTemplates.map(template => template.layerGroup);
+			layerGroups = _.compact(layerGroups);
 			return new FilteredMongoLayerGroups({
 				_id: {$in: layerGroups}
 			}, this.mongo).json();
@@ -115,7 +116,7 @@ class FrontOfficeLayers {
 		});
 
 		var groupedByLayerGroup = _.groupBy(uniqueLayers, (layer) => {
-			return layer.layerGroup.name;
+			return (layer.layerGroup && layer.layerGroup.name) || 'Other';
 		});
 
 		return Object.keys(groupedByLayerGroup).map(key => {

@@ -33,6 +33,13 @@ describe('LayersGeonode', () => {
 					year: 4,
 					areaTemplate: 2,
 					isData: false
+				}, {
+					_id: 3,
+					layer: "geonode:test2",
+					location: 2,
+					year: 1,
+					areaTemplate: 3,
+					isData: false
 				}]);
 			}).then(() => {
 				return mongoDb.collection('layergroup').insertMany([{
@@ -53,6 +60,9 @@ describe('LayersGeonode', () => {
 					_id: 2,
 					name: 'Template 1',
 					layerGroup: 2
+				}, {
+					_id: 3,
+					name: 'Template 1'
 				}])
 			});
 		}, fixture);
@@ -219,7 +229,7 @@ describe('LayersGeonode', () => {
 				.query({scope: 1, year: [1], place: [2]})
 				.expect(200)
 				.then((response) => {
-					should(response.body.data.length).be.exactly(1);
+					should(response.body.data.length).be.exactly(2);
 					done();
 				}).catch(err => {
 				done(err);
