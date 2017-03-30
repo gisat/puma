@@ -1,5 +1,7 @@
 let _ = require('underscore');
 
+let logger = require('../common/Logger').applicationWideLogger;
+
 /**
  * This class can build and query the PostgreSQL tables based on the provided filter.
  * The filter comes in the setup:
@@ -23,7 +25,9 @@ class FilteredPgCollection {
 	}
 
 	all() {
-		return this.pgPool.query(`SELECT * FROM ${this.schema}.${this.table} ${this.getWhereClause()};`);
+		let sql = `SELECT * FROM ${this.schema}.${this.table} ${this.getWhereClause()};`;
+		logger.info(`FilteredPgCollection#all SQL: `, sql);
+		return this.pgPool.query(sql);
 	}
 
 	/**
