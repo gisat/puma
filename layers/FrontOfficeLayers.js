@@ -68,7 +68,7 @@ class FrontOfficeLayers {
 			});
 
 			return new FilteredPgStyles(this.postgreSql, this.schema, {
-				id: stylesIds
+				id: stylesIds.map(styleId => `${styleId}`)
 			}).all();
 		}).then(result => {
 			let styles = result.rows;
