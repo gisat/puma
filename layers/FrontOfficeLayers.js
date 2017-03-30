@@ -71,7 +71,7 @@ class FrontOfficeLayers {
 				id: stylesIds.map(styleId => `${styleId}`)
 			}).all();
 		}).then(result => {
-			let styles = result.rows;
+			let styles = result;
 
 			return this.groupLayersByNamePath(filteredReferences, layerGroups, layerTemplates, styles);
 		})
