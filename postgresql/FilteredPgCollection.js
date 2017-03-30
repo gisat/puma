@@ -61,7 +61,7 @@ class FilteredPgCollection {
 				if (inSequence.length === 0) {
 					return ``;
 				} else {
-					return ` ${key} IN [${inSequence.join(',')}] `;
+					return ` ${key} IN (${inSequence.join(',')}) `;
 				}
 			} else if (_.isString(value)) {
 				return ` ${key} = '${value}'`;
