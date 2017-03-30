@@ -87,6 +87,8 @@ class FrontOfficeLayers {
 	 * @returns {Array}
 	 */
 	groupLayersByNamePath(references, layerGroups, layerTemplates, styles) {
+		console.log(styles);
+
 		var layers = references.map(reference => {
 			let layerTemplate = layerTemplates[reference.areaTemplate];
 			let layerGroup = layerGroups[layerTemplate.layerGroup];
