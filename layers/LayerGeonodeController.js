@@ -150,7 +150,7 @@ class LayerGeonodeController {
 		logger.info(`LayerGeonodeController#getFiltered Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
 
 		if (!request.session.user.hasPermission('scope', Permission.READ, request.query.scope)) {
-			logger.error(`LayerGeonodeController#getFiltered User: ${request.session.userId} doesn't have permissions to read layers for give scope: ${request.body.scope}`);
+			logger.error(`LayerGeonodeController#getFiltered User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
 			response.status(403).json({status: "err"});
 			return;
 		}
