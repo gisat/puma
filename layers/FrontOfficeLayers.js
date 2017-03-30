@@ -87,12 +87,10 @@ class FrontOfficeLayers {
 	 * @returns {Array}
 	 */
 	groupLayersByNamePath(references, layerGroups, layerTemplates, styles) {
-		console.log(styles);
-
 		var layers = references.map(reference => {
 			let layerTemplate = layerTemplates[reference.areaTemplate];
 			let layerGroup = layerGroups[layerTemplate.layerGroup];
-			let layerStyles = styles.filter(style => layerTemplate.symbologies.indexOf(style.id)).map(style => {
+			let layerStyles = styles.filter(style => layerTemplate && layerTemplate.symbologies && layerTemplate.symbologies.indexOf(style.id) || false).map(style => {
 				return {
 					name: style.name,
 					path: style.symbology_name
