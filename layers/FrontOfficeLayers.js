@@ -90,7 +90,7 @@ class FrontOfficeLayers {
 		var layers = references.map(reference => {
 			let layerTemplate = layerTemplates[reference.areaTemplate];
 			let layerGroup = layerGroups[layerTemplate.layerGroup];
-			let layerStyles = styles.filter(style => layerTemplate && layerTemplate.symbologies && layerTemplate.symbologies.indexOf(style.id) || false).map(style => {
+			let layerStyles = styles.filter(style => layerTemplate && layerTemplate.symbologies && layerTemplate.symbologies.indexOf(style.id) !== -1 || false).map(style => {
 				return {
 					name: style.name,
 					path: style.symbology_name
