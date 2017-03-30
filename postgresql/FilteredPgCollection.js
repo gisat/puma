@@ -28,6 +28,7 @@ class FilteredPgCollection {
 		let sql = `SELECT * FROM ${this.schema}.${this.table} ${this.getWhereClause()};`;
 		logger.info(`FilteredPgCollection#all SQL: `, sql);
 		return this.pgPool.query(sql).then(result => {
+			console.log(result);
 			return result && result.rows || [];
 		});
 	}
