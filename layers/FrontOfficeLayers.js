@@ -100,6 +100,7 @@ class FrontOfficeLayers {
 				return {
 					id: reference._id,
 					name: layerTemplate.name,
+					layerTemplateId: layerTemplate._id,
 					layerGroup: layerGroup,
 					path: reference.layer,
 					styles: layerStyles
