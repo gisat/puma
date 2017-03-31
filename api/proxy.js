@@ -35,12 +35,6 @@ function wms(params, req, res, callback) {
 	if (params.hasOwnProperty('SRS') && params['SRS'] == "EPSG:4326"){
 		var bounbox = params['BBOX'].split(',');
 		params['BBOX'] = bounbox[1] + "," + bounbox[0] + "," + bounbox[3] + "," + bounbox[2];
-
-		// it adds sld_id parametr to wms request for world wind
-		if (params.hasOwnProperty('STYLES')){
-			params['SLD_ID'] = params['STYLES'];
-			params['STYLES'] = "";
-		}
 	}
 
 
