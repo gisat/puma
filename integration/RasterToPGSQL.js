@@ -14,7 +14,7 @@ class RasterToPGSQL {
     import(layer) {
         return new Promise((resolve, reject) => {
             child_process.exec(`
-                raster2pgsql -d -I -C -k -F -s 3035 -t 512x512 ${layer.path} public."${layer.name}" | PGPASSWORD=${this._pgPassword} psql -h ${this._pgHost} -U ${this._pgUser} ${this._pgDatabase}
+                raster2pgsql -d -I -C -k -F -t 512x512 ${layer.path} public."${layer.name}" | PGPASSWORD=${this._pgPassword} psql -h ${this._pgHost} -U ${this._pgUser} ${this._pgDatabase}
             `, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
