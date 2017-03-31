@@ -9,7 +9,7 @@ class MongoUniqueInstance {
 
 	read() {
 		var self = this;
-		return this._connection.collection(this._name).find({_id: this._id}).toArray().then(function(allReferences){
+		return this._connection.collection(this._name).find({_id: Number(this._id)}).toArray().then(function(allReferences){
 			if(!allReferences || allReferences.length == 0) {
 				logger.error('MongoUniqueInstance#load There is no instance with given id: ', self._id);
 				allReferences = [null];
