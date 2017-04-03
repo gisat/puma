@@ -27,18 +27,22 @@ class PgMongoLayerReference {
     }
 
     table() {
-        let tableName, fidColumn;
+        let tableName, fidColumn, layerName;
         return this.tableName().then(pLayerName => {
             tableName = pLayerName;
             return this._layerReference.fidColumn();
         }).then(pFidColumn => {
             fidColumn = pFidColumn;
             return this._layerReference.layerName();
-        }).then(tableName => {
+        }).then(pLayerName => {
+            layerName = pLayerName;
+            return this.tableName();
+        }).then(pTableName => {
             return {
-                name: tableName,
+                tableName: pTableName,
+                layerName: layerName,
                 fidColumn: fidColumn,
-                alias: this.tableAlias(tableName)
+                alias: this.tableAlias(layerName)
             }
         })
     }
