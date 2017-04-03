@@ -31,7 +31,7 @@ class FrontOfficeLayers {
 
 	analyticalUnitsLayers(scope, year, place, level) {
 		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
-			layers.references = layers.references.filter(reference => level && reference.areaTemplate == level || layers.layerTemplates[reference.areaTemplate].layerType == 'au');
+			layers.references = layers.references.filter(reference => (level && reference.areaTemplate == level) || (!level && layers.layerTemplates[reference.areaTemplate].layerType == 'au'));
 
 			return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles);
 		});
