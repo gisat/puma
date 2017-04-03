@@ -49,9 +49,9 @@ class PgLayerViews {
                 logger.error(`PgLayerViews#remove Wrong parameters: layerReferenceId: ${layerReferenceId}`)
             );
         }
-
-        let schema = config.viewsSchema;
-        return this._pgPool.pool().query(`DROP VIEW ${schema}.${this.name(layerReferenceId)}`);
+        
+        let schema = config.postgreSqlSchemaLayers;
+        return this._pgPool.pool().query(`DROP VIEW ${schema}.${PgLayerViews.name(layerReferenceId)}`);
     }
 
     // TODO: It wont work, when columns with same name from different tables are used.
@@ -76,28 +76,29 @@ class PgLayerViews {
 
             return baseLayerReference.parentColumn();
         }).then(pParentColumn => {
-			parentColumn = pParentColumn;
-
-			return baseLayerReference.layerName();
-		}).then(pTableName => {
-			tableName = pTableName;
-
-			return baseLayerReference.nameColumn();
-		}).then(pNameColumn => {
-			nameColumn = pNameColumn;
-
-			return baseLayerReference.fidColumn();
-		}).then(pFidColumn => {
-			fidColumn = pFidColumn;
-
-			return this.attributes(dataLayerReferences)
-		}).then(pAttributes => {
+            parentColumn = pParentColumn;
+            
+            return baseLayerReference.layerName();
+        }).then(pTableName => {
+            tableName = pTableName;
+            
+            return baseLayerReference.nameColumn();
+        }).then(pNameColumn => {
+            nameColumn = pNameColumn;
+            
+            return baseLayerReference.fidColumn();
+        }).then(pFidColumn => {
+            fidColumn = pFidColumn;
+            
+            return this.attributes(dataLayerReferences)
+        }).then(pAttributes => {
             attributes = pAttributes;
             return this.joinedDataTables(dataLayerReferences, tableName, fidColumn);
         }).then(joinedDataTables => {
 			let sql = `CREATE VIEW ${schema}.${PgLayerViews.name(id)} AS SELECT
                 l_${tableName}."${fidColumn}" AS gid,
                 l_${tableName}."${nameColumn}"::text AS name,
+                l_${tableName}."the_geom" AS the_geom,
                 ${this.parentColumn(tableName, parentColumn)},
                 ${attributes}
                 baseTable.area,
@@ -114,7 +115,7 @@ class PgLayerViews {
 
     parentColumn(tableName, parentColumn) {
         if (parentColumn) {
-            return `${tableName}."${parentColumn}" AS parentgid`;
+            return `l_${tableName}."${parentColumn}" AS parentgid`;
         } else {
             return `NULL::integer AS parentgid`
         }
@@ -149,12 +150,12 @@ class PgLayerViews {
 
         return Promise.all(tables).then(tables => {
             let sql = ``;
-			sql += ` LEFT JOIN ${sourceTableName} AS l_${sourceTableName} ON l_${sourceTableName}."${fidColumn}"::text = baseTable.gid::text`;
-			tables.forEach(table => {
-			    if(table.name == sourceTableName) {
-			        return;
+            sql += ` LEFT JOIN ${sourceTableName} AS l_${sourceTableName} ON l_${sourceTableName}."${fidColumn}"::text = baseTable.gid::text`;
+            tables.forEach(table => {
+                if (table.layerName == sourceTableName) {
+                    return;
                 }
-                sql += ` LEFT JOIN ${table.name} AS ${table.alias} ON ${table.alias}."${table.fidColumn}"::text = baseTable.gid::text`;
+                sql += ` LEFT JOIN ${table.tableName} AS ${table.alias} ON ${table.alias}."${table.fidColumn}"::text = baseTable.gid::text`;
             });
 
             return sql;
