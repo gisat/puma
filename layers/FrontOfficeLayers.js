@@ -21,7 +21,23 @@ class FrontOfficeLayers {
 	 * @param year {Number[]} Ids of the periods
 	 * @param place {Number[]} Ids of the places
 	 */
-	withAreaTemplateNameAndLayerGroup(scope, year, place) {
+	vectorRasterLayers(scope, year, place) {
+		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
+			layers.references = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].layerType != 'au');
+
+			return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles);
+		});
+	}
+
+	analyticalUnitsLayers(scope, year, place) {
+		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
+			layers.references = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].layerType == 'au');
+
+			return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles);
+		});
+	}
+
+	getLayersWithMetadata(scope, year, place) {
 		let filteredReferences, layerTemplates = {}, layerGroups = {}, stylesIds = [];
 		let promise;
 		if (!place) {
@@ -73,7 +89,12 @@ class FrontOfficeLayers {
 		}).then(result => {
 			let styles = result;
 
-			return this.groupLayersByNamePath(filteredReferences, layerGroups, layerTemplates, styles);
+			return {
+				references: filteredReferences,
+				layerGroups: layerGroups,
+				layerTemplates: layerTemplates,
+				styles: styles
+			};
 		})
 	}
 
@@ -96,17 +117,13 @@ class FrontOfficeLayers {
 					path: style.symbology_name
 				}
 			});
-			if(layerTemplate.layerType != 'au') {
-				return {
-					id: reference._id,
-					name: layerTemplate.name,
-					layerTemplateId: layerTemplate._id,
-					layerGroup: layerGroup,
-					path: reference.layer,
-					styles: layerStyles
-				}
-			} else {
-				return null;
+			return {
+				id: reference._id,
+				name: layerTemplate.name,
+				layerTemplateId: layerTemplate._id,
+				layerGroup: layerGroup,
+				path: reference.layer,
+				styles: layerStyles
 			}
 		});
 

@@ -29,7 +29,8 @@ class LayerGeonodeController {
 		app.post('/rest/layer', this.add.bind(this));
 		app.put('/rest/layer', this.update.bind(this));
 		app.delete('/rest/layer/:id', this.delete.bind(this));
-		app.get('/rest/filtered/layer', this.getFiltered.bind(this));
+		app.get('/rest/filtered/layer', this.filteredLayers.bind(this));
+		app.get('/rest/filtered/au', this.filteredAnalyticalUnits.bind(this));
 	}
 
 	/**
@@ -138,7 +139,8 @@ class LayerGeonodeController {
 	}
 
 	/**
-	 * It returns filtered layers available in the system. The returned information contains: path, name, layerGroup
+	 * It returns filtered layers available in the system. It returns only vector and raster layers. The returned
+	 * information contains: path, name, layerGroup
 	 * The filters that are supported are:
 	 * {
 	 *   scope: {idOfScope},
@@ -146,19 +148,46 @@ class LayerGeonodeController {
 	 *   place: [] or nothing, if there is no place filter, then layers for all places
 	 * }
 	 */
-	getFiltered(request, response) {
-		logger.info(`LayerGeonodeController#getFiltered Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
+	filteredLayers(request, response) {
+		logger.info(`LayerGeonodeController#filteredLayers Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
 
 		if (!request.session.user.hasPermission('dataset', Permission.READ, request.query.scope)) {
-			logger.error(`LayerGeonodeController#getFiltered User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
+			logger.error(`LayerGeonodeController#filteredLayers User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
 			response.status(403).json({status: "err"});
 			return;
 		}
 
-		this.layerReferences.withAreaTemplateNameAndLayerGroup(request.query.scope, request.query.year, request.query.place).then(layers => {
+		this.layerReferences.vectorRasterLayers(request.query.scope, request.query.year, request.query.place).then(layers => {
 			response.json({data: layers});
 		}).catch(error => {
-			logger.error('LayerGeonodeController#getFiltered Error: ', error);
+			logger.error('LayerGeonodeController#filteredLayers Error: ', error);
+			response.status(500).json({status: 'err'});
+		});
+	}
+
+	/**
+	 * It returns filtered layers available in the system. It returns only analytical units. The returned
+	 * information contains: path, name, layerGroup
+	 * The filters that are supported are:
+	 * {
+	 *   scope: {idOfScope},
+	 *   year: [{idOfFirstYear}, {idOfSecondYear}]
+	 *   place: [] or nothing, if there is no place filter, then layers for all places
+	 * }
+	 */
+	filteredAnalyticalUnits(request, response) {
+		logger.info(`LayerGeonodeController#filteredAnalyticalUnits Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
+
+		if (!request.session.user.hasPermission('dataset', Permission.READ, request.query.scope)) {
+			logger.error(`LayerGeonodeController#filteredAnalyticalUnits User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
+			response.status(403).json({status: "err"});
+			return;
+		}
+
+		this.layerReferences.analyticalUnitsLayers(request.query.scope, request.query.year, request.query.place).then(layers => {
+			response.json({data: layers});
+		}).catch(error => {
+			logger.error('LayerGeonodeController#filteredAnalyticalUnits Error: ', error);
 			response.status(500).json({status: 'err'});
 		});
 	}
