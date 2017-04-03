@@ -173,10 +173,11 @@ class LayerGeonodeController {
 	 *   scope: {idOfScope},
 	 *   year: [{idOfFirstYear}, {idOfSecondYear}]
 	 *   place: [] or nothing, if there is no place filter, then layers for all places
+	 *   layerTemplate: {Id of the layer template} or nothing meaning all analytical units will be returned
 	 * }
 	 */
 	filteredAnalyticalUnits(request, response) {
-		logger.info(`LayerGeonodeController#filteredAnalyticalUnits Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
+		logger.info(`LayerGeonodeController#filteredAnalyticalUnits Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} Layer template: ${request.query.layerTemplate} by  User: ${request.session.userId}`);
 
 		if (!request.session.user.hasPermission('dataset', Permission.READ, request.query.scope)) {
 			logger.error(`LayerGeonodeController#filteredAnalyticalUnits User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
@@ -184,7 +185,7 @@ class LayerGeonodeController {
 			return;
 		}
 
-		this.layerReferences.analyticalUnitsLayers(request.query.scope, request.query.year, request.query.place).then(layers => {
+		this.layerReferences.analyticalUnitsLayers(request.query.scope, request.query.year, request.query.place, Number(request.query.layerTemplate)).then(layers => {
 			response.json({data: layers});
 		}).catch(error => {
 			logger.error('LayerGeonodeController#filteredAnalyticalUnits Error: ', error);
