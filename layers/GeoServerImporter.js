@@ -1,5 +1,6 @@
 let request = require('superagent');
 let Promise = require('promise');
+let _ = require('lodash');
 
 /**
  * This class handles layers to be imported into the GeoServer.
@@ -18,88 +19,72 @@ class GeoServerImporter {
     // TODO: Configure the name of the target data store.
     importLayer(layer) {
         let id;
-        
-        let importShpTemplate = {
-            targetWorkspace: {
-                workspace: {
-                    name: this._workspace
-                }
-            },
-            targetStore: {
-                dataStore: {
-                    name: this._dataStore
-                }
-            }
-        };
-        let importRasterTemplate = {
-            targetWorkspace: {
-                workspace: {
-                    name: this._workspace
-                }
+        let vectorDatastore = {
+            dataStore: {
+                name: this._dataStore
             }
         };
         
-        return Promise.resolve().then(() => {
-            if (layer.extension.includes('tif')) {
+        return request
+            .post(this._importPath)
+            .set('Content-Type', 'application/json')
+            .auth(this._userName, this._password)
+            .send({
+                import: {
+                    targetWorkspace: {
+                        workspace: {
+                            name: this._workspace
+                        }
+                    },
+                    targetStore: layer.type == "vector" ? vectorDatastore : undefined,
+                    data: {
+                        type: "directory",
+                        location: layer.directory
+                    }
+                }
+            })
+            .then(response => {
+                let importerResponse = response.body.import;
+                let importUrl = importerResponse.href;
+                let importTasks = importerResponse.tasks;
+                
+                if (!importTasks.length) {
+                    throw new Error(importerResponse.href);
+                }
+                
+                let allReady = true;
+                _.each(importTasks, importTask => {
+                    if (importTask.state != "READY") {
+                        allReady = !allReady;
+                    }
+                });
+                
+                if(!allReady) {
+                    throw new Error(importerResponse.href);
+                }
+                
                 return request
-                    .post(this._importPath)
-                    .set('Content-Type', 'application/json')
+                    .post(importUrl)
                     .auth(this._userName, this._password)
-                    .send({"import": importRasterTemplate}).then(response => {
-                        id = response.body.import.id;
+                    .then(() => {
                         return request
-                            .post(`${this._importPath}/${id}/tasks`)
-                            .auth(this._userName, this._password)
-                            .attach('filedata', layer.path)
-                    }).then(() => {
-                        return request
-                            .post(`${this._importPath}/${id}`)
-                            .auth(this._userName, this._password)
-                    }).then(() => {
-                        return request
-                            .get(`${this._importPath}/${id}/tasks/0/layer`)
+                            .get(importUrl)
                             .auth(this._userName, this._password)
                             .then(response => {
-                                layer.name = response.body.layer.name;
-                                layer.geoserverImportOutput = response.body;
-                                return layer;
-                            });
-                    });
-            } else {
-                return request
-                    .post(this._importPath)
-                    .set('Content-Type', 'application/json')
-                    .auth(this._userName, this._password)
-                    .send({"import": importShpTemplate}).then(response => {
-                        id = response.body.import.id;
-                        return request
-                            .post(`${this._importPath}/${id}/tasks`)
-                            .auth(this._userName, this._password)
-                            .attach('filedata', layer.path)
-                    }).then(() => {
-                        return request
-                            .put(`${this._importPath}/${id}/tasks/0/target`)
-                            .set('Content-Type', 'application/json')
-                            .auth(this._userName, this._password)
-                            .send(importShpTemplate.targetStore)
-                    }).then(() => {
-                        return request
-                            .post(`${this._importPath}/${id}`)
-                            .auth(this._userName, this._password)
-                    }).then(() => {
-                        return request
-                            .get(`${this._importPath}/${id}/tasks/0/layer`)
-                            .auth(this._userName, this._password)
-                            .then(response => {
-                                layer.name = response.body.layer.name;
-                                layer.geoserverImportOutput = response.body;
-                                return layer;
-                            });
-                    });
-            }
-        });
+                                let importerResponse = response.body.import;
+                                let importerTasks = importerResponse.tasks;
+                                _.each(importerTasks, task => {
+                                    if(task.state == "ERROR") {
+                                        throw new Error(task.href);
+                                    }
+                                })
+                            })
+                    })
+            });
     }
 }
+
 // TODO: Store the data about the layer in the pg table for layer.
 
-module.exports = GeoServerImporter;
+module
+    .exports = GeoServerImporter;
