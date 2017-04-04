@@ -10,7 +10,7 @@ class GeonodeUpdateLayers {
      * Update geonode from geoserver based on given filter
      * @param filter {layer: "layerName", workspace: "workspaceName", datastore: "datastoreName"}
      */
-    filtered(layer, filter) {
+    filtered(filter) {
         let updateLayersParameters = [];
         if (filter && filter.layer) {
             updateLayersParameters.push(`f=${filter.layer}`);
@@ -25,11 +25,10 @@ class GeonodeUpdateLayers {
             return superagent
                 .get(`http://localhost/cgi-bin/updatelayers?${updateLayersParameters.join(`&`)}`)
                 .then(response => {
-                    layer.geonodeUpdateLayersOutput = response;
-                    return layer;
+                    return response.body;
                 });
         } else {
-            return Promise.rejected(`Empty filter!`)
+            return Promise.reject(`Empty filter!`)
         }
     }
 }
