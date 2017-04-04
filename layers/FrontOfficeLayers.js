@@ -16,7 +16,7 @@ class FrontOfficeLayers {
 	}
 
 	/**
-	 * It retrieves layer in the format good for display in the front office.
+	 * It retrieves raster and vector layers in the format good for display in the front office.
 	 * @param scope {Number} Id of the scope
 	 * @param year {Number[]} Ids of the periods
 	 * @param place {Number[]} Ids of the places
@@ -29,6 +29,13 @@ class FrontOfficeLayers {
 		});
 	}
 
+	/**
+	 * It retrieves analytical units layers in the format good for the display in the Front Office.
+	 * @param scope {Number} Id of the scope
+	 * @param year {Number[]} Ids of the periods
+	 * @param place {Number[]} Ids of the places or null, if null then all the places in given scope are used
+	 * @param level {Number} Optional. If it is supplied it limits analytical units only to the ones with given area template.
+	 */
 	analyticalUnitsLayers(scope, year, place, level) {
 		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
 			layers.references = layers.references.filter(reference => (level && reference.areaTemplate == level) || (!level && layers.layerTemplates[reference.areaTemplate].layerType == 'au'));
