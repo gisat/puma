@@ -7,6 +7,7 @@ var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');
 var staticFn = express['static'];
 var session = require('express-session');
+let xmlparser = require('express-xml-bodyparser');
 
 var async = require('async');
 var loc = require('./common/loc');
@@ -61,6 +62,7 @@ function initServer(err) {
 
 	app.use(express.cookieParser());
 	app.use(express.bodyParser());
+	app.use(xmlparser());
 	app.use(session({
 		name: "panthersid",
 		secret: "panther",
