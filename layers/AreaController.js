@@ -25,7 +25,7 @@ class AreaController {
 		layers.forEach(layer => {
 			// Get table for the layer name with views.
 			var tableWithSchema = conn.getLayerTable(layer);
-			var sql = `SELECT gid FROM ${tableWithSchema} WHERE ST_Intersects(the_geom, 'POINT(${latitude} ${longitude})'::geometry)`;
+			var sql = `SELECT gid FROM ${tableWithSchema} WHERE ST_Intersects(the_geom, ST_GeomFromText('POINT(${longitude} ${latitude})', 4326))`;
 			logger.info(`AreaController#read Sql: `, sql);
 			promises.push(this._pool.query(sql).then(result => {
 				return result.rows;
