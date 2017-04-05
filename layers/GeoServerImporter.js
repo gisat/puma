@@ -59,7 +59,7 @@ class GeoServerImporter {
                     }
                 });
                 
-                if(!allReady) {
+                if (!allReady) {
                     throw new Error(importerResponse.href);
                 }
                 
@@ -73,13 +73,22 @@ class GeoServerImporter {
                             .then(response => {
                                 let importerResponse = response.body.import;
                                 let importerTasks = importerResponse.tasks;
+                                let taskResults = [];
                                 _.each(importerTasks, task => {
-                                    if(task.state == "ERROR") {
+                                    if (task.state == "ERROR") {
                                         throw new Error(task.href);
                                     }
-                                })
+                                    taskResults.push(
+                                        request
+                                            .get(`${task.href}/layer`)
+                                            .then(response => {
+                                                return response.body.layer;
+                                            })
+                                    );
+                                });
+                                return Promise.all(taskResults);
                             })
-                    })
+                    });
             });
     }
 }
