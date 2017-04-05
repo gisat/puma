@@ -33,7 +33,7 @@ class AreaController {
 		});
 
 		Promise.all(promises).then(results => {
-			var gids = _.pluck(_.flatten(results.rows), 'gid');
+			var gids = _.pluck(_.flatten(results), 'gid');
 			response.json({areas: gids});
 		}).catch(err => {
 			logger.error(`AreaController#read Error: `, err);
