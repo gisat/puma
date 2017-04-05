@@ -1,4 +1,5 @@
 let conn = require('../common/conn');
+let logger = require('../common/Logger').applicationWideLogger;
 
 let _ = require('underscore');
 
@@ -25,6 +26,7 @@ class AreaController {
 			// Get table for the layer name with views.
 			var tableWithSchema = conn.getLayerTable(layer);
 			var sql = `SELECT gid FROM ${tableWithSchema} WHERE ST_Intersects(the_geom, 'POINT(${latitude} ${longitude})'::geometry)`;
+			logger.info(`AreaController#read Sql: `, sql);
 			promises.push(this._pool.query(sql).then(result => {
 				return result.rows;
 			}));
@@ -34,6 +36,7 @@ class AreaController {
 			var gids = _.pluck(_.flatten(results.rows), 'gid');
 			response.json({areas: gids});
 		}).catch(err => {
+			logger.error(`AreaController#read Error: `, err);
 			response.status(500).json({status: 'err'});
 		})
 	}
