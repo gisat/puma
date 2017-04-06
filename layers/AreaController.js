@@ -26,7 +26,8 @@ class AreaController {
 
 		var promises = [];
 		layers.forEach(layer => {
-			var layerRefId = layer.split(':')[1].replace('layer_', '');
+			// TODO: Be careful it depends on the current data structures.
+			var layerRefId = Number(layer.split(':')[1].replace('layer_', ''));
 			logger.info(`AreaController#read Layer: ${layer} Id: ${layerRefId}`);
 
 			let rows;
