@@ -105,7 +105,7 @@ module.exports = function(app) {
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
 	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
-	new AreaController(app, pool);
+	new AreaController(app, pool, conn.getMongoDb());
 
 	new iprquery(app, pool);
 	new iprConversion(app);
