@@ -9,6 +9,10 @@ class MongoLayerGroup {
 
 		this._instance = new MongoUniqueInstance(id, connection, MongoLayerGroup.collectionName());
 	}
+	
+	id() {
+		return Promise.resolve(this._id);
+	}
 
 	layerTemplates() {
 		return this._layerTemplates.read();
