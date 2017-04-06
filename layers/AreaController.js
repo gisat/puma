@@ -44,13 +44,14 @@ class AreaController {
 				return rows.map(row => {
 					return {
 						gid: row.gid,
-						location: layerReferences.location
+						location: layerReferences.length && layerReferences[0].location || null
 					};
 				});
 			}));
 		});
 
 		Promise.all(promises).then(results => {
+			console.log(results);
 			var areas = _.flatten(results);
 			response.json({areas: areas});
 		}).catch(err => {
