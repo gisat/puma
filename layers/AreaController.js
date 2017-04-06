@@ -23,6 +23,7 @@ class AreaController {
 		var latitude = request.query.latitude;
 		var longitude = request.query.longitude;
 		var layers = request.query.layers;
+		logger.info(`AreaController#read Latitude: ${latitude}, Longitude: ${longitude}, Layers: `, layers);
 
 		var promises = [];
 		layers.forEach(layer => {
