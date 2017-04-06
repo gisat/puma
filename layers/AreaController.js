@@ -41,6 +41,7 @@ class AreaController {
 				rows = pRows;
 				return new FilteredMongoLayerReferences({_id: layerRefId}, this._mongo).json();
 			}).then(layerReferences => {
+				console.log(layerReferences);
 				return rows.map(row => {
 					return {
 						gid: row.gid,
