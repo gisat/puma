@@ -67,6 +67,11 @@ class MongoAttribute {
 	visualizations() {
 		return this._visualizations.read();
 	}
+	
+	attributeSets() {
+	    // todo have to return something meaningful
+        return Promise.resolve().then(() => {return []});
+	}
 
 	json() {
 		return this._instance.read();
