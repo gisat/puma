@@ -21,6 +21,23 @@ let path = require('path');
 
 function wms(params, req, res, callback) {
 
+	keysToUpperCase(params);
+	// todo find out why is not possible to use CRS
+	if (params.hasOwnProperty('CRS')){
+		params['SRS'] = params['CRS'];
+		delete params['CRS'];
+	}
+	// it solves an issue with choropleths in 3D
+	if (params.hasOwnProperty('VERSION')){
+		params['VERSION'] = params['1.1.1'];
+	}
+	// it solves wrong bbox for combination geoserver-web world wind
+	if (params.hasOwnProperty('SRS') && params['SRS'] == "EPSG:4326"){
+		var bounbox = params['BBOX'].split(',');
+		params['BBOX'] = bounbox[1] + "," + bounbox[0] + "," + bounbox[3] + "," + bounbox[2];
+	}
+
+
 	if (!layerGroupMap) {
 		crud.read('layergroupgs',{},function(err,items) {
 			items = items || [];
@@ -93,13 +110,13 @@ function wms(params, req, res, callback) {
 	if (params['LAYERS']) {
 		params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
-	var layers = params['LAYERS'];
+	var wmsParamLayers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
 	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/' + config.geoserver2Workspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
-	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[layers]) ? layerGroupMap[layers][style || 'def'] : '';
+	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[wmsParamLayers]) ? layerGroupMap[wmsParamLayers][style || 'def'] : '';
 
 	
 	//console.log("================layerGroup: ", layerGroup, "\n==========layerGroupMap: ",layerGroupMap);
@@ -110,10 +127,10 @@ function wms(params, req, res, callback) {
 		//delete params['TRANSPARENT'];
 		delete params['LAYER'];
 		// single layer
-		if (layers.search(',')<0) {
+		if (wmsParamLayers.search(',')<0) {
 			if(style && !layerGroup){
 				//console.log('Add style '+layers+' '+style)
-				createLayerGroup(layers,style,true);
+				createLayerGroup(wmsParamLayers,style,true);
 			}else{
 				//console.log('Single layer '+layers+' '+style)
 				path = config.geoserverPath+'/gwc/service/wms';
@@ -129,7 +146,7 @@ function wms(params, req, res, callback) {
 		// layer group to be created
 		else {
 			//console.log('Creating group, styles: '+style)
-			createLayerGroup(layers,style);
+			createLayerGroup(wmsParamLayers,style);
 		}
 		method = 'GET';
 		
@@ -174,8 +191,8 @@ function wms(params, req, res, callback) {
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
 		// TODO: Figure out sane solution to handling the legend.
-		if(layers && layers.indexOf(',') == -1 && layers.indexOf('panther:') != 0) {
-			options.path = options.path.replace('geonode', layers.split(':')[0]);
+		if(wmsParamLayers && wmsParamLayers.indexOf(',') == -1 && wmsParamLayers.indexOf('panther:') != 0) {
+			options.path = options.path.replace('geonode', wmsParamLayers.split(':')[0]);
 		}
 	}
 
@@ -200,6 +217,8 @@ function wms(params, req, res, callback) {
 					return callback(null);
 				});
 				return;
+			} else if (params['EXPECTJSON']) {
+				res.isJson = true;
 			} else {
 				res.noJson = true;
 			}
@@ -212,6 +231,21 @@ function wms(params, req, res, callback) {
 //        reqs.abort();
 //    },5000);
 
+}
+
+/**
+ * Convert all keys of object to uppercase
+ * @param obj {Object}
+ * @returns {Object}
+ */
+function keysToUpperCase (obj){
+	for (var key in obj){
+		var upper = key.toUpperCase();
+		if( upper !== key ){
+			obj[ upper ] = obj[key];
+			delete obj[key];
+		}
+	}
 }
 
 function storeTemporarySld(id, sld) {

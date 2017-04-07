@@ -21,6 +21,8 @@ class LinesSourceTable extends SourceTable {
             `name text,` +
             `geometry text,` +
             `scope text,` +
+            `place text,` +
+            `theme text,` +
             `user_name text,` +
             `PRIMARY KEY(uuid));`;
 

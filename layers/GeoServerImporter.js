@@ -58,5 +58,6 @@ class GeoServerImporter {
 			});
 	}
 }
+// TODO: Store the data about the layer in the pg table for layer.
 
 module.exports = GeoServerImporter;

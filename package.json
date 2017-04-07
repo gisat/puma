@@ -25,6 +25,7 @@
     "lodash": "^4.17.4",
     "moment": "^2.15.1",
     "mongodb": "~2.0",
+    "newrelic": "^1.37.0",
     "node-sass": "^3.7.0",
     "object-hash": "^1.1.5",
     "onecolor": "2.3.4",

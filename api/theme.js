@@ -441,7 +441,9 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 
 			if(!sql) {
-				return callback(new Error(logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates.")));
+				logger.error("theme#getThemeYearConf/sql Empty SQL query. No locations or no locAreaTemplates.");
+				// Continue with empty object.
+				return asyncCallback(null, {});
 			}
 
 			sql += ' ORDER BY idx ASC';
@@ -482,7 +484,7 @@ function getThemeYearConf(params, req, res, callback) {
 			}
 			var atMap = {};
 			var layerRefsToCheck = [];
-			var areas = results.sql.areas || results.sql.add;
+			var areas = results.sql.areas || results.sql.add || [];
 			var fidsToIter = params['fids'] ? JSON.parse(params['fids']) : {};
 			//console.log(fidsToIter)
 			for (var loc in fidsToIter) {

@@ -9,12 +9,18 @@ class Info {
 
     statistics(attributes, attributesMap, gids) {
         return attributes.attributes(this.sql.bind(this, gids)).then(attributes => {
-            return attributes.map(attribute => attribute.info({
-                units: attributesMap[attribute.name()].units,
-                value: attributesMap[attribute.name()].value,
-                attributeName: attributesMap[attribute.name()].attributeName,
-                attributeSetName: attributesMap[attribute.name()].attributeSetName
-            }));
+            return attributes.map(attribute => {
+                var id = "as_" + attribute._attributeSet + "_attr_" + attribute._attribute;
+                return attribute.info({
+                    units: attributesMap[id].units,
+                    color: attributesMap[id].color,
+                    value: attributesMap[id].value,
+                    attributeId: attributesMap[id].attribute,
+                    attributeName: attributesMap[id].attributeName,
+                    attributeSetId: attributesMap[id].attributeSet,
+                    attributeSetName: attributesMap[id].attributeSetName
+                })
+            });
         }).then(json => {
             // Group per gid.
             var groupedPerRow = _.toArray(_.groupBy(_.flatten(json), element => element.gid));
@@ -31,9 +37,13 @@ class Info {
                 };
                 group.forEach(value=> {
                     var attr = {
+                        id: value.attributeId,
                         name: value.attributeName,
+                        asId: value.attributeSetId,
+                        asName: value.attributeSetName,
                         value: value.value,
-                        units: value.units
+                        units: value.units,
+                        color: value.color
                     };
                     result.attributes.push(attr);
                 });
@@ -44,6 +54,10 @@ class Info {
 
     sql(gids, baseLayers) {
         logger.info('Info#sql baseLayers', baseLayers);
+        if (!Array.isArray(gids)){
+            gids = [gids];
+        }
+
         var values = [];
         gids.forEach(function (value) {
             values.push(value);

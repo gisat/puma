@@ -3,6 +3,7 @@ var path = require('path');
 var Promise = require('promise');
 var child_process  = require('pn/child_process');
 var fs = require('pn/fs');
+var superagent = require('superagent');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -30,15 +31,19 @@ class GeneratedImage {
 	generate() {
 		logger.info('GeneratedImage#generate Started generation.');
 		var self = this;
-		var pathOfResult;
+		var pathOfResult, body;
 		return this.path().then(function(path){
+			// Load the image from the API and then save it to the internal path.
+			// http://api.screenshotmachine.com/?key=a647a7&dimension=1024x768&format=png&timeout=1000&url=https%3A%2F%2Fpuma.worldbank.org%2Ftool%2Findex.html%3Fid%3D29717%26print
+
 			pathOfResult = path;
 			logger.info('GeneratedImage#generate Start process. Url: ', self.url, ' Path: ', path);
-			return child_process.execFile(self.phantomName, ['--ssl-protocol=any --ignore-ssl-errors=yes --debug=true', 'visualization/PhantomJsPrint.js', self.url, path, '-', 1], {}).promise;
+			return superagent.get(`http://api.screenshotmachine.com/?key=a647a7&dimension=1024x768&format=png&timeout=5000&url=https%3A%2F%2Fpuma.worldbank.org%2Ftool%2Findex.html%3Fid%3D${self.id}%26print`);
 		}).then(function(result){
-			logger.info("stderr:  ", result.stderr);
-			logger.info("stdout:\n", result.stdout);
-			return fs.readFile(pathOfResult);
+			body = result.body;
+			return fs.writeFile(pathOfResult, body);
+		}).then(() => {
+			return body;
 		});
 	}
 }

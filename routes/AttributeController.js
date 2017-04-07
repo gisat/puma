@@ -27,11 +27,11 @@ class AttributeController extends Controller {
         app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
         app.get('/rest/filter/attribute/filter', this.filter.bind(this));
         app.get('/rest/filter/attribute/amount', this.amount.bind(this));
-        app.get('/rest/info/attribute', this.info.bind(this));
+        app.post('/rest/info/attribute', this.info.bind(this));
     }
 
     statistics(request, response) {
-        var options = this._parseRequest(request);
+        var options = this._parseRequest(request.query);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, options.attributes);
         var distribution = request.query.distribution;
@@ -48,7 +48,7 @@ class AttributeController extends Controller {
     }
 
     filter(request, response) {
-        var options = this._parseRequest(request);
+        var options = this._parseRequest(request.query);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 
@@ -65,7 +65,7 @@ class AttributeController extends Controller {
     }
 
     amount(request, response) {
-        var options = this._parseRequest(request);
+        var options = this._parseRequest(request.query);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#amount UUID: ${uuid} Start: ${moment().format()}`);
 
@@ -81,8 +81,13 @@ class AttributeController extends Controller {
         });
     }
 
-    _parseRequest(request) {
-        let attributes = _.toArray(request.query.attributes);
+    _parseRequest(params) {
+        let attributes;
+        if (!params.isArray){
+            attributes = _.toArray(params.attributes);
+        } else {
+            attributes = params.attributes;
+        }
 
         var attributesMap = {};
         attributes.forEach(
@@ -91,9 +96,9 @@ class AttributeController extends Controller {
         return {
             attributes: attributes,
             attributesMap: attributesMap,
-            areaTemplate: Number(request.query.areaTemplate),
-            periods: request.query.periods.map(period => Number(period)),
-            places: request.query.places.map(place => Number(place))
+            areaTemplate: Number(params.areaTemplate),
+            periods: params.periods.map(period => Number(period)),
+            places: params.places.map(place => Number(place))
         };
     }
 
@@ -103,8 +108,8 @@ class AttributeController extends Controller {
      * @param response
      */
     info(request, response) {
-        var options = this._parseRequest(request);
-        let gid = request.query.gid;
+        var options = this._parseRequest(request.body);
+        let gid = request.body.gid;
         var uuid = new UUID().toString();
         logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
 

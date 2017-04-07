@@ -6,6 +6,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var AnalysisController = require('./AnalysisController');
 var AnalyticalUnitsController = require('../layers/AnalyticalUnitsController');
 var AreaTemplateController = require('./AreaTemplateController');
+var AreaController = require('../layers/AreaController');
 var AttributeController = require('./AttributeController');
 var AttributeSetController = require('./AttributeSetController');
 var ChartCfgController = require('./ChartCfgController');
@@ -13,7 +14,6 @@ var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var CustomFeaturesController = require('./CustomFeaturesController');
 var ExportController = require('./ExportController');
-var GufController = require('../utep/GufController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -77,7 +77,6 @@ module.exports = function(app) {
 	new AnalysisController(app, pool);
 	new AnalyticalUnitsController(app, pool, conn.getMongoDb());
 	new AreaTemplateController(app, pool);
-	new GufController(app, pool);
 	if(poolRemote) {
 		new ExportController(app, poolRemote);
 	} else {
@@ -98,7 +97,7 @@ module.exports = function(app) {
 	new PerformedAnalysisController(app, pool);
 	new ThemeController(app, pool);
 	new TopicController(app, pool);
-	new VisualizationController(app, pool);
+	new VisualizationController(app, pool, conn.getMongoDb());
 	new YearController(app, pool);
 	new IntegrationController(app, pool);
 
@@ -108,6 +107,7 @@ module.exports = function(app) {
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
 	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
+	new AreaController(app, pool, conn.getMongoDb());
 
 	new iprquery(app, pool);
 	new iprConversion(app);

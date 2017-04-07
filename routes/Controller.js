@@ -49,38 +49,38 @@ class Controller {
     }
 
     /**
-     * Default implementation of creation for rest objects. This implementation doesn't verifies anything. It simply creates the specified object.
+     * Default implementation of creation for rest objects. This implementation doesn't verify anything. It simply creates the specified object.
      * @param request {Request} Request created by the Express framework.
      * @param request.body.data {Object} Payload for object, which should be updated.
-     * @param request.session.userId {Number} Id of the user who issued the request.
+     * @param request.session.user.id {Number} Id of the user who issued the request.
      * @param response.locals.isAdmin {Boolean} Whether the user is admin
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
     create(request, response, next) {
-        logger.info('Controller#create Create instance of type: ', this.type, ' By User: ', request.session.userId);
+        logger.info('Controller#create Create instance of type: ', this.type, ' By User: ', request.session.user.id);
 
         crud.create(this.type, request.body.data, {
-            userId: request.session.userId,
+            userId: request.session.user.id,
             isAdmin: response.locals.isAdmin
         }, (err, result) => {
             if (err) {
-                logger.error("It wasn't possible to create object of type: ", this.type, " by User: ", request.session.userId,
+                logger.error("It wasn't possible to create object of type: ", this.type, " by User: ", request.session.user.id,
                     "With data: ", request.body.data, " Error:", err);
                 return next(err);
             }
 
             Promise.all([
-				this.permissions.add(request.session.userId, this.type, result._id, Permission.READ),
-				this.permissions.add(request.session.userId, this.type, result._id, Permission.UPDATE),
-			    this.permissions.add(request.session.userId, this.type, result._id, Permission.DELETE)
-			]).then(() => {
+                this.permissions.add(request.session.user.id, this.type, result._id, Permission.READ),
+                this.permissions.add(request.session.user.id, this.type, result._id, Permission.UPDATE),
+                this.permissions.add(request.session.user.id, this.type, result._id, Permission.DELETE)
+            ]).then(() => {
                 response.data = result;
                 next();
             }).catch(err => {
-				logger.error("It wasn't possible to add permissions to the object of type: ", this.type, " by User: ", request.session.userId,
-					"With data: ", request.body.data, " Error:", err);
-				return next(err);
+                logger.error("It wasn't possible to add permissions to the object of type: ", this.type, " by User: ", request.session.user.id,
+                    "With data: ", request.body.data, " Error:", err);
+                return next(err);
             });
         });
     }
@@ -139,19 +139,18 @@ class Controller {
             }
 
             let resultsWithRights = result
-				.filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
+                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
             let promises = resultsWithRights.map(element => {
-				return this.permissions.forType(this.type, element._id).then(permissions => {
+                return this.permissions.forType(this.type, element._id).then(permissions => {
                     element.permissions = permissions;
-				});
+                });
             });
 
             Promise.all(promises).then(() => {
-				response.json({data: resultsWithRights});
+                response.json({data: resultsWithRights});
             }).catch(err => {
                 logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
-                response.status(500);
-                return;
+                response.status(500).json({status: 'err'});
             })
         });
     }

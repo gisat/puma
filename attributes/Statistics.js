@@ -14,6 +14,7 @@ class Statistics {
                 attributeSetName: attributesMap[attribute.name()].attributeSetName,
                 units: attributesMap[attribute.name()].units,
                 standardUnits: attributesMap[attribute.name()].standardUnits,
+                color: attributesMap[attribute.name()].color,
                 active: attributesMap[attribute.name()].active
             }));
         });

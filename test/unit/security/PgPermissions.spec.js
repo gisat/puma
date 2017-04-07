@@ -62,5 +62,21 @@ describe('PgPermissions', () => {
                 id: null
             }]);
         })
-    })
+    });
+
+    describe('#forTypeGroupCollectionSql', () => {
+        it('return sql with all ids', () => {
+			let pgPermissions = new PgPermissions({pool: function(){}}, 'test');
+            let result = pgPermissions.forTypeGroupCollectionSql('layer', [{id: 1}, {id: 2}, {id: 3}]);
+            should(result).equal(`SELECT * FROM test.group_permissions WHERE resource_type = 'layer' AND resource_id IN ('1','2','3')`);
+		});
+    });
+
+    describe('#forTypeUserCollectionSql', () => {
+		it('return sql with all ids', () => {
+			let pgPermissions = new PgPermissions({pool: function(){}}, 'test');
+			let result = pgPermissions.forTypeUserCollectionSql('layer', [{id: 1}, {id: 2}, {id: 3}]);
+			should(result).equal(`SELECT * FROM test.permissions WHERE resource_type = 'layer' AND resource_id IN ('1','2','3')`);
+		});
+    });
 });

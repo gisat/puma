@@ -39,9 +39,12 @@ class NumericAttribute {
                     gid: this._jsonAttribute.gids[index],
                     name: this._jsonAttribute.names[index],
                     geom: this._jsonAttribute.geometries[index],
+                    attributeId: options.attributeId,
                     attributeName: options.attributeName,
                     attributeSetName: options.attributeSetName,
+                    attributeSetId: options.attributeSetId,
                     units: options.units,
+                    color: this._jsonAttribute.color,
                     value: value
                 }
             }
@@ -89,6 +92,7 @@ class NumericAttribute {
             attributeName: options.attributeName,
             attributeSetName: options.attributeSetName,
             units: options.units,
+            color: options.color,
             standardUnits: options.standardUnits,
             active: options.active,
             min: this._min,

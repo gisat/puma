@@ -102,7 +102,7 @@ function getChart(params, callback) {
 						}
 						var obj = {
 							name: attrRec.name,
-							units: attrRec.units,
+							units: attrRec.displayUnits || attrRec.units,  //TODO: Replace these units by the display units, if they were set.
 							as: attr.as,
 							visible: visible,
 							attr: attr.attr,

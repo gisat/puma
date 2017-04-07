@@ -77,7 +77,7 @@ describe('AnalyticalUnitsController', () => {
 		it('returns all analytical units valid for given filter.', done => {
 			let params = {
 				scope: 1,
-				locations: [1, 2],
+				locations: JSON.stringify([1, 2]),
 				areaTemplate: 1
 			};
 

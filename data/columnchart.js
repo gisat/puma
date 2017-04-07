@@ -137,9 +137,25 @@ function getChart(params, callback) {
 							}
 
 							if (params['stacking'] != 'double' || j < (attrs.length / 2)) {
-								attr.series[k].push({y: +row[yearAttrName], units: attr.units, loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
+								attr.series[k].push({
+									y: +row[yearAttrName],
+									units: attr.displayUnits || attr.units,
+									loc: row.loc,
+									at: row.at,
+									gid: row.gid,
+									year: years[k],
+									yearName: results.years[years[k]]
+								});
 							} else {
-								attr.series[k].push({y: -row[yearAttrName], units: attr.units, loc: row.loc, at: row.at, gid: row.gid, year: years[k], yearName: results.years[years[k]]});
+								attr.series[k].push({
+									y: -row[yearAttrName],
+									units: attr.displayUnits || attr.units,
+									loc: row.loc,
+									at: row.at,
+									gid: row.gid,
+									year: years[k],
+									yearName: results.years[years[k]]
+								});
 							}
 						}
 

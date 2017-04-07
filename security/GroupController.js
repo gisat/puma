@@ -100,7 +100,7 @@ class GroupController {
 	}
 
     /**
-     *
+     * With sufficient rights, this deletes the group. 
      * @param request
      * @param response
      */
@@ -119,8 +119,13 @@ class GroupController {
         });
     }
 
-    addUserToGroup(request, response) {
-		if(!request.session.user.hasPermission('group_member', Permission.CREATE, request.body.groupId)) {
+	/**
+	 * If the user has right to update the group, he can actually add user to the group.
+	 * @param request
+	 * @param response
+	 */
+	addUserToGroup(request, response) {
+		if(!request.session.user.hasPermission('group', Permission.UPDATE, request.body.groupId)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
@@ -134,8 +139,13 @@ class GroupController {
 		});
     }
 
-    removeUserFromGroup(request, response) {
-		if(!request.session.user.hasPermission('group_member', Permission.DELETE, request.body.groupId)) {
+	/**
+	 * If the user has right to update the group, he can actually remove user from the group.
+	 * @param request
+	 * @param response
+	 */
+	removeUserFromGroup(request, response) {
+		if(!request.session.user.hasPermission('group', Permission.UPDATE, request.body.groupId)) {
 			response.status(403);
 			response.json({"status": "err"});
 			return;
@@ -149,7 +159,14 @@ class GroupController {
 		});
     }
 
-    addPermission(request, response, next) {
+	/**
+	 * This is endpoint for adding a permissions. The users typically won't have these permissions. These permissions are
+	 * mainly for specification of creation rights for different concepts.
+	 * It is probably possible to say that only admin have rights toward
+	 * @param request
+	 * @param response
+	 */
+	addPermission(request, response) {
         if(!request.session.user.hasPermission('group_permission', Permission.CREATE, request.body.groupId)) {
             response.status(403);
             response.json({"status": "err"});
@@ -164,7 +181,13 @@ class GroupController {
         });
     }
 
-    removePermission(request, response, next) {
+	/**
+	 * This is endpoint for removing permissions. The users typically won't have these permissions. These permissions are
+	 * mainly for specification of creation rights for different concepts.
+	 * @param request
+	 * @param response
+	 */
+	removePermission(request, response) {
         if(!request.session.user.hasPermission('group_permission', Permission.DELETE, request.body.groupId)) {
             response.status(403);
             response.json({"status": "err"});
