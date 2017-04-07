@@ -14,7 +14,7 @@ class SnowPortal {
         app.post("/api/snowportal/scenes", this.getScenes.bind(this));
         app.post("/api/snowportal/composites", this.getComposites.bind(this));
 
-        app.get("", this.getCompositesMetadata.bind(this));
+        app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
     }
 
     getCompositesMetadata(request, response) {
