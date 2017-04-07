@@ -1,3 +1,5 @@
+let logger = require('../common/Logger').applicationWideLogger;
+
 let _ = require("lodash");
 let Promise = require("promise");
 let hash = require("object-hash");
@@ -11,6 +13,17 @@ class SnowPortal {
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenes.bind(this));
         app.post("/api/snowportal/composites", this.getComposites.bind(this));
+
+        app.get("", this.getCompositesMetadata.bind(this));
+    }
+
+    getCompositesMetadata(request, response) {
+        this._pgPool.query(`SELECT * FROM composites.metadata`).then(result => {
+            response.json({metadata: result.rows});
+        }).catch(err => {
+            logger.error(`SnowPortal#getCompositeMetadata Error: `, err);
+            response.status(500).json({status: "err"});
+        });
     }
     
     getScenes(request, response) {
