@@ -18,7 +18,7 @@ class SnowPortal {
     }
 
     getCompositesMetadata(request, response) {
-        this._pgPool.query(`SELECT * FROM composites.metadata`).then(result => {
+        this._pgPool.query(`SELECT * FROM composites.metadata ORDER BY date_start`).then(result => {
             response.json({metadata: result.rows});
         }).catch(err => {
             logger.error(`SnowPortal#getCompositeMetadata Error: `, err);
