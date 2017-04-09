@@ -51,7 +51,7 @@ class PgLayerViews {
         }
         
         let schema = config.postgreSqlSchemaLayers;
-        return this._pgPool.pool().query(`DROP VIEW ${schema}.${PgLayerViews.name(layerReferenceId)}`);
+        return this._pgPool.pool().query(`DROP VIEW IF EXISTS ${schema}.${PgLayerViews.name(layerReferenceId)}`);
     }
 
     // TODO: It wont work, when columns with same name from different tables are used.
