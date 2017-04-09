@@ -17,7 +17,7 @@ class RasterAnalysis {
             }
         });
         let sqlQuery = `
-                DROP TABLE IF EXISTS ${analysisTableName} CASCADE;
+                DROP TABLE IF EXISTS analysis.${analysisTableName} CASCADE;
                 CREATE TABLE analysis.${analysisTableName} AS (
                     SELECT
                         foo."${fidColumn}"              AS gid,
