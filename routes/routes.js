@@ -40,6 +40,8 @@ var iprConversion = require('./iprConversion');
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
+let LayerImporterController = require('../integration/LayerImporterController');
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -110,6 +112,8 @@ module.exports = function(app) {
 	new iprConversion(app);
 	
 	new WpsController(app, pool, conn.getMongoDb(), null);
+	
+	new LayerImporterController(app, conn.getMongoDb(), pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
