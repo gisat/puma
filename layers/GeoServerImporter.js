@@ -44,7 +44,7 @@ class GeoServerImporter {
                 }
             })
             .then(response => {
-                let importerResponse = response.body.importLayer;
+                let importerResponse = response.body.import;
                 let importUrl = importerResponse.href;
                 let importTasks = importerResponse.tasks;
                 
