@@ -554,26 +554,32 @@ class LayerImporter {
                 resolve();
             });
         }).then(() => {
-            fileExtension = path.extname(importerTask.inputs.url);
-            sourceFileName = path.basename(importerTask.inputs.url, fileExtension);
-            customLayerName = importerTask.inputs.name || sourceFileName;
+            fileExtension = path.extname(importerTask.inputs.url || importerTask.inputs.file);
+            sourceFileName = path.basename(importerTask.inputs.url || importerTask.inputs.name, fileExtension);
+            customLayerName = importerTask.inputs.customName || sourceFileName;
             systemLayerName = `i${importerTask.id}_${customLayerName.toLowerCase().substring(0, 50).replace(/[|&;$%@"<>()+, ]/g, "_")}`;
             filePath = `${importFolderPath}${sourceFileName}${fileExtension}`;
             
-            return new Promise((resolve, reject) => {
-                let output = fs.createWriteStream(filePath);
-                request.get(importerTask.inputs.url)
-                    .on('error', error => {
-                        reject(error);
-                    })
-                    .pipe(output)
-                    .on('finish', () => {
-                        resolve();
-                    })
-                    .on('error', error => {
-                        reject(error);
-                    });
-            })
+            if (importerTask.inputs.url) {
+                return new Promise((resolve, reject) => {
+                    let output = fs.createWriteStream(filePath);
+                    request.get(importerTask.inputs.url)
+                        .on('error', error => {
+                            reject(error);
+                        })
+                        .pipe(output)
+                        .on('finish', () => {
+                            resolve();
+                        })
+                        .on('error', error => {
+                            reject(error);
+                        });
+                })
+            } else if (importerTask.inputs.file) {
+                return Promise.resolve().then(() => {
+                    fs.renameSync(importerTask.inputs.file, filePath);
+                })
+            }
         }).then(() => {
             return new Promise((resolve, reject) => {
                 if (fileExtension.toLowerCase() === '.zip') {
