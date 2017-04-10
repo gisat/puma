@@ -49,9 +49,12 @@ class LayerImporterController {
                 scope: request.body.scope,
                 theme: request.body.theme,
                 url: request.body.url,
-                filePath: request.files.layer.path,
-                fileName: request.files.layer.originalFilename || request.files.layer.name,
-                customName: request.body.name
+                file: request.files.layer.path,
+                name: request.files.layer.originalFilename || request.files.layer.name,
+                customName: request.body.name,
+                user: {
+                    id: request.session.user.id
+                }
             }
         });
     }
