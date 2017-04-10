@@ -308,7 +308,7 @@ class LayerImporter {
             let topic, layerGroup, attributes = [], attributeSet, layerTemplate;
             
             let layer = currentProcess.layer;
-            let user = currentProcess.user;
+            let user = currentProcess.inputs.user;
             let layerGroupName = "Custom Layers";
             
             let mongoTopics = new MongoTopics(_mongo);
@@ -458,7 +458,7 @@ class LayerImporter {
      */
     createMongoLayerReferencesAndUpdateTheme(currentProcess, _mongo) {
         return new Promise((resolve, reject) => {
-            let user = currentProcess.user;
+            let user = currentProcess.inputs.user;
             let layer = currentProcess.layer;
             let scope = currentProcess.basicMongoMetadata.scope;
             let theme = currentProcess.basicMongoMetadata.theme;
