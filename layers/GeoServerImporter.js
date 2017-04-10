@@ -36,7 +36,7 @@ class GeoServerImporter {
                             name: this._workspace
                         }
                     },
-                    targetStore: layer.type == "vector" ? vectorDatastore : undefined,
+                    targetStore: layer.type === "vector" ? vectorDatastore : undefined,
                     data: {
                         type: "directory",
                         location: layer.directory
@@ -54,7 +54,7 @@ class GeoServerImporter {
                 
                 let allReady = true;
                 _.each(importTasks, importTask => {
-                    if (importTask.state != "READY") {
+                    if (importTask.state !== "READY") {
                         allReady = !allReady;
                     }
                 });
@@ -75,7 +75,7 @@ class GeoServerImporter {
                                 let importerTasks = importerResponse.tasks;
                                 let taskResults = [];
                                 _.each(importerTasks, task => {
-                                    if (task.state == "ERROR") {
+                                    if (task.state === "ERROR") {
                                         throw new Error(task.href);
                                     }
                                     taskResults.push(
