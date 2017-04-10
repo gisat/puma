@@ -14,9 +14,9 @@ class LayerImporterTasks {
         let taskId = conn.getNextId();
         
         this._importerTasks[taskId] = {
-            id: conn.getNextId(),
+            id: taskId,
             started: new Date(),
-            status: "processing",
+            status: "importing",
             progress: 0
         };
         
