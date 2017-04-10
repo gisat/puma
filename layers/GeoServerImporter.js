@@ -71,7 +71,7 @@ class GeoServerImporter {
                             .get(importUrl)
                             .auth(this._userName, this._password)
                             .then(response => {
-                                let importerResponse = response.body.importLayer;
+                                let importerResponse = response.body.import;
                                 let importerTasks = importerResponse.tasks;
                                 let taskResults = [];
                                 _.each(importerTasks, task => {
