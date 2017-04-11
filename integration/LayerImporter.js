@@ -7,7 +7,7 @@ let unzip = require('unzip');
 
 let conn = require('../common/conn');
 let config = require('../config');
-let utils = require('../../puma/tacrpha/utils');
+let utils = require('../tacrpha/utils');
 
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
 let FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
