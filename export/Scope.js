@@ -12,7 +12,7 @@ let FilteredMongoAnalysis = require('../analysis/FilteredMongoAnalysis');
 let FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformedAnalysis');
 let FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 let FilteredMongoAttributes = require('../attributes/FilteredMongoAttributes');
-let FilteredMongoLayerTemplate = require('../layers/FilteredMongoLayerTemplate');
+let FilteredMongoLayerTemplates = require('../layers/FilteredMongoLayerTemplates');
 let FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 
@@ -68,7 +68,7 @@ class Scope {
 			return new FilteredMongoAttributes({_id: {$in: ids}}, this.mongo).json();
 		}).then(pAttributes => {
 			attributes = pAttributes;
-			return new FilteredMongoLayerTemplate({topic: {$in: topicIds}}, this.mongo).json();
+			return new FilteredMongoLayerTemplates({topic: {$in: topicIds}}, this.mongo).json();
 		}).then(pLayerTemplates => {
 			layerTemplates = pLayerTemplates;
 			locationIds = this.getIds(locations, '_id');

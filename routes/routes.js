@@ -6,6 +6,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var AnalysisController = require('./AnalysisController');
 var AnalyticalUnitsController = require('../layers/AnalyticalUnitsController');
 var AreaTemplateController = require('./AreaTemplateController');
+var AreaController = require('../layers/AreaController');
 var AttributeController = require('./AttributeController');
 var AttributeSetController = require('./AttributeSetController');
 var ChartCfgController = require('./ChartCfgController');
@@ -107,6 +108,7 @@ module.exports = function(app) {
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
 	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
+	new AreaController(app, pool, conn.getMongoDb());
 
 	new iprquery(app, pool);
 	new iprConversion(app);

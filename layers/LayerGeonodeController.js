@@ -4,7 +4,10 @@ let config = require('../config');
 let conn = require('../common/conn');
 let logger = require('../common/Logger').applicationWideLogger;
 
+let FilteredMongoLayerGroups = require('./FilteredMongoLayerGroups');
+let FrontOfficeLayers = require('./FrontOfficeLayers');
 let GeonodeLayers = require('./GeonodeLayers');
+let MongoLayerReferences = require('./MongoLayerReferences');
 let PgLayers = require('./PgLayers');
 let PgPermissions = require('../security/PgPermissions');
 let Permission = require('../security/Permission');
@@ -20,10 +23,14 @@ class LayerGeonodeController {
 		this.pgLayers = new PgLayers(pgPool, this.mongo, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pgPool, schema || config.postgreSqlSchema);
 
+		this.layerReferences = new FrontOfficeLayers(this.mongo, pgPool, schema || config.postgreSqlSchema);
+
 		app.get('/rest/layer', this.readAll.bind(this));
 		app.post('/rest/layer', this.add.bind(this));
 		app.put('/rest/layer', this.update.bind(this));
 		app.delete('/rest/layer/:id', this.delete.bind(this));
+		app.get('/rest/filtered/layer', this.filteredLayers.bind(this));
+		app.get('/rest/filtered/au', this.filteredAnalyticalUnits.bind(this));
 	}
 
 	/**
@@ -118,7 +125,7 @@ class LayerGeonodeController {
 		logger.info(`LayerGeonodeController#delete Delete layer with id: ${request.params.id} By User: ${request.session.userId} `);
 
 		if (!request.session.user.hasPermission('layer', Permission.DELETE, request.params.id)) {
-			logger.error(`LayerGeonodeController#add User: ${request.session.userId} doesn't have permissions to delete layer: ${request.session.userId}`);
+			logger.error(`LayerGeonodeController#add User: ${request.session.userId} doesn't have permissions to delete layer: ${request.params.id}`);
 			response.status(403).json({status: "err"});
 			return;
 		}
@@ -129,6 +136,61 @@ class LayerGeonodeController {
 			logger.error('LayerGeonodeController#delete Error: ', error);
 			response.status(500).json({status: "err"});
 		})
+	}
+
+	/**
+	 * It returns filtered layers available in the system. It returns only vector and raster layers. The returned
+	 * information contains: path, name, layerGroup
+	 * The filters that are supported are:
+	 * {
+	 *   scope: {idOfScope},
+	 *   year: [{idOfFirstYear}, {idOfSecondYear}]
+	 *   place: [] or nothing, if there is no place filter, then layers for all places
+	 * }
+	 */
+	filteredLayers(request, response) {
+		logger.info(`LayerGeonodeController#filteredLayers Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} by  User: ${request.session.userId}`);
+
+		if (!request.session.user.hasPermission('dataset', Permission.READ, request.query.scope)) {
+			logger.error(`LayerGeonodeController#filteredLayers User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
+			response.status(403).json({status: "err"});
+			return;
+		}
+
+		this.layerReferences.vectorRasterLayers(request.query.scope, request.query.year, request.query.place).then(layers => {
+			response.json({data: layers});
+		}).catch(error => {
+			logger.error('LayerGeonodeController#filteredLayers Error: ', error);
+			response.status(500).json({status: 'err'});
+		});
+	}
+
+	/**
+	 * It returns filtered layers available in the system. It returns only analytical units. The returned
+	 * information contains: path, name, layerGroup
+	 * The filters that are supported are:
+	 * {
+	 *   scope: {idOfScope},
+	 *   year: [{idOfFirstYear}, {idOfSecondYear}]
+	 *   place: [] or nothing, if there is no place filter, then layers for all places
+	 *   layerTemplate: {Id of the layer template} or nothing meaning all analytical units will be returned
+	 * }
+	 */
+	filteredAnalyticalUnits(request, response) {
+		logger.info(`LayerGeonodeController#filteredAnalyticalUnits Get filtered layers for scope: ${request.query.scope}, theme: ${request.query.theme}, years: ${request.query.year}, place: ${request.query.place} Layer template: ${request.query.layerTemplate} by  User: ${request.session.userId}`);
+
+		if (!request.session.user.hasPermission('dataset', Permission.READ, request.query.scope)) {
+			logger.error(`LayerGeonodeController#filteredAnalyticalUnits User: ${request.session.user} doesn't have permissions to read layers for give scope: ${request.query.scope}`);
+			response.status(403).json({status: "err"});
+			return;
+		}
+
+		this.layerReferences.analyticalUnitsLayers(request.query.scope, request.query.year, request.query.place, Number(request.query.layerTemplate)).then(layers => {
+			response.json({data: layers});
+		}).catch(error => {
+			logger.error('LayerGeonodeController#filteredAnalyticalUnits Error: ', error);
+			response.status(500).json({status: 'err'});
+		});
 	}
 }
 

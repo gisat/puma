@@ -21,6 +21,23 @@ let path = require('path');
 
 function wms(params, req, res, callback) {
 
+	keysToUpperCase(params);
+	// todo find out why is not possible to use CRS
+	if (params.hasOwnProperty('CRS')){
+		params['SRS'] = params['CRS'];
+		delete params['CRS'];
+	}
+	// it solves an issue with choropleths in 3D
+	if (params.hasOwnProperty('VERSION')){
+		params['VERSION'] = params['1.1.1'];
+	}
+	// it solves wrong bbox for combination geoserver-web world wind
+	if (params.hasOwnProperty('SRS') && params['SRS'] == "EPSG:4326"){
+		var bounbox = params['BBOX'].split(',');
+		params['BBOX'] = bounbox[1] + "," + bounbox[0] + "," + bounbox[3] + "," + bounbox[2];
+	}
+
+
 	if (!layerGroupMap) {
 		crud.read('layergroupgs',{},function(err,items) {
 			items = items || [];
@@ -214,6 +231,21 @@ function wms(params, req, res, callback) {
 //        reqs.abort();
 //    },5000);
 
+}
+
+/**
+ * Convert all keys of object to uppercase
+ * @param obj {Object}
+ * @returns {Object}
+ */
+function keysToUpperCase (obj){
+	for (var key in obj){
+		var upper = key.toUpperCase();
+		if( upper !== key ){
+			obj[ upper ] = obj[key];
+			delete obj[key];
+		}
+	}
 }
 
 function storeTemporarySld(id, sld) {

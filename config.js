@@ -44,6 +44,22 @@ module.exports = {
 	 */
 	geonodeUrl: "http://10.0.75.2:80/",
 
+	/**
+	 * Full URL of the GeoServer usable for the requests.
+	 */
+	geoServerUrl: "http://10.0.75.2:80/geoserver/",
+
+	/**
+	 * Data store used for storing the layers.
+	 */
+	geoServerDataStore: "datastore",
+
+	/**
+	 * Path to the directory where temporary sld will be stored. It is used mainly for debugging. It is about thematic
+	 * maps and the borders of the analytical units.
+	 */
+	temporarySldFilesPath: "/tmp/",
+
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
 	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
@@ -145,5 +161,15 @@ module.exports = {
 	 */
 	exportDirectory: '/tmp/',
 
-	isUrbis: false
+	/*
+	 * Destination of temporary downloaded files for the WPS process
+	 */
+	temporaryDownloadedFilesLocation: '/tmp/',
+
+	isUrbis: false,
+	
+	/**
+	 * Name of the application used for watching the servers.
+	 */
+	appName: 'Localhost'
 };
