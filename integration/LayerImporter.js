@@ -156,6 +156,7 @@ class LayerImporter {
                     theme = pTheme;
                 })
             }).then(() => {
+                // todo check if user has correct rights
                 resolve({
                     scope: scope,
                     theme: theme,
