@@ -1,4 +1,4 @@
-let conn = require('../../puma/common/conn');
+let conn = require('../common/conn');
 
 class LayerImporterTasks {
     constructor() {
