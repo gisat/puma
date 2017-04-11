@@ -632,12 +632,14 @@ class LayerImporter {
                             layerType = "raster"
                         } else if (ext.includes("shp")) {
                             layerType = "vector";
-                        } else {
-                            reject(new Error(`unknown file, shp or geotiff is expected`));
                         }
                     });
                     
-                    resolve();
+                    if (!layerType) {
+                        reject(new Error(`unknown file, shp or geotiff is expected`));
+                    } else {
+                        resolve();
+                    }
                 })
             });
         }).then(() => {
