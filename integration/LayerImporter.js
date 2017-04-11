@@ -37,7 +37,7 @@ let PgBaseLayerTables = require('../../puma/layers/PgBaseLayerTables');
 let PgLayerViews = require('../../puma/layers/PgLayerViews');
 let RasterToPGSQL = require('../../puma/integration/RasterToPGSQL');
 let PgPermissions = require('../../puma/security/PgPermissions');
-let RasterAnalysis = require('../analysis/spatial/RasterAnalysis');
+let LayerAnalysis = require('../analysis/spatial/LayerAnalysis');
 let Permissions = require('../security/Permission');
 
 class LayerImporter {
@@ -67,13 +67,16 @@ class LayerImporter {
         
         this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo).then((basicMetadata) => {
             this._currentImportTask.basicMongoMetadata = basicMetadata;
+            this._currentImportTask.progress = 10;
             return this.prepareLayerFilesForImport(this._currentImportTask);
         }).then((layer) => {
             this._currentImportTask.layer = layer;
+            this._currentImportTask.progress = 20;
             return this.getPublicWorkspaceSchema();
         }).then((publicWorkspaceSchema) => {
             this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
             this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
+            this._currentImportTask.progress = 30;
             // todo get datastore from configuration
             let geoServerImporter = new GeoServerImporter(
                 config.geoserverHost + config.geoserverPath,
@@ -85,28 +88,36 @@ class LayerImporter {
             return geoServerImporter.importLayer(this._currentImportTask.layer);
         }).then((geoserverImportTaskResults) => {
             this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+            this._currentImportTask.progress = 40;
             let geonodeUpdateLayers = new GeonodeUpdateLayers();
             return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
         }).then(() => {
+            this._currentImportTask.progress = 50;
             if (this._currentImportTask.layer.type === "raster") {
                 let rasterToPgsql = new RasterToPGSQL(config.pgDataHost, config.pgDataUser, config.pgDataPassword, config.pgDataDatabase);
                 return rasterToPgsql.import(this._currentImportTask.layer);
             }
         }).then((rasterToPgsqlOutput) => {
+            this._currentImportTask.progress = 60;
             if (rasterToPgsqlOutput) {
                 this._currentImportTask.rasterToPgsqlOutput = rasterToPgsqlOutput
             }
             return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
         }).then((mongoMetadata) => {
+            this._currentImportTask.progress = 70;
             this._currentImportTask.mongoMetadata = mongoMetadata;
             return this.analyseLayer(this._currentImportTask, this._mongo, this._pgPool);
         }).then((performedAnalysis) => {
+            this._currentImportTask.progress = 80;
             this._currentImportTask.performedAnalysis = performedAnalysis;
             return this.createMongoLayerReferencesAndUpdateTheme(this._currentImportTask, this._mongo);
         }).then((mongoLayerReferences) => {
+            this._currentImportTask.progress = 90;
             this._currentImportTask.mongoLayerReferences = mongoLayerReferences;
             return this.updatePgViewWithPerformedAnalysisMongoLayerReferences(this._currentImportTask, this._mongo, this._pgPool);
         }).then(() => {
+            this._currentImportTask.progress = 100;
+            this._currentImportTask.status = "done";
             console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
         }).catch(error => {
             this._currentImportTask.status = "error";
@@ -122,7 +133,6 @@ class LayerImporter {
      */
     getBasicMetadataObjects(inputs, _mongo) {
         return new Promise((resolve, reject) => {
-            console.log(inputs);
             let themeId = inputs.theme;
             let scopeId = inputs.scope;
             
@@ -188,33 +198,28 @@ class LayerImporter {
                     }
                 });
             }).then(() => {
-                let promises = [];
-                _.each(analyticalUnits, (analyticalUnit, analyticalUnitName) => {
-                    if (layer.type === "raster") {
-                        let outputAnalysisTable = `${analyticalUnitName}_analysis_${layer.systemName.split(`_`)[0]}`;
-                        promises.push(_pgPool
-                            .pool()
-                            .query(`SELECT f_geometry_column FROM geometry_columns WHERE f_table_name='${analyticalUnitName}';`)
-                            .then((results) => {
-                                if (!results.rows.length) throw new Error(`there is no geometry column for given analytical unit`);
-                                
-                                let geometryColumn = results.rows[0][`f_geometry_column`];
-                                
-                                let analysis = _.map(currentProcess.mongoMetadata.attributes, attribute => {
-                                    return {
-                                        type: attribute.analysis,
-                                        attribute: `as_${currentProcess.mongoMetadata.attributeSet._id}_attr_${attribute._id}`
-                                    }
-                                });
-                                
-                                return new RasterAnalysis(_pgPool).analyse(
-                                    layer.systemName,
-                                    analyticalUnitName,
-                                    geometryColumn,
-                                    analyticalUnit.fidColumn,
-                                    outputAnalysisTable,
-                                    analysis
-                                ).then(() => {
+                    let promises = [];
+                    _.each(analyticalUnits, (analyticalUnit, analyticalUnitName) => {
+                            let outputAnalysisTable = `${analyticalUnitName}_analysis_${layer.systemName.split(`_`)[0]}`;
+                            promises.push(
+                                Promise.resolve().then(() => {
+                                    let analysis = _.map(currentProcess.mongoMetadata.attributes, attribute => {
+                                        return {
+                                            type: attribute.analysis,
+                                            attribute: `as_${currentProcess.mongoMetadata.attributeSet._id}_attr_${attribute._id}`,
+                                            column: attribute.column
+                                        }
+                                    });
+                                    return new LayerAnalysis(_pgPool)
+                                        .analyseLayer(
+                                            layer,
+                                            analyticalUnit,
+                                            outputAnalysisTable,
+                                            analysis
+                                        ).then(() => {
+                                            return analysis;
+                                        })
+                                }).then((analysis) => {
                                     executedAnalysis.push({
                                         layer: layer.systemName,
                                         analyticalUnit: analyticalUnitName,
@@ -222,19 +227,20 @@ class LayerImporter {
                                         analyticalUnitAreaTemplateId: analyticalUnit.areaTemplateId,
                                         analysis: analysis,
                                         outputTable: outputAnalysisTable
-                                    });
-                                });
-                            })
-                        );
-                    }
-                });
-                return Promise.all(promises);
-            }).then(() => {
+                                    })
+                                })
+                            );
+                        }
+                    );
+                    return Promise.all(promises);
+                }
+            ).then(() => {
                 resolve(executedAnalysis);
             }).catch(error => {
                 reject(error);
             });
-        });
+        })
+            ;
     }
     
     /**
@@ -315,6 +321,8 @@ class LayerImporter {
             let mongoLayerGroups = new MongoLayerGroups(_mongo);
             let pgPermissions = new PgPermissions(_pgPool, config.postgreSqlSchema);
             
+            let geoserverImportTaskResults = currentProcess.geoserverImportTaskResults;
+            
             topic = {
                 _id: conn.getNextId(),
                 name: `${layer.customName}`,
@@ -386,6 +394,22 @@ class LayerImporter {
                             origin: `customLayer`,
                             type: `numeric`,
                             analysis: attributeType
+                        });
+                    });
+                } else if (layer.type === "vector") {
+                    _.each(attributeTypes, attributeType => {
+                        _.each(geoserverImportTaskResults[0].attributes, attribute => {
+                            if (this.isVectorLayerAttributeNumeric(attribute)) {
+                                attributes.push({
+                                    _id: conn.getNextId(),
+                                    name: `${attribute.name} ${attributeType}`,
+                                    active: true,
+                                    origin: `customLayer`,
+                                    type: `numeric`,
+                                    analysis: attributeType,
+                                    column: attribute.name
+                                });
+                            }
                         });
                     });
                 }
@@ -473,8 +497,6 @@ class LayerImporter {
             let pgPermissions = new PgPermissions(this._pgPool, config.postgreSqlSchema);
             
             let locations = [], layerReferences = [];
-            
-            if (layer.type === "vector") reject(new Error(`creation of vector layer references is not implemented yet`));
             
             new FilteredMongoLocations({dataset: scope._id}, _mongo).json().then((mongoLocations) => {
                 if (!mongoLocations.length) throw new Error(`unable to found places for given scope`);
@@ -630,6 +652,26 @@ class LayerImporter {
                 });
             });
         });
+    }
+    
+    /**
+     * check if java data type is numeric
+     * @param attribute
+     * @returns {boolean}
+     */
+    isVectorLayerAttributeNumeric(attribute) {
+        switch (attribute.binding) {
+            case `java.lang.Integer`:
+                return true;
+            case `java.lang.Long`:
+                return true;
+            case `java.lang.Double`:
+                return true;
+            case `java.lang.Float`:
+                return true;
+            default:
+                return false;
+        }
     }
 }
 
