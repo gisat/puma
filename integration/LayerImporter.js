@@ -13,7 +13,7 @@ let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
 let FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
 let FilteredMongoLayerGroups = require('../metadata/FilteredMongoLayerGroups');
-let FilteredMongoLayerTemplate = require('../../puma/layers/FilteredMongoLayerTemplate');
+let FilteredMongoLayerTemplates = require('../../puma/layers/FilteredMongoLayerTemplates');
 let FilteredMongoLayerReferences = require('../../puma/layers/FilteredMongoLayerReferences');
 let GeoServerImporter = require('../../puma/layers/GeoServerImporter');
 let PgTable = require('../../puma/data/PgTable');
@@ -629,9 +629,10 @@ class LayerImporter {
                         fs.renameSync(`${importFolderPath}${file}`, `${importFolderPath}${systemLayerName}${ext}`);
                         if (ext.includes("tif")) {
                             layerType = "raster"
-                        }
-                        if (ext.includes("shp")) {
+                        } else if (ext.includes("shp")) {
                             layerType = "vector";
+                        } else {
+                            reject(new Error(`unknown file, shp or geotiff is expected`));
                         }
                     });
                     
