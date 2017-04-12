@@ -198,7 +198,7 @@ class LayerImporter {
                     }
                 ]
             }, _mongo).json().then((pAnalyticalUnitsLayerReferences) => {
-                if(!pAnalyticalUnitsLayerReferences.length) reject(new Error(`unable to analyse, no analytical units was found`));
+                if (!pAnalyticalUnitsLayerReferences.length) reject(new Error(`unable to analyse, no analytical units was found`));
                 analyticalUnitsLayerReferences = pAnalyticalUnitsLayerReferences;
                 _.each(analyticalUnitsLayerReferences, analyticalUnitLayerReference => {
                     analyticalUnits[analyticalUnitLayerReference.layer.split(`:`)[1]] = {
@@ -263,16 +263,25 @@ class LayerImporter {
         return new Promise((resolve, reject) => {
             let pgLayerViews = new PgLayerViews(_pgPool, config.postgreSqlSchemaLayers);
             let performedAnalysis = currentProcess.performedAnalysis;
+            let locationsIds = _.map(currentProcess.mongoMetadata.locations, location => {
+                return location._id
+            });
             new FilteredMongoLayerReferences({
                 $and: [
-                    {isData: false},
                     {
                         areaTemplate: {
-                            $in: _.map(performedAnalysis, performedAnalysis => {
-                                return performedAnalysis.analyticalUnitAreaTemplateId
-                            })
+                            $in: currentProcess.basicMongoMetadata.analyticalUnits
                         }
-                    }]
+                    },
+                    {
+                        location: {
+                            $in: locationsIds
+                        }
+                    },
+                    {
+                        isData: false
+                    }
+                ]
             }, _mongo).json().then((baseMongoLayerReferences) => {
                 let promises = [];
                 _.each(baseMongoLayerReferences, baseMongoLayerReference => {
