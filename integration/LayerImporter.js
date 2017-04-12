@@ -312,8 +312,9 @@ class LayerImporter {
      */
     prepareAndGetMetadata(currentProcess, _mongo, _pgPool) {
         return new Promise((resolve, reject) => {
-            let topic, layerGroup, attributes = [], attributeSet, layerTemplate;
+            let topic, layerGroup, attributes = [], attributeSet, layerTemplate, locations = [];
             
+            let scope = currentProcess.basicMongoMetadata.scope;
             let layer = currentProcess.layer;
             let user = currentProcess.inputs.user;
             let layerGroupName = "Custom Layers";
@@ -331,7 +332,10 @@ class LayerImporter {
                 origin: `customLayer`
             };
             
-            mongoTopics.add(topic).then((result) => {
+            new FilteredMongoLocations({dataset: scope._id}, _mongo).json().then(pLocations => {
+                locations = pLocations;
+                return mongoTopics.add(topic);
+            }).then((result) => {
                 if (!result.insertedCount) reject(new Error(`topic was not created`));
                 return Promise.all([
                     pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permissions.READ),
@@ -467,7 +471,8 @@ class LayerImporter {
                     layerGroup: layerGroup,
                     attributes: attributes,
                     attributeSet: attributeSet,
-                    layerTemplate: layerTemplate
+                    layerTemplate: layerTemplate,
+                    locations: locations
                 })
             }).catch(error => {
                 reject(error);
