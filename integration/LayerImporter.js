@@ -178,7 +178,7 @@ class LayerImporter {
             let analyticalUnitsLayerReferences;
             let analyticalUnits = {};
             let executedAnalysis = [];
-            let locationsIds = _.map(currentProcess.basicMongoMetadata.locations, location => {
+            let locationsIds = _.map(currentProcess.mongoMetadata.locations, location => {
                 return location._id
             });
             new FilteredMongoLayerReferences({
@@ -198,6 +198,7 @@ class LayerImporter {
                     }
                 ]
             }, _mongo).json().then((pAnalyticalUnitsLayerReferences) => {
+                if(!pAnalyticalUnitsLayerReferences.length) reject(new Error(`unable to analyse, no analytical units was found`));
                 analyticalUnitsLayerReferences = pAnalyticalUnitsLayerReferences;
                 _.each(analyticalUnitsLayerReferences, analyticalUnitLayerReference => {
                     analyticalUnits[analyticalUnitLayerReference.layer.split(`:`)[1]] = {
@@ -501,7 +502,7 @@ class LayerImporter {
             let scope = currentProcess.basicMongoMetadata.scope;
             let theme = currentProcess.basicMongoMetadata.theme;
             let topic = currentProcess.mongoMetadata.topic;
-            let locations = currentProcess.basicMongoMetadata.locations;
+            let locations = currentProcess.mongoMetadata.locations;
             let layerTemplate = currentProcess.mongoMetadata.layerTemplate;
             let workspace = currentProcess.publicWorkspace;
             let attributeSet = currentProcess.mongoMetadata.attributeSet;
@@ -527,39 +528,40 @@ class LayerImporter {
                         year: year
                     });
                 });
-                
-                _.each(locations, location => {
-                    _.each(scope.years, year => {
-                        _.each(performedAnalysis, performedAnalysisResult => {
-                            layerReferences.push({
-                                _id: conn.getNextId(),
-                                location: location._id,
-                                year: year,
-                                areaTemplate: performedAnalysisResult.analyticalUnitAreaTemplateId,
-                                isData: true,
-                                fidColumn: "gid",
-                                layer: `analysis:${performedAnalysisResult.outputTable}`,
-                                attributeSet: attributeSet._id,
-                                columnMap: _.map(attributes, attribute => {
-                                    return ({
-                                        column: `as_${attributeSet._id}_attr_${attribute._id}`,
-                                        attribute: attribute._id
-                                    })
+            });
+            
+            _.each(locations, location => {
+                _.each(scope.years, year => {
+                    _.each(performedAnalysis, performedAnalysisResult => {
+                        layerReferences.push({
+                            _id: conn.getNextId(),
+                            location: location._id,
+                            year: year,
+                            areaTemplate: performedAnalysisResult.analyticalUnitAreaTemplateId,
+                            isData: true,
+                            fidColumn: "gid",
+                            layer: `analysis:${performedAnalysisResult.outputTable}`,
+                            attributeSet: attributeSet._id,
+                            columnMap: _.map(attributes, attribute => {
+                                return ({
+                                    column: `as_${attributeSet._id}_attr_${attribute._id}`,
+                                    attribute: attribute._id
                                 })
-                            });
-                        })
+                            })
+                        });
                     })
-                });
-                return Promise.all(_.map(layerReferences, layerReference => {
-                    layerReferencesPermissions.concat([
-                        pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.READ),
-                        pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.UPDATE),
-                        pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.DELETE)
-                    ]);
-                    return mongoLayerReferences.add(layerReference);
-                })).then(() => {
-                    return Promise.all(layerReferencesPermissions);
-                });
+                })
+            });
+            
+            Promise.all(_.map(layerReferences, layerReference => {
+                layerReferencesPermissions.concat([
+                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.READ),
+                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.UPDATE),
+                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.DELETE)
+                ]);
+                return mongoLayerReferences.add(layerReference);
+            })).then(() => {
+                return Promise.all(layerReferencesPermissions);
             }).then(() => {
                 let topics = theme.topics;
                 topics.push(topic._id);
@@ -688,4 +690,5 @@ class LayerImporter {
     }
 }
 
-module.exports = LayerImporter;
+module
+    .exports = LayerImporter;
