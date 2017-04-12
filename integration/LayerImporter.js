@@ -501,6 +501,7 @@ class LayerImporter {
             let scope = currentProcess.basicMongoMetadata.scope;
             let theme = currentProcess.basicMongoMetadata.theme;
             let topic = currentProcess.mongoMetadata.topic;
+            let locations = currentProcess.basicMongoMetadata.locations;
             let layerTemplate = currentProcess.mongoMetadata.layerTemplate;
             let workspace = currentProcess.publicWorkspace;
             let attributeSet = currentProcess.mongoMetadata.attributeSet;
@@ -510,25 +511,20 @@ class LayerImporter {
             let mongoLayerReferences = new MongoLayerReferences(this._mongo);
             let pgPermissions = new PgPermissions(this._pgPool, config.postgreSqlSchema);
             
-            let locations = [], layerReferences = [];
+            let layerReferences = [];
             
-            new FilteredMongoLocations({dataset: scope._id}, _mongo).json().then((mongoLocations) => {
-                if (!mongoLocations.length) throw new Error(`unable to found places for given scope`);
-                locations = mongoLocations;
-            }).then(() => {
-                let layerReferencesPermissions = [];
-                _.each(locations, location => {
-                    _.each(scope.years, year => {
-                        layerReferences.push({
-                            _id: conn.getNextId(),
-                            active: true,
-                            areaTemplate: layerTemplate._id,
-                            columnMap: [],
-                            isData: false,
-                            layer: `${workspace}:${layer.systemName}`,
-                            location: location._id,
-                            year: year
-                        });
+            let layerReferencesPermissions = [];
+            _.each(locations, location => {
+                _.each(scope.years, year => {
+                    layerReferences.push({
+                        _id: conn.getNextId(),
+                        active: true,
+                        areaTemplate: layerTemplate._id,
+                        columnMap: [],
+                        isData: false,
+                        layer: `${workspace}:${layer.systemName}`,
+                        location: location._id,
+                        year: year
                     });
                 });
                 
