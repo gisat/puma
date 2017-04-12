@@ -178,11 +178,19 @@ class LayerImporter {
             let analyticalUnitsLayerReferences;
             let analyticalUnits = {};
             let executedAnalysis = [];
+            let locationsIds = _.map(currentProcess.basicMongoMetadata.locations, location => {
+                return location._id
+            });
             new FilteredMongoLayerReferences({
                 $and: [
                     {
                         areaTemplate: {
                             $in: currentProcess.basicMongoMetadata.analyticalUnits
+                        }
+                    },
+                    {
+                        location: {
+                            $in: locationsIds
                         }
                     },
                     {
