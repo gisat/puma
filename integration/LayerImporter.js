@@ -534,7 +534,8 @@ class LayerImporter {
                         isData: false,
                         layer: `${workspace}:${layer.systemName}`,
                         location: location._id,
-                        year: year
+                        year: year,
+                        origin: `customLayer`,
                     });
                 });
             });
@@ -556,7 +557,8 @@ class LayerImporter {
                                     column: `as_${attributeSet._id}_attr_${attribute._id}`,
                                     attribute: attribute._id
                                 })
-                            })
+                            }),
+                            origin: `customLayer`,
                         });
                     })
                 })
