@@ -65,7 +65,7 @@ class LayerImporter {
         
         this._currentImportTask.inputs = inputs;
         
-        this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo).then((basicMetadata) => {
+        this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((basicMetadata) => {
             this._currentImportTask.basicMongoMetadata = basicMetadata;
             this._currentImportTask.progress = 10;
             return this.prepareLayerFilesForImport(this._currentImportTask);
@@ -130,39 +130,67 @@ class LayerImporter {
      * Get basic mongo metadata objects ( scope & theme
      * @param inputs object with inputs from wps
      * @param _mongo mongo db connection
+     * @param _pgPool postgresql connection pool
      */
-    getBasicMetadataObjects(inputs, _mongo) {
+    getBasicMetadataObjects(inputs, _mongo, _pgPool) {
         return new Promise((resolve, reject) => {
-            let themeId = inputs.theme;
-            let scopeId = inputs.scope;
+            let themeIdFilter = inputs.theme;
+            let scopeIdFilter = inputs.scope;
+            let user = inputs.user;
             
-            let theme, scope, analyticalUnits;
-            
-            if (!themeId) {
-                reject(new Error(`theme id is not specified`));
-            }
-            if (!scopeId) {
-                reject(new Error(`scope id is not specified`));
-            }
-            
-            new MongoScope(Number(scopeId), _mongo).json().then((pScope) => {
-                if (!pScope) reject(new Error(`scope was not found`));
-                if (!pScope.featureLayers.length) reject(new Error(`selected scope has no analytical units`));
-                scope = pScope;
-                analyticalUnits = pScope.featureLayers;
-            }).then(() => {
-                return new MongoTheme(Number(themeId), _mongo).json().then((pTheme) => {
-                    if (!pTheme) reject(new Error(`theme was not found`));
-                    theme = pTheme;
+            let pgPermissions = new PgPermissions(_pgPool, config.postgreSqlSchema);
+            pgPermissions.forUser(user.id).then(results => {
+                let filter = {
+                    resourceType: MongoScope.collectionName(),
+                    permission: Permissions.UPDATE,
+                };
+                if (scopeIdFilter) {
+                    filter.resourceId = String(scopeIdFilter);
+                }
+                return _.filter(results, filter);
+            }).then(updatableScopes => {
+                let filter = {
+                    _id: {
+                        $in: _.map(updatableScopes, updatableScope => {
+                            return Number(updatableScope.resourceId);
+                        })
+                    },
+                    featureLayers: {
+                        $gt: []
+                    },
+                    years: {
+                        $gt: []
+                    }
+                };
+                return new FilteredMongoScopes(filter, _mongo).json();
+            }).then(updatableScopes => {
+                let scopes = {};
+                let scopesIds = _.map(updatableScopes, updatableScope => {
+                    return updatableScope._id;
+                });
+                let filter = {
+                    dataset: {
+                        $in: scopesIds
+                    }
+                };
+                if (themeIdFilter) {
+                    filter._id = Number(themeIdFilter);
+                }
+                return new FilteredMongoThemes(filter, _mongo).json().then(mongoThemes => {
+                    _.each(mongoThemes, mongoTheme => {
+                        if(themeIdFilter && mongoTheme._id !== Number(themeIdFilter)) return;
+                        scopes[Number(mongoTheme.dataset)] = scopes[Number(mongoTheme.dataset)] || _.find(updatableScopes, {_id: mongoTheme.dataset});
+                        scopes[Number(mongoTheme.dataset)].themes = scopes[Number(mongoTheme.dataset)].themes || [];
+                        scopes[Number(mongoTheme.dataset)].themes.push(mongoTheme);
+                    });
+                }).then(() => {
+                    return scopes;
                 })
-            }).then(() => {
-                // todo check if user has correct rights
-                resolve({
-                    scope: scope,
-                    theme: theme,
-                    analyticalUnits: analyticalUnits
-                })
-            })
+            }).then(scopes => {
+                resolve(scopes);
+            }).catch(error => {
+                reject(error);
+            });
         });
     }
     
