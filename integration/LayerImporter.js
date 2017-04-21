@@ -65,8 +65,8 @@ class LayerImporter {
         
         this._currentImportTask.inputs = inputs;
         
-        this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((basicMetadata) => {
-            this._currentImportTask.basicMongoMetadata = basicMetadata;
+        this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
+            this._currentImportTask.mongoScopes = pMongoScopes;
             this._currentImportTask.progress = 10;
             return this.prepareLayerFilesForImport(this._currentImportTask);
         }).then((layer) => {
@@ -178,7 +178,7 @@ class LayerImporter {
                 }
                 return new FilteredMongoThemes(filter, _mongo).json().then(mongoThemes => {
                     _.each(mongoThemes, mongoTheme => {
-                        if(themeIdFilter && mongoTheme._id !== Number(themeIdFilter)) return;
+                        if (themeIdFilter && mongoTheme._id !== Number(themeIdFilter)) return;
                         scopes[Number(mongoTheme.dataset)] = scopes[Number(mongoTheme.dataset)] || _.find(updatableScopes, {_id: mongoTheme.dataset});
                         scopes[Number(mongoTheme.dataset)].themes = scopes[Number(mongoTheme.dataset)].themes || [];
                         scopes[Number(mongoTheme.dataset)].themes.push(mongoTheme);
@@ -209,11 +209,36 @@ class LayerImporter {
             let locationsIds = _.map(currentProcess.mongoMetadata.locations, location => {
                 return location._id
             });
+            let areaTemplatesFilter = _.union(
+                _.flatten(
+                    _.concat(
+                        [], _.map(
+                            currentProcess.mongoScopes, mongoScope => {
+                                return mongoScope.featureLayers
+                            })
+                    )
+                )
+            );
+            let yearFilter = _.union(
+                _.flatten(
+                    _.concat(
+                        [], _.map(
+                            currentProcess.mongoScopes, mongoScope => {
+                                return mongoScope.years
+                            })
+                    )
+                )
+            );
             new FilteredMongoLayerReferences({
                 $and: [
                     {
                         areaTemplate: {
-                            $in: currentProcess.basicMongoMetadata.analyticalUnits
+                            $in: areaTemplatesFilter
+                        }
+                    },
+                    {
+                        year: {
+                            $in: yearFilter
                         }
                     },
                     {
@@ -254,7 +279,7 @@ class LayerImporter {
                                             analyticalUnit,
                                             outputAnalysisTable,
                                             analysis
-                                        ).then(() => {
+                                        ).then((queryOutput) => {
                                             return analysis;
                                         })
                                 }).then((analysis) => {
@@ -291,19 +316,44 @@ class LayerImporter {
         return new Promise((resolve, reject) => {
             let pgLayerViews = new PgLayerViews(_pgPool, config.postgreSqlSchemaLayers);
             let performedAnalysis = currentProcess.performedAnalysis;
-            let locationsIds = _.map(currentProcess.mongoMetadata.locations, location => {
+            let locationFilter = _.map(currentProcess.mongoMetadata.locations, location => {
                 return location._id
             });
+            let areaTemplateFilter = _.union(
+                _.flatten(
+                    _.concat(
+                        [], _.map(
+                            currentProcess.mongoScopes, mongoScope => {
+                                return mongoScope.featureLayers
+                            })
+                    )
+                )
+            );
+            let yearFilter = _.union(
+                _.flatten(
+                    _.concat(
+                        [], _.map(
+                            currentProcess.mongoScopes, mongoScope => {
+                                return mongoScope.years
+                            })
+                    )
+                )
+            );
             new FilteredMongoLayerReferences({
                 $and: [
                     {
                         areaTemplate: {
-                            $in: currentProcess.basicMongoMetadata.analyticalUnits
+                            $in: areaTemplateFilter
+                        }
+                    },
+                    {
+                        year: {
+                            $in: yearFilter
                         }
                     },
                     {
                         location: {
-                            $in: locationsIds
+                            $in: locationFilter
                         }
                     },
                     {
@@ -313,14 +363,20 @@ class LayerImporter {
             }, _mongo).json().then((baseMongoLayerReferences) => {
                 let promises = [];
                 _.each(baseMongoLayerReferences, baseMongoLayerReference => {
-                    promises.push(new FilteredMongoLayerReferences({
-                            $and: [
-                                {isData: true},
-                                {areaTemplate: baseMongoLayerReference.areaTemplate},
-                                {location: baseMongoLayerReference.location},
-                                {year: baseMongoLayerReference.year}
-                            ]
-                        }, _mongo).read().then(dataLayerReferences => {
+                    let baseLayerName = baseMongoLayerReference.layer.split(`:`)[1];
+                    let dataLayerId = `i${currentProcess.id}`;
+                    let layerRegex = `^analysis:${baseLayerName}_analysis_${dataLayerId}$`;
+                    let filter = {
+                        $and: [
+                            {isData: true},
+                            {areaTemplate: baseMongoLayerReference.areaTemplate},
+                            {location: baseMongoLayerReference.location},
+                            {year: baseMongoLayerReference.year},
+                            {layer: {$regex: layerRegex}}
+                        ]
+                    };
+                    console.log(`####`, filter);
+                    promises.push(new FilteredMongoLayerReferences(filter, _mongo).read().then(dataLayerReferences => {
                             return pgLayerViews.update(baseMongoLayerReference._id, dataLayerReferences);
                         })
                     );
@@ -360,7 +416,7 @@ class LayerImporter {
         return new Promise((resolve, reject) => {
             let topic, layerGroup, attributes = [], attributeSet, layerTemplate, locations = [];
             
-            let scope = currentProcess.basicMongoMetadata.scope;
+            let scopes = currentProcess.mongoScopes;
             let layer = currentProcess.layer;
             let user = currentProcess.inputs.user;
             let layerGroupName = "Custom Layers";
@@ -378,7 +434,13 @@ class LayerImporter {
                 origin: `customLayer`
             };
             
-            new FilteredMongoLocations({dataset: scope._id}, _mongo).json().then(pLocations => {
+            new FilteredMongoLocations({
+                dataset: {
+                    $in: _.map(scopes, scope => {
+                        return scope._id
+                    })
+                }
+            }, _mongo).json().then(pLocations => {
                 locations = pLocations;
                 return mongoTopics.add(topic);
             }).then((result) => {
@@ -536,8 +598,7 @@ class LayerImporter {
         return new Promise((resolve, reject) => {
             let user = currentProcess.inputs.user;
             let layer = currentProcess.layer;
-            let scope = currentProcess.basicMongoMetadata.scope;
-            let theme = currentProcess.basicMongoMetadata.theme;
+            let scopes = currentProcess.mongoScopes;
             let topic = currentProcess.mongoMetadata.topic;
             let locations = currentProcess.mongoMetadata.locations;
             let layerTemplate = currentProcess.mongoMetadata.layerTemplate;
@@ -551,9 +612,20 @@ class LayerImporter {
             
             let layerReferences = [];
             
+            let years = _.union(
+                _.flatten(
+                    _.concat(
+                        [], _.map(
+                            currentProcess.mongoScopes, mongoScope => {
+                                return mongoScope.years
+                            })
+                    )
+                )
+            );
+            
             let layerReferencesPermissions = [];
             _.each(locations, location => {
-                _.each(scope.years, year => {
+                _.each(years, year => {
                     layerReferences.push({
                         _id: conn.getNextId(),
                         active: true,
@@ -569,7 +641,7 @@ class LayerImporter {
             });
             
             _.each(locations, location => {
-                _.each(scope.years, year => {
+                _.each(years, year => {
                     _.each(performedAnalysis, performedAnalysisResult => {
                         layerReferences.push({
                             _id: conn.getNextId(),
@@ -602,10 +674,26 @@ class LayerImporter {
             })).then(() => {
                 return Promise.all(layerReferencesPermissions);
             }).then(() => {
-                let topics = theme.topics;
-                topics.push(topic._id);
-                let mongoCollection = this._mongo.collection(MongoTheme.collectionName());
-                return mongoCollection.update({_id: theme._id}, {$set: {topics: topics}});
+                let promises = [];
+                let themes = _.union(
+                    _.flatten(
+                        _.concat(
+                            [], _.map(
+                                currentProcess.mongoScopes, mongoScope => {
+                                    return mongoScope.themes
+                                })
+                        )
+                    )
+                );
+                _.each(themes, theme => {
+                    let topics = theme.topics || [];
+                    topics.push(topic._id);
+                    promises.push(
+                        _mongo.collection(
+                            MongoTheme.collectionName()
+                        ).update({_id: theme._id}, {$set: {topics: topics}}));
+                });
+                return Promise.all(promises);
             }).then(() => {
                 resolve(layerReferences);
             }).catch(error => {
