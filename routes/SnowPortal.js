@@ -120,7 +120,11 @@ class SnowPortal {
     getComposites(request, response) {
         let requestData = request.body;
         let requestHash = hash(requestData);
-        
+
+        /**
+         * existing process, return ticket or data
+         */
+
         if (processes[requestHash]) {
             let responseObject = {};
             if (processes[requestHash].data) {
@@ -135,16 +139,23 @@ class SnowPortal {
             }
             response.send(responseObject);
             return;
-        } else {
-            processes[requestHash] = {
-                started: Date.now(),
-                ended: null,
-                request: requestData,
-                data: null,
-                error: null
-            };
         }
-        
+
+
+	  		/**
+	  		 * not existing process
+	  		 */
+
+        // create new one
+        processes[requestHash] = {
+            started: Date.now(),
+            ended: null,
+            request: requestData,
+            data: null,
+            error: null
+        };
+
+        // get process data
         Promise.resolve().then(() => {
             let dateStart = requestData.timeRange.start;
             let dateEnd = requestData.timeRange.end;
@@ -152,12 +163,16 @@ class SnowPortal {
             let period = requestData.period;
             let area = requestData.area;
             
-            let sql = this.getCompositesMetadataSql(dateStart, dateEnd, period, sensors);
+            let getMetadataSql = this.getCompositesMetadataSql(dateStart, dateEnd, period, sensors);
             
-            return this._pgPool.pool().query(sql).then(result => {
+            return this._pgPool.pool().query(getMetadataSql).then(result => {
                 let promises = [];
                 if (!result.rows.length) {
-                    throw new Error("no results was found");
+                    throw new Error("no results were found");
+                    // TODO
+
+
+
                 } else {
                     _.each(result.rows, row => {
                         let tableName = row.key;
