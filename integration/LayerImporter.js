@@ -611,57 +611,44 @@ class LayerImporter {
             let pgPermissions = new PgPermissions(this._pgPool, config.postgreSqlSchema);
             
             let layerReferences = [];
-            
-            let years = _.union(
-                _.flatten(
-                    _.concat(
-                        [], _.map(
-                            currentProcess.mongoScopes, mongoScope => {
-                                return mongoScope.years
-                            })
-                    )
-                )
-            );
-            
             let layerReferencesPermissions = [];
-            _.each(locations, location => {
-                _.each(years, year => {
-                    layerReferences.push({
-                        _id: conn.getNextId(),
-                        active: true,
-                        areaTemplate: layerTemplate._id,
-                        columnMap: [],
-                        isData: false,
-                        layer: `${workspace}:${layer.systemName}`,
-                        location: location._id,
-                        year: year,
-                        origin: `customLayer`,
-                    });
-                });
-            });
             
-            _.each(locations, location => {
-                _.each(years, year => {
-                    _.each(performedAnalysis, performedAnalysisResult => {
+            _.each(scopes, scope => {
+                _.each(_.filter(locations, {dataset: scope._id}), location => {
+                    _.each(scope.years, yearId => {
                         layerReferences.push({
                             _id: conn.getNextId(),
+                            active: true,
+                            areaTemplate: layerTemplate._id,
+                            columnMap: [],
+                            isData: false,
+                            layer: `${workspace}:${layer.systemName}`,
                             location: location._id,
-                            year: year,
-                            areaTemplate: performedAnalysisResult.analyticalUnitAreaTemplateId,
-                            isData: true,
-                            fidColumn: "gid",
-                            layer: `analysis:${performedAnalysisResult.outputTable}`,
-                            attributeSet: attributeSet._id,
-                            columnMap: _.map(attributes, attribute => {
-                                return ({
-                                    column: `as_${attributeSet._id}_attr_${attribute._id}`,
-                                    attribute: attribute._id
-                                })
-                            }),
+                            year: yearId,
                             origin: `customLayer`,
                         });
+                        
+                        _.each(performedAnalysis, performedAnalysisResult => {
+                            layerReferences.push({
+                                _id: conn.getNextId(),
+                                location: location._id,
+                                year: yearId,
+                                areaTemplate: performedAnalysisResult.analyticalUnitAreaTemplateId,
+                                isData: true,
+                                fidColumn: "gid",
+                                layer: `analysis:${performedAnalysisResult.outputTable}`,
+                                attributeSet: attributeSet._id,
+                                columnMap: _.map(attributes, attribute => {
+                                    return ({
+                                        column: `as_${attributeSet._id}_attr_${attribute._id}`,
+                                        attribute: attribute._id
+                                    })
+                                }),
+                                origin: `customLayer`,
+                            });
+                        })
                     })
-                })
+                });
             });
             
             Promise.all(_.map(layerReferences, layerReference => {
