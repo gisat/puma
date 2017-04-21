@@ -54,6 +54,7 @@ function initServer(err) {
 	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
 		logger.info("Request: "+ req.method + " - " + req.url);
+		logger.info("Headers", req.headers);
 		next();
 	});
 
