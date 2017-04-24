@@ -37,6 +37,8 @@ class WpsController {
 			this.getCapabilities(response);
 		} else if(requestAction === 'describeprocess') {
 			this.describeProcess(request.query.identifier, response);
+        } else if(requestAction === 'execute') {
+            this.execute(request, response);
 		} else {
 			response.status(400).json({status: "Incorrect request. Valid choices are GetCapabilities and DescribeProcess for GET request."})
 		}
