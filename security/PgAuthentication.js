@@ -26,7 +26,7 @@ class PgAuthentication {
 
 		if (request.session.userId) {
 			return this.pgUsers.byId(request.session.userId).then(user => {
-				logger.info('PgAuthentication#authenticate User: ', user);
+				logger.info('PgAuthentication#authenticate User: ', user.id);
 				request.session.user = user;
 			});
 		} else {
