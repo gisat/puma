@@ -3,3 +3,4 @@
 /.idea/dictionaries/
 /node_modules/
 /tmp/
+/newrelic_agent.log
