@@ -1,6 +1,9 @@
 let Group = require('../security/Group');
+let User = require('../security/User');
+
 let PgUsers = require('../security/PgUsers');
 let PgPermissions = require('../security/PgPermissions');
+
 
 /**
  * This class governs the authentication based on the PostgreSQL user database.
