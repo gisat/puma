@@ -22,14 +22,16 @@ class PgAuthentication {
 	 * @return {Promise.<Number>} Null if the user is guest, otherwise the id of current user.
 	 */
 	authenticate(request) {
-		logger.info('SsoAuthentication#authenticate UserId: ', request.session.userId);
+		logger.info('PgAuthentication#authenticate UserId: ', request.session.userId);
 
 		if (request.session.userId) {
 			return this.pgUsers.byId(request.session.userId).then(user => {
+				logger.info('PgAuthentication#authenticate User: ', user);
 				request.session.user = user;
 			});
 		} else {
 			return this.pgPermissions.forGroup(Group.guestId()).then((permissions => {
+				logger.info('PgAuthentication#authenticate Guest');
 				request.session.user = new User(0, [], [new Group(Group.guestId(), permissions)]);
 			}));
 		}
