@@ -118,9 +118,11 @@ class LayerImporter {
         }).then(() => {
             this._currentImportTask.progress = 100;
             this._currentImportTask.status = "done";
+            this._currentImportTask.ended = new Date();
             console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
         }).catch(error => {
             this._currentImportTask.status = "error";
+            this._currentImportTask.ended = new Date();
             this._currentImportTask.message = error.message;
             console.log(`#9`, error);
         });
