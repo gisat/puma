@@ -1,3 +1,5 @@
+let logger = require('../common/Logger');
+
 let Group = require('../security/Group');
 let User = require('../security/User');
 
@@ -20,6 +22,8 @@ class PgAuthentication {
 	 * @return {Promise.<Number>} Null if the user is guest, otherwise the id of current user.
 	 */
 	authenticate(request) {
+		logger.info('SsoAuthentication#authenticate UserId: ', request.session.userId);
+
 		if (request.session.userId) {
 			return this.pgUsers.byId(request.session.userId).then(user => {
 				request.session.user = user;

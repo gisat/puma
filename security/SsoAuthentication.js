@@ -1,6 +1,7 @@
 let Promise = require('promise');
 
 let config = require('../config');
+let logger = require('../common/Logger').applicationWideLogger;
 
 let Geonode = require('../security/Geonode');
 let PgUsers = require('./PgUsers');
@@ -22,6 +23,8 @@ class SsoAuthentication {
 	 * @returns {Promise}
 	 */
 	authenticate(request) {
+		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email']);
+
 		if(request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') {
 			var email = request.headers['umsso-person-email'];
 			return this.pgUsers.byEmail(email).then(user => {

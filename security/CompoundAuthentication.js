@@ -1,5 +1,7 @@
 let Promise = require('promise');
 
+let logger = require('../common/Logger').applicationWideLogger;
+
 /**
  * This class handles the use cases where the authentication goes through multiple asynchronous steps.
  */
@@ -16,6 +18,8 @@ class CompoundAuthentication {
 	 * @returns {Promise.<Number>}
 	 */
 	authenticate(request, response, next) {
+		logger.info('CompoundAuthentication#authenticate');
+
 		let promise = Promise.resolve(null);
 		this.authenticators.forEach(authenticator => {
 			promise = promise.then(authenticator.authenticate(request, response, next));
