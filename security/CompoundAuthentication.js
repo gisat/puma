@@ -22,7 +22,10 @@ class CompoundAuthentication {
 
 		let promise = Promise.resolve(null);
 		this.authenticators.forEach(authenticator => {
-			promise = promise.then(authenticator.authenticate(request, response, next));
+			promise = promise.then(() => {
+				logger.info('CompoundAuthentication#authenticate Resolved promise');
+				return authenticator.authenticate(request, response, next)
+			});
 		});
 		return promise;
 	}
