@@ -185,5 +185,13 @@ module.exports = {
 	 * When is isn't allowed for unauthenticated users to access the system, this is the Url to which they will be
 	 * redirected instead.
 	 */
-	notAuthenticatedUrl: '10.0.75.2/tool/'
+	notAuthenticatedUrl: '10.0.75.2/tool/',
+
+	/**
+	 * Deafult admin user for Geonode usable to login users to Geonode.
+	 */
+	geonodeAdminUser: {
+		name: 'admin',
+		password: 'admin'
+	},
 };
