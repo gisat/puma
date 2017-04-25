@@ -1,4 +1,4 @@
-let logger = require('../common/Logger');
+let logger = require('../common/Logger').applicationWideLogger;
 
 let Group = require('../security/Group');
 let User = require('../security/User');
