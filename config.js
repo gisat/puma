@@ -34,7 +34,7 @@ module.exports = {
 	geoserver2Workspace : "puma",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "urban-tep.gisat.cz",
+	geonodeHost     : "10.0.75.2",
 	geonodePort			: 80,
 	geonodePath     : "/",
 	geonodeHome     : "/",
@@ -42,7 +42,7 @@ module.exports = {
 	/**
 	 * Full URL of the geonode usable for the requests.
 	 */
-	geonodeUrl: "http://urban-tep.gisat.cz:80/",
+	geonodeUrl: "http://10.0.75.2:80/",
 
 	/**
 	 * Full URL of the GeoServer usable for the requests.
