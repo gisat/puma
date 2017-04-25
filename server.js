@@ -22,10 +22,6 @@ process.on('uncaughtException', function (err) {
 var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
 var PgPool = require('./postgresql/PgPool');
 var DatabaseSchema = require('./postgresql/DatabaseSchema');
-let PgUsers = require('./security/PgUsers');
-let PgPermissions = require('./security/PgPermissions');
-let User = require('./security/User');
-let Group = require('./security/Group');
 let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
 let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 
@@ -58,7 +54,6 @@ function initServer(err) {
 	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
 		logger.info("Request: "+ req.method + " - " + req.url);
-		logger.info("Headers", req.headers);
 		next();
 	});
 
