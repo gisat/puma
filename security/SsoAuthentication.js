@@ -29,12 +29,14 @@ class SsoAuthentication {
 			var email = request.headers['umsso-person-email'];
 			return this.pgUsers.byEmail(email).then(user => {
 				if(!user) {
-					return this.pgUsers.add(email).then(userId => {
-						request.session.userId = userId;
+					return this.pgUsers.add(email).then(user => {
+						request.session.userId = user.id;
+						request.session.userName = request.headers['umsso-person-commonname'];
 						return this.login();
 					});
 				} else {
 					request.session.userId = user.id;
+					request.session.userName = request.headers['umsso-person-commonname'];
 					return this.login();
 				}
 			});
