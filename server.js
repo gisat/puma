@@ -29,6 +29,10 @@ let Group = require('./security/Group');
 let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
 let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 
+let CompoundAuthentication = require('./security/CompoundAuthentication');
+let PgAuthentication = require('./security/PgAuthentication');
+let SsoAuthentication = require('./security/SsoAuthentication');
+
 var pool = new PgPool({
     user: config.pgDataUser,
     database: config.pgDataDatabase,
@@ -91,17 +95,23 @@ function initServer(err) {
 
 	// Make sure that every request knows the current information about user.
 	app.use((request, response, next) => {
-		if(request.session.userId) {
-			new PgUsers(pool, config.postgreSqlSchema).byId(request.session.userId).then(user => {
-            	request.session.user = user;
-                next();
-			});
-        } else {
-			new PgPermissions(pool, config.postgreSqlSchema).forGroup(Group.guestId()).then((permissions => {
-                request.session.user = new User(0, [], [new Group(Group.guestId(), permissions)]);
-				next();
-			}));
+		let authenticators = [new PgAuthentication(pool, config.postgreSqlSchema)];
+		if(config.toggles.useEoSso) {
+			authenticators.unshift(new SsoAuthentication(pool, config.postgreSqlSchema));
 		}
+
+		new CompoundAuthentication(authenticators).authenticate(request, response, next).then(() => {
+			if(!request.session.userId && config.toggles.loggedOnly) {
+				response.redirect(config.notAuthenticatedUrl);
+			} else {
+				next();
+			}
+		}).catch(err => {
+			logger.error(`server#authentication Error: `, err);
+			if(config.toggles.loggedOnly) {
+				response.redirect(config.notAuthenticatedUrl);
+			}
+		})
 	});
 
 	require('./routes/security')(app);

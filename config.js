@@ -93,8 +93,16 @@ module.exports = {
 		allowPumaHelp: false,
 		allowDownloadsLink: false,
 		usePumaLogo: false,
-		advancedFiltersFirst: false
-		//renameAdvancedFiltersTo: "Evaluation Tool"
+		advancedFiltersFirst: false,
+		/**
+		 * When this flag is set, the EO SSO protocol is used to supply the information about the user.
+		 */
+		useEoSso: true,
+
+		/**
+		 * If only logged in users are allowed, then the all the requests will redirect the user to the login point.
+		 */
+		loggedOnly: false
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -171,5 +179,11 @@ module.exports = {
 	/**
 	 * Name of the application used for watching the servers.
 	 */
-	appName: 'Localhost'
+	appName: 'Localhost',
+
+	/**
+	 * When is isn't allowed for unauthenticated users to access the system, this is the Url to which they will be
+	 * redirected instead.
+	 */
+	notAuthenticatedUrl: '10.0.75.2/tool/'
 };

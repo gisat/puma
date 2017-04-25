@@ -46,6 +46,7 @@ DatabaseSchema.prototype.create = function () {
         'id SERIAL PRIMARY KEY,' +
         'name varchar(128)' +
         ');';
+    // Security based tables.
     var createPermissionsTable = `CREATE TABLE IF NOT EXISTS ${this.schema}.permissions (
 		 id SERIAL PRIMARY KEY,
 	 	 user_id int NOT NULL,
@@ -77,6 +78,15 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int
     )`;
+    let createInternalUsersTable = `CREATE TABLE IF NOT EXISTS ${this.schema}.panther_users (
+        id SERIAL PRIMARY KEY, 
+        email text NOT NULL,
+        created timestamp,
+        created_by int, 
+        changed timestamp, 
+        changed_by int  
+    );`;
+
     // Path means the location where the layer resides. It can be something like geonode:stuff or analysis:stuff or even
     // something else.
     let createLayers = `CREATE TABLE IF NOT EXISTS ${this.schema}.layers (
@@ -109,6 +119,7 @@ DatabaseSchema.prototype.create = function () {
     );
     `;
 
+
     var self = this;
     return this._pool.query(createSchema).then(function () {
         return self._pool.query(createStyleTable);
@@ -130,6 +141,8 @@ DatabaseSchema.prototype.create = function () {
 		return self._pool.query(createLayers);
 	}).then(function () {
 		return self._pool.query(createWmsLayers);
+	}).then(function () {
+		return self._pool.query(createInternalUsersTable);
 	}).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });
