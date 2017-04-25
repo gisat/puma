@@ -184,6 +184,7 @@ class LayerImporter {
                         scopes[Number(mongoTheme.dataset)].themes.push(mongoTheme);
                     });
                 }).then(() => {
+                    if(!Object.keys(scopes).length) reject(new Error(`no scopes was found, user is not logged in or has no scopes created`));
                     return scopes;
                 })
             }).then(scopes => {
