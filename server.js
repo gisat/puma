@@ -96,7 +96,9 @@ function initServer(err) {
 		}
 
 		new CompoundAuthentication(authenticators).authenticate(request, response, next).then(() => {
-			if(!request.session.userId && config.toggles.loggedOnly) {
+			logger.info('server#authentication User: ', request.session.user);
+			if(!request.session.user && config.toggles.loggedOnly) {
+				logger.info('server#authentication User not logged in');
 				response.redirect(config.notAuthenticatedUrl);
 			} else {
 				next();
