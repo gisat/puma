@@ -804,5 +804,4 @@ class LayerImporter {
     }
 }
 
-module
-    .exports = LayerImporter;
+module.exports = LayerImporter;
