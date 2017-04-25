@@ -1,6 +1,8 @@
 let Promise = require('promise');
 
-let PgAuthentication = require('./PgAuthentication');
+let config = require('../config');
+
+let Geonode = require('../security/Geonode');
 let PgUsers = require('./PgUsers');
 
 /**
@@ -10,10 +12,12 @@ let PgUsers = require('./PgUsers');
 class SsoAuthentication {
 	constructor(pgPool, schema) {
 		this.pgUsers = new PgUsers(pgPool, schema);
+		this.geonode = new Geonode();
 	}
 
 	/**
 	 * It prepares information for authentication based on the EO SSO header informations.
+	 * It also logs the user in the solution.
 	 * @param request
 	 * @returns {Promise}
 	 */
@@ -24,13 +28,26 @@ class SsoAuthentication {
 				if(!user) {
 					return this.pgUsers.add(email).then(userId => {
 						request.session.userId = userId;
+						return this.login();
 					});
 				} else {
 					request.session.userId = user.id;
+					return this.login();
 				}
 			});
 		} else {
 			return Promise.resolve(null);
+		}
+	}
+
+	/**
+	 * It logs user to the Geonode as an admin user.
+	 */
+	login() {
+		if(config.geonodeAdminUser) {
+			return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password);
+		} else {
+			return null;
 		}
 	}
 }

@@ -17,7 +17,7 @@ module.exports = {
 	},
 
 	geoserverHost   : "10.0.75.2",
-	geoserverPort   : 8080,
+	geoserverPort   : 80,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
 	geoserverPassword : "geoserver",
@@ -27,7 +27,7 @@ module.exports = {
 	geoserverWorkspace: "puma",
 
 	geoserver2Host  : "10.0.75.2",
-	geoserver2Port  : 8080,
+	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
