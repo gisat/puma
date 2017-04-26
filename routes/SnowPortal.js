@@ -300,7 +300,7 @@ class SnowPortal {
                 m.key,
                 m.date_start :: VARCHAR
             FROM composites.metadata AS m
-            WHERE m.period = '${period}'
+            WHERE m.period = ${period}
                   AND m.sensors <@ ${this.convertArrayToSqlArray(sensors)}
                   AND m.sensors @> ${this.convertArrayToSqlArray(sensors)}
                   AND (('${dateStart}', '${dateEnd}') OVERLAPS (m.date_start, m.date_end) 
