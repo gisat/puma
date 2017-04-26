@@ -92,7 +92,6 @@ class WpsController {
             
             if (currentProcess[id].method === `CustomLayerImport`) {
                 let layerImportTask = this._layerImporterTasks.getImporterTask(id);
-                console.log(layerImportTask);
                 statusData.method = currentProcess[id].method;
                 statusData.status = layerImportTask.status;
                 statusData.progress = layerImportTask.progress;
@@ -276,6 +275,7 @@ class WpsController {
                 layerImporterInputs[argument.argument] = argument.value;
             });
             
+            layerImporterInputs.customName = layerImporterInputs.name;
             layerImporterInputs.name = layerImporterInputs.url.split(`/`).pop();
             
             return layerImporterInputs;
