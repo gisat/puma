@@ -142,9 +142,9 @@ class SnowPortal {
         }
 
 
-	  		/**
-	  		 * not existing process
-	  		 */
+        /**
+         * not existing process
+         */
 
         // create new one
         processes[requestHash] = {
@@ -162,47 +162,82 @@ class SnowPortal {
             let sensors = Object.keys(requestData.sensors);
             let period = requestData.period;
             let area = requestData.area;
-            
-            let getMetadataSql = this.getCompositesMetadataSql(dateStart, dateEnd, period, sensors);
-            
+
+            let compositeDates = this.getCompositeDates(dateStart, dateEnd, period);
+            let getMetadataSql = this.getCompositesMetadataSql(compositeDates, period, sensors);
+
             return this._pgPool.pool().query(getMetadataSql).then(result => {
+                /**
+                 * Get metadata of ready composites or newly created composites
+                 */
+
                 let promises = [];
-                if (!result.rows.length) {
-                    throw new Error("no results were found");
-                    // TODO
 
-
-
-                } else {
-                    _.each(result.rows, row => {
-                        let tableName = row.key;
-                        promises.push(new Promise((resolve, reject) => {
-                            let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors);
-                            let query = this._pgPool.pool().query(sql).then((results) => {
-                                let classDistribution = {};
-                                let total = 0;
-                                _.each(results.rows, row => {
-                                    classDistribution[row.class] = row.count;
-                                    total += Number(row.count);
-                                });
-                                _.each(results.rows, row => {
-                                    classDistribution[row.class] = (row.count / total) * 100;
-                                });
-                                resolve({
-                                    key: tableName,
-                                    dateFrom: row.date_start,
-                                    period: period,
-                                    sensors: sensors,
-                                    aoiCoverage: 100,
-                                    classDistribution: classDistribution
-                                })
-                            }).catch(error => {
-                                reject(error);
-                            });
-                        }));
+                _.each(compositeDates, compositeDate => {
+                    // find composite in metadata PG result
+                    let composite = _.find(result.rows, function(item){
+                        return item['date_start'] == compositeDate;
                     });
-                    return Promise.all(promises);
-                }
+
+                    if (composite) { // composite exists
+                        promises.push(composite);
+                    } else { // composite doesn't exist
+                        // TODO create composite - add to promises
+
+                        promises.push({ ///////////// divny experiment
+                            date_start: compositeDate,
+                            key: null
+                        });
+                    }
+                });
+
+                return Promise.all(promises);
+
+            }).then(compositesMetadata => {
+                /**
+                 * Get composites data and compute statistics
+                 */
+
+                let promises = [];
+
+                _.each(compositesMetadata, composite => {
+
+                    let tableName = composite.key;
+                    promises.push(new Promise((resolve, reject) => {
+
+                        // handle no data // TODO ??
+                        if (tableName == null) {
+                            return reject("NoData");
+                        }
+
+                        let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors);
+                        let query = this._pgPool.pool().query(sql).then((results) => {
+                            let classDistribution = {};
+                            let total = 0;
+                            _.each(results.rows, row => {
+                                classDistribution[row.class] = row.count;
+                                total += Number(row.count);
+                            });
+                            _.each(results.rows, row => {
+                                classDistribution[row.class] = (row.count / total) * 100;
+                            });
+                            resolve({
+                                key: tableName,
+                                dateFrom: composite.date_start,
+                                period: period,
+                                sensors: sensors,
+                                aoiCoverage: 100,
+                                classDistribution: classDistribution
+                            })
+                        }).catch(error => {
+                            reject(error);
+                        });
+                    }));
+
+                });
+
+                return Promise.all(promises);
+
             }).catch(error => {
                 throw error;
             });
@@ -293,8 +328,36 @@ class SnowPortal {
                 return '\'' + value + '\'';
             }).join(",") + "]";
     }
-    
-    getCompositesMetadataSql(dateStart, dateEnd, period, sensors) {
+
+    /**
+    *
+    * @param dateStart
+    * @param dateEnd
+    * @param period
+    * @returns {Array} Array of SQL date strings
+    */
+    getCompositeDates(dateStart, dateEnd, period) {
+        // create dates - array with SQL dates, begginings of composite periods
+        let dates = [];
+        let dateObj = new Date(dateStart);
+        let dateEndObj = new Date(dateEnd);
+        let dateAfterEndObj = this.addDays(dateEndObj, 1);
+        let nextDate;
+        while((nextDate = this.addDays(dateObj, period)) <= dateAfterEndObj){ // TODO write better?
+            dates.push(dateObj.toISOString().split('T')[0]);
+            dateObj = nextDate;
+        }
+        return dates;
+    }
+
+    /**
+     * Create SQL query for selecting composites metadata.
+     * @param compositeDates Array of composite start days (SQL string format)
+     * @param period
+     * @param sensors
+     * @returns {string} SQL query string
+     */
+    getCompositesMetadataSql(compositeDates, period, sensors) {
         return `
             SELECT
                 m.key,
@@ -303,9 +366,19 @@ class SnowPortal {
             WHERE m.period = ${period}
                   AND m.sensors <@ ${this.convertArrayToSqlArray(sensors)}
                   AND m.sensors @> ${this.convertArrayToSqlArray(sensors)}
-                  AND (('${dateStart}', '${dateEnd}') OVERLAPS (m.date_start, m.date_end) 
-                        OR m.date_start BETWEEN '${dateStart}' AND '${dateEnd}' 
-                        OR m.date_end BETWEEN '${dateStart}' AND '${dateEnd}');`
+                  AND m.date_start::VARCHAR = ANY(${this.convertArrayToSqlArray(compositeDates)});`;
+    }
+
+    /**
+     * Add n days to date and return Date instance
+     * @param date Date instance or date in string
+     * @param days Number of days to add, can be negative
+     * @returns {Date}
+     */
+    addDays(date, days){
+        var result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
     }
     
     getCompositeDataSql(tableName, areaType, area, sensors) {
