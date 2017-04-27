@@ -48,8 +48,6 @@ class LayerImporter {
         this._mongo = mongo;
         this._importerTasks = importerTasks;
         this._currentImportTask = {};
-        this._currentImportStep = 0;
-        this._maxImportSteps = 11;
     }
     
     /**
@@ -68,20 +66,23 @@ class LayerImporter {
         this._currentImportTask = this._importerTasks.createNewImportTask();
         
         this._currentImportTask.inputs = inputs;
+    
+        let currentImportStep = 0;
+        let totalImportSteps = 11;
         
         this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
             this._currentImportTask.mongoScopes = pMongoScopes;
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             return this.prepareLayerFilesForImport(this._currentImportTask);
         }).then((layer) => {
             this._currentImportTask.layer = layer;
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             return this.getPublicWorkspaceSchema();
         }).then((publicWorkspaceSchema) => {
             console.log(publicWorkspaceSchema);
             this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
             this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             // todo get datastore from configuration
             let geoServerImporter = new GeoServerImporter(
                 config.geoserverHost + config.geoserverPath,
@@ -93,39 +94,39 @@ class LayerImporter {
             return geoServerImporter.importLayer(this._currentImportTask.layer);
         }).then((geoserverImportTaskResults) => {
             this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             let geonodeUpdateLayers = new GeonodeUpdateLayers();
             return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
         }).then(() => {
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             if (this._currentImportTask.layer.type === "raster") {
                 let rasterToPgsql = new RasterToPGSQL(config.pgDataHost, config.pgDataUser, config.pgDataPassword, config.pgDataDatabase);
                 return rasterToPgsql.import(this._currentImportTask.layer);
             }
         }).then((rasterToPgsqlOutput) => {
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             if (rasterToPgsqlOutput) {
                 this._currentImportTask.rasterToPgsqlOutput = rasterToPgsqlOutput
             }
             return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
         }).then((mongoMetadata) => {
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.mongoMetadata = mongoMetadata;
             return this.analyseLayer(this._currentImportTask, this._mongo, this._pgPool);
         }).then((performedAnalysis) => {
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.performedAnalysis = performedAnalysis;
             return this.createMongoLayerReferencesAndUpdateTheme(this._currentImportTask, this._mongo);
         }).then((mongoLayerReferences) => {
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.mongoLayerReferences = mongoLayerReferences;
             return this.updatePgViewWithPerformedAnalysisMongoLayerReferences(this._currentImportTask, this._mongo, this._pgPool);
         }).then(() => {
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             return this.createMongoDataView(this._currentImportTask, this._mongo);
         }).then((mongoDataView) => {
             this._currentImportTask.mongoMetadata.dataView = mongoDataView;
-            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.status = "done";
             this._currentImportTask.ended = new Date();
             console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
