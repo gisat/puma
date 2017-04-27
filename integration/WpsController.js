@@ -121,7 +121,7 @@ class WpsController {
                     `;
             }
             
-            if (progress >= 0) {
+            if (progress) {
                 progress = `
                         <wps:Progress>
 					        <ows:Value>${progress}</ows:Value>
