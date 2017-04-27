@@ -42,6 +42,7 @@ var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 let LayerImporterController = require('../integration/LayerImporterController');
+let UtepStatisticsController = require('../integration/UtepStatisticsController');
 
 var api = {
 	layers: require('../api/layers'),
@@ -116,6 +117,8 @@ module.exports = function(app) {
 	new WpsController(app, pool, conn.getMongoDb(), null);
 	
 	new LayerImporterController(app, conn.getMongoDb(), pool);
+	// Schema containing the imported data for Geoserver and schema for created views.
+	new UtepStatisticsController(app, pool, conn.getMongoDb(), 'public', 'views');
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);

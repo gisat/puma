@@ -1,5 +1,7 @@
 let Promise = require('promise');
 
+let logger = require('../common/Logger').applicationWideLogger;
+
 let PgPermissions = require('./PgPermissions');
 let PgGroups = require('./PgGroups');
 let User = require('./User');
@@ -38,6 +40,32 @@ class PgUsers {
 			return this.permissions.forUser(id);
 		}).then(permissions => {
 			return new User(id, permissions, groups);
+		});
+	}
+
+	/**
+	 * It queries internal users based on their email. If there is none such user, it returns null
+	 * @param email {String} String representation of email of the user used for querying the internal users.
+	 * @returns {Promise} Promise returning either user with permissions or null.
+	 */
+	byEmail(email) {
+		return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users WHERE email = '${email}'`).then(results => {
+			if(results.rows.length === 0) {
+				logger.warn(`PgUsers#byEmail No user with email: ${email}`);
+				return null;
+			}
+
+			return this.byId(Number(results.rows[0].id));
+		});
+	}
+
+	/**
+	 * It adds new internal user to the database.
+	 * @param email {String} Email for the user to be used.
+	 */
+	add(email) {
+		return this.pgPool.query(`INSERT INTO ${this.schema}.panther_users (email) VALUES ('${email}') RETURNING id`).then(result => {
+			return result.rows[0].id;
 		});
 	}
 }
