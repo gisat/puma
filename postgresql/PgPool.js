@@ -15,7 +15,7 @@ var pg = require('pg');
  * @constructor
  */
 var PgPool = function(config) {
-	config.max = config.max || 10;
+	config.max = config.max || 50;
 	config.idleTimeoutLimits = config.idleTimeoutLimits || 30000;
 	config.port = config.port || 5432;
 
