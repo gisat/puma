@@ -18,7 +18,7 @@ var DatabaseSchema = function (pool, schema) {
  * @returns {Promise.<T>}
  */
 DatabaseSchema.prototype.drop = function () {
-    var dropSchema = 'drop schema ' + this.schema + ' CASCADE';
+    var dropSchema = 'drop schema IF EXISTS ' + this.schema + ' CASCADE';
     return this._pool.query(dropSchema);
 };
 

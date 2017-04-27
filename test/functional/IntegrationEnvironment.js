@@ -49,9 +49,13 @@ class IntegrationEnvironment {
         });
 
         return conn.connectToMongo(config.mongoConnString).then((db) => {
-            this._mongoDb = db;
+			this._mongoDb = db;
 
-            this.schema = new DatabaseSchema(pool, this._commonSchema);
+			this.schema = new DatabaseSchema(pool, this._commonSchema);
+			return this.schema.drop();
+		}).then(() => {
+			return this.dropMongoCollections();
+		}).then(() => {
             return this.schema.create();
         }).then(() => {
             return this._onApplicationReady(app, pool, this.schema, this._mongoDb);
@@ -70,16 +74,24 @@ class IntegrationEnvironment {
      * @returns {Promise}
      */
     tearDown() {
-        let collections = ['symbology', 'analysis', 'areatemplate', 'attribute', 'attributeset', 'chartcfg', 'dataset', 'dataview', 'layergroup', 'layerref', 'location', 'performedanalysis', 'settings', 'theme', 'topic', 'visualization', 'year'];
-
         return this.schema.drop().then(() => {
         	this.server.close();
 
-            return Promise.all(collections.map(collection => {
-                return this._mongoDb.collection(collection).deleteMany({});
-            }));
+            return this.dropMongoCollections();
         })
     }
+
+	/**
+	 * It takes all the collections in the mongo and drops them.
+	 * @returns {Promise.<*>}
+	 */
+	dropMongoCollections() {
+		let collections = ['symbology', 'analysis', 'areatemplate', 'attribute', 'attributeset', 'chartcfg', 'dataset', 'dataview', 'layergroup', 'layerref', 'location', 'performedanalysis', 'settings', 'theme', 'topic', 'visualization', 'year'];
+
+		return Promise.all(collections.map(collection => {
+			return this._mongoDb.collection(collection).deleteMany({});
+		}));
+	}
 }
 
 module.exports = IntegrationEnvironment;

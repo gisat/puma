@@ -67,7 +67,7 @@ class PgLayerViews {
             );
         }
 
-        let id, fidColumn, nameColumn, tableName, baseLayerName, parentColumn, attributes;
+        let id, fidColumn, nameColumn, sourceTable, baseLayerName, parentColumn, attributes;
         let schema = this.schema;
         dataLayerReferences = dataLayerReferences || [];
 		return baseLayerReference.id().then(pId => {
@@ -78,28 +78,24 @@ class PgLayerViews {
         }).then(pParentColumn => {
             parentColumn = pParentColumn;
             
-            return baseLayerReference.layerName();
-        }).then(pTableName => {
-            tableName = pTableName;
+            return new PgMongoLayerReference(baseLayerReference).table();
+        }).then(pSourceTable => {
+            sourceTable = pSourceTable;
             
             return baseLayerReference.nameColumn();
         }).then(pNameColumn => {
             nameColumn = pNameColumn;
             
-            return baseLayerReference.fidColumn();
-        }).then(pFidColumn => {
-            fidColumn = pFidColumn;
-            
             return this.attributes(dataLayerReferences)
         }).then(pAttributes => {
             attributes = pAttributes;
-            return this.joinedDataTables(dataLayerReferences, tableName, fidColumn);
+            return this.joinedDataTables(dataLayerReferences, sourceTable);
         }).then(joinedDataTables => {
 			let sql = `CREATE VIEW ${schema}.${PgLayerViews.name(id)} AS SELECT
-                l_${tableName}."${fidColumn}" AS gid,
-                l_${tableName}."${nameColumn}"::text AS name,
-                l_${tableName}."the_geom" AS the_geom,
-                ${this.parentColumn(tableName, parentColumn)},
+                ${sourceTable.alias}."${sourceTable.fidColumn}" AS gid,
+                ${this.nameColumn(sourceTable, nameColumn)},
+                ${sourceTable.alias}."the_geom" AS the_geom,
+                ${this.parentColumn(sourceTable, parentColumn)},
                 ${attributes}
                 baseTable.area,
                 baseTable.length,
@@ -108,16 +104,25 @@ class PgLayerViews {
                 FROM ${schema}.${baseLayerName} as baseTable
                  ${joinedDataTables};
             `;
+			logger.info(`PgLayerViews#add SQL: `, sql);
 
             return this._pgPool.pool().query(sql)
         })
     }
 
-    parentColumn(tableName, parentColumn) {
+    nameColumn(sourceTable, nameColumn) {
+		if(nameColumn) {
+			return `${sourceTable.alias}."${nameColumn}"::text AS name`;
+		} else {
+			return `NULL::integer AS name`;
+		}
+	}
+
+    parentColumn(sourceTable, parentColumn) {
         if (parentColumn) {
-            return `l_${tableName}."${parentColumn}" AS parentgid`;
+            return `${sourceTable.alias}."${parentColumn}" AS parentgid`;
         } else {
-            return `NULL::integer AS parentgid`
+            return `NULL::integer AS parentgid`;
         }
     }
 
@@ -141,7 +146,7 @@ class PgLayerViews {
         });
     }
 
-    joinedDataTables(dataLayerReferences, sourceTableName, fidColumn) {
+    joinedDataTables(dataLayerReferences, sourceTable) {
         let tables = [];
 
         dataLayerReferences.forEach(layerReference =>{
@@ -150,9 +155,9 @@ class PgLayerViews {
 
         return Promise.all(tables).then(tables => {
             let sql = ``;
-            sql += ` LEFT JOIN ${sourceTableName} AS l_${sourceTableName} ON l_${sourceTableName}."${fidColumn}"::text = baseTable.gid::text`;
+            sql += ` LEFT JOIN ${sourceTable.tableName} AS ${sourceTable.alias} ON ${sourceTable.alias}."${sourceTable.fidColumn}"::text = baseTable.gid::text`;
             tables.forEach(table => {
-                if (table.layerName == sourceTableName) {
+                if (table.layerName === sourceTable.layerName) {
                     return;
                 }
                 sql += ` LEFT JOIN ${table.tableName} AS ${table.alias} ON ${table.alias}."${table.fidColumn}"::text = baseTable.gid::text`;

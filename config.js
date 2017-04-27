@@ -12,7 +12,7 @@ module.exports = {
 	mongoConnString    : "mongodb://10.0.75.2:27017/panther",
 
 	workspaceSchemaMap: {
-		geonode: "public",
+		geonode: "data_test",
 		analysis: "analysis"
 	},
 
