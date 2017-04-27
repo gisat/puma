@@ -100,7 +100,7 @@ class WpsController {
                 status = layerImportTask.status || ``;
                 started = layerImportTask.started || ``;
                 ended = layerImportTask.ended || ``;
-                progress = layerImportTask.progress && layerImportTask.progress >= 0 || ``;
+                progress = layerImportTask.progress && layerImportTask.progress >= 0 ? layerImportTask.progress : ``;
                 error = layerImportTask.message || ``;
                 url = layerImportTask.mongoMetadata && layerImportTask.mongoMetadata.dataView ? `${config.remoteProtocol}://${config.remoteAddress}/${config.projectHome}?id=${layerImportTask.mongoMetadata.dataView._id}` : ``;
             }
