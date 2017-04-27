@@ -86,49 +86,61 @@ class WpsController {
     
     status(request, response) {
         let id = request.params.id;
-        
         if (currentProcess[id]) {
-            let statusData = {}, process = ``, status = ``, created = ``, ended = ``, progress = ``, error = ``;
-            
-            if (currentProcess[id].method === `CustomLayerImport`) {
+            let method = currentProcess[id].method;
+            let status = ``;
+            let started = ``;
+            let ended = ``;
+            let progress = ``;
+            let error = ``;
+            let url = ``;
+
+            if (method === `CustomLayerImport`) {
                 let layerImportTask = this._layerImporterTasks.getImporterTask(id);
-                statusData.method = currentProcess[id].method;
-                statusData.status = layerImportTask.status;
-                statusData.progress = layerImportTask.progress;
-                statusData.started = layerImportTask.started;
-                statusData.ended = layerImportTask.ended;
-                statusData.message = layerImportTask.message;
+                status = layerImportTask.status;
+                started = layerImportTask.started;
+                ended = layerImportTask.ended;
+                progress = layerImportTask.progress;
+                error = layerImportTask.message;
             }
-            
-            if (statusData.method) {
-                process = `
+    
+            if (method) {
+                method = `
                         <wps:Process>
-					        <ows:Identifier>${statusData.method}</ows:Identifier>
+					        <ows:Identifier>${method}</ows:Identifier>
 				        </wps:Process>
                     `;
             }
             
-            if(statusData.status) {
+            if (status) {
                 status = `
-                        <wps:Status started="${statusData.started}" ended="${statusData.ended || ''}">
-					        <ows:Value>${statusData.status}</ows:Value>
+                        <wps:Status started="${started}" ended="${ended || ''}">
+					        <ows:Value>${status}</ows:Value>
 				        </wps:Status>
                     `;
             }
             
-            if(statusData.progress >= 0) {
+            if (progress >= 0) {
                 progress = `
                         <wps:Progress>
-					        <ows:Value>${statusData.progress}</ows:Value>
+					        <ows:Value>${progress}</ows:Value>
 				        </wps:Progress>
                     `;
             }
             
-            if(statusData.message) {
+            if (error) {
                 error = `
                         <wps:Error>
-					        <ows:Value>${statusData.message}</ows:Value>
+					        <ows:Value>${error}</ows:Value>
 				        </wps:Error>
+                    `;
+            }
+            
+            if (url) {
+                url = `
+                        <wps:LayerUrl>
+					        <ows:Value>${url}</ows:Value>
+				        </wps:LayerUrl>
                     `;
             }
             
@@ -145,10 +157,11 @@ class WpsController {
 					xml:lang="en-CA"
 					serviceInstance="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/backend/rest/wps"
 					statusLocation="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/backend/rest/status/wps/${id}">
-				    ${process}
+				    ${method}
 				    ${status}
 				    ${progress}
 				    ${error}
+				    ${url}
     			</wps:ExecuteResponse>
 			`);
         } else {
