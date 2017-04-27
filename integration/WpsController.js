@@ -87,7 +87,7 @@ class WpsController {
     status(request, response) {
         let id = request.params.id;
         if (currentProcess[id]) {
-            let method = currentProcess[id].method;
+            let method = currentProcess[id].method || ``;
             let status = ``;
             let started = ``;
             let ended = ``;
@@ -97,11 +97,12 @@ class WpsController {
 
             if (method === `CustomLayerImport`) {
                 let layerImportTask = this._layerImporterTasks.getImporterTask(id);
-                status = layerImportTask.status;
-                started = layerImportTask.started;
-                ended = layerImportTask.ended;
-                progress = layerImportTask.progress;
-                error = layerImportTask.message;
+                status = layerImportTask.status || ``;
+                started = layerImportTask.started || ``;
+                ended = layerImportTask.ended || ``;
+                progress = layerImportTask.progress && layerImportTask.progress >= 0 || ``;
+                error = layerImportTask.message || ``;
+                url = layerImportTask.mongoMetadata && layerImportTask.mongoMetadata.dataView ? `${config.remoteProtocol}://${config.remoteAddress}/${config.projectHome}?id=${layerImportTask.mongoMetadata.dataView._id}` : ``;
             }
     
             if (method) {
@@ -155,8 +156,8 @@ class WpsController {
 					service="WPS"
 					version="1.0.0"
 					xml:lang="en-CA"
-					serviceInstance="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/backend/rest/wps"
-					statusLocation="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/backend/rest/status/wps/${id}">
+					serviceInstance="${config.remoteProtocol}://${config.remoteAddress}/backend/rest/wps"
+					statusLocation="${config.remoteProtocol}://${config.remoteAddress}/backend/rest/status/wps/${id}">
 				    ${method}
 				    ${status}
 				    ${progress}
