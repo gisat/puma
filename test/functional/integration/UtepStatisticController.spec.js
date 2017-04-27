@@ -15,7 +15,7 @@ describe('UtepStatisticsController', () => {
 			pgSchema = schema.schema;
 			pgPool = pool;
 
-			new UtepStatisticsController(app, pool, mongoDb, pgSchema);
+			new UtepStatisticsController(app, pool, mongoDb, pgSchema, pgSchema);
 
 			return mongoDb.collection("dataset").insertMany([{
 				_id: 314,

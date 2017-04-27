@@ -117,7 +117,8 @@ module.exports = function(app) {
 	new WpsController(app, pool, conn.getMongoDb(), null);
 	
 	new LayerImporterController(app, conn.getMongoDb(), pool);
-	new UtepStatisticsController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
+	// Schema containing the imported data for Geoserver and schema for created views.
+	new UtepStatisticsController(app, pool, conn.getMongoDb(), 'public', 'views');
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);

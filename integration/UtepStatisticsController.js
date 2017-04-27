@@ -13,12 +13,12 @@ let PgLayerViews = require('../layers/PgLayerViews');
  * Automate mapping of the columns to the reality.
  */
 class UtepStatisticsController {
-	constructor(app, pool, mongo, schema) {
+	constructor(app, pool, mongo, schema, targetSchema) {
 		this._pool = pool;
 		this._mongo = mongo;
 
 		this._layerReferences = new MongoLayerReferences(this._mongo);
-		this._layerViews = new PgLayerViews(pool, schema);
+		this._layerViews = new PgLayerViews(pool, schema, targetSchema);
 
 		app.get('/rest/integrate/columns', this.import.bind(this));
 	}

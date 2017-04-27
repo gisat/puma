@@ -16,12 +16,15 @@ class PgLayerViews {
      * per layer reference which doesn't contain data and is therefore known as Base Layer. This view then contains
      * geometries and ids of all the polygons with columns representing the columns in the data layers.
 	 * @param pgPool {PgPool} Pool for the PostgreSQL.
-	 * @param schema {String} Name of the schema which should contain the view. Default usually is views.
+	 * @param sourceSchema {String} Optional. Name of the schema which contains the tables to load data from. Usually public
+	 * @param targetSchema {String} Optional. Name of the schema where the views should be created. Usually views.
 	 */
-	constructor(pgPool, schema) {
+	constructor(pgPool, targetSchema, sourceSchema) {
         this._pgPool = pgPool;
-        this.schema = schema;
-    }
+
+        this.targetSchema = targetSchema || 'views';
+		this.sourceSchema = sourceSchema || 'public';
+	}
 
 	/**
      * It removes the view from the database. The layerReferenceId is part of the name of the view. The structure is
@@ -50,8 +53,7 @@ class PgLayerViews {
             );
         }
         
-        let schema = config.postgreSqlSchemaLayers;
-        return this._pgPool.pool().query(`DROP VIEW IF EXISTS ${schema}.${PgLayerViews.name(layerReferenceId)}`);
+        return this._pgPool.pool().query(`DROP VIEW IF EXISTS ${this.targetSchema}.${PgLayerViews.name(layerReferenceId)}`);
     }
 
     // TODO: It wont work, when columns with same name from different tables are used.
@@ -68,7 +70,6 @@ class PgLayerViews {
         }
 
         let id, fidColumn, nameColumn, sourceTable, baseLayerName, parentColumn, attributes;
-        let schema = this.schema;
         dataLayerReferences = dataLayerReferences || [];
 		return baseLayerReference.id().then(pId => {
             id = pId;
@@ -91,7 +92,7 @@ class PgLayerViews {
             attributes = pAttributes;
             return this.joinedDataTables(dataLayerReferences, sourceTable);
         }).then(joinedDataTables => {
-			let sql = `CREATE VIEW ${schema}.${PgLayerViews.name(id)} AS SELECT
+			let sql = `CREATE VIEW ${this.targetSchema}.${PgLayerViews.name(id)} AS SELECT
                 ${sourceTable.alias}."${sourceTable.fidColumn}" AS gid,
                 ${this.nameColumn(sourceTable, nameColumn)},
                 ${sourceTable.alias}."the_geom" AS the_geom,
@@ -101,7 +102,7 @@ class PgLayerViews {
                 baseTable.length,
                 baseTable.centroid,
                 baseTable.extent
-                FROM ${schema}.${baseLayerName} as baseTable
+                FROM ${this.sourceSchema}.${baseLayerName} as baseTable
                  ${joinedDataTables};
             `;
 			logger.info(`PgLayerViews#add SQL: `, sql);
