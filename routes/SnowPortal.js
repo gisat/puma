@@ -163,6 +163,16 @@ class SnowPortal {
             let period = requestData.period;
             let area = requestData.area;
 
+            if (isNaN(period)) {
+                throw new Error("period is not a number");
+            }
+            if (!Number.isInteger(period)) {
+                throw new Error("period is not an integer");
+            }
+            if (period <= 0) {
+                throw new Error("period is 0 or negative");
+            }
+
             let compositeDates = this.getCompositeDates(dateStart, dateEnd, period);
             let getMetadataSql = this.getCompositesMetadataSql(compositeDates, period, sensors);
 
