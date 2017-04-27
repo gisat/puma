@@ -32,6 +32,8 @@ let MongoTopic = require('../metadata/MongoTopic');
 let MongoThemes = require('../metadata/MongoThemes');
 let MongoTheme = require('../metadata/MongoTheme');
 let MongoScope = require('../metadata/MongoScope');
+let MongoDataView = require('../visualization/MongoDataView');
+let MongoDataViews = require('../visualization/MongoDataViews');
 let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
 let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
 let PgLayerViews = require('../layers/PgLayerViews');
@@ -46,6 +48,8 @@ class LayerImporter {
         this._mongo = mongo;
         this._importerTasks = importerTasks;
         this._currentImportTask = {};
+        this._currentImportStep = 0;
+        this._maxImportSteps = 11;
     }
     
     /**
@@ -67,56 +71,61 @@ class LayerImporter {
         
         this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
             this._currentImportTask.mongoScopes = pMongoScopes;
-            this._currentImportTask.progress = 10;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             return this.prepareLayerFilesForImport(this._currentImportTask);
         }).then((layer) => {
             this._currentImportTask.layer = layer;
-            this._currentImportTask.progress = 20;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             return this.getPublicWorkspaceSchema();
         }).then((publicWorkspaceSchema) => {
+            console.log(publicWorkspaceSchema);
             this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
             this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
-            this._currentImportTask.progress = 30;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             // todo get datastore from configuration
             let geoServerImporter = new GeoServerImporter(
                 config.geoserverHost + config.geoserverPath,
                 config.geoserverUsername,
                 config.geoserverPassword,
                 publicWorkspaceSchema.workspace,
-                "datastore"
+                config.geoServerDataStore
             );
             return geoServerImporter.importLayer(this._currentImportTask.layer);
         }).then((geoserverImportTaskResults) => {
             this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
-            this._currentImportTask.progress = 40;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             let geonodeUpdateLayers = new GeonodeUpdateLayers();
             return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
         }).then(() => {
-            this._currentImportTask.progress = 50;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             if (this._currentImportTask.layer.type === "raster") {
                 let rasterToPgsql = new RasterToPGSQL(config.pgDataHost, config.pgDataUser, config.pgDataPassword, config.pgDataDatabase);
                 return rasterToPgsql.import(this._currentImportTask.layer);
             }
         }).then((rasterToPgsqlOutput) => {
-            this._currentImportTask.progress = 60;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             if (rasterToPgsqlOutput) {
                 this._currentImportTask.rasterToPgsqlOutput = rasterToPgsqlOutput
             }
             return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
         }).then((mongoMetadata) => {
-            this._currentImportTask.progress = 70;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             this._currentImportTask.mongoMetadata = mongoMetadata;
             return this.analyseLayer(this._currentImportTask, this._mongo, this._pgPool);
         }).then((performedAnalysis) => {
-            this._currentImportTask.progress = 80;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             this._currentImportTask.performedAnalysis = performedAnalysis;
             return this.createMongoLayerReferencesAndUpdateTheme(this._currentImportTask, this._mongo);
         }).then((mongoLayerReferences) => {
-            this._currentImportTask.progress = 90;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             this._currentImportTask.mongoLayerReferences = mongoLayerReferences;
             return this.updatePgViewWithPerformedAnalysisMongoLayerReferences(this._currentImportTask, this._mongo, this._pgPool);
         }).then(() => {
-            this._currentImportTask.progress = 100;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
+            return this.createMongoDataView(this._currentImportTask, this._mongo);
+        }).then((mongoDataView) => {
+            this._currentImportTask.mongoMetadata.dataView = mongoDataView;
+            this._currentImportTask.progress = this.getPercentage(++this._currentImportStep, this._maxImportSteps);
             this._currentImportTask.status = "done";
             this._currentImportTask.ended = new Date();
             console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
@@ -186,7 +195,7 @@ class LayerImporter {
                         scopes[Number(mongoTheme.dataset)].themes.push(mongoTheme);
                     });
                 }).then(() => {
-                    if(!Object.keys(scopes).length) reject(new Error(`no scopes was found, user is not logged in or has no scopes created`));
+                    if (!Object.keys(scopes).length) reject(new Error(`no scopes was found, user is not logged in or has no scopes created`));
                     return scopes;
                 })
             }).then(scopes => {
@@ -317,7 +326,7 @@ class LayerImporter {
      */
     updatePgViewWithPerformedAnalysisMongoLayerReferences(currentProcess, _mongo, _pgPool) {
         return new Promise((resolve, reject) => {
-            let pgLayerViews = new PgLayerViews(_pgPool, config.postgreSqlSchemaLayers);
+            let pgLayerViews = new PgLayerViews(_pgPool, config.postgreSqlSchemaLayers, config.postgreSqlSchemaLayers);
             let performedAnalysis = currentProcess.performedAnalysis;
             let locationFilter = _.map(currentProcess.mongoMetadata.locations, location => {
                 return location._id
@@ -378,7 +387,6 @@ class LayerImporter {
                             {layer: {$regex: layerRegex}}
                         ]
                     };
-                    console.log(`####`, filter);
                     promises.push(new FilteredMongoLayerReferences(filter, _mongo).read().then(dataLayerReferences => {
                             return pgLayerViews.update(baseMongoLayerReference._id, dataLayerReferences);
                         })
@@ -804,6 +812,168 @@ class LayerImporter {
             default:
                 return false;
         }
+    }
+    
+    /**
+     * Return percentage from given values
+     * @param current
+     * @param max
+     * @returns {*}
+     */
+    getPercentage(current, max) {
+        return Math.floor(current / max * 100);
+    }
+    
+    /**
+     * Create mongo dataview for imported layer
+     * @param currentImportTask
+     * @param mongo
+     */
+    createMongoDataView(currentImportTask, mongo) {
+        let mongoScope = currentImportTask.mongoScopes[Object.keys(currentImportTask.mongoScopes)[0]];
+        let mongoLocation = _.find(currentImportTask.mongoMetadata.locations, {dataset: mongoScope._id});
+        let analyticalUnitId = mongoScope.featureLayers[0];
+        let attributeSet = currentImportTask.mongoMetadata.attributeSet;
+        let attributes = currentImportTask.mongoMetadata.attributes;
+        let baseView = {
+            _id: conn.getNextId(),
+            name: currentImportTask.layer.customName,
+            conf: {
+                multipleMaps: false,
+                years: mongoScope.years,
+                dataset: mongoScope._id,
+                theme: mongoScope.themes[0]._id,
+                visualization: null,
+                location: mongoLocation._id,
+                expanded: {},
+                selMap: {
+                    ff4c39: []
+                },
+                choroplethCfg: [],
+                pagingUseSelected: false,
+                pagingSelectedColors: [
+                    "ff4c39",
+                    "34ea81",
+                    "39b0ff",
+                    "ffde58",
+                    "5c6d7e",
+                    "d97dff"
+                ],
+                filterMap: {},
+                filterActive: false,
+                layers: [
+                    {
+                        opacity: 0.7,
+                        sortIndex: 0,
+                        type: "selectedareasfilled",
+                        attributeSet: "",
+                        attribute: "",
+                        at: "",
+                        symbologyId: ""
+                    },
+                    {
+                        opacity: 0.7,
+                        sortIndex: 1,
+                        type: "areaoutlines",
+                        attributeSet: "",
+                        attribute: "",
+                        at: "",
+                        symbologyId: ""
+                    },
+                    {
+                        opacity: 0.7,
+                        sortIndex: 2,
+                        type: "topiclayer",
+                        attributeSet: "",
+                        attribute: "",
+                        at: currentImportTask.mongoMetadata.layerTemplate._id,
+                        symbologyId: "#blank#"
+                    },
+                    {
+                        opacity: 1,
+                        sortIndex: 10000,
+                        type: "terrain",
+                        attributeSet: "",
+                        attribute: "",
+                        at: "",
+                        symbologyId: ""
+                    }
+                ],
+                trafficLayer: false,
+                page: 1,
+                mapCfg: {
+                    center: {},
+                    zoom: 6
+                },
+                cfgs: [
+                    {
+                        cfg: {
+                            title: "Automatic analysis results",
+                            type: "grid",
+                            attrs: _.map(attributes, attribute => {
+                                return {
+                                    as: attributeSet._id,
+                                    attr: attribute._id,
+                                    normType: "",
+                                    normAs: "",
+                                    normAttr: "",
+                                    normYear: "",
+                                    attrNameNormalized: "",
+                                    checked: true,
+                                    numCategories: "",
+                                    classType: "",
+                                    zeroesAsNull: "",
+                                    name: "",
+                                    topic: "",
+                                    parentId: null,
+                                    index: 0,
+                                    depth: 0,
+                                    expanded: false,
+                                    expandable: true,
+                                    leaf: false,
+                                    cls: "",
+                                    iconCls: "",
+                                    icon: "",
+                                    root: false,
+                                    isLast: false,
+                                    isFirst: false,
+                                    allowDrop: true,
+                                    allowDrag: true,
+                                    loaded: false,
+                                    loading: false,
+                                    href: "",
+                                    hrefTarget: "",
+                                    qtip: "",
+                                    qtitle: "",
+                                    children: null,
+                                    attrName: `${attribute.name}`,
+                                    asName: `${attributeSet.name}`,
+                                    treeNodeText: `${attribute.name}`
+                                }
+                            }),
+                            featureLayerOpacity: "70",
+                            classType: "quantiles",
+                            numCategories: "5",
+                            constrainFl: [
+                                0,
+                                3
+                            ],
+                            stacking: "none",
+                            chartId: 7165535
+                        },
+                        queryCfg: {
+                            invisibleAttrs: [],
+                            invisibleYears: []
+                        }
+                    }
+                ]
+            },
+            origin: "customLayer"
+        };
+        
+        return new MongoDataViews(mongo).add(baseView).then(() => {
+            return baseView;
+        })
     }
 }
 
