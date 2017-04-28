@@ -3,6 +3,7 @@ let logger = require('../common/Logger').applicationWideLogger;
 let _ = require("lodash");
 let Promise = require("promise");
 let hash = require("object-hash");
+var child_process  = require('pn/child_process');
 
 let processes = {};
 
@@ -15,6 +16,9 @@ class SnowPortal {
         app.post("/api/snowportal/composites", this.getComposites.bind(this));
 
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
+
+        this.area = 'europe'; // TODO set dynamicaly?
+        this.tmpTiffLocation = "/tmp/";
     }
 
     getCompositesMetadata(request, response) {
@@ -29,8 +33,8 @@ class SnowPortal {
     getScenes(request, response) {
         let areaType = request.body.area.type;
         let area = request.body.area.value;
-        let dateStart = request.body.timeRange.start;
-        let dateEnd = request.body.timeRange.end;
+        let timeRangeStart = request.body.timeRange.start;
+        let timeRangeEnd = request.body.timeRange.end;
         let sensors = [];
         let satellites = [];
     
@@ -66,7 +70,7 @@ class SnowPortal {
             satellites = satellites.concat(sensorSatellites);
         });
         
-        let sql = this.getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd);
+        let sql = this.getScenesDataSql(areaType, area, sensors, satellites, timeRangeStart, timeRangeEnd);
         
         this._pgPool.pool().query(sql).then(results => {
             let totals = {};
@@ -157,8 +161,8 @@ class SnowPortal {
 
         // get process data
         Promise.resolve().then(() => {
-            let dateStart = requestData.timeRange.start;
-            let dateEnd = requestData.timeRange.end;
+            let timeRangeStart = requestData.timeRange.start;
+            let timeRangeEnd = requestData.timeRange.end;
             let sensors = Object.keys(requestData.sensors);
             let period = requestData.period;
             let area = requestData.area;
@@ -173,7 +177,7 @@ class SnowPortal {
                 throw new Error("period is 0 or negative");
             }
 
-            let compositeDates = this.getCompositeDates(dateStart, dateEnd, period);
+            let compositeDates = this.getCompositeDates(timeRangeStart, timeRangeEnd, period);
             let getMetadataSql = this.getCompositesMetadataSql(compositeDates, period, sensors);
 
             return this._pgPool.pool().query(getMetadataSql).then(result => {
@@ -192,12 +196,7 @@ class SnowPortal {
                     if (composite) { // composite exists
                         promises.push(composite);
                     } else { // composite doesn't exist
-                        // TODO create composite - add to promises
-
-                        promises.push({ ///////////// divny experiment
-                            date_start: compositeDate,
-                            key: null
-                        });
+                        promises.push(this.createComposite(compositeDate, period, sensors));
                     }
                 });
 
@@ -214,12 +213,6 @@ class SnowPortal {
 
                     let tableName = composite.key;
                     promises.push(new Promise((resolve, reject) => {
-
-                        // handle no data // TODO ??
-                        if (tableName == null) {
-                            return reject("NoData");
-                        }
-
                         let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors);
                         let query = this._pgPool.pool().query(sql).then((results) => {
                             let classDistribution = {};
@@ -262,6 +255,105 @@ class SnowPortal {
         response.send({
             ticket: requestHash,
             success: true
+        });
+    }
+
+    createComposite(startDay, period, sensors) {
+
+        let usedScenes = [];
+        let area = this.area;
+        let tableName;
+        let endDay = this.addDays(startDay, period - 1).toISOString().split("T")[0];
+
+        return new Promise((resolve, reject) => {
+            /**
+             * get IDs of scenes
+             */
+
+            let sql = this.getScenesIDsSql(startDay, endDay, sensors);
+            let query = this._pgPool.pool().query(sql).then((results) => {
+                _.each(results.rows, scene => {
+                    usedScenes.push(scene.id);
+                });
+
+                if (!usedScenes.length) {
+                    reject(new Error(`No scenes for sensors [${sensors}] from ${startDay} to ${endDay}.`));
+                }
+
+                resolve(usedScenes);
+            }).catch(error => {
+                reject(error);
+            });
+
+        }).then(() => {
+            /**
+             * Generate composite
+             */
+            return new Promise((resolve, reject) => {
+                tableName = "composite_" + hash({
+                        startDay: startDay,
+                        endDay: endDay,
+                        period: period,
+                        sensors: sensors,
+                        area: area,
+                        usedScenes: usedScenes
+                    });
+                let sql = this.createCompositeSql(tableName, startDay, endDay, sensors);
+                logger.trace(`SnowPortal#createComposite: Generating composite from ${startDay} to ${endDay} (${period} days) ` +
+                    `for sensors ${sensors} in area ${area} from scenes ${usedScenes}
+                | tableName: ${tableName}
+                | SQL: ${sql}`);
+                let query = this._pgPool.pool().query(sql).then((result) => {
+                    resolve();
+                }).catch(error => {
+                    reject(error);
+                });
+            });
+        }).then(() => {
+            /**
+             * Save composite metadata
+             */
+            return new Promise((resolve, reject) => {
+                let sql = this.saveCompositeMetadataSql(tableName, startDay, endDay, period, sensors, area, usedScenes);
+                logger.trace(`SnowPortal#createComposite: Saving composite metadata | SQL: ${sql}`);
+                let query = this._pgPool.pool().query(sql).then((result) => {
+                    resolve();
+                }).catch(error => {
+                    reject(error);
+                });
+            });
+        }).then(() => {
+            /**
+             * Export composite to GeoTiff
+             * TODO for Windows?
+             */
+            return new Promise((resolve, reject) => {
+                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${tableName} mode=2" ${this.tmpTiffLocation}${tableName}.tif`;
+                logger.trace(`SnowPortal#createComposite: Exporting GeoTiff of the composite ${tableName}`);
+                resolve(child_process.exec(command).promise);
+            });
+        }).then(() => {
+            /**
+             * Publish GeoTiff in GeoNode
+             * TODO for Windows?
+             */
+            return new Promise((resolve, reject) => {
+                let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this.tmpTiffLocation}${tableName}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${tableName}/file.geotiff`;
+                logger.trace(`SnowPortal#createComposite: Publishing GeoTiff in GeoNode (${tableName})`);
+                resolve(child_process.exec(command).promise);
+            });
+        }).then(() => {
+            /**
+             * Delete GeoTiff
+             * TODO for Windows?
+             */
+            return new Promise((resolve, reject) => {
+                logger.trace(`SnowPortal#createComposite: Deleting GeoTiff file ${tableName}.tif`);
+                resolve(child_process.exec(`rm ${tableName}.tif`).promise);
+            });
+        }).catch(error => {
+            logger.error(`SnowPortal#createComposite: Error ${error.message}`);
+            throw error;
         });
     }
     
@@ -340,22 +432,21 @@ class SnowPortal {
     }
 
     /**
-    *
-    * @param dateStart
-    * @param dateEnd
+    * Generate array of SQL string dates for composites - based on time range and period.
+    * @param timeRangeStart
+    * @param timeRangeEnd
     * @param period
     * @returns {Array} Array of SQL date strings
     */
-    getCompositeDates(dateStart, dateEnd, period) {
+    getCompositeDates(timeRangeStart, timeRangeEnd, period) {
         // create dates - array with SQL dates, begginings of composite periods
         let dates = [];
-        let dateObj = new Date(dateStart);
-        let dateEndObj = new Date(dateEnd);
-        let dateAfterEndObj = this.addDays(dateEndObj, 1);
-        let nextDate;
-        while((nextDate = this.addDays(dateObj, period)) <= dateAfterEndObj){ // TODO write better?
+        let dateObj = new Date(timeRangeStart);
+        let timeRangeEndObj = new Date(timeRangeEnd);
+        let endDate;
+        while((endDate = this.addDays(dateObj, period - 1)) <= timeRangeEndObj){
             dates.push(dateObj.toISOString().split('T')[0]);
-            dateObj = nextDate;
+            dateObj = this.addDays(endDate, 1);
         }
         return dates;
     }
@@ -377,6 +468,56 @@ class SnowPortal {
                   AND m.sensors <@ ${this.convertArrayToSqlArray(sensors)}
                   AND m.sensors @> ${this.convertArrayToSqlArray(sensors)}
                   AND m.date_start::VARCHAR = ANY(${this.convertArrayToSqlArray(compositeDates)});`;
+    }
+
+    /**
+     * Create SQL query for selecting Scene IDs for composite creation
+     * @param startDate
+     * @param endDate
+     * @param sensors
+     * @returns {string}
+     */
+    getScenesIDsSql(startDate, endDate, sensors) {
+        return `
+            SELECT
+                m.id, *
+            FROM
+                metadata AS m
+                INNER JOIN source AS s ON (m.source_id = s.id)
+            WHERE
+                s.sensor_key = ANY(${this.convertArrayToSqlArray(sensors)})
+                AND m.date BETWEEN '${startDate}' AND '${endDate}';`;
+    }
+
+    /**
+     * Create SQL query for creating composites
+     * @param tableName
+     * @param startDate
+     * @param endDate
+     * @param sensors
+     * @returns {string}
+     */
+    createCompositeSql(tableName, startDate, endDate, sensors) {
+        return `
+            CREATE TABLE composites.${tableName}
+                AS SELECT st_union(t.rast, 1, 'MAX') as rast
+                    FROM (SELECT DISTINCT st_centroid(extent) AS centroid
+                    FROM rasters) AS foo,
+                        tile AS t
+                    INNER JOIN rasters AS r ON (r.rid = t.rid)
+                    INNER JOIN metadata AS m ON (m.id = r.metadata_id)
+                    INNER JOIN source AS s ON (s.id = m.source_id)
+                    WHERE r.extent && foo.centroid
+                        AND m.date BETWEEN '${startDate}' AND '${endDate}'
+                        AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
+                    GROUP BY foo.centroid;`;
+    }
+
+    saveCompositeMetadataSql(tableName, startDate, endDate, period, sensors, area, usedScenes) {
+        return `
+            INSERT INTO composites.metadata
+                (key, sensors, date_start, date_end, period, area, used_scenes)
+                VALUES ('${tableName}', ${this.convertArrayToSqlArray(sensors)}, '${startDate}', '${endDate}', ${period}, '${area}', ${this.convertArrayToSqlArray(usedScenes)});`;
     }
 
     /**
