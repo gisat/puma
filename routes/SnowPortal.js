@@ -242,7 +242,7 @@ class SnowPortal {
                                 classDistribution: classDistribution
                             })
                         }).catch(error => {
-                            reject(error);
+                            reject(new Error(`Composites Statistics Error: ${error.message} | ${error}`));
                         });
                     }));
 
@@ -291,7 +291,7 @@ class SnowPortal {
 
                 resolve(usedScenes);
             }).catch(error => {
-                reject(error);
+                reject(new Error(`Creating composite, get IDs Error: ${error.message} | ${error}`));
             });
 
         }).then(() => {
@@ -315,7 +315,7 @@ class SnowPortal {
                 let query = this._pgPool.pool().query(sql).then((result) => {
                     resolve();
                 }).catch(error => {
-                    reject(error);
+                    reject(new Error(`Creating composite, generating Error: ${error.message} | ${error}`));
                 });
             });
         }).then(() => {
@@ -328,7 +328,7 @@ class SnowPortal {
                 let query = this._pgPool.pool().query(sql).then((result) => {
                     resolve();
                 }).catch(error => {
-                    reject(error);
+                    reject(new Error(`Creating composite, saving metadata Error: ${error.message} | ${error}`));
                 });
             });
         }).then(() => {
