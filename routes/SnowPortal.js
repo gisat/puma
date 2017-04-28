@@ -123,6 +123,15 @@ class SnowPortal {
     
     getComposites(request, response) {
         let requestData = request.body;
+
+        // TODO temporary
+        if (requestData.period == 'week') {
+            requestData.period = 7;
+        }
+        if (requestData.period == 'day') {
+            requestData.period = 1;
+        }
+
         let requestHash = hash(requestData);
 
         /**
