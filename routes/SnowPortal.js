@@ -122,6 +122,9 @@ class SnowPortal {
     
     
     getComposites(request, response) {
+        console.log('console log getComposites');
+        logger.trace('logger trace getComposites');
+
         let requestData = request.body;
 
         // TODO temporary
@@ -269,6 +272,8 @@ class SnowPortal {
     }
 
     createComposite(startDay, period, sensors) {
+        console.log('console log createComposite');
+        logger.trace('logger trace createComposite');
 
         let usedScenes = [];
         let area = this.area;
