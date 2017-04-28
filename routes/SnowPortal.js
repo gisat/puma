@@ -242,6 +242,7 @@ class SnowPortal {
                                 classDistribution: classDistribution
                             })
                         }).catch(error => {
+                            logger.error(`Composites Statistics Error: ${error}`);
                             reject(new Error(`Composites Statistics Error: ${error.message} | ${error}`));
                         });
                     }));
@@ -291,6 +292,7 @@ class SnowPortal {
 
                 resolve(usedScenes);
             }).catch(error => {
+                logger.error(`Creating composite, get IDs Error: ${error}`);
                 reject(new Error(`Creating composite, get IDs Error: ${error.message} | ${error}`));
             });
 
@@ -315,6 +317,7 @@ class SnowPortal {
                 let query = this._pgPool.pool().query(sql).then((result) => {
                     resolve();
                 }).catch(error => {
+                    logger.error(`Creating composite, generating Error: ${error}`);
                     reject(new Error(`Creating composite, generating Error: ${error.message} | ${error}`));
                 });
             });
@@ -328,6 +331,7 @@ class SnowPortal {
                 let query = this._pgPool.pool().query(sql).then((result) => {
                     resolve();
                 }).catch(error => {
+                    logger.error(`Creating composite, saving metadata Error: ${error}`);
                     reject(new Error(`Creating composite, saving metadata Error: ${error.message} | ${error}`));
                 });
             });
