@@ -78,18 +78,22 @@ class UtepStatisticsController {
 			}));
 		}).then(() => {
 			logger.info('UtepStatisticsController#import Update views');
-			// Update all relevant views.
-			return Promise.all(baseLayers.map(baseLayer => {
-				return new FilteredMongoLayerReferences({
-					"layer": baseLayer.layer,
-					"location": baseLayer.location,
-					"year": baseLayer.year,
-					"areaTemplate": baseLayer.areaTemplate,
-					"isData": true
-				}, this._mongo).read().then(layerReferences => {
+			// Update all relevant views. Do it one by one.
+			var promise = Promise.resolve(null);
+			baseLayers.forEach(baseLayer => {
+				promise = promise.then(() => {
+					return new FilteredMongoLayerReferences({
+						"layer": baseLayer.layer,
+						"location": baseLayer.location,
+						"year": baseLayer.year,
+						"areaTemplate": baseLayer.areaTemplate,
+						"isData": true
+					}, this._mongo).read();
+				}).then(layerReferences => {
 					return this._layerViews.update(baseLayer._id, layerReferences);
 				})
-			}));
+			});
+			return promise;
 		}).then(() => {
 			logger.info('UtepStatisticsController#import Done');
 			response.json({status: 'ok'});
