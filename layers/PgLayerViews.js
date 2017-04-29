@@ -108,7 +108,10 @@ class PgLayerViews {
 			logger.info(`PgLayerViews#add SQL: `, sql);
 
             return this._pgPool.pool().query(sql)
-        })
+        }).then(result => {
+        	logger.info(`PgLayerViews#add Added: ${id}`);
+        	return result;
+		});
     }
 
     nameColumn(sourceTable, nameColumn) {
