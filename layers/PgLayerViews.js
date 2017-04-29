@@ -102,7 +102,7 @@ class PgLayerViews {
                 baseTable.length,
                 baseTable.centroid,
                 baseTable.extent
-                FROM ${this.sourceSchema}.${baseLayerName} as baseTable
+                FROM ${this.targetSchema}.${baseLayerName} as baseTable
                  ${joinedDataTables};
             `;
 			logger.info(`PgLayerViews#add SQL: `, sql);
