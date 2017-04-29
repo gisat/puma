@@ -34,7 +34,8 @@ class UtepStatisticsController {
 			logger.info('UtepStatisticsController#import All locations: ', ids);
 			return new FilteredMongoLayerReferences({
 				location: {$in: ids},
-				isData: false
+				isData: false,
+				active: true
 			}, this._mongo).json();
 		}).then(pBaseLayers => {
 			baseLayers = pBaseLayers;
