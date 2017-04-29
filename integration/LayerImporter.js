@@ -55,6 +55,44 @@ class LayerImporter {
     getCurrentImporterTask() {
         return this._currentImportTask;
     }
+
+	/**
+     * Execute import of the layer without executing the statistical part of the scripts.
+	 * @param inputs
+	 */
+	importLayerWithoutStatistics(inputs) {
+		this._currentImportTask = this._importerTasks.createNewImportTask();
+
+		this._currentImportTask.inputs = inputs;
+
+		this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
+			this._currentImportTask.mongoScopes = pMongoScopes;
+			this._currentImportTask.progress = 10;
+			return this.prepareLayerFilesForImport(this._currentImportTask);
+		}).then((layer) => {
+			this._currentImportTask.layer = layer;
+			this._currentImportTask.progress = 20;
+			return this.getPublicWorkspaceSchema();
+		}).then((publicWorkspaceSchema) => {
+			this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
+			this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
+			this._currentImportTask.progress = 30;
+			// todo get datastore from configuration
+			let geoServerImporter = new GeoServerImporter(
+				config.geoserverHost + config.geoserverPath,
+				config.geoserverUsername,
+				config.geoserverPassword,
+				publicWorkspaceSchema.workspace,
+				"datastore"
+			);
+			return geoServerImporter.importLayer(this._currentImportTask.layer);
+		}).then((geoserverImportTaskResults) => {
+			this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+			this._currentImportTask.progress = 40;
+			let geonodeUpdateLayers = new GeonodeUpdateLayers();
+			return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
+		})
+    }
     
     /**
      * Execute layer import
