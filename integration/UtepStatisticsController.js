@@ -66,9 +66,9 @@ class UtepStatisticsController {
 						{"attribute": 5901, "column": "worldpop"},
 						{"attribute": 5904, "column": "gpw_v4"},
 						{"attribute": 4312, "column": "guf12m"},
-						{"attribute": 5920, "column": "tweet"}
-						/*,{"attribute": , "column": "avg_light"},
-						{"attribute": , "column": "sum_light"}*/
+						{"attribute": 5920, "column": "tweet"},
+						{"attribute": 5921, "column": "avg_light"},
+						{"attribute": 5922, "column": "sum_light"}
 					],
 					"attributeSet": 5900,
 					"active": true,
