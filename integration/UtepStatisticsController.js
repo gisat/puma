@@ -67,8 +67,9 @@ class UtepStatisticsController {
 						{"attribute": 5904, "column": "gpw_v4"},
 						{"attribute": 4312, "column": "guf12m"},
 						{"attribute": 5920, "column": "tweet"},
-						{"attribute": 5921, "column": "avg_light"},
-						{"attribute": 5922, "column": "sum_light"}
+						{"attribute": 5921, "column": "aff_avg_light"},
+						{"attribute": 5922, "column": "sum_light"},
+						{"attribute": 29029, "column": "rel_aff_area_light"}
 					],
 					"attributeSet": 5900,
 					"active": true,
