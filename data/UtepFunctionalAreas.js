@@ -9,9 +9,9 @@ class UtepFunctionalAreas {
 	}
 
 	getAsCsv(request, response, next) {
-		logger.info(`UtepFunctionalAreas#getAsCsv Sets: `, request.params);
+		logger.info(`UtepFunctionalAreas#getAsCsv Sets: `, request.query);
 
-		let sets = request.params.sets;
+		let sets = request.query.sets;
 		let setsArray = sets.split('$');
 
 		let resultCsv = 'State,High density clusters,Urban cluster,Rural area\n';
