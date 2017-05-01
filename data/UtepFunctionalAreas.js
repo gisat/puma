@@ -9,7 +9,7 @@ class UtepFunctionalAreas {
 	}
 
 	getAsCsv(request, response, next) {
-		logger.info(`UtepFunctionalAreas#getAsCsv Sets: ${request.params.sets}`);
+		logger.info(`UtepFunctionalAreas#getAsCsv Sets: `, request.params);
 
 		let sets = request.params.sets;
 		let setsArray = sets.split('$');
