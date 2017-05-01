@@ -25,13 +25,19 @@ class UtepFunctionalAreas {
 			let hdcAmount;
 			let ucAmount;
 			promise = promise.then(() => {
-				return this._pgPool.query(this.getSql(` "SumI0B0" > ${highDensityClusterOptions[0]} AND "density" > ${highDensityClusterOptions[1]}`));
+				let sql = this.getSql(` "SumI0B0" > ${highDensityClusterOptions[0]} AND "density" > ${highDensityClusterOptions[1]}`);
+				logger.info(`UtepFunctionalAreas#getAsCsv HDC SQL: `, sql);
+				return this._pgPool.query(sql);
 			}).then(result => {
+				let sql = this.getSql(` "SumI0B0" > ${urbanClusterOptions[0]} AND "density" > ${urbanClusterOptions[1]} AND "SumI0B0" < ${highDensityClusterOptions[0]} AND "density" < ${highDensityClusterOptions[1]} `);
+				logger.info(`UtepFunctionalAreas#getAsCsv Urban SQL: `, sql);
 				hdcAmount = result.rows[0].amount;
-				return this._pgPool.query(this.getSql(` "SumI0B0" > ${urbanClusterOptions[0]} AND "density" > ${urbanClusterOptions[1]} AND "SumI0B0" < ${highDensityClusterOptions[0]} AND "density" < ${highDensityClusterOptions[1]} `));
+				return this._pgPool.query(sql);
 			}).then(result => {
+				let sql = this.getSql(` "SumI0B0" < ${urbanClusterOptions[0]} OR "density" < ${urbanClusterOptions[1]}`);
+				logger.info(`UtepFunctionalAreas#getAsCsv Rural SQL: `, sql);
 				ucAmount = result.rows[0].amount;
-				return this._pgPool.query(this.getSql(` "SumI0B0" < ${urbanClusterOptions[0]} OR "density" < ${urbanClusterOptions[1]}`));
+				return this._pgPool.query(sql);
 			}).then(result => {
 				resultCsv += `Set ${index + 1},${hdcAmount},${ucAmount},${result.rows[0].amount}\n`;
 				return null;
