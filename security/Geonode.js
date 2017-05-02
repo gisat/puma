@@ -24,6 +24,7 @@ class Geonode {
 	}
 
 	login(username, password) {
+		logger.info(`Geonode#login Username: ${username} Passsword: ${password}`);
 		let geonodeHomeUrl = this.homeUrl();
 		var layersUrl = geonodeHomeUrl.resolveObject("/layers/");
 		var loginUrl = geonodeHomeUrl.resolveObject("/account/login/");
