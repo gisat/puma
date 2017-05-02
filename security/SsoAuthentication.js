@@ -20,9 +20,10 @@ class SsoAuthentication {
 	 * It prepares information for authentication based on the EO SSO header informations.
 	 * It also logs the user in the solution.
 	 * @param request
+	 * @param response
 	 * @returns {Promise}
 	 */
-	authenticate(request) {
+	authenticate(request, response) {
 		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email']);
 
 		if(request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') {
@@ -32,12 +33,12 @@ class SsoAuthentication {
 					return this.pgUsers.add(email).then(user => {
 						request.session.userId = user.id;
 						request.session.userName = request.headers['umsso-person-commonname'];
-						return this.login();
+						return this.login(response);
 					});
 				} else {
 					request.session.userId = user.id;
 					request.session.userName = request.headers['umsso-person-commonname'];
-					return this.login();
+					return this.login(response);
 				}
 			});
 		} else {
@@ -48,9 +49,13 @@ class SsoAuthentication {
 	/**
 	 * It logs user to the Geonode as an admin user.
 	 */
-	login() {
+	login(response) {
 		if(config.geonodeAdminUser) {
-			return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password);
+			return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password).then(parsedCookies => {
+				for (let name in parsedCookies) {
+					response.set("Set-Cookie", parsedCookies[name].headerLine);
+				}
+			});
 		} else {
 			return null;
 		}
