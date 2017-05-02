@@ -293,7 +293,7 @@ ViewResolver.prototype.create = function () {
 				);
 			}
 
-			var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "/?id=" + result._id;
+			var viewUrl = config.remoteProtocol + '://' + config.remoteAddress + "/puma/tool/?id=" + result._id;
 			resolve(viewUrl);
 		});
 	});
