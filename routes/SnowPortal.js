@@ -361,7 +361,12 @@ class SnowPortal {
              */
             return new Promise((resolve, reject) => {
                 logger.trace(`SnowPortal#createComposite: Deleting GeoTiff file ${tableName}.tif`);
-                resolve(child_process.exec(`rm ${this.tmpTiffLocation}${tableName}.tif`).promise);
+                child_process.exec(`rm ${this.tmpTiffLocation}${tableName}.tif`).promise.then(() => {
+                    resolve({
+                        date_start: startDay,
+                        key: tableName
+                    });
+                });
             });
         }).catch(error => {
             logger.error(`SnowPortal#createComposite: Error ${error.message}`);
