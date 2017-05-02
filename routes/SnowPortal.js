@@ -351,7 +351,7 @@ class SnowPortal {
              */
             return new Promise((resolve, reject) => {
                 let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this.tmpTiffLocation}${tableName}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${tableName}/file.geotiff`;
-                logger.trace(`SnowPortal#createComposite: Publishing GeoTiff in GeoNode (${tableName})`);
+                logger.trace(`SnowPortal#createComposite: Publishing GeoTiff in Geoserver (${tableName})`);
                 resolve(child_process.exec(command).promise);
             });
         }).then(() => {
