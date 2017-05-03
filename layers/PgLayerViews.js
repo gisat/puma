@@ -102,13 +102,16 @@ class PgLayerViews {
                 baseTable.length,
                 baseTable.centroid,
                 baseTable.extent
-                FROM ${this.sourceSchema}.${baseLayerName} as baseTable
+                FROM ${this.targetSchema}.${baseLayerName} as baseTable
                  ${joinedDataTables};
             `;
 			logger.info(`PgLayerViews#add SQL: `, sql);
 
             return this._pgPool.pool().query(sql)
-        })
+        }).then(result => {
+        	logger.info(`PgLayerViews#add Added: ${id}`);
+        	return result;
+		});
     }
 
     nameColumn(sourceTable, nameColumn) {

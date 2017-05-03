@@ -5,6 +5,7 @@ class LayerImporterController {
     constructor(app, mongo, pgPool) {
         app.get('/rest/layerImporter/status/:id', this.getLayerImportStatus.bind(this));
         app.post('/rest/layerImporter/import', this.importLayer.bind(this));
+		app.post('/rest/layerImporter/importNoStatistics', this.importNoStatisticsLayer.bind(this));
         
         this._mongo = mongo;
         this._pgPool = pgPool;
@@ -37,6 +38,25 @@ class LayerImporterController {
                 success: false
             })
         });
+    }
+
+	/**
+     * Execute import of the layer without generating statistics for it.
+	 * @param request
+	 * @param response
+	 */
+	importNoStatisticsLayer(request, response) {
+		let layerImporter = new LayerImporter(this._pgPool, this._mongo, this._layerImporterTasks);
+
+		this.getImportInputs(request).then(inputs => {
+			layerImporter.importLayerWithoutStatistics(inputs);
+			response.send(layerImporter.getCurrentImporterTask());
+		}).catch(error => {
+			response.send({
+				message: error.message,
+				success: false
+			})
+		});
     }
     
     /**
