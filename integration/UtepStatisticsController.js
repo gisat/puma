@@ -127,7 +127,8 @@ class UtepStatisticsController {
 			return new FilteredMongoLayerReferences({
 				attributeSet: 5900,
 				location: {$in: ids},
-				isData: true
+				isData: true,
+				areaTemplate: 315
 			}, this._mongo).read();
 		}).then(layerRefsToDelete => {
 			logger.info('UtepStatisticsController#import Layers to remove: ', layerRefsToDelete.length);
