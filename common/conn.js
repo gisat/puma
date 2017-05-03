@@ -280,7 +280,7 @@ function getGeometryColumnName(sourceTableName) {
 		          + " ORDER BY column_name;"
 		logger.info('conn#getGeometryColumnName SQL: ', sql, ' Schema name: ', schemaName, ' tableName: ', tableName);
 		var client = getPgDataDb();
-		client.query(sql, [schemaName, tableName], function(err, results) {
+		client.query(sql, [schemaName, '"'+tableName+'"'], function(err, results) {
 			if (err) {
 				var err_msg = util.format("Error querying geometry column name, query=%s, error=%s.", sql, err);
 				logger.error(err_msg);
