@@ -38,6 +38,7 @@ var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
 
 let SnowPortal = require("./SnowPortal");
+let SnowWidgetController = require("./SnowWidgetController");
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -113,6 +114,7 @@ module.exports = function(app) {
 	new iprConversion(app);
 
 	new SnowPortal(app, pool);
+	new SnowWidgetController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);

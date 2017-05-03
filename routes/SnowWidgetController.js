@@ -1,0 +1,47 @@
+var request = require('request');
+
+var SnowConfigurationTable = require('../snow/SnowConfigurationsTable');
+
+/**
+ * It contains endpoints relevant for getting and saving of snow portal configurations
+ */
+class SnowWidgetController {
+    constructor(app, pgPool) {
+        this._snowCfgTable = new SnowConfigurationTable(pgPool, "snow_configurations");
+
+        app.get('/rest/snow/getconfigurations', this.getConfigurations.bind(this));
+        app.post('/rest/snow/saveconfigurations', this.saveConfigurations.bind(this));
+    }
+
+
+    getConfigurations(request, response){
+        this._snowCfgTable.selectAll().then(function(result){
+            if (result.status == "OK"){
+                response.send(result);
+            } else {
+                response.send({
+                    status: "Error"
+                })
+            }
+        });
+    }
+
+    saveConfigurations(request, response){
+        var url = request.body.url;
+
+        this._snowCfgTable.insert({
+            url: url,
+            user_id: 1,
+        }).then(function(result){
+            if (result.status == "OK"){
+                response.send(result);
+            } else {
+                response.send({
+                    status: "Error"
+                })
+            }
+        });
+    }
+}
+
+module.exports = SnowWidgetController;
