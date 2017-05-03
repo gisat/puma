@@ -19,6 +19,7 @@ class SnowPortal {
 
         this.area = 'europe'; // TODO set dynamicaly?
         this.tmpTiffLocation = "/tmp/";
+        this.geoNodeManagePyDir = '/home/geonode/geonode';
     }
 
     getCompositesMetadata(request, response) {
@@ -346,12 +347,22 @@ class SnowPortal {
             });
         }).then(() => {
             /**
-             * Publish GeoTiff in GeoNode
+             * Import GeoTiff to Geoserver
              * TODO for Windows?
              */
             return new Promise((resolve, reject) => {
                 let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this.tmpTiffLocation}${tableName}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${tableName}/file.geotiff`;
-                logger.trace(`SnowPortal#createComposite: Publishing GeoTiff in Geoserver (${tableName})`);
+                logger.trace(`SnowPortal#createComposite: Importing GeoTiff in Geoserver (${tableName})`);
+                resolve(child_process.exec(command).promise);
+            });
+        }).then(() => {
+            /**
+             * Publish GeoTiff in GeoNode
+             * TODO for Windows?
+             */
+            return new Promise((resolve, reject) => {
+                let command = `cd ${this.geoNodeManagePyDir} && python manage.py updatelayers -f ${tableName}`;
+                logger.trace(`SnowPortal#createComposite: Publishing Geoserver raster layer in GeoNode (${tableName})`);
                 resolve(child_process.exec(command).promise);
             });
         }).then(() => {
