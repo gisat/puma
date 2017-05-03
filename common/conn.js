@@ -232,7 +232,7 @@ function getLayerTable(layerName) {
 	// Do lookup for schema.
 	var schemaName = getSchemaName(workspaceName);
 
-	return util.format("%s.%s", schemaName, tableName);
+	return util.format("%s.\"%s\"", schemaName, tableName);
 }
 
 function getSchemaName(workspaceName) {
