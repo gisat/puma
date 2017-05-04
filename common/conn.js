@@ -256,6 +256,7 @@ function getSchemaName(workspaceName) {
  *   If the table has more geometry columns than the column returned is the first column alphabetically.
  */
 function getGeometryColumnName(sourceTableName) {
+	console.log(sourceTableName);
 	return new Promise(function (resolve, reject) {
 		// Extract schema name and table name.
 		var nameParts = sourceTableName.split(".");
@@ -265,7 +266,7 @@ function getGeometryColumnName(sourceTableName) {
 			return reject(new Error(err_msg));
 		}
 		var schemaName = nameParts[0];
-		var tableName = nameParts[1];
+		var tableName = nameParts[1].replace(/"/g, '');
 		if (schemaName == "" || tableName == "") {
 			var err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
 			logger.error(err_msg);
