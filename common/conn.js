@@ -289,7 +289,7 @@ function getGeometryColumnName(sourceTableName) {
 			}
 			// TODO: Remove later. Necessary for mapping of certain information now.
 			if(config.toggles.useEoSso) {
-				return resolve('the_geom');
+				// return resolve('the_geom');
 			}
 			if (results.rows.length < 1) {
 				var err_msg = util.format("Error: table '%s' has no geometry column.", sourceTableName);
