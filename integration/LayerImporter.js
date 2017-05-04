@@ -452,7 +452,7 @@ class LayerImporter {
         return Promise.resolve().then(() => {
             let workspaceSchema = {};
             _.each(config.workspaceSchemaMap, (schema, workspace) => {
-                if (schema === "public") {
+                if (schema === "public" && !workspaceSchema.schema() && !workspaceSchema.workspace) {
                     workspaceSchema.schema = schema;
                     workspaceSchema.workspace = workspace;
                 }
