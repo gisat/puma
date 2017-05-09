@@ -71,17 +71,11 @@ class SnowConfigurationsTable extends SourceTable {
      * Select all records from table
      * @returns {Promise.<T>}
      */
-    selectAll (params){
+    selectByUser (params){
         var where = ``;
-
-        // todo where - permissions
-        //if (params){
-        //    where += `WHERE `;
-        //    for (var key in params){
-        //        where += key + `='${params[key]}' AND `;
-        //    }
-        //    where = where.slice(0,-4);
-        //}
+        if (params){
+            where = `WHERE user_id=${params['user_id']}`;
+        }
 
         var sql = `SELECT * FROM ${config.postgreSqlSchema}.${this._tableName} ` +
             where +

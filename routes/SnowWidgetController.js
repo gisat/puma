@@ -15,7 +15,11 @@ class SnowWidgetController {
 
 
     getConfigurations(request, response){
-        this._snowCfgTable.selectAll().then(function(result){
+        var userId = request.session.user.id;
+
+        this._snowCfgTable.selectByUser({
+            user_id: userId
+        }).then(function(result){
             if (result.status == "OK"){
                 response.send(result);
             } else {
@@ -28,10 +32,11 @@ class SnowWidgetController {
 
     saveConfigurations(request, response){
         var url = request.body.url;
+        var userId = request.session.user.id;
 
         this._snowCfgTable.insert({
             url: url,
-            user_id: 1,
+            user_id: userId
         }).then(function(result){
             if (result.status == "OK"){
                 response.send(result);
