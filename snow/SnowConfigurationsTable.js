@@ -17,6 +17,7 @@ class SnowConfigurationsTable extends SourceTable {
     createTable(name){
         var sql = `CREATE TABLE ${config.postgreSqlSchema}.${name}(` +
             `uuid text,` +
+            `name text,` +
             `url text,` +
             `user_id integer,` +
             `ts TIMESTAMP,` +
@@ -78,7 +79,7 @@ class SnowConfigurationsTable extends SourceTable {
             where = `WHERE user_id=${params['user_id']}`;
         }
 
-        var sql = `SELECT * FROM ${config.postgreSqlSchema}.${this._tableName} ` +
+        var sql = `SELECT *, to_char(ts, 'YYYY/DD/MM HH24:MI:SS') as converted_date FROM ${config.postgreSqlSchema}.${this._tableName} ` +
             where +
             ` ORDER BY ts DESC;`;
 

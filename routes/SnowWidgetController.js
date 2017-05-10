@@ -32,11 +32,13 @@ class SnowWidgetController {
 
     saveConfigurations(request, response){
         var url = request.body.url;
+        var name = request.body.name;
         var userId = request.session.user.id;
 
         this._snowCfgTable.insert({
             url: url,
-            user_id: userId
+            user_id: userId,
+            name: name
         }).then(function(result){
             if (result.status == "OK"){
                 response.send(result);
