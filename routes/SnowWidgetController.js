@@ -11,8 +11,8 @@ class SnowWidgetController {
 
         app.get('/rest/snow/getconfigurations', this.getConfigurations.bind(this));
         app.post('/rest/snow/saveconfigurations', this.saveConfigurations.bind(this));
+        app.post('/rest/snow/deleteconfiguration', this.deleteConfiguration.bind(this));
     }
-
 
     getConfigurations(request, response){
         var userId = request.session.user.id;
@@ -43,6 +43,23 @@ class SnowWidgetController {
             } else {
                 response.send({
                     status: "Error"
+                })
+            }
+        });
+    }
+
+    deleteConfiguration(request, response){
+        var uuid = request.body.uuid;
+
+        this._snowCfgTable.deleteRecord({
+            id: uuid
+        }).then(function(result){
+            if (result.status == "OK"){
+                response.send(result);
+            } else {
+                response.send({
+                    status: "Error",
+                    message: result.message
                 })
             }
         });

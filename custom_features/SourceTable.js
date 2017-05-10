@@ -114,9 +114,16 @@ class SourceTable {
 
         logger.info(`INFO SourceTable#deleteRecord sql: ` + sql);
         return this._pgPool.pool().query(sql).then(function(res){
-            return {
-                status: "OK",
-                message: "Record deleted successful"
+            if (res.rowCount == 1){
+                return {
+                    status: "OK",
+                    message: "Record deleted successfuly"
+                }
+            } else {
+                return {
+                    status: "Error",
+                    message: "Record was NOT deleted!"
+                }
             }
         }).catch(err => {
             throw new Error(
