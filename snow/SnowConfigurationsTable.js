@@ -19,6 +19,7 @@ class SnowConfigurationsTable extends SourceTable {
             `uuid text,` +
             `url text,` +
             `user_id integer,` +
+            `ts TIMESTAMP,` +
             `PRIMARY KEY(uuid));`;
 
         logger.info(`INFO PolygonsSourceTable#create sql: ` + sql);
@@ -49,9 +50,9 @@ class SnowConfigurationsTable extends SourceTable {
         }
 
         var sql = `INSERT INTO ${config.postgreSqlSchema}.${this._tableName} ` +
-            `(${keys.join(",")})` +
+            `(${keys.join(",")}, ts)` +
             `VALUES` +
-            `('${values.join("','")}');`;
+            `('${values.join("','")}', CURRENT_TIMESTAMP);`;
 
         logger.info(`INFO LinesSourceTable#insert sql: ` + sql);
         return this._pgPool.pool().query(sql).then(function(res){
@@ -79,7 +80,7 @@ class SnowConfigurationsTable extends SourceTable {
 
         var sql = `SELECT * FROM ${config.postgreSqlSchema}.${this._tableName} ` +
             where +
-            `;`;
+            ` ORDER BY ts DESC;`;
 
         logger.info(`INFO SourceTable#selectAll sql: ` + sql);
         return this._pgPool.pool().query(sql).then(function(res){
