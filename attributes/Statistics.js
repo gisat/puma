@@ -1,6 +1,8 @@
 var Promise = require('promise');
-var logger = require('../common/Logger').applicationWideLogger;
 
+/**
+ * It retrieves statistical information about the attributes in the PostgreSQL datastore.
+ */
 class Statistics {
     constructor(pgPool) {
         this._pgPool = pgPool;
@@ -20,7 +22,12 @@ class Statistics {
         });
     }
 
-    sql(baseLayers) {
+	/**
+     * It queries the information about the baseLayers.
+	 * @param baseLayers
+	 * @returns {Promise.<*>}
+	 */
+	sql(baseLayers) {
         return Promise.all(baseLayers
             .filter(baseLayer => baseLayer.queriedColumns.length > 0)
             .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
