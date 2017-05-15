@@ -586,6 +586,7 @@ class SnowPortal {
                     JOIN ${geometryTable} AS g ON (${geometryTableCondition})) AS foo
             JOIN source AS s ON (s.sensor_key = ${this.convertArrayToSqlAny(sensors)})
             JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
+        WHERE l.classified_as <> 'ND'
         GROUP BY class;`;
     }
     
@@ -657,6 +658,7 @@ class SnowPortal {
                     INNER JOIN metadata AS m2 ON m2.filename = t.filename
                 WHERE s2.aoi_coverage > 0) AS foo
             INNER JOIN legend AS l ON l.source_id = foo.source AND (foo.pvc).value BETWEEN l.value_from AND l.value_to
+            WHERE l.classified_as <> 'ND'
         GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
 }
