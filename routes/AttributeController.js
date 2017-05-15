@@ -24,14 +24,15 @@ class AttributeController extends Controller {
         this._filter = new Filter(pgPoolRemote || pgPool);
         this._info = new Info(pgPoolRemote || pgPool);
 
-        app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
-        app.get('/rest/filter/attribute/filter', this.filter.bind(this));
-        app.get('/rest/filter/attribute/amount', this.amount.bind(this));
+        app.post('/rest/filter/attribute/statistics', this.statistics.bind(this));
+        app.post('/rest/filter/attribute/filter', this.filter.bind(this));
+        app.post('/rest/filter/attribute/amount', this.amount.bind(this));
+
         app.post('/rest/info/attribute', this.info.bind(this));
     }
 
     statistics(request, response) {
-        var options = this._parseRequest(request.query);
+        var options = this._parseRequest(request.body);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, options.attributes);
         var distribution = request.query.distribution;
@@ -48,7 +49,7 @@ class AttributeController extends Controller {
     }
 
     filter(request, response) {
-        var options = this._parseRequest(request.query);
+        var options = this._parseRequest(request.body);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 
