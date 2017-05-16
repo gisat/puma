@@ -71,18 +71,18 @@ class LayerImporter {
 		this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
             logger.info('LayerImporter#importLayerWithoutStatistics. Metadata retrieved.');
 			this._currentImportTask.mongoScopes = pMongoScopes;
-			this._currentImportTask.progress = 10;
+			this._currentImportTask.progress = 20;
 			return this.prepareLayerFilesForImport(this._currentImportTask);
 		}).then((layer) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Files prepared', layer);
 			this._currentImportTask.layer = layer;
-			this._currentImportTask.progress = 20;
+			this._currentImportTask.progress = 40;
 			return this.getPublicWorkspaceSchema();
 		}).then((publicWorkspaceSchema) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Workspace schema retrieved', publicWorkspaceSchema);
 			this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
 			this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
-			this._currentImportTask.progress = 30;
+			this._currentImportTask.progress = 60;
 			// todo get datastore from configuration
 			let geoServerImporter = new GeoServerImporter(
 				config.geoserverHost + config.geoserverPath,
@@ -95,9 +95,24 @@ class LayerImporter {
 		}).then((geoserverImportTaskResults) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Geoserver imported', geoserverImportTaskResults);
 			this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
-			this._currentImportTask.progress = 40;
+			this._currentImportTask.progress = 80;
 			let geonodeUpdateLayers = new GeonodeUpdateLayers();
 			return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
+		}).then((geoserverImportTaskResults) => {
+			logger.info('LayerImporter#importLayerWithoutStatistics. Geonode updated', geoserverImportTaskResults);
+			this._currentImportTask.progress = 80;
+			return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
+		}).then((mongoMetadata) => {
+			this._currentImportTask.progress = 100;
+			this._currentImportTask.mongoMetadata = mongoMetadata;
+			this._currentImportTask.status = "done";
+			this._currentImportTask.ended = new Date();
+			console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
+		}).catch(error => {
+			this._currentImportTask.status = "error";
+			this._currentImportTask.ended = new Date();
+			this._currentImportTask.message = error.message;
+			console.log(`#9`, error);
 		})
     }
     
