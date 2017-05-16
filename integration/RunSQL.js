@@ -28,7 +28,7 @@ RunSQL.prototype.process = function(){
 		var connectionParameters = parse(config.pgDataConnString);
 
 		var command = "psql";
-		// command += " -h " + connectionParameters.host;
+		command += " -h " + connectionParameters.host;
 		command += " -U " + connectionParameters.user;
 		command += " -d " + connectionParameters.database;
 		command += " -f " + self.sqlFilePath;

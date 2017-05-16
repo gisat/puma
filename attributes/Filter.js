@@ -1,9 +1,13 @@
-var Promise = require('promise');
-var logger = require('../common/Logger').applicationWideLogger;
+let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
 
+/**
+ * It returns all the administrative units that complies with the requested filters. The filters can be numeric, boolean
+ * or text. 
+ */
 class Filter {
-    constructor(pgPool) {
+    constructor(pgPool, schema) {
         this._pgPool = pgPool;
+        this._schema = schema;
     }
 
     statistics(attributes, attributesMap, requestAttributes) {
@@ -17,15 +21,12 @@ class Filter {
     }
 
     sql(requestAttributes, baseLayers, mongoAttributes) {
-        return Promise.all(baseLayers
-            .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')},
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id} WHERE 
-                        ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`)
-            .map(sql => {
-                logger.info('Filter#dataViews Sql', sql);
-                return this._pgPool.pool().query(sql)
-            })
-        );
+        let queries = baseLayers
+			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')},
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id} WHERE 
+                        ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
+
+        return new PgSequentialQuery(this._pgPool).query(queries);
     }
 
     _generateWhere(columns, mongoAttributes, requestAttributes) {

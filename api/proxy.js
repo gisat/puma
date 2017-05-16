@@ -203,7 +203,7 @@ function wms(params, req, res, callback) {
 		}
 
 		if (output.length<10000 && (output.indexOf("PNG") == -1 || output.indexOf("PNG") > 8)) {
-			logger.info("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options,"\n\nDATA: "+data);
+			logger.info("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options);
 		}
 		res.data = output;
 		if (params['REQUEST'] == 'GetFeatureInfo') {

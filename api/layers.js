@@ -333,6 +333,7 @@ function getLayerDetails(params, req, res, callback) {
 }
 
 function parseWfsDocument(output) {
+	logger.info(`api/layers.js parseWfsDocument. Output: `, output);
 	// TODO: What if the response is invalid or empty.
 	// Parse the response and return JSON to the client. Response is known.
 	var wfsDocument = new xmldoc.XmlDocument(output);

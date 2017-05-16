@@ -89,7 +89,7 @@ class PgLayer {
 			console.log("Error: getLayerTable got layer with unknown workspace '" + workspace + "'.");
 			return workspace + "." + layerName;
 		}
-		return config.workspaceSchemaMap[workspace] + "." + layerName;
+		return config.workspaceSchemaMap[workspace] + '.\"' + layerName + '\"';
 	}
 }
 

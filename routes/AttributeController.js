@@ -15,40 +15,49 @@ var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
 class AttributeController extends Controller {
-    constructor(app, pgPool, pgPoolRemote) {
+    constructor(app, pgPool, pgPoolRemote, viewsSchema) {
         super(app, 'attribute', pgPool, MongoAttributes, MongoAttribute);
 
         this._pgPool = pgPoolRemote || pgPool;
 
-        this._statistics = new Statistics(pgPoolRemote || pgPool);
-        this._filter = new Filter(pgPoolRemote || pgPool);
+        this._statistics = new Statistics(pgPoolRemote || pgPool, viewsSchema);
+        this._filter = new Filter(pgPoolRemote || pgPool, viewsSchema);
         this._info = new Info(pgPoolRemote || pgPool);
 
-        app.get('/rest/filter/attribute/statistics', this.statistics.bind(this));
-        app.get('/rest/filter/attribute/filter', this.filter.bind(this));
-        app.get('/rest/filter/attribute/amount', this.amount.bind(this));
+        app.post('/rest/filter/attribute/statistics', this.statistics.bind(this));
+        app.post('/rest/filter/attribute/filter', this.filter.bind(this));
+        app.post('/rest/filter/attribute/amount', this.amount.bind(this));
+
         app.post('/rest/info/attribute', this.info.bind(this));
     }
 
-    statistics(request, response) {
-        var options = this._parseRequest(request.query);
+	/**
+	 * It returns max, min and distribution for all areas provided in the request and for the combination of areaTemplate,
+     * periods and places.
+     * Attributes also contain attribute name, attribute set name, units and active which are returned back.
+	 * @param request
+	 * @param response
+	 */
+	statistics(request, response) {
+        var options = this._parseRequest(request.body);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, options.attributes);
-        var distribution = request.query.distribution;
+        var distribution = request.body.distribution;
 
         let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
         this._statistics.statistics(attributes, options.attributesMap, distribution).then(json => {
             response.json({attributes: json});
             logger.info(`AttributeController#statistics UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
-            throw new Error(
+			response.status(500).json({status: 'err', message: err});
+			throw new Error(
                 logger.error(`AttributeController#statistics Error: `, err)
             )
         })
     }
 
     filter(request, response) {
-        var options = this._parseRequest(request.query);
+        var options = this._parseRequest(request.body);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#filter UUID: ${uuid} Start: ${moment().format()}`);
 
@@ -58,14 +67,21 @@ class AttributeController extends Controller {
             response.json(result);
             logger.info(`AttributeController#filter UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
+            response.status(500).json({status: 'err', message: err});
             throw new Error(
                 logger.error(`AttributeController#filter Error: `, err)
             )
         });
     }
 
-    amount(request, response) {
-        var options = this._parseRequest(request.query);
+	/**
+     * It returns amount of areas which satisfy all limitations passed as the part of the result. There is always only one
+     * number. If there is issue 500 is returned.
+	 * @param request
+	 * @param response
+	 */
+	amount(request, response) {
+        var options = this._parseRequest(request.body);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#amount UUID: ${uuid} Start: ${moment().format()}`);
 
@@ -75,7 +91,8 @@ class AttributeController extends Controller {
             response.json({amount: result.length});
             logger.info(`AttributeController#amount UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
-            throw new Error(
+			response.status(500).json({status: 'err', message: err});
+			throw new Error(
                 logger.error(`AttributeController#amount Error: `, err)
             )
         });

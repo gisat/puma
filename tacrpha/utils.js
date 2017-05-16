@@ -5,7 +5,7 @@ var logger = require('../common/Logger').applicationWideLogger;
  * @param str {string}
  * @returns {string}
  */
-function removeReservedWords (str){
+function removeReservedWords(str) {
     str = str.replace(/\bprefix/gi, '');
     str = str.replace(/\bselect/gi, '');
     str = str.replace(/\bwhere/gi, '');
@@ -25,14 +25,14 @@ function removeReservedWords (str){
  * @param arr {Array}
  * @returns {Array}
  */
-function removeMonosyllabics (arr){
+function removeMonosyllabics(arr) {
     var list = [];
     arr.map(item => {
-       if (item.length > 1){
-           list.push(item);
-       }
+        if (item.length > 1) {
+            list.push(item);
+        }
     });
-
+    
     return list;
 }
 
@@ -41,7 +41,7 @@ function removeMonosyllabics (arr){
  * @param str {string}
  * @returns {string}
  */
-function replaceInterpunction (str){
+function replaceInterpunction(str) {
     str = str.replace(/[+.,;]/gi, ' ');
     // replace all spaces with single space
     str = str.replace(/\s\s+/g, ' ');
@@ -53,7 +53,7 @@ function replaceInterpunction (str){
  * @param str {string}
  * @returns {string}
  */
-function removeSpecialCharacters(str){
+function removeSpecialCharacters(str) {
     return str.replace(/[^a-zA-Z0-9 ]/g, '');
 }
 
@@ -62,10 +62,10 @@ function removeSpecialCharacters(str){
  * @param str {string}
  * @returns {string}
  */
-function removeWordEnding(str){
-    if (str.length > 3){
+function removeWordEnding(str) {
+    if (str.length > 3) {
         var lastChar = str.slice(-1);
-        if (vowelTest(lastChar)){
+        if (vowelTest(lastChar)) {
             return str.slice(0, -1);
         }
     }
@@ -82,7 +82,7 @@ function vowelTest(s) {
  * @returns {string}
  * @see http://goo.gl/zCBxkM
  */
-function removeDiacritics (str) {
+function removeDiacritics(str) {
     var diacriticsMap = {
         A: /[\u0041\u24B6\uFF21\u00C0\u00C1\u00C2\u1EA6\u1EA4\u1EAA\u1EA8\u00C3\u0100\u0102\u1EB0\u1EAE\u1EB4\u1EB2\u0226\u01E0\u00C4\u01DE\u1EA2\u00C5\u01FA\u01CD\u0200\u0202\u1EA0\u1EAC\u1EB6\u1E00\u0104\u023A\u2C6F]/g,
         AA: /[\uA732]/g,
@@ -177,7 +177,31 @@ function removeDiacritics (str) {
     return str;
 }
 
+function getDataTypeFromJavaDataTypeString(javaDataTypeString) {
+    switch (javaDataTypeString) {
+        case 'java.lang.Integer':
+            return "numeric";
+            break;
+        case 'com.vividsolutions.jts.geom.MultiPolygon':
+            return "the_geom";
+            break;
+        case 'java.lang.String':
+            return "text";
+            break;
+        case 'java.lang.Long':
+            return "numeric";
+            break;
+        case 'java.lang.Double':
+            return "numeric";
+            break;
+        default:
+            return undefined;
+            break;
+    }
+}
+
 module.exports = {
+    getDataTypeFromJavaDataTypeString: getDataTypeFromJavaDataTypeString,
     removeMonosyllabics: removeMonosyllabics,
     removeDiacritics: removeDiacritics,
     removeReservedWords: removeReservedWords,

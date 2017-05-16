@@ -118,8 +118,8 @@ class ImportedPlace {
                     analyticalUnits."NUTS_NAME" as name,
                     analyticalUnits.the_geom as the_geom,
                     analyticalUnits."TOTAL_POP" as population, 
-                    0 as urban_area,
-                    0 as non_urban_area
+                    0::double precision as urban_area,
+                    0::double precision as non_urban_area
                 FROM ${this._rasterLayerTable} AS rasterLayer 
                 INNER JOIN ${analyticalUnitsLayer} AS analyticalUnits 
                     ON ST_Contains(rasterLayer.extent, analyticalUnits.the_geom)    

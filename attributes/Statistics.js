@@ -1,9 +1,12 @@
-var Promise = require('promise');
-var logger = require('../common/Logger').applicationWideLogger;
+let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
 
+/**
+ * It retrieves statistical information about the attributes in the PostgreSQL datastore.
+ */
 class Statistics {
-    constructor(pgPool) {
+    constructor(pgPool, schema) {
         this._pgPool = pgPool;
+        this._schema = schema;
     }
 
     statistics(attributes, attributesMap, distribution) {
@@ -20,13 +23,19 @@ class Statistics {
         });
     }
 
-    sql(baseLayers) {
-        return Promise.all(baseLayers
-            .filter(baseLayer => baseLayer.queriedColumns.length > 0)
-            .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id}`)
-            .map(sql => this._pgPool.pool().query(sql))
-        );
+	/**
+     * It queries the information about the baseLayers. I need to retain the structure which was there when all was used.
+	 * @param baseLayers
+	 * @returns {Promise.<*>}
+	 */
+	sql(baseLayers) {
+		// It has to be restructured.
+		let queries = baseLayers
+			.filter(baseLayer => baseLayer.queriedColumns.length > 0)
+			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`);
+
+		return new PgSequentialQuery(this._pgPool).query(queries);
     }
 }
 

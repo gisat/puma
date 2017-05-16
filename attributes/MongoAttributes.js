@@ -101,7 +101,7 @@ class MongoAttributes {
 
 	add(attribute) {
 		let collection = this._connection.collection(MongoAttribute.collectionName());
-		collection.insert(attribute)
+		return collection.insert(attribute);
 	}
 }
 

@@ -232,7 +232,7 @@ function getLayerTable(layerName) {
 	// Do lookup for schema.
 	var schemaName = getSchemaName(workspaceName);
 
-	return util.format("%s.%s", schemaName, tableName);
+	return util.format("%s.\"%s\"", schemaName, tableName);
 }
 
 function getSchemaName(workspaceName) {
@@ -256,6 +256,7 @@ function getSchemaName(workspaceName) {
  *   If the table has more geometry columns than the column returned is the first column alphabetically.
  */
 function getGeometryColumnName(sourceTableName) {
+	console.log(sourceTableName);
 	return new Promise(function (resolve, reject) {
 		// Extract schema name and table name.
 		var nameParts = sourceTableName.split(".");
@@ -265,7 +266,7 @@ function getGeometryColumnName(sourceTableName) {
 			return reject(new Error(err_msg));
 		}
 		var schemaName = nameParts[0];
-		var tableName = nameParts[1];
+		var tableName = nameParts[1].replace(/"/g, '');
 		if (schemaName == "" || tableName == "") {
 			var err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
 			logger.error(err_msg);
@@ -277,7 +278,7 @@ function getGeometryColumnName(sourceTableName) {
 		var sql = "SELECT column_name"
                           + " FROM information_schema.columns"
 		          + " WHERE table_schema = $1 AND table_name = $2 AND udt_name = 'geometry'"
-		          + " ORDER BY column_name;"
+		          + " ORDER BY column_name;";
 		logger.info('conn#getGeometryColumnName SQL: ', sql, ' Schema name: ', schemaName, ' tableName: ', tableName);
 		var client = getPgDataDb();
 		client.query(sql, [schemaName, tableName], function(err, results) {
@@ -285,6 +286,10 @@ function getGeometryColumnName(sourceTableName) {
 				var err_msg = util.format("Error querying geometry column name, query=%s, error=%s.", sql, err);
 				logger.error(err_msg);
 				return reject(new Error(err_msg));
+			}
+			// TODO: Remove later. Necessary for mapping of certain information now.
+			if(config.toggles.useEoSso) {
+				// return resolve('the_geom');
 			}
 			if (results.rows.length < 1) {
 				var err_msg = util.format("Error: table '%s' has no geometry column.", sourceTableName);
