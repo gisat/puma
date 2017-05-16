@@ -9,7 +9,28 @@ class PgSequentialQuery {
 		this._pgPool = pgPool;
 	}
 
+	// What If I ran this in groups of four, which is usually the amount of cores.
 	query(queries) {
+		if(queries.length > 20) {
+			// Split into for groups.
+			let amountInGroup = queries.length() / 4;
+			let multipleResults = [];
+			return this.handleSetOfQueries(queries.slice(0, amountInGroup)).then(results => {
+				Array.prototype.push.apply(multipleResults, results);
+				return this.handleSetOfQueries(queries.slice(amountInGroup, amountInGroup * 2));
+			}).then(results => {
+				Array.prototype.push.apply(multipleResults, results);
+				return this.handleSetOfQueries(queries.slice(amountInGroup * 2, amountInGroup * 3));
+			}).then(results => {
+				Array.prototype.push.apply(multipleResults, results);
+				return this.handleSetOfQueries(queries.slice(amountInGroup * 3, queries.length));
+			})
+		} else {
+			return this.handleSetOfQueries(queries);
+		}
+	}
+
+	handleSetOfQueries(queries) {
 		let results = [];
 		let promise = Promise.resolve(null);
 		queries.forEach(query => {
