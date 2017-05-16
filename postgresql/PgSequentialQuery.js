@@ -12,17 +12,22 @@ class PgSequentialQuery {
 	// What If I ran this in groups of four, which is usually the amount of cores.
 	query(queries) {
 		if(queries.length > 20) {
-			// Generate UNION from the queries.
-			let unionQuery = ``;
-			queries.forEach((query, index) => {
-				unionQuery += ` ${query} `;
-
-				if(index !== queries.length - 1) {
-					unionQuery += ` UNION `;
-				}
+			// Split into for groups.
+			let amountInGroup = queries.length / 6;
+			let multipleResults = [];
+			return Promise.all([
+				this.handleSetOfQueries(queries.slice(0, amountInGroup)),
+				this.handleSetOfQueries(queries.slice(amountInGroup, amountInGroup * 2)),
+				this.handleSetOfQueries(queries.slice(amountInGroup * 2, amountInGroup * 3)),
+				this.handleSetOfQueries(queries.slice(amountInGroup * 3, amountInGroup * 4)),
+				this.handleSetOfQueries(queries.slice(amountInGroup * 4, amountInGroup * 5)),
+				this.handleSetOfQueries(queries.slice(amountInGroup * 5, queries.length))
+			]).then(results => {
+				results.forEach(resultSet => {
+					Array.prototype.push.apply(multipleResults, resultSet);
+				});
+				return multipleResults;
 			});
-
-			return this._pgPool.query(unionQuery);
 		} else {
 			return this.handleSetOfQueries(queries);
 		}
