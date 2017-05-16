@@ -5,8 +5,9 @@ let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
  * or text. 
  */
 class Filter {
-    constructor(pgPool) {
+    constructor(pgPool, schema) {
         this._pgPool = pgPool;
+        this._schema = schema;
     }
 
     statistics(attributes, attributesMap, requestAttributes) {
@@ -22,7 +23,7 @@ class Filter {
     sql(requestAttributes, baseLayers, mongoAttributes) {
         let queries = baseLayers
 			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')},
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id} WHERE 
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id} WHERE 
                         ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
 
         return new PgSequentialQuery(this._pgPool).query(queries);

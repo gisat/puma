@@ -120,6 +120,63 @@ describe('FilterSpec', () => {
 		});
 	});
 
+	describe('filter', () => {
+		it('correctly receives rows satisfying the limitation combination of the information.', done => {
+			supertest(integrationEnvironment.app)
+				.post('/rest/filter/attribute/filter')
+				.send({
+					areaTemplate: 8,
+					periods: [6],
+					places: [101],
+					attributes: [{
+						attribute: 10000,
+						attributeSet: 201,
+						value: [0, 20]
+					}, {
+						attribute: 10001,
+						attributeSet: 201,
+						value: [4, 6]
+					}]
+				})
+				.then(response => {
+					should(response.body.length).be.exactly(1);
+					should(response.body[0].at).be.exactly(8);
+					should(response.body[0].gid).be.exactly(1);
+					should(response.body[0].loc).be.exactly(101);
+					done();
+				}).catch(error => {
+				done(error);
+			})
+		});
+	});
+
+	describe('amount', () => {
+		it('correctly receives amount of rows satisfying the limitation combination of the information on amount.', done => {
+			supertest(integrationEnvironment.app)
+				.post('/rest/filter/attribute/amount')
+				.send({
+					areaTemplate: 8,
+					periods: [6],
+					places: [101],
+					attributes: [{
+						attribute: 10000,
+						attributeSet: 201,
+						value: [0, 20]
+					}, {
+						attribute: 10001,
+						attributeSet: 201,
+						value: [4, 6]
+					}]
+				})
+				.then(response => {
+					should(response.body.amount).be.exactly(1);
+					done();
+				}).catch(error => {
+				done(error);
+			})
+		});
+	});
+
 	afterEach(done => {
 		integrationEnvironment.tearDown().then(() => {
 			done();
