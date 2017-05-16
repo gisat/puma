@@ -85,7 +85,7 @@ module.exports = function(app) {
 	} else {
 		new ExportController(app, pool);
 	}
-	new AttributeController(app, pool, poolRemote);
+	new AttributeController(app, pool, poolRemote, 'views');
 	new LayerGeonodeController(app, pool);
 	new LayerWmsController(app, pool, conn.getMongoDb());
 	new AttributeSetController(app, pool);

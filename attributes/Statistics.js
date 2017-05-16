@@ -4,8 +4,9 @@ let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
  * It retrieves statistical information about the attributes in the PostgreSQL datastore.
  */
 class Statistics {
-    constructor(pgPool) {
+    constructor(pgPool, schema) {
         this._pgPool = pgPool;
+        this._schema = schema;
     }
 
     statistics(attributes, attributesMap, distribution) {
@@ -32,7 +33,7 @@ class Statistics {
 		let queries = baseLayers
 			.filter(baseLayer => baseLayer.queriedColumns.length > 0)
 			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM views.layer_${baseLayer._id}`);
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`);
 
 		return new PgSequentialQuery(this._pgPool).query(queries);
     }

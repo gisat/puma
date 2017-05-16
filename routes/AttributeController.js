@@ -15,12 +15,12 @@ var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
 class AttributeController extends Controller {
-    constructor(app, pgPool, pgPoolRemote) {
+    constructor(app, pgPool, pgPoolRemote, viewsSchema) {
         super(app, 'attribute', pgPool, MongoAttributes, MongoAttribute);
 
         this._pgPool = pgPoolRemote || pgPool;
 
-        this._statistics = new Statistics(pgPoolRemote || pgPool);
+        this._statistics = new Statistics(pgPoolRemote || pgPool, viewsSchema);
         this._filter = new Filter(pgPoolRemote || pgPool);
         this._info = new Info(pgPoolRemote || pgPool);
 
@@ -35,7 +35,7 @@ class AttributeController extends Controller {
         var options = this._parseRequest(request.body);
         var uuid = new UUID().toString();
         logger.info(`AttributeController#statistics UUID: ${uuid} Start: ${moment().format()} Attributes: `, options.attributes);
-        var distribution = request.query.distribution;
+        var distribution = request.body.distribution;
 
         let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
         this._statistics.statistics(attributes, options.attributesMap, distribution).then(json => {
