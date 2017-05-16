@@ -13,7 +13,7 @@ class PgSequentialQuery {
 	query(queries) {
 		if(queries.length > 20) {
 			// Split into for groups.
-			let amountInGroup = queries.length() / 4;
+			let amountInGroup = queries.length / 4;
 			let multipleResults = [];
 			return this.handleSetOfQueries(queries.slice(0, amountInGroup)).then(results => {
 				Array.prototype.push.apply(multipleResults, results);
