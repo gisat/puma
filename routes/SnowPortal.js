@@ -587,6 +587,8 @@ class SnowPortal {
             JOIN source AS s ON (s.sensor_key = ${this.convertArrayToSqlAny(sensors)})
             JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
         WHERE l.classified_as <> 'ND'
+            AND l.classified_as <> 'O'
+            AND l.classified_as <> 'N'
         GROUP BY class;`;
     }
     
@@ -659,6 +661,8 @@ class SnowPortal {
                 WHERE s2.aoi_coverage > 0) AS foo
             INNER JOIN legend AS l ON l.source_id = foo.source AND (foo.pvc).value BETWEEN l.value_from AND l.value_to
             WHERE l.classified_as <> 'ND'
+                AND l.classified_as <> 'O'
+                AND l.classified_as <> 'N'
         GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
 }
