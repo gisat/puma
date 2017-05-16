@@ -194,4 +194,9 @@ module.exports = {
 		name: 'admin',
 		password: 'admin'
 	},
+
+	/**
+	 * Url used for generating the screenshots.
+	 */
+	printUrl: 'http://10.0.75.2/tool/index.html'
 };
