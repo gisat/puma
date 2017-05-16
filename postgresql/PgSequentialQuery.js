@@ -1,4 +1,5 @@
 let Promise = require('promise');
+let moment = require('moment');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
@@ -14,7 +15,7 @@ class PgSequentialQuery {
 	// What If I ran this in groups of four, which is usually the amount of cores.
 	query(queries) {
 		if(queries.length > 20) {
-			logger.info(`AttributeController#statistics Queries: ${queries.length}`);
+			logger.info(`AttributeController#statistics Queries: ${queries.length} Start: ${moment().format()}`);
 
 			// Split into for groups.
 			let amountInGroup = queries.length / 12;
@@ -33,9 +34,11 @@ class PgSequentialQuery {
 				this.handleSetOfQueries(queries.slice(amountInGroup * 10, amountInGroup * 11)),
 				this.handleSetOfQueries(queries.slice(amountInGroup * 11, queries.length))
 			]).then(results => {
+				logger.info(`AttributeController#statistics Queries End: ${moment().format()}`);
 				results.forEach(resultSet => {
 					Array.prototype.push.apply(multipleResults, resultSet);
 				});
+				logger.info(`AttributeController#statistics Queries Processing End: ${moment().format()}`);
 				return multipleResults;
 			});
 		} else {
