@@ -15,16 +15,17 @@ class PgSequentialQuery {
 			// Split into for groups.
 			let amountInGroup = queries.length / 4;
 			let multipleResults = [];
-			return this.handleSetOfQueries(queries.slice(0, amountInGroup)).then(results => {
-				Array.prototype.push.apply(multipleResults, results);
-				return this.handleSetOfQueries(queries.slice(amountInGroup, amountInGroup * 2));
-			}).then(results => {
-				Array.prototype.push.apply(multipleResults, results);
-				return this.handleSetOfQueries(queries.slice(amountInGroup * 2, amountInGroup * 3));
-			}).then(results => {
-				Array.prototype.push.apply(multipleResults, results);
-				return this.handleSetOfQueries(queries.slice(amountInGroup * 3, queries.length));
-			})
+			return Promise.all([
+				this.handleSetOfQueries(queries.slice(0, amountInGroup)),
+				this.handleSetOfQueries(queries.slice(amountInGroup, amountInGroup * 2)),
+				this.handleSetOfQueries(queries.slice(amountInGroup * 2, amountInGroup * 3)),
+				this.handleSetOfQueries(queries.slice(amountInGroup * 3, queries.length))
+			]).then(results => {
+				results.forEach(resultSet => {
+					Array.prototype.push.apply(multipleResults, resultSet);
+				});
+				return multipleResults;
+			});
 		} else {
 			return this.handleSetOfQueries(queries);
 		}
