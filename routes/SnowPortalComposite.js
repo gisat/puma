@@ -33,7 +33,7 @@ class SnowPortalComposite {
         this._startDay = startDay;
         if (period) {
             this._period = period;
-            this._endDay = SnowPortalComposite.addDays(this._startDay, this._period).toISOString().split("T")[0];
+            this._endDay = SnowPortalComposite.addDays(this._startDay, this._period - 1).toISOString().split("T")[0];
         } else {
             this._endDay = endDay;
             this._period = SnowPortalComposite.getDatesDiff(this._startDay, this._endDay) + 1;
