@@ -84,6 +84,7 @@ class SnowPortalComposite {
      * @returns Promise
      */
     create() {
+        console.log("CREATE");
         let usedScenes = [];
         let tableName;
 
@@ -124,6 +125,10 @@ class SnowPortalComposite {
                     `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
                 | tableName: ${tableName}
                 | SQL: ${sql}`);
+                console.log(`SnowPortalComposite#create: Generating composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
+                    `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
+                | tableName: ${tableName}
+                | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(() => {
                     resolve();
                 }).catch(error => {
@@ -138,6 +143,7 @@ class SnowPortalComposite {
             return new Promise((resolve, reject) => {
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(tableName, this._startDay, this._endDay, this._period, this._sensors, this._area, usedScenes);
                 logger.trace(`SnowPortalComposite#create: Saving composite metadata | SQL: ${sql}`);
+                console.log(`SnowPortalComposite#create: Saving composite metadata | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(() => {
                     resolve();
                 }).catch(error => {
@@ -153,6 +159,7 @@ class SnowPortalComposite {
             return new Promise((resolve) => {
                 let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${tableName} mode=2" ${this.tmpTiffLocation}${tableName}.tif`;
                 logger.trace(`SnowPortalComposite#create: Exporting GeoTiff of the composite ${tableName}`);
+                console.log(`SnowPortalComposite#create: Exporting GeoTiff of the composite ${tableName}`);
                 resolve(child_process.exec(command).promise);
             });
         }).then(() => {
@@ -163,6 +170,7 @@ class SnowPortalComposite {
             return new Promise((resolve) => {
                 let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this._tmpTiffLocation}${tableName}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${tableName}/file.geotiff`;
                 logger.trace(`SnowPortalComposite#create: Importing GeoTiff in Geoserver (${tableName})`);
+                console.log(`SnowPortalComposite#create: Importing GeoTiff in Geoserver (${tableName})`);
                 resolve(child_process.exec(command).promise);
             });
         }).then(() => {
@@ -173,6 +181,7 @@ class SnowPortalComposite {
             return new Promise((resolve) => {
                 let command = `cd ${this._geoNodeManagePyDir} && python manage.py updatelayers -f ${tableName}`;
                 logger.trace(`SnowPortalComposite#create: Publishing Geoserver raster layer in GeoNode (${tableName})`);
+                console.log(`SnowPortalComposite#create: Publishing Geoserver raster layer in GeoNode (${tableName})`);
                 resolve(child_process.exec(command).promise);
             });
         }).then(() => {
@@ -182,6 +191,7 @@ class SnowPortalComposite {
              */
             return new Promise((resolve) => {
                 logger.trace(`SnowPortalComposite#create: Deleting GeoTiff file ${tableName}.tif`);
+                console.log(`SnowPortalComposite#create: Deleting GeoTiff file ${tableName}.tif`);
                 child_process.exec(`rm ${this._tmpTiffLocation}${tableName}.tif`).promise.then(() => {
                     resolve({
                         date_start: this._startDay,
@@ -191,6 +201,7 @@ class SnowPortalComposite {
             });
         }).catch(error => {
             logger.error(`SnowPortalComposite#create: Error ${error.message}`);
+            console.log(`SnowPortalComposite#create: Error ${error.message}`);
             throw error;
         });
     }
