@@ -10,7 +10,11 @@ let logger = require('../common/Logger').applicationWideLogger;
  */
 class SnowPortalComposite {
     constructor (pgPool, startDay, endDay, period, sensors, area) {
-        console.log("============= NEW SnowPortalComposite ==============");
+        console.log("============= NEW SnowPortalComposite (console.log) ==============");
+        logger.trace("============= NEW SnowPortalComposite (logger.trace) ==============");
+        logger.info("============= NEW SnowPortalComposite (logger.info) ==============");
+        logger.warn("============= NEW SnowPortalComposite (logger.warn) ==============");
+        logger.error("============= NEW SnowPortalComposite (logger.error) ==============");
         // input validation
         if (!pgPool){
             throw new Error("SnowPortalComposite#constructor: pgPool must be specified");
