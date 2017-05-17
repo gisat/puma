@@ -181,13 +181,13 @@ class SnowPortal {
             let area = requestData.area;
 
             if (isNaN(period)) {
-                throw new Error("period is not a number");
+                throw new Error(logger.error("period is not a number"));
             }
             if (!Number.isInteger(period)) {
-                throw new Error("period is not an integer");
+                throw new Error(logger.error("period is not an integer"));
             }
             if (period <= 0) {
-                throw new Error("period is 0 or negative");
+                throw new Error(logger.error("period is 0 or negative"));
             }
 
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
@@ -270,6 +270,7 @@ class SnowPortal {
                 return Promise.all(promises);
 
             }).catch(error => {
+                logger.error(`SnowPortal#getComposites Error while getting metadata about composites: ${error}`);
                 throw error;
             });
         }).then(data => {
@@ -412,7 +413,7 @@ class SnowPortal {
         
         this._pgPool.pool().query(`SELECT DISTINCT "NAME" as name, "KEY" as key FROM areas ORDER BY "NAME"`).then(rows => {
             if (!rows.rows) {
-                throw new Error("Unable to get areas from database...");
+                throw new Error(logger.error("Unable to get areas from database..."));
             }
             options.areas = _.map(rows.rows, row => {
                 return {
@@ -423,13 +424,13 @@ class SnowPortal {
             return this._pgPool.pool().query(`SELECT MIN(date)::varchar AS from, MAX(date)::varchar AS to FROM metadata`);
         }).then(rows => {
             if (!rows.rows) {
-                throw new Error("Unable to get time from database...");
+                throw new Error(logger.error("Unable to get time from database..."));
             }
             options.time = rows.rows[0];
             return this._pgPool.pool().query(`select distinct m.source_id, s.satellite, s.satellite_key, s.sensor, s.sensor_key from metadata as m join source as s on (m.source_id=s.id);`)
         }).then(rows => {
             if (!rows.rows) {
-                throw new Error("Unable to get satellites and sensors from database...");
+                throw new Error(logger.error("Unable to get satellites and sensors from database..."));
             }
             let sensors = [];
             _.each(rows.rows, row => {
