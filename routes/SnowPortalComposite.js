@@ -128,7 +128,7 @@ class SnowPortalComposite {
                     resolve();
                 }).catch(error => {
                     logger.error(`Creating composite, generating Error: ${error}`);
-                    reject(new Error(`Creating composite, generating Error: ${error.message} | ${error}`));
+                    reject(new Error(`Creating composite, generating Error: ${error.message} | ${sql}`));
                 });
             });
         }).then(() => {
