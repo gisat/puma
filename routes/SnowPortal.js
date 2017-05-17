@@ -403,13 +403,25 @@ class SnowPortal {
                     name: row.name
                 }
             });
+            // TODO remove this query and options.time later
             return this._pgPool.pool().query(`SELECT MIN(date)::varchar AS from, MAX(date)::varchar AS to FROM metadata`);
         }).then(rows => {
             if (!rows.rows) {
                 throw new Error("Unable to get time from database...");
             }
             options.time = rows.rows[0];
-            return this._pgPool.pool().query(`select distinct m.source_id, s.satellite, s.satellite_key, s.sensor, s.sensor_key from metadata as m join source as s on (m.source_id=s.id);`)
+            return this._pgPool.pool().query(`
+                SELECT DISTINCT ON (m.source_id)
+                    m.source_id,
+                    MAX(s.satellite) AS satellite,
+                    MAX(s.satellite_key) AS satellite_key,
+                    MAX(s.sensor) AS sensor,
+                    MAX(s.sensor_key) AS sensor_key,
+                    MIN(date)::varchar AS from,
+                    MAX(date)::varchar AS to
+                FROM metadata AS m
+                    JOIN source AS s ON (m.source_id=s.id)
+                GROUP BY m.source_id;`);
         }).then(rows => {
             if (!rows.rows) {
                 throw new Error("Unable to get satellites and sensors from database...");
@@ -421,6 +433,8 @@ class SnowPortal {
                     sensor = {
                         key: row.sensor_key,
                         name: row.sensor,
+                        from: row.from,
+                        to: row.to,
                         satellites: []
                     };
                     sensors.push(sensor);
