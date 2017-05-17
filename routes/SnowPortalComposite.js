@@ -125,11 +125,11 @@ class SnowPortalComposite {
                     `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
                 | tableName: ${tableName}
                 | SQL: ${sql}`);
-                this._pgPool.pool().query(sql).then(() => {
+                this._pgPool.pool().query(sql).then(result => {
+                    logger.info(`SnowPortalComposite#create ------ Generating composite finished. ${result.rows[0]}`);
                     resolve();
                 }).catch(error => {
-                    logger.error(`Creating composite, generating Error: ${error}`);
-                    reject(new Error(`Creating composite, generating Error: ${error.message} | ${sql}`));
+                    reject(new Error(logger.error(`SnowPortalComposite#create Generating composite Error: ${error} | ${sql}`)));
                 });
             });
         }).then(() => {
@@ -139,11 +139,11 @@ class SnowPortalComposite {
             return new Promise((resolve, reject) => {
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(tableName, this._startDay, this._endDay, this._period, this._sensors, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#create: Saving composite metadata | SQL: ${sql}`);
-                this._pgPool.pool().query(sql).then(() => {
+                this._pgPool.pool().query(sql).then(result => {
+                    logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished. ${result.rows[0]}`);
                     resolve();
                 }).catch(error => {
-                    logger.error(`Creating composite, saving metadata Error: ${error}`);
-                    reject(new Error(`Creating composite, saving metadata Error: ${error.message} | ${error}`));
+                    reject(new Error(logger.error(`SnowPortalComposite#create Creating composite, saving metadata Error: ${error.message} | ${error}`)));
                 });
             });
         }).then(() => {
