@@ -1,0 +1,245 @@
+CREATE TEMPORARY VIEW adm_compute AS
+SELECT table_name
+FROM adm_all
+WHERE tbc;
+
+CREATE TEMPORARY VIEW adm_propagate AS
+SELECT table_name
+FROM adm_all
+WHERE NOT tbc;
+
+CREATE FUNCTION pg_temp.setup_columns(INOUT table_name varchar)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  EXECUTE format('
+    ALTER TABLE %I
+    ADD COLUMN worldpop real NULL DEFAULT NULL,
+    ADD COLUMN gpw_v4 real NULL DEFAULT NULL,
+    ADD COLUMN guf12m real NULL DEFAULT NULL,
+    ADD COLUMN tweet real NULL DEFAULT NULL;', table_name);
+END
+$$;
+
+CREATE FUNCTION pg_temp.list_empty(IN colname varchar)
+RETURNS SETOF varchar
+LANGUAGE plpgsql
+STABLE
+AS $$
+DECLARE
+  table_name varchar;
+  sql varchar;
+  cnt integer;
+BEGIN
+  FOR table_name IN SELECT table_name FROM adm_compute ORDER BY table_name LOOP
+    sql := format('
+      SELECT COUNT(*) AS cnt
+      FROM %1$I
+      WHERE %2$I IS NULL;', table_name, colname);
+    EXECUTE sql INTO cnt;
+    IF cnt > 0 THEN
+      RETURN NEXT table_name;
+    END IF;
+  END LOOP;
+  RETURN;
+END
+$$;
+
+CREATE FUNCTION pg_temp.propagate_info(IN table_name varchar,
+                                       OUT table_colname varchar,
+                                       OUT computed_table_name varchar)
+LANGUAGE plpgsql
+STABLE
+AS $$
+DECLARE
+  level integer;
+  computed_level char(1);
+  country varchar;
+BEGIN
+  level := substring(table_name from 8 for 1)::integer;
+  table_colname := 'ID_' || level::char;
+  country := substring(table_name from 1 for 3);
+  SELECT adm_all.table_name INTO computed_table_name
+    FROM adm_all
+    WHERE adm_all.country = country AND adm_all.tbc;
+END
+$$;
+
+CREATE FUNCTION pg_temp.clip(adm_table varchar,
+                             raster_table varchar)
+RETURNS TABLE (fid integer, rast raster)
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+  sql varchar;
+  geom geometry;
+  clipped raster;
+BEGIN
+  sql := format('
+    SELECT adm.fid, adm.the_geom, raster_table.rast
+    FROM %1$I adm
+    INNER JOIN %2$I raster_table ON ST_Intersects(raster_table.rast, adm.the_geom)
+    ORDER BY adm.fid;', adm_table, raster_table);
+  FOR fid, geom, rast IN EXECUTE sql LOOP
+    SELECT ST_Clip(rast, geom) INTO clipped;
+    IF NOT ST_IsEmpty(clipped) THEN
+      IF NOT ST_BandIsNoData(clipped) THEN
+        rast := clipped;
+        RETURN NEXT;
+      END IF;
+    END IF;
+  END LOOP;
+  RETURN;
+END
+$$;
+
+CREATE FUNCTION pg_temp.clip2(adm_table varchar,
+                              raster_table varchar,
+                              fid integer)
+RETURNS TABLE (rast raster)
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+DECLARE
+  sql varchar;
+  geom geometry;
+  clipped raster;
+BEGIN
+  sql := format('
+    SELECT raster_table.rast
+    FROM %1$I adm_table, %2$I raster_table
+    WHERE adm_table.fid = $1 AND ST_Intersects(raster_table.rast, adm_table.the_geom);', adm_table, raster_table);
+  FOR rast IN EXECUTE sql USING fid LOOP
+    SELECT ST_Clip(rast, geom) INTO rast;
+    IF NOT ST_IsEmpty(rast) THEN
+      IF NOT ST_BandIsNoData(rast) THEN
+        RETURN NEXT;
+      END IF;
+    END IF;
+  END LOOP;
+  RETURN;
+END
+$$;
+
+CREATE FUNCTION pg_temp.compute_wp(INOUT table_name varchar)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  sql varchar;
+BEGIN
+  RAISE NOTICE 'Computing worldpop for %', table_name;
+  EXECUTE 'UPDATE adm_all SET wp_state = $1 WHERE table_name = $2' USING 'P', table_name;
+  sql := format('
+    UPDATE %1$I adm
+    SET worldpop = (SELECT SUM((ST_SummaryStats(rast)).sum)
+                    FROM pg_temp.clip2(%1$L, %2$L, adm.fid));', table_name, 'worldpop');
+  EXECUTE sql;
+  EXECUTE 'UPDATE adm_all SET wp_state = $1 WHERE table_name = $2' USING 'F', table_name;
+END
+$$;
+
+CREATE FUNCTION pg_temp.compute_guf(INOUT table_name varchar)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  sql varchar;
+BEGIN
+  RAISE NOTICE 'Computing guf12m for %', table_name;
+  EXECUTE 'UPDATE adm_all SET guf_state = $1 WHERE table_name = $2' USING 'P', table_name;
+  sql := format('
+    UPDATE %1$I adm
+    SET guf12m = guf_area
+    FROM (SELECT
+            fid,
+            SUM(ST_Area(ST_Envelope(rast)) * ST_ValueCount(rast, 255.0) / ST_Count(rast, FALSE)) AS guf_area
+          FROM pg_temp.clip(%1$L, %2$L)
+          GROUP BY fid) AS computed
+    WHERE adm.fid = computed.fid;', table_name, 'guf12m');
+  EXECUTE sql;
+  EXECUTE 'UPDATE adm_all SET guf_state = $1 WHERE table_name = $2' USING 'F', table_name;
+END
+$$;
+
+CREATE FUNCTION pg_temp.compute_tweet(INOUT table_name varchar)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  sql varchar;
+BEGIN
+  RAISE NOTICE 'Computing tweets for %', table_name;
+  EXECUTE 'UPDATE adm_all SET tw_state = $1 WHERE table_name = $2' USING 'P', table_name;
+  sql := format('
+    UPDATE %1$I adm
+    SET tweet = computed.cnt
+    FROM (SELECT count(*) AS cnt
+          FROM %1$I sadm
+          INNER JOIN tweets tw ON ST_Intersects(sadm.the_geom, tw.the_geom)) computed
+    WHERE adm.fid = computed.fid;', table_name);
+  EXECUTE sql;
+  EXECUTE 'UPDATE adm_all SET tw_state = $1 WHERE table_name = $2' USING 'F', table_name;
+END
+$$;
+
+CREATE FUNCTION pg_temp.propagate_wp(INOUT table_name varchar)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  sql varchar;
+  table_colname varchar;
+  computed_table_name varchar;
+BEGIN
+  EXECUTE 'UPDATE adm_all SET wp_state = $1 WHERE table_name = $2' USING 'P', table_name;
+  SELECT pg_temp.propagate_info(table_name) INTO table_colname, computed_table_name;
+  sql := format('
+    UPDATE %1$I adm
+    SET worldpop = computed.sum_worldpop
+    FROM (SELECT
+            %2$I,
+            SUM(worldpop) AS sum_worldpop
+          FROM %3$I
+          GROUP BY %2$I) computed
+    WHERE adm.%2$I = computed.%2$I;', table_name, table_colname, computed_table_name);
+  EXECUTE sql;
+  EXECUTE 'UPDATE adm_all SET wp_state = $1 WHERE table_name = $2' USING 'F', table_name;
+END
+$$;
+
+CREATE FUNCTION pg_temp.propagate_guf(INOUT table_name varchar)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  sql varchar;
+  table_colname varchar;
+  computed_table_name varchar;
+BEGIN
+  EXECUTE 'UPDATE adm_all SET guf_state = $1 WHERE table_name = $2' USING 'P', table_name;
+  SELECT pg_temp.propagate_info(table_name) INTO table_colname, computed_table_name;
+  sql := format('
+    UPDATE %1$I adm
+    SET guf12m = computed.sum_guf12m
+    FROM (SELECT
+            %2$I,
+            SUM(worldpop) AS sum_guf12m
+          FROM %3$I
+          GROUP BY %2$I) computed
+    WHERE adm.%2$I = sub.%2$I;', table_name, table_colname, computed_table_name);
+  EXECUTE sql;
+  EXECUTE 'UPDATE adm_all SET guf_state = $1 WHERE table_name = $2' USING 'F', table_name;
+END
+$$;
+
+
+-- Setup columns on all adm tables.
+--SELECT pg_temp.setup_columns(table_name) FROM adm_all;
+
+-- Compute worldpop.
+\timing
+SELECT pg_temp.compute_wp2(table_name) FROM (SELECT table_name FROM adm_compute ORDER BY table_name) sq LIMIT 3;
+--SELECT pg_temp.propagate_wp(table_name) FROM adm_propagate;
+
+-- Compute guf12m.
+--SELECT pg_temp.compute_guf(table_name) FROM adm_compute;
+--SELECT pg_temp.propagate_guf(table_name) FROM adm_propagate;
+
+--SELECT * FROM pg_temp.list_empty();
