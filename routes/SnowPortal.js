@@ -243,8 +243,8 @@ class SnowPortal {
                                 classDistribution: classDistribution
                             })
                         }).catch(error => {
-                            logger.error(`Composites Statistics Error: ${error}`);
-                            reject(new Error(`Composites Statistics Error: ${error.message} | ${error}`));
+                            logger.error(`Composites Statistics Error: ${error} | ${sql}`);
+                            reject(new Error(`Composites Statistics Error: ${error.message} | ${sql}`));
                         });
                     }));
 
