@@ -683,7 +683,8 @@ class SnowPortal {
     }
 
     initTables() {
-        return this._pgPool.query(`CREATE TABLE IF NOT EXISTS composites.metadata (
+        return this._pgPool.query(`CREATE SCHEMA IF NOT EXISTS composites;`).then(() => {
+            return this._pgPool.query(`CREATE TABLE IF NOT EXISTS composites.metadata (
                                                     key varchar(50) not null,
                                                     sensors text[] not null,
                                                     satellites text[],
@@ -692,6 +693,7 @@ class SnowPortal {
                                                     area varchar(40) not null,
                                                     used_scenes text[],
                                                     period integer);`);
+        });
     }
 }
 
