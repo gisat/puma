@@ -691,7 +691,7 @@ class SnowPortal {
                                                     date_end date not null,
                                                     area varchar(40) not null,
                                                     used_scenes text[],
-                                                    period integer;`);
+                                                    period integer);`);
     }
 }
 
