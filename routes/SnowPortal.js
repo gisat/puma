@@ -233,6 +233,8 @@ class SnowPortal {
                 /**
                  * Get composites data and compute statistics
                  */
+                logger.info(`ITERATING comp met dat: ${metadata}`);
+
 
                 let promises = [];
 
