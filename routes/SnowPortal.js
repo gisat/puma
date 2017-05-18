@@ -10,6 +10,8 @@ let processes = {};
 class SnowPortal {
     constructor(app, pool) {
         this._pgPool = pool;
+
+        this.initTables();
         
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenes.bind(this));
@@ -678,6 +680,18 @@ class SnowPortal {
                 AND l.classified_as <> 'O'
                 AND l.classified_as <> 'N'
         GROUP BY class, coverage, key, satellite, sensor, date;`;
+    }
+
+    initTables() {
+        return this._pgPool.query(`CREATE TABLE IF NOT EXISTS composites.metadata (
+                                                    key varchar(50) not null,
+                                                    sensors text[] not null,
+                                                    satellites text[],
+                                                    date_start date not null,
+                                                    date_end date not null,
+                                                    area varchar(40) not null,
+                                                    used_scenes text[]
+                                                    period integer`);
     }
 }
 
