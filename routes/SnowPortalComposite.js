@@ -2,6 +2,7 @@ let _ = require("lodash");
 let Promise = require("promise");
 let hash = require("object-hash");
 let child_process = require('pn/child_process');
+let superagent = require('superagent');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
@@ -175,11 +176,9 @@ class SnowPortalComposite {
              * Publish GeoTiff in GeoNode
              * TODO for Windows?
              */
-            return new Promise((resolve) => {
-                let command = `cd ${this._geoNodeManagePyDir} && python manage.py updatelayers -f ${tableName}`;
-                logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${tableName})`);
-                resolve(child_process.exec(command).promise);
-            });
+            logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${tableName})`);
+            return superagent.get(`http://localhost/cgi-bin/updatelayers?f=${tableName}`);
+
         }).then((x) => {
                                 logger.info(`result:`);
                                 console.log(x);

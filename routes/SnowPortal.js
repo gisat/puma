@@ -1,8 +1,6 @@
 let _ = require("lodash");
 let Promise = require("promise");
 let hash = require("object-hash");
-let child_process = require('pn/child_process');
-let superagent = require('superagent');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
