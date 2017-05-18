@@ -152,7 +152,7 @@ class SnowPortalComposite {
              * TODO for Windows?
              */
             return new Promise((resolve) => {
-                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${tableName} mode=2" ${this.tmpTiffLocation}${tableName}.tif`;
+                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${tableName} mode=2" ${this._tmpTiffLocation}${tableName}.tif`;
                 logger.info(`SnowPortalComposite#create ------ Exporting GeoTiff of the composite ${tableName}`);
                 resolve(child_process.exec(command).promise);
             });
