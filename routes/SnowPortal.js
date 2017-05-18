@@ -244,7 +244,8 @@ class SnowPortal {
                     let tableName = composite.key;
                     promises.push(new Promise((resolve, reject) => {
                         let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors);
-                        let query = this._pgPool.pool().query(sql).then((results) => {
+                        this._pgPool.pool().query(sql).then((results) => {
+                            logger.info(`SnowPortal#getComposites ------ Composite data found`);
                             let classDistribution = {};
                             let total = 0;
                             _.each(results.rows, row => {
@@ -254,17 +255,20 @@ class SnowPortal {
                             _.each(results.rows, row => {
                                 classDistribution[row.class] = (row.count / total) * 100;
                             });
-                            resolve({
+
+                            let dataToResolve = {
                                 key: tableName,
                                 dateFrom: composite.date_start,
                                 period: period,
                                 sensors: sensors,
                                 aoiCoverage: 100,
                                 classDistribution: classDistribution
-                            })
+                            };
+                            console.log(dataToResolve);
+
+                            resolve(dataToResolve);
                         }).catch(error => {
-                            logger.error(`Composites Statistics Error: ${error}`);
-                            reject(new Error(`Composites Statistics Error: ${error.message} | ${error}`));
+                            reject(new Error(logger.error(`SnowPortal#getComposites ------ Composites Statistics Error: ${error.message} | ${error}`)));
                         });
                     }));
 
@@ -273,7 +277,7 @@ class SnowPortal {
                 return Promise.all(promises);
 
             }).catch(error => {
-                logger.error(`SnowPortal#getComposites Error while getting metadata about composites: ${error}`);
+                logger.error(`SnowPortal#getComposites ------ Error while getting metadata about composites: ${error}`);
                 throw error;
             });
         }).then(data => {
