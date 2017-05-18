@@ -253,9 +253,7 @@ class SnowPortalComposite {
     }
 
     static convertArrayToSqlAny(array) {
-        return "ANY (ARRAY [" + array.map(function (value) {
-                return '\'' + value + '\'';
-            }).join(",") + "] :: VARCHAR [])";
+        return "ANY (" + SnowPortalComposite.convertArrayToSqlArray(array) + " :: VARCHAR [])";
     }
 
     static convertArrayToSqlArray(array) {
@@ -313,7 +311,7 @@ class SnowPortalComposite {
                 metadata AS m
                 INNER JOIN source AS s ON (m.source_id = s.id)
             WHERE
-                s.sensor_key = ANY(${SnowPortalComposite.convertArrayToSqlArray(sensors)})
+                s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
                 AND m.date BETWEEN '${startDate}' AND '${endDate}';`;
     }
 
