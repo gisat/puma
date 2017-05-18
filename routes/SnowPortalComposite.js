@@ -305,7 +305,7 @@ class SnowPortalComposite {
     static getScenesIDsSql(startDate, endDate, sensors) {
         return `
             SELECT
-                m.id, *
+                m.id
             FROM
                 metadata AS m
                 INNER JOIN source AS s ON (m.source_id = s.id)
