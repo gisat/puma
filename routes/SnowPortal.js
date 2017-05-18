@@ -4,6 +4,7 @@ let _ = require("lodash");
 let Promise = require("promise");
 let hash = require("object-hash");
 var child_process  = require('pn/child_process');
+let superagent = require('superagent');
 
 let processes = {};
 
@@ -358,20 +359,8 @@ class SnowPortal {
                 resolve(child_process.exec(command).promise);
             });
         }).then(() => {
-            /**
-             * Publish GeoTiff in GeoNode
-             * TODO for Windows?
-             */
-            return new Promise((resolve, reject) => {
-                let command = `cd ${this.geoNodeManagePyDir} && python manage.py updatelayers -f ${tableName}`;
-                logger.trace(`SnowPortal#createComposite: Publishing Geoserver raster layer in GeoNode (${tableName})`);
-                resolve(child_process.exec(command).promise);
-            });
+            return superagent.get(`http://localhost/cgi-bin/updatelayers?f=${tableName}`);
         }).then(() => {
-            /**
-             * Delete GeoTiff
-             * TODO for Windows?
-             */
             return new Promise((resolve, reject) => {
                 logger.trace(`SnowPortal#createComposite: Deleting GeoTiff file ${tableName}.tif`);
                 child_process.exec(`rm ${this.tmpTiffLocation}${tableName}.tif`).promise.then(() => {
