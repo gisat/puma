@@ -156,7 +156,8 @@ class SnowPortalComposite {
                 logger.info(`SnowPortalComposite#create ------ Exporting GeoTiff of the composite ${tableName}`);
                 resolve(child_process.exec(command).promise);
             });
-        }).then(() => {
+        }).then((x) => {
+                                logger.info(`result: ${x}`);
             /**
              * Import GeoTiff to Geoserver
              * TODO for Windows?
@@ -166,7 +167,8 @@ class SnowPortalComposite {
                 logger.info(`SnowPortalComposite#create ------ Importing GeoTiff in Geoserver (${tableName})`);
                 resolve(child_process.exec(command).promise);
             });
-        }).then(() => {
+        }).then((x) => {
+                                logger.info(`result: ${x}`);
             /**
              * Publish GeoTiff in GeoNode
              * TODO for Windows?
@@ -176,7 +178,8 @@ class SnowPortalComposite {
                 logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${tableName})`);
                 resolve(child_process.exec(command).promise);
             });
-        }).then(() => {
+        }).then((x) => {
+                                logger.info(`result: ${x}`);
             /**
              * Delete GeoTiff
              * TODO for Windows?
