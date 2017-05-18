@@ -229,7 +229,7 @@ class SnowPortal {
             ////////////////
 
 
-            Promise.all(compositesMetadata).then(metadata => {
+            return Promise.all(compositesMetadata).then(metadata => {
                 /**
                  * Get composites data and compute statistics
                  */
