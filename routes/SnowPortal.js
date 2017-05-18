@@ -281,9 +281,13 @@ class SnowPortal {
                 throw error;
             });
         }).then(data => {
+            logger.info(`SnowPortal#getComposites ------ get process data resolved!`);
+            console.log('data: ', data);
+
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
         }).catch(error => {
+            logger.error(`SnowPortal#getComposites ------ get process data FAILED: ${error}`);
             processes[requestHash].ended = Date.now();
             processes[requestHash].error = error.message;
         });
