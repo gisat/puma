@@ -90,49 +90,114 @@ class SnowPortalComposite {
         let usedScenes = [];
         let tableName;
 
+
         return new Promise((resolve, reject) => {
             /**
-             * get IDs of used scenes
+             * First steps different for one-day and n-day composites
              */
-            let sql = SnowPortalComposite.getScenesIDsSql(this._startDay, this._endDay, this._sensors); // TODO only for period=1
-            this._pgPool.pool().query(sql).then((results) => {
-                _.each(results.rows, scene => {
-                    usedScenes.push(scene.id);
+
+
+            if (this._period > 1) {
+                /**
+                 * N-DAY COMPOSITE
+                 */
+
+                /**
+                 * get or create one-day composites
+                 */
+                let oneDayDates = SnowPortalComposite.getCompositeDates(this._startDay, this._endDay, 1);
+                let oneDayComposites = [];
+                _.each(oneDayDates, date => {
+                    let oneDayComposite = new SnowPortalComposite(this._pgPool, date, null, 1, this._sensors, this._area);
+                    oneDayComposites.push(oneDayComposite.getMetadata());
                 });
 
-                if (!usedScenes.length) {
-                    reject(new Error(logger.error(`SnowPortalComposite#create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`)));
-                }
-
-                resolve(usedScenes);
-            }).catch(error => {
-                reject(new Error(logger.error(`SnowPortalComposite#create ------ Creating composite, get IDs Error: ${error.message} | ${error}`)));
-            });
-        }).then(() => {
-            /**
-             * Generate composite
-             */
-            return new Promise((resolve, reject) => {
-                tableName = "composite_" + hash({
-                        startDay: this._startDay,
-                        endDay: this._endDay,
-                        period: this._period,
-                        sensors: this._sensors,
-                        area: this._area,
-                        usedScenes: usedScenes
+                /**
+                 * Composite one-day composites to one composite
+                 */
+                Promise.all(oneDayComposites).then(compositesMetadata => {
+                    let tables = [];
+                    _.each(compositesMetadata, composite => {
+                        tables.push(composite.key);
+                        usedScenes = _.union(usedScenes, composite.usedScenes);
                     });
-                let sql = SnowPortalComposite.createCompositeSql(tableName, this._startDay, this._endDay, this._sensors); // TODO change to createOneDayCompositeSql
-                logger.info(`SnowPortalComposite#create ------ Generating composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
-                    `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
-                | tableName: ${tableName}
-                | SQL: ${sql}`);
-                this._pgPool.pool().query(sql).then(result => {
-                    logger.info(`SnowPortalComposite#create ------ Generating composite finished. ${result.rows[0]}`);
-                    resolve();
-                }).catch(error => {
-                    reject(new Error(logger.error(`SnowPortalComposite#create ------ Generating composite Error: ${error} | ${sql}`)));
+
+                    tableName = "composite_" + hash({
+                            startDay: this._startDay,
+                            endDay: this._endDay,
+                            period: this._period,
+                            sensors: this._sensors,
+                            area: this._area,
+                            usedScenes: usedScenes
+                        });
+
+                    let sql = SnowPortalComposite.createMultiDayCompositeSql(tableName, tables);
+                    logger.info(`SnowPortalComposite#create ------ Generating n-day composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
+                        `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
+                    | tableName: ${tableName}
+                    | SQL: ${sql}`);
+                    this._pgPool.pool().query(sql).then(() => {
+                        logger.info(`SnowPortalComposite#create ------ Generating n-day composite finished.`);
+                        resolve();
+                    }).catch(error => {
+                        reject(new Error(logger.error(`SnowPortalComposite#create ------ Generating n-day composite Error: ${error} | ${sql}`)));
+                    });
+
                 });
-            });
+
+
+
+            } else {
+                /**
+                 * ONE-DAY COMPOSITE
+                 */
+
+
+                resolve(new Promise((resolve, reject) => {
+                    /**
+                     * get IDs of used scenes
+                     */
+                    let sql = SnowPortalComposite.getScenesIDsSql(this._startDay, this._sensors); // TODO only for period=1
+                    this._pgPool.pool().query(sql).then((results) => {
+                        _.each(results.rows, scene => {
+                            usedScenes.push(scene.id);
+                        });
+
+                        if (!usedScenes.length) {
+                            reject(new Error(logger.error(`SnowPortalComposite#create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`)));
+                        }
+
+                        resolve(usedScenes);
+                    }).catch(error => {
+                        reject(new Error(logger.error(`SnowPortalComposite#create ------ Creating composite, get IDs Error: ${error.message} | ${error}`)));
+                    });
+                }).then(() => {
+                    /**
+                     * Generate composite
+                     */
+                    return new Promise((resolve, reject) => {
+                        tableName = "composite_" + hash({
+                                startDay: this._startDay,
+                                endDay: this._endDay,
+                                period: this._period,
+                                sensors: this._sensors,
+                                area: this._area,
+                                usedScenes: usedScenes
+                            });
+                        let sql = SnowPortalComposite.createOneDayCompositeSql(tableName, this._startDay, this._sensors);
+                        logger.info(`SnowPortalComposite#create ------ Generating one-day composite for ${this._startDay} ` +
+                            `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
+                        | tableName: ${tableName}
+                        | SQL: ${sql}`);
+                        this._pgPool.pool().query(sql).then(() => {
+                            logger.info(`SnowPortalComposite#create ------ Generating one-day composite finished.`);
+                            resolve();
+                        }).catch(error => {
+                            reject(new Error(logger.error(`SnowPortalComposite#create ------ Generating one-day composite Error: ${error} | ${sql}`)));
+                        });
+                    });
+                }));
+            }
         }).then(() => {
             /**
              * Save composite metadata
@@ -179,9 +244,7 @@ class SnowPortalComposite {
             logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${tableName})`);
             return superagent.get(`http://localhost/cgi-bin/updatelayers?f=${tableName}`);
 
-        }).then((x) => {
-                                logger.info(`result:`);
-                                console.log(x);
+        }).then(() => {
             /**
              * Delete GeoTiff
              * TODO for Windows?
@@ -191,6 +254,7 @@ class SnowPortalComposite {
                 child_process.exec(`rm ${this._tmpTiffLocation}${tableName}.tif`).promise.then(() => {
                     resolve({
                         date_start: this._startDay,
+                        usedScenes: usedScenes,
                         key: tableName
                     });
                 });
@@ -283,26 +347,7 @@ class SnowPortalComposite {
      * @param sensors
      * @returns {string}
      */
-    // static getScenesIDsSql(date, sensors) {
-    //     return `
-    //         SELECT
-    //             m.id, *
-    //         FROM
-    //             metadata AS m
-    //             INNER JOIN source AS s ON (m.source_id = s.id)
-    //         WHERE
-    //             s.sensor_key = ANY(${this.convertArrayToSqlArray(sensors)})
-    //             AND m.date = '${date}';`;
-    // }
-
-    /**
-     * Create SQL query for selecting Scene IDs for composite creation
-     * @param startDate
-     * @param endDate
-     * @param sensors
-     * @returns {string}
-     */
-    static getScenesIDsSql(startDate, endDate, sensors) {
+    static getScenesIDsSql(date, sensors) {
         return `
             SELECT
                 m.id
@@ -311,23 +356,22 @@ class SnowPortalComposite {
                 INNER JOIN source AS s ON (m.source_id = s.id)
             WHERE
                 s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
-                AND m.date BETWEEN '${startDate}' AND '${endDate}';`;
+                AND m.date = '${date}';`;
     }
 
 
     /**
-     * Create SQL query for creating composites
+     * Create SQL query for creating one-day composites
      * @param tableName
-     * @param startDate
-     * @param endDate
+     * @param date
      * @param sensors
      * @returns {string}
      */
-    static createCompositeSql(tableName, startDate, endDate, sensors) {
+    static createOneDayCompositeSql(tableName, date, sensors) {
         return `
             CREATE TABLE composites.${tableName}
                 AS SELECT
-                        st_union(t.rast, 1, 'MAX') as rast
+                        ST_Union(t.rast, 1, 'MAX') as rast
                     FROM (
                             SELECT DISTINCT st_centroid(extent) AS centroid
                             FROM rasters
@@ -337,9 +381,23 @@ class SnowPortalComposite {
                         INNER JOIN metadata AS m ON (m.id = r.metadata_id)
                         INNER JOIN source AS s ON (s.id = m.source_id)
                     WHERE r.extent && foo.centroid
-                        AND m.date BETWEEN '${startDate}' AND '${endDate}'
+                        AND m.date = '${date}'
                         AND s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
                     GROUP BY foo.centroid;`;
+    }
+
+    static createMultiDayCompositeSql(tableName, oneDayTables) {
+        let union = oneDayTables.map(value => {
+                return `SELECT rast FROM composites.${value}`;
+            }).join(" UNION ");
+
+        return `
+            CREATE TABLE composites.${tableName}
+                AS SELECT
+                    ST_Union(uni.rast, 1, 'MAX') as rast
+                FROM (
+                    ${union}
+                ) AS uni;`;
     }
 
     /**
