@@ -8,6 +8,7 @@ let SnowPortalComposite = require('./SnowPortalComposite');
 
 
 let processes = {};
+let composites = {};
 
 class SnowPortal {
     constructor(app, pool) {
@@ -74,7 +75,7 @@ class SnowPortal {
         });
         
         let sql = this.getScenesDataSql(areaType, area, sensors, satellites, timeRangeStart, timeRangeEnd);
-        
+
         this._pgPool.pool().query(sql).then(results => {
             let totals = {};
             let scenes = {};
@@ -190,11 +191,10 @@ class SnowPortal {
             }
 
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
-            let composites = []; // todo change to key-value?
             let compositesMetadata = [];
             _.each(compositeDates, compositeDate => {
-                let composite = new SnowPortalComposite(this._pgPool, compositeDate, null, period, sensors, this.area);
-                composites.push(composite);
+                let composite = new SnowPortalComposite(this._pgPool, composites, compositeDate, null, period, sensors, this.area);
+                composites[composite.getKey()] = composite;
                 compositesMetadata.push(composite.getMetadata());
             });
 

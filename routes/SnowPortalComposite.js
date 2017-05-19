@@ -10,7 +10,7 @@ let logger = require('../common/Logger').applicationWideLogger;
  *
  */
 class SnowPortalComposite {
-    constructor (pgPool, startDay, endDay, period, sensors, area) {
+    constructor (pgPool, composites, startDay, endDay, period, sensors, area) {
         logger.info("============= NEW SnowPortalComposite ==============");
         // input validation
         if (!pgPool){
@@ -43,7 +43,8 @@ class SnowPortalComposite {
         this._area = area;
 
         this._tmpTiffLocation = "/tmp/";
-        this._geoNodeManagePyDir = '/home/geonode/geonode';
+
+        this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._area);
 
 
 
@@ -53,10 +54,24 @@ class SnowPortalComposite {
             if (result.rows.length > 1) {
                 logger.warn(`SnowPortalComposite#constructor More then one metadata results! (${result.rows.length}) ${result.rows}`);
             }
+
             if (result.rows.length) {
+                /**
+                 * Composite already exists in database.
+                 */
                 logger.info(`SnowPortalComposite#constructor Composite exists. Metadata: ${result.rows[0]}`);
+                this._key = result.rows[0].key;
                 return result.rows[0];
+            } else if(composites[this._key]) {
+                /**
+                 * There is a process of creating composite
+                 */
+                logger.info(`SnowPortalComposite#constructor Composite is already being created.`);
+                return composites[this._key].getMetadata();
             } else {
+                /**
+                 * Composite doesn't exist. Let's create.
+                 */
                 logger.info(`SnowPortalComposite#constructor Composite doesn't exist. Creating new.`);
                 return this.create();
             }
@@ -80,6 +95,10 @@ class SnowPortalComposite {
         return this._metadata;
     }
 
+    getKey() {
+        return this._key;
+    }
+
 
     /**
      *
@@ -88,8 +107,6 @@ class SnowPortalComposite {
     create() {
         logger.info(`SnowPortalComposite#create ------- ${this._startDay}-${this._endDay} (${this._period} days) sensors: ${this._sensors}`);
         let usedScenes = [];
-        let tableName;
-
 
         return new Promise((resolve, reject) => {
             /**
@@ -122,7 +139,7 @@ class SnowPortalComposite {
                         usedScenes = _.union(usedScenes, composite.usedScenes);
                     });
 
-                    tableName = "composite_" + hash({
+                    this._key = "composite_" + hash({
                             startDay: this._startDay,
                             endDay: this._endDay,
                             period: this._period,
@@ -131,10 +148,10 @@ class SnowPortalComposite {
                             usedScenes: usedScenes
                         });
 
-                    let sql = SnowPortalComposite.createMultiDayCompositeSql(tableName, tables);
+                    let sql = SnowPortalComposite.createMultiDayCompositeSql(this._key, tables);
                     logger.info(`SnowPortalComposite#create ------ Generating n-day composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
                         `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
-                    | tableName: ${tableName}
+                    | key: ${this._key}
                     | SQL: ${sql}`);
                     this._pgPool.pool().query(sql).then(() => {
                         logger.info(`SnowPortalComposite#create ------ Generating n-day composite finished.`);
@@ -176,7 +193,7 @@ class SnowPortalComposite {
                      * Generate composite
                      */
                     return new Promise((resolve, reject) => {
-                        tableName = "composite_" + hash({
+                        this._key = "composite_" + hash({
                                 startDay: this._startDay,
                                 endDay: this._endDay,
                                 period: this._period,
@@ -184,10 +201,10 @@ class SnowPortalComposite {
                                 area: this._area,
                                 usedScenes: usedScenes
                             });
-                        let sql = SnowPortalComposite.createOneDayCompositeSql(tableName, this._startDay, this._sensors);
+                        let sql = SnowPortalComposite.createOneDayCompositeSql(this._key, this._startDay, this._sensors);
                         logger.info(`SnowPortalComposite#create ------ Generating one-day composite for ${this._startDay} ` +
                             `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
-                        | tableName: ${tableName}
+                        | key: ${this._key}
                         | SQL: ${sql}`);
                         this._pgPool.pool().query(sql).then(() => {
                             logger.info(`SnowPortalComposite#create ------ Generating one-day composite finished.`);
@@ -203,7 +220,7 @@ class SnowPortalComposite {
              * Save composite metadata
              */
             return new Promise((resolve, reject) => {
-                let sql = SnowPortalComposite.saveCompositeMetadataSql(tableName, this._startDay, this._endDay, this._period, this._sensors, this._area, usedScenes);
+                let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#create ------ Saving composite metadata | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(result => {
                     logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished. ${result.rows[0]}`);
@@ -218,8 +235,8 @@ class SnowPortalComposite {
              * TODO for Windows?
              */
             return new Promise((resolve) => {
-                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${tableName} mode=2" ${this._tmpTiffLocation}${tableName}.tif`;
-                logger.info(`SnowPortalComposite#create ------ Exporting GeoTiff of the composite ${tableName}`);
+                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${this._key} mode=2" ${this._tmpTiffLocation}${this._key}.tif`;
+                logger.info(`SnowPortalComposite#create ------ Exporting GeoTiff of the composite ${this._key}`);
                 resolve(child_process.exec(command).promise);
             });
         }).then((x) => {
@@ -230,8 +247,8 @@ class SnowPortalComposite {
              * TODO for Windows?
              */
             return new Promise((resolve) => {
-                let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this._tmpTiffLocation}${tableName}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${tableName}/file.geotiff`;
-                logger.info(`SnowPortalComposite#create ------ Importing GeoTiff in Geoserver (${tableName})`);
+                let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this._tmpTiffLocation}${this._key}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${this._key}/file.geotiff`;
+                logger.info(`SnowPortalComposite#create ------ Importing GeoTiff in Geoserver (${this._key})`);
                 resolve(child_process.exec(command).promise);
             });
         }).then((x) => {
@@ -241,8 +258,8 @@ class SnowPortalComposite {
              * Publish GeoTiff in GeoNode
              * TODO for Windows?
              */
-            logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${tableName})`);
-            return superagent.get(`http://localhost/cgi-bin/updatelayers?f=${tableName}`);
+            logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
+            return superagent.get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`);
 
         }).then(() => {
             /**
@@ -250,12 +267,12 @@ class SnowPortalComposite {
              * TODO for Windows?
              */
             return new Promise((resolve) => {
-                logger.info(`SnowPortalComposite#create ------ Deleting GeoTiff file ${tableName}.tif`);
-                child_process.exec(`rm ${this._tmpTiffLocation}${tableName}.tif`).promise.then(() => {
+                logger.info(`SnowPortalComposite#create ------ Deleting GeoTiff file ${this._key}.tif`);
+                child_process.exec(`rm ${this._tmpTiffLocation}${this._key}.tif`).promise.then(() => {
                     resolve({
                         date_start: this._startDay,
                         usedScenes: usedScenes,
-                        key: tableName
+                        key: this._key
                     });
                 });
             });
@@ -269,6 +286,16 @@ class SnowPortalComposite {
 
 
     ///// STATIC //////
+
+    static createKey(startDay, endDay, period, sensors, area) {
+        return "composite_" + hash({
+                startDay: startDay,
+                endDay: endDay,
+                period: period,
+                sensors: sensors.sort(),
+                area: area
+            });
+    }
 
     /**
      * Generate array of SQL string dates for composites - based on time range and period.
