@@ -190,6 +190,7 @@ class SnowPortal {
             return Promise.all(compositesMetadata).then(metadata => {
                 /**
                  * Get composites data and compute statistics
+                 * TODO - this can be moved to the SnowPortalComposite class
                  */
                 logger.info(`ITERATING comp met dat:`);
                 console.log(metadata);

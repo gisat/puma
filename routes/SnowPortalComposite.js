@@ -13,7 +13,6 @@ let composites = {};
  */
 class SnowPortalComposite {
     constructor (pgPool, startDay, endDay, period, sensors, area) {
-        logger.info("============= NEW SnowPortalComposite ==============");
         // input validation
         if (!pgPool){
             throw new Error(logger.error("SnowPortalComposite#constructor: pgPool must be specified"));
@@ -48,11 +47,8 @@ class SnowPortalComposite {
         /**
          * Test if composite is in memory
          */
-        logger.info(`SnowPortalComposite#constructor ========> composites memory:`);
-        console.log(Object.keys(composites));
-
         if(composites[this._key]) {
-            logger.info(`SnowPortalComposite#constructor ****** Composite is already being created.`);
+            logger.info(`SnowPortalComposite#constructor *** Composite is already being created.`);
             return composites[this._key];
         }
         logger.info(`SnowPortalComposite#constructor *** no ` + this._key);
@@ -245,9 +241,7 @@ class SnowPortalComposite {
                 logger.info(`SnowPortalComposite#create ------ Exporting GeoTiff of the composite ${this._key}`);
                 resolve(child_process.exec(command).promise);
             });
-        }).then((x) => {
-                                logger.info(`result:`);
-                                console.log(x);
+        }).then(() => {
             /**
              * Import GeoTiff to Geoserver
              * TODO for Windows?
@@ -257,9 +251,7 @@ class SnowPortalComposite {
                 logger.info(`SnowPortalComposite#create ------ Importing GeoTiff in Geoserver (${this._key})`);
                 resolve(child_process.exec(command).promise);
             });
-        }).then((x) => {
-                                logger.info(`result:`);
-                                console.log(x);
+        }).then(() => {
             /**
              * Publish GeoTiff in GeoNode
              * TODO for Windows?
