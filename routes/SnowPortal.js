@@ -74,7 +74,7 @@ class SnowPortal {
         });
         
         let sql = this.getScenesDataSql(areaType, area, sensors, satellites, timeRangeStart, timeRangeEnd);
-        
+
         this._pgPool.pool().query(sql).then(results => {
             let totals = {};
             let scenes = {};
@@ -126,15 +126,6 @@ class SnowPortal {
     
     getComposites(request, response) {
         let requestData = request.body;
-
-        // TODO temporary
-        if (requestData.period == 'week') {
-            requestData.period = 7;
-        }
-        if (requestData.period == 'day') {
-            requestData.period = 1;
-        }
-
         let requestHash = hash(requestData);
 
         /**
@@ -190,17 +181,16 @@ class SnowPortal {
             }
 
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
-            let composites = []; // todo change to key-value?
             let compositesMetadata = [];
             _.each(compositeDates, compositeDate => {
                 let composite = new SnowPortalComposite(this._pgPool, compositeDate, null, period, sensors, this.area);
-                composites.push(composite);
                 compositesMetadata.push(composite.getMetadata());
             });
 
             return Promise.all(compositesMetadata).then(metadata => {
                 /**
                  * Get composites data and compute statistics
+                 * TODO - this can be moved to the SnowPortalComposite class
                  */
                 logger.info(`ITERATING comp met dat:`);
                 console.log(metadata);
