@@ -8,7 +8,6 @@ let SnowPortalComposite = require('./SnowPortalComposite');
 
 
 let processes = {};
-let composites = {};
 
 class SnowPortal {
     constructor(app, pool) {
@@ -127,15 +126,6 @@ class SnowPortal {
     
     getComposites(request, response) {
         let requestData = request.body;
-
-        // TODO temporary
-        if (requestData.period == 'week') {
-            requestData.period = 7;
-        }
-        if (requestData.period == 'day') {
-            requestData.period = 1;
-        }
-
         let requestHash = hash(requestData);
 
         /**
@@ -193,8 +183,7 @@ class SnowPortal {
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
             let compositesMetadata = [];
             _.each(compositeDates, compositeDate => {
-                let composite = new SnowPortalComposite(this._pgPool, composites, compositeDate, null, period, sensors, this.area);
-                composites[composite.getKey()] = composite;
+                let composite = new SnowPortalComposite(this._pgPool, compositeDate, null, period, sensors, this.area);
                 compositesMetadata.push(composite.getMetadata());
             });
 

@@ -6,11 +6,13 @@ let superagent = require('superagent');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
+let composites = {};
+
 /**
  *
  */
 class SnowPortalComposite {
-    constructor (pgPool, composites, startDay, endDay, period, sensors, area) {
+    constructor (pgPool, startDay, endDay, period, sensors, area) {
         logger.info("============= NEW SnowPortalComposite ==============");
         // input validation
         if (!pgPool){
@@ -32,19 +34,29 @@ class SnowPortalComposite {
         // input
         this._pgPool = pgPool;
         this._startDay = startDay;
-        if (period) {
-            this._period = period;
-            this._endDay = SnowPortalComposite.addDays(this._startDay, this._period - 1).toISOString().split("T")[0];
-        } else {
-            this._endDay = endDay;
-            this._period = SnowPortalComposite.getDatesDiff(this._startDay, this._endDay) + 1;
-        }
+        let completeDateConfiguration = SnowPortalComposite.getCompleteDateConfiguration(this._startDay, endDay, period);
+        this._endDay = completeDateConfiguration.endDay;
+        this._period = completeDateConfiguration.period;
         this._sensors = sensors;
         this._area = area;
 
         this._tmpTiffLocation = "/tmp/";
 
         this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._area);
+
+
+        /**
+         * Test if composite is in memory
+         */
+        logger.info(`SnowPortalComposite#constructor ========> composites memory:`);
+        console.log(Object.keys(composites));
+
+        if(composites[this._key]) {
+            logger.info(`SnowPortalComposite#constructor ****** Composite is already being created.`);
+            return composites[this._key];
+        }
+        logger.info(`SnowPortalComposite#constructor *** no ` + this._key);
+        composites[this._key] = this;
 
 
 
@@ -62,12 +74,6 @@ class SnowPortalComposite {
                 logger.info(`SnowPortalComposite#constructor Composite exists. Metadata: ${result.rows[0]}`);
                 this._key = result.rows[0].key;
                 return result.rows[0];
-            } else if(composites[this._key]) {
-                /**
-                 * There is a process of creating composite
-                 */
-                logger.info(`SnowPortalComposite#constructor Composite is already being created.`);
-                return composites[this._key].getMetadata();
             } else {
                 /**
                  * Composite doesn't exist. Let's create.
@@ -288,13 +294,30 @@ class SnowPortalComposite {
     ///// STATIC //////
 
     static createKey(startDay, endDay, period, sensors, area) {
+        let completeConf = SnowPortalComposite.getCompleteDateConfiguration(startDay, endDay, period);
         return "composite_" + hash({
                 startDay: startDay,
-                endDay: endDay,
-                period: period,
+                endDay: completeConf.endDay,
+                period: completeConf.period,
                 sensors: sensors.sort(),
                 area: area
             });
+    }
+
+    static getCompleteDateConfiguration(startDay, endDay, period) {
+        if (period) {
+            return {
+                startDay: startDay,
+                endDay: SnowPortalComposite.addDays(startDay, period - 1).toISOString().split("T")[0],
+                period: period,
+            };
+        } else {
+            return {
+                startDay: startDay,
+                endDay: endDay,
+                period: SnowPortalComposite.getDatesDiff(startDay, endDay) + 1
+            };
+        }
     }
 
     /**
