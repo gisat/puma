@@ -305,8 +305,8 @@ class SnowPortal {
                     sensor = {
                         key: row.sensor_key,
                         name: row.sensor,
-                        from: row.from,
-                        to: row.to,
+                        from: row.from, // TODO remove
+                        to: row.to, // TODO remove
                         satellites: []
                     };
                     sensors.push(sensor);
@@ -315,7 +315,9 @@ class SnowPortal {
                 if (!satellite) {
                     sensor.satellites.push({
                         key: row.satellite_key,
-                        name: row.satellite
+                        name: row.satellite,
+                        from: row.from,
+                        to: row.to,
                     });
                 }
             });
