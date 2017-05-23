@@ -14,24 +14,19 @@ class PgSequentialQuery {
 
 	// What If I ran this in groups of four, which is usually the amount of cores.
 	query(queries) {
-		if(queries.length > 20) {
+		if (queries.length > 20) {
 			logger.info(`AttributeController#statistics Queries: ${queries.length} Start: ${moment().format()}`);
+			// Create table with the name hashed from the string of queries.
+			let viewCreationSql = queries.join(' UNION ');
+			let viewName = this.hashCode(queries.join());
+			// If the materialized view doesn't exist, create it otherwise simply query the materialized view.
+			viewCreationSql = 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' + viewName + ' AS ' + viewCreationSql;
+			return this._pgPool.query(viewCreationSql).then(() => {
+				return this._pgPool.query('SELECT * FROM ' + viewName).then(results=>{
+					logger.info(`AttributeController#statistics Queries End: ${moment().format()}`);
 
-			// Split into for groups.
-			let amountInGroup = queries.length / 4;
-			let multipleResults = [];
-			return Promise.all([
-				this.handleSetOfQueries(queries.slice(0, amountInGroup)),
-				this.handleSetOfQueries(queries.slice(amountInGroup, amountInGroup * 2)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 2, amountInGroup * 3)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 3, queries.length))
-			]).then(results => {
-				logger.info(`AttributeController#statistics Queries End: ${moment().format()}`);
-				results.forEach(resultSet => {
-					Array.prototype.push.apply(multipleResults, resultSet);
+					return results;
 				});
-				logger.info(`AttributeController#statistics Queries Processing End: ${moment().format()}`);
-				return multipleResults;
 			});
 		} else {
 			return this.handleSetOfQueries(queries);
@@ -52,6 +47,14 @@ class PgSequentialQuery {
 		return promise.then(() => {
 			return results;
 		});
+	}
+
+	hashCode(str) {
+		var hash = 0;
+		for (var i = 0; i < str.length; i++) {
+			hash = ~~(((hash << 5) - hash) + str.charCodeAt(i));
+		}
+		return hash;
 	}
 }
 
