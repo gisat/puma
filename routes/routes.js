@@ -67,6 +67,15 @@ module.exports = function(app) {
 		host: config.pgDataHost,
 		port: config.pgDataPort
 	});
+	var longRunningPool = new PgPool({
+		user: config.pgDataUser,
+		database: config.pgDataDatabase,
+		password: config.pgDataPassword,
+		host: config.pgDataHost,
+		port: config.pgDataPort,
+		max: 4,
+        idleTimeoutMillis: 0
+	});
 	let poolRemote = null;
 	if(config.pgDataUserRemote) {
 		poolRemote = new PgPool({
@@ -125,7 +134,7 @@ module.exports = function(app) {
 	new UtepStatisticsController(app, pool, conn.getMongoDb(), 'views', 'public');
 	new UtepFunctionalAreas(app, pool);
 
-	new SnowPortal(app, pool);
+	new SnowPortal(app, pool, longRunningPool);
 	new SnowWidgetController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {

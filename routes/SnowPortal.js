@@ -10,8 +10,9 @@ let SnowPortalComposite = require('./SnowPortalComposite');
 let processes = {};
 
 class SnowPortal {
-    constructor(app, pool) {
+    constructor(app, pool, longRunningPool) {
         this._pgPool = pool;
+        this._pgLongRunningPool = longRunningPool;
 
         this.initTables();
 
@@ -189,7 +190,7 @@ class SnowPortal {
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
             let compositesMetadata = [];
             _.each(compositeDates, compositeDate => {
-                let composite = new SnowPortalComposite(this._pgPool, compositeDate, null, period, sensors, satellites, this.area);
+                let composite = new SnowPortalComposite(this._pgPool, this._pgLongRunningPool, compositeDate, null, period, sensors, satellites, this.area);
                 compositesMetadata.push(composite.getMetadata());
             });
 

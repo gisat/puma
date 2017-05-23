@@ -15,6 +15,7 @@ class SnowPortalComposite {
     /**
      * SnowPortalComposite constructor
      * @param pgPool
+     * @param pgLongRunningPool
      * @param startDay
      * @param endDay
      * @param period
@@ -22,10 +23,13 @@ class SnowPortalComposite {
      * @param satellites
      * @param area
      */
-    constructor (pgPool, startDay, endDay, period, sensors, satellites, area) {
+    constructor (pgPool, pgLongRunningPool, startDay, endDay, period, sensors, satellites, area) {
         // input validation
         if (!pgPool){
             throw new Error(logger.error("SnowPortalComposite#constructor: pgPool must be specified"));
+        }
+        if (!pgLongRunningPool){
+            throw new Error(logger.error("SnowPortalComposite#constructor: pgLongRunningPool must be specified"));
         }
         if (!endDay && !period){
             throw new Error(logger.error("SnowPortalComposite#constructor: endDay or period must be specified"));
@@ -45,6 +49,7 @@ class SnowPortalComposite {
 
         // input
         this._pgPool = pgPool;
+        this._pgLongRunningPool = pgLongRunningPool;
         this._startDay = startDay;
         let completeDateConfiguration = SnowPortalComposite.getCompleteDateConfiguration(this._startDay, endDay, period);
         this._endDay = completeDateConfiguration.endDay;
@@ -145,7 +150,7 @@ class SnowPortalComposite {
                 let oneDayDates = SnowPortalComposite.getCompositeDates(this._startDay, this._endDay, 1);
                 let oneDayComposites = [];
                 _.each(oneDayDates, date => {
-                    let oneDayComposite = new SnowPortalComposite(this._pgPool, date, null, 1, this._sensors, this._satellites, this._area);
+                    let oneDayComposite = new SnowPortalComposite(this._pgPool, this._pgLongRunningPool, date, null, 1, this._sensors, this._satellites, this._area);
                     oneDayComposites.push(oneDayComposite.getMetadata());
                 });
 
@@ -174,7 +179,7 @@ class SnowPortalComposite {
                         `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
                     | key: ${this._key}
                     | SQL: ${sql}`);
-                    this._pgPool.pool().query(sql).then(() => {
+                    this._pgLongRunningPool.pool().query(sql).then(() => {
                         logger.info(`SnowPortalComposite#create ------ Generating n-day composite finished.`);
                         resolve();
                     }).catch(error => {
@@ -220,7 +225,7 @@ class SnowPortalComposite {
                             `for sensors ${this._sensors}/satellites ${this._satellites} in area ${this._area} from scenes ${usedScenes}
                         | key: ${this._key}
                         | SQL: ${sql}`);
-                        this._pgPool.pool().query(sql).then(() => {
+                        this._pgLongRunningPool.pool().query(sql).then(() => {
                             logger.info(`SnowPortalComposite#create ------ Generating one-day composite finished.`);
                             resolve();
                         }).catch(error => {
