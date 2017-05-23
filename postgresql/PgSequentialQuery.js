@@ -25,7 +25,7 @@ class PgSequentialQuery {
 				return this._pgPool.query('SELECT * FROM ' + viewName).then(results=>{
 					logger.info(`AttributeController#statistics Queries End: ${moment().format()}`);
 
-					return results;
+					return [results];
 				});
 			});
 		} else {
