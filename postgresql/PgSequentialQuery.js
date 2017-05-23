@@ -1,5 +1,6 @@
 let Promise = require('promise');
 let moment = require('moment');
+let md5 = require('blueimp-md5');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
@@ -18,7 +19,7 @@ class PgSequentialQuery {
 			logger.info(`AttributeController#statistics Queries: ${queries.length} Start: ${moment().format()}`);
 			// Create table with the name hashed from the string of queries.
 			let viewCreationSql = queries.join(' UNION ');
-			let viewName = "a" + this.hashCode(queries.join());
+			let viewName = "a" + md5(queries.join());
 			// If the materialized view doesn't exist, create it otherwise simply query the materialized view.
 			viewCreationSql = 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' + viewName + ' AS ' + viewCreationSql;
 			return this._pgPool.query(viewCreationSql).then(() => {
@@ -47,14 +48,6 @@ class PgSequentialQuery {
 		return promise.then(() => {
 			return results;
 		});
-	}
-
-	hashCode(str) {
-		var hash = 0;
-		for (var i = 0; i < str.length; i++) {
-			hash = ~~(((hash << 5) - hash) + str.charCodeAt(i));
-		}
-		return hash;
 	}
 }
 

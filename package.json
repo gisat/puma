@@ -13,6 +13,7 @@
   "homepage": "https://puma.worldbank.org/",
   "dependencies": {
     "async": "1.5.x",
+    "blueimp-md5": "^2.7.0",
     "bower": "^1.6.5",
     "csv": "^1.1.0",
     "deepcopy": "^0.6.1",
