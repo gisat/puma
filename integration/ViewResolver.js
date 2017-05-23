@@ -276,6 +276,7 @@ var baseView = {
 	}
 };
 
+// TODO: Add the Custom WMS
 var ViewResolver = function (viewProps) {
 	var base = deepcopy(baseView);
 	var conf = base.conf;

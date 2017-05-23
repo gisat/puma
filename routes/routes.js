@@ -27,7 +27,7 @@ var YearController = require('./YearController');
 var PrintController = require('./PrintController');
 var MellodiesWpsController = require('./../melodies/WpsController');
 var MellodiesLodController = require('../melodies/LodController');
-var IntegrationController = require('./IntegrationController');
+var IntegrationController = require('../integration/GufIntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
 let PgAnalysisController = require('../analysis/PgAnalysisController');
@@ -42,7 +42,6 @@ var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 let LayerImporterController = require('../integration/LayerImporterController');
-let UtepStatisticsController = require('../integration/UtepStatisticsController');
 let UtepFunctionalAreas = require('../data/UtepFunctionalAreas');
 
 var api = {
@@ -102,7 +101,7 @@ module.exports = function(app) {
 	new TopicController(app, pool);
 	new VisualizationController(app, pool, conn.getMongoDb());
 	new YearController(app, pool);
-	new IntegrationController(app, pool);
+	new IntegrationController(app, pool, conn.getMongoDb());
 
 	new PrintController(app);
 	new MellodiesWpsController(app, pool);
@@ -119,7 +118,6 @@ module.exports = function(app) {
 	
 	new LayerImporterController(app, conn.getMongoDb(), pool);
 	// Schema containing the imported data for Geoserver and schema for created views.
-	new UtepStatisticsController(app, pool, conn.getMongoDb(), 'views', 'public');
 	new UtepFunctionalAreas(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {

@@ -67,7 +67,7 @@ class MongoScopes {
 
 	add(scope) {
 		let collection = this._connection.collection(MongoScope.collectionName());
-		collection.insert(scope)
+		return collection.insert(scope);
 	}
 }
 

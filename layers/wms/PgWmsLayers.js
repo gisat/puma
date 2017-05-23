@@ -31,7 +31,7 @@ class PgWmsLayers {
 	}
 
 	/**
-	 * It returns subset of the layers filtered byb the
+	 * It returns subset of the layers filtered by the
 	 * @param scope {Number} Id of the scope on which are the layers filtered.
 	 * @param place {Number} Id of the place on which are the layers filtered.
 	 * @param periods {Number[]} Array of ids of periods relevant for the filtered layers.

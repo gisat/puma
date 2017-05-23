@@ -37,7 +37,11 @@ RasterToPSQL.prototype.process = function(){
 			command += " -t " + self.psqlRasterTileSize; // split to tiles
 			command += " -F " + self.rasterFileLocation; // input raster file location
 			command += " " + tableName; // result table name
-			command += " > " + sqlFilePath;
+			command += " | ";
+			command += " PGPASSWORD=" + config.pgDataPassword;
+			command += "psql -h " + config.pgDataHost;
+			command += "-p " + config.pgDataPort;
+			command += "-U " + config.pgDataUser + " " + config.pgDataDatabase;
 
 			logger.info("RasterToPSQL#process, running raster2psql command: ", command);
 			cp.exec(command, {maxBuffer: 1024 * 1024 * 100}, function(err, stdout, stderr) {
