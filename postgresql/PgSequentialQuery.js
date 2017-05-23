@@ -16,13 +16,15 @@ class PgSequentialQuery {
 	// What If I ran this in groups of four, which is usually the amount of cores.
 	query(queries) {
 		if (queries.length > 20) {
-			logger.info(`AttributeController#statistics Queries: ${queries.length} Start: ${moment().format()}`);
-			// Create table with the name hashed from the string of queries.
 			let viewCreationSql = queries.join(' UNION ');
 			let viewName = "a" + md5(queries.join());
+
+			logger.info(`AttributeController#statistics Queries: ${queries.length} Start: ${moment().format()} View: ${viewName}`);
+			// Create table with the name hashed from the string of queries.
 			// If the materialized view doesn't exist, create it otherwise simply query the materialized view.
 			viewCreationSql = 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' + viewName + ' AS ' + viewCreationSql;
 			return this._pgPool.query(viewCreationSql).then(() => {
+				logger.info(`AttributeController#statistics Queries: ${queries.length} Start retrieval: ${moment().format()}`);
 				return this._pgPool.query('SELECT * FROM ' + viewName).then(results=>{
 					logger.info(`AttributeController#statistics Queries End: ${moment().format()}`);
 
