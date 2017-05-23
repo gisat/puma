@@ -39,19 +39,8 @@ class PgSequentialQuery {
 	}
 
 	handleSetOfQueries(queries) {
-		let results = [];
-		let promise = Promise.resolve(null);
-		queries.forEach(query => {
-			promise = promise.then(() => {
-				return this._pgPool.query(query);
-			}).then(stats => {
-				results.push(stats);
-			})
-		});
-
-		return promise.then(() => {
-			return results;
-		});
+		console.log(queries.join(' UNION '));
+		return this._pgPool.query(queries.join(' UNION '));
 	}
 }
 
