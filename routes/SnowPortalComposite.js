@@ -12,7 +12,17 @@ let composites = {};
  *
  */
 class SnowPortalComposite {
-    constructor (pgPool, startDay, endDay, period, sensors, area) {
+    /**
+     * SnowPortalComposite constructor
+     * @param pgPool
+     * @param startDay
+     * @param endDay
+     * @param period
+     * @param sensors
+     * @param satellites
+     * @param area
+     */
+    constructor (pgPool, startDay, endDay, period, sensors, satellites, area) {
         // input validation
         if (!pgPool){
             throw new Error(logger.error("SnowPortalComposite#constructor: pgPool must be specified"));
@@ -26,6 +36,9 @@ class SnowPortalComposite {
         if (!Array.isArray(sensors) || !sensors.length){
             throw new Error(logger.error("SnowPortalComposite#constructor: sensors must be not empty array"));
         }
+        if (!Array.isArray(satellites) || !satellites.length){
+            throw new Error(logger.error("SnowPortalComposite#constructor: satellites must be not empty array"));
+        }
         if (!area){
             throw new Error(logger.error("SnowPortalComposite#constructor: area must be specified"));
         }
@@ -37,11 +50,12 @@ class SnowPortalComposite {
         this._endDay = completeDateConfiguration.endDay;
         this._period = completeDateConfiguration.period;
         this._sensors = sensors;
+        this._satellites = satellites;
         this._area = area;
 
         this._tmpTiffLocation = "/tmp/";
 
-        this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._area);
+        this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area);
 
 
         /**
@@ -56,7 +70,7 @@ class SnowPortalComposite {
 
 
 
-        let getMetadataSql = SnowPortalComposite.getMetadataSql(this._startDay, this._endDay, this._period, this._sensors);
+        let getMetadataSql = SnowPortalComposite.getMetadataSql(this._startDay, this._endDay, this._period, this._sensors, this._satellites);
 
         this._metadata = this._pgPool.pool().query(getMetadataSql).then(result => {
             if (result.rows.length > 1) {
@@ -90,24 +104,28 @@ class SnowPortalComposite {
     }
 
     /**
-     *
+     * Returns _metadata - Promise of composite metadata, when the composite is ready.
      * @returns Promise
      */
     getMetadata() {
         return this._metadata;
     }
 
+    /**
+     * Returns _key
+     * @returns {*|string}
+     */
     getKey() {
         return this._key;
     }
 
 
     /**
-     *
+     * Create and publish composite.
      * @returns Promise
      */
     create() {
-        logger.info(`SnowPortalComposite#create ------- ${this._startDay}-${this._endDay} (${this._period} days) sensors: ${this._sensors}`);
+        logger.info(`SnowPortalComposite#create ------- ${this._startDay}-${this._endDay} (${this._period} days) sensors: ${this._sensors} satellites: ${this._satellites}`);
         let usedScenes = [];
 
         return new Promise((resolve, reject) => {
@@ -127,7 +145,7 @@ class SnowPortalComposite {
                 let oneDayDates = SnowPortalComposite.getCompositeDates(this._startDay, this._endDay, 1);
                 let oneDayComposites = [];
                 _.each(oneDayDates, date => {
-                    let oneDayComposite = new SnowPortalComposite(this._pgPool, date, null, 1, this._sensors, this._area);
+                    let oneDayComposite = new SnowPortalComposite(this._pgPool, date, null, 1, this._sensors, this._satellites, this._area);
                     oneDayComposites.push(oneDayComposite.getMetadata());
                 });
 
@@ -146,6 +164,7 @@ class SnowPortalComposite {
                             endDay: this._endDay,
                             period: this._period,
                             sensors: this._sensors,
+                            satellites: this._satellites,
                             area: this._area,
                             usedScenes: usedScenes
                         });
@@ -195,17 +214,10 @@ class SnowPortalComposite {
                      * Generate composite
                      */
                     return new Promise((resolve, reject) => {
-                        this._key = "composite_" + hash({
-                                startDay: this._startDay,
-                                endDay: this._endDay,
-                                period: this._period,
-                                sensors: this._sensors,
-                                area: this._area,
-                                usedScenes: usedScenes
-                            });
-                        let sql = SnowPortalComposite.createOneDayCompositeSql(this._key, this._startDay, this._sensors);
+                        this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area);
+                        let sql = SnowPortalComposite.createOneDayCompositeSql(this._key, this._startDay, this._sensors, this._satellites);
                         logger.info(`SnowPortalComposite#create ------ Generating one-day composite for ${this._startDay} ` +
-                            `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
+                            `for sensors ${this._sensors}/satellites ${this._satellites} in area ${this._area} from scenes ${usedScenes}
                         | key: ${this._key}
                         | SQL: ${sql}`);
                         this._pgPool.pool().query(sql).then(() => {
@@ -222,7 +234,7 @@ class SnowPortalComposite {
              * Save composite metadata
              */
             return new Promise((resolve, reject) => {
-                let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._area, usedScenes);
+                let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#create ------ Saving composite metadata | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(result => {
                     logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished. ${result.rows[0]}`);
@@ -285,17 +297,35 @@ class SnowPortalComposite {
 
     ///// STATIC //////
 
-    static createKey(startDay, endDay, period, sensors, area) {
+    /**
+     * Create non-random unique composite key based on parameters.
+     * @param startDay
+     * @param endDay
+     * @param period
+     * @param sensors
+     * @param satellites
+     * @param area
+     * @returns {string}
+     */
+    static createKey(startDay, endDay, period, sensors, satellites, area) {
         let completeConf = SnowPortalComposite.getCompleteDateConfiguration(startDay, endDay, period);
         return "composite_" + hash({
                 startDay: startDay,
                 endDay: completeConf.endDay,
                 period: completeConf.period,
                 sensors: sensors.sort(),
+                satellites: satellites.sort(),
                 area: area
             });
     }
 
+    /**
+     * Complete the dates for two known parameters.
+     * @param startDay - required
+     * @param endDay - can be null, but not both
+     * @param period - can be null, but not both
+     * @returns {*}
+     */
     static getCompleteDateConfiguration(startDay, endDay, period) {
         if (period) {
             return {
@@ -357,18 +387,36 @@ class SnowPortalComposite {
         return result;
     }
 
+    /**
+     * Convert JS array to SQL ANY( ARRAY[...] )
+     * @param array
+     * @returns {string}
+     */
     static convertArrayToSqlAny(array) {
         return "ANY (" + SnowPortalComposite.convertArrayToSqlArray(array) + " :: VARCHAR [])";
     }
 
+    /**
+     * Convert JS array to SQL ARRAY[...]
+     * @param array
+     * @returns {string}
+     */
     static convertArrayToSqlArray(array) {
         return "ARRAY [" + array.map(function (value) {
                 return '\'' + value + '\'';
             }).join(",") + "]";
     }
 
-
-    static getMetadataSql(startDay, endDay, period, sensors) {
+    /**
+     * Create SQL query for selecting composites metadata
+     * @param startDay
+     * @param endDay
+     * @param period
+     * @param sensors
+     * @param satellites
+     * @returns {string}
+     */
+    static getMetadataSql(startDay, endDay, period, sensors, satellites) {
         return `
             SELECT
                 m.key,
@@ -380,7 +428,9 @@ class SnowPortalComposite {
                 AND m.date_end = '${endDay}'
                 AND m.period = ${period}
                 AND m.sensors <@ ${SnowPortalComposite.convertArrayToSqlArray(sensors)}
-                AND m.sensors @> ${SnowPortalComposite.convertArrayToSqlArray(sensors)};`
+                AND m.sensors @> ${SnowPortalComposite.convertArrayToSqlArray(sensors)}
+                AND m.satellites <@ ${SnowPortalComposite.convertArrayToSqlArray(satellites)}
+                AND m.satellites @> ${SnowPortalComposite.convertArrayToSqlArray(satellites)};`
     }
 
     /**
@@ -407,9 +457,10 @@ class SnowPortalComposite {
      * @param tableName
      * @param date
      * @param sensors
+     * @param satellites
      * @returns {string}
      */
-    static createOneDayCompositeSql(tableName, date, sensors) {
+    static createOneDayCompositeSql(tableName, date, sensors, satellites) {
         return `
             CREATE TABLE composites.${tableName}
                 AS SELECT
@@ -425,9 +476,16 @@ class SnowPortalComposite {
                     WHERE r.extent && foo.centroid
                         AND m.date = '${date}'
                         AND s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
+                        AND s.satellite_key = ${SnowPortalComposite.convertArrayToSqlAny(satellites)}
                     GROUP BY foo.centroid;`;
     }
 
+    /**
+     * Create SQL query for unioning more one-day composites to one.
+     * @param tableName
+     * @param oneDayTables
+     * @returns {string}
+     */
     static createMultiDayCompositeSql(tableName, oneDayTables) {
         let union = oneDayTables.map(value => {
                 return `SELECT rast FROM composites.${value}`;
@@ -449,15 +507,25 @@ class SnowPortalComposite {
      * @param endDate
      * @param period
      * @param sensors
+     * @param satellites
      * @param area
      * @param usedScenes
      * @returns {string}
      */
-    static saveCompositeMetadataSql(tableName, startDate, endDate, period, sensors, area, usedScenes) {
+    static saveCompositeMetadataSql(tableName, startDate, endDate, period, sensors, satellites, area, usedScenes) {
         return `
             INSERT INTO composites.metadata
-                (key, sensors, date_start, date_end, period, area, used_scenes)
-                VALUES ('${tableName}', ${SnowPortalComposite.convertArrayToSqlArray(sensors)}, '${startDate}', '${endDate}', ${period}, '${area}', ${this.convertArrayToSqlArray(usedScenes)});`;
+                (key, sensors, satellites, date_start, date_end, period, area, used_scenes)
+                VALUES (
+                    '${tableName}',
+                    ${SnowPortalComposite.convertArrayToSqlArray(sensors)},
+                    ${SnowPortalComposite.convertArrayToSqlArray(satellites)},
+                    '${startDate}',
+                    '${endDate}',
+                    ${period},
+                    '${area}',
+                    ${this.convertArrayToSqlArray(usedScenes)}
+                );`;
     }
 
 }

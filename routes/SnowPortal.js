@@ -166,9 +166,15 @@ class SnowPortal {
         Promise.resolve().then(() => {
             let timeRangeStart = requestData.timeRange.start;
             let timeRangeEnd = requestData.timeRange.end;
-            let sensors = Object.keys(requestData.sensors);
             let period = requestData.period;
             let area = requestData.area;
+            let sensors = [];
+            let satellites = [];
+            _.each(request.body.sensors, (sensorSatellites, sensorKey) => {
+                sensors.push(sensorKey);
+                satellites = satellites.concat(sensorSatellites);
+            });
+
 
             if (isNaN(period)) {
                 throw new Error(logger.error("period is not a number"));
@@ -183,7 +189,7 @@ class SnowPortal {
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
             let compositesMetadata = [];
             _.each(compositeDates, compositeDate => {
-                let composite = new SnowPortalComposite(this._pgPool, compositeDate, null, period, sensors, this.area);
+                let composite = new SnowPortalComposite(this._pgPool, compositeDate, null, period, sensors, satellites, this.area);
                 compositesMetadata.push(composite.getMetadata());
             });
 
@@ -202,7 +208,7 @@ class SnowPortal {
 
                     let tableName = composite.key;
                     promises.push(new Promise((resolve, reject) => {
-                        let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors);
+                        let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors, satellites);
                         this._pgPool.pool().query(sql).then((results) => {
                             logger.info(`SnowPortal#getComposites ------ Composite data found`);
                             let classDistribution = {};
@@ -220,6 +226,7 @@ class SnowPortal {
                                 dateFrom: composite.date_start,
                                 period: period,
                                 sensors: sensors,
+                                satellites: satellites,
                                 aoiCoverage: 100,
                                 classDistribution: classDistribution
                             };
@@ -338,7 +345,7 @@ class SnowPortal {
             }).join(",") + "]";
     }
     
-    getCompositeDataSql(tableName, areaType, area, sensors) {
+    getCompositeDataSql(tableName, areaType, area, sensors, satellites) {
         let geometryTable;
         let geometryTableCondition;
     
@@ -362,7 +369,10 @@ class SnowPortal {
         FROM (SELECT ST_ValueCount(ST_Clip(c.rast, g.the_geom)) AS pvc
                 FROM composites."${tableName}" AS c
                     JOIN ${geometryTable} AS g ON (${geometryTableCondition})) AS foo
-            JOIN source AS s ON (s.sensor_key = ${this.convertArrayToSqlAny(sensors)})
+            JOIN source AS s ON (
+                s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
+                AND s.satellite_key = ${this.convertArrayToSqlAny(satellites)}
+            )
             JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
         WHERE l.classified_as <> 'ND'
             AND l.classified_as <> 'O'
