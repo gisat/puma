@@ -275,13 +275,6 @@ class SnowPortal {
                     name: row.name
                 }
             });
-            // TODO remove this query and options.time later
-            return this._pgPool.pool().query(`SELECT MIN(date)::varchar AS from, MAX(date)::varchar AS to FROM metadata`);
-        }).then(rows => {
-            if (!rows.rows) {
-                throw new Error(logger.error("Unable to get time from database..."));
-            }
-            options.time = rows.rows[0];
             return this._pgPool.pool().query(`
                 SELECT DISTINCT ON (m.source_id)
                     m.source_id,
@@ -305,8 +298,6 @@ class SnowPortal {
                     sensor = {
                         key: row.sensor_key,
                         name: row.sensor,
-                        from: row.from, // TODO remove
-                        to: row.to, // TODO remove
                         satellites: []
                     };
                     sensors.push(sensor);
