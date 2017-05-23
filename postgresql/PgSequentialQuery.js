@@ -18,21 +18,13 @@ class PgSequentialQuery {
 			logger.info(`AttributeController#statistics Queries: ${queries.length} Start: ${moment().format()}`);
 
 			// Split into for groups.
-			let amountInGroup = queries.length / 12;
+			let amountInGroup = queries.length / 4;
 			let multipleResults = [];
 			return Promise.all([
 				this.handleSetOfQueries(queries.slice(0, amountInGroup)),
 				this.handleSetOfQueries(queries.slice(amountInGroup, amountInGroup * 2)),
 				this.handleSetOfQueries(queries.slice(amountInGroup * 2, amountInGroup * 3)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 3, amountInGroup * 4)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 4, amountInGroup * 5)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 5, amountInGroup * 6)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 6, amountInGroup * 7)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 7, amountInGroup * 8)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 8, amountInGroup * 9)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 9, amountInGroup * 10)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 10, amountInGroup * 11)),
-				this.handleSetOfQueries(queries.slice(amountInGroup * 11, queries.length))
+				this.handleSetOfQueries(queries.slice(amountInGroup * 3, queries.length))
 			]).then(results => {
 				logger.info(`AttributeController#statistics Queries End: ${moment().format()}`);
 				results.forEach(resultSet => {
