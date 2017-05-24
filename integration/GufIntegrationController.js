@@ -209,8 +209,12 @@ class GufIntegrationController {
 	 */
 	analyse(rasterTable, administrativeUnits) {
 		let sql = `
-			UPDATE ${administrativeUnits} SET urban = (SELECT SUM(ST_Area(geography(ST_Envelope(rast))) * ST_ValueCount(rast, 255.0) / ST_Count(rast, FALSE) / 1000000 FROM ${rasterTable});
-			UPDATE ${administrativeUnits} SET non_urban = (SELECT SUM(ST_Area(geography(ST_Envelope(rast))) * 1 - (ST_ValueCount(rast, 255.0) / ST_Count(rast, FALSE)) / 1000000 FROM ${rasterTable});
+			UPDATE ${administrativeUnits}
+SET urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast))) * ST_ValueCount(rast, 255.0) /
+                                            ST_Count(rast, FALSE)) / 1000000 as sum FROM ${rasterTable}) AS subquery;
+			UPDATE ${administrativeUnits}
+SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast))) * ST_ValueCount(rast, 0.0) /
+                                            ST_Count(rast, FALSE)) / 1000000 as sum FROM ${rasterTable}) AS subquery;
 		`;
 
 		return this._pgPool.query(sql);
