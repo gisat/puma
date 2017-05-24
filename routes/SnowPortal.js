@@ -96,7 +96,7 @@ class SnowPortal {
                 /**
                  * Classes we want to see in statistics
                  */
-                if(["S", "NS", "C"].includes(row.class)) {
+                if(["S", "NS", "C", "NC"].includes(row.class)) {
                     classDistribution[row.class] = row.count;
                     visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
                 }
