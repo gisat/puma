@@ -111,7 +111,7 @@ class SnowPortal {
                 _.each(scene.classDistribution, (value, key) => {
                     scene.classDistribution[key] = 100 * (Number(value) / Number(visibleTotals[scene.key]));
                 });
-                scene.aoiCoverage *= visibleTotals[scene.key] / totals[scene.key];
+                scene.aoiCoverage *= (visibleTotals[scene.key] / totals[scene.key]) || 0;
             });
             
             return _.map(scenes, scene => {
