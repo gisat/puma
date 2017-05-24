@@ -101,7 +101,7 @@ module.exports = function(app) {
 	new TopicController(app, pool);
 	new VisualizationController(app, pool, conn.getMongoDb());
 	new YearController(app, pool);
-	new IntegrationController(app, pool, conn.getMongoDb());
+	new IntegrationController(app, pool, conn.getMongoDb(),'public','views',config.postgreSqlSchema);
 
 	new PrintController(app);
 	new MellodiesWpsController(app, pool);
