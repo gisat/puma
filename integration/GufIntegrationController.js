@@ -109,7 +109,7 @@ class GufIntegrationController {
 
 			// Add columns with the statistical information to the administrative unit table.
 			// Also delete the information
-			return this.analyse(administrativeUnitTable, rasterLayerTable);
+			return this.analyse(rasterLayerTable, administrativeUnitTable);
 		}).then(() => {
 			process.status("Processing", logger.info("integration#process Retrieving information about scope or creating it.", 52));
 			processes.store(process);
