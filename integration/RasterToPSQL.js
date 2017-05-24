@@ -39,9 +39,9 @@ RasterToPSQL.prototype.process = function(){
 			command += " " + tableName; // result table name
 			command += " | ";
 			command += " PGPASSWORD=" + config.pgDataPassword;
-			command += "psql -h " + config.pgDataHost;
-			command += "-p " + config.pgDataPort;
-			command += "-U " + config.pgDataUser + " " + config.pgDataDatabase;
+			command += " psql -h " + config.pgDataHost;
+			command += " -p " + config.pgDataPort;
+			command += " -U " + config.pgDataUser + " " + config.pgDataDatabase;
 
 			logger.info("RasterToPSQL#process, running raster2psql command: ", command);
 			cp.exec(command, {maxBuffer: 1024 * 1024 * 100}, function(err, stdout, stderr) {
