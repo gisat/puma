@@ -83,7 +83,7 @@ class GufIntegrationController {
 		});
 		processes.store(process);
 
-		let administrativeUnitTable = `${this._sourceSchema}.${id}`;
+		let administrativeUnitTable = `${this._sourceSchema}.au${id}`;
 		let information, place;
 		let user = request.session.user;
 		var rasterLayerTable, boundingBox, url;
