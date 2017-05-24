@@ -24,7 +24,7 @@ class SsoAuthentication {
 	 * @returns {Promise}
 	 */
 	authenticate(request, response) {
-		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email'], ' Remote: ', request.headers['REMOTE_USER']);
+		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email'], ' Remote: ', request.headers['REMOTE_USER'], ' ', request.headers);
 
 		if((request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') || (request.headers['REMOTE_USER'] && request.headers['REMOTE_USER'] != '')) {
 			var email = request.headers['umsso-person-email'] || request.headers['REMOTE_USER'];
