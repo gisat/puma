@@ -77,6 +77,7 @@ class AttributeController extends Controller {
 	/**
      * It returns amount of areas which satisfy all limitations passed as the part of the result. There is always only one
      * number. If there is issue 500 is returned.
+     * The sql here doesnt need geometry.
 	 * @param request
 	 * @param response
 	 */

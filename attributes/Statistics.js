@@ -33,7 +33,7 @@ class Statistics {
 		let queries = baseLayers
 			.filter(baseLayer => baseLayer.queriedColumns.length > 0)
 			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`);
+                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`);
 
 		return new PgSequentialQuery(this._pgPool).query(queries);
     }
