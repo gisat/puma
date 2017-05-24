@@ -116,7 +116,7 @@ class AttributeController extends Controller {
             attributesMap: attributesMap,
             areaTemplate: Number(params.areaTemplate),
             periods: params.periods.map(period => Number(period)),
-            places: params.places.map(place => Number(place))
+            places: params.places && params.places.map(place => Number(place)) || []
         };
     }
 
