@@ -17,6 +17,7 @@ let PgWmsLayers = require('../layers/wms/PgWmsLayers');
 let IntegrationScope = require('./IntegrationScope');
 let PgPermissions = require('../security/PgPermissions');
 let Permission = require('../security/Permission');
+let MongoLocation = require('../metadata/MongoLocation');
 let MongoLocations = require('../metadata/MongoLocations');
 let MongoScope = require('../metadata/MongoScope');
 let MongoLayerReference = require('../layers/MongoLayerReference');
@@ -237,9 +238,9 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 			"dataset": scope
 		}).then(() => {
 			return Promise.all([
-				this._permissions.add(user.id, MongoScope.collectionName(), id, Permission.READ),
-				this._permissions.add(user.id, MongoScope.collectionName(), id, Permission.UPDATE),
-				this._permissions.add(user.id, MongoScope.collectionName(), id, Permission.DELETE)
+				this._permissions.add(user.id, MongoLocation.collectionName(), id, Permission.READ),
+				this._permissions.add(user.id, MongoLocation.collectionName(), id, Permission.UPDATE),
+				this._permissions.add(user.id, MongoLocation.collectionName(), id, Permission.DELETE)
 			]);
 		}).then(() => {
 			return id;

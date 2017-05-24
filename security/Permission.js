@@ -4,7 +4,7 @@
  */
 module.exports = {
 	CREATE: 'POST',
-	UPDATE: 'UPDATE',
+	UPDATE: 'PUT',
 	DELETE: 'DELETE',
 	READ: 'GET'
 };
