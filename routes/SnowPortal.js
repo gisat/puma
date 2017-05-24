@@ -78,6 +78,7 @@ class SnowPortal {
 
         this._pgPool.pool().query(sql).then(results => {
             let totals = {};
+            let visibleTotals = {};
             let scenes = {};
             
             _.each(results.rows, row => {
@@ -89,22 +90,26 @@ class SnowPortal {
                 scene.sensor = row.sensor;
                 scene.date = row.date;
                 scene.aoiCoverage = row.coverage;
-    
-                classDistribution[row.class] = row.count;
-    
-                let total = Number(totals[scene.key]) || 0;
-                total += Number(row.count);
-                totals[scene.key] = total;
-                
+
+                totals[scene.key] = totals[scene.key] + Number(row.count) || Number(row.count);
+
+                /**
+                 * Classes we want to see in statistics
+                 */
+                if(["S", "NS", "C"].includes(row.class)) {
+                    classDistribution[row.class] = row.count;
+                    visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
+                }
                 scene.classDistribution = classDistribution;
-                
+
                 scenes[row.key] = scene;
             });
-            
+
             _.each(scenes, scene => {
                 _.each(scene.classDistribution, (value, key) => {
-                    scene.classDistribution[key] = 100 * (Number(value) / Number(totals[scene.key]));
+                    scene.classDistribution[key] = 100 * (Number(value) / Number(visibleTotals[scene.key]));
                 });
+                scene.aoiCoverage *= visibleTotals[scene.key] / totals[scene.key];
             });
             
             return _.map(scenes, scene => {
@@ -199,9 +204,6 @@ class SnowPortal {
                  * Get composites data and compute statistics
                  * TODO - this can be moved to the SnowPortalComposite class
                  */
-                logger.info(`ITERATING comp met dat:`);
-                console.log(metadata);
-
 
                 let promises = [];
 
@@ -231,7 +233,7 @@ class SnowPortal {
                                 aoiCoverage: 100,
                                 classDistribution: classDistribution
                             };
-                            console.log(dataToResolve);
+                            logger.info(`SnowPortal#getComposites ------ dataToResolve: ${dataToResolve}`);
 
                             resolve(dataToResolve);
                         }).catch(error => {
@@ -449,9 +451,6 @@ class SnowPortal {
                     INNER JOIN metadata AS m2 ON m2.filename = t.filename
                 WHERE s2.aoi_coverage > 0) AS foo
             INNER JOIN legend AS l ON l.source_id = foo.source AND (foo.pvc).value BETWEEN l.value_from AND l.value_to
-            WHERE l.classified_as <> 'ND'
-                AND l.classified_as <> 'O'
-                AND l.classified_as <> 'N'
         GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
 
