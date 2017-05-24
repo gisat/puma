@@ -28,7 +28,6 @@ RasterToPSQL.prototype.process = function(){
 	var self = this;
 	return new Promise(function(resolve, reject){
 		var name = path.parse(self.rasterFileLocation).name;
-		var sqlFilePath = path.join(config.temporaryDownloadedFilesLocation, name + ".sql");
 
 		getTableName(self.psqlDB, name).then(function(tableName){
 			var command = "raster2pgsql";
@@ -50,10 +49,7 @@ RasterToPSQL.prototype.process = function(){
 					reject(err);
 				}
 				logger.info("RasterToPSQL#process raster2sql stderr:\n", stderr, "\n");
-				resolve({
-					sqlFilePath: sqlFilePath,
-					rasterTableName: tableName
-				});
+				resolve(tableName);
 			});
 		});
 	});
