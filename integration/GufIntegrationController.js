@@ -135,7 +135,7 @@ class GufIntegrationController {
 			process.status("Processing", logger.info("integration#process Creating references.", 91));
 			processes.store(process);
 
-			return this.createLayerRefs(id, place, information.year, information.areaTemplate, information.attributeSet,
+			return this.createLayerRefs('au'+id, place, information.year, information.areaTemplate, information.attributeSet,
 				information.attributes.urban, information.attributes.nonUrban);
 		}).then(() => {
 			process.status("Processing", logger.info("integration#process Creating data view.", 98));
