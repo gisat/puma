@@ -115,7 +115,7 @@ class GufIntegrationController {
 			processes.store(process);
 
 			// Create new Location with the right access rights only to current user
-			return new IntegrationScope(this._mongo, this._pgPool, this._dataSchema, 'Global Urban Footprint', 2015).json();
+			return new IntegrationScope(this._mongo, this._pgPool, this._dataSchema, request.session.user, 'Global Urban Footprint', 2015).json();
 		}).then((pInformation) => {
 			information = pInformation;
 
