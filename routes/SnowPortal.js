@@ -23,6 +23,8 @@ class SnowPortal {
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
 
         this.area = 'europe'; // TODO set dynamicaly?
+
+        this.visibleClasses = ["S", "NS", "C", "NC"];
     }
 
     getCompositesMetadata(request, response) {
@@ -96,7 +98,7 @@ class SnowPortal {
                 /**
                  * Classes we want to see in statistics
                  */
-                if(["S", "NS", "C", "NC"].includes(row.class)) {
+                if(this.visibleClasses.includes(row.class)) {
                     classDistribution[row.class] = row.count;
                     visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
                 }
@@ -213,15 +215,26 @@ class SnowPortal {
                     promises.push(new Promise((resolve, reject) => {
                         let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors, satellites);
                         this._pgPool.pool().query(sql).then((results) => {
-                            logger.info(`SnowPortal#getComposites ------ Composite data found`);
                             let classDistribution = {};
                             let total = 0;
+                            let visibleTotal = 0;
                             _.each(results.rows, row => {
-                                classDistribution[row.class] = row.count;
+
+                                /**
+                                 * For classes we want to see in statistics
+                                 */
+                                if(this.visibleClasses.includes(row.class)) {
+                                    visibleTotal += Number(row.count);
+                                    classDistribution[row.class] = null;
+                                }
+
                                 total += Number(row.count);
+
                             });
                             _.each(results.rows, row => {
-                                classDistribution[row.class] = (row.count / total) * 100;
+                                if(this.visibleClasses.includes(row.class)) {
+                                    classDistribution[row.class] = (row.count / visibleTotal) * 100;
+                                }
                             });
 
                             let dataToResolve = {
@@ -230,11 +243,12 @@ class SnowPortal {
                                 period: period,
                                 sensors: sensors,
                                 satellites: satellites,
-                                aoiCoverage: 100,
+                                aoiCoverage: 100 * (visibleTotal / total),
                                 classDistribution: classDistribution
                             };
-                            logger.info(`SnowPortal#getComposites ------ dataToResolve: ${dataToResolve}`);
 
+                            logger.info(`SnowPortal#getComposites ------ Composite statistical data to resolve:`);
+                            console.log(dataToResolve);
                             resolve(dataToResolve);
                         }).catch(error => {
                             reject(new Error(logger.error(`SnowPortal#getComposites ------ Composites Statistics Error: ${error.message} | ${error}`)));
@@ -377,9 +391,6 @@ class SnowPortal {
                 AND s.satellite_key = ${this.convertArrayToSqlAny(satellites)}
             )
             JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
-        WHERE l.classified_as <> 'ND'
-            AND l.classified_as <> 'O'
-            AND l.classified_as <> 'N'
         GROUP BY class;`;
     }
     
