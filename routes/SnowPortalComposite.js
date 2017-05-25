@@ -298,8 +298,8 @@ class SnowPortalComposite {
                 superagent
                     .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
                     .timeout({
-                        response: 15000,  // Wait 5 seconds for the server to start sending,
-                        deadline: 300000, // but allow 1 minute for the file to finish loading.
+                        response: 300000,  // Wait 5 seconds for the server to start sending,
+                        deadline: 600000, // but allow 1 minute for the file to finish loading.
                     })
                     .then(res => {
                     logger.info(`SnowPortalComposite#create ------ updatelayers finished with result:`);
