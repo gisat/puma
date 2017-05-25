@@ -294,25 +294,20 @@ class SnowPortalComposite {
              * TODO for Windows?
              */
             logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
-            return  new Promise((resolve, reject) => {
-                superagent
-                    .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
-                    .timeout({
-                        response: 300000,  // Wait 5 seconds for the server to start sending,
-                        deadline: 600000, // but allow 1 minute for the file to finish loading.
-                    })
-                    .then(res => {
+            superagent
+                .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
+                .timeout({
+                    response: 1800000,  // Wait 5 seconds for the server to start sending,
+                    deadline: 3600000, // but allow 1 minute for the file to finish loading.
+                })
+                .then(res => {
                     logger.info(`SnowPortalComposite#create ------ updatelayers finished with result:`);
-                    console.log(res);
-                    if(res.status == 200) {
-                        resolve(res.text);
-                    } else {
-                        reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${res.status}: ${res.text}`)));
+                    if(res.status !== 200) {
+                        new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${res.status}: ${res.text}`));
                     }
                 }).catch(error => {
-                    reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error)));
+                    new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error));
                 });
-            });
 
         }).then(() => {
             /**
