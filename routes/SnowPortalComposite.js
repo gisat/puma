@@ -303,6 +303,8 @@ class SnowPortalComposite {
                     } else {
                         reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${res.status}: ${res.text}`)));
                     }
+                }).catch(error => {
+                    reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error)));
                 });
             });
 
