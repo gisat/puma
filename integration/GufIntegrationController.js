@@ -25,6 +25,8 @@ let MongoLayerReferences = require('../layers/MongoLayerReferences');
 
 let PgLayerViews = require('../layers/PgLayerViews');
 let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
+let GeoServerImporter = require('../layers/GeoServerImporter');
+let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
 
 let fs = require('fs');
 let geotiff = require('geotiff');
@@ -117,6 +119,12 @@ class GufIntegrationController {
 
 			// Create new Location with the right access rights only to current user
 			return new IntegrationScope(this._mongo, this._pgPool, this._dataSchema, request.session.user, 'Global Urban Footprint', 2015).json();
+		}).then(() => {
+			process.status("Processing", logger.info("integration#process Publishing layers in GeoServer and GeoNode.", 52));
+			processes.store(process);
+
+			// Create new publish layers.
+			return this.publishLayer('au' + id);
 		}).then((pInformation) => {
 			information = pInformation;
 
@@ -136,13 +144,7 @@ class GufIntegrationController {
 			process.status("Processing", logger.info("integration#process Creating references.", 91));
 			processes.store(process);
 
-			return this.createLayerRefs('au'+id, place, information.year, information.areaTemplate, information.attributeSet,
-				information.attributes.urban, information.attributes.nonUrban);
-		}).then(() => {
-			process.status("Processing", logger.info("integration#process Creating references for parent area template.", 91));
-			processes.store(process);
-
-			return this.createLayerRefs('au'+id, place, information.year, information.parentAreaTemplate, information.attributeSet,
+			return this.createLayerRefs('au' + id, place, information.year, information.areaTemplate, information.attributeSet,
 				information.attributes.urban, information.attributes.nonUrban);
 		}).then(() => {
 			process.status("Processing", logger.info("integration#process Creating data view.", 98));
@@ -229,6 +231,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 
 	/**
 	 * It creates new location for given scope. It also adds relevant permissions.
+	 * @param user
 	 * @param boundingBox {String} Standard Bounding Box usable in the FO.
 	 * @param scope {Number} Id of the scope this place belongs to.
 	 * @returns {*|Promise.<TResult>}
@@ -268,7 +271,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 			// Make sure that the user has permissions towards these layers.
 			let promises = [];
 			layers.forEach(layer => {
-				if(!user.hasPermission('custom_wms', Permission.READ, layer.id)){
+				if (!user.hasPermission('custom_wms', Permission.READ, layer.id)) {
 					promises.push(this._permissions.add(user.id, 'custom_wms', layer.id, Permission.READ));
 				}
 			});
@@ -336,6 +339,43 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	createDataView() {
 		// TODO: create correct data view.
 		return null;
+	}
+
+	/**
+	 *
+	 * @param analyticalUnitsLayer
+	 */
+	publishLayer(analyticalUnitsLayer) {
+		return this.getPublicWorkspaceSchema().then((publicWorkspaceSchema) => {
+			// todo get datastore from configuration
+			let geoServerImporter = new GeoServerImporter(
+				config.geoserverHost + config.geoserverPath,
+				config.geoserverUsername,
+				config.geoserverPassword,
+				publicWorkspaceSchema.workspace,
+				config.geoServerDataStore
+			);
+			return geoServerImporter.importLayer(analyticalUnitsLayer);
+		}).then(() => {
+			let geonodeUpdateLayers = new GeonodeUpdateLayers();
+			return geonodeUpdateLayers.filtered({layer: analyticalUnitsLayer});
+		});
+	}
+
+	/**
+	 * Return object with public workspace and schema based on config
+	 */
+	getPublicWorkspaceSchema() {
+		return Promise.resolve().then(() => {
+			let workspaceSchema = {};
+			_.each(config.workspaceSchemaMap, (schema, workspace) => {
+				if (schema === "public" && !workspaceSchema.schema && !workspaceSchema.workspace) {
+					workspaceSchema.schema = schema;
+					workspaceSchema.workspace = workspace;
+				}
+			});
+			return workspaceSchema;
+		});
 	}
 
 	status(request, response) {
