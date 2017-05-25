@@ -29,6 +29,8 @@ class ExportController {
         app.get('/drawingexport/shapefile', this.drawing2shapefile.bind(this));
         app.get('/drawingexport/xls', this.drawing2xls.bind(this));
 
+        app.post('/export/composites/xls', this.composites2xls.bind(this));
+
         this._wgs84 = {
             name: "WGS84",
             projDef: "WGS84",
@@ -44,6 +46,17 @@ class ExportController {
             sourceCRSProjDef: this._webMercator.projDef,
             targetCRSProjDef: this._wgs84.projDef
         });
+    }
+
+    composites2xls(request, response, next){
+        let json = JSON.parse(request.body.records);
+        logger.error(`ExportController#composites2xls Records: `, json.length);
+        json.data.map(rec => {
+           rec.area = json.area;
+           rec.period = json.period;
+        });
+
+        this.prepareXlsExport(response, json.data);
     }
 
     /**
