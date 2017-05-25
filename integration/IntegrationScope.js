@@ -85,6 +85,16 @@ class IntegrationScope {
 				"topic": null
 			})
 		}).then(() => {
+			return this._layerTemplates.add({
+				"_id": conn.getNextId(),
+				"active": true,
+				"layerType": "au",
+				"name": this._administrativeUnit,
+				"symbologies": [],
+				"layerGroup": null,
+				"topic": null
+			})
+		}).then(() => {
 			return this._scopes.add({
 				"_id": scopeId,
 				"active": true,
