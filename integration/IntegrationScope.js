@@ -64,6 +64,7 @@ class IntegrationScope {
 		let scopeId = conn.getNextId();
 		let periodId = conn.getNextId();
 		let areaTemplateId = conn.getNextId();
+		let parentAreaTemplateId = conn.getNextId();
 		let attributeSetId = conn.getNextId();
 		let topicId = conn.getNextId();
 		let urbanAttributeId = conn.getNextId();
@@ -86,7 +87,7 @@ class IntegrationScope {
 			})
 		}).then(() => {
 			return this._layerTemplates.add({
-				"_id": conn.getNextId(),
+				"_id": parentAreaTemplateId,
 				"active": true,
 				"layerType": "au",
 				"name": this._administrativeUnit,
@@ -99,7 +100,7 @@ class IntegrationScope {
 				"_id": scopeId,
 				"active": true,
 				"name": this._scope,
-				"featureLayers": [areaTemplateId],
+				"featureLayers": [parentAreaTemplateId, areaTemplateId],
 				"years": [periodId]
 			})
 		}).then(() => {
@@ -160,6 +161,7 @@ class IntegrationScope {
 				scope: scopeId,
 				period: periodId,
 				areaTemplate: areaTemplateId,
+				parentAreaTemplate: parentAreaTemplateId,
 				attributeSet: attributeSetId,
 				attributes: {
 					urban: urbanAttributeId,

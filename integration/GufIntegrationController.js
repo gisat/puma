@@ -139,6 +139,12 @@ class GufIntegrationController {
 			return this.createLayerRefs('au'+id, place, information.year, information.areaTemplate, information.attributeSet,
 				information.attributes.urban, information.attributes.nonUrban);
 		}).then(() => {
+			process.status("Processing", logger.info("integration#process Creating references for parent area template.", 91));
+			processes.store(process);
+
+			return this.createLayerRefs('au'+id, place, information.year, information.parentAreaTemplate, information.attributeSet,
+				information.attributes.urban, information.attributes.nonUrban);
+		}).then(() => {
 			process.status("Processing", logger.info("integration#process Creating data view.", 98));
 			processes.store(process);
 
