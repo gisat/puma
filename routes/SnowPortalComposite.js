@@ -295,7 +295,13 @@ class SnowPortalComposite {
              */
             logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
             return  new Promise((resolve, reject) => {
-                superagent.get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`).then(res => {
+                superagent
+                    .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
+                    .timeout({
+                        response: 15000,  // Wait 5 seconds for the server to start sending,
+                        deadline: 300000, // but allow 1 minute for the file to finish loading.
+                    })
+                    .then(res => {
                     logger.info(`SnowPortalComposite#create ------ updatelayers finished with result:`);
                     console.log(res);
                     if(res.status == 200) {
