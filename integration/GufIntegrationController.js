@@ -255,6 +255,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 */
 	addCustomWms(user, scope, place) {
 		// Load layers in the scope.
+		// TODO: If the scope was created, then it is necessary to add custom wms layer and permissions to it.
 		let layers;
 		this._wmsLayers.filtered(scope, null, null).then(pLayers => {
 			layers = pLayers;
