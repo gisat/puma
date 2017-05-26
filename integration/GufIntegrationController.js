@@ -25,8 +25,9 @@ let MongoLayerReferences = require('../layers/MongoLayerReferences');
 
 let PgLayerViews = require('../layers/PgLayerViews');
 let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
-let GeoServerImporter = require('../layers/GeoServerImporter');
+let GeoServerLayers = require('../layers/GeoServerLayers');
 let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
+let RestLayer = require('../layers/RestLayer');
 
 let fs = require('fs');
 let geotiff = require('geotiff');
@@ -348,14 +349,12 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	publishLayer(analyticalUnitsLayer) {
 		return this.getPublicWorkspaceSchema().then((publicWorkspaceSchema) => {
 			// todo get datastore from configuration
-			let geoServerImporter = new GeoServerImporter(
+			let geoServerImporter = new GeoServerLayers(
 				config.geoserverHost + config.geoserverPath,
 				config.geoserverUsername,
-				config.geoserverPassword,
-				publicWorkspaceSchema.workspace,
-				config.geoServerDataStore
+				config.geoserverPassword
 			);
-			return geoServerImporter.importLayer(analyticalUnitsLayer);
+			return geoServerImporter.create(new RestLayer(analyticalUnitsLayer, publicWorkspaceSchema.workspace, config.geoServerDataStore));
 		}).then(() => {
 			let geonodeUpdateLayers = new GeonodeUpdateLayers();
 			return geonodeUpdateLayers.filtered({layer: analyticalUnitsLayer});
