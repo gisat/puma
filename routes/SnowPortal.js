@@ -245,7 +245,7 @@ class SnowPortal {
                                 period: period,
                                 sensors: sensors,
                                 satellites: satellites,
-                                aoiCoverage: aoiCoverage,
+                                aoiCoverage: aoiCoverage * (visibleTotal / total),
                                 classDistribution: classDistribution
                             };
 
