@@ -293,21 +293,25 @@ class SnowPortalComposite {
              * Publish GeoTiff in GeoNode
              * TODO for Windows?
              */
-            logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
-            superagent
-                .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
-                .timeout({
-                    response: 1800000,  // Wait 5 seconds for the server to start sending,
-                    deadline: 3600000, // but allow 1 minute for the file to finish loading.
-                })
-                .then(res => {
-                    logger.info(`SnowPortalComposite#create ------ updatelayers finished with result:`);
-                    if(res.status !== 200) {
-                        new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${res.status}: ${res.text}`));
-                    }
-                }).catch(error => {
-                    new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error));
-                });
+
+            /**
+             * TODO fix socket hang up error
+             */
+            // logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
+            // superagent
+            //     .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
+            //     .timeout({
+            //         response: 1800000,
+            //         deadline: 3600000
+            //     })
+            //     .then(res => {
+            //         logger.info(`SnowPortalComposite#create ------ updatelayers finished with result:`);
+            //         if(res.status !== 200) {
+            //             new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${res.status}: ${res.text}`));
+            //         }
+            //     }).catch(error => {
+            //         new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error));
+            //     });
 
         }).then(() => {
             /**
