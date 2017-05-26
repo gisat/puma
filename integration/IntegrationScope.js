@@ -89,7 +89,7 @@ class IntegrationScope {
 				"_id": scopeId,
 				"active": true,
 				"name": this._scope,
-				"featureLayers": [parentAreaTemplateId, areaTemplateId],
+				"featureLayers": [areaTemplateId],
 				"years": [periodId]
 			})
 		}).then(() => {
@@ -150,7 +150,6 @@ class IntegrationScope {
 				scope: scopeId,
 				period: periodId,
 				areaTemplate: areaTemplateId,
-				parentAreaTemplate: parentAreaTemplateId,
 				attributeSet: attributeSetId,
 				attributes: {
 					urban: urbanAttributeId,
