@@ -65,11 +65,13 @@ class GeoServerLayers {
 			dataStoreName = name;
 			return layer.name();
 		}).then(function(layerName){
-			return {
+			let result = {
 				workspaceName: workspaceName,
 				dataStoreName: dataStoreName,
 				layerName: layerName
-			}
+			};
+			logger.info(`GeoServerLayers#getNames Results: `, result);
+			return result;
 		}).catch(function(error){
 			throw new Error(
 				logger.error('GeoServerLayers#getNames Error: ', error)
