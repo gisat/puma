@@ -145,8 +145,10 @@ class SnowPortal {
             if (processes[requestHash].data) {
                 responseObject.data = processes[requestHash].data;
                 responseObject.success = true;
-            } else if (processes[requestHash].error) {
-                responseObject.message = processes[requestHash].error;
+            } else if (processes[requestHash].error || processes[requestHash].ended) {
+                logger.error(`SnowPortal#getComposites ended ${processes[requestHash].ended} Error:`);
+                logger.error(processes[requestHash].error);
+                responseObject.message = processes[requestHash].error.message || processes[requestHash].error;
                 responseObject.success = false;
             } else {
                 responseObject.ticket = requestHash;
@@ -272,9 +274,9 @@ class SnowPortal {
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
         }).catch(error => {
-            logger.error(`SnowPortal#getComposites ------ get process data FAILED: ${error}`);
+            logger.error(`SnowPortal#getComposites ------ get process data FAILED: ${error.message || error}`);
             processes[requestHash].ended = Date.now();
-            processes[requestHash].error = error.message;
+            processes[requestHash].error = error;
         });
 
         response.send({
