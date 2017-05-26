@@ -35,7 +35,7 @@ class SnowPortal {
             response.status(500).json({status: "err"});
         });
     }
-    
+
     getScenes(request, response) {
         let areaType = request.body.area.type;
         let area = request.body.area.value;
@@ -43,10 +43,10 @@ class SnowPortal {
         let timeRangeEnd = request.body.timeRange.end;
         let sensors = [];
         let satellites = [];
-    
+
         let requestData = request.body;
         let requestHash = hash(requestData);
-    
+
         if (processes[requestHash]) {
             let responseObject = {};
             if (processes[requestHash].data) {
@@ -70,23 +70,23 @@ class SnowPortal {
                 error: null
             };
         }
-        
+
         _.each(request.body.sensors, (sensorSatellites, sensorKey) => {
             sensors.push(sensorKey);
             satellites = satellites.concat(sensorSatellites);
         });
-        
+
         let sql = this.getScenesDataSql(areaType, area, sensors, satellites, timeRangeStart, timeRangeEnd);
 
         this._pgPool.pool().query(sql).then(results => {
             let totals = {};
             let visibleTotals = {};
             let scenes = {};
-            
+
             _.each(results.rows, row => {
                 let scene = scenes[row.key] || {};
                 let classDistribution = scene.classDistribution || {};
-                
+
                 scene.key = row.key;
                 scene.satellite = row.satellite;
                 scene.sensor = row.sensor;
@@ -98,7 +98,7 @@ class SnowPortal {
                 /**
                  * Classes we want to see in statistics
                  */
-                if(this.visibleClasses.includes(row.class)) {
+                if (this.visibleClasses.includes(row.class)) {
                     classDistribution[row.class] = row.count;
                     visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
                 }
@@ -113,7 +113,7 @@ class SnowPortal {
                 });
                 scene.aoiCoverage *= (visibleTotals[scene.key] / totals[scene.key]) || 0;
             });
-            
+
             return _.map(scenes, scene => {
                 return scene;
             });
@@ -124,14 +124,14 @@ class SnowPortal {
             processes[requestHash].ended = Date.now();
             processes[requestHash].error = error.message;
         });
-    
+
         response.send({
             ticket: requestHash,
             success: true
         });
     }
-    
-    
+
+
     getComposites(request, response) {
         let requestData = request.body;
         let requestHash = hash(requestData);
@@ -218,21 +218,23 @@ class SnowPortal {
                             let classDistribution = {};
                             let total = 0;
                             let visibleTotal = 0;
+                            let aoiCoverage = 0;
                             _.each(results.rows, row => {
 
                                 /**
                                  * For classes we want to see in statistics
                                  */
-                                if(this.visibleClasses.includes(row.class)) {
+                                if (this.visibleClasses.includes(row.class)) {
                                     visibleTotal += Number(row.count);
                                     classDistribution[row.class] = null;
+                                    aoiCoverage = row.aoi;
                                 }
 
                                 total += Number(row.count);
 
                             });
                             _.each(results.rows, row => {
-                                if(this.visibleClasses.includes(row.class)) {
+                                if (this.visibleClasses.includes(row.class)) {
                                     classDistribution[row.class] = (row.count / visibleTotal) * 100;
                                 }
                             });
@@ -243,7 +245,7 @@ class SnowPortal {
                                 period: period,
                                 sensors: sensors,
                                 satellites: satellites,
-                                aoiCoverage: 100 * (visibleTotal / total),
+                                aoiCoverage: aoiCoverage,
                                 classDistribution: classDistribution
                             };
 
@@ -274,13 +276,13 @@ class SnowPortal {
             processes[requestHash].ended = Date.now();
             processes[requestHash].error = error.message;
         });
-        
+
         response.send({
             ticket: requestHash,
             success: true
         });
     }
-    
+
     /**
      * Return scope options based on existing data
      * @param request
@@ -288,7 +290,7 @@ class SnowPortal {
      */
     getScopeOptions(request, response) {
         let options = {};
-        
+
         this._pgPool.pool().query(`SELECT DISTINCT "NAME" as name, "KEY" as key FROM areas ORDER BY "NAME"`).then(rows => {
             if (!rows.rows) {
                 throw new Error(logger.error("Unable to get areas from database..."));
@@ -349,23 +351,23 @@ class SnowPortal {
             });
         });
     }
-    
+
     convertArrayToSqlAny(array) {
         return "ANY (ARRAY [" + array.map(function (value) {
                 return '\'' + value + '\'';
             }).join(",") + "] :: VARCHAR [])";
     }
-    
+
     convertArrayToSqlArray(array) {
         return "ARRAY [" + array.map(function (value) {
                 return '\'' + value + '\'';
             }).join(",") + "]";
     }
-    
+
     getCompositeDataSql(tableName, areaType, area, sensors, satellites) {
         let geometryTable;
         let geometryTableCondition;
-    
+
         switch (areaType) {
             case "key":
                 geometryTable = "areas";
@@ -378,12 +380,16 @@ class SnowPortal {
             default:
                 return null;
         }
-    
+
         return `
         SELECT
             l.classified_as      AS class,
-            sum((foo.pvc).count) AS count
-        FROM (SELECT ST_ValueCount(ST_Clip(c.rast, g.the_geom)) AS pvc
+            sum((foo.pvc).count) AS count,
+            avg(foo.aoi_coverage) AS aoi
+        FROM (
+            SELECT ST_ValueCount(ST_Clip(c.rast, g.the_geom)) AS pvc,
+            100 * (st_area(ST_MinConvexHull(ST_Clip(c.rast, g.the_geom))) /
+                            st_area(g.the_geom)) AS aoi_coverage
                 FROM composites."${tableName}" AS c
                     JOIN ${geometryTable} AS g ON (${geometryTableCondition})) AS foo
             JOIN source AS s ON (
@@ -393,11 +399,11 @@ class SnowPortal {
             JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
         GROUP BY class;`;
     }
-    
+
     getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
         let geometryTable;
         let geometryTableCondition;
-        
+
         switch (areaType) {
             case "key":
                 geometryTable = "areas";
@@ -410,10 +416,10 @@ class SnowPortal {
             default:
                 return null;
         }
-        
+
         let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
         let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
-        
+
         return `
         WITH scenes AS (SELECT
                             m.filename,
