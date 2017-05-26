@@ -2,6 +2,7 @@ var Promise = require('promise');
 
 var GeoServerWorkspace = require('./GeoServerWorkspace');
 var GeoServerDataStore = require('./GeoServerDataStore');
+let RestDataStore = require('./RestDataStore');
 let RestWorkspace = require('./RestWorkspace');
 
 class RestLayer {
@@ -17,7 +18,7 @@ class RestLayer {
 	}
 
 	dataStore() {
-		return Promise.resolve(this._dataStore);
+		return Promise.resolve(new RestDataStore(this._dataStore));
 	}
 
 	name() {
