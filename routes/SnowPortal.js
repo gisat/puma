@@ -395,7 +395,7 @@ class SnowPortal {
           (SELECT st_area(st_union(st_polygon(st_clip(composite.rast, g.the_geom)))) AS area
            FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
                ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_area,
-          (SELECT st_area(st_union(areas.the_geom)) AS area
+          (SELECT st_area(st_union(g.the_geom)) AS area
            FROM ${geometryTable} AS g
            WHERE ${geometryTableCondition}) AS total_area
           INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
