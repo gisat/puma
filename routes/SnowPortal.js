@@ -385,23 +385,28 @@ class SnowPortal {
 
         return `
         SELECT
-          l.classified_as                                          AS class,
-          sum((clipped_raster_data.pvc).count)               AS count,
-          max(100 * (clipped_raster_area.area / total_area.area)) AS aoi
-        FROM
-          (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
-           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
-               ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
-          (SELECT st_area(st_union(st_polygon(st_clip(composite.rast, g.the_geom)))) AS area
-           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
-               ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_area,
-          (SELECT st_area(st_union(g.the_geom)) AS area
-           FROM ${geometryTable} AS g
-           WHERE ${geometryTableCondition}) AS total_area
+          l.classified_as AS class,
+          sum(foo.count)  AS count,
+          max(foo.aoi)    AS aoi
+        FROM (
+            SELECT
+              l.classified_as                                          AS class,
+              sum((clipped_raster_data.pvc).count)               AS count,
+              max(100 * (clipped_raster_area.area / total_area.area)) AS aoi
+            FROM
+              (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
+               FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
+                   ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
+              (SELECT st_area(st_union(st_polygon(st_clip(composite.rast, g.the_geom)))) AS area
+               FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
+                   ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_area,
+              (SELECT st_area(st_union(g.the_geom)) AS area
+               FROM ${geometryTable} AS g
+               WHERE ${geometryTableCondition}) AS total_area
+            GROUP BY class) AS foo
           INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
-          INNER JOIN legend AS l ON l.source_id = s.id AND (clipped_raster_data.pvc).value BETWEEN l.value_from AND l.value_to
-        GROUP BY class
-        ORDER BY class;
+          INNER JOIN legend AS l ON l.source_id = s.id AND foo.class BETWEEN l.value_from AND l.value_to
+        GROUP BY l.classified_as;
         `
     }
 
