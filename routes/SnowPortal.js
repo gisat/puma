@@ -386,21 +386,23 @@ class SnowPortal {
         return `
         SELECT
           l.classified_as                                          AS class,
-          (raster_data.pvc).count                                  AS count,
-          100 * (raster_data.raster_area / raster_data.total_area) AS aoi
-        FROM (SELECT
-                st_valuecount(raster_clip.rast)       AS pvc,
-                st_area(st_polygon(raster_clip.rast)) AS raster_area,
-                raster_clip.total_area                AS total_area
-              FROM (SELECT
-                      st_clip(r.rast, g.the_geom) AS rast,
-                      st_area(g.the_geom)         AS total_area
-                    FROM composites.${tableName} AS r
-                      INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}) AS raster_clip) AS raster_data
+          sum((clipped_raster_data.pvc).count)               AS count,
+          max(100 * (clipped_raster_area.area / total_area.area)) AS aoi
+        FROM
+          (SELECT st_valuecount(st_clip(composite.rast, areas.the_geom)) AS pvc
+           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS areas
+               ON ${geometryTableCondition} AND st_intersects(areas.the_geom, composite.rast)) AS clipped_raster_data,
+          (SELECT st_area(st_union(st_polygon(st_clip(composite.rast, areas.the_geom)))) AS area
+           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS areas
+               ON ${geometryTableCondition} AND st_intersects(areas.the_geom, composite.rast)) AS clipped_raster_area,
+          (SELECT st_area(st_union(areas.the_geom)) AS area
+           FROM ${geometryTable} AS areas
+           WHERE ${geometryTableCondition}) AS total_area
           INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
-          INNER JOIN legend AS l ON l.source_id = s.id AND (raster_data.pvc).value BETWEEN l.value_from AND l.value_to
-        GROUP BY raster_data.pvc, raster_data.total_area, raster_data.raster_area, l.classified_as;
-        `;
+          INNER JOIN legend AS l ON l.source_id = s.id AND (clipped_raster_data.pvc).value BETWEEN l.value_from AND l.value_to
+        GROUP BY class
+        ORDER BY class;
+        `
     }
 
     getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
