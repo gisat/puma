@@ -390,7 +390,7 @@ class SnowPortal {
           max(foo.aoi)    AS aoi
         FROM (
             SELECT
-              l.classified_as                                          AS class,
+              (clipped_raster_data.pvc).value                          AS class,
               sum((clipped_raster_data.pvc).count)               AS count,
               max(100 * (clipped_raster_area.area / total_area.area)) AS aoi
             FROM
