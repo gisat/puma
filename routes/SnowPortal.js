@@ -385,21 +385,22 @@ class SnowPortal {
 
         return `
         SELECT
-            l.classified_as      AS class,
-            sum((foo.pvc).count) AS count,
-            avg(foo.aoi_coverage) AS aoi
-        FROM (
-            SELECT ST_ValueCount(ST_Clip(c.rast, g.the_geom)) AS pvc,
-            100 * (st_area(ST_MinConvexHull(ST_Clip(c.rast, g.the_geom))) /
-                            st_area(g.the_geom)) AS aoi_coverage
-                FROM composites."${tableName}" AS c
-                    JOIN ${geometryTable} AS g ON (${geometryTableCondition})) AS foo
-            JOIN source AS s ON (
-                s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
-                AND s.satellite_key = ${this.convertArrayToSqlAny(satellites)}
-            )
-            JOIN legend AS l ON (l.source_id = s.id AND (foo.pvc).value BETWEEN l.value_from AND l.value_to)
-        GROUP BY class;`;
+          l.classified_as                                          AS class,
+          (raster_data.pvc).count                                  AS count,
+          100 * (raster_data.raster_area / raster_data.total_area) AS aoi
+        FROM (SELECT
+                st_valuecount(raster_clip.rast)       AS pvc,
+                st_area(st_polygon(raster_clip.rast)) AS raster_area,
+                raster_clip.total_area                AS total_area
+              FROM (SELECT
+                      st_clip(r.rast, g.the_geom) AS rast,
+                      st_area(g.the_geom)         AS total_area
+                    FROM composites.${tableName} AS r
+                      INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}) AS raster_clip) AS raster_data
+          INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
+          INNER JOIN legend AS l ON l.source_id = s.id AND (raster_data.pvc).value BETWEEN l.value_from AND l.value_to
+        GROUP BY raster_data.pvc, raster_data.total_area, raster_data.raster_area, l.classified_as;
+        `;
     }
 
     getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
