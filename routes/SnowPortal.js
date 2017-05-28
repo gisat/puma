@@ -389,14 +389,14 @@ class SnowPortal {
           sum((clipped_raster_data.pvc).count)               AS count,
           max(100 * (clipped_raster_area.area / total_area.area)) AS aoi
         FROM
-          (SELECT st_valuecount(st_clip(composite.rast, areas.the_geom)) AS pvc
-           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS areas
-               ON ${geometryTableCondition} AND st_intersects(areas.the_geom, composite.rast)) AS clipped_raster_data,
-          (SELECT st_area(st_union(st_polygon(st_clip(composite.rast, areas.the_geom)))) AS area
-           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS areas
-               ON ${geometryTableCondition} AND st_intersects(areas.the_geom, composite.rast)) AS clipped_raster_area,
+          (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
+           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
+               ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
+          (SELECT st_area(st_union(st_polygon(st_clip(composite.rast, g.the_geom)))) AS area
+           FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
+               ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_area,
           (SELECT st_area(st_union(areas.the_geom)) AS area
-           FROM ${geometryTable} AS areas
+           FROM ${geometryTable} AS g
            WHERE ${geometryTableCondition}) AS total_area
           INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
           INNER JOIN legend AS l ON l.source_id = s.id AND (clipped_raster_data.pvc).value BETWEEN l.value_from AND l.value_to
