@@ -245,6 +245,7 @@ class SnowPortalComposite {
              * Save composite metadata
              */
             return new Promise((resolve, reject) => {
+                usedScenes.sort();
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#create ------ Saving composite metadata | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(result => {
