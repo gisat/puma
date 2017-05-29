@@ -165,7 +165,7 @@ class IntegrationScope {
 	scope() {
 		let scopeId, periodId, areaTemplateId, urbanAttributeId, nonUrbanAttributeId;
 		return new FilteredMongoScopes({name: this._scope}, this._mongo).json().then(results => {
-			results = results.filter(result => this._user.hasRights(MongoScope.collectionName(), Permission.UPDATE, result._id));
+			results = results.filter(result => this._user.hasPermission(MongoScope.collectionName(), Permission.UPDATE, result._id));
 
 			scopeId = results[0]._id;
 			areaTemplateId = results[0].featureLayers[0];
