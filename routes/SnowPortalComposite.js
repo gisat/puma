@@ -172,8 +172,12 @@ class SnowPortalComposite {
                             return;
                         }
                         tables.push(composite.key);
+                        console.log('usedScenes before', usedScenes);
                         usedScenes = _.union(usedScenes, composite.usedScenes);
+                        console.log('usedScenes after', usedScenes);
                     });
+
+                    console.log(usedScenes);
 
                     if(!tables.length || usedScenes.length) {
                         logger.warn(`SnowPortalComposite#create ------ one-day to n-day: ` +
