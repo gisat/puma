@@ -60,7 +60,14 @@ class SnowPortalComposite {
 
         this._tmpTiffLocation = "/tmp/";
 
-        this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area);
+        this._key = SnowPortalComposite.createKey(
+            this._startDay,
+            this._endDay,
+            this._period,
+            this._sensors,
+            this._satellites,
+            this._area
+        );
 
 
         /**
@@ -87,7 +94,6 @@ class SnowPortalComposite {
                  * Composite already exists in database.
                  */
                 logger.info(`SnowPortalComposite#constructor Composite exists. Metadata: ${result.rows[0]}`);
-                this._key = result.rows[0].key;
                 return result.rows[0];
             } else {
                 /**
@@ -160,27 +166,21 @@ class SnowPortalComposite {
                 Promise.all(oneDayComposites).then(compositesMetadata => {
                     let tables = [];
                     _.each(compositesMetadata, composite => {
+                        console.log(`@@@`, composite);
                         tables.push(composite.key);
                         usedScenes = _.union(usedScenes, composite.usedScenes);
                     });
 
-                    if(!tables.length) {
+                    if(!tables.length || usedScenes.length) {
+                        logger.warn(`SnowPortalComposite#create ------ one-day to n-day: ` +
+                            `SKIPPING ${this._startDay}--${this._endDay}. tables or usedScenes empty!` +
+                            `tables (${tables.length}): ${tables}    - usedScenes (${usedScenes.length}): ${usedScenes}`);
                         return reject('noScenes');
                     }
 
-                    this._key = "composite_" + hash({
-                            startDay: this._startDay,
-                            endDay: this._endDay,
-                            period: this._period,
-                            sensors: this._sensors,
-                            satellites: this._satellites,
-                            area: this._area,
-                            usedScenes: usedScenes
-                        });
-
                     let sql = SnowPortalComposite.createMultiDayCompositeSql(this._key, tables);
                     logger.info(`SnowPortalComposite#create ------ Generating n-day composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
-                        `for sensors ${this._sensors} in area ${this._area} from scenes ${usedScenes}
+                        `for sensors ${this._sensors} in area ${this._area} from scenes [${usedScenes}]
                     | key: ${this._key}
                     | SQL: ${sql}`);
                     this._pgLongRunningPool.pool().query(sql).then(() => {
@@ -224,7 +224,6 @@ class SnowPortalComposite {
                      * Generate composite
                      */
                     return new Promise((resolve, reject) => {
-                        this._key = SnowPortalComposite.createKey(this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area);
                         let sql = SnowPortalComposite.createOneDayCompositeSql(this._key, this._startDay, this._sensors, this._satellites);
                         logger.info(`SnowPortalComposite#create ------ Generating one-day composite for ${this._startDay} ` +
                             `for sensors ${this._sensors}/satellites ${this._satellites} in area ${this._area} from scenes ${usedScenes}
