@@ -147,7 +147,7 @@ class SnowPortal {
                 responseObject.data = processes[requestHash].data;
                 responseObject.success = true;
             } else if (processes[requestHash].error || processes[requestHash].ended) {
-                let dateEnded = processes[requestHash].ended ? processes[requestHash].ended.toISOString() : processes[requestHash].ended;
+                let dateEnded = processes[requestHash].ended ? new Date(processes[requestHash].ended).toISOString() : processes[requestHash].ended;
                 logger.error(`SnowPortal#getComposites ended ${dateEnded} with Error:`);
                 logger.error(processes[requestHash].error);
                 responseObject.message = processes[requestHash].error.message || processes[requestHash].error;
