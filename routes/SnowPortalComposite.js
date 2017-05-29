@@ -248,7 +248,7 @@ class SnowPortalComposite {
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#create ------ Saving composite metadata | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(result => {
-                    logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished. ${result.rows[0]}`);
+                    logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished.`);
                     resolve();
                 }).catch(error => {
                     reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. Creating composite, saving metadata Error: ${error.message} | ${error}`)));
