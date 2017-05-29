@@ -215,6 +215,13 @@ class SnowPortal {
 
                 _.each(metadata, composite => {
 
+                    if(!composite.key) {
+                        logger.info(`SnowPortal#getComposites Empty composite metadata object.`);
+                        console.log(typeof composite); // TODO temp
+                        console.log(composite); // TODO temp
+                        return;
+                    }
+
                     let tableName = composite.key;
                     promises.push(new Promise((resolve, reject) => {
                         let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors, satellites);

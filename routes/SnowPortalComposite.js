@@ -64,7 +64,7 @@ class SnowPortalComposite {
 
 
         /**
-         * Test if composite is in memory
+         * Test if composite is in memory - ready or being created. If so, return it as this instance.
          */
         if(composites[this._key]) {
             logger.info(`SnowPortalComposite#constructor *** Composite is already being created.`);
@@ -206,8 +206,9 @@ class SnowPortalComposite {
                             usedScenes.push(scene.id);
                         });
 
-                        if (!usedScenes.length) {
-                            reject(new Error(logger.error(`SnowPortalComposite#create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`)));
+                        if (!usedScenes.length) { // TODO ?
+                            logger.info(`SnowPortalComposite#create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`);
+                            reject('noScenes');
                         }
 
                         resolve(usedScenes);
@@ -337,6 +338,9 @@ class SnowPortalComposite {
                 });
             });
         }).catch(error => {
+            if(error === 'noScenes') {
+                return null;
+            }
             logger.error(`SnowPortalComposite#create ------ Error ${error.message}`);
             throw error;
         });
