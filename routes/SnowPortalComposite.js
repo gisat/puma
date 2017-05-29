@@ -551,12 +551,15 @@ class SnowPortalComposite {
             }).join(" UNION ");
 
         return `
-            CREATE TABLE composites.${tableName}
-                AS SELECT
-                    ST_Union(uni.rast, 1, 'MAX') as rast
-                FROM (
-                    ${union}
-                ) AS uni;`;
+            BEGIN;
+                DROP TABLE IF EXISTS composites.${tableName};
+                CREATE TABLE composites.${tableName}
+                    AS SELECT
+                        ST_Union(uni.rast, 1, 'MAX') as rast
+                    FROM (
+                        ${union}
+                    ) AS uni;
+            COMMIT;`;
     }
 
     /**
