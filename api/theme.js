@@ -478,7 +478,7 @@ function getThemeYearConf(params, req, res, callback) {
 		}],
 
 		leafs: ['sql', function(asyncCallback, results) {
-			logger.info('theme# getThemeYearConf auto: leafs Data: ', results.sql);
+			// logger.info('theme# getThemeYearConf auto: leafs Data: ', results.sql);
 			if (!params['refreshAreas'] || params['refreshAreas']=='false' || params['bypassLeafs']) {
 				return asyncCallback(null, null);
 			}
