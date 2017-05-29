@@ -29,6 +29,7 @@ class Geonode {
 		var layersUrl = geonodeHomeUrl.resolveObject("/layers/");
 		var loginUrl = geonodeHomeUrl.resolveObject("/account/login/");
 		var refererUrl = geonodeHomeUrl.resolveObject("/");
+		logger.info(`Geonode#login Layers: ${layersUrl} Login: ${loginUrl}`);
 		var cookies = {};
 		// During login request to geonode csrftoken must have been already established .
 		// So we dig Geonode in order to obtain one.
