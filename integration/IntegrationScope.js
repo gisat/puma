@@ -6,7 +6,7 @@ let Permission = require('../security/Permission');
 let FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 let FilteredMongoAttributes = require('../attributes/FilteredMongoAttributes');
 let FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
-let FilteredThemes = require('../metadata/FilteredMongoThemes');
+let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
 
 let MongoScope = require('../metadata/MongoScope');
 let MongoTopic = require('../metadata/MongoTopic');
@@ -196,7 +196,7 @@ class IntegrationScope {
 			return new FilteredMongoAttributeSets({name: this._scope}, this._mongo).json();
 		}).then(attributeSet => {
 			attributeSetId = attributeSet[0]._id;
-			return new FilteredMongoAttributeSets({name: this._scope}, this._mongo).json();
+			return new FilteredMongoThemes({name: this._scope}, this._mongo).json();
 		}).then(theme => {
 			themeId = theme[0]._id;
 			return {
