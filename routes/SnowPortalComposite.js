@@ -173,9 +173,9 @@ class SnowPortalComposite {
                         usedScenes = _.union(usedScenes, composite.used_scenes);
                     });
 
-                    if(!tables.length || usedScenes.length) {
+                    if(!tables.length || !usedScenes.length) {
                         logger.warn(`SnowPortalComposite#create ------ one-day to n-day: ` +
-                            `SKIPPING ${this._startDay}--${this._endDay}. tables or usedScenes empty!` +
+                            `SKIPPING ${this._startDay}--${this._endDay}. tables or usedScenes empty! ` +
                             `tables (${tables.length}): ${tables}    - usedScenes (${usedScenes.length}): ${usedScenes}`);
                         return reject('noScenes');
                     }
