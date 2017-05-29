@@ -17,6 +17,7 @@ let PgWmsLayers = require('../layers/wms/PgWmsLayers');
 let IntegrationScope = require('./IntegrationScope');
 let PgPermissions = require('../security/PgPermissions');
 let Permission = require('../security/Permission');
+let MongoDataViews = require('../visualization/MongoDataViews');
 let MongoLocation = require('../metadata/MongoLocation');
 let MongoLocations = require('../metadata/MongoLocations');
 let MongoScope = require('../metadata/MongoScope');
@@ -43,6 +44,7 @@ class GufIntegrationController {
 		this._permissions = new PgPermissions(pgPool, dataSchema);
 		this._locations = new MongoLocations(mongo);
 		this._layerReferences = new MongoLayerReferences(mongo);
+		this._dataViews = new MongoDataViews(mongo);
 
 		this._layerViews = new PgLayerViews(pgPool, targetSchema, sourceSchema);
 		this._baseLayerTables = new PgBaseLayerTables(pgPool);
@@ -154,8 +156,7 @@ class GufIntegrationController {
 			process.status("Processing", logger.info("integration#process Creating data view.", 98));
 			processes.store(process);
 
-			return this.createDataView(place, information.year, information.areaTemplate, information.attributeSet,
-				information.attributes.urban, information.attributes.nonUrban);
+			return this.createDataView(information.scope, place, information.period, information.theme, information.areaTemplate, information.attributeSet, information.attributes.urban, information.attributes.nonUrban);
 		}).then(function (url) {
 			logger.info("integration#process Finished preparation of Url: ", url);
 			// Set result to the process.
@@ -352,9 +353,447 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 		});
 	}
 
-	createDataView() {
-		// TODO: create correct data view.
-		return null;
+	/**
+	 *
+	 * @param scope {Number}
+	 * @param place {Number}
+	 * @param period {Number}
+	 * @param theme {Number}
+	 * @param layerTemplate {Number}
+	 * @param attributeSet {Number}
+	 * @param urbanAttribute {Number}
+	 * @param nonUrbanAtribute {Number}
+	 */
+	createDataView(scope, place, period, theme, layerTemplate, attributeSet, urbanAttribute, nonUrbanAtribute) {
+		let dataViewId = conn.getNextId();
+		return this._dataViews.add({
+			"_id": dataViewId,
+			"name": "",
+			"conf": {
+				"multipleMaps": false,
+				"years": [
+					period
+				],
+				"dataset": scope,
+				"theme": theme,
+				"visualization": null,
+				"location": place,
+				"expanded": {},
+				"selMap": {
+					"ff4c39": [
+						{
+							"at": layerTemplate,
+							"gid": "1",
+							"loc": place
+						}
+					]
+				},
+				"pagingUseSelected": false,
+				"pagingSelectedColors": [
+					"ff4c39",
+					"34ea81",
+					"39b0ff",
+					"ffde58",
+					"5c6d7e",
+					"d97dff"
+				],
+				"filterMap": {},
+				"filterActive": false,
+				"layers": [
+					{
+						"opacity": 0.7,
+						"sortIndex": 0,
+						"type": "selectedareasfilled",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"name": "Selected areas filled",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 0.7,
+						"sortIndex": 1,
+						"type": "areaoutlines",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"name": "Area outlines",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 2,
+						"type": "wmsLayer",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"name": "GUF2012-12M",
+						"symbologyId": ""
+					},
+					{
+						"opacity": 1,
+						"sortIndex": 10000,
+						"type": "terrain",
+						"attributeSet": "",
+						"attribute": "",
+						"at": "",
+						"name": "Google terrain",
+						"symbologyId": ""
+					}
+				],
+				"trafficLayer": false,
+				"page": 1,
+				"mapCfg": {
+					"center": {
+						"lon": 1472470.8337428,
+						"lat": 6066043.1713462
+					},
+					"zoom": 7
+				},
+				"cfgs": [
+					{
+						"cfg": {
+							"title": "Share of Urban / Non Urban",
+							"type": "piechart",
+							"attrs": [
+								{
+									"as": attributeSet,
+									"attr": urbanAttribute,
+									"normType": "area",
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"normalizationUnits": "%",
+									"customFactor": "100",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"displayUnits": "%",
+									"areaUnits": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"topic": "",
+									"parentId": null,
+									"index": 0,
+									"depth": 0,
+									"expanded": false,
+									"expandable": true,
+									"leaf": false,
+									"cls": "",
+									"iconCls": "",
+									"icon": "",
+									"root": false,
+									"isLast": false,
+									"isFirst": false,
+									"allowDrop": true,
+									"allowDrag": true,
+									"loaded": false,
+									"loading": false,
+									"href": "",
+									"hrefTarget": "",
+									"qtip": "",
+									"qtitle": "",
+									"children": null,
+									"attrName": "Urban",
+									"asName": "Global Urban Footprint",
+									"units": "km2",
+									"treeNodeText": "Urban"
+								},
+								{
+									"as": attributeSet,
+									"attr": nonUrbanAtribute,
+									"normType": "area",
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"normalizationUnits": "%",
+									"customFactor": "100",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"displayUnits": "%",
+									"areaUnits": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"topic": "",
+									"parentId": null,
+									"index": 0,
+									"depth": 0,
+									"expanded": false,
+									"expandable": true,
+									"leaf": false,
+									"cls": "",
+									"iconCls": "",
+									"icon": "",
+									"root": false,
+									"isLast": false,
+									"isFirst": false,
+									"allowDrop": true,
+									"allowDrag": true,
+									"loaded": false,
+									"loading": false,
+									"href": "",
+									"hrefTarget": "",
+									"qtip": "",
+									"qtitle": "",
+									"children": null,
+									"attrName": "Non Urban",
+									"asName": "Global Urban Footprint",
+									"units": "km2",
+									"treeNodeText": "Non Urban"
+								}
+							],
+							"units": "km2",
+							"displayUnits": "%",
+							"normalizationUnits": "%",
+							"areaUnits": "",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								0
+							],
+							"stacking": "none",
+							"chartId": 8497275
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban / Non Urban",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": attributeSet,
+									"attr": urbanAttribute,
+									"normType": "area",
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"normalizationUnits": "%",
+									"customFactor": "100",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"displayUnits": "%",
+									"areaUnits": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"topic": "",
+									"parentId": null,
+									"index": 0,
+									"depth": 0,
+									"expanded": false,
+									"expandable": true,
+									"leaf": false,
+									"cls": "",
+									"iconCls": "",
+									"icon": "",
+									"root": false,
+									"isLast": false,
+									"isFirst": false,
+									"allowDrop": true,
+									"allowDrag": true,
+									"loaded": false,
+									"loading": false,
+									"href": "",
+									"hrefTarget": "",
+									"qtip": "",
+									"qtitle": "",
+									"children": null,
+									"attrName": "Urban",
+									"asName": "Global Urban Footprint",
+									"units": "km2",
+									"treeNodeText": "Urban"
+								},
+								{
+									"as": attributeSet,
+									"attr": nonUrbanAtribute,
+									"normType": "area",
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"normalizationUnits": "%",
+									"customFactor": "100",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"displayUnits": "%",
+									"areaUnits": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"topic": "",
+									"parentId": null,
+									"index": 0,
+									"depth": 0,
+									"expanded": false,
+									"expandable": true,
+									"leaf": false,
+									"cls": "",
+									"iconCls": "",
+									"icon": "",
+									"root": false,
+									"isLast": false,
+									"isFirst": false,
+									"allowDrop": true,
+									"allowDrag": true,
+									"loaded": false,
+									"loading": false,
+									"href": "",
+									"hrefTarget": "",
+									"qtip": "",
+									"qtitle": "",
+									"children": null,
+									"attrName": "Non Urban",
+									"asName": "Global Urban Footprint",
+									"units": "km2",
+									"treeNodeText": "Non Urban"
+								}
+							],
+							"units": "km2",
+							"displayUnits": "%",
+							"normalizationUnits": "%",
+							"areaUnits": "",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								0
+							],
+							"stacking": "percent",
+							"chartId": 9211061
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					},
+					{
+						"cfg": {
+							"title": "Urban / Non Urban",
+							"type": "columnchart",
+							"attrs": [
+								{
+									"as": attributeSet,
+									"attr": urbanAttribute,
+									"normType": "area",
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"normalizationUnits": "%",
+									"customFactor": "100",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"displayUnits": "%",
+									"areaUnits": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"topic": "",
+									"parentId": null,
+									"index": 0,
+									"depth": 0,
+									"expanded": false,
+									"expandable": true,
+									"leaf": false,
+									"cls": "",
+									"iconCls": "",
+									"icon": "",
+									"root": false,
+									"isLast": false,
+									"isFirst": false,
+									"allowDrop": true,
+									"allowDrag": true,
+									"loaded": false,
+									"loading": false,
+									"href": "",
+									"hrefTarget": "",
+									"qtip": "",
+									"qtitle": "",
+									"children": null,
+									"attrName": "Urban",
+									"asName": "Global Urban Footprint",
+									"units": "km2",
+									"treeNodeText": "Urban"
+								},
+								{
+									"as": attributeSet,
+									"attr": nonUrbanAtribute,
+									"normType": "area",
+									"normAs": null,
+									"normAttr": null,
+									"normYear": "",
+									"normalizationUnits": "%",
+									"customFactor": "100",
+									"attrNameNormalized": "",
+									"checked": true,
+									"numCategories": "",
+									"classType": "",
+									"displayUnits": "%",
+									"areaUnits": "",
+									"zeroesAsNull": "",
+									"name": "",
+									"topic": "",
+									"parentId": null,
+									"index": 0,
+									"depth": 0,
+									"expanded": false,
+									"expandable": true,
+									"leaf": false,
+									"cls": "",
+									"iconCls": "",
+									"icon": "",
+									"root": false,
+									"isLast": false,
+									"isFirst": false,
+									"allowDrop": true,
+									"allowDrag": true,
+									"loaded": false,
+									"loading": false,
+									"href": "",
+									"hrefTarget": "",
+									"qtip": "",
+									"qtitle": "",
+									"children": null,
+									"attrName": "Non Urban",
+									"asName": "Global Urban Footprint",
+									"units": "km2",
+									"treeNodeText": "Non Urban"
+								}
+							],
+							"normalizationUnits": "%",
+							"customFactor": "1",
+							"areaUnits": "",
+							"featureLayerOpacity": "70",
+							"classType": "quantiles",
+							"numCategories": "5",
+							"constrainFl": [
+								0,
+								0
+							],
+							"stacking": "none",
+							"chartId": 4322236
+						},
+						"queryCfg": {
+							"invisibleAttrs": [],
+							"invisibleYears": []
+						}
+					}
+				]
+			}
+		}).then(() => {
+			return `${config.remoteProtocol}://${config.remoteAddress}${config.projectHome}tool/?id=${dataViewId}`;
+		})
 	}
 
 	/**

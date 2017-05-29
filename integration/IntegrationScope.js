@@ -166,6 +166,7 @@ class IntegrationScope {
 			return {
 				scope: scopeId,
 				period: periodId,
+				theme: themeId,
 				areaTemplate: areaTemplateId,
 				attributeSet: attributeSetId,
 				attributes: {
