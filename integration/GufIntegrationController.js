@@ -95,7 +95,7 @@ class GufIntegrationController {
 		let administrativeUnitTable = `${this._sourceSchema}.au${id}`;
 		let information, place;
 		let user = request.session.user;
-		var rasterLayerTable, boundingBox, url;
+		var rasterLayerTable, boundingBox, url, center;
 		remoteFile.get().then(() => {
 			process.status("Processing", "File was retrieved successfully and is being processed.", 13);
 			processes.store(process);
@@ -111,7 +111,8 @@ class GufIntegrationController {
 			// Create table for the analytical units.
 			return this.createAdministrativeUnit(remoteFile.getDestination(), administrativeUnitTable);
 		}).then(pBoundingBox => {
-			boundingBox = pBoundingBox;
+			boundingBox = pBoundingBox.box;
+			center = pBoundingBox.center;
 
 			process.status("Processing", logger.info("integration#process Analysis.", 39));
 			processes.store(process);
@@ -156,7 +157,7 @@ class GufIntegrationController {
 			process.status("Processing", logger.info("integration#process Creating data view.", 98));
 			processes.store(process);
 
-			return this.createDataView(information.scope, place, information.period, information.theme, information.areaTemplate, information.attributeSet, information.attributes.urban, information.attributes.nonUrban);
+			return this.createDataView(information.scope, place, information.period, information.theme, information.areaTemplate, information.attributeSet, information.attributes.urban, information.attributes.nonUrban, center);
 		}).then(function (url) {
 			logger.info("integration#process Finished preparation of Url: ", url);
 			// Set result to the process.
@@ -200,7 +201,13 @@ class GufIntegrationController {
 		`;
 
 		return this._pgPool.query(sql).then(() => {
-			return `${minX},${minY},${maxX},${maxY}`;
+			return {
+				box: `${minX},${minY},${maxX},${maxY}`,
+				center: {
+					latitude: (minY + maxY / 2),
+					longitude: (minX + maxX / 2)
+				}
+			};
 		});
 	}
 
@@ -364,7 +371,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 * @param urbanAttribute {Number}
 	 * @param nonUrbanAtribute {Number}
 	 */
-	createDataView(scope, place, period, theme, layerTemplate, attributeSet, urbanAttribute, nonUrbanAtribute) {
+	createDataView(scope, place, period, theme, layerTemplate, attributeSet, urbanAttribute, nonUrbanAtribute, center) {
 		let dataViewId = conn.getNextId();
 		return this._dataViews.add({
 			"_id": dataViewId,
@@ -445,8 +452,8 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 				"page": 1,
 				"mapCfg": {
 					"center": {
-						"lon": 1472470.8337428,
-						"lat": 6066043.1713462
+						"lon": center.latitude,
+						"lat": center.longitude
 					},
 					"zoom": 7
 				},
