@@ -392,7 +392,7 @@ class SnowPortal {
             SELECT
               (clipped_raster_data.pvc).value                          AS class,
               sum((clipped_raster_data.pvc).count)               AS count,
-              aoi.aoi AS aoi
+              avg(aoi.aoi) AS aoi
             FROM
               (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
                FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
