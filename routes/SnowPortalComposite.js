@@ -166,7 +166,11 @@ class SnowPortalComposite {
                 Promise.all(oneDayComposites).then(compositesMetadata => {
                     let tables = [];
                     _.each(compositesMetadata, composite => {
-                        console.log(`@@@`, composite);
+                        console.log(`@@@`, composite); // TODO TEMP
+                        // Skip empty composites
+                        if(composite === null) {
+                            return;
+                        }
                         tables.push(composite.key);
                         usedScenes = _.union(usedScenes, composite.usedScenes);
                     });
