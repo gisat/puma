@@ -50,6 +50,12 @@ class GufIntegrationController {
 		this._layerViews = new PgLayerViews(pgPool, targetSchema, sourceSchema);
 		this._baseLayerTables = new PgBaseLayerTables(pgPool);
 
+		this._geoServerLayers = new GeoServerLayers(
+			config.geoserverHost + config.geoserverPath,
+			config.geoserverUsername,
+			config.geoserverPassword
+		);
+
 		app.post("/integration/process", this.process.bind(this));
 		app.get("/integration/status", this.status.bind(this));
 	}
@@ -296,10 +302,6 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 		});
 	}
 
-	createCustomWms() {
-
-	}
-
 	/**
 	 * It create relevant layer references.
 	 * @param areaTemplateLayer {String} Name of the layer.
@@ -350,6 +352,9 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 			// Recreate the views and base layers, which are necessary.
 		}).then(() => {
 			return this._layerViews.add(new MongoLayerReference(baseLayerId, this._mongo), [new MongoLayerReference(dataLayerId, this._mongo)]);
+		}).then(() => {
+			// TODO: parametrize workspace and datastore
+			return this._geoServerLayers.create(new RestLayer('layer_' + baseLayerId, 'panther', 'views'));
 		});
 	}
 
@@ -364,13 +369,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 */
 	publishLayer(analyticalUnitsLayer) {
 		return this.getPublicWorkspaceSchema().then((publicWorkspaceSchema) => {
-			// todo get datastore from configuration
-			let geoServerImporter = new GeoServerLayers(
-				config.geoserverHost + config.geoserverPath,
-				config.geoserverUsername,
-				config.geoserverPassword
-			);
-			return geoServerImporter.create(new RestLayer(analyticalUnitsLayer, publicWorkspaceSchema.workspace, config.geoServerDataStore));
+			return this._geoServerLayers.create(new RestLayer(analyticalUnitsLayer, publicWorkspaceSchema.workspace, config.geoServerDataStore));
 		}).then(() => {
 			let geonodeUpdateLayers = new GeonodeUpdateLayers();
 			return geonodeUpdateLayers.filtered({layer: analyticalUnitsLayer});
