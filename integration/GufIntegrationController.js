@@ -201,7 +201,7 @@ class GufIntegrationController {
 
 		let sql = `
 			CREATE TABLE ${administrativeUnitsTable} (gid SERIAL, the_geom geometry, name text, urban double precision, non_urban double precision);
-			INSERT INTO ${administrativeUnitsTable} (the_geom, name) VALUES (ST_GeomFromText('${bbox}', 4326), 'area');
+			INSERT INTO ${administrativeUnitsTable} (the_geom, name) VALUES (ST_GeomFromText('${bbox}', 4326), 'Area of interest');
 		`;
 
 		return this._pgPool.query(sql).then(() => {

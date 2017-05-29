@@ -129,6 +129,7 @@ class IntegrationScope {
 						"active": true,
 						"type": "numeric",
 						"standardUnits": 'km2',
+						"units": 'km2',
 						"color": "#880000"
 					}])
 				} else {
@@ -144,6 +145,7 @@ class IntegrationScope {
 						"active": true,
 						"type": "numeric",
 						"standardUnits": 'km2',
+						"units": 'km2',
 						"color": "#000000"
 					}])
 				} else {
