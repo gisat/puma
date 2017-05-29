@@ -586,7 +586,7 @@ class SnowPortalComposite {
                     '${endDate}',
                     ${period},
                     '${area}',
-                    ${this.convertArrayToSqlArray(usedScenes)}
+                    ${this.convertArrayToSqlArray(usedScenes)}::integer[]
                 );`;
     }
 
