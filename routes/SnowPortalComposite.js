@@ -173,7 +173,7 @@ class SnowPortalComposite {
                         }
                         tables.push(composite.key);
                         console.log('usedScenes before', usedScenes);
-                        usedScenes = _.union(usedScenes, composite.usedScenes);
+                        usedScenes = _.union(usedScenes, composite.used_scenes);
                         console.log('usedScenes after', usedScenes);
                     });
 
