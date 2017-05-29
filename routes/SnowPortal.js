@@ -215,7 +215,7 @@ class SnowPortal {
 
                 _.each(metadata, composite => {
 
-                    if(!composite.key) {
+                    if(!composite.hasOwnProperty('key')) {
                         logger.info(`SnowPortal#getComposites Empty composite metadata object.`);
                         console.log(typeof composite); // TODO temp
                         console.log(composite); // TODO temp
