@@ -455,7 +455,7 @@ function getThemeYearConf(params, req, res, callback) {
 					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
 					return callback(err);
 				}
-				logger.info("theme# getThemeYearConf, auto:sql Results: ", resls.rows);
+				// logger.info("theme# getThemeYearConf, auto:sql Results: ", resls.rows);
 				var obj = {};
 				if (!fids) {
 					obj.areas = resls.rows;
