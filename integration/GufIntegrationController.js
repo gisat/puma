@@ -29,10 +29,7 @@ let GeoServerLayers = require('../layers/GeoServerLayers');
 let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
 let RestLayer = require('../layers/RestLayer');
 
-let fs = require('fs');
-let geotiff = require('geotiff');
-let epsg = require('epsg-to-proj');
-let extents = require('geotiff-extents');
+let gdal = require('gdal');
 
 class GufIntegrationController {
 	constructor(app, pgPool, mongo, sourceSchema, targetSchema, dataSchema) {
@@ -182,22 +179,19 @@ class GufIntegrationController {
 	 */
 	createAdministrativeUnit(rasterFile, administrativeUnitsTable) {
 		// Get the polygon surrounding the raster.
-		var data = this.toArrayBuffer(fs.readFileSync(rasterFile));
-		var im = geotiff.parse(data).getImage();
-		var fd = im.getFileDirectory();
-		var gk = im.getGeoKeys();
+		let dataset = gdal.open(rasterFile);
+		let geoTransform = dataset.geoTransform;
 
-		var extent = extents({
-			tiePoint: fd.ModelTiepoint,
-			pixelScale: fd.ModelPixelScale,
-			width: fd.ImageWidth,
-			height: fd.ImageLength,
-			proj: require('proj4'),
-			from: epsg[gk.ProjectedCSTypeGeoKey || gk.GeographicTypeGeoKey],
-			to: epsg[4326]
-		});
+		let numX = dataset.rasterSize.x;
+		let numY = dataset.rasterSize.y;
+
+		let minX = geoTransform[0];
+		let minY = geoTransform[3] + (geoTransform[5] * numY);
+		let maxX = geoTransform[0] + (geoTransform[1] * numX);
+		let maxY = geoTransform[3];
+
 		// For points for the Polygon
-		let bbox = `POLYGON ((${extent.upperLeft[0]} ${extent.upperLeft[1]},${extent.upperRight[0]} ${extent.upperRight[1]},${extent.lowerRight[0]} ${extent.lowerRight[1]},${extent.lowerLeft[0]} ${extent.lowerLeft[1]},${extent.upperLeft[0]} ${extent.upperLeft[1]}))`;
+		let bbox = `POLYGON ((${minX} ${maxY},${maxX} ${maxY},${maxX} ${minY},${minX} ${minY},${minX} ${maxY}))`;
 
 		let sql = `
 			CREATE TABLE ${administrativeUnitsTable} (gid SERIAL, the_geom geometry, name text, urban double precision, non_urban double precision);
@@ -205,7 +199,7 @@ class GufIntegrationController {
 		`;
 
 		return this._pgPool.query(sql).then(() => {
-			return `${extent.upperLeft[0]},${extent.lowerRight[1]},${extent.lowerRight[0]},${extent.upperLeft[1]}`;
+			return `${minX},${minY},${maxX},${maxY}`;
 		});
 	}
 
