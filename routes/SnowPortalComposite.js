@@ -164,6 +164,10 @@ class SnowPortalComposite {
                         usedScenes = _.union(usedScenes, composite.usedScenes);
                     });
 
+                    if(!tables.length) {
+                        return reject('noScenes');
+                    }
+
                     this._key = "composite_" + hash({
                             startDay: this._startDay,
                             endDay: this._endDay,
@@ -338,6 +342,7 @@ class SnowPortalComposite {
                 });
             });
         }).catch(error => {
+            // noScenes is not an Error
             if(error === 'noScenes') {
                 return null;
             }
