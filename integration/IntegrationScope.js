@@ -6,6 +6,7 @@ let Permission = require('../security/Permission');
 let FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 let FilteredMongoAttributes = require('../attributes/FilteredMongoAttributes');
 let FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
+let FilteredThemes = require('../metadata/FilteredMongoThemes');
 
 let MongoScope = require('../metadata/MongoScope');
 let MongoTopic = require('../metadata/MongoTopic');
@@ -178,7 +179,7 @@ class IntegrationScope {
 	}
 
 	scope() {
-		let scopeId, periodId, areaTemplateId, urbanAttributeId, nonUrbanAttributeId;
+		let scopeId, periodId, areaTemplateId, themeId, urbanAttributeId, nonUrbanAttributeId, attributeSetId;
 		return new FilteredMongoScopes({name: this._scope}, this._mongo).json().then(results => {
 			results = results.filter(result => this._user.hasPermission(MongoScope.collectionName(), Permission.UPDATE, result._id));
 
@@ -194,11 +195,16 @@ class IntegrationScope {
 			nonUrbanAttributeId = nonUrban[0]._id;
 			return new FilteredMongoAttributeSets({name: this._scope}, this._mongo).json();
 		}).then(attributeSet => {
+			attributeSetId = attributeSet[0]._id;
+			return new FilteredMongoAttributeSets({name: this._scope}, this._mongo).json();
+		}).then(theme => {
+			themeId = theme[0]._id;
 			return {
 				scope: scopeId,
 				period: periodId,
+				theme: themeId,
 				areaTemplate: areaTemplateId,
-				attributeSet: attributeSet[0]._id,
+				attributeSet: attributeSetId,
 				attributes: {
 					urban: urbanAttributeId,
 					nonUrban: nonUrbanAttributeId
