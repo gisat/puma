@@ -140,7 +140,7 @@ class GufIntegrationController {
 			process.status("Processing", logger.info("integration#process Add Custom WMS.", 78));
 			processes.store(process);
 
-			return this.addCustomWms(user, information.scope, place);
+			return this.addCustomWms(user, information.scope, place, information.period);
 		}).then(() => {
 			process.status("Processing", logger.info("integration#process Creating references.", 91));
 			processes.store(process);
@@ -262,25 +262,42 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 * @param user
 	 * @param scope {Number}
 	 * @param place {Number}
+	 * @param period {Number}
 	 */
-	addCustomWms(user, scope, place) {
-		// TODO: If the scope was created, then it is necessary to add custom wms layer and permissions to it.
+	addCustomWms(user, scope, place, period) {
 		let layers;
-		this._wmsLayers.filtered(scope, null, null).then(pLayers => {
+
+		return this._wmsLayers.filtered(scope, null, null).then(pLayers => {
 			layers = pLayers;
-			// Make sure that the user has permissions towards these layers.
-			let promises = [];
-			layers.forEach(layer => {
-				if (!user.hasPermission('custom_wms', Permission.READ, layer.id)) {
-					promises.push(this._permissions.add(user.id, 'custom_wms', layer.id, Permission.READ));
-				}
-			});
-			return Promise.all(promises);
-		}).then(() => {
-			return Promise.all(layers.map(layer => {
-				return this._wmsLayers.insertDependencies(layer.id, [place], null);
-			}));
+
+			if (layers.length === 0) {
+				return this._wmsLayers.add({
+					name: 'GUF2012-12M',
+					url: 'https://utep.it4i.cz/geoserver/gwc/service/wms',
+					scope: scope,
+					places: [place],
+					periods: [period],
+					layer: 'ESA_UTEP:GUF04'
+				}, user.id)
+			} else {
+				// Make sure that the user has permissions towards these layers.
+				let promises = [];
+				layers.forEach(layer => {
+					if (!user.hasPermission('custom_wms', Permission.READ, layer.id)) {
+						promises.push(this._permissions.add(user.id, 'custom_wms', layer.id, Permission.READ));
+					}
+				});
+				return Promise.all(promises).then(() => {
+					return Promise.all(layers.map(layer => {
+						return this._wmsLayers.insertDependencies(layer.id, [place], null);
+					}));
+				});
+			}
 		});
+	}
+
+	createCustomWms() {
+
 	}
 
 	/**
