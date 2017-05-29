@@ -19,12 +19,14 @@ class GeoServerLayers {
 
 	create(layer) {
 		var self = this;
-		return this.getNames(layer).then(function(names){
+		return this.getNames(layer).then(function (names) {
 			let data = {
-				name: names.layerName,
-				nativeName: names.layerName,
-				title: names.layerName,
-				enabled: true
+				featureType: {
+					name: names.layerName,
+					nativeName: names.layerName,
+					title: names.layerName,
+					enabled: true
+				}
 			};
 			logger.info(`GeoServerLayers#create Data: `, data);
 			return superagent
@@ -38,7 +40,7 @@ class GeoServerLayers {
 
 	remove(layer) {
 		var self = this;
-		return this.getNames(layer).then(function(names){
+		return this.getNames(layer).then(function (names) {
 			return superagent
 				.delete(self._url + '/rest/workspaces/' + names.workspaceName + '/datastores/' + names.dataStoreName + '/featuretypes/' + names.layerName)
 				.auth(self._userName, self._password)
@@ -56,17 +58,17 @@ class GeoServerLayers {
 	getNames(layer) {
 		var workspaceName, dataStoreName;
 
-		return layer.workspace().then(function(workspace){
+		return layer.workspace().then(function (workspace) {
 			return workspace.name();
-		}).then(function(name){
+		}).then(function (name) {
 			workspaceName = name;
 			return layer.dataStore();
-		}).then(function(dataStore){
+		}).then(function (dataStore) {
 			return dataStore.name();
-		}).then(function(name){
+		}).then(function (name) {
 			dataStoreName = name;
 			return layer.name();
-		}).then(function(layerName){
+		}).then(function (layerName) {
 			let result = {
 				workspaceName: workspaceName,
 				dataStoreName: dataStoreName,
@@ -74,7 +76,7 @@ class GeoServerLayers {
 			};
 			logger.info(`GeoServerLayers#getNames Results: `, result);
 			return result;
-		}).catch(function(error){
+		}).catch(function (error) {
 			throw new Error(
 				logger.error('GeoServerLayers#getNames Error: ', error)
 			);

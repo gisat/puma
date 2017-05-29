@@ -121,7 +121,7 @@ class GufIntegrationController {
 			// Create new Location with the right access rights only to current user
 			return new IntegrationScope(this._mongo, this._pgPool, this._dataSchema, request.session.user, 'Global Urban Footprint', 2015).json();
 		}).then(() => {
-			process.status("Processing", logger.info("integration#process Publishing layers in GeoServer and GeoNode.", 52));
+			process.status("Processing", logger.info("integration#process Publishing layers in GeoServer and GeoNode.", 60));
 			processes.store(process);
 
 			// Create new publish layers.
@@ -264,7 +264,6 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 * @param place {Number}
 	 */
 	addCustomWms(user, scope, place) {
-		// Load layers in the scope.
 		// TODO: If the scope was created, then it is necessary to add custom wms layer and permissions to it.
 		let layers;
 		this._wmsLayers.filtered(scope, null, null).then(pLayers => {
