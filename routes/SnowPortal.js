@@ -142,11 +142,12 @@ class SnowPortal {
 
         if (processes[requestHash]) {
             let responseObject = {};
-            if (processes[requestHash].data) {
+            if (processes[requestHash].data !== null) {
+                logger.info(`SnowPortal#getComposites ended succesfuly.`);
                 responseObject.data = processes[requestHash].data;
                 responseObject.success = true;
             } else if (processes[requestHash].error || processes[requestHash].ended) {
-                logger.error(`SnowPortal#getComposites ended ${processes[requestHash].ended} Error:`);
+                logger.error(`SnowPortal#getComposites ended ${processes[requestHash].ended.toISOString()} with Error:`);
                 logger.error(processes[requestHash].error);
                 responseObject.message = processes[requestHash].error.message || processes[requestHash].error;
                 responseObject.success = false;
