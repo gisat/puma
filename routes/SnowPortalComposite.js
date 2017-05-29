@@ -482,7 +482,8 @@ class SnowPortalComposite {
         return `
             SELECT
                 m.key,
-                m.date_start :: VARCHAR
+                m.date_start :: VARCHAR,
+                m.used_scenes
             FROM
                 composites.metadata m
             WHERE
