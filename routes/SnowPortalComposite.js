@@ -136,7 +136,6 @@ class SnowPortalComposite {
      * @returns Promise
      */
     create() {
-        logger.info(`SnowPortalComposite#create ------- ${this._startDay}-${this._endDay} (${this._period} days) sensors: ${this._sensors} satellites: ${this._satellites}`);
         let usedScenes = [];
 
         return new Promise((resolve, reject) => {
