@@ -333,7 +333,7 @@ class SnowPortalComposite {
                     console.log(`stderr: ${stderr}`);
                     resolve({
                         date_start: this._startDay,
-                        usedScenes: usedScenes,
+                        used_scenes: usedScenes,
                         key: this._key
                     });
                 });
