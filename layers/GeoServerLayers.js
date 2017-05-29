@@ -20,17 +20,19 @@ class GeoServerLayers {
 	create(layer) {
 		var self = this;
 		return this.getNames(layer).then(function(names){
+			let data = {
+				name: names.layerName,
+				nativeName: names.layerName,
+				title: names.layerName,
+				enabled: true
+			};
+			logger.info(`GeoServerLayers#create Data: `, data);
 			return superagent
 				.post(self._url + '/rest/workspaces/' + names.workspaceName + '/datastores/' + names.dataStoreName + '/featuretypes')
 				.auth(self._userName, self._password)
 				.set('Accept', '*/*')
 				.set('Content-Type', 'application/json; charset=utf-8')
-				.send({
-					name: names.layerName,
-					nativeName: names.layerName,
-					title: names.layerName,
-					enabled: true
-				})
+				.send(data)
 		});
 	}
 
