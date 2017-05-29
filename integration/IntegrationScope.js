@@ -1,4 +1,5 @@
 let conn = require('../common/conn');
+let logger = require('../common/Logger').applicationWideLogger;
 let PgPermissions = require('../security/PgPermissions');
 let Permission = require('../security/Permission');
 
@@ -40,6 +41,8 @@ class IntegrationScope {
 		this._topics = new MongoTopics(this._mongo);
 		this._attributeSets = new MongoAttributeSets(this._mongo);
 		this._attributes = new MongoAttributes(this._mongo);
+
+		logger.info(`IntegrationScope#constructor Parameters: Schema: ${schema} Scope: ${scope} Period: ${period} User: `, user);
 	}
 
 	json() {
