@@ -166,18 +166,13 @@ class SnowPortalComposite {
                 Promise.all(oneDayComposites).then(compositesMetadata => {
                     let tables = [];
                     _.each(compositesMetadata, composite => {
-                        console.log(`@@@`, composite); // TODO TEMP
                         // Skip empty composites
                         if(composite === null) {
                             return;
                         }
                         tables.push(composite.key);
-                        console.log('usedScenes before', usedScenes);
                         usedScenes = _.union(usedScenes, composite.used_scenes);
-                        console.log('usedScenes after', usedScenes);
                     });
-
-                    console.log(usedScenes);
 
                     if(!tables.length || usedScenes.length) {
                         logger.warn(`SnowPortalComposite#create ------ one-day to n-day: ` +
@@ -212,13 +207,13 @@ class SnowPortalComposite {
                     /**
                      * get IDs of used scenes
                      */
-                    let sql = SnowPortalComposite.getScenesIDsSql(this._startDay, this._sensors); // TODO only for period=1
+                    let sql = SnowPortalComposite.getScenesIDsSql(this._startDay, this._sensors);
                     this._pgPool.pool().query(sql).then((results) => {
                         _.each(results.rows, scene => {
                             usedScenes.push(scene.id);
                         });
 
-                        if (!usedScenes.length) { // TODO ?
+                        if (!usedScenes.length) {
                             logger.info(`SnowPortalComposite#create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`);
                             reject('noScenes');
                         }
@@ -263,7 +258,6 @@ class SnowPortalComposite {
         }).then(() => {
             /**
              * Export composite to GeoTiff
-             * TODO for Windows?
              */
             return new Promise((resolve, reject) => {
                 let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${this._key} mode=2" ${this._tmpTiffLocation}${this._key}.tif`;
@@ -283,7 +277,6 @@ class SnowPortalComposite {
         }).then(() => {
             /**
              * Import GeoTiff to Geoserver
-             * TODO for Windows?
              */
             return new Promise((resolve, reject) => {
                 let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this._tmpTiffLocation}${this._key}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${this._key}/file.geotiff`;
@@ -303,7 +296,6 @@ class SnowPortalComposite {
         }).then(() => {
             /**
              * Publish GeoTiff in GeoNode
-             * TODO for Windows?
              */
 
             /**
@@ -328,7 +320,6 @@ class SnowPortalComposite {
         }).then(() => {
             /**
              * Delete GeoTiff
-             * TODO for Windows?
              */
             return new Promise((resolve, reject) => {
                 logger.info(`SnowPortalComposite#create ------ Deleting GeoTiff file ${this._key}.tif`);

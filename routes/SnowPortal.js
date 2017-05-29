@@ -258,8 +258,6 @@ class SnowPortal {
                                 classDistribution: classDistribution
                             };
 
-                            logger.info(`SnowPortal#getComposites ------ Composite statistical data to resolve:`);
-                            console.log(dataToResolve);
                             resolve(dataToResolve);
                         }).catch(error => {
                             reject(new Error(logger.error(`SnowPortal#getComposites ------ Composites Statistics Error: ${error.message} | ${error}`)));
