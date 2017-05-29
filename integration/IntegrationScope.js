@@ -121,23 +121,35 @@ class IntegrationScope {
 				"topic": topicId
 			})
 		}).then(() => {
-			return this._attributes.add([{
-				"_id": urbanAttributeId,
-				"name": "Urban",
-				"active": true,
-				"type": "numeric",
-				"standardUnits": 'km2',
-				"color": "#880000"
-			}])
+			return new FilteredMongoAttributes({name: 'Urban'}, this._mongo).json().then(attributes => {
+				if(attributes.length === 0) {
+					return this._attributes.add([{
+						"_id": urbanAttributeId,
+						"name": "Urban",
+						"active": true,
+						"type": "numeric",
+						"standardUnits": 'km2',
+						"color": "#880000"
+					}])
+				} else {
+					urbanAttributeId = attributes[0]._id;
+				}
+			});
 		}).then(() => {
-			return this._attributes.add([{
-				"_id": nonUrbanAttributeId,
-				"name": "Non Urban",
-				"active": true,
-				"type": "numeric",
-				"standardUnits": 'km2',
-				"color": "#000000"
-			}])
+			return new FilteredMongoAttributes({name: 'Non Urban'}, this._mongo).json().then(attributes => {
+				if(attributes.length === 0) {
+					return this._attributes.add([{
+						"_id": nonUrbanAttributeId,
+						"name": "Non Urban",
+						"active": true,
+						"type": "numeric",
+						"standardUnits": 'km2',
+						"color": "#000000"
+					}])
+				} else {
+					nonUrbanAttributeId = attributes[0]._id;
+				}
+			});
 		}).then(() => {
 			return Promise.all([
 				this._permissions.add(this._user.id, MongoScope.collectionName(), scopeId, Permission.READ),
