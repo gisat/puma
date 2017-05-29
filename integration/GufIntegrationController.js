@@ -120,15 +120,15 @@ class GufIntegrationController {
 
 			// Create new Location with the right access rights only to current user
 			return new IntegrationScope(this._mongo, this._pgPool, this._dataSchema, request.session.user, 'Global Urban Footprint', 2015).json();
-		}).then(() => {
+		}).then((pInformation) => {
+			information = pInformation;
+
 			process.status("Processing", logger.info("integration#process Publishing layers in GeoServer and GeoNode.", 60));
 			processes.store(process);
 
 			// Create new publish layers.
 			return this.publishLayer('au' + id);
-		}).then((pInformation) => {
-			information = pInformation;
-
+		}).then(() => {
 			process.status("Processing", logger.info("integration#process Create new location with permissions.", 65));
 			processes.store(process);
 
