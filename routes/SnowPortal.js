@@ -78,7 +78,7 @@ class SnowPortal {
 
         let sql = this.getScenesDataSql(areaType, area, sensors, satellites, timeRangeStart, timeRangeEnd);
 
-        this._pgPool.pool().query(sql).then(results => {
+        this._pgLongRunningPool.pool().query(sql).then(results => {
             let totals = {};
             let visibleTotals = {};
             let scenes = {};
@@ -223,7 +223,7 @@ class SnowPortal {
                     let tableName = composite.key;
                     promises.push(new Promise((resolve, reject) => {
                         let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors, satellites);
-                        this._pgPool.pool().query(sql).then((results) => {
+                        this._pgLongRunningPool.pool().query(sql).then((results) => {
                             let classDistribution = {};
                             let total = 0;
                             let visibleTotal = 0;
