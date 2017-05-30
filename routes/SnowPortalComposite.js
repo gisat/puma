@@ -58,8 +58,10 @@ class SnowPortalComposite {
         this._satellites = satellites;
         this._area = area;
 
+        // static configuration
         this._tmpTiffLocation = "/tmp/";
 
+        // generate key
         this._key = SnowPortalComposite.createKey(
             this._startDay,
             this._endDay,
@@ -77,33 +79,11 @@ class SnowPortalComposite {
             logger.info(`SnowPortalComposite#constructor *** Composite is already being created.`);
             return composites[this._key];
         }
-        logger.info(`SnowPortalComposite#constructor *** no ` + this._key);
+
+        // register this instance to composites array
         composites[this._key] = this;
 
-
-
-        let getMetadataSql = SnowPortalComposite.getMetadataSql(this._startDay, this._endDay, this._period, this._sensors, this._satellites);
-
-        this._metadata = this._pgPool.pool().query(getMetadataSql).then(result => {
-            if (result.rows.length > 1) {
-                logger.warn(`SnowPortalComposite#constructor More then one metadata results! (${result.rows.length}) ${result.rows}`);
-            }
-
-            if (result.rows.length) {
-                /**
-                 * Composite already exists in database.
-                 */
-                logger.info(`SnowPortalComposite#constructor Composite exists. Metadata: ${result.rows[0]}`);
-                return result.rows[0];
-            } else {
-                /**
-                 * Composite doesn't exist. Let's create.
-                 */
-                logger.info(`SnowPortalComposite#constructor Composite doesn't exist. Creating new.`);
-                return this.create();
-            }
-        });
-
+        this._metadata = this._initMetadata();
     }
 
     /**
@@ -130,12 +110,38 @@ class SnowPortalComposite {
         return this._key;
     }
 
+    /**
+     * Init generating of metadata (getting from database or creating the composite)
+     */
+    _initMetadata() {
+        let getMetadataSql = SnowPortalComposite.getMetadataSql(this._startDay, this._endDay, this._period, this._sensors, this._satellites);
+        return this._pgPool.pool().query(getMetadataSql).then(result => {
+            if (result.rows.length > 1) {
+                logger.warn(`SnowPortalComposite#constructor More then one metadata results! (${result.rows.length}) ${result.rows}`);
+            }
+
+            if (result.rows.length) {
+                /**
+                 * Composite already exists in database.
+                 */
+                logger.info(`SnowPortalComposite#constructor Composite exists. Metadata: ${result.rows[0]}`);
+                return result.rows[0];
+            } else {
+                /**
+                 * Composite doesn't exist. Let's create.
+                 */
+                logger.info(`SnowPortalComposite#constructor Composite doesn't exist. Creating new.`);
+                return this._create();
+            }
+        });
+    }
+
 
     /**
      * Create and publish composite.
      * @returns Promise
      */
-    create() {
+    _create() {
         let usedScenes = [];
 
         return new Promise((resolve, reject) => {
@@ -174,22 +180,22 @@ class SnowPortalComposite {
                     });
 
                     if(!tables.length || !usedScenes.length) {
-                        logger.warn(`SnowPortalComposite#create ------ one-day to n-day: ` +
+                        logger.warn(`SnowPortalComposite#_create ------ one-day to n-day: ` +
                             `SKIPPING ${this._startDay}--${this._endDay}. tables or usedScenes empty! ` +
                             `tables (${tables.length}): ${tables}    - usedScenes (${usedScenes.length}): ${usedScenes}`);
                         return reject('noScenes');
                     }
 
                     let sql = SnowPortalComposite.createMultiDayCompositeSql(this._key, tables);
-                    logger.info(`SnowPortalComposite#create ------ Generating n-day composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
+                    logger.info(`SnowPortalComposite#_create ------ Generating n-day composite from ${this._startDay} to ${this._endDay} (${this._period} days) ` +
                         `for sensors ${this._sensors} in area ${this._area} from scenes [${usedScenes}]
                     | key: ${this._key}
                     | SQL: ${sql}`);
                     this._pgLongRunningPool.pool().query(sql).then(() => {
-                        logger.info(`SnowPortalComposite#create ------ Generating n-day composite finished.`);
+                        logger.info(`SnowPortalComposite#_create ------ Generating n-day composite finished.`);
                         resolve();
                     }).catch(error => {
-                        reject(new Error(logger.error(`SnowPortalComposite#create ------ Generating n-day composite Error: ${error} | ${sql}`)));
+                        reject(new Error(logger.error(`SnowPortalComposite#_create ------ Generating n-day composite Error: ${error} | ${sql}`)));
                     });
 
                 });
@@ -213,13 +219,13 @@ class SnowPortalComposite {
                         });
 
                         if (!usedScenes.length) {
-                            logger.info(`SnowPortalComposite#create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`);
+                            logger.info(`SnowPortalComposite#_create ------ No scenes for sensors [${this._sensors}] for date ${this._startDay}.`);
                             reject('noScenes');
                         }
 
                         resolve(usedScenes);
                     }).catch(error => {
-                        reject(new Error(logger.error(`SnowPortalComposite#create ------ Creating composite, get IDs Error: ${error.message} | ${error}`)));
+                        reject(new Error(logger.error(`SnowPortalComposite#_create ------ Creating composite, get IDs Error: ${error.message} | ${error}`)));
                     });
                 }).then(() => {
                     /**
@@ -227,15 +233,15 @@ class SnowPortalComposite {
                      */
                     return new Promise((resolve, reject) => {
                         let sql = SnowPortalComposite.createOneDayCompositeSql(this._key, this._startDay, this._sensors, this._satellites);
-                        logger.info(`SnowPortalComposite#create ------ Generating one-day composite for ${this._startDay} ` +
+                        logger.info(`SnowPortalComposite#_create ------ Generating one-day composite for ${this._startDay} ` +
                             `for sensors ${this._sensors}/satellites ${this._satellites} in area ${this._area} from scenes ${usedScenes}
                         | key: ${this._key}
                         | SQL: ${sql}`);
                         this._pgLongRunningPool.pool().query(sql).then(() => {
-                            logger.info(`SnowPortalComposite#create ------ Generating one-day composite finished.`);
+                            logger.info(`SnowPortalComposite#_create ------ Generating one-day composite finished.`);
                             resolve();
                         }).catch(error => {
-                            reject(new Error(logger.error(`SnowPortalComposite#create ------ Generating one-day composite Error: ${error} | ${sql}`)));
+                            reject(new Error(logger.error(`SnowPortalComposite#_create ------ Generating one-day composite Error: ${error} | ${sql}`)));
                         });
                     });
                 }));
@@ -247,12 +253,12 @@ class SnowPortalComposite {
             return new Promise((resolve, reject) => {
                 usedScenes.sort();
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area, usedScenes);
-                logger.info(`SnowPortalComposite#create ------ Saving composite metadata | SQL: ${sql}`);
+                logger.info(`SnowPortalComposite#_create ------ Saving composite metadata | SQL: ${sql}`);
                 this._pgPool.pool().query(sql).then(() => {
-                    logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished.`);
+                    logger.info(`SnowPortalComposite#_create ------ Saving composite metadata finished.`);
                     resolve();
                 }).catch(error => {
-                    reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. Creating composite, saving metadata Error: ${error.message} | ${error}`)));
+                    reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Creating composite, saving metadata Error: ${error.message} | ${error}`)));
                 });
             });
         }).then(() => {
@@ -261,14 +267,14 @@ class SnowPortalComposite {
              */
             return new Promise((resolve, reject) => {
                 let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${this._key} mode=2" ${this._tmpTiffLocation}${this._key}.tif`;
-                logger.info(`SnowPortalComposite#create ------ Exporting GeoTiff of the composite ${this._key}`);
+                logger.info(`SnowPortalComposite#_create ------ Exporting GeoTiff of the composite ${this._key}`);
                 child_process.exec(command, (error, stdout, stderr) => {
                     if (error) {
                         console.log(`stdout: ${stdout}`);
                         console.log(`stderr: ${stderr}`);
-                        return reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. Export composite to GeoTiff failed: ${error} (outputs above)`)));
+                        return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Export composite to GeoTiff failed: ${error} (outputs above)`)));
                     }
-                    logger.info(`SnowPortalComposite#create ------ Export composite to GeoTiff finished with output:`);
+                    logger.info(`SnowPortalComposite#_create ------ Export composite to GeoTiff finished with output:`);
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
                     resolve();
@@ -280,14 +286,14 @@ class SnowPortalComposite {
              */
             return new Promise((resolve, reject) => {
                 let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this._tmpTiffLocation}${this._key}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${this._key}/file.geotiff`;
-                logger.info(`SnowPortalComposite#create ------ Importing GeoTiff in Geoserver (${this._key})`);
+                logger.info(`SnowPortalComposite#_create ------ Importing GeoTiff in Geoserver (${this._key})`);
                 child_process.exec(command, (error, stdout, stderr) => {
                     if (error) {
                         console.log(`stdout: ${stdout}`);
                         console.log(`stderr: ${stderr}`);
-                        return reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. Import GeoTiff to GS failed: ${error} (outputs above)`)));
+                        return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Import GeoTiff to GS failed: ${error} (outputs above)`)));
                     }
-                    logger.info(`SnowPortalComposite#create ------ Import GeoTiff to geoserver finished with output:`);
+                    logger.info(`SnowPortalComposite#_create ------ Import GeoTiff to geoserver finished with output:`);
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
                     resolve();
@@ -301,7 +307,7 @@ class SnowPortalComposite {
             /**
              * TODO fix socket hang up error
              */
-            // logger.info(`SnowPortalComposite#create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
+            // logger.info(`SnowPortalComposite#_create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
             // superagent
             //     .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
             //     .timeout({
@@ -309,25 +315,25 @@ class SnowPortalComposite {
             //         deadline: 3600000
             //     })
             //     .then(res => {
-            //         logger.info(`SnowPortalComposite#create ------ updatelayers finished with result:`);
+            //         logger.info(`SnowPortalComposite#_create ------ updatelayers finished with result:`);
             //         if(res.status !== 200) {
-            //             new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${res.status}: ${res.text}`));
+            //             new Error(logger.error(`SnowPortalComposite#_create ------ Error. updatelayers error: #${res.status}: ${res.text}`));
             //         }
             //     }).catch(error => {
-            //         new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error));
+            //         new Error(logger.error(`SnowPortalComposite#_create ------ Error. updatelayers error: `, error));
             //     });
 
             // TODO this might work but we don't want to do updatelayers now
             // return new Promise((resolve, reject) => {
             //     let command = `curl http://localhost/cgi-bin/updatelayers?f=${this._key}`;
-            //     logger.info(`SnowPortalComposite#create ------ updatelayers in GeoNode (${this._key})`);
+            //     logger.info(`SnowPortalComposite#_create ------ updatelayers in GeoNode (${this._key})`);
             //     child_process.exec(command, (error, stdout, stderr) => {
             //         if (error) {
             //             console.log(`stdout: ${stdout}`);
             //             console.log(`stderr: ${stderr}`);
-            //             return reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${error}`)));
+            //             return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. updatelayers error: #${error}`)));
             //         }
-            //         logger.info(`SnowPortalComposite#create ------ updatelayers in GeoNode finished with output:`);
+            //         logger.info(`SnowPortalComposite#_create ------ updatelayers in GeoNode finished with output:`);
             //         console.log(`stdout: ${stdout}`);
             //         console.log(`stderr: ${stderr}`);
             //         resolve();
@@ -341,14 +347,14 @@ class SnowPortalComposite {
              * Delete GeoTiff
              */
             return new Promise((resolve, reject) => {
-                logger.info(`SnowPortalComposite#create ------ Deleting GeoTiff file ${this._key}.tif`);
+                logger.info(`SnowPortalComposite#_create ------ Deleting GeoTiff file ${this._key}.tif`);
                 child_process.exec(`rm ${this._tmpTiffLocation}${this._key}.tif`, (error, stdout, stderr) => {
                     if (error) {
                         console.log(`stdout: ${stdout}`);
                         console.log(`stderr: ${stderr}`);
-                        return reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. Deleting GeoTiff failed: ${error} (outputs above)`)));
+                        return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Deleting GeoTiff failed: ${error} (outputs above)`)));
                     }
-                    logger.info(`SnowPortalComposite#create ------ Deleting GeoTiff finished with output:`);
+                    logger.info(`SnowPortalComposite#_create ------ Deleting GeoTiff finished with output:`);
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
                     resolve();
@@ -368,7 +374,7 @@ class SnowPortalComposite {
             if(error === 'noScenes') {
                 return null;
             }
-            logger.error(`SnowPortalComposite#create ------ Error ${error.message}`);
+            logger.error(`SnowPortalComposite#_create ------ Error ${error.message}`);
             throw error;
         });
     }
