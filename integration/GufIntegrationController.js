@@ -211,15 +211,6 @@ class GufIntegrationController {
 		});
 	}
 
-	toArrayBuffer(buffer) {
-		var ab = new ArrayBuffer(buffer.length);
-		var view = new Uint8Array(ab);
-		for (var i = 0; i < buffer.length; ++i) {
-			view[i] = buffer[i];
-		}
-		return ab;
-	}
-
 	/**
 	 * It counts the correct area of urban and non urban area.
 	 * @param rasterTable {String} Name of the raster table containing the schema
