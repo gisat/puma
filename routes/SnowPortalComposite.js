@@ -248,7 +248,7 @@ class SnowPortalComposite {
                 usedScenes.sort();
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#create ------ Saving composite metadata | SQL: ${sql}`);
-                this._pgPool.pool().query(sql).then(result => {
+                this._pgPool.pool().query(sql).then(() => {
                     logger.info(`SnowPortalComposite#create ------ Saving composite metadata finished.`);
                     resolve();
                 }).catch(error => {
@@ -317,6 +317,25 @@ class SnowPortalComposite {
             //         new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: `, error));
             //     });
 
+            // TODO this might work but we don't want to do updatelayers now
+            // return new Promise((resolve, reject) => {
+            //     let command = `curl http://localhost/cgi-bin/updatelayers?f=${this._key}`;
+            //     logger.info(`SnowPortalComposite#create ------ updatelayers in GeoNode (${this._key})`);
+            //     child_process.exec(command, (error, stdout, stderr) => {
+            //         if (error) {
+            //             console.log(`stdout: ${stdout}`);
+            //             console.log(`stderr: ${stderr}`);
+            //             return reject(new Error(logger.error(`SnowPortalComposite#create ------ Error. updatelayers error: #${error}`)));
+            //         }
+            //         logger.info(`SnowPortalComposite#create ------ updatelayers in GeoNode finished with output:`);
+            //         console.log(`stdout: ${stdout}`);
+            //         console.log(`stderr: ${stderr}`);
+            //         resolve();
+            //     });
+            // });
+
+
+
         }).then(() => {
             /**
              * Delete GeoTiff
@@ -332,15 +351,20 @@ class SnowPortalComposite {
                     logger.info(`SnowPortalComposite#create ------ Deleting GeoTiff finished with output:`);
                     console.log(`stdout: ${stdout}`);
                     console.log(`stderr: ${stderr}`);
-                    resolve({
-                        date_start: this._startDay,
-                        used_scenes: usedScenes,
-                        key: this._key
-                    });
+                    resolve();
                 });
             });
+        }).then(() => {
+            /**
+             * Resolve composite metadata
+             */
+            return {
+                date_start: this._startDay,
+                used_scenes: usedScenes,
+                key: this._key
+            };
         }).catch(error => {
-            // noScenes is not an Error
+            // noScenes is not an error
             if(error === 'noScenes') {
                 return null;
             }
