@@ -24,6 +24,7 @@ let MongoScope = require('../metadata/MongoScope');
 let MongoLayerReference = require('../layers/MongoLayerReference');
 let MongoLayerReferences = require('../layers/MongoLayerReferences');
 
+let Group = require('../security/Group');
 let PgLayerViews = require('../layers/PgLayerViews');
 let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
 let GeoServerLayers = require('../layers/GeoServerLayers');
@@ -60,6 +61,14 @@ class GufIntegrationController {
 	}
 
 	process(request, response) {
+		let user = request.session.user;
+		if(user.id === Group.guestId()) {
+			logger.error("GufIntegrationController#process The user must be logged in. Guest doesn't have access.");
+			response.status(400).json({
+				message: "The user must be logged in. Guest doesn't have access"
+			});
+		}
+
 		if (!request.body.url) {
 			logger.error("Url of the data source must be specified.");
 			response.status(400).json({
@@ -94,7 +103,6 @@ class GufIntegrationController {
 
 		let administrativeUnitTable = `${this._sourceSchema}.au${id}`;
 		let information, place;
-		let user = request.session.user;
 		var rasterLayerTable, boundingBox, url, center;
 		remoteFile.get().then(() => {
 			process.status("Processing", "File was retrieved successfully and is being processed.", 13);
