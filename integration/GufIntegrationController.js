@@ -798,7 +798,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 				]
 			}
 		}).then(() => {
-			return `${config.remoteProtocol}://${config.remoteAddress}${config.projectHome}tool/?id=${dataViewId}`;
+			return `${config.remoteProtocol}://${config.remoteAddress}${config.projectHome}/tool/?id=${dataViewId}`;
 		})
 	}
 
