@@ -62,7 +62,6 @@ class GufIntegrationController {
 
 	process(request, response) {
 		let user = request.session.user;
-		console.log("User: ", user);
 		if(user.id === User.guestId()) {
 			logger.error("GufIntegrationController#process The user must be logged in. Guest doesn't have access.");
 			response.status(400).json({
