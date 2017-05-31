@@ -34,6 +34,10 @@ class User {
             groups: this.groups.map(group => group.json())
         }
     }
+
+    static guestId() {
+        return 0;
+    }
 }
 
 module.exports = User;

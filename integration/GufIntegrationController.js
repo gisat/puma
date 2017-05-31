@@ -24,12 +24,12 @@ let MongoScope = require('../metadata/MongoScope');
 let MongoLayerReference = require('../layers/MongoLayerReference');
 let MongoLayerReferences = require('../layers/MongoLayerReferences');
 
-let Group = require('../security/Group');
 let PgLayerViews = require('../layers/PgLayerViews');
 let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
 let GeoServerLayers = require('../layers/GeoServerLayers');
 let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
 let RestLayer = require('../layers/RestLayer');
+let User = require('../security/User');
 
 let gdal = require('gdal');
 
@@ -62,7 +62,8 @@ class GufIntegrationController {
 
 	process(request, response) {
 		let user = request.session.user;
-		if(user.id === Group.guestId()) {
+		console.log("User: ", user);
+		if(user.id === User.guestId()) {
 			logger.error("GufIntegrationController#process The user must be logged in. Guest doesn't have access.");
 			response.status(400).json({
 				message: "The user must be logged in. Guest doesn't have access"
