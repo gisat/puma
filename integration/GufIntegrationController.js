@@ -79,6 +79,8 @@ class GufIntegrationController {
 			return;
 		}
 
+		let defaultName = request.body.name;
+
 		logger.info("/integration/process, Start remote process. Url: ", request.body.url);
 
 		var urlOfGeoTiff = request.body.url;
@@ -149,7 +151,7 @@ class GufIntegrationController {
 			processes.store(process);
 
 			// Create new Location with the right access rights only to current user
-			return this.createLocation(user, boundingBox, information.scope);
+			return this.createLocation(user, boundingBox, information.scope, defaultName);
 		}).then((pPlace) => {
 			place = pPlace;
 
@@ -246,13 +248,13 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 * @param scope {Number} Id of the scope this place belongs to.
 	 * @returns {*|Promise.<TResult>}
 	 */
-	createLocation(user, boundingBox, scope) {
+	createLocation(user, boundingBox, scope, defaultName) {
 		// Integrate into the relevant scope.
 		let id = conn.getNextId();
 		return this._locations.add({
 			"_id": id,
 			"active": true,
-			"name": "Imported " + id,
+			"name": defaultName || "Imported " + id,
 			"bbox": boundingBox,
 			"dataset": scope
 		}).then(() => {
