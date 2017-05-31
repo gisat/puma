@@ -67,6 +67,7 @@ class GufIntegrationController {
 			response.status(400).json({
 				message: "The user must be logged in. Guest doesn't have access"
 			});
+			return;
 		}
 
 		if (!request.body.url) {
