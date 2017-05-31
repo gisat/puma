@@ -60,6 +60,7 @@ class SnowPortalComposite {
 
         // static configuration
         this._tmpTiffLocation = "/tmp/";
+        this._visibleClasses = ["S", "NS", "C", "NC"]; // TODO get from SnowPortal?
 
         // generate key
         this._key = SnowPortalComposite.createKey(
@@ -108,6 +109,120 @@ class SnowPortalComposite {
      */
     getKey() {
         return this._key;
+    }
+
+    getStatsForArea(areaObj) {
+        let areaString = areaObj.type === 'noLimit' ? 'europe':areaObj.value;
+
+        return new Promise((resolve, reject) => {
+
+            /**
+             * Find existing stats for this composite and area.
+             */
+            Promise.resolve(this._metadata).then(() => {
+                let sql = SnowPortalComposite.findExistingStatsSql(this._key, areaString);
+                this._pgPool.pool().query(sql).then(result => {
+                    logger.info(`SnowPortalComposite#getStatsForArea ----- Found ${result.rows.length} statistics for ${this._area} and ${this._key}`);
+                    if(result.rows.length) {
+                        let row = result.rows[0];
+                        let classDistribution = JSON.parse(row.class_distribution);
+                        resolve({
+                            key: tableName,
+                            dateFrom: this._startDay,
+                            period: this._period,
+                            sensors: this._sensors,
+                            satellites: this._satellites,
+                            aoiCoverage: row.aoi_coverage,
+                            classDistribution: classDistribution
+                        });
+                    } else {
+                        resolve(null);
+                    }
+                }).catch(error => {
+                    reject(new Error(logger.error(`SnowPortalComposite#getStatsForArea ------ Searching for existing composite statistics Error: ${error} | ${sql}`)));
+                });
+            });
+
+
+        }).then(statistics => {
+
+            /**
+             * Found existing
+             */
+            if(statistics !== null) {
+                logger.info(`SnowPortalComposite#getStatsForArea ------ found statistics: `);
+                console.log(statistics);
+                return statistics;
+            } else {
+
+                /**
+                 * No existing found, create and save new
+                 */
+                return new Promise((resolve, reject) => {
+                    /**
+                     * Compute statistics
+                     */
+                    let sql = SnowPortalComposite.createStatsSql(this._key, areaObj.type, areaObj.value, this._sensors, this._satellites);
+                    this._pgLongRunningPool.pool().query(sql).then((results) => {
+                        let classDistribution = {};
+                        let total = 0;
+                        let visibleTotal = 0;
+                        let aoiCoverage = 0;
+                        _.each(results.rows, row => {
+
+                            /**
+                             * For classes we want to see in statistics
+                             */
+                            if (this._visibleClasses.includes(row.class)) {
+                                visibleTotal += Number(row.count);
+                                classDistribution[row.class] = null;
+                                aoiCoverage = row.aoi;
+                            }
+
+                            total += Number(row.count);
+
+                        });
+                        _.each(results.rows, row => {
+                            if (this._visibleClasses.includes(row.class)) {
+                                classDistribution[row.class] = (row.count / visibleTotal) * 100;
+                            }
+                        });
+
+                        resolve({
+                            key: tableName,
+                            dateFrom: this._startDay,
+                            period: this._period,
+                            sensors: this._sensors,
+                            satellites: this._satellites,
+                            aoiCoverage: aoiCoverage * (visibleTotal / total),
+                            classDistribution: classDistribution
+                        });
+                    }).catch(error => {
+                        reject(new Error(logger.error(`SnowPortalComposite#getStatsForArea ------ Composites Statistics Error: ${error.message} | ${error}`)));
+                    });
+                }).then(statistics => {
+
+                    /**
+                     * Save statistics to DB
+                     */
+                    return new Promise((resolve, reject) => {
+                        let sql = SnowPortalComposite.saveStatsSql(this._key, areaString, statistics.aoiCoverage, statistics.classDistribution);
+                        this._pgPool.pool().query(sql).then(() => {
+                            resolve(statistics);
+                        }).catch(error => {
+                            // don't stop if saving failed, only show warning
+                            logger.warn(`SnowPortalComposite#getStatsForArea ------ Saving stats failed: ${error}`);
+                            resolve(statistics);
+                        });
+                    });
+                });
+            }
+
+
+        }).catch(error => {
+            logger.error(`SnowPortalComposite#getStatsForArea ------ Getting stats for composite and area failed: ${error}`);
+            throw error;
+        });
     }
 
     /**
@@ -592,7 +707,7 @@ class SnowPortalComposite {
     }
 
     /**
-     *
+     * Create SQL query for saving composite metadata
      * @param tableName
      * @param startDate
      * @param endDate
@@ -617,6 +732,97 @@ class SnowPortalComposite {
                     '${area}',
                     ${this.convertArrayToSqlArray(usedScenes)}::integer[]
                 );`;
+    }
+
+    /**
+     * Create SQL query for finding existing composite statistics
+     * @param compositeKey
+     * @param area
+     * @returns {string}
+     */
+    static findExistingStatsSql(compositeKey, area) {
+        return `
+            SELECT *
+                WHERE composite_key = '${compositeKey}'
+                    AND area = '${area}';
+        `;
+    }
+
+    /**
+     * Create SQL query for saving composite statistics
+     * @param compositeKey
+     * @param area
+     * @param aoiCoverage
+     * @param classDistribution
+     * @returns {string}
+     */
+    static saveStatsSql(compositeKey, area, aoiCoverage, classDistribution) {
+        return `
+            INSERT INTO composites.statistics (
+                    composite_key,
+                    area,
+                    aoi_coverage,
+                    class_distribution
+                )
+                VALUES (
+                    '${compositeKey}',
+                    '${area}'
+                    ${aoiCoverage},
+                    '${JSON.stringify(classDistribution)}'
+                );
+        `;
+    }
+
+    /**
+     * Create SQL query for creating composite statistics
+     * @param tableName
+     * @param areaType
+     * @param area
+     * @param sensors
+     * @param satellites
+     * @returns {*}
+     */
+    static createStatsSql(tableName, areaType, area, sensors, satellites) {
+        let geometryTable;
+        let geometryTableCondition;
+
+        switch (areaType) {
+            case "key":
+                geometryTable = "areas";
+                geometryTableCondition = `g."KEY" = '${area}'`;
+                break;
+            case "noLimit":
+                geometryTable = "europe";
+                geometryTableCondition = `g.the_geom IS NOT NULL`;
+                break;
+            default:
+                return null;
+        }
+
+        return `
+        SELECT
+          l.classified_as AS class,
+          sum(foo.count)  AS count,
+          max(foo.aoi)    AS aoi
+        FROM (
+            SELECT
+              (clipped_raster_data.pvc).value                    AS class,
+              sum((clipped_raster_data.pvc).count)               AS count,
+              avg(aoi.aoi) AS aoi
+            FROM
+              (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
+               FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
+                   ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
+              (SELECT 100 * (st_area(st_union(st_intersection(st_polygon(st_clip(r.rast, g.the_geom)), g.the_geom))) /
+                       st_area(st_union(g.the_geom))) AS aoi
+                 FROM composites."${tableName}" AS r
+                   INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
+                 WHERE st_intersects(r.rast, g.the_geom)) AS aoi
+            GROUP BY class) AS foo
+          INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
+          INNER JOIN legend AS l ON l.source_id = s.id AND foo.class BETWEEN l.value_from AND l.value_to
+        GROUP BY l.classified_as;
+        `
     }
 
 }

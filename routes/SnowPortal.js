@@ -24,7 +24,7 @@ class SnowPortal {
 
         this.area = 'europe'; // TODO set dynamicaly?
 
-        this.visibleClasses = ["S", "NS", "C", "NC"];
+        this._visibleClasses = ["S", "NS", "C", "NC"];
     }
 
     getCompositesMetadata(request, response) {
@@ -98,7 +98,7 @@ class SnowPortal {
                 /**
                  * Classes we want to see in statistics
                  */
-                if (this.visibleClasses.includes(row.class)) {
+                if (this._visibleClasses.includes(row.class)) {
                     classDistribution[row.class] = row.count;
                     visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
                 }
@@ -199,79 +199,14 @@ class SnowPortal {
             }
 
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
-            let compositesMetadata = [];
+            let compositeStats = [];
             _.each(compositeDates, compositeDate => {
                 let composite = new SnowPortalComposite(this._pgPool, this._pgLongRunningPool, compositeDate, null, period, sensors, satellites, this.area);
-                compositesMetadata.push(composite.getMetadata());
+                compositeStats.push(composite.getStatsForArea(area));
             });
 
-            return Promise.all(compositesMetadata).then(metadata => {
-                /**
-                 * Get composites data and compute statistics
-                 * TODO - this can be moved to the SnowPortalComposite class
-                 */
+            return Promise.all(compositeStats);
 
-                let promises = [];
-
-                _.each(metadata, composite => {
-
-                    if(composite === null) {
-                        logger.info(`SnowPortal#getComposites Empty composite metadata object.`);
-                        return;
-                    }
-
-                    let tableName = composite.key;
-                    promises.push(new Promise((resolve, reject) => {
-                        let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors, satellites);
-                        this._pgLongRunningPool.pool().query(sql).then((results) => {
-                            let classDistribution = {};
-                            let total = 0;
-                            let visibleTotal = 0;
-                            let aoiCoverage = 0;
-                            _.each(results.rows, row => {
-
-                                /**
-                                 * For classes we want to see in statistics
-                                 */
-                                if (this.visibleClasses.includes(row.class)) {
-                                    visibleTotal += Number(row.count);
-                                    classDistribution[row.class] = null;
-                                    aoiCoverage = row.aoi;
-                                }
-
-                                total += Number(row.count);
-
-                            });
-                            _.each(results.rows, row => {
-                                if (this.visibleClasses.includes(row.class)) {
-                                    classDistribution[row.class] = (row.count / visibleTotal) * 100;
-                                }
-                            });
-
-                            let dataToResolve = {
-                                key: tableName,
-                                dateFrom: composite.date_start,
-                                period: period,
-                                sensors: sensors,
-                                satellites: satellites,
-                                aoiCoverage: aoiCoverage * (visibleTotal / total),
-                                classDistribution: classDistribution
-                            };
-
-                            resolve(dataToResolve);
-                        }).catch(error => {
-                            reject(new Error(logger.error(`SnowPortal#getComposites ------ Composites Statistics Error: ${error.message} | ${error}`)));
-                        });
-                    }));
-
-                });
-
-                return Promise.all(promises);
-
-            }).catch(error => {
-                logger.error(`SnowPortal#getComposites ------ Error while getting metadata about composites: ${error}`);
-                throw error;
-            });
         }).then(data => {
             logger.info(`SnowPortal#getComposites ------ get process data resolved!`);
             console.log('data: ', data);
@@ -495,7 +430,12 @@ class SnowPortal {
                                                     date_end date not null,
                                                     area varchar(40) not null,
                                                     used_scenes text[],
-                                                    period integer);`);
+                                                    period integer);
+                                       CREATE TABLE IF NOT EXISTS composites.statistics (
+                                                    composite_key varchar(50) not null,
+                                                    area varchar(40) not null,
+                                                    aoi_coverage double precision not null,
+                                                    class_distribution varchar(255) not null);`);
         });
     }
 }
