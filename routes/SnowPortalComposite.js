@@ -215,7 +215,7 @@ class SnowPortalComposite {
                             resolve(statistics);
                         }).catch(error => {
                             // don't stop if saving failed, only show warning
-                            logger.warn(`SnowPortalComposite#getStatsForArea ------ Saving stats failed: ${error}`);
+                            logger.warn(`SnowPortalComposite#getStatsForArea ------ Saving stats failed: ${error} | SQL: ${sql}`);
                             resolve(statistics);
                         });
                     });
