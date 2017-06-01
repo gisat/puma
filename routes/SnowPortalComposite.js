@@ -189,7 +189,7 @@ class SnowPortalComposite {
                         });
 
                         resolve({
-                            key: tableName,
+                            key: this._key,
                             dateFrom: this._startDay,
                             period: this._period,
                             sensors: this._sensors,
@@ -206,7 +206,11 @@ class SnowPortalComposite {
                      * Save statistics to DB
                      */
                     return new Promise((resolve, reject) => {
-                        let sql = SnowPortalComposite.saveStatsSql(this._key, areaString, statistics.aoiCoverage, statistics.classDistribution);
+                        let sql = SnowPortalComposite.saveStatsSql(
+                            this._key,
+                            areaString,
+                            statistics.aoiCoverage,
+                            statistics.classDistribution);
                         this._pgPool.pool().query(sql).then(() => {
                             resolve(statistics);
                         }).catch(error => {
