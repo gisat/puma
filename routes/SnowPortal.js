@@ -179,7 +179,7 @@ class SnowPortal {
             let timeRangeStart = requestData.timeRange.start;
             let timeRangeEnd = requestData.timeRange.end;
             let period = requestData.period;
-            let area = requestData._area;
+            let area = requestData.area;
             let sensors = [];
             let satellites = [];
             _.each(request.body.sensors, (sensorSatellites, sensorKey) => {
