@@ -743,6 +743,7 @@ class SnowPortalComposite {
     static findExistingStatsSql(compositeKey, area) {
         return `
             SELECT *
+                FROM composites.statistics
                 WHERE composite_key = '${compositeKey}'
                     AND area = '${area}';
         `;
