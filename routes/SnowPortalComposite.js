@@ -123,6 +123,7 @@ class SnowPortalComposite {
 
                 // don't count stats for no composite
                 if(compositeMetadata === null) {
+                    logger.info(`SnowPortalComposite#getStatsForArea ----- null metadata - reject to count stats for no composite with key ${this._key}`);
                     return reject('noComposite');
                 }
 
