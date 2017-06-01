@@ -24,7 +24,7 @@ class SnowPortal {
 
         this.area = 'europe'; // TODO set dynamicaly?
 
-        this.visibleClasses = ["S", "NS", "C", "NC"];
+        this._visibleClasses = ["S", "NS", "C", "NC"];
     }
 
     getCompositesMetadata(request, response) {
@@ -98,7 +98,7 @@ class SnowPortal {
                 /**
                  * Classes we want to see in statistics
                  */
-                if (this.visibleClasses.includes(row.class)) {
+                if (this._visibleClasses.includes(row.class)) {
                     classDistribution[row.class] = row.count;
                     visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
                 }
@@ -199,79 +199,14 @@ class SnowPortal {
             }
 
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
-            let compositesMetadata = [];
+            let compositeStats = [];
             _.each(compositeDates, compositeDate => {
                 let composite = new SnowPortalComposite(this._pgPool, this._pgLongRunningPool, compositeDate, null, period, sensors, satellites, this.area);
-                compositesMetadata.push(composite.getMetadata());
+                compositeStats.push(composite.getStatsForArea(area));
             });
 
-            return Promise.all(compositesMetadata).then(metadata => {
-                /**
-                 * Get composites data and compute statistics
-                 * TODO - this can be moved to the SnowPortalComposite class
-                 */
+            return Promise.all(compositeStats);
 
-                let promises = [];
-
-                _.each(metadata, composite => {
-
-                    if(composite === null) {
-                        logger.info(`SnowPortal#getComposites Empty composite metadata object.`);
-                        return;
-                    }
-
-                    let tableName = composite.key;
-                    promises.push(new Promise((resolve, reject) => {
-                        let sql = this.getCompositeDataSql(tableName, area.type, area.value, sensors, satellites);
-                        this._pgLongRunningPool.pool().query(sql).then((results) => {
-                            let classDistribution = {};
-                            let total = 0;
-                            let visibleTotal = 0;
-                            let aoiCoverage = 0;
-                            _.each(results.rows, row => {
-
-                                /**
-                                 * For classes we want to see in statistics
-                                 */
-                                if (this.visibleClasses.includes(row.class)) {
-                                    visibleTotal += Number(row.count);
-                                    classDistribution[row.class] = null;
-                                    aoiCoverage = row.aoi;
-                                }
-
-                                total += Number(row.count);
-
-                            });
-                            _.each(results.rows, row => {
-                                if (this.visibleClasses.includes(row.class)) {
-                                    classDistribution[row.class] = (row.count / visibleTotal) * 100;
-                                }
-                            });
-
-                            let dataToResolve = {
-                                key: tableName,
-                                dateFrom: composite.date_start,
-                                period: period,
-                                sensors: sensors,
-                                satellites: satellites,
-                                aoiCoverage: aoiCoverage * (visibleTotal / total),
-                                classDistribution: classDistribution
-                            };
-
-                            resolve(dataToResolve);
-                        }).catch(error => {
-                            reject(new Error(logger.error(`SnowPortal#getComposites ------ Composites Statistics Error: ${error.message} | ${error}`)));
-                        });
-                    }));
-
-                });
-
-                return Promise.all(promises);
-
-            }).catch(error => {
-                logger.error(`SnowPortal#getComposites ------ Error while getting metadata about composites: ${error}`);
-                throw error;
-            });
         }).then(data => {
             logger.info(`SnowPortal#getComposites ------ get process data resolved!`);
             console.log('data: ', data);
@@ -371,49 +306,6 @@ class SnowPortal {
             }).join(",") + "]";
     }
 
-    getCompositeDataSql(tableName, areaType, area, sensors, satellites) {
-        let geometryTable;
-        let geometryTableCondition;
-
-        switch (areaType) {
-            case "key":
-                geometryTable = "areas";
-                geometryTableCondition = `g."KEY" = '${area}'`;
-                break;
-            case "noLimit":
-                geometryTable = "europe";
-                geometryTableCondition = `g.the_geom IS NOT NULL`;
-                break;
-            default:
-                return null;
-        }
-
-        return `
-        SELECT
-          l.classified_as AS class,
-          sum(foo.count)  AS count,
-          max(foo.aoi)    AS aoi
-        FROM (
-            SELECT
-              (clipped_raster_data.pvc).value                          AS class,
-              sum((clipped_raster_data.pvc).count)               AS count,
-              avg(aoi.aoi) AS aoi
-            FROM
-              (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
-               FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
-                   ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
-              (SELECT 100 * (st_area(st_union(st_intersection(st_polygon(st_clip(r.rast, g.the_geom)), g.the_geom))) /
-                       st_area(st_union(g.the_geom))) AS aoi
-                 FROM composites."${tableName}" AS r
-                   INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
-                 WHERE st_intersects(r.rast, g.the_geom)) AS aoi
-            GROUP BY class) AS foo
-          INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
-          INNER JOIN legend AS l ON l.source_id = s.id AND foo.class BETWEEN l.value_from AND l.value_to
-        GROUP BY l.classified_as;
-        `
-    }
-
     getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
         let geometryTable;
         let geometryTableCondition;
@@ -495,7 +387,12 @@ class SnowPortal {
                                                     date_end date not null,
                                                     area varchar(40) not null,
                                                     used_scenes text[],
-                                                    period integer);`);
+                                                    period integer);
+                                       CREATE TABLE IF NOT EXISTS composites.statistics (
+                                                    composite_key varchar(50) not null,
+                                                    area varchar(40) not null,
+                                                    aoi_coverage double precision not null,
+                                                    class_distribution varchar(255) not null);`);
         });
     }
 }
