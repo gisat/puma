@@ -119,7 +119,13 @@ class SnowPortalComposite {
             /**
              * Find existing stats for this composite and area.
              */
-            Promise.resolve(this._metadata).then(() => {
+            Promise.resolve(this._metadata).then(compositeMetadata => {
+
+                // don't count stats for no composite
+                if(compositeMetadata === null) {
+                    return reject('noComposite');
+                }
+
                 let sql = SnowPortalComposite.findExistingStatsSql(this._key, areaString);
                 this._pgPool.pool().query(sql).then(result => {
                     logger.info(`SnowPortalComposite#getStatsForArea ----- Found ${result.rows.length} statistics for ${areaString} and ${this._key}`);
@@ -225,6 +231,10 @@ class SnowPortalComposite {
 
 
         }).catch(error => {
+            // noComposite is not an error
+            if(error === 'noComposite') {
+                return null;
+            }
             logger.error(`SnowPortalComposite#getStatsForArea ------ Getting stats for composite and area failed: ${error}`);
             throw error;
         });

@@ -208,11 +208,13 @@ class SnowPortal {
             return Promise.all(compositeStats);
 
         }).then(data => {
+            let dataWithoutNulls = _.compact(data);
+
             logger.info(`SnowPortal#getComposites ------ get process data resolved!`);
-            console.log('data: ', data);
+            console.log('data: ', dataWithoutNulls);
 
             processes[requestHash].ended = Date.now();
-            processes[requestHash].data = data;
+            processes[requestHash].data = dataWithoutNulls;
         }).catch(error => {
             logger.error(`SnowPortal#getComposites ------ get process data FAILED: ${error.message || error}`);
             processes[requestHash].ended = Date.now();
