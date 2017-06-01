@@ -122,7 +122,7 @@ class SnowPortalComposite {
             Promise.resolve(this._metadata).then(() => {
                 let sql = SnowPortalComposite.findExistingStatsSql(this._key, areaString);
                 this._pgPool.pool().query(sql).then(result => {
-                    logger.info(`SnowPortalComposite#getStatsForArea ----- Found ${result.rows.length} statistics for ${this._area} and ${this._key}`);
+                    logger.info(`SnowPortalComposite#getStatsForArea ----- Found ${result.rows.length} statistics for ${areaString} and ${this._key}`);
                     if(result.rows.length) {
                         let row = result.rows[0];
                         let classDistribution = JSON.parse(row.class_distribution);
