@@ -212,6 +212,7 @@ class SnowPortalComposite {
                             statistics.aoiCoverage,
                             statistics.classDistribution);
                         this._pgPool.pool().query(sql).then(() => {
+                            logger.info(`SnowPortalComposite#getStatsForArea ------ Saving stats OK`);
                             resolve(statistics);
                         }).catch(error => {
                             // don't stop if saving failed, only show warning
