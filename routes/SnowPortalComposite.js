@@ -771,7 +771,7 @@ class SnowPortalComposite {
                 )
                 VALUES (
                     '${compositeKey}',
-                    '${area}'
+                    '${area}',
                     ${aoiCoverage},
                     '${JSON.stringify(classDistribution)}'
                 );
