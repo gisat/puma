@@ -127,7 +127,7 @@ class SnowPortalComposite {
                         let row = result.rows[0];
                         let classDistribution = JSON.parse(row.class_distribution);
                         resolve({
-                            key: tableName,
+                            key: this._key,
                             dateFrom: this._startDay,
                             period: this._period,
                             sensors: this._sensors,
