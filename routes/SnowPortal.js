@@ -22,7 +22,7 @@ class SnowPortal {
 
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
 
-        this.area = 'europe'; // TODO set dynamicaly?
+        this._area = 'europe'; // TODO set dynamicaly?
 
         this._visibleClasses = ["S", "NS", "C", "NC"];
     }
@@ -179,7 +179,7 @@ class SnowPortal {
             let timeRangeStart = requestData.timeRange.start;
             let timeRangeEnd = requestData.timeRange.end;
             let period = requestData.period;
-            let area = requestData.area;
+            let area = requestData._area;
             let sensors = [];
             let satellites = [];
             _.each(request.body.sensors, (sensorSatellites, sensorKey) => {
@@ -201,7 +201,7 @@ class SnowPortal {
             let compositeDates = SnowPortalComposite.getCompositeDates(timeRangeStart, timeRangeEnd, period);
             let compositeStats = [];
             _.each(compositeDates, compositeDate => {
-                let composite = new SnowPortalComposite(this._pgPool, this._pgLongRunningPool, compositeDate, null, period, sensors, satellites, this.area);
+                let composite = new SnowPortalComposite(this._pgPool, this._pgLongRunningPool, compositeDate, null, period, sensors, satellites, this._area);
                 compositeStats.push(composite.getStatsForArea(area));
             });
 
