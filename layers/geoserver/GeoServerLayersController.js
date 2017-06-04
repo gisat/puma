@@ -32,6 +32,9 @@ class GeoServerLayersController {
 			areaTemplate: analyticalUnitLevel,
 			location: {$in: places}
 		}, this._mongo).layerReferences().then(layers => {
+			if(layers.length === 0) {
+				throw new Error(`No base layers found for given combination.`);
+			}
 			baseLayerIds = layers.map(layer => layer._id);
 			return this._styles.add(new SldStyle(styleId, style));
 		}).then(() => {
