@@ -14,7 +14,8 @@ class GeoServerLayersController {
 	constructor(app, mongo, pool, schema) {
 		this._mongo = mongo;
 		this._styles = new GeoServerStyles(pool, schema);
-		this._styledLayers = new GeoServerLayerStyles(config.geoServerUrl,config.geoserverUsername,config.geoserverPassword);
+		var url = 'http://' + config.geoserverHost + ":" + config.geoserverPort + config.geoserverPath;
+		this._styledLayers = new GeoServerLayerStyles(url,config.geoserverUsername,config.geoserverPassword);
 
 		app.post('/rest/geoserver/layer', this.createLayer.bind(this));
 		app.delete('/rest/geoserver/layer', this.removeLayer.bind(this));
@@ -41,13 +42,13 @@ class GeoServerLayersController {
 			let promise = Promise.resolve(null);
 			baseLayerIds.forEach(layerId => {
 				promise = promise.then(() => {
-					return this._styledLayers.create(`${config.geoserverWorkspace}:layer_${layerId}`, styleId)
+					return this._styledLayers.create(`${config.geoserver2Workspace}:layer_${layerId}`, styleId)
 				})
 			});
 
 			return promise
 		}).then(() => {
-			layers = baseLayerIds.map(id => `${config.geoserverWorkspace}:layer_${id}`).join(',');
+			layers = baseLayerIds.map(id => `${config.geoserver2Workspace}:layer_${id}`).join(',');
 			response.json({
 				layer: layers,
 				styleId: styleId
