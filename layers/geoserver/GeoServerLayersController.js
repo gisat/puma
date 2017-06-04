@@ -23,14 +23,14 @@ class GeoServerLayersController {
 	createLayer(request, response) {
 		let styleId = new UUID().toString();
 		let style = request.body.style;
-		let places = request.body.places;
-		let analyticalUnitLevel = request.body.analyticalUnitLevel;
+		let places = request.body.places.map(place => Number(place));
+		let analyticalUnitLevel = Number(request.body.analyticalUnitLevel);
 		let baseLayerIds, layers;
 		logger.info(`GeoServerLayersController#createLayer Places: ${places.join(',')} AnalyticalUnitLevel: ${analyticalUnitLevel}`);
 
 		new FilteredBaseLayerReferences({
 			areaTemplate: analyticalUnitLevel,
-			location: {$in: [places]}
+			location: {$in: places}
 		}, this._mongo).layerReferences().then(layers => {
 			baseLayerIds = layers.map(layer => layer._id);
 			return this._styles.add(new SldStyle(styleId, style));
