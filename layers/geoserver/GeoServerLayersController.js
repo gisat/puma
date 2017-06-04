@@ -61,6 +61,8 @@ class GeoServerLayersController {
 	}
 
 	removeLayer(request, response) {
+		logger.info(`GeoServerLayersController#remvoeLayer`);
+
 		// TODO: In the second version, correctly clean the stuff.
 		response.json({
 			status: 'ok'
