@@ -35,6 +35,7 @@ let LayerGeonodeController = require('../layers/LayerGeonodeController');
 let LayerWmsController = require('../layers/wms/LayerWmsController');
 let WpsController = require('../integration/WpsController');
 let GeoServerLayersController = require('../layers/geoserver/GeoServerLayersController');
+let UtepStatisticsController = require('../integration/UtepStatisticsController');
 
 var iprquery = require('./iprquery');
 var iprConversion = require('./iprConversion');
@@ -121,6 +122,7 @@ module.exports = function(app) {
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new UtepFunctionalAreas(app, pool);
 	new GeoServerLayersController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
+	new UtepStatisticsController(app, pool, conn.getMongoDb(), 'views', config.postgreSqlSchema);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
