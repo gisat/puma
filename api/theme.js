@@ -723,13 +723,18 @@ function getThemeYearConf(params, req, res, callback) {
 
 		finish: ['layers', 'leafs', function(asyncCallback, results) {
 			logger.info('api/theme#getThemeYearConf finish');
+
+			var areas = [];
+			if(!results.dataset.oneLevelOnly) {
+				areas = results.leafs ? results.leafs.areas : results.sql.areas;
+			}
 			res.data = (params['parentgids'] || params['justAreas']) ? (results.leafs ? results.leafs.areas : results.sql.areas) : {
 				add: results.leafs ? results.leafs.add : results.sql.add,
 				leafMap: results.leafs ? results.leafs.leafMap : null,
 				auRefMap: results.layerRefs,
 				remove: results.sql.remove,
 				attrSets: results.requiredAttrSets,
-				areas: results.leafs ? results.leafs.areas : results.sql.areas,
+				areas: areas,
 				layerRefMap: results.layers ? results.layers.layerRefMap : null,
 				layerNodes: results.layers ? results.layers.layerNodes : null
 			};
