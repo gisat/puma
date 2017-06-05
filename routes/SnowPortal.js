@@ -1,3 +1,20 @@
+/**
+ * SQL tables:
+ * - composites.metadata
+ *     Metadata for created composites, like start date, end date, satellites, sensors, area...
+ *     Removing composites: delete row in this table, drop corresponding table and remove
+ *     the layer from Geoserver.
+ * - composites.statistics
+ *     Cache for counted statistics of composites, like AIO covfefe and class distribution
+ *     for combinations of composites and areas.
+ *     This can be truncated in order to recalculation of statistics, which takes some time.
+ * - public.scene_statistics
+ *     Cache for counted statistics of scenes, like AOI coverage and class distribution
+ *     for combinations of scenes and areas.
+ *     This can be truncated in order to recalculation of statistics, which takes some time.
+ *
+ */
+
 let _ = require("lodash");
 let Promise = require("promise");
 let hash = require("object-hash");
@@ -38,11 +55,13 @@ class SnowPortal {
 
     getScenes(request, response) {
         let areaType = request.body.area.type;
-        let area = request.body.area.value;
+        let areaValue = request.body.area.value;
+        let areaString = areaType === 'noLimit' ? 'europe' : areaValue;
         let timeRangeStart = request.body.timeRange.start;
         let timeRangeEnd = request.body.timeRange.end;
         let sensors = [];
         let satellites = [];
+        let existingStats = [];
 
         let requestData = request.body;
         let requestHash = hash(requestData);
@@ -76,53 +95,137 @@ class SnowPortal {
             satellites = satellites.concat(sensorSatellites);
         });
 
-        let sql = this.getScenesDataSql(areaType, area, sensors, satellites, timeRangeStart, timeRangeEnd);
+        new Promise((resolve, reject) => {
+            /**
+             * Find existing stats for the current configuration (sensors, days and area)
+             */
 
-        this._pgLongRunningPool.pool().query(sql).then(results => {
-            let totals = {};
-            let visibleTotals = {};
-            let scenes = {};
-
-            _.each(results.rows, row => {
-                let scene = scenes[row.key] || {};
-                let classDistribution = scene.classDistribution || {};
-
-                scene.key = row.key;
-                scene.satellite = row.satellite;
-                scene.sensor = row.sensor;
-                scene.date = row.date;
-                scene.aoiCoverage = row.coverage;
-
-                totals[scene.key] = totals[scene.key] + Number(row.count) || Number(row.count);
-
-                /**
-                 * Classes we want to see in statistics
-                 */
-                if (this._visibleClasses.includes(row.class)) {
-                    classDistribution[row.class] = row.count;
-                    visibleTotals[scene.key] = visibleTotals[scene.key] + Number(row.count) || Number(row.count);
+            let sql = this.findExistingSceneStatsSql(areaString, sensors, satellites, timeRangeStart, timeRangeEnd);
+            this._pgPool.pool().query(sql).then(results => {
+                if (results.rows.length) {
+                    logger.info(`SnowPortal#getScenes ------ Found ${results.rows.length} existing scene stats.`);
+                    resolve(_.map(results.rows, row => {
+                        return {
+                            key: row['scene_id'],
+                            satellite: row['satellite_key'],
+                            sensor: row['sensor_key'],
+                            date: new Date(row['date']).toISOString().split("T")[0],
+                            aoiCoverage: row['aoi_coverage'],
+                            classDistribution: JSON.parse(row['class_distribution'])
+                        };
+                    }));
+                } else {
+                    logger.info(`SnowPortal#getScenes ------ No matching existing scene stats.`);
+                    resolve([]);
                 }
-                scene.classDistribution = classDistribution;
-
-                scenes[row.key] = scene;
+            }).catch(error => {
+                reject(new Error(logger.error(`SnowPortal#getScenes ------ Getting existing scene stats Error: ${error.message} | ${error} | ${sql}`)));
             });
+        }).then(existingStatsData => {
+            /**
+             * Compute statistics for all scenes, except existing stats.
+             */
 
-            _.each(scenes, scene => {
-                _.each(scene.classDistribution, (value, key) => {
-                    scene.classDistribution[key] = 100 * (Number(value) / Number(visibleTotals[scene.key]));
+            return new Promise((resolve, reject) => {
+                existingStats = existingStatsData;
+                let existingSceneIDs = [];
+                _.each(existingStats, sceneStat => {
+                    existingSceneIDs.push(sceneStat.key);
                 });
-                scene.aoiCoverage *= (visibleTotals[scene.key] / totals[scene.key]) || 0;
+                let sql = this.getScenesDataSql(areaType, areaValue, sensors, satellites, timeRangeStart, timeRangeEnd, existingSceneIDs);
+                this._pgLongRunningPool.pool().query(sql).then(results => {
+                    let totals = {};
+                    let scenes = {};
+
+                    _.each(results.rows, row => {
+                        let scene = scenes[row.key] || {};
+                        let classDistribution = scene.classDistribution || {};
+
+                        scene.key = row.key;
+                        scene.satellite = row.satellite;
+                        scene.sensor = row.sensor;
+                        scene.date = row.date;
+                        scene.aoiCoverage = row.coverage;
+
+                        totals[scene.key] = totals[scene.key] + Number(row.count) || Number(row.count);
+
+                        classDistribution[row.class] = row.count;
+                        scene.classDistribution = classDistribution;
+
+                        scenes[row.key] = scene;
+                    });
+
+                    _.each(scenes, scene => {
+                        _.each(scene.classDistribution, (value, key) => {
+                            scene.classDistribution[key] = 100 * (Number(value) / Number(totals[scene.key]));
+                        });
+                    });
+
+                    resolve(_.map(scenes, scene => {
+                        return scene;
+                    }));
+                }).catch(error => {
+                    reject(new Error(logger.error(`SnowPortal#getScenes ------ Computing stats for scenes Error: ${error.message} | ${error} | ${sql}`)));
+                });
+
+            });
+        }).then(newStatsData => {
+            /**
+             * save new stats to DB
+             */
+
+            return new Promise((resolve, reject) => {
+                let sql = this.saveSceneStatsSql(newStatsData, areaString);
+                this._pgPool.pool().query(sql).then(() => {
+                    logger.info(`SnowPortal#getScenes ------ Successfuly saved new statistics to database.`);
+                    resolve(newStatsData);
+                }).catch(error => {
+                    // don't stop if saving failed, only show warning
+                    logger.warn(`SnowPortal#getScenes ------ Saving new scenes stats error: ${error.message} | ${error} | ${sql}`);
+                    resolve(newStatsData);
+                });
             });
 
-            return _.map(scenes, scene => {
+        }).then(newStatsData => {
+            /**
+             * Combine existing and new data
+             */
+            return _.union(existingStats, newStatsData);
+        }).then(data => {
+            /**
+             * filter classes we want to see in statistics
+             */
+
+            return _.map(data, scene => {
+                let total = 0;
+                let visibleTotal = 0;
+                let classDistribution = {};
+
+                _.each(scene.classDistribution, (value, key) => {
+                    total += value;
+                    if (this._visibleClasses.includes(key)) {
+                        visibleTotal += value;
+                    }
+                });
+
+                _.each(scene.classDistribution, (value, key) => {
+                    if (this._visibleClasses.includes(key)) {
+                        classDistribution[key] = 100 * (Number(value) / Number(visibleTotal));
+                    }
+                });
+
+                scene.aoiCoverage *= (visibleTotal / total) || 0;
+                scene.classDistribution = classDistribution;
                 return scene;
             });
+
         }).then(data => {
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
         }).catch(error => {
+            logger.error(`SnowPortal#getScenes Error: ${error}`);
             processes[requestHash].ended = Date.now();
-            processes[requestHash].error = error.message;
+            processes[requestHash].error = error.message || error || 'Unknown error';
         });
 
         response.send({
@@ -308,9 +411,32 @@ class SnowPortal {
             }).join(",") + "]";
     }
 
-    getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
+    findExistingSceneStatsSql(areaString, sensors, satellites, dateStart, dateEnd) {
+        let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
+        let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
+        return `
+            SELECT
+                scene_id,
+                aoi_coverage,
+                class_distribution,
+                date,
+                satellite_key,
+                sensor_key
+              FROM scene_statistics ss
+                INNER JOIN metadata m ON ss.scene_id = m.id
+                INNER JOIN source AS s ON s.id = m.source_id
+              WHERE
+                ${satellitesSql} ${satellitesSql ? "AND" : ""} ${sensorsSql} 
+                ${satellitesSql || sensorsSql ? "AND" : ""} m.date BETWEEN '${dateStart}' AND '${dateEnd}'
+                AND ss.area = '${areaString}';
+        `;
+    }
+
+    getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd, existingSceneIDs) {
         let geometryTable;
         let geometryTableCondition;
+
+        // TODO except existingSceneIDs
 
         switch (areaType) {
             case "key":
@@ -327,9 +453,11 @@ class SnowPortal {
 
         let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
         let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
+        let existingScenesSql = existingSceneIDs && existingSceneIDs.length ? `AND NOT (m.id = ANY(${this.convertArrayToSqlArray(existingSceneIDs)}::INTEGER[]))` : ``;
 
         return `
         WITH scenes AS (SELECT
+                            m.id,
                             m.filename,
                             m.date,
                             m.source_id,
@@ -344,9 +472,11 @@ class SnowPortal {
                             INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
                         WHERE ${satellitesSql} ${satellitesSql ? "AND" : ""} ${sensorsSql} 
                             ${satellitesSql || sensorsSql ? "AND" : ""} m.date BETWEEN '${dateStart}' AND '${dateEnd}'
+                            ${existingScenesSql}
                             AND r.extent && g.the_geom
                             AND st_intersects(st_setsrid(r.extent, 3035), g.the_geom)
                         GROUP BY
+                            m.id,
                             m.filename,
                             m.date,
                             m.source_id,
@@ -379,6 +509,42 @@ class SnowPortal {
         GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
 
+
+    saveSceneStatsSql(newScenesData, area) {
+        let sqlInserts = [];
+        _.each(newScenesData, newScene => {
+            sqlInserts.push(`INSERT INTO scene_statistics (
+                                    scene_id,
+                                    area,
+                                    aoi_coverage,
+                                    class_distribution)
+                                VALUES (
+                                    ${newScene.key},
+                                    '${area}',
+                                    ${newScene.aoiCoverage},
+                                    '${JSON.stringify(newScene.classDistribution)}'
+                                );`);
+        });
+        return sqlInserts.join("\n");
+    }
+
+    // getScenesDataSql(sensors, satellites, dateStart, dateEnd) {
+    //     let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
+    //     let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
+    //     return `
+    //     SELECT
+    //           m.id,
+    //           m.filename,
+    //           m.date,
+    //           m.source_id,
+    //           s.satellite_key,
+    //           s.sensor_key
+    //       FROM metadata AS m
+    //           INNER JOIN source AS s ON s.id = m.source_id
+    //       WHERE ${satellitesSql} ${satellitesSql ? "AND" : ""} ${sensorsSql}
+    //           ${satellitesSql || sensorsSql ? "AND" : ""} m.date BETWEEN '${dateStart}' AND '${dateEnd}';`;
+    // }
+
     initTables() {
         return this._pgPool.query(`CREATE SCHEMA IF NOT EXISTS composites;`).then(() => {
             return this._pgPool.query(`CREATE TABLE IF NOT EXISTS composites.metadata (
@@ -392,6 +558,11 @@ class SnowPortal {
                                                     period integer);
                                        CREATE TABLE IF NOT EXISTS composites.statistics (
                                                     composite_key varchar(50) not null,
+                                                    area varchar(40) not null,
+                                                    aoi_coverage double precision not null,
+                                                    class_distribution varchar(255) not null);
+                                       CREATE TABLE IF NOT EXISTS scene_statistics (
+                                                    scene_id integer not null,
                                                     area varchar(40) not null,
                                                     aoi_coverage double precision not null,
                                                     class_distribution varchar(255) not null);`);
