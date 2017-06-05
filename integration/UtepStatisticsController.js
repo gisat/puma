@@ -217,6 +217,7 @@ class UtepStatisticsController {
 		}, this._mongo).json().then(pLocations => {
 			logger.info(`UtepStatisticsController#importGsi Filtered locations: ${pLocations.length}`);
 			locations = pLocations.map(location => {
+				location._id = conn.getNextId();
 				location.dataset = 38433;
 				location.source = 'gsi_integration';
 				return location
