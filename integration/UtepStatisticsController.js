@@ -210,10 +210,12 @@ class UtepStatisticsController {
 	// Load the names from the database.
 	// Also get all the places and transport them to new scope.
 	importGsi(request, response) {
+		logger.info(`UtepStatisticsController#importGsi`);
 		let locations;
 		new FilteredMongoLocations({
 			dataset: 314
 		}, this._mongo).json().then(pLocations => {
+			logger.info(`UtepStatisticsController#importGsi Filtered locations: ${pLocations.length}`);
 			locations = pLocations.map(location => {
 				location.dataset = 38433;
 				location.source = 'gsi_integration';
