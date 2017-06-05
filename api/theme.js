@@ -450,6 +450,14 @@ function getThemeYearConf(params, req, res, callback) {
 
 			var client = conn.getPgDataDb();
 			logger.info("theme# getThemeYearConf, auto:sql SQL:", sql);
+
+			if(results.dataset.oneLevelOnly) {
+				return asyncCallback(null, {
+					add: [],
+					remove: [],
+					areas: []
+				})
+			}
 			client.query(sql, {}, function(err, resls) {
 				if (err){
 					logger.error("theme# getThemeYearConf. SQL: ", sql, " Error: ", err);
