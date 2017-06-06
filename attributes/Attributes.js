@@ -89,13 +89,14 @@ class Attributes {
 
 			return this._dataViews(sqlProducer, mongoAttributes);
 		}).then(amounts => {
-			let amount = 0;
+			let resultAmount = 0;
 
 			amounts.forEach(amount => {
-				amount += amount && amount.rows.length || 0;
+			    console.log(amount.rows);
+				resultAmount += amount && amount.rows.length || 0;
 			});
 
-			return amount;
+			return resultAmount;
 		});
     }
 
