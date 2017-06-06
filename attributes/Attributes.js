@@ -78,6 +78,27 @@ class Attributes {
         });
     }
 
+    amount(sqlProducer) {
+		let mongoAttributes = {};
+		return Promise.all(this._attributes.map(attribute => {
+			return new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()).json();
+		})).then(attributes => {
+			attributes.forEach(attribute => {
+				mongoAttributes[attribute._id] = attribute;
+			});
+
+			return this._dataViews(sqlProducer, mongoAttributes);
+		}).then(amounts => {
+			let amount = 0;
+
+			amounts.forEach(amount => {
+				amount += amount && amount.rows.length || 0;
+			});
+
+			return amount;
+		});
+    }
+
     _dataView(dataView, attributes) {
         if(!dataView || !dataView.rows) {
             return;

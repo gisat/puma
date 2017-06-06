@@ -6,19 +6,22 @@ var UUID = require('../common/UUID');
 var _ = require('underscore');
 var moment = require('moment');
 
+let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var Statistics = require('../attributes/Statistics');
 var Filter = require('../attributes/Filter');
 var Attributes = require('../attributes/Attributes');
 var Info = require('../attributes/Info');
+let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
 
 class AttributeController extends Controller {
-    constructor(app, pgPool, pgPoolRemote, viewsSchema) {
+    constructor(app, pgPool, pgPoolRemote, mongo, viewsSchema) {
         super(app, 'attribute', pgPool, MongoAttributes, MongoAttribute);
 
         this._pgPool = pgPoolRemote || pgPool;
+        this._mongo = mongo;
 
         this._statistics = new Statistics(pgPoolRemote || pgPool, viewsSchema);
         this._filter = new Filter(pgPoolRemote || pgPool, viewsSchema);
@@ -86,17 +89,32 @@ class AttributeController extends Controller {
         var uuid = new UUID().toString();
         logger.info(`AttributeController#amount UUID: ${uuid} Start: ${moment().format()}`);
 
-        let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
-        this._filter.statistics(attributes, options.attributesMap, options.attributes).then(json => {
-            let result = this._deduplicate(_.flatten(json), json.length);
-            response.json({amount: result.length});
-            logger.info(`AttributeController#amount UUID: ${uuid} End: ${moment().format()}`);
-        }).catch(err => {
-			response.status(500).json({status: 'err', message: err});
-			throw new Error(
-                logger.error(`AttributeController#amount Error: `, err)
-            )
-        });
+        // When I ask for multiple periods, it is the only time, where it actually needs the deduplication and stuff.
+        // Otherwise it is actually quite simple.
+		let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+		if(options.periods.length > 1) {
+			this._filter.statistics(attributes, options.attributesMap, options.attributes).then(json => {
+				let result = this._deduplicate(_.flatten(json), json.length);
+				response.json({amount: result.length});
+				logger.info(`AttributeController#amount UUID: ${uuid} End: ${moment().format()}`);
+			}).catch(err => {
+				response.status(500).json({status: 'err', message: err});
+				throw new Error(
+					logger.error(`AttributeController#amount Error: `, err)
+				)
+			});
+		} else {
+        	this._filter.amount(attributes, options.attributes).then(amount => {
+				response.json({amount: amount});
+
+				logger.info(`AttributeController#amount UUID: ${uuid} End: ${moment().format()}`);
+			}).catch(err => {
+				response.status(500).json({status: 'err', message: err});
+				throw new Error(
+					logger.error(`AttributeController#amount Error: `, err)
+				)
+			});
+        }
     }
 
     _parseRequest(params) {

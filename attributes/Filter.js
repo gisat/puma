@@ -20,6 +20,10 @@ class Filter {
         });
     }
 
+    amount(attributes, requestAttributes) {
+		return attributes.amount(this.sqlAmount.bind(this, requestAttributes));
+    }
+
     sql(requestAttributes, baseLayers, mongoAttributes) {
         let queries = baseLayers
 			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')},
@@ -27,6 +31,14 @@ class Filter {
                         ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
 
         return new PgSequentialQuery(this._pgPool).query(queries);
+    }
+
+    sqlAmount(requestAttributes, baseLayers, mongoAttributes) {
+		let queries = baseLayers
+			.map(baseLayer => `SELECT count(*) FROM ${this._schema}.layer_${baseLayer._id} WHERE 
+                        ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
+
+		return new PgSequentialQuery(this._pgPool).query(queries);
     }
 
     _generateWhere(columns, mongoAttributes, requestAttributes) {
