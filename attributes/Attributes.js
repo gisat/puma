@@ -92,7 +92,7 @@ class Attributes {
 			let resultAmount = 0;
 
 			amounts.forEach(amount => {
-			    resultAmount += amount && amount.rows[0].count || 0;
+			    resultAmount += amount && Number(amount.rows[0].count) || 0;
 			});
 
 			return resultAmount;
