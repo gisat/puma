@@ -40,6 +40,7 @@ class PgSequentialQuery {
 		let results = [];
 		let promise = Promise.resolve(null);
 		queries.forEach(query => {
+			logger.info(`PgSeuqnetialQuery#query SQL: ${query}`);
 			promise = promise.then(() => {
 				return this._pgPool.query(query);
 			}).then(stats => {
