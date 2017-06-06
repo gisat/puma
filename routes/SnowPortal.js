@@ -53,6 +53,11 @@ class SnowPortal {
         });
     }
 
+    /**
+     * API scenes endpoint
+     * @param request
+     * @param response
+     */
     getScenes(request, response) {
         let areaType = request.body.area.type;
         let areaValue = request.body.area.value;
@@ -234,7 +239,11 @@ class SnowPortal {
         });
     }
 
-
+    /**
+     * API composites endpoint
+     * @param request
+     * @param response
+     */
     getComposites(request, response) {
         let requestData = request.body;
         let requestHash = hash(requestData);
@@ -331,7 +340,7 @@ class SnowPortal {
     }
 
     /**
-     * Return scope options based on existing data
+     * API endpoint. Return scope options based on existing data
      * @param request
      * @param response
      */
@@ -411,6 +420,15 @@ class SnowPortal {
             }).join(",") + "]";
     }
 
+    /**
+     * Create SQL query for selecting already coumputed statistics for combinations of scenes and areas
+     * @param areaString
+     * @param sensors
+     * @param satellites
+     * @param dateStart
+     * @param dateEnd
+     * @returns {string} SQL query
+     */
     findExistingSceneStatsSql(areaString, sensors, satellites, dateStart, dateEnd) {
         let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
         let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
@@ -432,12 +450,20 @@ class SnowPortal {
         `;
     }
 
+    /**
+     * Create SQL query for computing scene statistics
+     * @param areaType
+     * @param area
+     * @param sensors
+     * @param satellites
+     * @param dateStart
+     * @param dateEnd
+     * @param existingSceneIDs
+     * @returns {*}
+     */
     getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd, existingSceneIDs) {
         let geometryTable;
         let geometryTableCondition;
-
-        // TODO except existingSceneIDs
-
         switch (areaType) {
             case "key":
                 geometryTable = "areas";
@@ -509,7 +535,12 @@ class SnowPortal {
         GROUP BY class, coverage, key, satellite, sensor, date;`;
     }
 
-
+    /**
+     * Create SQL query for saving computed scene stats
+     * @param newScenesData
+     * @param area
+     * @returns {string}
+     */
     saveSceneStatsSql(newScenesData, area) {
         let sqlInserts = [];
         _.each(newScenesData, newScene => {
@@ -528,23 +559,9 @@ class SnowPortal {
         return sqlInserts.join("\n");
     }
 
-    // getScenesDataSql(sensors, satellites, dateStart, dateEnd) {
-    //     let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
-    //     let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
-    //     return `
-    //     SELECT
-    //           m.id,
-    //           m.filename,
-    //           m.date,
-    //           m.source_id,
-    //           s.satellite_key,
-    //           s.sensor_key
-    //       FROM metadata AS m
-    //           INNER JOIN source AS s ON s.id = m.source_id
-    //       WHERE ${satellitesSql} ${satellitesSql ? "AND" : ""} ${sensorsSql}
-    //           ${satellitesSql || sensorsSql ? "AND" : ""} m.date BETWEEN '${dateStart}' AND '${dateEnd}';`;
-    // }
-
+    /**
+     * Create scene and composite metadata/statistics tables if they don't exist.
+     */
     initTables() {
         return this._pgPool.query(`CREATE SCHEMA IF NOT EXISTS composites;`).then(() => {
             return this._pgPool.query(`CREATE TABLE IF NOT EXISTS composites.metadata (
