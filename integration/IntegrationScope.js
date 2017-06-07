@@ -8,7 +8,12 @@ let FilteredMongoAttributes = require('../attributes/FilteredMongoAttributes');
 let FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
 
+let MongoAttribute = require('../attributes/MongoAttribute');
+let MongoAttributeSet = require('../attributes/MongoAttributeSet');
+let MongoLayerTemplate = require('../layers/MongoLayerTemplate');
+let MongoPeriod = require('../metadata/MongoPeriod');
 let MongoScope = require('../metadata/MongoScope');
+let MongoTheme = require('../metadata/MongoTheme');
 let MongoTopic = require('../metadata/MongoTopic');
 
 let MongoPeriods = require('../metadata/MongoPeriods');
@@ -79,6 +84,12 @@ class IntegrationScope {
 			"name": this._year,
 			"active": true
 		}).then(() => {
+			return Promise.all([
+				this._permissions.add(this._user.id, MongoPeriod.collectionName(), periodId, Permission.READ),
+				this._permissions.add(this._user.id, MongoPeriod.collectionName(), periodId, Permission.UPDATE),
+				this._permissions.add(this._user.id, MongoPeriod.collectionName(), periodId, Permission.DELETE)
+			]);
+		}).then(() => {
 			return this._layerTemplates.add({
 				"_id": areaTemplateId,
 				"active": true,
@@ -88,6 +99,12 @@ class IntegrationScope {
 				"layerGroup": null,
 				"topic": null
 			})
+		}).then(() => {
+			return Promise.all([
+				this._permissions.add(this._user.id, MongoLayerTemplate.collectionName(), areaTemplateId, Permission.READ),
+				this._permissions.add(this._user.id, MongoLayerTemplate.collectionName(), areaTemplateId, Permission.UPDATE),
+				this._permissions.add(this._user.id, MongoLayerTemplate.collectionName(), areaTemplateId, Permission.DELETE)
+			]);
 		}).then(() => {
 			return this._scopes.add({
 				"_id": scopeId,
@@ -107,6 +124,12 @@ class IntegrationScope {
 				"dataset": scopeId
 			})
 		}).then(() => {
+			return Promise.all([
+				this._permissions.add(this._user.id, MongoTheme.collectionName(), themeId, Permission.READ),
+				this._permissions.add(this._user.id, MongoTheme.collectionName(), themeId, Permission.UPDATE),
+				this._permissions.add(this._user.id, MongoTheme.collectionName(), themeId, Permission.DELETE)
+			]);
+		}).then(() => {
 			return this._topics.add({
 				"_id": topicId,
 				"name": this._scope,
@@ -122,37 +145,41 @@ class IntegrationScope {
 				"topic": topicId
 			})
 		}).then(() => {
-			return new FilteredMongoAttributes({name: 'Urban'}, this._mongo).json().then(attributes => {
-				if(attributes.length === 0) {
-					return this._attributes.add([{
-						"_id": urbanAttributeId,
-						"name": "Urban",
-						"active": true,
-						"type": "numeric",
-						"standardUnits": 'km2',
-						"units": 'km2',
-						"color": "#880000"
-					}])
-				} else {
-					urbanAttributeId = attributes[0]._id;
-				}
-			});
+			return Promise.all([
+				this._permissions.add(this._user.id, MongoAttributeSet.collectionName(), attributeSetId, Permission.READ),
+				this._permissions.add(this._user.id, MongoAttributeSet.collectionName(), attributeSetId, Permission.UPDATE),
+				this._permissions.add(this._user.id, MongoAttributeSet.collectionName(), attributeSetId, Permission.DELETE)
+			]);
 		}).then(() => {
-			return new FilteredMongoAttributes({name: 'Non Urban'}, this._mongo).json().then(attributes => {
-				if(attributes.length === 0) {
-					return this._attributes.add([{
-						"_id": nonUrbanAttributeId,
-						"name": "Non Urban",
-						"active": true,
-						"type": "numeric",
-						"standardUnits": 'km2',
-						"units": 'km2',
-						"color": "#000000"
-					}])
-				} else {
-					nonUrbanAttributeId = attributes[0]._id;
-				}
-			});
+			return this._attributes.add([{
+				"_id": urbanAttributeId,
+				"name": "Urban",
+				"active": true,
+				"type": "numeric",
+				"standardUnits": 'km2',
+				"units": 'km2',
+				"color": "#880000"
+			}]);
+		}).then(() => {
+			return this._attributes.add([{
+				"_id": nonUrbanAttributeId,
+				"name": "Non Urban",
+				"active": true,
+				"type": "numeric",
+				"standardUnits": 'km2',
+				"units": 'km2',
+				"color": "#000000"
+			}]);
+		}).then(() => {
+			return Promise.all([
+				this._permissions.add(this._user.id, MongoAttribute.collectionName(), urbanAttributeId, Permission.READ),
+				this._permissions.add(this._user.id, MongoAttribute.collectionName(), urbanAttributeId, Permission.UPDATE),
+				this._permissions.add(this._user.id, MongoAttribute.collectionName(), urbanAttributeId, Permission.DELETE),
+
+				this._permissions.add(this._user.id, MongoAttribute.collectionName(), nonUrbanAttributeId, Permission.READ),
+				this._permissions.add(this._user.id, MongoAttribute.collectionName(), nonUrbanAttributeId, Permission.UPDATE),
+				this._permissions.add(this._user.id, MongoAttribute.collectionName(), nonUrbanAttributeId, Permission.DELETE)
+			]);
 		}).then(() => {
 			return Promise.all([
 				this._permissions.add(this._user.id, MongoScope.collectionName(), scopeId, Permission.READ),
@@ -189,15 +216,23 @@ class IntegrationScope {
 
 			return new FilteredMongoAttributes({name: 'Urban'}, this._mongo).json();
 		}).then(urban => {
+			urban = urban.filter(result => this._user.hasPermission(MongoAttribute.collectionName(), Permission.UPDATE, result._id));
+
 			urbanAttributeId = urban[0]._id;
 			return new FilteredMongoAttributes({name: 'Non Urban'}, this._mongo).json();
 		}).then(nonUrban => {
+			nonUrban = nonUrban.filter(result => this._user.hasPermission(MongoAttribute.collectionName(), Permission.UPDATE, result._id));
+
 			nonUrbanAttributeId = nonUrban[0]._id;
 			return new FilteredMongoAttributeSets({name: this._scope}, this._mongo).json();
 		}).then(attributeSet => {
+			attributeSet = attributeSet.filter(result => this._user.hasPermission(MongoAttributeSet.collectionName(), Permission.UPDATE, result._id));
+
 			attributeSetId = attributeSet[0]._id;
 			return new FilteredMongoThemes({name: this._scope}, this._mongo).json();
 		}).then(theme => {
+			theme = theme.filter(result => this._user.hasPermission(MongoTheme.collectionName(), Permission.UPDATE, result._id));
+
 			themeId = theme[0]._id;
 			return {
 				scope: scopeId,
