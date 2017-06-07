@@ -24,10 +24,10 @@ class SsoAuthentication {
 	 * @returns {Promise}
 	 */
 	authenticate(request, response) {
-		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email'], ' Remote: ', request.headers['REMOTE_USER'], ' ', request.headers);
+		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email'], ' Remote: ', request.headers['remote_user'], ' ', request.headers);
 
-		if((request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') || (request.headers['REMOTE_USER'] && request.headers['REMOTE_USER'] != '')) {
-			var email = request.headers['umsso-person-email'] || request.headers['REMOTE_USER'];
+		if((request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') || (request.headers['remote_user'] && request.headers['remote_user'] != '')) {
+			var email = request.headers['umsso-person-email'] || request.headers['remote_user'];
 			return this.pgUsers.byEmail(email).then(user => {
 				if(!user) {
 					return this.pgUsers.add(email).then(user => {
