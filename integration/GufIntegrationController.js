@@ -298,14 +298,14 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 					periods: [period],
 					layer: 'ESA_UTEP:GUF04'
 				}, user.id).then(layer => {
-					return this._permissions.add(user.id, 'custom_wms', layer.id, Permission.READ);
+					return this._permissions.add(user.id, 'layer_wms', layer.id, Permission.READ);
 				})
 			} else {
 				// Make sure that the user has permissions towards these layers.
 				let promises = [];
 				layers.forEach(layer => {
 					if (!user.hasPermission('custom_wms', Permission.READ, layer.id)) {
-						promises.push(this._permissions.add(user.id, 'custom_wms', layer.id, Permission.READ));
+						promises.push(this._permissions.add(user.id, 'layer_wms', layer.id, Permission.READ));
 					}
 				});
 				return Promise.all(promises).then(() => {
