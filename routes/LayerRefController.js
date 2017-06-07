@@ -84,6 +84,10 @@ class LayerRefController extends Controller {
 			return true;
 		});
 	}
+
+    hasRights(user, method, id, object) {
+        return user.hasPermission(this.type, method, object.location);
+    }
 }
 
 module.exports = LayerRefController;
