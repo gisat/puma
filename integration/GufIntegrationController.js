@@ -98,9 +98,9 @@ class GufIntegrationController {
 		superagent.get(request.body.url)
 			.set('Accept', 'application/json')
 			.then(result => {
-				console.log(result.body);
 				defaultName = result.body.features[0].title;
 				urlOfGeoTiff = result.body.features[0].properties.EarthObservation.result.EarthObservationResult.product.ProductInformation.fileName.ServiceReference['@href'];
+				logger.info(`GufIntegrationController#process DefaultName: ${defaultName} URL: ${urlOfGeoTiff}`);
 
 				process.setOption('tiff', urlOfGeoTiff);
 				processes.store(process);
@@ -253,6 +253,7 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	 * @param user
 	 * @param boundingBox {String} Standard Bounding Box usable in the FO.
 	 * @param scope {Number} Id of the scope this place belongs to.
+	 * @param defaultName {String} Name to be used instead of Imported {Number}
 	 * @returns {*|Promise.<TResult>}
 	 */
 	createLocation(user, boundingBox, scope, defaultName) {
@@ -296,7 +297,9 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 					places: [place],
 					periods: [period],
 					layer: 'ESA_UTEP:GUF04'
-				}, user.id)
+				}, user.id).then(layer => {
+					return this._permissions.add(user.id, 'custom_wms', layer.id, Permission.READ);
+				})
 			} else {
 				// Make sure that the user has permissions towards these layers.
 				let promises = [];
