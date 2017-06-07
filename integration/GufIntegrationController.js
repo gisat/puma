@@ -3,6 +3,7 @@ var conn = require('../common/conn');
 var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 let Promise = require('promise');
+let superagent = require('superagent');
 
 var RasterToPSQL = require('../integration/RasterToPSQL');
 // Careful with renaming to uppercase start. Was created in windows with lowercase first.
@@ -78,36 +79,43 @@ class GufIntegrationController {
 			return;
 		}
 
-		let defaultName = request.body.name;
-
 		logger.info("/integration/process, Start remote process. Url: ", request.body.url);
 
-		var urlOfGeoTiff = request.body.url;
 		var id = "a" + guid();
-
-		var remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
-		if (!remoteFile.validateUrl()) {
-			logger.error("Invalid file url provided, aborted.");
-			response.status(400).json({
-				message: "Invalid file url."
-			});
-			return;
-		}
-
-		var db = this._mongo;
-		var processes = new Processes(db);
+		var processes = new Processes(this._mongo);
 		var process = new Process(id, {
-			tiff: urlOfGeoTiff,
+			tiff: '',
 			status: "Started",
 			progress: 0,
-			sourceUrl: urlOfGeoTiff
+			sourceUrl: request.body.url
 		});
 		processes.store(process);
 
 		let administrativeUnitTable = `${this._sourceSchema}.au${id}`;
-		let information, place;
-		var rasterLayerTable, boundingBox, url, center;
-		remoteFile.get().then(() => {
+		let information, place, remoteFile, urlOfGeoTiff, defaultName;
+		let rasterLayerTable, boundingBox, url, center;
+
+		superagent.get(request.body.url)
+			.set('Accept', 'application/json')
+			.then(result => {
+				console.log(result);
+				defaultName = result.features[0].title;
+				urlOfGeoTiff = result.features[0].properties.EarthObservation.result.EarthObservationResult.product.ProductInformation.fileName.ServiceReference['@href'];
+
+				process.setOption('tiff', urlOfGeoTiff);
+				processes.store(process);
+
+				remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
+				if (!remoteFile.validateUrl()) {
+					logger.error("Invalid file url provided, aborted.");
+					response.status(400).json({
+						message: "Invalid file url."
+					});
+					throw new Error('Invalid url');
+				}
+
+				return remoteFile.get();
+		}).then(() => {
 			process.status("Processing", "File was retrieved successfully and is being processed.", 13);
 			processes.store(process);
 
