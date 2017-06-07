@@ -3,11 +3,17 @@ let logger = require('../common/Logger').applicationWideLogger;
 let conn = require('../common/conn');
 
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
-let FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 let MongoLayerReferences = require('../layers/MongoLayerReferences');
+let MongoLocation = require('../metadata/MongoLocation');
 let MongoLocations = require('../metadata/MongoLocations');
 let PgLayerViews = require('../layers/PgLayerViews');
+
+let Group = require('../security/Group');
+let PgPermissions = require('../security/PgPermissions');
+let Permission = require('../security/Permission');
+
+let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
 
 /**
  * Utility class for implementation of the data into the World Scope
@@ -21,6 +27,7 @@ class UtepStatisticsController {
 		this._layerReferences = new MongoLayerReferences(this._mongo);
 		this._layerViews = new PgLayerViews(pool, targetSchema, schema);
 		this._places = new MongoLocations(this._mongo);
+		this._permissions = new PgPermissions(pool, schema);
 
 		app.get('/rest/integrate/gsi', this.importCountry.bind(this));
 	}
@@ -28,82 +35,17 @@ class UtepStatisticsController {
 	importCountry(request, response, next) {
 		logger.info('UtepStatisticsController#import started');
 
-		let baseLayers, ids;
 		new FilteredMongoLocations({
 			dataset: 38433
 		}, this._mongo).json().then(locations => {
-			ids = _.pluck(locations, '_id');
-			logger.info('UtepStatisticsController#import All locations: ', ids);
-			return new FilteredMongoLayerReferences({
-				location: {$in: ids},
-				isData: false,
-				active: true,
-				areaTemplate: 4027
-			}, this._mongo).json();
-		}).then(pBaseLayers => {
-			baseLayers = pBaseLayers;
-			logger.info('UtepStatisticsController#import Base Layers: ', baseLayers.length);
-
-			return new FilteredMongoLayerReferences({
-				attributeSet: 4185,
-				location: {$in: ids},
-				isData: true
-			}, this._mongo).read();
-		}).then(layerRefsToDelete => {
-			logger.info('UtepStatisticsController#import Layers to remove: ', layerRefsToDelete.length);
-// For given attribute set map all attributes by deleting layerref for this attribute set.
-			return Promise.all(layerRefsToDelete.map(layerRef => {
-				return this._layerReferences.remove(layerRef);
-			}));
-		}).then(() => {
-			logger.info('UtepStatisticsController#import Add layerrefs');
-			// Create and add layerref for every base layer.
-			return Promise.all(baseLayers.map(baseLayer => {
-				this._layerReferences.add({
-					_id: conn.getNextId(),
-					"isData": true,
-					"layer": baseLayer.layer,
-					"location": baseLayer.location,
-					"year": baseLayer.year,
-					"columnMap": [
-						{"attribute": 15, "column": "NRPrimE"},
-						{"attribute": 16, "column": "NREdg"},
-						{"attribute": 17, "column": "NRSecE"},
-						{"attribute": 18, "column": "SLocSig"},
-						{"attribute": 19, "column": "S3NearNeig"},
-						{"attribute": 910, "column": "AREA"},
-						{"attribute": 5920, "column": "tweet"},
-						{"attribute": 5921, "column": "aff_avg_light"},
-						{"attribute": 29029, "column": "rel_aff_area_light"}
-					],
-					"attributeSet": 4185,
-					"active": true,
-					"areaTemplate": baseLayer.areaTemplate,
-					"fidColumn": baseLayer.fidColumn,
-					"dataSourceOrigin": 'import_gsi'
-				});
-			}));
-		}).then(() => {
-			logger.info('UtepStatisticsController#import Update views');
-			// Update all relevant views. Do it one by one.
-			var promise = Promise.resolve(null);
-			baseLayers.forEach(baseLayer => {
-				promise = promise.then(() => {
-					return new FilteredMongoLayerReferences({
-						"layer": baseLayer.layer,
-						"location": baseLayer.location,
-						"year": baseLayer.year,
-						"areaTemplate": baseLayer.areaTemplate,
-						"isData": true
-					}, this._mongo).read();
-				}).then(layerReferences => {
-					return this._layerViews.update(baseLayer._id, layerReferences);
-				})
+			let sqls = locations.map(location => {
+				this._permissions.addGroupSql(Group.userId(), MongoLocation.collectionName(), location._id, Permission.READ);
 			});
-			return promise;
+			return new PgSequentialQuery(this._pool).handleSetOfQueries(sqls);
 		}).then(() => {
-			logger.info('UtepStatisticsController#import Done');
-			response.json({status: 'ok'});
+			response.json({
+				status: 'ok'
+			})
 		}).catch(err => {
 			logger.error('UtepStatisticsController#import Error: ', err);
 		});
