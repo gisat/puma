@@ -98,9 +98,9 @@ class GufIntegrationController {
 		superagent.get(request.body.url)
 			.set('Accept', 'application/json')
 			.then(result => {
-				console.log(result);
-				defaultName = result.features[0].title;
-				urlOfGeoTiff = result.features[0].properties.EarthObservation.result.EarthObservationResult.product.ProductInformation.fileName.ServiceReference['@href'];
+				console.log(result.body);
+				defaultName = result.body.features[0].title;
+				urlOfGeoTiff = result.body.features[0].properties.EarthObservation.result.EarthObservationResult.product.ProductInformation.fileName.ServiceReference['@href'];
 
 				process.setOption('tiff', urlOfGeoTiff);
 				processes.store(process);
