@@ -98,8 +98,6 @@ class GufIntegrationController {
 		superagent.get(request.body.url)
 			.set('Accept', 'application/json')
 			.then(result => {
-				console.log(result.body.features[0]);
-				console.log(result.body.features[0].properties);
 				defaultName = result.body.features[0].properties.title;
 				urlOfGeoTiff = result.body.features[0].properties.EarthObservation.result.EarthObservationResult.product.ProductInformation.fileName.ServiceReference['@href'];
 				logger.info(`GufIntegrationController#process DefaultName: ${defaultName} URL: ${urlOfGeoTiff}`);
