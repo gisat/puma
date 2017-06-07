@@ -39,7 +39,7 @@ class UtepStatisticsController {
 			dataset: 38433
 		}, this._mongo).json().then(locations => {
 			let sqls = locations.map(location => {
-				this._permissions.addGroupSql(Group.userId(), MongoLocation.collectionName(), location._id, Permission.READ);
+				return this._permissions.addGroupSql(Group.userId(), MongoLocation.collectionName(), location._id, Permission.READ);
 			});
 			return new PgSequentialQuery(this._pool).handleSetOfQueries(sqls);
 		}).then(() => {
