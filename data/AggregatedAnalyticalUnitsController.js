@@ -52,7 +52,7 @@ class AggregatedAnalyticalUnitsController {
 	 * @param response
 	 */
 	getAsCsv(request, response) {
-		logger.info(`AggregatedAnalyticalUnitsController#getAsCsv`);
+		logger.info(`AggregatedAnalyticalUnitsController#getAsCsv AreaTemplate: ${request.body.areaTemplate} Periods: ${request.body.periods[0]} Places: ${request.body.places[0]} Sets: `, request.body.sets);
 
 		let promises = [];
 		let resultCsv = '';
@@ -82,6 +82,7 @@ class AggregatedAnalyticalUnitsController {
 		});
 
 		Promise.all(promises).then(() => {
+			logger.info(`AggregatedAnalyticalUnitsController#getAsCsv CSV: ${resultCsv}`);
 			response.set('Content-Type', 'text/csv');
 			response.send(resultCsv);
 		})
