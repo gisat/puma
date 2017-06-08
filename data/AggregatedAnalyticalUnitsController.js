@@ -73,9 +73,10 @@ class AggregatedAnalyticalUnitsController {
 							return result.length;
 						});
 					} else {
-						this._filter.amount(attributes, options.attributes);
+						return this._filter.amount(attributes, options.attributes);
 					}
 				})).then(results => {
+					logger.info(`AggregatedAnalyticalUnitsController#getAsCsv Results: `, results);
 					resultCsv += `${set.name},${results.join(',')}\n`;
 				})
 			);
