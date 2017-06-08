@@ -86,6 +86,12 @@ class AggregatedAnalyticalUnitsController {
 			logger.info(`AggregatedAnalyticalUnitsController#getAsCsv CSV: ${resultCsv}`);
 			response.set('Content-Type', 'text/csv');
 			response.send(resultCsv);
+		}).catch(err => {
+			logger.error(`AggregatedAnalyticalUnitsController#getAsCsv Error: `, err);
+			response.status(500).json({
+				"status": "error",
+				"error": err
+			});
 		})
 	}
 

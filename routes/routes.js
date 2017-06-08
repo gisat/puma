@@ -120,7 +120,7 @@ module.exports = function(app) {
 	new LayerImporterController(app, conn.getMongoDb(), pool);
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
-	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'vies');
+	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
