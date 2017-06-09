@@ -55,8 +55,11 @@ class AggregatedAnalyticalUnitsController {
 		logger.info(`AggregatedAnalyticalUnitsController#getAsCsv AreaTemplate: ${request.body.areaTemplate} Periods: ${request.body.periods[0]} Places: ${request.body.places[0]} Sets: `, request.body.sets);
 
 		let promises = [];
-		let resultCsv = '';
+		let sets = [];
 		request.body.sets.forEach(set => {
+			let resultCsv = set.categories.map(category => {
+				return category.name;
+			}).join(',');
 			promises.push(
 				Promise.all(set.categories.map(category => {
 					var options = this._parseRequest({
@@ -78,14 +81,16 @@ class AggregatedAnalyticalUnitsController {
 				})).then(results => {
 					logger.info(`AggregatedAnalyticalUnitsController#getAsCsv Results: `, results);
 					resultCsv += `${set.name},${results.join(',')}\n`;
+					sets.push(resultCsv);
 				})
 			);
 		});
 
 		Promise.all(promises).then(() => {
-			logger.info(`AggregatedAnalyticalUnitsController#getAsCsv CSV: ${resultCsv}`);
-			response.set('Content-Type', 'text/csv');
-			response.send(resultCsv);
+			logger.info(`AggregatedAnalyticalUnitsController#getAsCsv CSV: `, sets);
+			response.json({
+				sets: sets
+			});
 		}).catch(err => {
 			logger.error(`AggregatedAnalyticalUnitsController#getAsCsv Error: `, err);
 			response.status(500).json({
