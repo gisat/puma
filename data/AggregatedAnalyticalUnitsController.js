@@ -57,9 +57,9 @@ class AggregatedAnalyticalUnitsController {
 		let promises = [];
 		let sets = [];
 		request.body.sets.forEach(set => {
-			let resultCsv = set.categories.map(category => {
+			let resultCsv = ',' + set.categories.map(category => {
 				return category.name;
-			}).join(',');
+			}).join(',') + '\n';
 			promises.push(
 				Promise.all(set.categories.map(category => {
 					var options = this._parseRequest({
