@@ -81,7 +81,10 @@ class AggregatedAnalyticalUnitsController {
 				})).then(results => {
 					logger.info(`AggregatedAnalyticalUnitsController#getAsCsv Results: `, results);
 					resultCsv += `${set.name},${results.join(',')}\n`;
-					sets.push(resultCsv);
+					sets.push({
+						csv: resultCsv,
+						set: set
+					});
 				})
 			);
 		});
