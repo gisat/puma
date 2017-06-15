@@ -61,7 +61,7 @@ function initServer(err) {
 	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
-	app.use(express.bodyParser());
+	app.use(express.bodyParser({limit: '50mb'}));
 	app.use(xmlparser());
 	app.use(session({
 		name: "panthersid",
