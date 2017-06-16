@@ -138,6 +138,7 @@ class SnowPortal {
                     existingSceneIDs.push(sceneStat.key);
                 });
                 let sql = this.getScenesDataSql(areaType, areaValue, sensors, satellites, timeRangeStart, timeRangeEnd, existingSceneIDs);
+                logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL: `, sql);
                 this._pgLongRunningPool.pool().query(sql).then(results => {
                     logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL finished. Rows: `, results.rows.length);
                     let totals = {};
