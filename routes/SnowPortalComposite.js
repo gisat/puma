@@ -817,28 +817,26 @@ class SnowPortalComposite {
         }
 
         return `
-        SELECT
-          l.classified_as AS class,
-          sum(foo.count)  AS count,
-          max(foo.aoi)    AS aoi
-        FROM (
             SELECT
-              (clipped_raster_data.pvc).value                    AS class,
-              sum((clipped_raster_data.pvc).count)               AS count,
-              avg(aoi.aoi) AS aoi
-            FROM
-              (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
-               FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
-                   ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
-              (SELECT 100 * (st_area(st_union(st_intersection(st_polygon(st_clip(r.rast, g.the_geom)), g.the_geom))) /
-                       st_area(st_union(g.the_geom))) AS aoi
-                 FROM composites."${tableName}" AS r
-                   INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
-                 WHERE st_intersects(r.rast, g.the_geom)) AS aoi
-            GROUP BY class) AS foo
-          INNER JOIN source AS s ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
-          INNER JOIN legend AS l ON l.source_id = s.id AND foo.class BETWEEN l.value_from AND l.value_to
-        GROUP BY l.classified_as;
+              l.classified_as                                               AS class,
+              sum(foo.count)                                                AS count,
+              100 * ((sum(foo.count) * 250000) / avg(foo.geometry_area)) AS aoi
+            FROM (
+                   SELECT
+                     (clipped_raster_data.pvc).value        AS class,
+                     sum((clipped_raster_data.pvc).count)   AS count,
+                     avg(clipped_raster_data.geometry_area) AS geometry_area
+                   FROM
+                     (SELECT
+                        st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc,
+                        st_area(g.the_geom)                                AS geometry_area
+                      FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
+                          ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data
+                   GROUP BY class) AS foo
+              INNER JOIN source AS s
+                ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
+              INNER JOIN legend AS l ON l.source_id = s.id AND foo.class BETWEEN l.value_from AND l.value_to
+            GROUP BY l.classified_as;
         `
     }
 
