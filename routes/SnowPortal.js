@@ -133,12 +133,7 @@ class SnowPortal {
 
             return new Promise((resolve, reject) => {
                 existingStats = existingStatsData;
-                let existingSceneIDs = [];
-                _.each(existingStats, sceneStat => {
-                    existingSceneIDs.push(sceneStat.key);
-                });
-                let sql = this.getScenesDataSql(areaType, areaValue, sensors, satellites, timeRangeStart, timeRangeEnd, existingSceneIDs);
-                logger.info(`SnowPortal#getScenes ------ Computing stats for scenes (except count ${existingSceneIDs.length})`);
+                let sql = this.getScenesDataSql(areaType, areaValue, sensors, satellites, timeRangeStart, timeRangeEnd);
                 this._pgLongRunningPool.pool().query(sql).then(results => {
                     logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL finished. Rows: `, results.rows.length);
                     let totals = {};
@@ -168,7 +163,7 @@ class SnowPortal {
                         });
                     });
 
-                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.count, ` Scenes: `, Object.keys(scenes).length);
+                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.length, ` Scenes: `, Object.keys(scenes).length);
 
                     resolve(_.map(scenes, scene => {
                         return scene;
@@ -462,10 +457,9 @@ class SnowPortal {
      * @param satellites
      * @param dateStart
      * @param dateEnd
-     * @param existingSceneIDs
      * @returns {*}
      */
-    getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd, existingSceneIDs) {
+    getScenesDataSql(areaType, area, sensors, satellites, dateStart, dateEnd) {
         let geometryTable;
         let geometryTableCondition;
         switch (areaType) {
@@ -483,7 +477,6 @@ class SnowPortal {
 
         let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
         let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
-        let existingScenesSql = existingSceneIDs && existingSceneIDs.length ? `AND NOT (m.id = ANY(ARRAY[${existingSceneIDs.join(',')}]))` : ``;
 
         return `
         WITH scenes AS (SELECT
