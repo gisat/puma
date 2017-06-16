@@ -99,7 +99,13 @@ class GufIntegrationController {
 			.set('Accept', 'application/json')
 			.then(result => {
 				defaultName = result.body.features[0].properties.title;
-				urlOfGeoTiff = result.body.features[0].properties.EarthObservation.result.EarthObservationResult.product.ProductInformation.fileName.ServiceReference['@href'];
+				urlOfGeoTiff = null;
+				result.body.features[0].properties.links.forEach(link => {
+					if(link['@type'] == 'image/tiff') {
+						urlOfGeoTiff = link['@href'].replace('https://store.terradue.com/', 'https://store.terradue.com/api');
+					}
+				});
+
 				logger.info(`GufIntegrationController#process DefaultName: ${defaultName} URL: ${urlOfGeoTiff}`);
 
 				process.setOption('tiff', urlOfGeoTiff);
