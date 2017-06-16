@@ -502,7 +502,7 @@ class SnowPortal {
                             INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
                         WHERE ${satellitesSql} ${satellitesSql ? "AND" : ""} ${sensorsSql} 
                             ${satellitesSql || sensorsSql ? "AND" : ""} m.date BETWEEN '${dateStart}' AND '${dateEnd}'
-                            ${existingScenesSql}
+                            AND m.id NOT IN (SELECT scene_id FROM scene_statistics WHERE area = '${area}')
                             AND r.extent && g.the_geom
                             AND st_intersects(st_setsrid(r.extent, 3035), g.the_geom)
                         GROUP BY
