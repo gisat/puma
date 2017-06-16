@@ -95,6 +95,7 @@ class GufIntegrationController {
 		let information, place, remoteFile, urlOfGeoTiff, defaultName;
 		let rasterLayerTable, boundingBox, url, center;
 
+		request.body.url = request.body.url.replace('format=atom','format=json');
 		superagent.get(request.body.url)
 			.set('Accept', 'application/json')
 			.then(result => {
