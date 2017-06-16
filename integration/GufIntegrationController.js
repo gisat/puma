@@ -138,7 +138,7 @@ class GufIntegrationController {
 			processes.store(process);
 
 			// Create table for the analytical units.
-			return this.createAdministrativeUnit(remoteFile.getDestination(), administrativeUnitTable);
+			return this.createAdministrativeUnit(remoteFile.getDestination(), administrativeUnitTable, defaultName);
 		}).then(pBoundingBox => {
 			boundingBox = pBoundingBox.box;
 			center = pBoundingBox.center;
@@ -208,7 +208,9 @@ class GufIntegrationController {
 	 * @param rasterFile
 	 * @param administrativeUnitsTable
 	 */
-	createAdministrativeUnit(rasterFile, administrativeUnitsTable) {
+	createAdministrativeUnit(rasterFile, administrativeUnitsTable, locationName) {
+		locationName = locationName || 'Area of interest';
+
 		// Get the polygon surrounding the raster.
 		let dataset = gdal.open(rasterFile);
 		let geoTransform = dataset.geoTransform;
@@ -226,7 +228,7 @@ class GufIntegrationController {
 
 		let sql = `
 			CREATE TABLE ${administrativeUnitsTable} (gid SERIAL, the_geom geometry, name text, urban double precision, non_urban double precision);
-			INSERT INTO ${administrativeUnitsTable} (the_geom, name) VALUES (ST_GeomFromText('${bbox}', 4326), 'Area of interest');
+			INSERT INTO ${administrativeUnitsTable} (the_geom, name) VALUES (ST_GeomFromText('${bbox}', 4326), '${locationName}');
 		`;
 
 		return this._pgPool.query(sql).then(() => {
