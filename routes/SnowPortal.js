@@ -139,7 +139,7 @@ class SnowPortal {
                 });
                 let sql = this.getScenesDataSql(areaType, areaValue, sensors, satellites, timeRangeStart, timeRangeEnd, existingSceneIDs);
                 this._pgLongRunningPool.pool().query(sql).then(results => {
-                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL finished. Rows: `, results.rows.count);
+                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL finished. Rows: `, results.rows.length);
                     let totals = {};
                     let scenes = {};
 
@@ -166,6 +166,8 @@ class SnowPortal {
                             scene.classDistribution[key] = 100 * (Number(value) / Number(totals[scene.key]));
                         });
                     });
+
+                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.count, ` Scenes: `, Object.keys(scenes).length);
 
                     resolve(_.map(scenes, scene => {
                         return scene;
