@@ -138,7 +138,7 @@ class SnowPortal {
                     existingSceneIDs.push(sceneStat.key);
                 });
                 let sql = this.getScenesDataSql(areaType, areaValue, sensors, satellites, timeRangeStart, timeRangeEnd, existingSceneIDs);
-                logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL: `, sql);
+                logger.info(`SnowPortal#getScenes ------ Computing stats for scenes (except count ${existingSceneIDs.length})`);
                 this._pgLongRunningPool.pool().query(sql).then(results => {
                     logger.info(`SnowPortal#getScenes ------ Computing stats for scenes, SQL finished. Rows: `, results.rows.length);
                     let totals = {};
@@ -483,7 +483,7 @@ class SnowPortal {
 
         let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
         let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
-        let existingScenesSql = existingSceneIDs && existingSceneIDs.length ? `AND NOT (m.id = ANY(${this.convertArrayToSqlArray(existingSceneIDs)}::INTEGER[]))` : ``;
+        let existingScenesSql = existingSceneIDs && existingSceneIDs.length ? `AND NOT (m.id = ANY(${existingSceneIDs.join(',')}))` : ``;
 
         return `
         WITH scenes AS (SELECT
