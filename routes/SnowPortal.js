@@ -483,7 +483,7 @@ class SnowPortal {
 
         let satellitesSql = satellites && satellites.length ? `s.satellite_key = ${this.convertArrayToSqlAny(satellites)}` : ``;
         let sensorsSql = sensors && sensors.length ? `s.sensor_key = ${this.convertArrayToSqlAny(sensors)}` : ``;
-        let existingScenesSql = existingSceneIDs && existingSceneIDs.length ? `AND NOT (m.id = ANY(${existingSceneIDs.join(',')}))` : ``;
+        let existingScenesSql = existingSceneIDs && existingSceneIDs.length ? `AND NOT (m.id = ANY(ARRAY[${existingSceneIDs.join(',')}]))` : ``;
 
         return `
         WITH scenes AS (SELECT
