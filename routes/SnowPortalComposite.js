@@ -183,12 +183,14 @@ class SnowPortalComposite {
                             if (this._visibleClasses.includes(row.class)) {
                                 visibleTotal += Number(row.count);
                                 classDistribution[row.class] = null;
-                                aoiCoverage = row.aoi;
+                                aoiCoverage += row.aoi;
                             }
 
                             total += Number(row.count);
 
                         });
+
+                        // convert absolute numbers to percents
                         _.each(results.rows, row => {
                             if (this._visibleClasses.includes(row.class)) {
                                 classDistribution[row.class] = (row.count / visibleTotal) * 100;
@@ -201,7 +203,7 @@ class SnowPortalComposite {
                             period: this._period,
                             sensors: this._sensors,
                             satellites: this._satellites,
-                            aoiCoverage: aoiCoverage * (visibleTotal / total),
+                            aoiCoverage: total ? (aoiCoverage * (visibleTotal / total)) : 0,
                             classDistribution: classDistribution
                         });
                     }).catch(error => {
