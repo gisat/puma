@@ -96,6 +96,9 @@ class GufIntegrationController {
 		let rasterLayerTable, boundingBox, url, center;
 
 		request.body.url = request.body.url.replace('format=atom','format=json');
+		if(request.body.url.indexOf('do=terradue') == -1) {
+			request.body.url += '&do=terradue';
+		}
 		superagent.get(request.body.url)
 			.set('Accept', 'application/json')
 			.then(result => {
