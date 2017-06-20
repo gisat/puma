@@ -400,7 +400,7 @@ class SnowPortalComposite {
              * Export composite to GeoTiff
              */
             return new Promise((resolve, reject) => {
-                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${this._key} mode=2" ${this._tmpTiffLocation}${this._key}.tif`;
+                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=testCompost mode=2" /tmp/testCompost.tif`;
                 logger.info(`SnowPortalComposite#_create ------ Exporting GeoTiff of the composite ${this._key}`);
                 child_process.exec(command, (error, stdout, stderr) => {
                     if (error) {
@@ -686,7 +686,7 @@ class SnowPortalComposite {
         return `
             CREATE TABLE composites.${tableName}
                 AS SELECT
-                        ST_Union(t.rast, 1, 'MAX') as rast
+                        ST_CLIP(ST_Union(t.rast, 1, 'MAX'), eu.the_geom, 253, false) as rast
                     FROM (
                             SELECT DISTINCT st_centroid(extent) AS centroid
                             FROM rasters
@@ -694,12 +694,15 @@ class SnowPortalComposite {
                         tile AS t
                         INNER JOIN rasters AS r ON (r.rid = t.rid)
                         INNER JOIN metadata AS m ON (m.id = r.metadata_id)
-                        INNER JOIN source AS s ON (s.id = m.source_id)
+                        INNER JOIN source AS s ON (s.id = m.source_id),
+                        europe AS eu
                     WHERE r.extent && foo.centroid
                         AND m.date = '${date}'
                         AND s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
                         AND s.satellite_key = ${SnowPortalComposite.convertArrayToSqlAny(satellites)}
-                    GROUP BY foo.centroid;`;
+                    GROUP BY
+                        foo.centroid
+                        eu.the_geom;`;
     }
 
     /**
