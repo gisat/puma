@@ -820,26 +820,34 @@ class SnowPortalComposite {
         }
 
         return `
-        SELECT
-          l.classified_as                                          AS class,
-          sum(foo.count)                                           AS count,
-          100 * (sum(foo.count) * 250000 / avg(foo.geometry_area)) AS aoi
-        FROM (
-               SELECT
-                 (clipped_raster_data.pvc).value      AS class,
-                 sum((clipped_raster_data.pvc).count) AS count,
-                 avg(geometry_data.geometry_area)     AS geometry_area
-               FROM
-                 (SELECT st_valuecount(st_clip(composite.rast, g.the_geom, 253, FALSE)) AS pvc
-                  FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
-                      ON ${geometryTableCondition}) AS clipped_raster_data,
-                 (SELECT sum(st_area(g.the_geom)) AS geometry_area
-                  FROM ${geometryTable} AS g WHERE ${geometryTableCondition}) AS geometry_data
-               GROUP BY class) AS foo
-          INNER JOIN source AS s
-            ON s.satellite_key = ${this.convertArrayToSqlAny(satellites)} AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
-          INNER JOIN legend AS l ON l.source_id = s.id AND foo.class BETWEEN l.value_from AND l.value_to
-        GROUP BY l.classified_as;
+            WITH raster_data AS (
+                SELECT st_valuecount(st_clip(composite.rast, g.the_geom, 253, FALSE)) AS pvc
+                FROM composites."${tableName}" AS composite
+                  INNER JOIN ${geometryTable} AS g ON ${geometryTableCondition}
+            ), geometry_data AS (
+                SELECT sum(st_area(g.the_geom)) AS total_area
+                FROM ${geometryTable} AS g
+                WHERE ${geometryTableCondition}
+            ), legend_data AS (
+                SELECT DISTINCT
+                  classified_as,
+                  value_from,
+                  value_to
+                FROM
+                  source AS s
+                  INNER JOIN legend AS l
+                    ON l.source_id = s.id
+                WHERE
+                  s.satellite_key = ${this.convertArrayToSqlAny(satellites)}
+                  AND s.sensor_key = ${this.convertArrayToSqlAny(sensors)}
+            )
+            SELECT
+              legend_data.classified_as as class,
+              sum((raster_data.pvc).count)                                               AS count,
+              100 * ((sum((raster_data.pvc).count) * 250000) / geometry_data.total_area) AS aoi
+            FROM raster_data, geometry_data, legend_data
+            WHERE (raster_data.pvc).value BETWEEN legend_data.value_from AND legend_data.value_to
+            GROUP BY class, geometry_data.total_area;
         `
     }
 
