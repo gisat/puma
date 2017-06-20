@@ -176,6 +176,7 @@ class SnowPortal {
                         if (a.date > b.date) {
                             return 1;
                         }
+                        logger.info(`==========> Sorting scenes, a=b: a:`, a, `b:`, b);
                         return 0;
                     });
 
