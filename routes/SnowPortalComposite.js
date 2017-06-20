@@ -829,7 +829,7 @@ class SnowPortalComposite {
                  sum((clipped_raster_data.pvc).count) AS count,
                  avg(geometry_data.geometry_area)     AS geometry_area
                FROM
-                 (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
+                 (SELECT st_valuecount(st_clip(composite.rast, g.the_geom, 253, FALSE)) AS pvc
                   FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
                       ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
                  (SELECT sum(st_area(g.the_geom)) AS geometry_area
