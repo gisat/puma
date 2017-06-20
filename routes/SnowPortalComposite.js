@@ -170,6 +170,7 @@ class SnowPortalComposite {
                      * Compute statistics
                      */
                     let sql = SnowPortalComposite.createStatsSql(this._key, areaObj.type, areaObj.value, this._sensors, this._satellites);
+                    console.log(`#### SQL`, sql);
                     this._pgLongRunningPool.pool().query(sql).then((results) => {
                         let classDistribution = {};
                         let total = 0;
@@ -829,9 +830,9 @@ class SnowPortalComposite {
                  sum((clipped_raster_data.pvc).count) AS count,
                  avg(geometry_data.geometry_area)     AS geometry_area
                FROM
-                 (SELECT st_valuecount(st_clip(composite.rast, g.the_geom)) AS pvc
+                 (SELECT st_valuecount(st_clip(composite.rast, g.the_geom, 253, FALSE)) AS pvc
                   FROM composites."${tableName}" AS composite INNER JOIN ${geometryTable} AS g
-                      ON ${geometryTableCondition} AND st_intersects(g.the_geom, composite.rast)) AS clipped_raster_data,
+                      ON ${geometryTableCondition}) AS clipped_raster_data,
                  (SELECT sum(st_area(g.the_geom)) AS geometry_area
                   FROM ${geometryTable} AS g WHERE ${geometryTableCondition}) AS geometry_data
                GROUP BY class) AS foo
