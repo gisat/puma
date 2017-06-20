@@ -170,7 +170,7 @@ class SnowPortal {
 
                     // sort scenes by date
                     scenesArray.sort((a, b) => {
-                        logger.info(`==========> Sorting scenes, a=b: a:`, a, `b:`, b);
+                        console.log(`================> Sorting scenes, a=b: a:`, a, `b:`, b);
                         if (a.date < b.date) {
                             return -1;
                         }
