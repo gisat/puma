@@ -169,11 +169,6 @@ module.exports = {
 	 */
 	exportDirectory: '/tmp/',
 
-	/*
-	 * Destination of temporary downloaded files for the WPS process
-	 */
-	temporaryDownloadedFilesLocation: '/tmp/',
-
 	isUrbis: false,
 	
 	/**
