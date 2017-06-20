@@ -163,26 +163,12 @@ class SnowPortal {
                         });
                     });
 
-                    // convert key-value object to array
-                    let scenesArray = _.map(scenes, scene => {
+                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.length, ` Scenes: `, Object.keys(scenes).length);
+
+                    // convert key-value object to array and resolve
+                    resolve(_.map(scenes, scene => {
                         return scene;
-                    });
-
-                    // sort scenes by date
-                    scenesArray.sort((a, b) => {
-                        console.log(`================> Sorting scenes, a=b: a:`, a, `b:`, b);
-                        if (a.date < b.date) {
-                            return -1;
-                        }
-                        if (a.date > b.date) {
-                            return 1;
-                        }
-                        return 0;
-                    });
-
-                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.length, ` Scenes: `, scenesArray.length);
-
-                    resolve(scenesArray);
+                    }));
                 }).catch(error => {
                     reject(new Error(logger.error(`SnowPortal#getScenes ------ Computing stats for scenes Error: ${error.message} | ${error} | ${sql}`)));
                 });
@@ -207,9 +193,24 @@ class SnowPortal {
 
         }).then(newStatsData => {
             /**
-             * Combine existing and new data
+             * Combine existing and new data, sort
              */
-            return _.union(existingStats, newStatsData);
+
+            let allScenes = _.union(existingStats, newStatsData);
+
+            // sort scenes by date
+            allScenes.sort((a, b) => {
+                console.log(`================> Sorting scenes, a=b: a:`, a, `b:`, b);
+                if (a.date < b.date) {
+                    return -1;
+                }
+                if (a.date > b.date) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            return allScenes;
         }).then(data => {
             /**
              * filter classes we want to see in statistics
