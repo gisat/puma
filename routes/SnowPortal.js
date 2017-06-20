@@ -163,7 +163,13 @@ class SnowPortal {
                         });
                     });
 
-                    scenes.sort((a, b) => {
+                    // convert key-value object to array
+                    let scenesArray = _.map(scenes, scene => {
+                        return scene;
+                    });
+
+                    // sort scenes by date
+                    scenesArray.sort((a, b) => {
                         if (a.date < b.date) {
                             return -1;
                         }
@@ -173,11 +179,9 @@ class SnowPortal {
                         return 0;
                     });
 
-                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.length, ` Scenes: `, Object.keys(scenes).length);
+                    logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.length, ` Scenes: `, scenesArray.length);
 
-                    resolve(_.map(scenes, scene => {
-                        return scene;
-                    }));
+                    resolve(scenesArray);
                 }).catch(error => {
                     reject(new Error(logger.error(`SnowPortal#getScenes ------ Computing stats for scenes Error: ${error.message} | ${error} | ${sql}`)));
                 });
