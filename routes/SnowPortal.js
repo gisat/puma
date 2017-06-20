@@ -163,6 +163,16 @@ class SnowPortal {
                         });
                     });
 
+                    scenes.sort((a, b) => {
+                        if (a.date < b.date) {
+                            return -1;
+                        }
+                        if (a.date > b.date) {
+                            return 1;
+                        }
+                        return 0;
+                    });
+
                     logger.info(`SnowPortal#getScenes ------ Computing stats for scenes finished. Rows: `, results.rows.length, ` Scenes: `, Object.keys(scenes).length);
 
                     resolve(_.map(scenes, scene => {
