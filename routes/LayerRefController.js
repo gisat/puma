@@ -11,6 +11,7 @@ var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
 var MongoLayerTemplate = require('../layers/MongoLayerTemplate');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoLayerReference = require('../layers/MongoLayerReference');
+let MongoLocation = require('../metadata/MongoLocation');
 
 /**
  * @augments Controller
@@ -89,7 +90,7 @@ class LayerRefController extends Controller {
 	}
 
 	hasRights(user, method, id, object) {
-		return user.hasPermission(this.type, method, object.location);
+		return user.hasPermission(MongoLocation.collectionName(), method, object.location);
 	}
 }
 
