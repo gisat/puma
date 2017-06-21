@@ -686,7 +686,7 @@ class SnowPortalComposite {
         return `
             CREATE TABLE composites.${tableName}
                 AS SELECT
-                        ST_CLIP(ST_Union(t.rast, 1, 'MAX'), eu.the_geom, 253, false) as rast
+                        ST_Union(ST_CLIP(t.rast, eu.the_geom, 253, false), 1, 'MAX') as rast
                     FROM (
                             SELECT DISTINCT st_centroid(extent) AS centroid
                             FROM rasters
