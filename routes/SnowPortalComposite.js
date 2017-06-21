@@ -400,7 +400,7 @@ class SnowPortalComposite {
              * Export composite to GeoTiff
              */
             return new Promise((resolve, reject) => {
-                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=testCompost mode=2" /tmp/testCompost.tif`;
+                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${this._key} mode=2" ${this._tmpTiffLocation}${this._key}.tif`;
                 logger.info(`SnowPortalComposite#_create ------ Exporting GeoTiff of the composite ${this._key}`);
                 child_process.exec(command, (error, stdout, stderr) => {
                     if (error) {
