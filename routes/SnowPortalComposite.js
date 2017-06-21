@@ -701,7 +701,7 @@ class SnowPortalComposite {
                         AND s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
                         AND s.satellite_key = ${SnowPortalComposite.convertArrayToSqlAny(satellites)}
                     GROUP BY
-                        foo.centroid
+                        foo.centroid,
                         eu.the_geom;`;
     }
 
