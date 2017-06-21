@@ -684,25 +684,28 @@ class SnowPortalComposite {
      */
     static createOneDayCompositeSql(tableName, date, sensors, satellites) {
         return `
-            CREATE TABLE composites.${tableName}
-                AS SELECT
-                        ST_Union(ST_CLIP(t.rast, eu.the_geom, 253, false), 1, 'MAX') as rast
-                    FROM (
-                            SELECT DISTINCT st_centroid(extent) AS centroid
-                            FROM rasters
-                        ) AS foo,
-                        tile AS t
-                        INNER JOIN rasters AS r ON (r.rid = t.rid)
-                        INNER JOIN metadata AS m ON (m.id = r.metadata_id)
-                        INNER JOIN source AS s ON (s.id = m.source_id),
-                        europe AS eu
-                    WHERE r.extent && foo.centroid
-                        AND m.date = '${date}'
-                        AND s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
-                        AND s.satellite_key = ${SnowPortalComposite.convertArrayToSqlAny(satellites)}
-                    GROUP BY
-                        foo.centroid,
-                        eu.the_geom;`;
+            BEGIN;
+                DROP TABLE IF EXISTS composites.${tableName};
+                CREATE TABLE composites.${tableName}
+                    AS SELECT
+                            ST_Union(ST_Clip(t.rast, eu.the_geom, 253, false), 1, 'MAX') as rast
+                        FROM (
+                                SELECT DISTINCT st_centroid(extent) AS centroid
+                                FROM rasters
+                            ) AS foo,
+                            tile AS t
+                            INNER JOIN rasters AS r ON (r.rid = t.rid)
+                            INNER JOIN metadata AS m ON (m.id = r.metadata_id)
+                            INNER JOIN source AS s ON (s.id = m.source_id),
+                            europe AS eu
+                        WHERE r.extent && foo.centroid
+                            AND m.date = '${date}'
+                            AND s.sensor_key = ${SnowPortalComposite.convertArrayToSqlAny(sensors)}
+                            AND s.satellite_key = ${SnowPortalComposite.convertArrayToSqlAny(satellites)}
+                        GROUP BY
+                            foo.centroid,
+                            eu.the_geom;
+            COMMIT;`;
     }
 
     /**
