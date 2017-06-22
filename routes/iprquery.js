@@ -225,8 +225,8 @@ class iprquery {
         
         SELECT
             DISTINCT
-            ?datasetName
-            (?ipr_obj as ?datasetUri)
+            (?datasetName as ?dataset)
+            (?ipr_obj as ?dataset_uri)
         WHERE {
             ?ipr_sub common:isInContextOfDataset ?ipr_obj .
         
