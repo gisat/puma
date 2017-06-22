@@ -2,6 +2,7 @@ var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 var TacrPhaStatistics = require('../tacrpha/TacrPhaStatistics');
 var utils = require('../tacrpha/utils');
+let LodAdministrativeUnits = require('../melodies/LodAdministrativeUnits');
 
 var request = require('request');
 var Promise = require('promise');
@@ -14,6 +15,7 @@ class iprquery {
         app.post("/iprquery/data", this.dataSearching.bind(this));
         app.post("/iprquery/object", this.objectSearching.bind(this));
         app.get("/iprquery/statistics", this.statistics.bind(this));
+        app.get("/iprquery/adm", this.administrativeUnit.bind(this));
 
         this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
         this._prefixes = [
@@ -58,12 +60,12 @@ class iprquery {
     objectSearching(req, res){
         let dataset = req.body.dataset;
         let objectDs = req.body.objectDataset;
-        let objectId = req.body.objectId;
-        logger.info(`INFO iprquery#objectSearching params: ` + dataset + ' ' + objectDs + ' ' + objectId);
-        var sparql = this.prepareObjectQuery(dataset, objectDs, objectId);
+        let objectIds = req.body.objectIds;
+        logger.info(`INFO iprquery#objectSearching params: ` + dataset + ' ' + objectDs + ' ' + objectIds);
+        var sparql = this.prepareObjectQuery(dataset, objectDs, objectIds);
         logger.info(`INFO iprquery#objectSearching sparql: ` + sparql);
         this.endpointRequest(sparql).then(function(result){
-            result.keywords =[objectDs + "/" + objectId];
+            result.keywords =[objectDs + "/" + objectIds];
             res.send(result);
         });
     }
@@ -140,14 +142,14 @@ class iprquery {
      * Prepare sparql query for object searching
      * @param dataset
      * @param objectDs
-     * @param objectId
+     * @param objectIds {String[]}
      * @returns {string}
      */
-    prepareObjectQuery(dataset, objectDs, objectId){
+    prepareObjectQuery(dataset, objectDs, objectIds){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ') + ' PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/' + objectDs + '/>';
 
-        var filter = '(?ipr_sbj = uri:' + objectId +')';
+        var filter = `(?ipr_sbj IN (${objectIds.map(id => `uri:${id}`).join(',')}))`;
         var select = '(?ipr_okt as ?hodnota) (?ipr_pkt as ?atribut) (?ipr_sbj as ?objekt)';
         var limit = 'LIMIT 100';
 
@@ -210,20 +212,34 @@ class iprquery {
     prepareTermsQuery(values, type){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
-        var sparql = ' SELECT (?ipr_sub as ?pojem) (?ipr_obj as ?dataset) WHERE {?ipr_sub common:isInContextOfDataset ?ipr_obj . ';
 
-        var filter = [];
-        values.map((value) => {
-            value = utils.removeWordEnding(value);
-            filter.push('regex(str(?ipr_sub), "' + value + '", "i")');
-        });
-        filter = 'FILTER(' + filter.join(type) + ')';
-        sparql += filter + '}';
+		var filter = [];
+		values.map((value) => {
+			value = utils.removeWordEnding(value);
+			filter.push('regex(str(?ipr_sub), "' + value + '", "i")');
+		});
+		filter = 'FILTER(' + filter.join(type) + ')';
+
+		var sparql = `
+        ${prefixes}
+        
+        SELECT
+            DISTINCT
+            ?datasetName
+            (?ipr_obj as ?datasetUri)
+            ?commonName
+        WHERE {
+            ?ipr_sub common:isInContextOfDataset ?ipr_obj .
+        
+            ?ipr_sub rdfs:label ?commonName .
+            ?ipr_obj rdfs:label ?datasetName .
+            ${filter}
+        }`;
 
         logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
-        logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
+        logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + sparql);
 
-        return query + encodeURIComponent(prefixes + sparql);
+        return query + encodeURIComponent(sparql);
     }
 
     /**
@@ -243,6 +259,15 @@ class iprquery {
         logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
 
         return query + encodeURIComponent(prefixes + sparql);
+    }
+
+    administrativeUnit(request, response) {
+        new LodAdministrativeUnits(request.query.name).json().then(result => {
+            console.log(result);
+            response.json({
+                "status": "ok"
+            });
+        });
     }
 
     endpointRequest(sparql){
