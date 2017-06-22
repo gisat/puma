@@ -10,7 +10,8 @@ var csv = require('csv');
 
 class iprquery {
     constructor (app, pool) {
-        app.post("/iprquery/dataset", this.attributesSearching.bind(this));
+        app.post("/iprquery/attributes", this.attributesSearching.bind(this));
+		app.post("/iprquery/dataset", this.datasetSearch.bind(this));
         app.post("/iprquery/terms", this.searching.bind(this));
         app.post("/iprquery/data", this.dataSearching.bind(this));
         app.post("/iprquery/object", this.objectSearching.bind(this));
@@ -101,7 +102,7 @@ class iprquery {
      */
     attributesSearching(req, res){
         let dataset = req.body.dataset;
-        var sparql = this.prepareDatasetQuery(dataset);
+        var sparql = this.prepareAttributesQuery(dataset);
         debugger;
         this.endpointRequest(sparql).then(function(result){
             result.keywords = [dataset];
@@ -137,6 +138,35 @@ class iprquery {
             });
         }
     };
+
+	/**
+	 * Basic method for searching datasets
+	 * @param req
+	 * @param res
+	 */
+	datasetSearch(req, res){
+		let keywords = this.constructor.parseRequestString(req.body.search);
+		var self = this;
+		if (keywords.length == 0){
+			logger.info(`INFO iprquery#dataset keywords: No keywords`);
+			var json = {
+				status: "OK",
+				message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky a nesmí obsahovat rezervovaná slova pro SPARQL!",
+				data: []
+			};
+			res.send(json);
+		} else {
+			let type = this.constructor.getTypeString(req.body.settings.type);
+			logger.info(`INFO iprquery#dataset keywords: ` + keywords);
+
+			var sparql = this.prepareDatasetQuery(keywords, type);
+			this.endpointRequest(sparql).then(function(result){
+				result.keywords = keywords;
+				res.send(result);
+				self._statistics.insert(req.headers.origin, keywords, result);
+			});
+		}
+	};
 
     /**
      * Prepare sparql query for object searching
@@ -204,12 +234,12 @@ class iprquery {
     }
 
     /**
-     * Prepare sparql query for terms
+     * Prepare sparql query for dataset
      * @param values {Array} values for searching
      * @param type {string} operators
      * @returns {string}
      */
-    prepareTermsQuery(values, type){
+    prepareDatasetQuery(values, type){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
 
@@ -240,12 +270,37 @@ class iprquery {
         return query + encodeURIComponent(sparql);
     }
 
+	/**
+	 * Prepare sparql query for terms
+	 * @param values {Array} values for searching
+	 * @param type {string} operators
+	 * @returns {string}
+	 */
+	prepareTermsQuery(values, type){
+		var query = this._datasetEndpoint + '?query=';
+		var prefixes = this._prefixes.join(' ');
+		var sparql = ' SELECT (?ipr_sub as ?pojem) (?ipr_obj as ?dataset) WHERE {?ipr_sub common:isInContextOfDataset ?ipr_obj . ';
+
+		var filter = [];
+		values.map((value) => {
+			value = utils.removeWordEnding(value);
+			filter.push('regex(str(?ipr_sub), "' + value + '", "i")');
+		});
+		filter = 'FILTER(' + filter.join(type) + ')';
+		sparql += filter + '}';
+
+		logger.info(`INFO iprquery#prepareTermsQuery sparql: ` + sparql);
+		logger.info(`INFO iprquery#prepareTermsQuery full query: ` + query + prefixes + sparql);
+
+		return query + encodeURIComponent(prefixes + sparql);
+	}
+
     /**
      * Prepare sparql query for datasets
      * @param dataset {string} dataset code
      * @returns {string}
      */
-    prepareDatasetQuery(dataset){
+    prepareAttributesQuery(dataset){
         var query = this._datasetEndpoint + '?query=';
         var prefixes = this._prefixes.join(' ');
         var sparql = ' SELECT (?ipr_att as ?atribut) (?ipr_code as ?kod) WHERE {?ipr_att common:isInContextOfDataset ?dataset . ?ipr_att common:isRepresentedAsDatabaseTableAttribute ?ipr_code. ';
