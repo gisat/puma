@@ -227,11 +227,9 @@ class iprquery {
             DISTINCT
             ?datasetName
             (?ipr_obj as ?datasetUri)
-            ?commonName
         WHERE {
             ?ipr_sub common:isInContextOfDataset ?ipr_obj .
         
-            ?ipr_sub rdfs:label ?commonName .
             ?ipr_obj rdfs:label ?datasetName .
             ${filter}
         }`;
