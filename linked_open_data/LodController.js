@@ -7,6 +7,8 @@ var request = require('request');
 var Promise = require('promise');
 var csv = require('csv');
 
+let IPRData = require('./queries/IPRData');
+
 class iprquery {
     constructor (app, pool) {
 		app.post("/iprquery/dataset", this.datasetSearch.bind(this));
@@ -62,16 +64,19 @@ class iprquery {
 	}
 
 	data(request, response) {
-    	// Send color for the layer.
-		response.json({
-			status: 'ok',
-			wms: {
-				url: '',
-				layer: '',
-				style: ''
-			},
-			amount: 1000
-		})
+    	new IPRData().json().then(data => {
+    		let values = data.values;
+
+			response.json({
+				status: 'ok',
+				wms: {
+					url: '',
+					layer: '',
+					style: ''
+				},
+				amount: data.amount
+			})
+		});
 	}
 
     /**
