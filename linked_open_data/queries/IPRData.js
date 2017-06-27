@@ -107,7 +107,7 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
-				${data.filters}
+				${data.filters.join(' ')}
 			}
 		`;
 
