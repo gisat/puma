@@ -34,7 +34,6 @@ class IPRAttributes {
 			
 			SELECT
 			  (?ipr_o as ?objekt)
-			  (?ipr_d as ?tabulka)
 			  ?label
 			WHERE {
 				?ipr_o ?ipr_p ?ipr_d;
@@ -146,7 +145,6 @@ class IPRAttributes {
 				return {
 					name: result.label,
 					objekt: result.objekt,
-					tabulka: result.tabulka,
 					dataset: datasetUrl,
 					datasetName: datasetName,
 					key: key
