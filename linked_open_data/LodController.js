@@ -2,11 +2,17 @@ var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 var TacrPhaStatistics = require('../tacrpha/TacrPhaStatistics');
 var utils = require('../tacrpha/utils');
+let _ = require('lodash');
 
 var request = require('request');
 var Promise = require('promise');
 var csv = require('csv');
-let _ = require('underscore');
+
+let GeometryToPsql = require('./postgresql/GeometryToPsql');
+let GeoServerLayers = require('../layers/GeoServerLayers');
+let RestLayer = require('../layers/RestLayer');
+
+let ProjectionConverter = require('../format/projection/ProjectionConverter');
 
 let IPRAttributes = require('./queries/IPRAttributes');
 let IPRData = require('./queries/IPRData');
@@ -21,8 +27,16 @@ class LodController {
 		app.get('/iprquery/attributes', this.attributes.bind(this));
 		app.get('/iprquery/data', this.data.bind(this)); // Expects relationship, geometry, words No geometry means no geometry filter.
 
-        this._statistics = new TacrPhaStatistics(pool);
-    }
+        this._geometryToPsql = new GeometryToPsql(pool);
+		this._projectionConverter = new ProjectionConverter();
+		this._geoServerLayers = new GeoServerLayers(
+			config.geoserverHost + config.geoserverPath,
+			config.geoserverUsername,
+			config.geoserverPassword
+		);
+
+		this._statistics = new TacrPhaStatistics(pool);
+	}
 
     attributes(request, response) {
 		let params = LodController.parseRequestString(request.query.params);
@@ -41,17 +55,59 @@ class LodController {
 
 	data(request, response) {
     	new IPRData(request.params.filters).json().then(data => {
-    		let values = data.values;
+			let values = data.values;
+			let srid = data.srid;
+			let amount = data.amount;
+			let color = data.color;
+			let convertedValues = [];
+			let createdTableName;
+			let createdStyleName;
 
-			response.json({
-				status: 'ok',
-				wms: {
-					url: '',
-					layer: '',
-					style: ''
-				},
-				amount: data.amount
-			})
+			_.each(values, value => {
+				convertedValues.push(this._projectionConverter.convertWktKrovakToWgs84(value));
+			});
+
+			this._geometryToPsql
+				.prepareGeometryTable()
+				.then(tableName => {
+					createdTableName = tableName;
+					return this._geometryToPsql
+						.addWktGeometryToTable(
+							tableName,
+							convertedValues,
+							4326
+						)
+				})
+				.then(() => {
+					return this.getPublicWorkspaceSchema();
+				})
+				.then((publicWorkspaceSchema) => {
+					return this._geoServerLayers.create(new RestLayer(createdTableName, publicWorkspaceSchema.workspace, config.geoServerDataStore));
+				})
+				.then(() => {
+					createdStyleName = `style_${createdTableName}`;
+					return this._geoServerLayers.createBasicPolygonStyle(createdStyleName, color);
+				})
+				.then(() => {
+					return this._geoServerLayers.setExistingStyleToLayer(createdTableName, createdStyleName);
+				})
+				.then((results) => {
+					response.json({
+						status: 'ok',
+						wms: {
+							url: `${config.remoteProtocol}://${config.remoteAddress}/${config.geoserverPath}/wms`,
+							layer: createdTableName,
+							style: createdStyleName
+						},
+						amount: data.amount
+					});
+					console.log(`#### OK ####`);
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+		}).catch(error => {
+			console.log(error);
 		});
 	}
 
@@ -214,6 +270,22 @@ class LodController {
             symbol = " || ";
         }
         return symbol;
+    }
+
+    /**
+     * Return object with public workspace and schema based on config
+     */
+    getPublicWorkspaceSchema() {
+        return Promise.resolve().then(() => {
+            let workspaceSchema = {};
+            _.each(config.workspaceSchemaMap, (schema, workspace) => {
+                if (schema === "public" && !workspaceSchema.schema && !workspaceSchema.workspace) {
+                    workspaceSchema.schema = schema;
+                    workspaceSchema.workspace = workspace;
+                }
+            });
+            return workspaceSchema;
+        });
     }
 }
 

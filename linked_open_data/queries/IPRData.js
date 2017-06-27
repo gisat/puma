@@ -115,16 +115,28 @@ class IPRData {
 	}
 
 	json() {
+		let amount = 0;
 		return superagent.get(this.countQuery()).then(result => {
 			return new CsvParser(result.text).objects();
 		}).then(objects => {
-			return this.queryForAllData(objects[0].amount);
+			amount = objects[0].amount;
+			return this.queryForAllData(amount);
 		}).then(results => {
 			return {
 				color: this._colors[Math.floor(Math.random() * this._colors.length)],
-				values: results
+				values: results,
+				srid: this.srid(),
+				amount: amount
 			};
 		});
+	}
+
+	srid() {
+		return 5514
+	}
+
+	amount() {
+		return values.length;
 	}
 }
 
