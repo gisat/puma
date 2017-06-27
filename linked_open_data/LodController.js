@@ -2,10 +2,17 @@ var config = require('../config.js');
 var logger = require('../common/Logger').applicationWideLogger;
 var TacrPhaStatistics = require('../tacrpha/TacrPhaStatistics');
 var utils = require('../tacrpha/utils');
+let _ = require('lodash');
 
 var request = require('request');
 var Promise = require('promise');
 var csv = require('csv');
+
+let GeometryToPsql = require('./postgresql/GeometryToPsql');
+let GeoServerLayers = require('../layers/GeoServerLayers');
+let RestLayer = require('../layers/RestLayer');
+
+let ProjectionConverter = require('../format/projection/ProjectionConverter');
 
 let IPRData = require('./queries/IPRData');
 
@@ -26,59 +33,109 @@ class iprquery {
             "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
             "PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>"
         ];
-
+        
+        this._geometryToPsql = new GeometryToPsql(pool);
+        this._projectionConverter = new ProjectionConverter();
+        this._geoServerLayers = new GeoServerLayers(
+            config.geoserverHost + config.geoserverPath,
+            config.geoserverUsername,
+            config.geoserverPassword
+        );
+        
         this._statistics = new TacrPhaStatistics(pool);
     }
 
     attributes(request, response) {
-		response.json({
-			status: 'ok',
-			datasets: [
-				{
-					name: 'Budovy',
-					attributes: [
-						{
-							name: 'Atribut 1',
-							values: [1, 20]
-						},
-						{
-							name: 'Druhy atribut',
-							values: ['prvni', 'druhy', 'treti']
-						}
-					]
-				}, {
-					name: 'Podlaznost',
-					attributes: [
-						{
-							name: 'Ve druhem atribut',
-							values: ['nejaka', 'jinak', 'jina']
-						},
-						{
-							name: 'Divny',
-							values: [0,5]
-						}
-					]
-				}
-			]
-		});
-	}
-
-	data(request, response) {
-    	new IPRData().json().then(data => {
-    		let values = data.values;
-
-			response.json({
-				status: 'ok',
-				wms: {
-					url: '',
-					layer: '',
-					style: ''
-				},
-				amount: data.amount
-			})
-		});
-	}
-
+        response.json({
+            status: 'ok',
+            datasets: [
+                {
+                    name: 'Budovy',
+                    attributes: [
+                        {
+                            name: 'Atribut 1',
+                            values: [1, 20]
+                        },
+                        {
+                            name: 'Druhy atribut',
+                            values: ['prvni', 'druhy', 'treti']
+                        }
+                    ]
+                }, {
+                    name: 'Podlaznost',
+                    attributes: [
+                        {
+                            name: 'Ve druhem atribut',
+                            values: ['nejaka', 'jinak', 'jina']
+                        },
+                        {
+                            name: 'Divny',
+                            values: [0, 5]
+                        }
+                    ]
+                }
+            ]
+        });
+    }
+    
+    data(request, response) {
+        new IPRData().json().then(data => {
+            let values = data.values;
+            let srid = data.srid;
+            let amount = data.amount;
+            let color = data.color;
+            let convertedValues = [];
+            let createdTableName;
+            let createdStyleName;
+            
+            _.each(values, value => {
+                convertedValues.push(this._projectionConverter.convertWktKrovakToWgs84(value));
+            });
+            
+            this._geometryToPsql
+                .prepareGeometryTable()
+                .then(tableName => {
+                    createdTableName = tableName;
+                    return this._geometryToPsql
+                        .addWktGeometryToTable(
+                            tableName,
+                            convertedValues,
+                            4326
+                        )
+                })
+                .then(() => {
+                    return this.getPublicWorkspaceSchema();
+                })
+                .then((publicWorkspaceSchema) => {
+                    return this._geoServerLayers.create(new RestLayer(createdTableName, publicWorkspaceSchema.workspace, config.geoServerDataStore));
+                })
+                .then(() => {
+                    createdStyleName = `style_${createdTableName}`;
+                    return this._geoServerLayers.createBasicPolygonStyle(createdStyleName, color);
+                })
+                .then(() => {
+                    return this._geoServerLayers.setExistingStyleToLayer(createdTableName, createdStyleName);
+                })
+                .then((results) => {
+                    response.json({
+                        status: 'ok',
+                        wms: {
+                            url: `${config.remoteProtocol}://${config.remoteAddress}/${config.geoserverPath}/wms`,
+                            layer: createdTableName,
+                            style: createdStyleName
+                        },
+                        amount: data.amount
+                    });
+                    console.log(`#### OK ####`);
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+        }).catch(error => {
+            console.log(error);
+        });
+    }
+    
     /**
      * Return searching history statistics
      * @param req
@@ -238,6 +295,22 @@ class iprquery {
             symbol = " || ";
         }
         return symbol;
+    }
+    
+    /**
+     * Return object with public workspace and schema based on config
+     */
+    getPublicWorkspaceSchema() {
+        return Promise.resolve().then(() => {
+            let workspaceSchema = {};
+            _.each(config.workspaceSchemaMap, (schema, workspace) => {
+                if (schema === "public" && !workspaceSchema.schema && !workspaceSchema.workspace) {
+                    workspaceSchema.schema = schema;
+                    workspaceSchema.workspace = workspace;
+                }
+            });
+            return workspaceSchema;
+        });
     }
 }
 
