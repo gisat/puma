@@ -25,6 +25,7 @@ class ProjectionConverter {
     }
     
     convertWktKrovakToWgs84(krovakWkt) {
+        console.log(krowakWkt);
         let geojson = wellknown(krovakWkt);
         let convertedCoordinates = _.map(geojson.coordinates, coordinates => {
             return _.map(coordinates, coordinates => {
