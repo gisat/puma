@@ -55,6 +55,8 @@ class LodController {
 	}
 
 	data(request, response) {
+    	console.log(request.query);
+    	console.log(request);
     	new IPRData(request.query.filters).json().then(data => {
 			let values = data.values;
 			let srid = data.srid;
