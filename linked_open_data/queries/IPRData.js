@@ -44,7 +44,7 @@ class IPRData {
 			promise = this.queryPromise(promise, current, increment).then(result => {
 				return new CsvParser(result.text).objects();
 			}).then(objects => {
-				results.push.apply(results, objects);
+				results.push.apply(results, objects.map(object => object.geometry));
 				return results;
 			});
 
