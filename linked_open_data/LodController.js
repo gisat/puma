@@ -67,7 +67,7 @@ class LodController {
 				convertedValues.push(this._projectionConverter.convertWktKrovakToWgs84(value));
 			});
 
-			this._geometryToPsql
+			return this._geometryToPsql
 				.prepareGeometryTable()
 				.then(tableName => {
 					createdTableName = tableName;
@@ -103,9 +103,6 @@ class LodController {
 					});
 					console.log(`#### OK ####`);
 				})
-				.catch((error) => {
-					console.log(error);
-				});
 		}).catch(error => {
 			console.log(error);
 		});
