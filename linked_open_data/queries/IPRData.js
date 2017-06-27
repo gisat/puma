@@ -37,7 +37,7 @@ class IPRData {
 
 	queryForAllData(amount) {
 		let current = 0;
-		let increment = 10000;
+		let increment = 100000;
 		let promise = Promise.resolve(null);
 		let results = [];
 		while(amount > current) {
