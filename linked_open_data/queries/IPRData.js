@@ -21,7 +21,7 @@ class IPRData {
 		this._filters.forEach((filter, index) => {
 			triplets.push(`dataset:${filter.key} ?variable${index}`);
 			if(filter.type == 'string') {
-				filters.push(`FILTER (?variable${index} IN ${filter.values.join(',')})`);
+				filters.push(`FILTER (?variable${index} IN '${filter.values.join('\',\'')}')`);
 			} else {
 				filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
 			}
