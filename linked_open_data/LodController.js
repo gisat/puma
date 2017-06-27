@@ -55,7 +55,7 @@ class LodController {
 	}
 
 	data(request, response) {
-    	new IPRData(request.params.filters).json().then(data => {
+    	new IPRData(request.query.filters).json().then(data => {
 			let values = data.values;
 			let srid = data.srid;
 			let amount = data.amount;
