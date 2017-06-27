@@ -23,7 +23,7 @@ class IPRData {
 			this._dataset = filter.dataset;
 			triplets.push(`dataset:${filter.key} ?variable${index}`);
 			if(filter.type == 'string') {
-				filters.push(`FILTER (?variable${index} IN '${filter.values.join('\',\'')}')`);
+				filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
 			} else {
 				filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
 			}
@@ -78,7 +78,7 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
-				${data.filters}
+				${data.filters.join(' ')}
 			} 
 			LIMIT ${increment}
 			OFFSET ${current}
