@@ -12,6 +12,7 @@ class IPRData {
 		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets?query=';
 
 		this._filters = filters;
+		this._dataset = null;
 		this._colors = ['#ffffff','#FF0000','#00ff00','#0000ff','#50e8df','#d450e8','#e8db50','#323687','#000000'];
 	}
 
@@ -19,6 +20,7 @@ class IPRData {
 		let triplets = [];
 		let filters = [];
 		this._filters.forEach((filter, index) => {
+			this._dataset = filter.key;
 			triplets.push(`dataset:${filter.key} ?variable${index}`);
 			if(filter.type == 'string') {
 				filters.push(`FILTER (?variable${index} IN '${filter.values.join('\',\'')}')`);
@@ -68,7 +70,7 @@ class IPRData {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${this._filters.dataset}>
+			PREFIX dataset: <${this._dataset}>
 			
 			SELECT
 			  ?geometry
@@ -97,7 +99,7 @@ class IPRData {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${this._filters.dataset}>
+			PREFIX dataset: <${this._dataset}>
 			
 			SELECT
 			  (COUNT(?geometry) as ?amount)
