@@ -41,6 +41,7 @@ class LodController {
     attributes(request, response) {
 		let params = LodController.parseRequestString(request.query.params);
     	new IPRAttributes(params, request.query.type).json().then(results => {
+    		logger.info('LodController#attributes Results: ', results);
 			response.json({
 				status: 'ok',
 				datasets: results
