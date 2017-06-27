@@ -18,7 +18,7 @@ class IPRData {
 	filter() {
 		let triplets = [];
 		let filters = [];
-		this._filters.filters.forEach((filter, index) => {
+		this._filters.forEach((filter, index) => {
 			triplets.push(`dataset:${filter.key} ?variable${index}`);
 			if(filter.type == 'string') {
 				filters.push(`FILTER (?variable${index} IN ${filter.values.join(',')})`);
