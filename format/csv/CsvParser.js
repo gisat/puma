@@ -8,8 +8,9 @@ class CsvParser {
 	}
 
 	objects() {
-		return new Promise(resolve, reject => {
-			csv.parse(this._text, function(error, result){
+		var self = this;
+		return new Promise(function(resolve, reject) {
+			csv.parse(self._text, function(error, result){
 				if(error){
 					logger.error(`ERROR CsvParser#objects csv.parse:` + error);
 					reject(error);

@@ -6,65 +6,41 @@ var utils = require('../tacrpha/utils');
 var request = require('request');
 var Promise = require('promise');
 var csv = require('csv');
+let _ = require('underscore');
 
+let IPRAttributes = require('./queries/IPRAttributes');
 let IPRData = require('./queries/IPRData');
+let IPRDatasets = require('./queries/IPRDatasets');
 
-class iprquery {
+class LodController {
     constructor (app, pool) {
 		app.post("/iprquery/dataset", this.datasetSearch.bind(this));
+
 		app.get("/iprquery/statistics", this.statistics.bind(this));
 
 		app.get('/iprquery/attributes', this.attributes.bind(this));
 		app.get('/iprquery/data', this.data.bind(this)); // Expects relationship, geometry, words No geometry means no geometry filter.
 
-        this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
-        this._prefixes = [
-            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
-            "PREFIX owl: <http://www.w3.org/2002/07/owl#>",
-            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>",
-            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>",
-            "PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>",
-            "PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>"
-        ];
-
         this._statistics = new TacrPhaStatistics(pool);
     }
 
     attributes(request, response) {
-		response.json({
-			status: 'ok',
-			datasets: [
-				{
-					name: 'Budovy',
-					attributes: [
-						{
-							name: 'Atribut 1',
-							values: [1, 20]
-						},
-						{
-							name: 'Druhy atribut',
-							values: ['prvni', 'druhy', 'treti']
-						}
-					]
-				}, {
-					name: 'Podlaznost',
-					attributes: [
-						{
-							name: 'Ve druhem atribut',
-							values: ['nejaka', 'jinak', 'jina']
-						},
-						{
-							name: 'Divny',
-							values: [0,5]
-						}
-					]
-				}
-			]
+		let params = LodController.parseRequestString(request.query.params);
+    	new IPRAttributes(params, request.query.type).json().then(results => {
+			response.json({
+				status: 'ok',
+				datasets: results
+			});
+		}).catch(err => {
+			logger.error(`LodController#attributes Error: `, err);
+			response.status(500).json({
+				status: 'err'
+			})
 		});
 	}
 
 	data(request, response) {
-    	new IPRData().json().then(data => {
+    	new IPRData(request.params.filters).json().then(data => {
     		let values = data.values;
 
 			response.json({
@@ -241,4 +217,4 @@ class iprquery {
     }
 }
 
-module.exports = iprquery;
+module.exports = LodController;

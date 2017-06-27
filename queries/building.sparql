@@ -1,0 +1,169 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/tmbudova_p/>
+
+SELECT
+    (?ipr_okt as ?hodnota)
+	(?ipr_pkt as ?atribut)
+	(?ipr_sbj as ?objekt)
+	WHERE {
+	    ?ipr_sbj rdf:type ?dataset.
+	    ?ipr_sbj ?ipr_pkt ?ipr_okt. FILTER ((?ipr_sbj IN (uri:339)))
+    } LIMIT 100
+
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+
+SELECT
+  DISTINCT
+  ?datasetName
+  (?ipr_obj as ?datasetUri)
+  ?commonName
+WHERE {
+    ?ipr_sub common:isInContextOfDataset ?ipr_obj .
+
+    ?ipr_sub rdfs:label ?commonName .
+    ?ipr_obj rdfs:label ?datasetName .
+    FILTER (regex(str(?ipr_sub), "budova", "i"))
+}
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTableBudovy/>
+
+SELECT
+  (?ipr_o as ?objekt)
+  (?ipr_d as ?tabulka)
+WHERE {
+    ?ipr_o ?ipr_p ?ipr_d.
+    FILTER(?ipr_d = rdf:Property)
+} LIMIT 500
+
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX budovy: <http://onto.fel.cvut.cz/ontologies/town-plan/budovy/Budovy>
+PREFIX ssvu: <http://onto.fel.cvut.cz/ontologies/town-plan/ssvu/SoucasnyStavVyuzitiUzemi>
+PREFIX vyuzitiPloch: <http://onto.fel.cvut.cz/ontologies/town-plan/fvu/VyuzitiPloch>
+PREFIX podlaznosti: <http://onto.fel.cvut.cz/ontologies/town-plan/podlaznosti/Podlaznosti>
+PREFIX parcely: <http://onto.fel.cvut.cz/ontologies/town-plan/parcely/Parcely>
+PREFIX kodVyuzitiUzemi: <http://onto.fel.cvut.cz/ontologies/town-plan/ssvu/kodVyuzitiUzemi>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT
+    ?p (COUNT(?p) as ?pTotal)
+WHERE {
+    ?s ?p ?o .
+}
+GROUP BY ?p
+LIMIT 100
+
+
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX podlaznosti: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTablePodlaznosti>
+PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTableParcely/>
+
+SELECT
+  *
+WHERE {
+    ?ipr_o dataset:katuze_kod ?kod;
+           dataset:kn_par_id ?parId;
+           dataset:gid ?gid; .
+} LIMIT 500
+
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTableBudovy/>
+
+SELECT
+  (?ipr_o as ?objekt)
+  (?ipr_d as ?tabulka)
+WHERE {
+    ?ipr_o ?ipr_p ?ipr_d.
+    FILTER(?ipr_d = rdf:Property)
+} LIMIT 500
+
+// Filtering upon one dataset is simple.
+
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTableParcely/>
+PREFIX podlaznost: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTablePodlaznosti/>
+
+SELECT
+(COUNT(?kod) as ?kodName)
+WHERE {
+    ?ipr_o podlaznost:geom ?kod .
+    BIND(datatype(?kod) as ?datatype)
+} LIMIT 10
+
+
+
+
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX podlaznost: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTablePodlaznosti/>
+
+SELECT DISTINCT
+(?kod as ?kodName)
+WHERE {
+    ?ipr_o podlaznost:geom ?kod .
+} LIMIT 10
+
