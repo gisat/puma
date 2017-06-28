@@ -152,9 +152,14 @@ class IPRAttributes {
 				}
 			})
 		}).then(() => {
-			return Promise.all(results.map(result => {
-				return superagent.get(this.typeQuery(result)).then(result => {
-					return new CsvParser(result.text).objects();
+			let promise = Promise.resolve(null);
+
+			results.forEach(result => {
+				promise = promise.then(() => {
+					return superagent.get(this.typeQuery(result));
+				}).then(response => {
+					logger.info('IPRAttributes#json Response For: ', result);
+					return new CsvParser(response.text).objects();
 				}).then(objects => {
 					if(objects.length == 0) {
 						result.type = 'string';
@@ -163,11 +168,18 @@ class IPRAttributes {
 					}
 					return result;
 				})
-			}))
+			});
+
+			return promise;
 		}).then(() => {
-			return Promise.all(results.map(result => {
-				return superagent.get(this.valuesQuery(result)).then(result => {
-					return new CsvParser(result.text).objects();
+			let promise = Promise.resolve(null);
+
+			results.forEach(result => {
+				promise = promise.then(() => {
+					return superagent.get(this.valuesQuery(result))
+				}).then(response => {
+					logger.info('IPRAttributes#json Response For: ', response);
+					return new CsvParser(response.text).objects();
 				}).then(objects => {
 					if(objects.length == 0) {
 						result.values = [];
@@ -180,7 +192,9 @@ class IPRAttributes {
 					}
 					return result;
 				})
-			}));
+			});
+
+			return promise;
 		}).then(() => {
 			let datasetResults = _.groupBy(results, "datasetName");
 			let keys = Object.keys(datasetResults);
