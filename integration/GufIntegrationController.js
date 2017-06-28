@@ -33,6 +33,7 @@ let RestLayer = require('../layers/RestLayer');
 let User = require('../security/User');
 
 let gdal = require('gdal');
+let validUrl = require('valid-url');
 
 class GufIntegrationController {
 	constructor(app, pgPool, mongo, sourceSchema, targetSchema, dataSchema) {
@@ -42,7 +43,7 @@ class GufIntegrationController {
 		this._targetSchema = targetSchema;
 		this._dataSchema = dataSchema;
 
-		this._wmsLayers = new PgWmsLayers(pgPool, mongo, dataSchema);
+		this._wmsLayers = new PgWmsLayers(pgPool, mongo, dataSchema);npm
 		this._permissions = new PgPermissions(pgPool, dataSchema);
 		this._locations = new MongoLocations(mongo);
 		this._layerReferences = new MongoLayerReferences(mongo);
@@ -75,6 +76,14 @@ class GufIntegrationController {
 			logger.error("Url of the data source must be specified.");
 			response.status(400).json({
 				error: "Url of the data source must be specified."
+			});
+			return;
+		}
+
+		if(!validUrl.isUri(request.body.url)) {
+			logger.error("Incorrect URL of the data.");
+			response.status(400).json({
+				error: "Incorrect URL of the data."
 			});
 			return;
 		}
