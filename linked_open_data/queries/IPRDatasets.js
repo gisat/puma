@@ -7,7 +7,7 @@ let CsvParser = require('../../format/csv/CsvParser');
 
 class IPRDatasets {
 	constructor(terms, type) {
-		this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
+		this._datasetEndpoint = "http://lod.gisat.cz/iprquery";
 		this._terms = terms;
 		this._type = type;
 	}
