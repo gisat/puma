@@ -9,7 +9,7 @@ let CsvParser = require('../../format/csv/CsvParser');
 
 class IPRData {
 	constructor(filters) {
-		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets?query=';
+		this._url = 'http://lod.gisat.cz/iprquery?query=';
 
 		this._filters = filters;
 		this._dataset = null;
