@@ -41,6 +41,7 @@ class LodController {
     attributes(request, response) {
 		let params = LodController.parseRequestString(request.query.params);
     	new IPRAttributes(params, request.query.type).json().then(results => {
+    		logger.info('LodController#attributes Results: ', results);
 			response.json({
 				status: 'ok',
 				datasets: results
@@ -54,7 +55,7 @@ class LodController {
 	}
 
 	data(request, response) {
-    	new IPRData(request.params.filters).json().then(data => {
+    	new IPRData(request.query.filters).json().then(data => {
 			let values = data.values;
 			let srid = data.srid;
 			let amount = data.amount;

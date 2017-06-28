@@ -12,16 +12,18 @@ class IPRData {
 		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets?query=';
 
 		this._filters = filters;
+		this._dataset = null;
 		this._colors = ['#ffffff','#FF0000','#00ff00','#0000ff','#50e8df','#d450e8','#e8db50','#323687','#000000'];
 	}
 
 	filter() {
 		let triplets = [];
 		let filters = [];
-		this._filters.filters.forEach((filter, index) => {
+		this._filters.forEach((filter, index) => {
+			this._dataset = filter.dataset;
 			triplets.push(`dataset:${filter.key} ?variable${index}`);
 			if(filter.type == 'string') {
-				filters.push(`FILTER (?variable${index} IN ${filter.values.join(',')})`);
+				filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
 			} else {
 				filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
 			}
@@ -35,14 +37,14 @@ class IPRData {
 
 	queryForAllData(amount) {
 		let current = 0;
-		let increment = 10000;
+		let increment = 100000;
 		let promise = Promise.resolve(null);
 		let results = [];
 		while(amount > current) {
 			promise = this.queryPromise(promise, current, increment).then(result => {
 				return new CsvParser(result.text).objects();
 			}).then(objects => {
-				results.push.apply(results, objects);
+				results.push.apply(results, objects.map(object => object.geometry));
 				return results;
 			});
 
@@ -73,7 +75,7 @@ class IPRData {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${this._filters.dataset}>
+			PREFIX dataset: <${this._dataset}>
 			
 			SELECT
 			  ?geometry
@@ -81,7 +83,7 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
-				${data.filters}
+				${data.filters.join(' ')}
 			} 
 			LIMIT ${increment}
 			OFFSET ${current}
@@ -102,7 +104,7 @@ class IPRData {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${this._filters.dataset}>
+			PREFIX dataset: <${this._dataset}>
 			
 			SELECT
 			  (COUNT(?geometry) as ?amount)
@@ -110,7 +112,7 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
-				${data.filters}
+				${data.filters.join(' ')}
 			}
 		`;
         

@@ -183,12 +183,11 @@ class IPRAttributes {
 		}).then(() => {
 			let datasetResults = _.groupBy(results, "datasetName");
 			let keys = Object.keys(datasetResults);
-			let datasets = [];
 			return keys.map(key => {
-				datasets.push({
+				return {
 					name: key,
 					attributes: datasetResults[key]
-				})
+				};
 			});
 		});
 	}
