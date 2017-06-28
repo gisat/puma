@@ -54,7 +54,7 @@ class LodController {
 		let keywords = LodController.parseRequestString(request.query.params);
     	new IPRAttributes(keywords, request.query.type).json().then(results => {
     		logger.info('LodController#attributes Results: ', results);
-			self._statistics.insert(request.headers.origin, keywords, results.attributes);
+			self._statistics.insert(request.headers.origin, keywords, {data: ['success']});
 			response.json({
 				status: 'ok',
 				datasets: results
@@ -168,7 +168,7 @@ class LodController {
 			this.endpointRequest(sparql).then(function(result){
 				result.keywords = keywords;
 				res.send(result);
-				self._statistics.insert(req.headers.origin, keywords, result);
+				//self._statistics.insert(req.headers.origin, keywords, result);
 			});
 		}
 	};

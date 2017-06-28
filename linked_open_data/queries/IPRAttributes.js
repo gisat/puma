@@ -137,6 +137,7 @@ class IPRAttributes {
 		return superagent.get(this.query()).then(result => {
 			return new CsvParser(result.text).objects();
 		}).then(pResults => {
+			pResults = pResults.filter(result => result.objekt.indexOf('http://onto.fel.cvut.cz/ontologies/town-plan/common/') === -1);
 			results = pResults.map(result => {
 				let urlParts = result.objekt.split('/');
 				let key = urlParts.pop();
