@@ -66,7 +66,7 @@ class GufIntegrationController {
 		if(user.id === User.guestId()) {
 			logger.error("GufIntegrationController#process The user must be logged in. Guest doesn't have access.");
 			response.status(400).json({
-				message: "The user must be logged in. Guest doesn't have access"
+				error: "The user must be logged in. Guest doesn't have access"
 			});
 			return;
 		}
@@ -74,7 +74,7 @@ class GufIntegrationController {
 		if (!request.body.url) {
 			logger.error("Url of the data source must be specified.");
 			response.status(400).json({
-				message: "Url of the data source must be specified."
+				error: "Url of the data source must be specified."
 			});
 			return;
 		}
@@ -118,9 +118,6 @@ class GufIntegrationController {
 				remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
 				if (!remoteFile.validateUrl()) {
 					logger.error("Invalid file url provided, aborted.");
-					response.status(400).json({
-						message: "Invalid file url."
-					});
 					throw new Error('Invalid url');
 				}
 
