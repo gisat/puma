@@ -54,7 +54,7 @@ class LodController {
 		let keywords = LodController.parseRequestString(request.query.params);
     	new IPRAttributes(keywords, request.query.type).json().then(results => {
     		logger.info('LodController#attributes Results: ', results);
-			self._statistics.insert(request.headers.origin, keywords, '');
+			self._statistics.insert(request.headers.origin, keywords, results.attributes);
 			response.json({
 				status: 'ok',
 				datasets: results
