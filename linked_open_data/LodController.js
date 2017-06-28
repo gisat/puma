@@ -168,7 +168,7 @@ class LodController {
 			this.endpointRequest(sparql).then(function(result){
 				result.keywords = keywords;
 				res.send(result);
-				self._statistics.insert(req.headers.origin, keywords, result);
+				//self._statistics.insert(req.headers.origin, keywords, result);
 			});
 		}
 	};
