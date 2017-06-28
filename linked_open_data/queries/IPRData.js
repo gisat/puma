@@ -56,7 +56,12 @@ class IPRData {
 
 	queryPromise(promise, current, increment) {
 		return promise.then(() => {
-			return superagent.get(this.limitedQuery(current, increment));
+			return superagent
+                .get(this.limitedQuery(current, increment))
+                .timeout({
+                    response: 15000,  // Wait 15 seconds for the server to start sending,
+                    deadline: 1200000, // but allow 10 minutes for the file to finish loading.
+                });
 		})
 	}
 
@@ -83,16 +88,16 @@ class IPRData {
 			LIMIT ${increment}
 			OFFSET ${current}
 		`;
-
-		logger.info(`IPRAttributes#limitedQuery Sparql: `, sparql);
-
-		return this._url + encodeURIComponent(sparql);
-	}
-
-	countQuery() {
-		let data = this.filter();
-
-		let sparql = `
+        
+        logger.info(`IPRAttributes#limitedQuery Sparql: `, sparql);
+        
+        return this._url + encodeURIComponent(sparql);
+    }
+    
+    countQuery() {
+        let data = this.filter();
+        
+        let sparql = `
 			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 			PREFIX owl: <http://www.w3.org/2002/07/owl#>
 			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
@@ -110,36 +115,36 @@ class IPRData {
 				${data.filters.join(' ')}
 			}
 		`;
-
-		logger.info(`IPRAttributes#countQuery Sparql: `, sparql);
-
-		return this._url + encodeURIComponent(sparql);
-	}
-
-	json() {
-		let amount = 0;
-		return superagent.get(this.countQuery()).then(result => {
-			return new CsvParser(result.text).objects();
-		}).then(objects => {
-			amount = objects[0].amount;
-			return this.queryForAllData(amount);
-		}).then(results => {
-			return {
-				color: this._colors[Math.floor(Math.random() * this._colors.length)],
-				values: results,
-				srid: this.srid(),
-				amount: amount
-			};
-		});
-	}
-
-	srid() {
-		return 5514
-	}
-
-	amount() {
-		return values.length;
-	}
+        
+        logger.info(`IPRAttributes#countQuery Sparql: `, sparql);
+        
+        return this._url + encodeURIComponent(sparql);
+    }
+    
+    json() {
+        let amount = 0;
+        return superagent.get(this.countQuery()).then(result => {
+            return new CsvParser(result.text).objects();
+        }).then(objects => {
+            amount = objects[0].amount;
+            return this.queryForAllData(amount);
+        }).then(results => {
+            return {
+                color: this._colors[Math.floor(Math.random() * this._colors.length)],
+                values: results,
+                srid: this.srid(),
+                amount: amount
+            };
+        });
+    }
+    
+    srid() {
+        return 5514
+    }
+    
+    amount() {
+        return values.length;
+    }
 }
 
 module.exports = IPRData;
