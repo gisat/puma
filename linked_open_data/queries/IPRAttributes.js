@@ -20,9 +20,9 @@ class IPRAttributes {
 		var filter = [];
 		this._terms.map((value) => {
 			value = utils.removeWordEnding(value);
-			filter.push('regex(str(?ipr_o), "' + value + '", "i")');
+			filter.push('regex(str(?label), "' + value + '", "i")');
 		});
-		filter = 'FILTER(' + filter.join(this._type) + ')';
+		filter = 'FILTER(' + filter.join(' ' + this._type + ' ') + ')';
 
 		let sparql = `
 			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
