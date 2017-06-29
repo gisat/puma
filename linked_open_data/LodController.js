@@ -27,7 +27,7 @@ class LodController {
 		app.get('/iprquery/attributes', this.attributes.bind(this));
 		app.get('/iprquery/data', this.data.bind(this)); // Expects relationship, geometry, words No geometry means no geometry filter.
 
-		this._datasetEndpoint = "http://lod.gisat.cz/iprquery";
+		this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
 		this._prefixes = [
 			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>",
 			"PREFIX owl: <http://www.w3.org/2002/07/owl#>",
