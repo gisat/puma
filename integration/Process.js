@@ -78,6 +78,7 @@ Process.prototype.end = function(message){
  */
 Process.prototype.error = function(message){
 	this.options.status = "Error";
+	this.options.error = util.format(message);
 	this.options.message = util.format(message);
 	this.options.progress = 100;
 	logger.info("Process# error(), Process", this.id, "failed, message:", message);
