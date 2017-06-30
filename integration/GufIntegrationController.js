@@ -112,7 +112,7 @@ class GufIntegrationController {
 				urlOfGeoTiff = null;
 				result.body.features[0].properties.links.forEach(link => {
 					if(link['@type'] == 'image/tiff') {
-						urlOfGeoTiff = link['@href'];
+						urlOfGeoTiff = link['@href'].replace('https://', 'https://jbalhar:AKCp2WXr7WPtkNb1f5AfiXkLrBahymriqfTuST6ABwoWLpEAX18QphXxigFZCexf3kQdmkWD6@');
 					}
 				});
 
