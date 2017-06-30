@@ -56,18 +56,43 @@ class LodController {
     attributes(request, response) {
         var self = this;
         let keywords = LodController.parseRequestString(request.query.params);
-        new IPRAttributes(keywords, request.query.type).json().then(results => {
-            logger.info('LodController#attributes Results: ', results);
-            self._statistics.insert(request.headers.origin, keywords, {data: ['success']});
+        let hash;
+        this.getFiltersHash(keywords).then(pHash => {
+            hash = pHash;
+            return this._iprDataQueryProcesses.getExistingProcess(pHash);
+        }).then((pResult) => {
+            let results = {};
+            let state = 'processing';
+            if (pResult.rows.length > 0) {
+                let process = pResult.rows[0];
+                results = process.results;
+                state = process.state;
+            } else {
+                this._iprDataQueryProcesses.createNewProcess(hash, results, state).then(() => {
+                    return new IPRAttributes(keywords, request.query.type).json().then(pResults => {
+                        logger.info('LodController#attributes Results: ', pResults);
+                        self._statistics.insert(request.headers.origin, keywords, {data: ['success']});
+                        this._iprDataQueryProcesses.updateExistingProcess(hash, results, state);
+                    });
+                }).catch(err => {
+                    logger.error(`LodController#attributes Error: `, err);
+                    response.status(500).json({
+                        status: 'err',
+                        message: err.message
+                    })
+                });
+            }
+            return [results, state];
+        }).then(([results, state]) => {
             response.json({
-                status: 'ok',
+                status: state,
                 datasets: results
             });
-        }).catch(err => {
-            logger.error(`LodController#attributes Error: `, err);
+        }).catch((error) => {
             response.status(500).json({
-                status: 'err'
-            })
+                status: 'err',
+                message: error.message
+            });
         });
     }
     
