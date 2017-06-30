@@ -105,9 +105,6 @@ class GufIntegrationController {
 		let rasterLayerTable, boundingBox, url, center;
 
 		request.body.url = request.body.url.replace('format=atom','format=json');
-		if(request.body.url.indexOf('do=terradue') == -1) {
-			request.body.url += '&do=terradue';
-		}
 		superagent.get(request.body.url)
 			.set('Accept', 'application/json')
 			.then(result => {
@@ -115,7 +112,7 @@ class GufIntegrationController {
 				urlOfGeoTiff = null;
 				result.body.features[0].properties.links.forEach(link => {
 					if(link['@type'] == 'image/tiff') {
-						urlOfGeoTiff = link['@href'].replace('https://store.terradue.com/', 'https://store.terradue.com/api');
+						urlOfGeoTiff = link['@href'];
 					}
 				});
 
