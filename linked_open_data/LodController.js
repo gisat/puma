@@ -72,7 +72,7 @@ class LodController {
                     return new IPRAttributes(keywords, request.query.type).json().then(pResults => {
                         logger.info('LodController#attributes Results: ', pResults);
                         self._statistics.insert(request.headers.origin, keywords, {data: ['success']});
-                        this._iprDataQueryProcesses.updateExistingProcess(hash, results, state);
+                        this._iprDataQueryProcesses.updateExistingProcess(hash, pResults, 'ok');
                     });
                 }).catch(err => {
                     logger.error(`LodController#attributes Error: `, err);
