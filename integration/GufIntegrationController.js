@@ -43,7 +43,7 @@ class GufIntegrationController {
 		this._targetSchema = targetSchema;
 		this._dataSchema = dataSchema;
 
-		this._wmsLayers = new PgWmsLayers(pgPool, mongo, dataSchema);npm
+		this._wmsLayers = new PgWmsLayers(pgPool, mongo, dataSchema);
 		this._permissions = new PgPermissions(pgPool, dataSchema);
 		this._locations = new MongoLocations(mongo);
 		this._layerReferences = new MongoLayerReferences(mongo);
