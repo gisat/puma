@@ -112,7 +112,7 @@ class GufIntegrationController {
 				urlOfGeoTiff = null;
 				result.body.features[0].properties.links.forEach(link => {
 					if(link['@type'] == 'image/tiff') {
-						urlOfGeoTiff = link['@href'].replace('https://', 'https://jbalhar:AKCp2WXr7WPtkNb1f5AfiXkLrBahymriqfTuST6ABwoWLpEAX18QphXxigFZCexf3kQdmkWD6@');
+						urlOfGeoTiff = link['@href'].replace('https://', 'https://jbalhar:AKCp2WXr7WPtkNb1f5AfiXkLrBahymriqfTuST6ABwoWLpEAX18QphXxigFZCexf3kQdmkWD6@').replace('store.terradue.com', 'store.terradue.com/api');
 					}
 				});
 
@@ -122,11 +122,6 @@ class GufIntegrationController {
 				processes.store(process);
 
 				remoteFile = new RemoteFile(urlOfGeoTiff, id, config.temporaryDownloadedFilesLocation);
-				if (!remoteFile.validateUrl()) {
-					logger.error("Invalid file url provided, aborted.");
-					throw new Error('Invalid url');
-				}
-
 				return remoteFile.get();
 		}).then(() => {
 			process.status("Processing", "File was retrieved successfully and is being processed.", 13);
