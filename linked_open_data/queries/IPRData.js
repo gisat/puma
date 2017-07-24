@@ -20,12 +20,14 @@ class IPRData {
 		let triplets = [];
 		let filters = [];
 		this._filters.forEach((filter, index) => {
-			this._dataset = filter.dataset;
-			triplets.push(`dataset:${filter.key} ?variable${index}`);
-			if(filter.type == 'string') {
-				filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
-			} else {
-				filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
+			if (filter.values){
+                this._dataset = filter.dataset;
+                triplets.push(`dataset:${filter.key} ?variable${index}`);
+                if(filter.type == 'string') {
+                    filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
+                } else {
+                    filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
+                }
 			}
 		});
 
