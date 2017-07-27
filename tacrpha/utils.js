@@ -54,7 +54,7 @@ function replaceInterpunction(str) {
  * @returns {string}
  */
 function removeSpecialCharacters(str) {
-    return str.replace(/[^a-zA-Z0-9 ]/g, '');
+    return str.replace(/[^a-zA-Z0-9áčďéěíňóřšťůúýž ]/g, '');
 }
 
 /**

@@ -22,10 +22,8 @@ let IPRDataQueryProcesses = require('./queries/IPRDataQueryProcesses');
 
 class LodController {
     constructor(app, pool) {
-        app.post("/iprquery/dataset", this.datasetSearch.bind(this));
-        
-        app.get("/iprquery/statistics", this.statistics.bind(this));
-        
+        app.get('/iprquery/dataset', this.datasets.bind(this));
+        app.get('/iprquery/statistic', this.statistics.bind(this));
         app.get('/iprquery/attributes', this.attributes.bind(this));
         app.get('/iprquery/data', this.data.bind(this)); // Expects relationship, geometry, words No geometry means no geometry filter.
         
@@ -49,13 +47,12 @@ class LodController {
         );
         
         this._statistics = new TacrPhaStatistics(pool);
-        
         this._iprDataQueryProcesses = new IPRDataQueryProcesses(pool);
     }
     
     attributes(request, response) {
         var self = this;
-        let keywords = LodController.parseRequestString(request.query.params);
+        let keywords = LodController.parseRequestString(request.query.params).adjustedEN;
         let hash;
         this.getFiltersHash(keywords).then(pHash => {
             hash = pHash;
@@ -214,6 +211,28 @@ class LodController {
             )
         });
     }
+
+    datasets(request, response){
+        let keywords = LodController.parseRequestString(request.query.search);
+        let type = request.query.settings.type;
+
+        if (keywords.original.length === 0) {
+            logger.info(`INFO datasets#dataset keywords: No keywords!`);
+            let json = {
+                status: "OK",
+                message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky a nesmí obsahovat rezervovaná slova pro SPARQL!",
+                data: []
+            };
+            response.send(json);
+        } else {
+            logger.info(`INFO iprquery#dataset keywords original: ` + keywords.original.join(", "));
+            logger.info(`INFO iprquery#dataset keywords adjusted CZ: ` + keywords.adjustedCZ.join(", "));
+            logger.info(`INFO iprquery#dataset keywords adjusted EN: ` + keywords.adjustedEN.join(", "));
+            new IPRDatasets(keywords, type).json().then(results => {
+               let res;
+            });
+        }
+    }
     
     /**
      * Basic method for searching datasets
@@ -221,7 +240,7 @@ class LodController {
      * @param res
      */
     datasetSearch(req, res) {
-        let keywords = this.constructor.parseRequestString(req.body.search);
+        let keywords = this.constructor.parseRequestString(req.body.search).adjustedEN;
         var self = this;
         if (keywords.length == 0) {
             logger.info(`INFO iprquery#dataset keywords: No keywords`);
@@ -327,18 +346,31 @@ class LodController {
     /**
      * Prepare keywords for searching
      * @param reqString {string} request string
-     * @returns {Array} keywords
+     * @returns {Object} keywords
      */
     static parseRequestString(reqString) {
         logger.info(`INFO iprquery#parseRequestString reqString: ` + reqString);
+
+        let original = reqString;
+        let adjusted = utils.replaceInterpunction(reqString);
+
+        adjusted = utils.removeSpecialCharacters(adjusted);
+
+        let adjustedCZ = adjusted;
+        let adjustedEN = utils.removeDiacritics(adjusted);
+
+        adjustedCZ = utils.removeReservedWords(adjustedCZ);
+        adjustedEN = utils.removeReservedWords(adjustedEN);
+
+        let originalList = original.split(" ");
+        let adjustedCZList = adjustedCZ.split(" ");
+        let adjustedENList = adjustedEN.split(" ");
         
-        reqString = utils.replaceInterpunction(reqString);
-        reqString = utils.removeDiacritics(reqString);
-        reqString = utils.removeReservedWords(reqString);
-        reqString = utils.removeSpecialCharacters(reqString);
-        var list = reqString.split(" ");
-        
-        return utils.removeMonosyllabics(list);
+        return {
+            original: originalList,
+            adjustedCZ: utils.removeMonosyllabics(adjustedCZList),
+            adjustedEN: utils.removeMonosyllabics(adjustedENList),
+        }
     }
     
     /**
