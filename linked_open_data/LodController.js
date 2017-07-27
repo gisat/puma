@@ -229,7 +229,7 @@ class LodController {
             logger.info(`INFO iprquery#dataset keywords adjusted CZ: ` + keywords.adjustedCZ.join(", "));
             logger.info(`INFO iprquery#dataset keywords adjusted EN: ` + keywords.adjustedEN.join(", "));
             new IPRDatasets(keywords, type).json().then(results => {
-               let res;
+               response.send(results);
             });
         }
     }

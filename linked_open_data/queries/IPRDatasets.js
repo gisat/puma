@@ -69,7 +69,7 @@ class IPRDatasets {
         let filter = this.getFilters("dataset");
 
 		let sparql = this._prefixes + `
-			SELECT DISTINCT ?datasetLabel ?dataset
+			SELECT DISTINCT ?datasetLabel ?dataset ?datasetComment
 				WHERE {{ ?dataset rdf:type common:Dataset.
 					?dataset rdfs:label ?datasetLabel.
 					?subject common:isInContextOfDataset ?dataset.
@@ -241,7 +241,16 @@ class IPRDatasets {
                if (!dataset.sources.dataset){
                    dataset.sources["dataset"] = {};
                }
-               dataset.sources.dataset["info"] = `URI nebo štítek datasetu (rdfs:label) obsahuje ${this._keywordsReference}.`
+
+               if (record.datasetComment.length){
+                   dataset.sources.dataset["datasetComment"] = {
+                       info: `Komentář k datasetu (rdfs:comment) obsahuje ${this._keywordsReference}.`
+                   }
+               } else {
+                   dataset.sources.dataset["dataset"] = {
+                       info: `URI nebo štítek datasetu (rdfs:label) obsahuje ${this._keywordsReference}.`
+                   }
+               }
            }
         });
         return datasets;
