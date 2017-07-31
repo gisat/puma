@@ -23,7 +23,7 @@ let IPRDataQueryProcesses = require('./queries/IPRDataQueryProcesses');
 class LodController {
     constructor(app, pool) {
         app.get('/iprquery/dataset', this.datasets.bind(this));
-        app.get('/iprquery/statistic', this.statistics.bind(this));
+        app.get('/iprquery/statistics', this.statistics.bind(this));
         app.get('/iprquery/attributes', this.attributes.bind(this));
         app.get('/iprquery/data', this.data.bind(this)); // Expects relationship, geometry, words No geometry means no geometry filter.
         
@@ -219,7 +219,7 @@ class LodController {
         if (keywords.original.length === 0) {
             logger.info(`INFO datasets#dataset keywords: No keywords!`);
             let json = {
-                status: "OK",
+                status: "ok",
                 message: "Žádná klíčová slova pro vyhledávání. Klíčové slovo musí mít alespoň dva znaky a nesmí obsahovat rezervovaná slova pro SPARQL!",
                 data: []
             };
@@ -229,7 +229,17 @@ class LodController {
             logger.info(`INFO iprquery#dataset keywords adjusted CZ: ` + keywords.adjustedCZ.join(", "));
             logger.info(`INFO iprquery#dataset keywords adjusted EN: ` + keywords.adjustedEN.join(", "));
             new IPRDatasets(keywords, type).json().then(results => {
-               response.send(results);
+                let json = {
+                    status: "ok",
+                    keywords: keywords,
+                    data: results
+                };
+               response.send(json);
+            }).catch(error => {
+                response.json({
+                    status: 'err',
+                    message: error.message
+                });
             });
         }
     }

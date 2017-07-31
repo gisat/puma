@@ -73,7 +73,7 @@ function removeWordEnding(str) {
 }
 
 function vowelTest(s) {
-    return (/^[aeiouy]$/i).test(s);
+    return (/^[aeiouyáéíýúůě]$/i).test(s);
 }
 
 /**

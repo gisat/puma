@@ -11,10 +11,10 @@ class IPRDatasets {
 		this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
 		this._keywords = keywords;
 		this._type = '||';
-		this._keywordsReference = `jedno nebo více klíčových slov`;
+		this._keywordsReference = `jedno nebo více z hledaných slov`;
 		if (type === 'and'){
 			this._type = '&&';
-            this._keywordsReference = `všechna klíčová slova`;
+            this._keywordsReference = `všechna hledaná slova`;
 		}
 
 		this._prefixes = `
@@ -208,15 +208,18 @@ class IPRDatasets {
 
                if (record.subjectComment.length){
                    dataset.sources.attribute["subjectComment"] = {
-                       info: `Nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde komentář k pojmu (rdfs:comment) obsahuje ${this._keywordsReference}.`
+                       info: `Dataset nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde komentář k pojmu (rdfs:comment) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.subjectComment}`
                    }
                } else if (record.subjectDefinition.length){
                    dataset.sources.attribute["subjectDefinition"] = {
-                       info: `Nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde definice pojmu (common:ma_definici) obsahuje ${this._keywordsReference}.`
+                       info: `Dataset nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde definice pojmu (common:ma_definici) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.subjectDefinition}`
                    }
                } else {
                    dataset.sources.attribute["subject"] = {
-                       info: `Nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde URI nebo štítek pojmu (rdfs:label) obsahuje ${this._keywordsReference}.`
+                       info: `Dataset nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde URI nebo štítek pojmu (rdfs:label) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.subject}, ${record.subjectLabel}`
                    }
                }
            } else if (record.subjectParent){
@@ -226,15 +229,18 @@ class IPRDatasets {
 
                if (record.subjectParentComment.length){
                    dataset.sources.related["subjectParentComment"] = {
-                       info: `Nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde komentář ke třídě (rdfs:comment) obsahuje ${this._keywordsReference}.`
+                       info: `Dataset nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde komentář ke třídě (rdfs:comment) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.subjectParentComment}`
                    }
                } else if (record.subjectParentDefinition.length){
                    dataset.sources.related["subjectParentDefinition"] = {
-                       info: `Nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde definice třídy (common:ma_definici) obsahuje ${this._keywordsReference}.`
+                       info: `Dataset nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde definice třídy (common:ma_definici) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.subjectParentDefinition}`
                    }
                } else {
                    dataset.sources.related["subjectParent"] = {
-                       info: `Nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde URI nebo štítek třídy (rdfs:label) obsahuje ${this._keywordsReference}.`
+                       info: `Dataset nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde URI nebo štítek třídy (rdfs:label) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.subjectParent}, ${record.subjectParentLabel}`
                    }
                }
            } else {
@@ -244,11 +250,13 @@ class IPRDatasets {
 
                if (record.datasetComment.length){
                    dataset.sources.dataset["datasetComment"] = {
-                       info: `Komentář k datasetu (rdfs:comment) obsahuje ${this._keywordsReference}.`
+                       info: `Komentář k datasetu (rdfs:comment) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.datasetComment}`
                    }
                } else {
                    dataset.sources.dataset["dataset"] = {
-                       info: `URI nebo štítek datasetu (rdfs:label) obsahuje ${this._keywordsReference}.`
+                       info: `URI nebo štítek datasetu (rdfs:label) obsahuje ${this._keywordsReference}.`,
+                       source: `${record.dataset}, ${record.datasetLabel}`
                    }
                }
            }
