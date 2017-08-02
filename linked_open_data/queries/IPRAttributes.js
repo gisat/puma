@@ -1,5 +1,5 @@
 let superagent = require('superagent');
-let _ = require('underscore');
+let _ = require('lodash');
 
 let logger = require('../../common/Logger').applicationWideLogger;
 let utils = require('../../tacrpha/utils');
@@ -7,84 +7,49 @@ let utils = require('../../tacrpha/utils');
 let CsvParser = require('../../format/csv/CsvParser');
 
 class IPRAttributes {
-	constructor(terms, type) {
+	constructor(dataset) {
 		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets';
-
-		this._terms = terms;
-		this._type = type;
+		this._dataset = dataset;
 	}
 
 	query() {
-		var query = this._url + '?query=';
-
-		var filter = [];
-		this._terms.map((value) => {
-			value = utils.removeWordEnding(value);
-			filter.push('regex(str(?label), "' + value + '", "i")');
-		});
-		filter = 'FILTER(' + filter.join(' ' + this._type + ' ') + ')';
+		let query = this._url + '?query=';
 
 		let sparql = `
-			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-			PREFIX owl: <http://www.w3.org/2002/07/owl#>
-			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
-			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+			PREFIX owl: <http://www.w3.org/2002/07/owl#> 
+			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
+			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/> 
+			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>  
+			PREFIX ufo: <http://onto.fel.cvut.cz/ontologies/ufo/>  
 			
-			SELECT
-			  (?ipr_o as ?objekt)
-			  ?label
-			WHERE {
-				?ipr_o ?ipr_p ?ipr_d;
-					   rdfs:label ?label.
-			    
-			    FILTER(?ipr_d = rdf:Property)
-				${filter}
+			SELECT ?attributeLabel ?attribute ?dataType WHERE {
+				?dataset ufo:is_object_part_of <` + this._dataset + `>. 
+				?attribute common:isDatabaseTableAttributeOfDatabaseTable ?dataset.
+				?subject common:isRepresentedAsDatabaseTableAttribute ?attribute.
+				?subject rdfs:label ?attributeLabel.
+				?attribute common:hasDataType ?dataType
 			}
 		`;
 
 		// Also get the type.
 		logger.info(`IPRAttributes#query Sparql: `, sparql);
-
-		return query + encodeURIComponent(sparql);
-	}
-
-	typeQuery(attribute) {
-		var query = this._url + '?query=';
-
-		let sparql = `
-			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-			PREFIX owl: <http://www.w3.org/2002/07/owl#>
-			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
-			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${attribute.dataset}>
-			
-			SELECT
-				?datatype
-			WHERE {
-				?ipr_o dataset:${attribute.key} ?kod .
-				BIND(datatype(?kod) as ?datatype)
-			} LIMIT 1
-		`;
-
-		logger.info(`IPRAttributes#typeQuery Sparql: `, sparql);
-
 		return query + encodeURIComponent(sparql);
 	}
 
 	valuesQuery(attribute) {
-		if(attribute.type == 'string') {
-			return this.stringQuery(attribute);
-		} else {
+		if(attribute.type === 'integer' || attribute.type === 'double') {
 			return this.numberQuery(attribute);
+		} else if (attribute.type === 'dateTimeStamp'){
+            return this.dateQuery(attribute);
+        } else {
+			return this.stringQuery(attribute);
 		}
 	}
 
 	numberQuery(attribute) {
-		var query = this._url + '?query=';
+		let query = this._url + '?query=';
 
 		let sparql = `
 			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -93,19 +58,44 @@ class IPRAttributes {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${attribute.dataset}>
+			PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/${attribute.datasetKey}/>
 			
 			SELECT
 				(MIN(?kod) as ?minValue)
 				(MAX(?kod) as ?maxValue)
 			WHERE {
-				?ipr_o dataset:${attribute.key} ?kod .
+				?dataset dataset:${attribute.attributeKey} ?kod .
 			}
 		`;
 
 		logger.info(`IPRAttributes#numberQuery Sparql: `, sparql);
 
 		return query + encodeURIComponent(sparql);
+	}
+
+	dateQuery(attribute){
+        let query = this._url + '?query=';
+
+        let sparql = `
+			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+			PREFIX owl: <http://www.w3.org/2002/07/owl#>
+			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+			PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/${attribute.datasetKey}/>
+			
+			SELECT
+				(MIN(?kod) as ?minValue)
+				(MAX(?kod) as ?maxValue)
+			WHERE {
+				?dataset dataset:${attribute.attributeKey} ?kod .
+			}
+		`;
+
+        logger.info(`IPRAttributes#numberQuery Sparql: `, sparql);
+
+        return query + encodeURIComponent(sparql);
 	}
 
 	stringQuery(attribute) {
@@ -118,12 +108,12 @@ class IPRAttributes {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <${attribute.dataset}>
+			PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/${attribute.datasetKey}/>
 			
 			SELECT DISTINCT
 				?kod
 			WHERE {
-				?ipr_o dataset:${attribute.key} ?kod .
+				?dataset dataset:${attribute.attributeKey} ?kod .
 			}
 		`;
 
@@ -137,40 +127,19 @@ class IPRAttributes {
 		return superagent.get(this.query()).then(result => {
 			return new CsvParser(result.text).objects();
 		}).then(pResults => {
-			pResults = pResults.filter(result => result.objekt.indexOf('http://onto.fel.cvut.cz/ontologies/town-plan/common/') === -1);
-			results = pResults.map(result => {
-				let urlParts = result.objekt.split('/');
-				let key = urlParts.pop();
-				let datasetUrl = urlParts.join('/') + '/';
-				let datasetName = urlParts.pop().replace('databaseTable', '');
+            let resultsUnion = _.unionBy(pResults, 'attribute');
+			results = resultsUnion.map(result => {
+				let urlParts = result.attribute.split('/');
+				let attributeKey = urlParts.pop();
+				let datasetKey = urlParts.pop();
+				let type = result.dataType.split('#')[1];
 				return {
-					name: result.label,
-					objekt: result.objekt,
-					dataset: datasetUrl,
-					datasetName: datasetName,
-					key: key
+					attributeName: result.attributeLabel,
+					attributeKey: attributeKey,
+					datasetKey: datasetKey,
+					type: type
 				}
 			})
-		}).then(() => {
-			let promise = Promise.resolve(null);
-
-			results.forEach(result => {
-				promise = promise.then(() => {
-					return superagent.get(this.typeQuery(result));
-				}).then(response => {
-					logger.info('IPRAttributes#json Response For: ', result);
-					return new CsvParser(response.text).objects();
-				}).then(objects => {
-					if(objects.length == 0) {
-						result.type = 'string';
-					} else {
-						result.type = objects[0].datatype.split('#')[1];
-					}
-					return result;
-				})
-			});
-
-			return promise;
 		}).then(() => {
 			let promise = Promise.resolve(null);
 
@@ -181,13 +150,13 @@ class IPRAttributes {
 					logger.info('IPRAttributes#json Response For: ', response);
 					return new CsvParser(response.text).objects();
 				}).then(objects => {
-					if(objects.length == 0) {
+					if(objects.length === 0) {
 						result.values = [];
 					} else {
-						if(result.type == 'string') {
-							result.values = objects.map(object => object.kod);
+						if(result.type === 'integer' || result.type === 'double' || result.type === 'dateTimeStamp') {
+                            result.values = [objects[0].minValue, objects[0].maxValue];
 						} else {
-							result.values = [objects[0].minValue, objects[0].maxValue];
+                            result.values = objects.map(object => object.kod);
 						}
 					}
 					return result;
@@ -196,14 +165,17 @@ class IPRAttributes {
 
 			return promise;
 		}).then(() => {
-			let datasetResults = _.groupBy(results, "datasetName");
-			let keys = Object.keys(datasetResults);
-			return keys.map(key => {
-				return {
-					name: key,
-					attributes: datasetResults[key]
-				};
+			let attributes = [];
+			results.map(attribute => {
+                let values = attribute.values;
+                if (values.length > 0 && (values[0].length > 0 || values[1].length > 0)){
+                    attributes.push(attribute);
+                }
 			});
+
+            attributes = _.sortBy(attributes, [function(attribute) { return attribute.type; }]);
+
+			return attributes;
 		});
 	}
 }

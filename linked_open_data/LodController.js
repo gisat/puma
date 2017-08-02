@@ -51,10 +51,8 @@ class LodController {
     }
     
     attributes(request, response) {
-        var self = this;
-        let keywords = LodController.parseRequestString(request.query.params).adjustedEN;
         let hash;
-        this.getFiltersHash(keywords).then(pHash => {
+        this.getFiltersHash([request.query.dataset]).then(pHash => {
             hash = pHash;
             return this._iprDataQueryProcesses.getExistingProcess(pHash);
         }).then((pResult) => {
@@ -66,9 +64,9 @@ class LodController {
                 state = process.state;
             } else {
                 this._iprDataQueryProcesses.createNewProcess(hash, results, state).then(() => {
-                    return new IPRAttributes(keywords, request.query.type).json().then(pResults => {
+                    return new IPRAttributes(request.query.dataset).json().then(pResults => {
                         logger.info('LodController#attributes Results: ', pResults);
-                        self._statistics.insert(request.headers.origin, keywords, {data: ['success']});
+                        // self._statistics.insert(request.headers.origin, keywords, {data: ['success']});
                         this._iprDataQueryProcesses.updateExistingProcess(hash, pResults, 'ok');
                     });
                 }).catch(err => {
@@ -83,7 +81,7 @@ class LodController {
         }).then(([results, state]) => {
             response.json({
                 status: state,
-                datasets: results
+                data: results
             });
         }).catch((error) => {
             response.status(500).json({
