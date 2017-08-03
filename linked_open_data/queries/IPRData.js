@@ -19,15 +19,21 @@ class IPRData {
 	filter() {
 		let triplets = [];
 		let filters = [];
+		let optionals = [];
 		this._filters.forEach((filter, index) => {
 			if (filter.values){
                 this._dataset = filter.datasetUri;
-                triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
                 if (filter.type === 'string') {
+                    triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
                     filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
                 } else if (filter.type === 'dateTimeStamp'){
-                	// filter for time period
-				} else if (filter.type === 'integer' || filter.type === 'double') {
+                    let from = new Date(filter.values[0]);
+                    from = from.getFullYear() + "-" + (from.getMonth()+1) + "-" + from.getDate();
+                    let to = new Date(filter.values[1]);
+                    to =to.getFullYear() + "-" + (to.getMonth()+1) + "-" + to.getDate();
+                    optionals.push(`OPTIONAL {?ipr_o dataset:${filter.attributeKey} ?variable${index} FILTER (?variable${index} >= "${from}"^^xsd:date && ?variable${index} <= "${to}"^^xsd:date)}`);
+                } else if (filter.type === 'integer' || filter.type === 'double') {
+                    triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
                     filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
                 }
 			}
@@ -35,7 +41,8 @@ class IPRData {
 
 		return {
 			triplets: triplets,
-			filters: filters
+			filters: filters,
+			optionals: optionals
 		}
 	}
 
@@ -87,6 +94,7 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
+				${data.optionals.join(' ')}
 				${data.filters.join(' ')}
 			} 
 			LIMIT ${increment}
@@ -116,6 +124,7 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
+				${data.optionals.join(' ')}
 				${data.filters.join(' ')}
 			}
 		`;
