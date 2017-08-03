@@ -13,7 +13,7 @@ class IPRData {
 
 		this._filters = filters;
 		this._dataset = null;
-		this._colors = ['#ffffff','#FF0000','#00ff00','#0000ff','#50e8df','#d450e8','#e8db50','#323687','#000000'];
+		this._colors = ['#ffffff','#FF0000','#00ff00','#0000ff','#50e8df','#d450e8','#e8db50','#323687'];
 	}
 
 	filter() {
@@ -21,11 +21,13 @@ class IPRData {
 		let filters = [];
 		this._filters.forEach((filter, index) => {
 			if (filter.values){
-                this._dataset = filter.dataset;
-                triplets.push(`dataset:${filter.key} ?variable${index}`);
-                if(filter.type == 'string') {
+                this._dataset = filter.datasetUri;
+                triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
+                if (filter.type === 'string') {
                     filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
-                } else {
+                } else if (filter.type === 'dateTimeStamp'){
+                	// filter for time period
+				} else if (filter.type === 'integer' || filter.type === 'double') {
                     filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
                 }
 			}

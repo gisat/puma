@@ -147,6 +147,7 @@ class LodController {
                                 return this._iprDataQueryProcesses.updateExistingProcess(hash, {
                                     layer: createdTableName,
                                     style: createdStyleName,
+                                    color: color,
                                     amount: data.amount
                                 }, 'ok').then(() => {
                                     console.log(`#### CREATING WMS LAYER IS DONE ####`);
@@ -166,7 +167,8 @@ class LodController {
                 wms: {
                     url: `${config.remoteProtocol}://${config.remoteAddress}/${config.geoserverPath}/wms`,
                     layer: results.layer,
-                    style: results.style
+                    style: results.style,
+                    color: results.color,
                 },
                 amount: results.amount
             });

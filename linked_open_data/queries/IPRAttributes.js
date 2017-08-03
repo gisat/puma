@@ -9,6 +9,7 @@ let CsvParser = require('../../format/csv/CsvParser');
 class IPRAttributes {
 	constructor(dataset) {
 		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets';
+		this._resources = 'http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/';
 		this._dataset = dataset;
 	}
 
@@ -58,7 +59,7 @@ class IPRAttributes {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/${attribute.datasetKey}/>
+			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
 			
 			SELECT
 				(MIN(?kod) as ?minValue)
@@ -83,7 +84,7 @@ class IPRAttributes {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/${attribute.datasetKey}/>
+			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
 			
 			SELECT
 				(MIN(?kod) as ?minValue)
@@ -108,7 +109,7 @@ class IPRAttributes {
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
-			PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/${attribute.datasetKey}/>
+			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
 			
 			SELECT DISTINCT
 				?kod
@@ -137,6 +138,7 @@ class IPRAttributes {
 					attributeName: result.attributeLabel,
 					attributeKey: attributeKey,
 					datasetKey: datasetKey,
+					datasetUri: this._resources + datasetKey + "/",
 					type: type
 				}
 			})
