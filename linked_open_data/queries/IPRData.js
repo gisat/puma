@@ -22,18 +22,15 @@ class IPRData {
 		let optionals = [];
 		this._filters.forEach((filter, index) => {
 			if (filter.values){
+                triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
                 this._dataset = filter.datasetUri;
                 if (filter.type === 'string') {
-                    triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
                     filters.push(`FILTER (?variable${index} IN ('${filter.values.join('\',\'')}'))`);
                 } else if (filter.type === 'dateTimeStamp'){
-                    let from = new Date(filter.values[0]);
-                    from = from.getFullYear() + "-" + (from.getMonth()+1) + "-" + from.getDate();
-                    let to = new Date(filter.values[1]);
-                    to =to.getFullYear() + "-" + (to.getMonth()+1) + "-" + to.getDate();
-                    optionals.push(`OPTIONAL {?ipr_o dataset:${filter.attributeKey} ?variable${index} FILTER (?variable${index} >= "${from}"^^xsd:date && ?variable${index} <= "${to}"^^xsd:date)}`);
+                    let from = this.getDateString(filter.values[0]);
+                    let to = this.getDateString(filter.values[1]);
+                    filters.push(`FILTER (?variable${index} >= "${from}"^^xsd:date && ?variable${index} <= "${to}"^^xsd:date)`);
                 } else if (filter.type === 'integer' || filter.type === 'double') {
-                    triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
                     filters.push(`FILTER (?variable${index} >= ${filter.values[0]} && ?variable${index} <= ${filter.values[1]})`);
                 }
 			}
@@ -41,8 +38,7 @@ class IPRData {
 
 		return {
 			triplets: triplets,
-			filters: filters,
-			optionals: optionals
+			filters: filters
 		}
 	}
 
@@ -124,7 +120,6 @@ class IPRData {
 				?ipr_o dataset:wkt_geometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
-				${data.optionals.join(' ')}
 				${data.filters.join(' ')}
 			}
 		`;
@@ -150,6 +145,20 @@ class IPRData {
             };
         });
     }
+
+    /**
+	 * Get date in YYYY-MM-DD format
+     * @param dateString {Date}
+     * @returns {string}
+     */
+    getDateString (dateString){
+        let date = new Date(dateString);
+        let year = date.getFullYear();
+        let month = ("0" + (date.getMonth()+1)).slice(-2); // add leading zero
+		let day = ("0" + date.getDate()).slice(-2);
+
+		return year + "-" + month + "-" + day;
+	}
     
     srid() {
         return 5514
