@@ -215,6 +215,7 @@ class LodController {
     datasets(request, response){
         let keywords = LodController.parseRequestString(request.query.search);
         let type = request.query.settings.type;
+        let self = this;
 
         if (keywords.original.length === 0) {
             logger.info(`INFO datasets#dataset keywords: No keywords!`);
@@ -234,6 +235,7 @@ class LodController {
                     keywords: keywords,
                     data: results
                 };
+                self._statistics.insert(request.headers.host,keywords.original,results);
                response.send(json);
             }).catch(error => {
                 response.json({
