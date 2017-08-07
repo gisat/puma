@@ -88,9 +88,7 @@ class IPRData {
 			  ?geometry
 			WHERE {
 				?ipr_o dataset:wkt_geometry ?geometry;
-					   ${data.triplets.join(';')}.
-				
-				${data.optionals.join(' ')}
+				${data.triplets.join(';')}.
 				${data.filters.join(' ')}
 			} 
 			LIMIT ${increment}
