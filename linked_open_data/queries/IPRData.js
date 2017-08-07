@@ -13,7 +13,7 @@ class IPRData {
 
 		this._filters = filters;
 		this._dataset = null;
-		this._colors = ['#ffffff','#FF0000','#00ff00','#0000ff','#50e8df','#d450e8','#e8db50','#323687'];
+		this._colors = ['#ffffff','#FF0000','#FF8000','#00ff00','#ffff00','#00ffff','#0000ff','#50e8df','#d450e8','#e8db50','#323687'];
 	}
 
 	filter() {
