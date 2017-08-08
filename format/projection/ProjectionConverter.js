@@ -6,6 +6,20 @@ class ProjectionConverter {
     constructor() {
         this._krovakEastNorth = "+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs";
         this._wgs = "WGS84";
+        this._shift = [-0.00007, -0.000075];
+    }
+
+    /**
+     * Manually shift wrong coordinates of a point
+     * todo remove this operation if original coordinates are correct
+     * @param wgsPoint
+     * @returns {Object} shifted coordinates
+     */
+    shiftCoordinates(wgsPoint){
+        return {
+            x: wgsPoint.x + this._shift[0],
+            y: wgsPoint.y + this._shift[1]
+        };
     }
     
     convertCoordinatesKrovakToWgs84(krovakCoordinates) {
@@ -18,6 +32,7 @@ class ProjectionConverter {
             } else {
                 wgsPoint = proj4(this._krovakEastNorth, this._wgs, point);
             }
+            wgsPoint = this.shiftCoordinates(wgsPoint);
             wgs84Coordinates.push(wgsPoint);
         });
         
