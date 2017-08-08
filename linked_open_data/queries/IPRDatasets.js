@@ -199,7 +199,6 @@ class IPRDatasets {
         let datasets = this.getUniqueDatasets(results);
         results.map(record => {
            let dataset = _.find(datasets, function(ds) { return ds.dataset === record.dataset; });
-
            // TODO only the last value of the property is used now
            if (record.predicateLabel){
                if (!dataset.sources.attribute){
@@ -209,17 +208,17 @@ class IPRDatasets {
                if (record.subjectComment.length){
                    dataset.sources.attribute["subjectComment"] = {
                        info: `Dataset nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde komentář k pojmu (rdfs:comment) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.subjectComment}`
+                       source: `${this.higlightSearchingInResult(record.subjectComment)}`
                    }
                } else if (record.subjectDefinition.length){
                    dataset.sources.attribute["subjectDefinition"] = {
                        info: `Dataset nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde definice pojmu (common:ma_definici) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.subjectDefinition}`
+                       source: `${this.higlightSearchingInResult(record.subjectDefinition)}`
                    }
                } else {
                    dataset.sources.attribute["subject"] = {
                        info: `Dataset nalezen přes vazbu "Pojem ${record.subjectLabel} ${record.predicateLabel} ${record.datasetLabel}", kde URI nebo štítek pojmu (rdfs:label) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.subject}, ${record.subjectLabel}`
+                       source: `${this.higlightSearchingInResult(record.subject)}, ${this.higlightSearchingInResult(record.subjectLabel)}`
                    }
                }
            } else if (record.subjectParent){
@@ -230,17 +229,17 @@ class IPRDatasets {
                if (record.subjectParentComment.length){
                    dataset.sources.related["subjectParentComment"] = {
                        info: `Dataset nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde komentář ke třídě (rdfs:comment) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.subjectParentComment}`
+                       source: `${this.higlightSearchingInResult(record.subjectParentComment)}`
                    }
                } else if (record.subjectParentDefinition.length){
                    dataset.sources.related["subjectParentDefinition"] = {
                        info: `Dataset nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde definice třídy (common:ma_definici) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.subjectParentDefinition}`
+                       source: `${this.higlightSearchingInResult(record.subjectParentDefinition)}`
                    }
                } else {
                    dataset.sources.related["subjectParent"] = {
                        info: `Dataset nalezen přes vazbu "Pojem je podtřídou (rdfs:subClassOf) třídy ${record.subjectParentLabel}", kde URI nebo štítek třídy (rdfs:label) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.subjectParent}, ${record.subjectParentLabel}`
+                       source: `${this.higlightSearchingInResult(record.subjectParent)}, ${this.higlightSearchingInResult(record.subjectParentLabel)}`
                    }
                }
            } else {
@@ -251,17 +250,41 @@ class IPRDatasets {
                if (record.datasetComment.length){
                    dataset.sources.dataset["datasetComment"] = {
                        info: `Komentář k datasetu (rdfs:comment) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.datasetComment}`
+                       source: `${this.higlightSearchingInResult(record.datasetComment)}`
                    }
                } else {
                    dataset.sources.dataset["dataset"] = {
                        info: `URI nebo štítek datasetu (rdfs:label) obsahuje ${this._keywordsReference}.`,
-                       source: `${record.dataset}, ${record.datasetLabel}`
+                       source: `${this.higlightSearchingInResult(record.dataset)}, ${this.higlightSearchingInResult(record.datasetLabel)}`
                    }
                }
            }
         });
         return datasets;
+    }
+
+    higlightSearchingInResult(resultString){
+        this._keywords.adjustedEN.map(keyword => {
+            keyword = utils.removeWordEnding(keyword);
+            keyword = utils.lowercaseFirstLetter(keyword);
+            let regex = new RegExp(keyword,"g");
+            resultString = _.replace(resultString, regex, `<b>${keyword}</b>`);
+            let keywordUpper = utils.uppercaseFirstLetter(keyword);
+            let regex2 = new RegExp(keywordUpper,"g");
+            resultString = _.replace(resultString, regex2, `<b>${keywordUpper}</b>`);
+        });
+
+        this._keywords.adjustedCZ.map(keyword => {
+            keyword = utils.removeWordEnding(keyword);
+            keyword = utils.lowercaseFirstLetter(keyword);
+            let regex = new RegExp(keyword,"g");
+            resultString = _.replace(resultString, regex, `<b>${keyword}</b>`);
+            let keywordUpper = utils.uppercaseFirstLetter(keyword);
+            let regex2 = new RegExp(keywordUpper,"g");
+            resultString = _.replace(resultString, regex2, `<b>${keywordUpper}</b>`);
+        });
+
+        return resultString;
     }
 
     /**
