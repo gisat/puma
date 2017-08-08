@@ -1,6 +1,7 @@
 let superagent = require('superagent');
 let _ = require('underscore');
 let Promise = require('promise');
+let randomColor = require('randomcolor');
 
 let logger = require('../../common/Logger').applicationWideLogger;
 let utils = require('../../tacrpha/utils');
@@ -13,7 +14,6 @@ class IPRData {
 
 		this._filters = filters;
 		this._dataset = null;
-		this._colors = ['#ffffff','#FF0000','#FF8000','#00ff00','#ffff00','#00ffff','#0000ff','#50e8df','#d450e8','#e8db50','#323687'];
 	}
 
 	filter() {
@@ -136,7 +136,7 @@ class IPRData {
             return this.queryForAllData(amount);
         }).then(results => {
             return {
-                color: this._colors[Math.floor(Math.random() * this._colors.length)],
+                color: randomColor({luminosity: 'light'}),
                 values: results,
                 srid: this.srid(),
                 amount: amount

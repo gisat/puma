@@ -41,6 +41,7 @@
     "proj4": "^2.3.14",
     "promise": "^7.1.1",
     "properties": "0.3.3",
+    "randomcolor": "^0.5.3",
     "request": "latest",
     "shp-write": "^0.3.2",
     "superagent": "3.4.1",
