@@ -136,6 +136,7 @@ class IPRAttributes {
 				let type = result.dataType.split('#')[1];
 				return {
 					attributeName: result.attributeLabel,
+					attributeNameEN: utils.removeDiacritics(result.attributeLabel),
 					attributeKey: attributeKey,
 					datasetKey: datasetKey,
 					datasetUri: this._resources + datasetKey + "/",
@@ -175,7 +176,7 @@ class IPRAttributes {
                 }
 			});
 
-            attributes = _.sortBy(attributes, [function(attribute) { return attribute.type; }]);
+            attributes = _.sortBy(attributes, [function(attribute) { return attribute.attributeNameEN; }]);
 
 			return attributes;
 		});
