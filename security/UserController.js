@@ -44,13 +44,13 @@ class UserController {
 			return Promise.all(users.map(user => {
 				return this.users.byId(user.id).then(loaded => {
 					let json = loaded.json();
-					json.email = user.email;
-					json.firstName = user.first_name;
-					json.lastName = user.last_name;
-					json.username = user.username;
+					json.email = json.email || user.email;
+					json.username = json.username || user.username;
 
-					result.push(json);
-				}); // email, firstName, lastName, username
+                    json.name = user.first_name + ' ' + user.last_name;
+
+                    result.push(json);
+				});
 			}));
 		}).then(() => {
 			response.json(JSON.stringify({data: result}));

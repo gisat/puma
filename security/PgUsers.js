@@ -63,8 +63,8 @@ class PgUsers {
 	 * It adds new internal user to the database.
 	 * @param email {String} Email for the user to be used.
 	 */
-	add(email) {
-		return this.pgPool.query(`INSERT INTO ${this.schema}.panther_users (email) VALUES ('${email}') RETURNING id`).then(result => {
+	add(email, username) {
+		return this.pgPool.query(`INSERT INTO ${this.schema}.panther_users (email, username) VALUES ('${email}','${username}') RETURNING id`).then(result => {
 			return result.rows[0].id;
 		});
 	}
