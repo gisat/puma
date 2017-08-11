@@ -9,9 +9,9 @@ class PrepareForInternalUser extends Migration {
 
     process(mongo, pool) {
         return pool.query(`
-            ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN username TYPE text NOT NULL;
-            ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN password TYPE text;
-            ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN name TYPE text;            
+            ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN username text NOT NULL;
+            ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN password text;
+            ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN name text;            
         `);
     }
 }
