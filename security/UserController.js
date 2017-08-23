@@ -132,7 +132,7 @@ class UserController {
      * @param response
      */
 	create(request, response) {
-		logger.info(`UserController#create Hash: ${request.body.hash}, Name: ${request.body.name}, Username: ${request.body.username}`);
+		logger.info(`UserController#create Hash: ${request.body.hash}, Name: ${request.body.name}`);
 
 		let hash = request.body.hash;
 		let name = request.body.name;
@@ -141,7 +141,7 @@ class UserController {
         this.getInvitation(hash).verify().then(pEmail => {
         	email = pEmail;
 
-        	return this.users.create(username, password, name, email);
+        	return this.users.create(password, name, email);
 		}).then(id => {
         	response.json({
 				data: {
@@ -174,15 +174,13 @@ class UserController {
 			});
 		} else {
             let name = request.body.name;
-            let username = request.body.username;
             let password = request.body.password;
             let email = request.body.email;
 
-            this.users.update(id, name, username, password, email).then(() => {
+            this.users.update(id, name, password, email).then(() => {
                 response.json({
                     data: {
                         id: id,
-                        username: username,
                         password: password,
                         name: name,
                         email: email

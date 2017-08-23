@@ -74,27 +74,26 @@ class PgUsers {
     /**
      * It adds new internal user to the database.
      * @param email {String} Email for the user to be used.
-     * @param username {String} Name displayed in the BO.
+     * @param name {String} Name displayed in the BO.
      */
-    add(email, username) {
-        return this.pgPool.query(`INSERT INTO ${this.schema}.panther_users (email, username) VALUES ('${email}','${username}') RETURNING id`).then(result => {
+    add(email, name) {
+        return this.pgPool.query(`INSERT INTO ${this.schema}.panther_users (email, name) VALUES ('${email}','${name}') RETURNING id`).then(result => {
             return result.rows[0].id;
         });
     }
 
     /**
-     * It creates new user.
-     * @param username {String} Username used for login and displayed in the BO
+     * It creates new user.* @param username {String} Username used for login and displayed in the BO
      * @param password {String} Password used for login.
      * @param name {String} Name displayed in the BackOffice
      * @param email {String} Email of the user used for email communication
      * @returns {Promise<Number>} Promise of id of the
      */
-    create(username, password, name, email) {
+    create(password, name, email) {
         new PasswordHash(password).toString().then(hash => {
             return this.pgPool.query(`
-			INSERT INTO ${this.schema}.panther_users (email, username, password, name) 
-				VALUES ('${email}','${username}', '${hash}', '${name}') 
+			INSERT INTO ${this.schema}.panther_users (email, password, name) 
+				VALUES ('${email}', '${hash}', '${name}') 
 				RETURNING id`
             )
         }).then(result => {
@@ -105,15 +104,14 @@ class PgUsers {
     /**
      * It updates existing user.
      * @param id {Number} Id of the user.
-     * @param username {String} Username used for login and displayed in the BO
      * @param password {String} Password used for login
      * @param name {String} Name displayed in the BackOffice
      * @param email {String} Email of the user for the email communication
      */
-    update(id, username, password, name, email) {
+    update(id, password, name, email) {
         new PasswordHash(password).toString().then(hash => {
             return this.pgPool.query(`
-			    UPDATE ${this.schema}.panther_users set username = '${username}', password = '${hash}', name='${name}', email='${email}' WHERE id = ${id}
+			    UPDATE ${this.schema}.panther_users set password = '${hash}', name='${name}', email='${email}' WHERE id = ${id}
 		    `);
         });
     }
