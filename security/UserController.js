@@ -138,7 +138,9 @@ class UserController {
 		let name = request.body.name;
 		let username = request.body.username;
 		let password = request.body.password;
-        this.getInvitation(hash).verify().then(email => {
+		let email;
+        this.getInvitation(hash).verify().then(pEmail => {
+        	email = pEmail;
 			return this.users.create(username, password, name, email);
 		}).then(id => {
         	response.json({
