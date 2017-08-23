@@ -27,7 +27,6 @@ class UserController {
         app.get('/rest/user/:id', this.byId.bind(this));
 
         app.post('/rest/user/invitation', this.invite.bind(this));
-        app.get('/rest/user/invitation/:hash', this.invitationResult.bind(this));
 
         app.post('/rest/permission/user', this.addPermission.bind(this));
 		app.delete('/rest/permission/user', this.removePermission.bind(this));
