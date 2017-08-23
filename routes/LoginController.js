@@ -31,8 +31,8 @@ class LoginController {
 	}
 
 	login(request, response, next) {
-		var username = request.body.username;
-		var password = request.body.password;
+		let username = request.body.username;
+		let password = request.body.password;
 		return new Promise((resolve) => {
 			// Destroy current and create a new session.
 			request.session.regenerate(resolve);
@@ -42,7 +42,7 @@ class LoginController {
 			if(!user) {
                 response.status(401).end();
 			} else {
-                Object.assign(request.session, user);
+                Object.assign(request.session, user.json());
                 response.status(200).json({
                     data: {
                         status: "ok"

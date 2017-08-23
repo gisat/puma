@@ -1,4 +1,5 @@
 let Promise = require('promise');
+let bcrypt = require('bcrypt');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
@@ -113,6 +114,32 @@ class PgUsers {
             return this.pgPool.query(`
 			    UPDATE ${this.schema}.panther_users set password = '${hash}', name='${name}', email='${email}' WHERE id = ${id}
 		    `);
+        });
+    }
+
+    /**
+     * It verifies whether the user with given email and password exists.
+     * @param email {String} Email of the user for the email communication
+     * @param password {String} Password used for login
+     */
+    verify(email, password) {
+        let user;
+        return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users WHERE email = '${email}'`).then(results => {
+            if (results.rows.length === 0) {
+                logger.warn(`PgUsers#verify No user with email: ${email}`);
+                return null;
+            }
+
+            user = results.rows[0];
+
+            return bcrypt.compare(password, user.password);
+        }).then(result => {
+            if(!result) {
+                logger.warn(`PgUsers#verify Incorrect password for user with email: ${email}`);
+                return null;
+            }
+
+            return this.byId(Number(user.id));
         });
     }
 }
