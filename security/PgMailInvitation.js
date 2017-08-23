@@ -32,9 +32,9 @@ class PgMailInvitation {
      * It stores the email and associated hash inside of the database.
      */
     send(email, baseUrl) {
-        logger.info(`PgMailInvitation#send Email: ${email}, BaseUrl: ${baseUrl}, Hash: ${this._uuid}`);
+        let url = `${baseUrl}?hash=${this._uuid}`;
+        logger.info(`PgMailInvitation#send Email: ${email}, BaseUrl: ${baseUrl}, Hash: ${this._uuid}, Url: ${url}`);
 
-        let url = `${baseUrl}/rest/user/invitation/${this._uuid}`;
         return this._pool.query(`INSERT INTO ${this._schema}.invitation (email, hash) values ('${email}','${this._uuid}')`).then(() => {
             let mailOptions = {
                 from: this._mail.from,

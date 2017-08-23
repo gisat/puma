@@ -118,7 +118,7 @@ class UserController {
 			response.json({"status": "err"});
 		}
 
-		this.getInvitation(null).send(email).then(() => {
+		this.getInvitation(null).send(email, `${config.remoteProtocol}://${config.remoteAddress}${config.projectHome}/backoffice/register`).then(() => {
 			response.json({"status": "ok"});
 		}).catch(err => {
 			logger.error(`UserController#invite Error: `, err);
