@@ -48,7 +48,7 @@ class PgMailInvitation {
                 `
             };
 
-            return new Promise(function(resolve, reject){
+            return new Promise((resolve, reject) => {
                 this._transporter.sendMail(mailOptions, (error, info) => {
                     if(error) {
                         reject(error);
