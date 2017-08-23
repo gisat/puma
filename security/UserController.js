@@ -45,6 +45,8 @@ class UserController {
 	 * @param next
 	 */
 	readAll(request, response) {
+		logger.info(`UserController#readAll`);
+
 		let usersUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}/api/profiles`;
 		let result = [];
 		superagent.get(usersUrl).then((retrieved) => {
@@ -79,6 +81,8 @@ class UserController {
 	 * @param next
 	 */
 	byId(request, response) {
+		logger.info(`UserController#byId Id: ${request.params.id}`);
+
 		if (!request.session.user.hasPermission('user', Permission.READ, request.params.id)) {
 			response.status(403);
 			response.json({"status": "err"});
@@ -100,6 +104,8 @@ class UserController {
      * @param response
      */
 	invite(request, response) {
+		logger.info(`UserController#invitation Email: ${request.body.email}`);
+
         if (!request.session.user.hasPermission('user', Permission.CREATE)) {
             response.status(403);
             response.json({"status": "err"});
@@ -126,6 +132,8 @@ class UserController {
      * @param response
      */
 	create(request, response) {
+		logger.info(`UserController#create Hash: ${request.body.hash}, Name: ${request.body.name}, Username: ${request.body.username}`);
+
 		let hash = request.body.hash;
 		let name = request.body.name;
 		let username = request.body.username;
@@ -154,7 +162,9 @@ class UserController {
      * @param response
      */
 	update(request, response) {
-		let id = Number(request.body.id);
+        logger.info(`UserController#update Id: ${request.body.id}, Name: ${request.body.name}, Username: ${request.body.username}, Email: ${request.body.email}`);
+
+        let id = Number(request.body.id);
 
 		if(request.session.user.id != id) {
 			response.status(403).json({

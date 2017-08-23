@@ -1,3 +1,4 @@
+let logger = require('../common/Logger').applicationWideLogger;
 let UUID = require('../common/UUID');
 
 let nodemailer = require('nodemailer');
@@ -29,6 +30,8 @@ class PgMailInvitation {
      * It stores the email and associated hash inside of the database.
      */
     send(email, baseUrl) {
+        logger.info(`PgMailInvitation#send Email: ${email}, BaseUrl: ${baseUrl}, Hash: ${this._uuid}`);
+
         let url = `${baseUrl}/rest/user/invitation/${this._uuid}`;
         return this._pool.query(`INSERT INTO ${this._schema}.invitation (email, hash) values ('${email}','${this._uuid}')`).then(() => {
             let mailOptions = {
@@ -62,6 +65,8 @@ class PgMailInvitation {
      * throws Error.
      */
     verify() {
+        logger.info(`PgMailInvitation#verify Uuid: ${this._uuid}`);
+
         return this._pool.query(`SELECT email FROM ${this}.invitation WHERE hash = '${this._uuid};'`).then(result => {
             if(result.rows.length === 0) {
                 throw new Error('Invalid hash');
