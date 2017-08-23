@@ -61,6 +61,17 @@ class PgUsers {
     }
 
     /**
+     * It queries internal users based on their email. If there is none such user, it returns false, otherwise true.
+     * @param email {String} String representation of email of the user used for querying the users.
+     * @returns {Promise|Boolean} Promise returning either true or false
+     */
+    exists(email) {
+        return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users WHERE email = '${email}'`).then(results => {
+            return results.rows.length > 0;
+        });
+    }
+
+    /**
      * It adds new internal user to the database.
      * @param email {String} Email for the user to be used.
      * @param username {String} Name displayed in the BO.
