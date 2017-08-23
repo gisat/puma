@@ -9,7 +9,7 @@ let nodemailer = require('nodemailer');
  */
 class PgMailInvitation {
     constructor(pool, schema, mail, uuid) {
-        logger.info(`PgMailInvitation#constructor Mail: ${mail}`);
+        logger.info(`PgMailInvitation#constructor Mail: `, mail);
 
         this._pool = pool;
         this._schema = schema;
