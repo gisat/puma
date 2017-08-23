@@ -69,7 +69,7 @@ class PgMailInvitation {
     verify() {
         logger.info(`PgMailInvitation#verify Uuid: ${this._uuid}`);
 
-        return this._pool.query(`SELECT email FROM ${this}.invitation WHERE hash = '${this._uuid};'`).then(result => {
+        return this._pool.query(`SELECT email FROM ${this._schema}.invitation WHERE hash = '${this._uuid};'`).then(result => {
             if(result.rows.length === 0) {
                 throw new Error('Invalid hash');
             }

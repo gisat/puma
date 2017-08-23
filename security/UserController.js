@@ -152,7 +152,8 @@ class UserController {
 				message: 'The user was correctly created.'
 			});
 		}).catch(err => {
-			response.status(500).json({error: err});
+            logger.error(`UserController#create Error: `, err);
+            response.status(500).json({error: err});
 		})
 	}
 
@@ -188,7 +189,8 @@ class UserController {
                     message: 'The user was correctly created.'
                 });
 			}).catch(err => {
-				response.status(500).json({error: err});
+                logger.error(`UserController#update Error: `, err);
+                response.status(500).json({error: err});
 			});
 		}
     }
