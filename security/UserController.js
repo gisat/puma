@@ -21,12 +21,12 @@ class UserController {
 			throw new Error(`Invitation service won't work. Supply email to the configuration.`);
         }
 
-		app.get('/rest/user', this.readAll.bind(this));
+        app.post('/rest/invitation/user', this.invite.bind(this));
+
+        app.get('/rest/user', this.readAll.bind(this));
 		app.post('/rest/user', this.create.bind(this));
 		app.put('/rest/user', this.update.bind(this));
         app.get('/rest/user/:id', this.byId.bind(this));
-
-        app.post('/rest/user/invitation', this.invite.bind(this));
 
         app.post('/rest/permission/user', this.addPermission.bind(this));
 		app.delete('/rest/permission/user', this.removePermission.bind(this));
