@@ -51,6 +51,8 @@ class LoginController {
                 });
             }
 		}).catch(function (err) {
+			logger.error(`LoginController#login Error: `, err);
+
 			next(err);
 		});
 	}
