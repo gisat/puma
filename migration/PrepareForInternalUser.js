@@ -14,7 +14,7 @@ class PrepareForInternalUser extends Migration {
                 ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN password text;
                 ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN name text;
                  
-                INSERT INTO ${config.postgreSqlSchema}.panther_users (name, password) values ('admin','${hash}');           
+                INSERT INTO ${config.postgreSqlSchema}.panther_users (email, name, password) values ('admin','admin','${hash}');           
             `);
         });
     }
