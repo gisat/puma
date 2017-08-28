@@ -24,6 +24,8 @@ class PgUsers {
      * @param id {Number} Id of the user.
      */
     byId(id) {
+        logger.info(`PgUsers#byId Id: ${id}`);
+
         let groups;
         return new PgGroups(this.pgPool, this.schema).forUser(id).then(pGroups => {
             groups = pGroups;
@@ -123,6 +125,8 @@ class PgUsers {
      * @param password {String} Password used for login
      */
     verify(email, password) {
+        logger.info(`PgUsers#verify Email: ${email}, Password: ${password}`);
+
         let user;
         return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users WHERE email = '${email}'`).then(results => {
             if (results.rows.length === 0) {

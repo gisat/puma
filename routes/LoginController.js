@@ -33,6 +33,7 @@ class LoginController {
 	login(request, response, next) {
 		let username = request.body.username;
 		let password = request.body.password;
+		logger.info(`LoginController#login Username: ${username}, Password: ${password}`);
 		return new Promise((resolve) => {
 			// Destroy current and create a new session.
 			request.session.regenerate(resolve);
