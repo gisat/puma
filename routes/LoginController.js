@@ -43,7 +43,7 @@ class LoginController {
 			if(!user) {
                 response.status(401).end();
 			} else {
-                Object.assign(request.session, user.json());
+                Object.assign(request.session, {user: user.json()});
                 response.status(200).json({
                     data: {
                         status: "ok"
