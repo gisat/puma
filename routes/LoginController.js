@@ -44,7 +44,7 @@ class LoginController {
                 response.status(401).end();
 			} else {
                 Object.assign(request.session, {user: user.json()});
-                console.log(request.session);
+                request.session.userId = user.id;
                 response.status(200).json({
                     data: {
                         status: "ok"
