@@ -9,7 +9,7 @@ class PrepareForInternalUser extends Migration {
     }
 
     process(mongo, pool) {
-        bcrypt.hash('admin', 10).then(hash => {
+        return bcrypt.hash('admin', 10).then(hash => {
             return pool.query(`
                 ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN password text;
                 ALTER TABLE ${config.postgreSqlSchema}.panther_users ADD COLUMN name text;
