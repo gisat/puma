@@ -25,8 +25,6 @@ var TopicController = require('./TopicController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 var PrintController = require('./PrintController');
-var MellodiesWpsController = require('./../melodies/WpsController');
-var MellodiesLodController = require('../melodies/LodController');
 var IntegrationController = require('../integration/GufIntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
@@ -37,8 +35,7 @@ let WpsController = require('../integration/WpsController');
 let GeoServerLayersController = require('../layers/geoserver/GeoServerLayersController');
 let AggregatedAnalyticalUnitsController = require('../data/AggregatedAnalyticalUnitsController');
 
-var iprquery = require('./iprquery');
-var iprConversion = require('./iprConversion');
+var LodController = require('../linked_open_data/LodController');
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
@@ -105,18 +102,14 @@ module.exports = function(app) {
 	new IntegrationController(app, pool, conn.getMongoDb(),'public','views',config.postgreSqlSchema);
 
 	new PrintController(app);
-	new MellodiesWpsController(app, pool);
-	new MellodiesLodController(app, pool);
+	new LodController(app, pool);
 	new PermissionController(app, pool);
 	new GroupController(app, pool);
 	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
 	new AreaController(app, pool, conn.getMongoDb());
 
-	new iprquery(app, pool);
-	new iprConversion(app);
-	
 	new WpsController(app, pool, conn.getMongoDb(), null);
-	
+
 	new LayerImporterController(app, conn.getMongoDb(), pool);
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);

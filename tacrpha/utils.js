@@ -54,7 +54,7 @@ function replaceInterpunction(str) {
  * @returns {string}
  */
 function removeSpecialCharacters(str) {
-    return str.replace(/[^a-zA-Z0-9 ]/g, '');
+    return str.replace(/[^a-zA-Z0-9áčďéěíňóřšťůúýžÁČĎÉÍŇÓŘŠŤŮÚYŽ ]/g, '');
 }
 
 /**
@@ -73,7 +73,7 @@ function removeWordEnding(str) {
 }
 
 function vowelTest(s) {
-    return (/^[aeiouy]$/i).test(s);
+    return (/^[aeiouyáéíýúůě]$/i).test(s);
 }
 
 /**
@@ -200,6 +200,14 @@ function getDataTypeFromJavaDataTypeString(javaDataTypeString) {
     }
 }
 
+function lowercaseFirstLetter(string){
+    return string.charAt(0).toLowerCase() + string.slice(1);
+}
+
+function uppercaseFirstLetter(string){
+        return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 module.exports = {
     getDataTypeFromJavaDataTypeString: getDataTypeFromJavaDataTypeString,
     removeMonosyllabics: removeMonosyllabics,
@@ -207,5 +215,7 @@ module.exports = {
     removeReservedWords: removeReservedWords,
     removeSpecialCharacters: removeSpecialCharacters,
     removeWordEnding: removeWordEnding,
-    replaceInterpunction: replaceInterpunction
+    replaceInterpunction: replaceInterpunction,
+    lowercaseFirstLetter: lowercaseFirstLetter,
+    uppercaseFirstLetter: uppercaseFirstLetter
 };

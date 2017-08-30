@@ -1,0 +1,38 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTableBudovy/>
+
+SELECT
+    (?ipr_o as ?objekt)
+    (?ipr_h as ?hodnota)
+    (?ipr_d as ?tabulka)
+    (?ipr_pkt as ?atribut)
+    WHERE {
+        ?ipr_o rdf:type ?ipr_d.
+        ?ipr_o dataset:cdom_hodn ?ipr_h FILTER ((?ipr_d = ds:databaseTableBudovy))
+        }
+    LIMIT 100
+
+
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
+PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+PREFIX uri: <http://onto.fel.cvut.cz/ontologies/town-plan/tmbudova_p/>
+PREFIX : <http://onto.fel.cvut.cz/ontologies/town-plan/budovy#>
+PREFIX dataset: <http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/databaseTableBudovy/>
+
+SELECT
+    (?ipr_sbj as ?objekt)
+	(?ipr_pkt as ?atribut)
+	(?ipr_okt as ?hodnota)
+	WHERE {
+        ?ipr_sbj dataset:wkt_geometry ?ipr_okt.
+	    ?ipr_sbj ?ipr_pkt ?ipr_okt. FILTER ((?ipr_sbj IN (uri:339)))
+    } LIMIT 100
