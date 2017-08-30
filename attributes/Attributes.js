@@ -91,9 +91,9 @@ class Attributes {
 		}).then(amounts => {
 			let resultAmount = 0;
 
-			console.log(amount);
+			console.error(amounts);
 			amounts.forEach(amount => {
-			    console.log("Amount ", amount.rows[0].count);
+			    console.error("Amount ", amount.rows[0].count);
 			    if(typeof amount.rows[0].count !== 'undefined') {
 			        resultAmount += Number(amount.rows[0].count);
                 }

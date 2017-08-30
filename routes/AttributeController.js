@@ -93,7 +93,7 @@ class AttributeController extends Controller {
         // Otherwise it is actually quite simple.
 		let attributes = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
 		if(options.periods.length > 1) {
-		    console.log("Go through the statistics");
+		    console.error("Go through the statistics");
 			this._filter.statistics(attributes, options.attributesMap, options.attributes).then(json => {
 				let result = this._deduplicate(_.flatten(json), json.length);
 				response.json({amount: result.length});
@@ -105,7 +105,7 @@ class AttributeController extends Controller {
 				)
 			});
 		} else {
-            console.log("Go through the amount");
+            console.error("Go through the amount");
             this._filter.amount(attributes, options.attributes).then(amount => {
 				response.json({amount: amount});
 
