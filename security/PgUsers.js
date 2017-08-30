@@ -18,6 +18,20 @@ class PgUsers {
         this.permissions = new PgPermissions(pool, schema);
     }
 
+    all() {
+        // TODO: Improve performance for lots of users.
+        return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users`).then(result => {
+            return Promise.all(result.rows.map(row => {
+                return this.byId(row.id).then(user => {
+                    user.username = row.username;
+                    user.email = row.email;
+
+                    return user;
+                });
+            }));
+        });
+    }
+
     /**
      * Every existing user belongs on top of other groups to the groups guest and user.
      * Everyone accessing the platform belongs to the group guest.

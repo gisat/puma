@@ -42,31 +42,13 @@ class UserController {
 	 * It returns basic information, groups and permissions for all users in the platform.
 	 * @param request
 	 * @param response
-	 * @param next
 	 */
 	readAll(request, response) {
 		logger.info(`UserController#readAll`);
 
-		let usersUrl = `${config.geonodeProtocol}://${config.geonodeHost}:${config.geonodePort}${config.geonodePath}/api/profiles`;
-		let result = [];
-		superagent.get(usersUrl).then((retrieved) => {
-			let users = retrieved.body.objects;
-			users = users && users.length && users
-				.filter(user => this.hasRights(request.session.user, Permission.READ, user.id)) || [];
-
-			return Promise.all(users.map(user => {
-				return this.users.byId(user.id).then(loaded => {
-					let json = loaded.json();
-					json.email = json.email || user.email;
-					json.username = json.username || user.username;
-
-                    json.name = user.first_name + ' ' + user.last_name;
-
-                    result.push(json);
-				});
-			}));
-		}).then(() => {
-			response.json(JSON.stringify({data: result}));
+		this.users.all().then(users => {
+			let jsonUsers = users.map(user => user.json());
+			response.json(JSON.stringify({data: jsonUsers}));
 		}).catch(err => {
 			logger.error('UserController#readAll Error: ', err);
 			response.status(500);
