@@ -23,7 +23,6 @@ class PgSequentialQuery {
 			// Create table with the name hashed from the string of queries.
 			// If the materialized view doesn't exist, create it otherwise simply query the materialized view.
 			viewCreationSql = 'CREATE MATERIALIZED VIEW IF NOT EXISTS ' + viewName + ' AS ' + viewCreationSql;
-			console.error(viewCreationSql);
 			return this._pgPool.query(viewCreationSql).then(() => {
 				logger.info(`AttributeController#statistics Queries: ${queries.length} Start retrieval: ${moment().format()}`);
 				return this._pgPool.query('SELECT * FROM ' + viewName).then(results=>{
