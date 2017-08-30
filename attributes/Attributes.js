@@ -92,11 +92,13 @@ class Attributes {
 			let resultAmount = 0;
 
 			console.error(amounts);
-			amounts.rows.forEach(row => {
-			    console.error("Amount ", row.count);
-			    if(typeof row.count !== 'undefined') {
-			        resultAmount += Number(row.count);
-                }
+			amounts.forEach(amount => {
+			    console.error('Amount ', amount);
+			    amount.rows.forEach(row => {
+                    if(typeof row.count !== 'undefined') {
+                        resultAmount += Number(row.count);
+                    }
+                })
 			});
 
 			return resultAmount;
