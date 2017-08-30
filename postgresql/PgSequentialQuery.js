@@ -14,8 +14,8 @@ class PgSequentialQuery {
 	}
 
 	// What If I ran this in groups of four, which is usually the amount of cores.
-	query(queries) {
-		if (queries.length > 20) {
+	query(queries, options) {
+		if (queries.length > 20 && options.approach !== 'queries') {
 			let viewCreationSql = queries.join(' UNION ');
 			let viewName = "a" + md5(queries.join());
 

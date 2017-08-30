@@ -38,7 +38,8 @@ class Filter {
 			.map(baseLayer => `SELECT count(*) FROM ${this._schema}.layer_${baseLayer._id} WHERE 
                         ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
 
-		return new PgSequentialQuery(this._pgPool).query(queries);
+		// Here run the queries, it works better
+		return new PgSequentialQuery(this._pgPool).query(queries, {approach: 'queries'});
     }
 
     _generateWhere(columns, mongoAttributes, requestAttributes) {
