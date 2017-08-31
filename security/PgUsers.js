@@ -159,6 +159,9 @@ class PgUsers {
 
             return this.byId(Number(user.id));
         }).then(pUser => {
+            console.error(user);
+            console.error(pUser);
+
             pUser.username = user.username;
             pUser.email = user.email;
 
