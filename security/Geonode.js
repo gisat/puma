@@ -82,63 +82,6 @@ class Geonode {
 					});
 			});
 	}
-
-	logout(cookieHeaderLine) {
-		let geonodeHomeUrl = this.homeUrl();
-		var logoutUrl = geonodeHomeUrl.resolveObject("/account/logout/");
-		var refererUrl = geonodeHomeUrl.resolveObject("/");
-		return superagent.post(logoutUrl.format())
-			.type('form')
-			.set('Referer', refererUrl.format())
-			.set('Cookie', cookieHeaderLine)
-			.redirects(0)
-			.then(function (res) {
-				throw new Error(logger.error(`Unhandled status code ${res.status} in geonode logout response.`));
-			}).catch(function (err) {
-				// Status code 302 Found represents successful logout in Geonode.
-				// Status code 403 Forbidden represents expired csrf token.
-				// Other err status codes are unknown.
-				if (err.response.status == 302 || err.response.status == 403) {
-					return true;
-				} else {
-					throw new Error(logger.error(`Unhandled status code ${err.response.status} or other error in geonode logout response, err=${err}.`));
-				}
-			});
-	}
-
-	fetchUserInfo(username) {
-		var client = conn.getPgGeonodeDb();
-		var sql = 'SELECT p.id AS userid, g.name AS groupname'
-			+ ' FROM people_profile p '
-			+ ' LEFT JOIN people_profile_groups pg ON pg.profile_id = p.id'
-			+ ' LEFT JOIN auth_group g ON pg.group_id = g.id '
-			+ ' WHERE p.username = $1';
-
-		return new Promise(function (resolve) {
-			client.query(sql, [username], function (err, result) {
-				if (err) {
-					throw new Error(logger.error(`Error querying user in geonode, sql=${sql}, err=${err}.`));
-				}
-				var userid = null;
-				var groups = [];
-				for (let row of result.rows) {
-					if (row.groupname) {
-						groups.push(row.groupname);
-					}
-					userid = userid || row.userid;
-				}
-				if (!userid) {
-					throw new Error(logger.error(`No such user in geonode, username=${username}.`));
-				}
-				var userInfo = {
-					userId: userid,
-					userName: username,
-					groups: groups
-				};
-				resolve(userInfo);
-			});
-		});
-	}
 }
 
 module.exports = Geonode;

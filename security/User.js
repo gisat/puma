@@ -8,6 +8,24 @@ class User {
         this.id = id;
         this.permissions = permissions || [];
         this.groups = groups || [];
+        this._username = '';
+        this._email = '';
+    }
+
+    get username() {
+        return this._username;
+    }
+
+    set username(value) {
+        this._username = value;
+    }
+
+    get email() {
+        return this._email;
+    }
+
+    set email(value) {
+        this._email = value;
     }
 
     /**
@@ -31,7 +49,9 @@ class User {
         return {
             _id: this.id,
             permissions: this.permissions,
-            groups: this.groups.map(group => group.json())
+            groups: this.groups.map(group => group.json()),
+            username: this.username,
+            email: this.email
         }
     }
 

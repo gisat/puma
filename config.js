@@ -193,5 +193,23 @@ module.exports = {
 	/**
 	 * Url used for generating the screenshots.
 	 */
-	printUrl: 'http://10.0.75.2/tool/index.html'
+	printUrl: 'http://10.0.75.2/tool/index.html',
+
+    /**
+	 * Information necessary to send emails to the users.
+	 * host: Hostname of the SMTP server e.g. zimbra.gisat.cz
+	 * user: Username of the user using server e.g. puma.geonode@gisat.cz
+	 * port: Port of the SMTP service. Usually 587
+	 * password: Password of the user e.g. XXXXXXX
+	 * from: The email address sending the email e.g. puma.geonode@gisat.cz
+	 * subject: Subject of the email. It should contain the core information about the service
+     */
+	email: {
+		host: 'zimbra.gisat.cz',
+		user: 'panther@gisat.cz',
+		port: 587,
+		password: '7Mn3+wXcQ2',
+		from: 'panther@gisat.cz',
+		subject: 'Panther - Visualisation and analysis platform. Internal'
+	}
 };

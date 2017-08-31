@@ -13,6 +13,7 @@
   "homepage": "https://puma.worldbank.org/",
   "dependencies": {
     "async": "1.5.x",
+    "bcrypt": "^1.0.2",
     "blueimp-md5": "^2.7.0",
     "bower": "^1.6.5",
     "csv": "^1.1.0",
@@ -32,6 +33,7 @@
     "mongodb": "~2.0",
     "newrelic": "^1.37.0",
     "node-sass": "^3.7.0",
+    "nodemailer": "^4.0.1",
     "object-hash": "^1.1.8",
     "onecolor": "2.3.4",
     "openlayers": "3.0.0",

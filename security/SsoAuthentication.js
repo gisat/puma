@@ -24,20 +24,22 @@ class SsoAuthentication {
 	 * @returns {Promise}
 	 */
 	authenticate(request, response) {
-		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-commonname'], ' Remote: ', request.headers['remote_user'], ' ', request.headers);
+		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email'], ' Remote: ', request.headers['remote_user'],
+			' Username: ', request.headers['umsso-person-commonname']);
 
-		if((request.headers['umsso-person-commonname'] && request.headers['umsso-person-commonname'] != '') || (request.headers['remote_user'] && request.headers['remote_user'] != '')) {
-			var email = request.headers['umsso-person-commonname'] || request.headers['remote_user'];
+		if((request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') || (request.headers['remote_user'] && request.headers['remote_user'] != '')) {
+			let email = request.headers['umsso-person-email'] || request.headers['remote_user'];
+			let username = request.headers['umsso-person-commonname'] || email;
 			return this.pgUsers.byEmail(email).then(user => {
 				if(!user) {
-					return this.pgUsers.add(email).then(user => {
+					return this.pgUsers.add(email, username).then(user => {
 						request.session.userId = user.id;
-						request.session.userName = request.headers['umsso-person-commonname'];
+						request.session.userName = username;
 						return this.login(response);
 					});
 				} else {
 					request.session.userId = user.id;
-					request.session.userName = request.headers['umsso-person-commonname'];
+					request.session.userName = username;
 					return this.login(response);
 				}
 			});
