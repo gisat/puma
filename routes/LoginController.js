@@ -23,8 +23,7 @@ class LoginController {
 	logged(request, response) {
 		// It is possible that nobody will be logged. In this case return 404
 		if(request.session.user) {
-			console.error(request.session.user);
-			response.json(request.session.user.json());
+			response.json(request.session.userInfo.json());
 		} else {
 			response.status(404);
 			response.json({status: 'Nobody is logged in.'});
@@ -44,11 +43,10 @@ class LoginController {
 			if(!user) {
                 response.status(401).end();
 			} else {
-                console.error(user.username);
-                console.error(user.email);
-				console.error(user.json());
-
-                Object.assign(request.session, {user: user.json()});
+                Object.assign(request.session, {
+                	user: user.json(),
+					userInfo: user.json()
+                });
                 request.session.userId = user.id;
                 response.status(200).json({
                     data: {
