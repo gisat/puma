@@ -44,6 +44,10 @@ class LoginController {
 			if(!user) {
                 response.status(401).end();
 			} else {
+                console.error(user.username);
+                console.error(user.email);
+				console.error(user.json());
+
                 Object.assign(request.session, {user: user.json()});
                 request.session.userId = user.id;
                 response.status(200).json({
