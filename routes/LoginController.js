@@ -23,6 +23,7 @@ class LoginController {
 	logged(request, response) {
 		// It is possible that nobody will be logged. In this case return 404
 		if(request.session.user) {
+			console.error(request.session.user);
 			response.json(request.session.user.json());
 		} else {
 			response.status(404);
