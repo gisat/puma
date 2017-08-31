@@ -23,7 +23,7 @@ class PgUsers {
         return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users`).then(result => {
             return Promise.all(result.rows.map(row => {
                 return this.byId(row.id).then(user => {
-                    user.username = row.username;
+                    user.username = row.name;
                     user.email = row.email;
 
                     return user;
@@ -62,7 +62,7 @@ class PgUsers {
             user = pUser;
             return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users where id = ${id}`);
         }).then(result => {
-            user.username = result.rows[0].username;
+            user.username = result.rows[0].name;
             user.email = result.rows[0].email;
             return user;
         });
