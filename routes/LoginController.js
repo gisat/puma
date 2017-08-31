@@ -23,7 +23,7 @@ class LoginController {
 	logged(request, response) {
 		// It is possible that nobody will be logged. In this case return 404
 		if(request.session.user) {
-			response.json(request.session.userInfo.json());
+			response.json(request.session.user.json());
 		} else {
 			response.status(404);
 			response.json({status: 'Nobody is logged in.'});
@@ -44,8 +44,7 @@ class LoginController {
                 response.status(401).end();
 			} else {
                 Object.assign(request.session, {
-                	user: user.json(),
-					userInfo: user.json()
+                	user: user.json()
                 });
                 request.session.userId = user.id;
                 response.status(200).json({

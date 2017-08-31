@@ -40,7 +40,7 @@ class PgUsers {
     byId(id) {
         logger.info(`PgUsers#byId Id: ${id}`);
 
-        let groups;
+        let groups, user;
         return new PgGroups(this.pgPool, this.schema).forUser(id).then(pGroups => {
             groups = pGroups;
             return Promise.all(groups.map(group => {
@@ -58,6 +58,13 @@ class PgUsers {
             return this.permissions.forUser(id);
         }).then(permissions => {
             return new User(id, permissions, groups);
+        }).then(pUser => {
+            user = pUser;
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users where id = ${id}`);
+        }).then(result => {
+            user.username = result.rows[0].username;
+            user.email = result.rows[0].email;
+            return user;
         });
     }
 
