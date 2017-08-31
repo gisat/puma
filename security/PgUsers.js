@@ -162,8 +162,10 @@ class PgUsers {
             console.error(user);
             console.error(pUser);
 
-            pUser.username = user.username;
+            pUser.username = user.name;
             pUser.email = user.email;
+
+            console.error(pUser);
 
             return pUser;
         });
