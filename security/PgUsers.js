@@ -158,6 +158,11 @@ class PgUsers {
             }
 
             return this.byId(Number(user.id));
+        }).then(pUser => {
+            pUser.username = user.username;
+            pUser.email = user.email;
+
+            return pUser;
         });
     }
 }
