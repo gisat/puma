@@ -848,7 +848,7 @@ class LayerImporter {
                 fs.readdir(importFolderPath, (error, files) => {
                     if (error) reject(error);
                     _.each(files, file => {
-                        fs.chmodSync(file, 511);
+                        fs.chmodSync(`${importFolderPath}${file}`, 511);
                     });
                     resolve({
                         customName: customLayerName,
