@@ -25,6 +25,7 @@ var DatabaseSchema = require('./postgresql/DatabaseSchema');
 let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
 let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
+let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
 
 let CompoundAuthentication = require('./security/CompoundAuthentication');
 let PgAuthentication = require('./security/PgAuthentication');
@@ -132,6 +133,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
 }).then(()=>{
     return new PrepareForInternalUser(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddCustomInfoToWms(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
