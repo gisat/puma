@@ -97,7 +97,7 @@ class LayerImporter {
 			this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
 			this._currentImportTask.progress = 56;
 			let geonodeUpdateLayers = new GeonodeUpdateLayers();
-			return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
+			return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName, workspace: this._currentImportTask.publicWorkspace, datastore: config.geoServerDataStore});
 		}).then((geoserverImportTaskResults) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Geonode updated', geoserverImportTaskResults);
 			this._currentImportTask.progress = 70;
@@ -160,7 +160,7 @@ class LayerImporter {
             this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             let geonodeUpdateLayers = new GeonodeUpdateLayers();
-            return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName});
+            return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName, workspace: this._currentImportTask.publicWorkspace, datastore: config.geoServerDataStore});
         }).then(() => {
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             if (this._currentImportTask.layer.type === "raster") {
