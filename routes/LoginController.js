@@ -55,6 +55,8 @@ class LoginController {
                 	user: user.json()
                 });
                 request.session.userId = user.id;
+                request.session.userName = user.username;
+                request.session.groups = user.json().groups;
                 response.status(200).json({
                     data: {
                         status: "ok"
