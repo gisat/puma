@@ -1,6 +1,7 @@
 let config = require('../config');
 let logger = require('../common/Logger').applicationWideLogger;
 
+let Geonode = require('../security/Geonode');
 let PgUsers = require('../security/PgUsers');
 
 /**
@@ -18,6 +19,7 @@ class LoginController {
 		app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
 
 		this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
+		this.geonode = new Geonode();
 	}
 
 	logged(request, response) {
@@ -31,6 +33,7 @@ class LoginController {
 	}
 
 	login(request, response, next) {
+		let user = null;
 		let username = request.body.username;
 		let password = request.body.password;
 		logger.info(`LoginController#login Username: ${username}, Password: ${password}`);
@@ -39,7 +42,12 @@ class LoginController {
 			request.session.regenerate(resolve);
 		}).then(() => {
 			return this.pgUsers.verify(username, password);
-		}).then((user) => {
+		}).then((pUser) => {
+			user = pUser;
+			if(user) {
+            	return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password);
+			}
+        }).then(() => {
 			if(!user) {
                 response.status(401).end();
 			} else {
