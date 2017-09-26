@@ -47,19 +47,27 @@ class LoginController {
 			if(user) {
             	return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password);
 			}
-        }).then(() => {
+        }).then((parsedCookies) => {
 			if(!user) {
                 response.status(401).end();
 			} else {
                 Object.assign(request.session, {
                 	user: user.json()
                 });
+
+                // Proxy cookies to the client.
+                for (let name in parsedCookies) {
+                    response.set("Set-Cookie", parsedCookies[name].headerLine);
+                }
+
                 request.session.userId = user.id;
                 request.session.userName = user.username;
                 request.session.groups = user.json().groups;
                 response.status(200).json({
                     data: {
-                        status: "ok"
+                        status: "ok",
+                        ssid: parsedCookies["sessionid"].value,
+                        csrfToken: parsedCookies["csrftoken"].value
                     },
                     success: true
                 });
