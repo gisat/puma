@@ -34,10 +34,10 @@ class FrontOfficeLayers {
 							let ref = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].topic === topic);
 							references = references.concat(ref);
 					});
-                    return this.groupLayersByNamePath(references, layers.layerGroups, layers.layerTemplates, layers.styles);
+                    return this.groupLayersByNamePath(references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
 				})
 			} else {
-                return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles);
+                return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
 			}
 		});
 	}
@@ -131,9 +131,10 @@ class FrontOfficeLayers {
 	 * @param layerGroups
 	 * @param layerTemplates
 	 * @param styles
+     * @param [period] {number} Optional parameter.
 	 * @returns {Array}
 	 */
-	groupLayersByNamePath(references, layerGroups, layerTemplates, styles) {
+	groupLayersByNamePath(references, layerGroups, layerTemplates, styles, period) {
 		var layers = references.map(reference => {
 			let layerTemplate = layerTemplates[reference.areaTemplate];
 			let layerGroup = layerGroups[layerTemplate.layerGroup];
@@ -143,13 +144,19 @@ class FrontOfficeLayers {
 					path: style.symbology_name
 				}
 			});
+
+			let periodId = null;
+			if (period){
+			    periodId = Number(period);
+            }
 			return {
 				id: reference._id,
 				name: layerTemplate.name,
 				layerTemplateId: layerTemplate._id,
 				layerGroup: layerGroup,
 				path: reference.layer,
-				styles: layerStyles
+				styles: layerStyles,
+                period: periodId
 			}
 		});
 
@@ -170,6 +177,7 @@ class FrontOfficeLayers {
 		var groupedLayers = Object.keys(groupedByLayerGroup).map(key => {
 			return {
 				name: key,
+                id: groupedByLayerGroup[key][0].layerGroup._id,
 				layers: groupedByLayerGroup[key]
 			}
 		});
