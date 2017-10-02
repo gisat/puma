@@ -86,8 +86,6 @@ module.exports = {
 	],
 
 	toggles: {
-		noGeoserverLayerGroups: false,
-
 		/**
 		 * When this flag is set, the EO SSO protocol is used to supply the information about the user.
 		 */
