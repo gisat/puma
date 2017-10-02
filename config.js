@@ -86,14 +86,7 @@ module.exports = {
 
 	toggles: {
 		noGeoserverLayerGroups: false,
-		useWBAgreement: false,
-		useWBHeader: false,
-		useHeader: false,
-		useWBFooter: false,
-		allowPumaHelp: false,
-		allowDownloadsLink: false,
-		usePumaLogo: false,
-		advancedFiltersFirst: false,
+
 		/**
 		 * When this flag is set, the EO SSO protocol is used to supply the information about the user.
 		 */
@@ -121,17 +114,6 @@ module.exports = {
 	 * UrbanTEP - Destination of temporary downloaded files.
 	 */
 	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
-
-	/*
-	 * UrbanTEP - UserName and Password under which the layers are uploaded
-	 */
-	urbanTepGeonodeUserName: '',
-	urbanTepGeonodeUserPassword: '',
-
-	/*
-	 * UrbanTep - Approximate pixel size in input tif file, m^2
-	 */
-	urbanTepTifPixelSize: 75*75,
 
 	/*
 	* Environment in which is the application run. The used libraries will differ.
