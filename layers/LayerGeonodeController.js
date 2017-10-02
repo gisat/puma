@@ -158,7 +158,10 @@ class LayerGeonodeController {
 		}
 
 		this.layerReferences.vectorRasterLayers(request.query.scope, request.query.year, request.query.place, request.query.theme).then(layers => {
-			response.json({data: layers});
+			response.json({
+				data: layers,
+				period: Number(request.query.year)
+			});
 		}).catch(error => {
 			logger.error('LayerGeonodeController#filteredLayers Error: ', error);
 			response.status(500).json({status: 'err'});

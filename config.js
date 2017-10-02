@@ -1,20 +1,21 @@
 module.exports = {
-	localHost       : "10.0.75.2",
+	localHost       : "localhost",
 	localPort       : 4000,
 	localPath       : "",
 
 	remoteProtocol  : "http",
-	remoteAddress   : "10.0.75.2:4000",
+	remoteAddress   : "localhost",
 	projectHome     : "",
 
 	pgDataConnString   : "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
 	pgGeonodeConnString: "postgres://geonode:geonode@10.0.75.2:5432/geonode",
 	mongoConnString    : "mongodb://10.0.75.2:27017/panther",
 
-	workspaceSchemaMap: {
-		geonode: "data_test",
-		analysis: "analysis"
-	},
+    workspaceSchemaMap: {
+        geonode: "public",
+        panther: "views",
+        analysis: "analysis"
+    },
 
 	geoserverHost   : "10.0.75.2",
 	geoserverPort   : 80,
@@ -24,14 +25,14 @@ module.exports = {
 	/*
 	 * It contains workspace, which is used when storing and generating things in the geoserver.
 	 */
-	geoserverWorkspace: "puma",
+	geoserverWorkspace: "panther",
 
 	geoserver2Host  : "10.0.75.2",
 	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "puma",
+	geoserver2Workspace : "panther",
 
 	geonodeProtocol : "http",
 	geonodeHost     : "10.0.75.2",
@@ -125,7 +126,7 @@ module.exports = {
 	/*
 	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
-	postgreSqlSchema: 'data_test',
+	postgreSqlSchema: 'data',
 
 	/*
 	 * Schema containing produced tables and views - base_ and layers_ with the data for usge in Panther.
