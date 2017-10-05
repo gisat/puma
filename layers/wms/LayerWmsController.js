@@ -16,7 +16,7 @@ class LayerWmsController {
 	constructor(app, pool, mongo, schema){
 		this._pgLayers = new PgWmsLayers(pool, mongo, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
-		this.type = "layer_wms";
+		this.type = "layer";
 
 		app.get('/rest/wms/layer', this.readAll.bind(this));
 		app.post('/rest/wms/layer', this.add.bind(this));
