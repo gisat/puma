@@ -36,7 +36,7 @@ class PgPermissions {
 
 	// Private
 	forUserSql(userId) {
-		return `SELECT * FROM ${this.schema}.permissions WHERE user_id = ${userId}`;
+		return `SELECT * FROM ${this.schema}.permissions WHERE user_id = ${userId} AND resource_type <> 'layerref'`;
 	}
 
 	forGroup(groupId) {
