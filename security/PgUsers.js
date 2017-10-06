@@ -22,7 +22,7 @@ class PgUsers {
 
     all() {
         return this.pgPool.query(`SELECT usr.id, usr.email, usr.password, usr.name, permissions.resource_id, permissions.resource_type, 
-            permissions.permission, gp.resource_id as gresource_id, gp.resource_type as gresource_type, gp.permissions as gpermissions,
+            permissions.permission, gp.resource_id as gresource_id, gp.resource_type as gresource_type, gp.permission as gpermission,
             ghm.group_id 
             FROM ${this.schema}.panther_users as usr
               LEFT JOIN ${this.schema}.permissions as permissions on usr.id = permissions.user_id
