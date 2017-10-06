@@ -9,6 +9,8 @@ let PgGroups = require('./PgGroups');
 let User = require('./User');
 let Group = require('./Group');
 
+let _ = require('underscore');
+
 class PgUsers {
     constructor(pool, schema) {
         this.pgPool = pool;
@@ -19,16 +21,44 @@ class PgUsers {
     }
 
     all() {
-        // TODO: Improve performance for lots of users.
-        return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users`).then(result => {
-            return Promise.all(result.rows.map(row => {
-                return this.byId(row.id).then(user => {
-                    user.username = row.name;
-                    user.email = row.email;
+        return this.pgPool.query(`SELECT usr.id, usr.email, usr.password, usr.name, permissions.resource_id, permissions.resource_type, 
+            permissions.permission, gp.resource_id as gresource_id, gp.resource_type as gresource_type, gp.permissions as gpermissions,
+            ghm.group_id 
+            FROM ${this.schema}.panther_users as usr
+              LEFT JOIN ${this.schema}.permissions as permissions on usr.id = permissions.user_id
+              LEFT JOIN ${this.schema}.group_has_members ghm ON usr.id = ghm.user_id
+              LEFT JOIN ${this.schema}.group_permissions gp ON ghm.group_id = gp.id
+              WHERE permissions.resource_type = 'dataset'
+                    OR permissions.resource_type = 'location'
+                    OR permissions.resource_type = 'topic'
+                    OR permissions.resource_type = 'layer_wms';`).then(result => {
+            let groupped = _.groupBy(result.rows, 'id');
 
-                    return user;
+            return Object.keys(groupped).map(userId => {
+                let permissions = [];
+                let groupPermissions = [];
+
+                groupped[userId].forEach(permission => {
+                    permissions.push({
+                        resourceId: permission.resource_id,
+                        resourceType: permission.resource_type,
+                        permission: permission.permission,
+                        id: permission.id
+                    });
+
+                    groupPermissions.push({
+                        resourceId: permission.gresource_id,
+                        resourceType: permission.gresource_type,
+                        permission: permission.gpermission,
+                        id: permission.group_id
+                    });
                 });
-            }));
+
+                let user = new User(groupped[userId][0].id, permissions, groupPermissions);
+                user.username = groupped[userId][0].name;
+                user.email = groupped[userId][0].email;
+                return user;
+            });
         });
     }
 
@@ -159,7 +189,7 @@ class PgUsers {
 
             return bcrypt.compare(password, user.password);
         }).then(result => {
-            if(!result) {
+            if (!result) {
                 logger.warn(`PgUsers#verify Incorrect password for user with email: ${email}`);
                 return null;
             }
