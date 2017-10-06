@@ -140,13 +140,7 @@ class Controller {
 
             let resultsWithRights = result
                 .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
-            let promises = resultsWithRights.map(element => {
-                return this.permissions.forType(this.type, element._id).then(permissions => {
-                    element.permissions = permissions;
-                });
-            });
-
-            Promise.all(promises).then(() => {
+            this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
                 response.json({data: resultsWithRights});
             }).catch(err => {
                 logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
