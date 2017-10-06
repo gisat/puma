@@ -86,7 +86,7 @@ class LayerRefController extends Controller {
 	}
 
     hasRights(user, method, id, object) {
-        return user.hasPermission(this.type, method, object.location);
+        return user.hasPermission('location', method, object.location) && user.hasPermission(this.type, method, id);
     }
 }
 
