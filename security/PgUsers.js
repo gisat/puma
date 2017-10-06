@@ -23,10 +23,11 @@ class PgUsers {
     all() {
         return this.pgPool.query(`SELECT usr.id, usr.email, usr.password, usr.name, permissions.resource_id, permissions.resource_type, 
             permissions.permission, gp.resource_id as gresource_id, gp.resource_type as gresource_type, gp.permission as gpermission,
-            ghm.group_id 
+            groups.id as group_id, groups.name as group_name
             FROM ${this.schema}.panther_users as usr
               LEFT JOIN ${this.schema}.permissions as permissions on usr.id = permissions.user_id
               LEFT JOIN ${this.schema}.group_has_members ghm ON usr.id = ghm.user_id
+              LEFT JOIN ${this.schema}.groups groups ON ghm.group_id = groups.id
               LEFT JOIN ${this.schema}.group_permissions gp ON ghm.group_id = gp.id
               WHERE permissions.resource_type = 'dataset'
                     OR permissions.resource_type = 'location'
@@ -36,7 +37,6 @@ class PgUsers {
 
             return Object.keys(groupped).map(userId => {
                 let permissions = [];
-                let groupPermissions = [];
 
                 groupped[userId].forEach(permission => {
                     permissions.push({
@@ -45,16 +45,26 @@ class PgUsers {
                         permission: permission.permission,
                         id: permission.id
                     });
-
-                    groupPermissions.push({
-                        resourceId: permission.gresource_id,
-                        resourceType: permission.gresource_type,
-                        permission: permission.gpermission,
-                        id: permission.group_id
-                    });
                 });
 
-                let user = new User(groupped[userId][0].id, permissions, groupPermissions);
+                let grouppedByGroup = _.groupBy(groupped[userId], 'group_id');
+
+                let groups = Object.keys(grouppedByGroup).map(groupId => {
+                    let permissions = [];
+
+                    grouppedByGroup[groupId].forEach(permission => {
+                        permissions.push({
+                            resourceId: permission.gresource_id,
+                            resourceType: permission.gresource_type,
+                            permission: permission.gpermission,
+                            id: permission.group_id
+                        });
+                    });
+
+                    return new Group(grouppedByGroup[groupId][0].id, permissions, grouppedByGroup[groupId][0].name)
+                });
+
+                let user = new User(groupped[userId][0].id, permissions, groups);
                 user.username = groupped[userId][0].name;
                 user.email = groupped[userId][0].email;
                 return user;
