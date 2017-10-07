@@ -127,25 +127,26 @@ class Controller {
     readAll(request, response, next) {
         logger.info('Controller#readAll Read all instances of type: ', this.type, ' By User: ', request.session.userId);
 
-        var filter = this.getFilterByScope(request.params.scope);
         var self = this;
-        crud.read(this.type, filter, {
-            userId: request.session.userId,
-            justMine: request.query['justMine']
-        }, (err, result) => {
-            if (err) {
-                logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
-                return next(err);
-            }
+        this.getFilterByScope(request.params.scope).then(filter => {
+            crud.read(this.type, filter, {
+                userId: request.session.userId,
+                justMine: request.query['justMine']
+            }, (err, result) => {
+                if (err) {
+                    logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
+                    return next(err);
+                }
 
-            let resultsWithRights = result
-                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
-            this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
-                response.json({data: resultsWithRights});
-            }).catch(err => {
-                logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
-                response.status(500).json({status: 'err'});
-            })
+                let resultsWithRights = result
+                    .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
+                this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
+                    response.json({data: resultsWithRights});
+                }).catch(err => {
+                    logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
+                    response.status(500).json({status: 'err'});
+                })
+            });
         });
     }
 
