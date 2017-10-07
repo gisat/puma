@@ -127,7 +127,7 @@ class Controller {
     readAll(request, response, next) {
         logger.info('Controller#readAll Read all instances of type: ', this.type, ' By User: ', request.session.userId);
 
-        var filter = {};
+        var filter = this.getFilterByScope(request.params.scope);
         var self = this;
         crud.read(this.type, filter, {
             userId: request.session.userId,
@@ -167,6 +167,7 @@ class Controller {
             return;
         }
 
+        // Figure out how to provide scope in this case.
         var self = this;
         crud.update(this.type, object, {
             userId: request.session.userId,
@@ -222,6 +223,14 @@ class Controller {
 
     hasRights(user, method, id, object) {
         return true;
+    }
+
+    /**
+     * To be overwritten. It returns filter based on the scope.
+     * @param scope
+     */
+    getFilterByScope(scope) {
+        return Promise.resolve({});
     }
 }
 
