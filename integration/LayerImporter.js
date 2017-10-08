@@ -43,6 +43,8 @@ let PgPermissions = require('../security/PgPermissions');
 let LayerAnalysis = require('../analysis/spatial/LayerAnalysis');
 let Permissions = require('../security/Permission');
 
+let DBFEditor = require('./DBFEditor');
+
 class LayerImporter {
     constructor(pgPool, mongo, importerTasks) {
         this._pgPool = pgPool;
@@ -50,7 +52,7 @@ class LayerImporter {
         this._importerTasks = importerTasks;
         this._currentImportTask = {};
     }
-    
+
     /**
      * Return current import task
      * @returns current import task
@@ -121,16 +123,16 @@ class LayerImporter {
 			console.log(`#9`, error);
 		})
     }
-    
+
     /**
      * Execute layer import
      * @param inputs object with user inputs
      */
     importLayer(inputs) {
         this._currentImportTask = this._importerTasks.createNewImportTask();
-        
+
         this._currentImportTask.inputs = inputs;
-    
+
         let currentImportStep = 0;
         let totalImportSteps = 11;
         
@@ -201,7 +203,7 @@ class LayerImporter {
             console.log(`#9`, error);
         });
     }
-    
+
     /**
      * Get basic mongo metadata objects ( scope & theme
      * @param inputs object with inputs from wps
@@ -213,7 +215,7 @@ class LayerImporter {
             let themeIdFilter = inputs.theme;
             let scopeIdFilter = inputs.scope;
             let user = inputs.user;
-            
+
             let pgPermissions = new PgPermissions(_pgPool, config.postgreSqlSchema);
             pgPermissions.forUser(user.id).then(results => {
                 let filter = {
@@ -270,7 +272,7 @@ class LayerImporter {
             });
         });
     }
-    
+
     /**
      * Run sum and average analysis on layer
      * @param currentProcess current import process object
@@ -382,7 +384,7 @@ class LayerImporter {
         })
             ;
     }
-    
+
     /**
      * Create mongo layer referecnes for analytical unit based on performed analysis
      * @param currentProcess current import process object
@@ -465,7 +467,7 @@ class LayerImporter {
             });
         });
     }
-    
+
     /**
      * Return object with public workspace and schema based on config
      */
@@ -481,7 +483,7 @@ class LayerImporter {
             return workspaceSchema;
         });
     }
-    
+
     /**
      * Prepare and get metadata for imported layer
      * @param currentProcess current import process object
@@ -491,25 +493,25 @@ class LayerImporter {
     prepareAndGetMetadata(currentProcess, _mongo, _pgPool) {
         return new Promise((resolve, reject) => {
             let topic, layerGroup, attributes = [], attributeSet, layerTemplate, locations = [];
-            
+
             let scopes = currentProcess.mongoScopes;
             let layer = currentProcess.layer;
             let user = currentProcess.inputs.user;
             let layerGroupName = "Custom Layers";
-            
+
             let mongoTopics = new MongoTopics(_mongo);
             let mongoLayerGroups = new MongoLayerGroups(_mongo);
             let pgPermissions = new PgPermissions(_pgPool, config.postgreSqlSchema);
-            
+
             let geoserverImportTaskResults = currentProcess.geoserverImportTaskResults;
-            
+
             topic = {
                 _id: conn.getNextId(),
                 name: `${layer.customName}`,
                 active: true,
                 origin: `customLayer`
             };
-            
+
             new FilteredMongoLocations({
                 dataset: {
                     $in: _.map(scopes, scope => {
@@ -573,7 +575,7 @@ class LayerImporter {
             }).then(() => {
                 let promises = [];
                 let attributeTypes = [`sum`, `avg`];
-                
+
                 if (layer.type === "raster") {
                     _.each(attributeTypes, attributeType => {
                         attributes.push({
@@ -602,11 +604,11 @@ class LayerImporter {
                         });
                     });
                 }
-                
+
                 if (!attributes.length) {
                     throw new Error(`no attributes was prepared`);
                 }
-                
+
                 let mongoAttributes = new MongoAttributes(_mongo);
                 _.each(attributes, attribute => {
                     promises.push(mongoAttributes.add(attribute));
@@ -614,7 +616,7 @@ class LayerImporter {
                     promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permissions.UPDATE));
                     promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permissions.DELETE));
                 });
-                
+
                 return Promise.all(promises).then((results) => {
                     _.each(results, result => {
                         if (!result.command && !result.insertedCount) {
@@ -663,7 +665,7 @@ class LayerImporter {
             });
         })
     }
-    
+
     /**
      * Create mongo layer references for given layer and update mongo theme with layer's topic
      * @param currentProcess current import process object
@@ -682,13 +684,13 @@ class LayerImporter {
             let attributeSet = currentProcess.mongoMetadata.attributeSet;
             let attributes = currentProcess.mongoMetadata.attributes;
             let performedAnalysis = currentProcess.performedAnalysis;
-            
+
             let mongoLayerReferences = new MongoLayerReferences(this._mongo);
             let pgPermissions = new PgPermissions(this._pgPool, config.postgreSqlSchema);
-            
+
             let layerReferences = [];
             let layerReferencesPermissions = [];
-            
+
             _.each(scopes, scope => {
                 _.each(_.filter(locations, {dataset: scope._id}), location => {
                     _.each(scope.years, yearId => {
@@ -703,7 +705,7 @@ class LayerImporter {
                             year: yearId,
                             origin: `customLayer`,
                         });
-                        
+
                         _.each(performedAnalysis, performedAnalysisResult => {
                             layerReferences.push({
                                 _id: conn.getNextId(),
@@ -726,7 +728,7 @@ class LayerImporter {
                     })
                 });
             });
-            
+
             Promise.all(_.map(layerReferences, layerReference => {
                 layerReferencesPermissions.concat([
                     pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.READ),
@@ -764,7 +766,7 @@ class LayerImporter {
             });
         });
     }
-    
+
     /**
      * Download layer from given url and prepare it for import to Geoserver
      * @param importerTask importer task object
@@ -783,7 +785,7 @@ class LayerImporter {
             customLayerName = importerTask.inputs.customName || sourceFileName;
             systemLayerName = `i${importerTask.id}_${customLayerName.toLowerCase().substring(0, 50).replace(/[|&;$%@"<>()+, ]/g, "_")}`;
             filePath = `${importFolderPath}${sourceFileName}${fileExtension}`;
-            
+
             if (importerTask.inputs.url) {
                 return new Promise((resolve, reject) => {
                     let output = fs.createWriteStream(filePath);
@@ -825,7 +827,7 @@ class LayerImporter {
             return new Promise((resolve, reject) => {
                 fs.readdir(importFolderPath, (error, files) => {
                     if (error) reject(error);
-                    
+
                     _.each(files, file => {
                         let ext = path.extname(`${importFolderPath}${file}`).toLowerCase();
                         fs.renameSync(`${importFolderPath}${file}`, `${importFolderPath}${systemLayerName}${ext}`);
@@ -835,7 +837,7 @@ class LayerImporter {
                             layerType = "vector";
                         }
                     });
-                    
+
                     if (!layerType) {
                         reject(new Error(`unknown file, shp or geotiff is expected`));
                     } else {
@@ -850,18 +852,28 @@ class LayerImporter {
                     _.each(files, file => {
                         fs.chmodSync(`${importFolderPath}${file}`, 511);
                     });
-                    resolve({
-                        customName: customLayerName,
-                        systemName: systemLayerName,
-                        files: files,
-                        directory: importFolderPath,
-                        type: layerType
-                    });
+                    resolve(files);
                 });
             });
+		}).then((files) => {
+			let dbfEditor = new DBFEditor();
+			let file = _.filter(files, (file) => {
+				return file.toLowerCase().endsWith('.dbf');
+			});
+			return dbfEditor.prepareDbfFileForImport(`${importFolderPath}/${file}`).then(() => {
+				return files;
+			});
+        }).then((files) => {
+            return ({
+				customName: customLayerName,
+				systemName: systemLayerName,
+				files: files,
+				directory: importFolderPath,
+				type: layerType
+			});
         });
     }
-    
+
     /**
      * check if java data type is numeric
      * @param attribute
@@ -881,7 +893,7 @@ class LayerImporter {
                 return false;
         }
     }
-    
+
     /**
      * Return percentage from given values
      * @param current
@@ -891,7 +903,7 @@ class LayerImporter {
     getPercentage(current, max) {
         return Math.floor(current / max * 100);
     }
-    
+
     /**
      * Create mongo dataview for imported layer
      * @param currentImportTask
@@ -1038,7 +1050,7 @@ class LayerImporter {
             },
             origin: "customLayer"
         };
-        
+
         return new MongoDataViews(mongo).add(baseView).then(() => {
             return baseView;
         })
