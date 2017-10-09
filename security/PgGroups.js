@@ -40,7 +40,7 @@ class PgGroups {
     byName(name) {
 	    let groups;
         return this.pgPool.pool().query(
-            `SELECT * FROM ${this.schema}.groups WHERE name = ${name}`
+            `SELECT * FROM ${this.schema}.groups WHERE name = '${name}'`
         ).then((result => {
             if(result.rows.length == 0) {
                 throw new Error(logger.error(`PgGroups#byId There is no group with given name: ${name}`));
