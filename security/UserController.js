@@ -253,6 +253,7 @@ class UserController {
 		Promise.all(communities.map(community => {
 			let group;
 			return this.groups.byName(community.identifier).then(pGroup => {
+				// If the group doesn't exist, create it.
 				group = pGroup;
 				return this.groups.isMember(request.session.user.id, group.id);
 			}).then(isMember => {
@@ -284,8 +285,9 @@ class UserController {
 			group = pGroup;
 			return new FilteredMongoDataViews({_id: dataViewId}, this.mongo).json();
 		}).then(pDataView => {
-			dataView = pDataView;
-			return new FilteredMongoThemes({_id: dataView.theme}, this.mongo);
+            logger.info(`UserController#shareCommunities DataView: `, dataView);
+            dataView = pDataView;
+			return new FilteredMongoThemes({_id: dataView.theme}, this.mongo).json();
 		}).then(themes => {
 			topics = _.flatten(themes.map(theme => {
 				return _.flatten([theme.topics, theme.prefTopics]);
