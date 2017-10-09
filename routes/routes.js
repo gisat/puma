@@ -103,7 +103,7 @@ module.exports = function(app) {
 
 	new PrintController(app);
 	new LodController(app, pool);
-	new PermissionController(app, pool);
+	new PermissionController(app, pool, config.postgreSqlSchema, conn.getMongoDb());
 	new GroupController(app, pool);
 	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
 	new AreaController(app, pool, conn.getMongoDb());

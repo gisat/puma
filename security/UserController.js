@@ -1,6 +1,7 @@
 let config = require('../config');
 let logger = require('../common/Logger').applicationWideLogger;
 
+let _ = require('underscore');
 let superagent = require('superagent');
 let Promise = require('promise');
 
@@ -8,6 +9,14 @@ let Permission = require('./Permission');
 let PgPermissions = require('./PgPermissions');
 let PgUsers = require('./PgUsers');
 let PgInvitation = require('./PgMailInvitation');
+let PgGroups = require('./PgGroups');
+
+let FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
+let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
+let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
+let MongoTopic = require('../metadata/MongoTopic');
+let MongoScope = require('../metadata/MongoScope');
+let MongoLocation = require('../metadata/MongoLocation');
 
 /**
  * It allows management of users. Currently it can retrieve all users in the system, retrieve details about specific
@@ -16,7 +25,7 @@ let PgInvitation = require('./PgMailInvitation');
  * @constructor
  */
 class UserController {
-	constructor(app, pgPool, commonSchema) {
+	constructor(app, pgPool, commonSchema, mongo) {
         if(!config.email) {
 			throw new Error(`Invitation service won't work. Supply email to the configuration.`);
         }
@@ -31,11 +40,16 @@ class UserController {
         app.post('/rest/permission/user', this.addPermission.bind(this));
 		app.delete('/rest/permission/user', this.removePermission.bind(this));
 
+		app.post('/rest/communities', this.updateCommunities.bind(this));
+        app.post('/rest/share/communities', this.shareCommunities.bind(this));
+
 		this.permissions = new PgPermissions(pgPool, commonSchema || config.postgreSqlSchema);
 		this.users = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
+		this.groups = new PgGroups(pgPool, commonSchema || config.postgreSqlSchema);
 
 		this.pgPool = pgPool;
 		this.schema = commonSchema || config.postgreSqlSchema;
+		this.mongo = mongo;
 	}
 
 	/**
@@ -230,6 +244,74 @@ class UserController {
 			response.status(500);
 		});
 	}
+
+	updateCommunities(request, response) {
+		let communities = request.body.communities;
+        logger.info(`UserController#updateCommunities Communities: `, communities);
+
+        // Add user to group unless he is there for each community.
+		Promise.all(communities.map(community => {
+			let group;
+			return this.groups.byName(community.identifier).then(pGroup => {
+				group = pGroup;
+				return this.groups.isMember(group)
+			}).then(isMember => {
+				if(!isMember) {
+					return this.groups.addMember(request.session.user.id, group.id, request.session.user.id);
+				}
+			})
+		})).then(() => {
+            response.json({status: "Ok"});
+		}).catch(err => {
+            logger.error('UserController#updateCommunities Error: ', err);
+            response.status(500).json({status: 'Error'});
+		})
+	}
+
+	shareCommunities(request, response) {
+		let dataViewId = request.body.dataViewId;
+		let groupName = request.body.group;
+		logger.info(`UserController#shareCommunities DataView: ${dataViewId} Group: ${groupName}`);
+		if(!dataViewId || !groupName) {
+			response.status(400).json({
+				status: 'err',
+				message: 'No DataView or Group Present'
+			});
+        }
+
+		let group, dataView, topics;
+        return this.groups.byName(groupName).then(pGroup => {
+			group = pGroup;
+			return new FilteredMongoDataViews({_id: dataViewId}, this.mongo).json();
+		}).then(pDataView => {
+			dataView = pDataView;
+			return new FilteredMongoThemes({_id: dataView.theme}, this.mongo);
+		}).then(themes => {
+			topics = _.flatten(themes.map(theme => {
+				return _.flatten([theme.topics, theme.prefTopics]);
+			}));
+
+			if(!location) {
+				return new FilteredMongoLocations().json();
+			} else {
+				return [location]
+			}
+		}).then(locations => {
+            return Promise.all(_.flatten([
+                topics.map(topic => this.permissions.addGroup(group.id, MongoTopic.collectionName(), topic, Permission.READ)),
+				locations.map(location => this.permissions.addGroup(group.id, MongoLocation.collectionName(), location, Permission.READ)),
+                this.permissions.addGroup(group.id, MongoScope.collectionName(), dataView.dataset, Permission.READ)
+            ]));
+		}).then(() => {
+        	request.json({status: 'ok'});
+		}).catch(err => {
+			logger.error(`UserController#shareCommunities Error: `, err);
+			response.status(500).json({
+				status: 'err',
+				message: err
+			})
+		})
+	};
 
 	hasRights(user, method, id) {
 		return user.hasPermission('user', method, id) || user.id == id;
