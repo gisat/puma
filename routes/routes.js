@@ -91,7 +91,7 @@ module.exports = function(app) {
 	new DataViewController(app, pool);
 	new CustomFeaturesController(app, pool);
 	new LayerGroupController(app, pool);
-	new LayerRefController(app, pool);
+	new LayerRefController(app, pool, conn.getMongoDb());
 	new LocationController(app, pool);
 	new LoginController(app, pool);
 	new PerformedAnalysisController(app, pool);
