@@ -293,10 +293,10 @@ class UserController {
 				return _.flatten([theme.topics, theme.prefTopics]);
 			}));
 
-			if(!location) {
+			if(!dataView.location) {
 				return new FilteredMongoLocations().json();
 			} else {
-				return [location]
+				return [dataView.location]
 			}
 		}).then(locations => {
             return Promise.all(_.flatten([
