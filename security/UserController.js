@@ -287,22 +287,22 @@ class UserController {
 		}).then(pDataView => {
             logger.info(`UserController#shareCommunities DataView: `, dataView);
             dataView = pDataView;
-			return new FilteredMongoThemes({_id: dataView.theme}, this.mongo).json();
+			return new FilteredMongoThemes({_id: dataView.conf.theme}, this.mongo).json();
 		}).then(themes => {
 			topics = _.flatten(themes.map(theme => {
 				return _.flatten([theme.topics, theme.prefTopics]);
 			}));
 
-			if(!dataView.location) {
-				return new FilteredMongoLocations().json();
+			if(!dataView.conf.location) {
+				return new FilteredMongoLocations({dataset: dataView.conf.dataset}, this.mongo).json();
 			} else {
-				return [dataView.location]
+				return [dataView.conf.location]
 			}
 		}).then(locations => {
             return Promise.all(_.flatten([
                 topics.map(topic => this.permissions.addGroup(group.id, MongoTopic.collectionName(), topic, Permission.READ)),
 				locations.map(location => this.permissions.addGroup(group.id, MongoLocation.collectionName(), location, Permission.READ)),
-                this.permissions.addGroup(group.id, MongoScope.collectionName(), dataView.dataset, Permission.READ)
+                this.permissions.addGroup(group.id, MongoScope.collectionName(), dataView.conf.dataset, Permission.READ)
             ]));
 		}).then(() => {
         	request.json({status: 'ok'});
