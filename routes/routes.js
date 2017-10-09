@@ -73,7 +73,7 @@ module.exports = function(app) {
 		password: config.pgDataPassword,
 		host: config.pgDataHost,
 		port: config.pgDataPort,
-		max: 8
+		max: 4
 	});
 	let poolRemote = null;
 	if(config.pgDataUserRemote) {
