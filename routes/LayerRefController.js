@@ -101,6 +101,10 @@ class LayerRefController extends Controller {
     getFilterByScope(scope) {
 		// Load Locations to use for filter.
 		return new FilteredMongoLocations({dataset: scope}, this.mongo).json().then(locations => {
+			console.log(locations);
+			console.log({
+                location: {$in: _.pluck(locations, "_id")}
+            });
 			return {
 				location: {$in: _.pluck(locations, "_id")}
 			}
