@@ -25,7 +25,8 @@ class SsoAuthentication {
 	 */
 	authenticate(request, response) {
 		logger.info('SsoAuthentication#authenticate Header: ', request.headers['umsso-person-email'], ' Remote: ', request.headers['remote_user'],
-			' Username: ', request.headers['umsso-person-commonname']);
+			' Username: ', request.headers['umsso-person-commonname'], ' REMOTE_USER_APIKEY: ', request.headers['REMOTE_USER_APIKEY'],
+			' REMOTE_USER: ', request.headers['REMOTE_USER ']);
 
 		if((request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') || (request.headers['remote_user'] && request.headers['remote_user'] != '')) {
 			let email = request.headers['umsso-person-email'] || request.headers['remote_user'];
