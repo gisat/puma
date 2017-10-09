@@ -254,7 +254,7 @@ class UserController {
 			let group;
 			return this.groups.byName(community.identifier).then(pGroup => {
 				group = pGroup;
-				return this.groups.isMember(group)
+				return this.groups.isMember(request.session.user.id, group.id);
 			}).then(isMember => {
 				if(!isMember) {
 					return this.groups.addMember(request.session.user.id, group.id, request.session.user.id);
