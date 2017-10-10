@@ -31,17 +31,24 @@ class SsoAuthentication {
 		if((request.headers['umsso-person-email'] && request.headers['umsso-person-email'] != '') || (request.headers['remote_user'] && request.headers['remote_user'] != '')) {
 			let email = request.headers['umsso-person-email'] || request.headers['remote_user'];
 			let username = request.headers['umsso-person-commonname'] || email;
+			let isLogged = request.session.userId > 0;
 			return this.pgUsers.byEmail(email).then(user => {
 				if(!user) {
 					return this.pgUsers.add(email, username).then(user => {
 						request.session.userId = user.id;
 						request.session.userName = username;
-						return this.login(response);
+						// If was logged in, dont do that.
+                        if(!isLogged) {
+                            return this.login(response);
+                        }
 					});
 				} else {
 					request.session.userId = user.id;
 					request.session.userName = username;
-					return this.login(response);
+
+					if(!isLogged) {
+                        return this.login(response);
+                    }
 				}
 			});
 		} else {
