@@ -11,6 +11,7 @@ class MigrateAwayFromGeonode extends Migration{
     }
 
     process(mongo, pool) {
+        // Load the information from the geonode db typename from layers_layer
         return superagent.get(config.geonodeUrl + 'layers/acls').then(result => {
             let promise = Promise.resolve(null);
             result.ro.forEach(layer => {
