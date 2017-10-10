@@ -6,6 +6,7 @@ let FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
 let FilteredMongoLayerTemplates = require('./FilteredMongoLayerTemplates');
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
 let FilteredPgStyles = require('../styles/FilteredPgStyles');
+let MongoFilteredCollection = require('../data/MongoFilteredCollection');
 let PgStyles = require('../styles/PgStyles');
 
 class FrontOfficeLayers {
@@ -20,12 +21,24 @@ class FrontOfficeLayers {
 	 * @param scope {Number} Id of the scope
 	 * @param year {Number[]} Ids of the periods
 	 * @param place {Number[]} Ids of the places
+	 * @param theme {Number} Id of the theme
 	 */
-	vectorRasterLayers(scope, year, place) {
+	vectorRasterLayers(scope, year, place, theme) {
 		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
 			layers.references = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].layerType != 'au');
-
-			return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles);
+			if (theme){
+				return new MongoFilteredCollection({_id: Number(theme)}, this.mongo, "theme").json().then(themes => {
+					let theme = themes[0];
+					let references = [];
+					theme.topics.map(topic => {
+							let ref = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].topic === topic);
+							references = references.concat(ref);
+					});
+                    return this.groupLayersByNamePath(references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
+				})
+			} else {
+                return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
+			}
 		});
 	}
 
@@ -34,7 +47,7 @@ class FrontOfficeLayers {
 	 * @param scope {Number} Id of the scope
 	 * @param year {Number[]} Ids of the periods
 	 * @param place {Number[]} Ids of the places or null, if null then all the places in given scope are used
-	 * @param level {Number} Optional. If it is supplied it limits analytical units only to the ones with given area template.
+	 * @param [level] {Number} Optional. If it is supplied it limits analytical units only to the ones with given area template.
 	 */
 	analyticalUnitsLayers(scope, year, place, level) {
 		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
@@ -44,6 +57,12 @@ class FrontOfficeLayers {
 		});
 	}
 
+    /**
+	 *
+     * @param scope
+     * @param year
+     * @param place
+     */
 	getLayersWithMetadata(scope, year, place) {
 		let filteredReferences, layerTemplates = {}, layerGroups = {}, stylesIds = [];
 		let promise;
@@ -112,9 +131,10 @@ class FrontOfficeLayers {
 	 * @param layerGroups
 	 * @param layerTemplates
 	 * @param styles
+     * @param [period] {number} Optional parameter.
 	 * @returns {Array}
 	 */
-	groupLayersByNamePath(references, layerGroups, layerTemplates, styles) {
+	groupLayersByNamePath(references, layerGroups, layerTemplates, styles, period) {
 		var layers = references.map(reference => {
 			let layerTemplate = layerTemplates[reference.areaTemplate];
 			let layerGroup = layerGroups[layerTemplate.layerGroup];
@@ -124,13 +144,19 @@ class FrontOfficeLayers {
 					path: style.symbology_name
 				}
 			});
+
+			let periodId = null;
+			if (period){
+			    periodId = Number(period);
+            }
 			return {
 				id: reference._id,
 				name: layerTemplate.name,
 				layerTemplateId: layerTemplate._id,
 				layerGroup: layerGroup,
 				path: reference.layer,
-				styles: layerStyles
+				styles: layerStyles,
+                period: periodId
 			}
 		});
 
@@ -151,6 +177,7 @@ class FrontOfficeLayers {
 		var groupedLayers = Object.keys(groupedByLayerGroup).map(key => {
 			return {
 				name: key,
+                id: groupedByLayerGroup[key][0].layerGroup._id,
 				layers: groupedByLayerGroup[key]
 			}
 		});

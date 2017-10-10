@@ -24,6 +24,8 @@ var PgPool = require('./postgresql/PgPool');
 var DatabaseSchema = require('./postgresql/DatabaseSchema');
 let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
 let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
+let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
+let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
 
 let CompoundAuthentication = require('./security/CompoundAuthentication');
 let PgAuthentication = require('./security/PgAuthentication');
@@ -61,7 +63,7 @@ function initServer(err) {
 	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
-	app.use(express.bodyParser());
+	app.use(express.bodyParser({limit: '50mb'}));
 	app.use(xmlparser());
 	app.use(session({
 		name: "panthersid",
@@ -129,6 +131,10 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
 }).then(()=>{
 	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new PrepareForInternalUser(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddCustomInfoToWms(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

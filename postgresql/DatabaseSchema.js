@@ -118,6 +118,12 @@ DatabaseSchema.prototype.create = function () {
         period_id int
     );
     `;
+    let createInvitation = `CREATE TABLE IF NOT EXISTS ${this.schema}.invitation (
+        id SERIAL PRIMARY KEY,
+        hash text,
+        email text
+    );  
+    `;
 
 
     var self = this;
@@ -143,7 +149,9 @@ DatabaseSchema.prototype.create = function () {
 		return self._pool.query(createWmsLayers);
 	}).then(function () {
 		return self._pool.query(createInternalUsersTable);
-	}).catch(function (err) {
+	}).then(function () {
+        return self._pool.query(createInvitation);
+    }).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });
 };

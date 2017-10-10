@@ -37,6 +37,23 @@ class PgGroups {
         }))
     }
 
+    byName(name) {
+	    let groups;
+        return this.pgPool.pool().query(
+            `SELECT * FROM ${this.schema}.groups WHERE name = '${name}'`
+        ).then((result => {
+            if(result.rows.length == 0) {
+                throw new Error(logger.error(`PgGroups#byId There is no group with given name: ${name}`));
+            }
+
+            groups = result.rows.map(group => new Group(group.id, null, group.name, group.created, group.created_by, group.changed, group.changed_by));
+            return this.permissions.forGroup(groups[0].id);
+        })).then((permissions => {
+            groups[0].permissions = permissions;
+            return groups[0];
+        }))
+    }
+
 	/**
      * It returns Promise of all groups in the database represented as json. If there is no group in the database, empty array is returned.
      * @return {Promise|Group[]} Promise of all groups.
@@ -141,6 +158,18 @@ class PgGroups {
 		    `INSERT INTO ${this.schema}.group_has_members (group_id, user_id, created, created_by, changed, changed_by) 
             VALUES (${groupId},${userId}, '${time}', ${creatorId}, '${time}', ${creatorId})`
         );
+    }
+
+    isMember(userId, groupId) {
+	    return this.pgPool.query(
+	        `SELECT * FROM ${this.schema}.group_has_members WHERE user_id = ${userId} AND group_id = ${groupId}`
+        ).then(result => {
+            if(result.rows.length > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        });
     }
 
 	/**

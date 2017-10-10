@@ -69,7 +69,7 @@ class PgMongoLayerReference {
             }
 
             // Do lookup for schema.
-            return `${this.schemaName(workspace)}.${tableName}`;
+            return `${this.schemaName(workspace)}."${tableName}"`;
         })
     }
 

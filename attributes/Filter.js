@@ -20,13 +20,26 @@ class Filter {
         });
     }
 
+    amount(attributes, requestAttributes) {
+		return attributes.amount(this.sqlAmount.bind(this, requestAttributes));
+    }
+
     sql(requestAttributes, baseLayers, mongoAttributes) {
         let queries = baseLayers
 			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')},
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id} WHERE 
+                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id} WHERE 
                         ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
 
         return new PgSequentialQuery(this._pgPool).query(queries);
+    }
+
+    sqlAmount(requestAttributes, baseLayers, mongoAttributes) {
+		let queries = baseLayers
+			.map(baseLayer => `SELECT count(*) FROM ${this._schema}.layer_${baseLayer._id} WHERE 
+                        ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
+
+		// Here run the queries, it works better
+		return new PgSequentialQuery(this._pgPool).query(queries, {approach: 'queries'});
     }
 
     _generateWhere(columns, mongoAttributes, requestAttributes) {

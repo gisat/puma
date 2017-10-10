@@ -1,14 +1,15 @@
-var logger = require('../common/Logger').applicationWideLogger;
+let config = require('../config');
+let logger = require('../common/Logger').applicationWideLogger;
 
 let Geonode = require('../security/Geonode');
-let Unauthorized = require('../security/Unauthorized');
+let PgUsers = require('../security/PgUsers');
 
 /**
  * Controller for handling the login and logout of the user from the system. Internally this implementation uses Geonode
  * to log the user in.
  */
 class LoginController {
-	constructor(app) {
+	constructor(app, pgPool, commonSchema) {
 		if (!app) {
 			throw new Error(logger.error("LoginController#constructor The controller must receive valid app."));
 		}
@@ -17,6 +18,7 @@ class LoginController {
 		app.post("/api/login/logout", this.logout.bind(this));
 		app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
 
+		this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
 		this.geonode = new Geonode();
 	}
 
@@ -31,42 +33,48 @@ class LoginController {
 	}
 
 	login(request, response, next) {
-		var username = request.body.username;
-		var password = request.body.password;
+		let user = null;
+		let username = request.body.username;
+		let password = request.body.password;
+		logger.info(`LoginController#login Username: ${username}, Password: ${password}`);
 		return new Promise((resolve) => {
 			// Destroy current and create a new session.
 			request.session.regenerate(resolve);
 		}).then(() => {
-			// Log in geonode.
-			return this.geonode.login(username, password);
-		}).then((parsedCookies) => {
-			if (parsedCookies instanceof Unauthorized) {
-				response.status(401).end();
-			} else {
-				// Fetch user info from geonode.
-				return this.geonode.fetchUserInfo(username)
-				.then(function (userInfo) {
-					// Set userInfo into session data.
-					Object.assign(request.session, userInfo);
-
-					// Proxy geonode cookies to user agent.
-					for (let name in parsedCookies) {
-						response.set("Set-Cookie", parsedCookies[name].headerLine);
-					}
-
-					// Set JSON response data.
-					// FIXME: The complicated data structure is here due to old FrontOffice.
-					response.status(200).json({
-						data: {
-							status: "ok",
-							ssid: parsedCookies["sessionid"].value,
-							csrfToken: parsedCookies["csrftoken"].value
-						},
-						success: true
-					});
-				})
+			return this.pgUsers.verify(username, password);
+		}).then((pUser) => {
+			user = pUser;
+			if(user) {
+            	return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password);
 			}
+        }).then((parsedCookies) => {
+			if(!user) {
+                response.status(401).end();
+			} else {
+                Object.assign(request.session, {
+                	user: user.json()
+                });
+
+                // Proxy cookies to the client.
+                for (let name in parsedCookies) {
+                    response.set("Set-Cookie", parsedCookies[name].headerLine);
+                }
+
+                request.session.userId = user.id;
+                request.session.userName = user.username;
+                request.session.groups = user.json().groups;
+                response.status(200).json({
+                    data: {
+                        status: "ok",
+                        ssid: parsedCookies["sessionid"].value,
+                        csrfToken: parsedCookies["csrftoken"].value
+                    },
+                    success: true
+                });
+            }
 		}).catch(function (err) {
+			logger.error(`LoginController#login Error: `, err);
+
 			next(err);
 		});
 	}
@@ -75,8 +83,6 @@ class LoginController {
 		return new Promise(function (resolve) {
 			// Destroy current session.
 			request.session.destroy(resolve);
-		}).then(() => {
-			return this.geonode.logout(request.get('Cookie'))
 		}).then(() => {
 			// FIXME: The complicated data structure is here due to FrontOffice.
 			response.status(200).json({success: true});

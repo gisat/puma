@@ -62,7 +62,7 @@ class MongoLocations {
 
 	add(location) {
 		let collection = this._connection.collection(MongoLocation.collectionName());
-		collection.insert(location)
+		return collection.insert(location);
 	}
 }
 

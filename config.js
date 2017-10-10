@@ -1,20 +1,21 @@
 module.exports = {
-	localHost       : "10.0.75.2",
+	localHost       : "localhost",
 	localPort       : 4000,
 	localPath       : "",
 
 	remoteProtocol  : "http",
-	remoteAddress   : "10.0.75.2:4000",
+	remoteAddress   : "localhost",
 	projectHome     : "",
 
 	pgDataConnString   : "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
 	pgGeonodeConnString: "postgres://geonode:geonode@10.0.75.2:5432/geonode",
 	mongoConnString    : "mongodb://10.0.75.2:27017/panther",
 
-	workspaceSchemaMap: {
-		geonode: "data_test",
-		analysis: "analysis"
-	},
+    workspaceSchemaMap: {
+        geonode: "public",
+        panther: "views",
+        analysis: "analysis"
+    },
 
 	geoserverHost   : "10.0.75.2",
 	geoserverPort   : 80,
@@ -24,14 +25,14 @@ module.exports = {
 	/*
 	 * It contains workspace, which is used when storing and generating things in the geoserver.
 	 */
-	geoserverWorkspace: "puma",
+	geoserverWorkspace: "panther",
 
 	geoserver2Host  : "10.0.75.2",
 	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
 	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "puma",
+	geoserver2Workspace : "panther",
 
 	geonodeProtocol : "http",
 	geonodeHost     : "10.0.75.2",
@@ -85,15 +86,6 @@ module.exports = {
 	],
 
 	toggles: {
-		noGeoserverLayerGroups: false,
-		useWBAgreement: false,
-		useWBHeader: false,
-		useHeader: false,
-		useWBFooter: false,
-		allowPumaHelp: false,
-		allowDownloadsLink: false,
-		usePumaLogo: false,
-		advancedFiltersFirst: false,
 		/**
 		 * When this flag is set, the EO SSO protocol is used to supply the information about the user.
 		 */
@@ -123,17 +115,6 @@ module.exports = {
 	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
 
 	/*
-	 * UrbanTEP - UserName and Password under which the layers are uploaded
-	 */
-	urbanTepGeonodeUserName: '',
-	urbanTepGeonodeUserPassword: '',
-
-	/*
-	 * UrbanTep - Approximate pixel size in input tif file, m^2
-	 */
-	urbanTepTifPixelSize: 75*75,
-
-	/*
 	* Environment in which is the application run. The used libraries will differ.
 	* Allowed values: 'production', 'development'
 	* If no value is present production will be used
@@ -143,7 +124,7 @@ module.exports = {
 	/*
 	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
-	postgreSqlSchema: 'data_test',
+	postgreSqlSchema: 'data',
 
 	/*
 	 * Schema containing produced tables and views - base_ and layers_ with the data for usge in Panther.
@@ -169,11 +150,6 @@ module.exports = {
 	 */
 	exportDirectory: '/tmp/',
 
-	/*
-	 * Destination of temporary downloaded files for the WPS process
-	 */
-	temporaryDownloadedFilesLocation: '/tmp/',
-
 	isUrbis: false,
 	
 	/**
@@ -194,4 +170,27 @@ module.exports = {
 		name: 'admin',
 		password: 'admin'
 	},
+
+	/**
+	 * Url used for generating the screenshots.
+	 */
+	printUrl: 'http://10.0.75.2/tool/index.html',
+
+    /**
+	 * Information necessary to send emails to the users.
+	 * host: Hostname of the SMTP server e.g. zimbra.gisat.cz
+	 * user: Username of the user using server e.g. puma.geonode@gisat.cz
+	 * port: Port of the SMTP service. Usually 587
+	 * password: Password of the user e.g. XXXXXXX
+	 * from: The email address sending the email e.g. puma.geonode@gisat.cz
+	 * subject: Subject of the email. It should contain the core information about the service
+     */
+	email: {
+		host: 'zimbra.gisat.cz',
+		user: 'panther@gisat.cz',
+		port: 587,
+		password: '7Mn3+wXcQ2',
+		from: 'panther@gisat.cz',
+		subject: 'Panther - Visualisation and analysis platform. Internal'
+	}
 };

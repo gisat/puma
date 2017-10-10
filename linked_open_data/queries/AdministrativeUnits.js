@@ -31,7 +31,7 @@ class LodAdministrativeUnits {
                 '   ?parent a gadm-o:Level ; rdfs:label ?parentLbl . ' +
                 '   ?child rdfs:label ?name ; gadm-o:representedBy [ geom:geometry [ ogc:asWKT ?geo ] ] ; meta-o:parentLevel ?parent . ' +
                 '   Filter(' +
-                '       ?parentLbl="%s"' +
+                '       regex(?name,".*%s.*","i")' +
                 '   ) . ' +
                 '} ' +
                 'Order By ?name  ', this._place));
@@ -39,6 +39,7 @@ class LodAdministrativeUnits {
 
     json() {
         return this.query().then(query => {
+            console.log(query);
             return new JsonOsmData(query).json();
         })
     }

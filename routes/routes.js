@@ -25,18 +25,17 @@ var TopicController = require('./TopicController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
 var PrintController = require('./PrintController');
-var MellodiesWpsController = require('./../melodies/WpsController');
-var MellodiesLodController = require('../melodies/LodController');
-var IntegrationController = require('./IntegrationController');
+var IntegrationController = require('../integration/GufIntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
 let PgAnalysisController = require('../analysis/PgAnalysisController');
 let LayerGeonodeController = require('../layers/LayerGeonodeController');
 let LayerWmsController = require('../layers/wms/LayerWmsController');
 let WpsController = require('../integration/WpsController');
+let GeoServerLayersController = require('../layers/geoserver/GeoServerLayersController');
+let AggregatedAnalyticalUnitsController = require('../data/AggregatedAnalyticalUnitsController');
 
-var iprquery = require('./iprquery');
-var iprConversion = require('./iprConversion');
+var LodController = require('../linked_open_data/LodController');
 
 let SnowPortal = require("./SnowPortal");
 let SnowWidgetController = require("./SnowWidgetController");
@@ -45,8 +44,6 @@ var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 let LayerImporterController = require('../integration/LayerImporterController');
-let UtepStatisticsController = require('../integration/UtepStatisticsController');
-let UtepFunctionalAreas = require('../data/UtepFunctionalAreas');
 
 var api = {
 	layers: require('../api/layers'),
@@ -96,7 +93,7 @@ module.exports = function(app) {
 	} else {
 		new ExportController(app, pool);
 	}
-	new AttributeController(app, pool, poolRemote, 'views');
+	new AttributeController(app, pool, poolRemote, conn.getMongoDb(), 'views');
 	new LayerGeonodeController(app, pool);
 	new LayerWmsController(app, pool, conn.getMongoDb());
 	new AttributeSetController(app, pool);
@@ -105,7 +102,7 @@ module.exports = function(app) {
 	new DataViewController(app, pool);
 	new CustomFeaturesController(app, pool);
 	new LayerGroupController(app, pool);
-	new LayerRefController(app, pool);
+	new LayerRefController(app, pool, conn.getMongoDb());
 	new LocationController(app, pool);
 	new LoginController(app, pool);
 	new PerformedAnalysisController(app, pool);
@@ -113,25 +110,21 @@ module.exports = function(app) {
 	new TopicController(app, pool);
 	new VisualizationController(app, pool, conn.getMongoDb());
 	new YearController(app, pool);
-	new IntegrationController(app, pool);
+	new IntegrationController(app, pool, conn.getMongoDb(),'public','views',config.postgreSqlSchema);
 
 	new PrintController(app);
-	new MellodiesWpsController(app, pool);
-	new MellodiesLodController(app, pool);
-	new PermissionController(app, pool);
+	new LodController(app, pool);
+	new PermissionController(app, pool, config.postgreSqlSchema, conn.getMongoDb());
 	new GroupController(app, pool);
 	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
 	new AreaController(app, pool, conn.getMongoDb());
 
-	new iprquery(app, pool);
-	new iprConversion(app);
-	
 	new WpsController(app, pool, conn.getMongoDb(), null);
-	
+
 	new LayerImporterController(app, conn.getMongoDb(), pool);
 	// Schema containing the imported data for Geoserver and schema for created views.
-	new UtepStatisticsController(app, pool, conn.getMongoDb(), 'views', 'public');
-	new UtepFunctionalAreas(app, pool);
+	new GeoServerLayersController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
+	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
 	new SnowPortal(app, pool, longRunningPool);
 	new SnowWidgetController(app, pool);

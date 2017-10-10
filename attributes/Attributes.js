@@ -78,6 +78,29 @@ class Attributes {
         });
     }
 
+    amount(sqlProducer) {
+		let mongoAttributes = {};
+		return Promise.all(this._attributes.map(attribute => {
+			return new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()).json();
+		})).then(attributes => {
+			attributes.forEach(attribute => {
+				mongoAttributes[attribute._id] = attribute;
+			});
+
+			return this._dataViews(sqlProducer, mongoAttributes);
+		}).then(amounts => {
+			let resultAmount = 0;
+
+			amounts.forEach(amount => {
+			    if(typeof amount.rows[0].count !== 'undefined') {
+			        resultAmount += Number(amount.rows[0].count);
+                }
+			});
+
+			return resultAmount;
+		});
+    }
+
     _dataView(dataView, attributes) {
         if(!dataView || !dataView.rows) {
             return;

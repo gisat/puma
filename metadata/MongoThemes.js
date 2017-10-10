@@ -49,7 +49,7 @@ class MongoThemes {
 
 	add(theme) {
 		let collection = this._connection.collection(MongoTheme.collectionName());
-		collection.insert(theme)
+		return collection.insert(theme);
 	}
 }
 

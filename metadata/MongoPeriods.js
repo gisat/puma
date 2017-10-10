@@ -104,7 +104,7 @@ class MongoPeriods {
 
 	add(period) {
 		let collection = this._connection.collection(MongoPeriod.collectionName());
-		collection.insert(period)
+		return collection.insert(period);
 	}
 }
 

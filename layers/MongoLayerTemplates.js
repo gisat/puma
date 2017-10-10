@@ -113,7 +113,7 @@ class MongoLayerTemplates {
 
 	add(layerTemplate) {
 		let collection = this._connection.collection(MongoLayerTemplate.collectionName());
-		return collection.insert(layerTemplate)
+		return collection.insert(layerTemplate);
 	}
 }
 

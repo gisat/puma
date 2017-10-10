@@ -6,6 +6,7 @@ var Process = function(id, options){
 	this.options = options || {};
 	this.options.status = options.status || "Started";
 	this.options.message = options.message || null;
+	this.options.progress = options.progress || 0;
 };
 
 /**
@@ -14,12 +15,15 @@ var Process = function(id, options){
  * @param newMessage - optional
  * @returns {Process} Process itself
  */
-Process.prototype.status = function (newStatus, newMessage) {
+Process.prototype.status = function (newStatus, newMessage, newProgress) {
 	if(newStatus){
 		this.options.status = newStatus;
 	}
 	if(newMessage){
 		this.options.message = newMessage;
+	}
+	if(newProgress) {
+		this.options.progress = newProgress;
 	}
 	return this;
 };
@@ -62,6 +66,7 @@ Process.prototype.mongoDoc = function(){
 Process.prototype.end = function(message){
 	this.options.status = "Finished";
 	this.options.message = util.format(message);
+	this.options.progress = 100;
 	logger.info("Process# end(), Process", this.id, "finished sucessfully, message:", message);
 	return this;
 };
@@ -73,7 +78,9 @@ Process.prototype.end = function(message){
  */
 Process.prototype.error = function(message){
 	this.options.status = "Error";
+	this.options.error = util.format(message);
 	this.options.message = util.format(message);
+	this.options.progress = 100;
 	logger.info("Process# error(), Process", this.id, "failed, message:", message);
 	return this;
 };

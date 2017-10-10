@@ -31,7 +31,7 @@ class PgWmsLayers {
 	}
 
 	/**
-	 * It returns subset of the layers filtered byb the
+	 * It returns subset of the layers filtered by the
 	 * @param scope {Number} Id of the scope on which are the layers filtered.
 	 * @param place {Number} Id of the place on which are the layers filtered.
 	 * @param periods {Number[]} Array of ids of periods relevant for the filtered layers.
@@ -111,7 +111,8 @@ class PgWmsLayers {
 	 * @param layer {Object} WmsLayer to add.
 	 * @param layer.name {String} Name of the layer
 	 * @param layer.url {String} Url of the layer
-	 * @param layer.scope {Number} Scope to which the layer belongs.
+     * @param layer.custom {String} Custom parameters
+     * @param layer.scope {Number} Scope to which the layer belongs.
 	 * @param layer.places {Number[]} Place to which the layer belongs.
 	 * @param layer.periods {Number[]} Period to which the layer belongs.
 	 * @param layer.layer {String} Name of the layer to use from given WMS Store.
@@ -135,7 +136,7 @@ class PgWmsLayers {
 
 		// TODO: Enclose into transaction. Handle Rollback correctly.
 		return this._pool.query(`
-			INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} created, created_by, changed, changed_by) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} '${time}', ${userId}, '${time}', ${userId}) RETURNING id;`).then(result => {
+			INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} created, created_by, changed, changed_by, custom) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} '${time}', ${userId}, '${time}', ${userId}, '${layer.custom}') RETURNING id;`).then(result => {
 			id = result.rows[0].id;
 			return this.insertDependencies(id, layer.places, layer.periods);
 		}).then(() => {
@@ -167,7 +168,8 @@ class PgWmsLayers {
 	 * @param layer.id {Number} Id of the layer to update
 	 * @param layer.name {String} Name of the layer.
 	 * @param layer.url {String} Url of the layer
-	 * @param layer.scope {Number} Scope to which the layer belongs.
+	 * @param layer.custom {String} Custom parameters
+     * @param layer.scope {Number} Scope to which the layer belongs.
 	 * @param layer.places {Number[]} Place to which the layer belongs.
 	 * @param layer.periods {Number[]} Period to which the layer belongs.
 	 * @param layer.layer {String} Name of the layer used from given WMS.
@@ -186,7 +188,7 @@ class PgWmsLayers {
 		}
 
 		logger.info('PgWmsLayer#update Layer: ', layer, ' SQL: ', `UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId} where id = ${layer.id}`);
-		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId} where id = ${layer.id}`).then(() => {
+		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId}, custom='${layer.custom}' where id = ${layer.id}`).then(() => {
 			return this._pool.query(this.deleteDependenciesSql(layer.id));
 		}).then(() => {
 			return this.insertDependencies(layer.id, layer.places, layer.periods);

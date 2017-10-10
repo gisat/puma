@@ -127,31 +127,26 @@ class Controller {
     readAll(request, response, next) {
         logger.info('Controller#readAll Read all instances of type: ', this.type, ' By User: ', request.session.userId);
 
-        var filter = {};
         var self = this;
-        crud.read(this.type, filter, {
-            userId: request.session.userId,
-            justMine: request.query['justMine']
-        }, (err, result) => {
-            if (err) {
-                logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
-                return next(err);
-            }
+        this.getFilterByScope(request.params.scope).then(filter => {
+            crud.read(this.type, filter, {
+                userId: request.session.userId,
+                justMine: request.query['justMine']
+            }, (err, result) => {
+                if (err) {
+                    logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
+                    return next(err);
+                }
 
-            let resultsWithRights = result
-                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
-            let promises = resultsWithRights.map(element => {
-                return this.permissions.forType(this.type, element._id).then(permissions => {
-                    element.permissions = permissions;
-                });
+                let resultsWithRights = result
+                    .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
+                this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
+                    response.json({data: resultsWithRights});
+                }).catch(err => {
+                    logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
+                    response.status(500).json({status: 'err'});
+                })
             });
-
-            Promise.all(promises).then(() => {
-                response.json({data: resultsWithRights});
-            }).catch(err => {
-                logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
-                response.status(500).json({status: 'err'});
-            })
         });
     }
 
@@ -173,6 +168,7 @@ class Controller {
             return;
         }
 
+        // Figure out how to provide scope in this case.
         var self = this;
         crud.update(this.type, object, {
             userId: request.session.userId,
@@ -228,6 +224,14 @@ class Controller {
 
     hasRights(user, method, id, object) {
         return true;
+    }
+
+    /**
+     * To be overwritten. It returns filter based on the scope.
+     * @param scope
+     */
+    getFilterByScope(scope) {
+        return Promise.resolve({});
     }
 }
 

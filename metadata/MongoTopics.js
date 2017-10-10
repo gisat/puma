@@ -80,7 +80,7 @@ class MongoTopics {
 
 	add(topic) {
 		let collection = this._connection.collection(MongoTopic.collectionName());
-		return collection.insert(topic)
+		return collection.insert(topic);
 	}
 }
 

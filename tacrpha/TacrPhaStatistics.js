@@ -67,9 +67,9 @@ class TacrPhaStatistics {
         let timestamp = Date.now();
         let searchString = keywords.toString();
 
-        if (result.hasOwnProperty("data")){
-            numOfRecords = result.data.length;
-            var first = result.data[0];
+        if (result.length){
+            numOfRecords = result.length;
+            var first = result[0];
             for (var key in first){
                 firstRow += key + ": " + first[key] + ", ";
             }

@@ -36,7 +36,7 @@ class PgPermissions {
 
 	// Private
 	forUserSql(userId) {
-		return `SELECT * FROM ${this.schema}.permissions WHERE user_id = ${userId}`;
+		return `SELECT * FROM ${this.schema}.permissions WHERE user_id = ${userId} AND resource_type <> 'layerref'`;
 	}
 
 	forGroup(groupId) {
@@ -149,7 +149,7 @@ class PgPermissions {
 			return Promise.resolve([]);
 		}
 
-		resources = resources.filter(resource => resource.id);
+		resources = resources.filter(resource => resource.id || resource._id);
 		if (!resources.length) {
 			return Promise.resolve([]);
 		}
@@ -166,8 +166,8 @@ class PgPermissions {
 			// How do we effectively map the information to the resources.
 			resources.forEach(resource => {
 				resource.permissions = {
-					user: userPermissions.filter(permission => permission.resourceId == resource.id),
-					group: groupPermissions.filter(permission => permission.resourceId == resource.id),
+					user: userPermissions.filter(permission => permission.resourceId == (resource.id || resource._id)),
+					group: groupPermissions.filter(permission => permission.resourceId == (resource.id || resource._id)),
 				};
 			});
 
@@ -185,7 +185,7 @@ class PgPermissions {
 	 * @returns {string}
 	 */
 	forTypeGroupCollectionSql(type, resources) {
-		let ids = resources.map(layer => layer.id);
+		let ids = resources.map(layer => layer.id || layer._id);
 		return `SELECT * FROM ${this.schema}.group_permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
 	}
 
@@ -198,7 +198,7 @@ class PgPermissions {
 	 * @returns {string}
 	 */
 	forTypeUserCollectionSql(type, resources) {
-		let ids = resources.map(layer => layer.id);
+		let ids = resources.map(layer => layer.id || layer._id);
 		return `SELECT * FROM ${this.schema}.permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
 	}
 }
