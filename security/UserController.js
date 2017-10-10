@@ -270,7 +270,7 @@ class UserController {
 	}
 
 	shareCommunities(request, response) {
-		let dataViewId = request.body.dataViewId;
+		let dataViewId = Number(request.body.dataViewId);
 		let groupName = request.body.group;
 		logger.info(`UserController#shareCommunities DataView: ${dataViewId} Group: ${groupName}`);
 		if(!dataViewId || !groupName) {
