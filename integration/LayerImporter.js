@@ -7,36 +7,27 @@ let unzip = require('unzip');
 
 let conn = require('../common/conn');
 let config = require('../config');
-let utils = require('../tacrpha/utils');
 let logger = require('../common/Logger').applicationWideLogger;
 
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
 let FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
 let FilteredMongoLayerGroups = require('../metadata/FilteredMongoLayerGroups');
-let FilteredMongoLayerTemplates = require('../layers/FilteredMongoLayerTemplates');
 let FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 let GeoServerImporter = require('../layers/GeoServerImporter');
-let PgTable = require('../data/PgTable');
 let MongoAttribute = require('../attributes/MongoAttribute');
 let MongoAttributes = require('../attributes/MongoAttributes');
-let MongoAttributeSet = require('../attributes/MongoAttributeSet');
 let MongoAttributeSets = require('../attributes/MongoAttributeSets');
 let MongoLayerReferences = require('../layers/MongoLayerReferences');
 let MongoLayerReference = require('../layers/MongoLayerReference');
 let MongoLayerTemplates = require('../layers/MongoLayerTemplates');
-let MongoLayerTemplate = require('../layers/MongoLayerTemplate');
 let MongoLayerGroups = require('../layers/MongoLayerGroups');
 let MongoLayerGroup = require('../layers/MongoLayerGroup');
 let MongoTopics = require('../metadata/MongoTopics');
 let MongoTopic = require('../metadata/MongoTopic');
-let MongoThemes = require('../metadata/MongoThemes');
 let MongoTheme = require('../metadata/MongoTheme');
 let MongoScope = require('../metadata/MongoScope');
-let MongoDataView = require('../visualization/MongoDataView');
 let MongoDataViews = require('../visualization/MongoDataViews');
-let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
-let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
 let PgLayerViews = require('../layers/PgLayerViews');
 let RasterToPGSQL = require('../integration/RasterToPGSQL');
 let PgPermissions = require('../security/PgPermissions');
@@ -96,12 +87,6 @@ class LayerImporter {
 			return geoServerImporter.importLayer(this._currentImportTask.layer);
 		}).then((geoserverImportTaskResults) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Geoserver imported', geoserverImportTaskResults);
-			this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
-			this._currentImportTask.progress = 56;
-			let geonodeUpdateLayers = new GeonodeUpdateLayers();
-			return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName, workspace: this._currentImportTask.publicWorkspace, datastore: config.geoServerDataStore});
-		}).then((geoserverImportTaskResults) => {
-			logger.info('LayerImporter#importLayerWithoutStatistics. Geonode updated', geoserverImportTaskResults);
 			this._currentImportTask.progress = 70;
 			return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
 		}).then((mongoMetadata) => {
@@ -158,12 +143,8 @@ class LayerImporter {
                 config.geoServerDataStore
             );
             return geoServerImporter.importLayer(this._currentImportTask.layer);
-        }).then((geoserverImportTaskResults) => {
+        }).then(geoserverImportTaskResults => {
             this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
-            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
-            let geonodeUpdateLayers = new GeonodeUpdateLayers();
-            return geonodeUpdateLayers.filtered({layer: this._currentImportTask.layer.systemName, workspace: this._currentImportTask.publicWorkspace, datastore: config.geoServerDataStore});
-        }).then(() => {
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             if (this._currentImportTask.layer.type === "raster") {
                 let rasterToPgsql = new RasterToPGSQL(config.pgDataHost, config.pgDataUser, config.pgDataPassword, config.pgDataDatabase);
