@@ -64,8 +64,8 @@ class Controller {
                 isAdmin: response.locals.isAdmin
             }, (err, result) => {
                 if (err) {
-                    reject(new Error("It wasn't possible to create object of type: ", this.type, " by User: ", request.session.userId,
-                        "With data: ", request.body.data, " Error:", err));
+                    reject(new Error("It wasn't possible to create object of type: " + this.type + " by User: " + request.session.userId +
+                        " With data: " + request.body.data + " Error: " + err));
                 }
 
                 Promise.all([
