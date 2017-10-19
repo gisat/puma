@@ -33,17 +33,18 @@ class PgWmsLayers {
 	/**
 	 * It returns subset of the layers filtered by the
 	 * @param scope {Number} Id of the scope on which are the layers filtered.
-	 * @param place {Number} Id of the place on which are the layers filtered.
-	 * @param periods {Number[]} Array of ids of periods relevant for the filtered layers.
+	 * @param places {Number[]} Array of ids of the places on which are the layers filtered.
+	 * @param periods {Number[]} Array of ids of periods relevant for the filtered layers. If the periods are undefined,
+	 *   the periods are ignored.
 	 */
-	filtered(scope, place, periods) {
+	filtered(scope, places, periods) {
 		let restrictions = [];
 		if(scope) {
 			restrictions.push(`scope = '${scope}'`)
 		}
 
-		if(place) {
-			restrictions.push(`wms_layer_has_places.place_id = '${place}'`);
+		if(places && places.length) {
+			restrictions.push(`wms_layer_has_places.place_id in (${places.join()})`);
 		}
 
 		if(periods && periods.length) {

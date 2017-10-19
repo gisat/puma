@@ -48,7 +48,7 @@ class PgPermissions {
 		return `SELECT * from ${this.schema}.group_permissions WHERE group_id = ${groupId}`;
 	}
 
-	/**
+    /**
 	 * It adds permission to the user for given resource type and id.
 	 * @param userId {Number} Id of the user
 	 * @param resourceType {String} Type of the resource toward which the rights are valid.
@@ -60,7 +60,21 @@ class PgPermissions {
 		return this.pgPool.pool().query(sql);
 	}
 
-	// Private
+    addCollection(groupId, resourceType, resourceIds, permission) {
+        let sql = resourceIds.map(resourceId => {
+            return this.addSql(groupId, resourceType, resourceId, permission);
+        }).join(' ');
+        return this.pgPool.query(sql);
+    }
+
+    /**
+	 * @private
+     * @param userId
+     * @param resourceType
+     * @param resourceId
+     * @param permission
+     * @returns {string}
+     */
 	addSql(userId, resourceType, resourceId, permission) {
 		if(resourceId) {
 			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', '${resourceId}', '${permission}')`;
@@ -70,14 +84,29 @@ class PgPermissions {
 	}
 
 	addGroup(groupId, resourceType, resourceId, permission) {
-		return this.pgPool.pool().query(this.addGroupSql(groupId, resourceType, resourceId, permission));
+		return this.pgPool.query(this.addGroupSql(groupId, resourceType, resourceId, permission));
 	}
 
+    addGroupCollection(groupId, resourceType, resourceIds, permission) {
+        let sql = resourceIds.map(resourceId => {
+            return this.addGroupSql(groupId, resourceType, resourceId, permission);
+        }).join(' ');
+        return this.pgPool.query(sql);
+    }
+
+    /**
+	 * @private
+     * @param groupId
+     * @param resourceType
+     * @param resourceId
+     * @param permission
+     * @returns {string}
+     */
 	addGroupSql(groupId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', '${resourceId}', '${permission}')`;
+			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', '${resourceId}', '${permission}');`;
 		} else {
-			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, permission) VALUES (${groupId}, '${resourceType}', '${permission}')`;
+			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, permission) VALUES (${groupId}, '${resourceType}', '${permission}');`;
 		}
 	}
 
