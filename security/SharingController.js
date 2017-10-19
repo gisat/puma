@@ -11,7 +11,7 @@ let MongoLocation = require('../metadata/MongoLocation');
 
 let PgGroups = require('./PgGroups');
 let PgPermissions = require('./PgPermissions');
-let PgWmsLayers = require('./PgWmsLayers');
+let PgWmsLayers = require('../layers/wms/PgWmsLayers');
 let Permission = require('./Permission');
 
 /**
