@@ -29,7 +29,7 @@ class SharingController {
 
         this.permissions = new PgPermissions(pgPool, commonSchema || config.postgreSqlSchema);
         this.groups = new PgGroups(pgPool, commonSchema || config.postgreSqlSchema);
-        this.wmsLayers = new PgWmsLayers(pgPool, commonSchema || config.postgreSqlSchema);
+        this.wmsLayers = new PgWmsLayers(pgPool, mongo, commonSchema || config.postgreSqlSchema);
 
         this.pgPool = pgPool;
         this.schema = commonSchema || config.postgreSqlSchema;
