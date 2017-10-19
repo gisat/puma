@@ -77,9 +77,9 @@ class PgPermissions {
      */
 	addSql(userId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', '${resourceId}', '${permission}')`;
+			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', '${resourceId}', '${permission}');`;
 		} else {
-			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, permission) VALUES (${userId}, '${resourceType}', '${permission}')`;
+			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, permission) VALUES (${userId}, '${resourceType}', '${permission}');`;
 		}
 	}
 
