@@ -43,7 +43,7 @@ class PgWmsLayers {
 			restrictions.push(`scope = '${scope}'`)
 		}
 
-		if(places && places.length) {
+		if(places && places.length > 0 && _.isArray(places)) {
 			restrictions.push(`wms_layer_has_places.place_id in (${places.join()})`);
 		}
 
