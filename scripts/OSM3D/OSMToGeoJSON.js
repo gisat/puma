@@ -25,6 +25,7 @@ superagent
                 return;
             }
 
+            feature.properties = {};
             feature.properties.height = height;
         });
         geojson.features = geojson.features.filter(feature => feature.properties.height);
