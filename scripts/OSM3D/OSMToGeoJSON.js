@@ -7,7 +7,7 @@ let fs = require('fs');
 superagent
     .post('https://overpass-api.de/api/interpreter')
     .type('form')
-    .send('[out:json][timeout:25];(way[building](48.8376569,17.0786994,48.8692833,17.1734567); relation[building](48.8376569,17.0786994,48.8692833,17.1734567); ); out body; >; out skel qt;')
+    .send('[out:json][timeout:25];(way[building](49.9154703,14.1642328,50.1835442,14.7272819); relation[building](49.9154703,14.1642328,50.1835442,14.7272819); ); out body; >; out skel qt;')
     .then(result => {
         let geojson = osmtogeojson(result.body);
 
@@ -29,7 +29,7 @@ superagent
         });
         geojson.features = geojson.features.filter(feature => feature.properties.height);
 
-        fs.writeFile('hodonin.json', JSON.stringify(geojson), err => {
+        fs.writeFile('praha.json', JSON.stringify(geojson), err => {
             if (err) {
                 console.error(err);
             } else {
