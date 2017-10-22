@@ -204,6 +204,7 @@ module.exports = {
             compositesGeotiffStoragePath: "/tmp"
         },
         rasters: {
+            replaceExisting: true,
             reclass: {
                 sentinel3: {
                     reclassexpr: "[0-0]:1, [211-211]:2, [250-250]:3,  [239-239]:4, [1-1]:5, [100-100]:100",

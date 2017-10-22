@@ -19,7 +19,7 @@ class GeoServerImporter {
 
     // TODO: Configure the name of the workspace to import into.
     // TODO: Configure the name of the target data store.
-    importLayer(layer) {
+    importLayer(layer, replaceExisting) {
         let id;
         let vectorDatastore = {
             dataStore: {
@@ -33,7 +33,7 @@ class GeoServerImporter {
             .auth(this._userName, this._password)
             .then(async response => {
                 if (layer.type === 'raster') {
-                    if (await this.isLayerExistsInGeoserver(layer.systemName) && layer.replace) {
+                    if (replaceExisting && await this.isLayerExistsInGeoserver(layer.systemName) ) {
                         return request
                             .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layer.systemName}?recurse=true&purge=all`)
                             .auth(this._userName, this._password)
@@ -42,7 +42,7 @@ class GeoServerImporter {
                                     .delete(`${this._geoserverPath}/rest/styles/${this._workspace}_${layer.systemName}`)
                                     .auth(this._userName, this._password);
                             });
-                    } else if (existingCoverageStores.length && !layer.replace) {
+                    } else if (!replaceExisting) {
                         throw new Error(`Layer already exists in geoserver!`);
                     }
                 }
