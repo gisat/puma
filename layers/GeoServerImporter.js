@@ -34,14 +34,7 @@ class GeoServerImporter {
             .then(async response => {
                 if (layer.type === 'raster') {
                     if (replaceExisting && await this.isLayerExistsInGeoserver(layer.systemName) ) {
-                        return request
-                            .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layer.systemName}?recurse=true&purge=all`)
-                            .auth(this._userName, this._password)
-                            .then(() => {
-                                return request
-                                    .delete(`${this._geoserverPath}/rest/styles/${this._workspace}_${layer.systemName}`)
-                                    .auth(this._userName, this._password);
-                            });
+                        this.removeExistingRasterLayer(layer.systemName);
                     } else if (!replaceExisting) {
                         throw new Error(`Layer already exists in geoserver!`);
                     }
@@ -140,6 +133,20 @@ class GeoServerImporter {
                 return _.reject(response.body.layers.layer, layer => {
                     return layerNames.includes(layer.name);
                 });
+            });
+    }
+
+    removeExistingRasterLayer(layerName) {
+        return request
+            .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layerName}?recurse=true&purge=all`)
+            .auth(this._userName, this._password)
+            .then(() => {
+                return request
+                    .delete(`${this._geoserverPath}/rest/styles/${this._workspace}_${layerName}`)
+                    .auth(this._userName, this._password)
+                    .catch(error => {
+                        console.log(`#### GeoserverImporter#error: `, error.message);
+                    });
             });
     }
 }

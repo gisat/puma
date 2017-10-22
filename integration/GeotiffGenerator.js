@@ -1,8 +1,23 @@
+let _ = require('lodash');
+
+let config = require('../config');
+
+let GeoserverImporter = require('../layers/GeoServerImporter');
+
 class GeotiffGenerator {
     constructor(pgLongPool) {
         this._pgLongPool = pgLongPool;
     }
 
+    /**
+     * Export geotiff from pg raster table
+     * @param sourceTable
+     * @param sourceSchema
+     * @param destinationFolder
+     * @param colorMap
+     * @param reclass
+     * @returns {Promise<any> | * | Promise | Promise.<RESULT> | Promise.<TResult>}
+     */
     exportPgRasterAsGeotiff(sourceTable, sourceSchema, destinationFolder, colorMap, reclass) {
         return Promise.resolve().then(() => {
             if (!sourceTable) {
@@ -36,6 +51,76 @@ class GeotiffGenerator {
                     return this._pgLongPool.pool().query(`SELECT lo_unlink(${results.rows[0].oid});`)
                 });
         })
+    }
+
+    /**
+     * Prepare geotiffs for given data
+     * @param data
+     * @param replaceExisting
+     * @param pgSchema
+     * @param useReclass
+     * @param useColors
+     * @returns data
+     */
+    prepareGeotiffs(data, replaceExisting, pgSchema, outputDirectory, useReclass, useColors) {
+        return Promise.resolve().then(async () => {
+            let geoServerImporter = new GeoserverImporter(
+                config.geoserverHost + config.geoserverPath,
+                config.geoserverUsername,
+                config.geoserverPassword,
+                "geonode",
+                "datastore"
+            );
+            let generatorPromises = [];
+            let outputData = [];
+
+            let layersMissingInGeoserver = !replaceExisting ? await geoServerImporter.getGeoserverMissingLayers(_.map(data, layerData => {return layerData.key})) : [];
+
+            for (let dataIndex in data) {
+                if (!data[dataIndex].aoiCoverage) continue;
+
+                let rasterType = data[dataIndex].satellite;
+                let rasterName = data[dataIndex].key;
+                pgSchema = pgSchema ? pgSchema : `scenes`;
+
+                outputData.push(data[dataIndex]);
+
+                if(!replaceExisting && !layersMissingInGeoserver.includes(rasterName)) continue;
+
+                await this.generateGeotiff(
+                    geoServerImporter,
+                    rasterName,
+                    pgSchema,
+                    outputDirectory,
+                    rasterType,
+                    useReclass,
+                    useColors,
+                    replaceExisting
+                );
+            }
+            return outputData;
+        });
+    };
+
+    /**
+     * Generate geotiff and propagete it to geoserver
+     */
+    async generateGeotiff(geoserverImporter, rasterName, pgSchema, outputDirecotry, rasterType, useReclass, useColors, replaceExisting) {
+        return this.exportPgRasterAsGeotiff(
+            rasterName,
+            pgSchema,
+            outputDirecotry,
+            useColors ? config.snow.rasters.colorMap[rasterType] : null,
+            useReclass ? config.snow.rasters.reclass[rasterType] : null
+        ).then(result => {
+            let layerObject = {
+                customName: rasterName,
+                systemName: rasterName,
+                file: `${config.snow.paths.scenesGeotiffStoragePath}/${rasterName}.tiff`,
+                type: "raster"
+            };
+            return geoserverImporter.importLayer(layerObject, replaceExisting);
+        });
     }
 }
 

@@ -6,6 +6,11 @@ let superagent = require('superagent');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
+let config = require('../config');
+
+let GeotiffGenerator = require('../integration/GeotiffGenerator');
+let GeoserverImporter = require('../layers/GeoServerImporter');
+
 let composites = {};
 
 /**
@@ -50,6 +55,8 @@ class SnowPortalComposite {
         // input
         this._pgPool = pgPool;
         this._pgLongRunningPool = pgLongRunningPool;
+        this._geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool);
+        this._geoserverImporter = new GeoserverImporter();
         this._startDay = startDay;
         let completeDateConfiguration = SnowPortalComposite.getCompleteDateConfiguration(this._startDay, endDay, period);
         this._endDay = completeDateConfiguration.endDay;
@@ -397,103 +404,14 @@ class SnowPortalComposite {
             });
         }).then(() => {
             /**
-             * Export composite to GeoTiff
+             * Export geotiff and propagate it to geoserver
              */
-            return new Promise((resolve, reject) => {
-                let command = `gdal_translate "PG:host=localhost port=5432 dbname=geonode_data user=geonode password=geonode schema=composites table=${this._key} mode=2" ${this._tmpTiffLocation}${this._key}.tif`;
-                logger.info(`SnowPortalComposite#_create ------ Exporting GeoTiff of the composite ${this._key}`);
-                child_process.exec(command, (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                        return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Export composite to GeoTiff failed: ${error} (outputs above)`)));
-                    }
-                    logger.info(`SnowPortalComposite#_create ------ Export composite to GeoTiff finished with output:`);
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-                    resolve();
-                });
-            });
-        }).then(() => {
-            /**
-             * Import GeoTiff to Geoserver
-             */
-            return new Promise((resolve, reject) => {
-                let command = `curl -u admin:geoserver -XPUT -H "Content-type:image/tiff" --data-binary @${this._tmpTiffLocation}${this._key}.tif http://localhost/geoserver/rest/workspaces/geonode/coveragestores/${this._key}/file.geotiff`;
-                logger.info(`SnowPortalComposite#_create ------ Importing GeoTiff in Geoserver (${this._key})`);
-                child_process.exec(command, (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                        return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Import GeoTiff to GS failed: ${error} (outputs above)`)));
-                    }
-                    logger.info(`SnowPortalComposite#_create ------ Import GeoTiff to geoserver finished with output:`);
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-                    resolve();
-                });
-            });
-        }).then(() => {
-            /**
-             * Publish GeoTiff in GeoNode
-             */
-
-            /**
-             * TODO fix socket hang up error
-             */
-            // logger.info(`SnowPortalComposite#_create ------ Publishing Geoserver raster layer in GeoNode (${this._key})`);
-            // superagent
-            //     .get(`http://localhost/cgi-bin/updatelayers?f=${this._key}`)
-            //     .timeout({
-            //         response: 1800000,
-            //         deadline: 3600000
-            //     })
-            //     .then(res => {
-            //         logger.info(`SnowPortalComposite#_create ------ updatelayers finished with result:`);
-            //         if(res.status !== 200) {
-            //             new Error(logger.error(`SnowPortalComposite#_create ------ Error. updatelayers error: #${res.status}: ${res.text}`));
-            //         }
-            //     }).catch(error => {
-            //         new Error(logger.error(`SnowPortalComposite#_create ------ Error. updatelayers error: `, error));
-            //     });
-
-            // TODO this might work but we don't want to do updatelayers now
-            // return new Promise((resolve, reject) => {
-            //     let command = `curl http://localhost/cgi-bin/updatelayers?f=${this._key}`;
-            //     logger.info(`SnowPortalComposite#_create ------ updatelayers in GeoNode (${this._key})`);
-            //     child_process.exec(command, (error, stdout, stderr) => {
-            //         if (error) {
-            //             console.log(`stdout: ${stdout}`);
-            //             console.log(`stderr: ${stderr}`);
-            //             return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. updatelayers error: #${error}`)));
-            //         }
-            //         logger.info(`SnowPortalComposite#_create ------ updatelayers in GeoNode finished with output:`);
-            //         console.log(`stdout: ${stdout}`);
-            //         console.log(`stderr: ${stderr}`);
-            //         resolve();
-            //     });
-            // });
-
-
-
-        }).then(() => {
-            /**
-             * Delete GeoTiff
-             */
-            return new Promise((resolve, reject) => {
-                logger.info(`SnowPortalComposite#_create ------ Deleting GeoTiff file ${this._key}.tif`);
-                child_process.exec(`rm ${this._tmpTiffLocation}${this._key}.tif`, (error, stdout, stderr) => {
-                    if (error) {
-                        console.log(`stdout: ${stdout}`);
-                        console.log(`stderr: ${stderr}`);
-                        return reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Deleting GeoTiff failed: ${error} (outputs above)`)));
-                    }
-                    logger.info(`SnowPortalComposite#_create ------ Deleting GeoTiff finished with output:`);
-                    console.log(`stdout: ${stdout}`);
-                    console.log(`stderr: ${stderr}`);
-                    resolve();
-                });
-            });
+            return this._geotiffGenerator.prepareGeotiffs(
+                [{key: this._key, aoiCoverage: 1}],
+                config.snow.rasters.replaceExisting,
+                `composites`,
+                config.snow.paths.compositesGeotiffStoragePath
+            );
         }).then(() => {
             /**
              * Resolve composite metadata

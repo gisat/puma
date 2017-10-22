@@ -26,8 +26,6 @@ let config = require('../config');
 let SnowPortalComposite = require('./SnowPortalComposite');
 
 let GeotiffGenerator = require('../integration/GeotiffGenerator');
-let GeoServerImporter = require('../layers/GeoServerImporter');
-
 
 let processes = {};
 
@@ -238,13 +236,21 @@ class SnowPortal {
                     }
                 });
 
+                scene.key = `scene_${scene.key}`;
                 scene.aoiCoverage *= (visibleTotal / total) || 0;
                 scene.classDistribution = classDistribution;
                 return scene;
             });
 
         }).then(data => {
-            return this.prepareGeotiffs(data, config.snow.rasters.replaceExisting);
+            return new GeotiffGenerator(this._pgLongRunningPool).prepareGeotiffs(
+                data,
+                config.snow.rasters.replaceExisting,
+                `scenes`,
+                config.snow.paths.scenesGeotiffStoragePath,
+                false,
+                false
+            );
         }).then(data => {
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
@@ -257,76 +263,6 @@ class SnowPortal {
         response.send({
             ticket: requestHash,
             success: true
-        });
-    }
-
-    /**
-     * Prepare geotiffs for given data
-     * @param data
-     * @param update existing geotiffs
-     * @returns data
-     */
-    prepareGeotiffs(data, replaceExisting) {
-        return Promise.resolve().then(async () => {
-            let geoServerImporter = new GeoServerImporter(
-                config.geoserverHost + config.geoserverPath,
-                config.geoserverUsername,
-                config.geoserverPassword,
-                "geonode",
-                "datastore"
-            );
-            let geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool);
-            let generatorPromises = [];
-            let outputData = [];
-
-            let layersMissingInGeoserver = !replaceExisting ? await geoServerImporter.getGeoserverMissingLayers(_.map(data, layerData => {return `scene_${layerData.key}`})) : [];
-
-            for (let dataIndex in data) {
-                if (!data[dataIndex].aoiCoverage) continue;
-
-                let rasterType = data[dataIndex].satellite;
-                let rasterName = `scene_${data[dataIndex].key}`;
-                let pgSchema = `scenes`;
-
-                data[dataIndex].key = rasterName;
-                outputData.push(data[dataIndex]);
-
-                if(!replaceExisting && !layersMissingInGeoserver.includes(rasterName)) continue;
-
-                await this.generateGeotiff(
-                    geoServerImporter,
-                    geotiffGenerator,
-                    rasterName,
-                    pgSchema,
-                    rasterType,
-                    true,
-                    false,
-                    replaceExisting
-                );
-            }
-            return outputData;
-        });
-    };
-
-    /**
-     * Generate geotiff and propagete it to geoserver
-     */
-    async generateGeotiff(geoserverImporter, geotiffGenerator, rasterName, pgSchema, rasterType, useReclass, useColors, replaceExisting) {
-        console.log(`#### SnowPortal: generateGeotiff`, rasterName);
-        return geotiffGenerator.exportPgRasterAsGeotiff(
-            rasterName,
-            pgSchema,
-            config.snow.paths.scenesGeotiffStoragePath,
-            useColors ? config.snow.rasters.colorMap[rasterType] : null,
-            useReclass ? config.snow.rasters.reclass[rasterType] : null
-        ).then(result => {
-            let layerObject = {
-                customName: rasterName,
-                systemName: rasterName,
-                file: `${config.snow.paths.scenesGeotiffStoragePath}/${rasterName}.tiff`,
-                type: "raster"
-            };
-            return geoserverImporter.importLayer(layerObject, replaceExisting);
         });
     }
 
