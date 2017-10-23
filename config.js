@@ -200,8 +200,9 @@ module.exports = {
     snow: {
         cores: 6,
         paths: {
-            scenesGeotiffStoragePath: "/tmp",
-            compositesGeotiffStoragePath: "/tmp"
+            scenesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/scenes",
+            compositesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/composites",
+            packagesForDownloadPath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/downloads"
         },
         rasters: {
             replaceExisting: true,
