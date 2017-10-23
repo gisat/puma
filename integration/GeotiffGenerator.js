@@ -114,7 +114,7 @@ class GeotiffGenerator {
             let layerObject = {
                 customName: rasterName,
                 systemName: rasterName,
-                file: `${config.snow.paths.scenesGeotiffStoragePath}/${rasterName}.tiff`,
+                file: `${outputDirecotry}/${rasterName}.tiff`,
                 type: "raster"
             };
             return geoserverImporter.importLayer(layerObject, replaceExisting);
