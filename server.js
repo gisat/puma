@@ -40,6 +40,15 @@ var pool = new PgPool({
     port: config.pgDataPort
 });
 
+// Temporary pool for the last steps in migration away from Geonode.
+let geonodePool = new PgPool({
+    user: config.pgDataUser,
+    database: 'geonode',
+    password: config.pgDataPassword,
+    host: config.pgDataHost,
+    port: config.pgDataPort
+});
+
 var app;
 // TODO: Move to the API instead of public.
 function initServer(err) {
@@ -137,7 +146,7 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 }).then(()=>{
     return new AddCustomInfoToWms(config.postgreSqlSchema).run();
 }).then(()=>{
-    return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
+    return new MigrateAwayFromGeonode(config.postgreSqlSchema, geonodePool).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

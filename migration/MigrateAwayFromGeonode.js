@@ -1,27 +1,18 @@
-let superagent = require('superagent');
-let config = require('../config');
-
 let Migration = require('./Migration');
 
 class MigrateAwayFromGeonode extends Migration{
-    constructor(schema) {
+    constructor(schema, geonodePool) {
         super('MigrateAwayFromGeonode');
 
         this._schema = schema;
+        this._geonodePool = geonodePool;
     }
 
     process(mongo, pool) {
-        // Load the information from the geonode db typename from layers_layer
+        return this._geonodePool.query(`SELECT name, typename FROM layers_layer`).then(result => {
+            let query = result.rows.map(row => `INSERT INTO ${this._schema}.layers (name, path) VALUES ('${row.name}', '${row.typename}');`).join(' ');
 
-        return superagent.get(config.geonodeUrl + 'layers/acls').then(result => {
-            let promise = Promise.resolve(null);
-            result.ro.forEach(layer => {
-                promise = promise.then(() => {
-                    return pool.query(`INSERT INTO ${this._schema}.layers (name, path) VALUES ('${layer}', '${layer}')`);
-                })
-            });
-
-            return promise;
+            return pool.query(query);
         });
     }
 }
