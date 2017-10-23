@@ -40,15 +40,6 @@ var pool = new PgPool({
     port: config.pgDataPort
 });
 
-// Temporary pool for the last steps in migration away from Geonode.
-let geonodePool = new PgPool({
-    user: config.pgDataUser,
-    database: 'geonode',
-    password: config.pgDataPassword,
-    host: config.pgDataHost,
-    port: config.pgDataPort
-});
-
 var app;
 // TODO: Move to the API instead of public.
 function initServer(err) {
