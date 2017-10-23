@@ -137,7 +137,7 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 }).then(()=>{
     return new AddCustomInfoToWms(config.postgreSqlSchema).run();
 }).then(()=>{
-    return new MigrateAwayFromGeonode(config.postgreSqlSchema, geonodePool).run();
+    return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
