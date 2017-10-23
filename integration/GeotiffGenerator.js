@@ -27,8 +27,6 @@ class GeotiffGenerator {
                 throw new Error(`Missing path to destination folder!`);
             }
         }).then(() => {
-            return this._pgLongPool.pool().query(`SET postgis.gdal_enabled_drivers = 'ENABLE_ALL';`);
-        }).then(() => {
             let rast = `rast`;
             if (reclass) {
                 rast = `ST_Reclass(${rast}, '${reclass.reclassexpr}', '${reclass.pixelType}')`;
