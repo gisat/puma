@@ -63,10 +63,10 @@ class GeoServerImporter {
             .then(response => {
                 let importerResponse = response.body.import;
                 let importUrl = importerResponse.href;
-                let importTasks = importerResponse.tasks;
+                let importTasks = importerResponse.hasOwnProperty('tasks') ? importerResponse.tasks : [];
 
                 if (!importTasks.length) {
-                    throw new Error(importerResponse.href);
+                    throw new Error(importerResponse);
                 }
 
                 let allReady = true;
