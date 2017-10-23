@@ -1,7 +1,6 @@
 require('newrelic');
 
 var express = require('express');
-var app = express();
 var conn = require('./common/conn');
 var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');

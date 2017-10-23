@@ -1,6 +1,7 @@
 let config = require('../config');
 
 let Migration = require('./Migration');
+let PgPool = require('../postgresql/PgPool');
 
 class MigrateAwayFromGeonode extends Migration{
     constructor(schema) {
