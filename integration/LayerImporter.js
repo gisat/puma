@@ -100,7 +100,7 @@ class LayerImporter {
         }).then(() => {
             logger.info('LayerImporter#importLayerWithoutMapping. RasterToPgsql Finished');
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
-            return this.storeLayerMetadata(this._currentImportTask.layer.systemName, inputs.metadata, inputs.user.id);
+            return this.storeLayerMetadata(this._currentImportTask.layer.systemName, inputs.user.id);
         }).then(() => {
             logger.info('LayerImporter#importLayerWithoutMapping. Layer metadata stored');
             this._currentImportTask.progress = 100;
