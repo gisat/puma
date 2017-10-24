@@ -164,11 +164,9 @@ function wms(params, req, res, callback) {
 	if (useFirst && jsid) {
 		headers['Cookie'] = 'JSESSIONID='+jsid;
 	}
-	if (!useFirst) {
-		headers['Authorization'] = auth;
-		//console.log(new Date())
-	}
-	if (method=='GET') {
+
+	headers['Authorization'] = auth;
+    if (method=='GET') {
 		var queryParams = '?'+querystring.stringify(params);
 		path += queryParams;
 	}else{
