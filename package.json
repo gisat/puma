@@ -1,7 +1,7 @@
 {
   "name": "PANTHER",
   "description": "PANTHER platform",
-  "version": "2.1.0",
+  "version": "2.3.0",
   "private": true,
   "repository": {
     "type": "git",
