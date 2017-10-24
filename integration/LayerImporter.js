@@ -189,7 +189,6 @@ class LayerImporter {
             }
         }).then(() => {
             logger.info('LayerImporter#importLayerWithoutStatistics. RasterToPgsql Finished');
-            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.layer.customName = inputs.customName;
             return this.storeLayerMetadata(this._currentImportTask.layer, inputs.user.id);
@@ -268,7 +267,6 @@ class LayerImporter {
             return this.updatePgViewWithPerformedAnalysisMongoLayerReferences(this._currentImportTask, this._mongo, this._pgPool);
         }).then(() => {
             logger.info('LayerImporter#importLayerWithoutStatistics. RasterToPgsql Finished');
-            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.layer.customName = inputs.customName;
             return this.storeLayerMetadata(this._currentImportTask.layer, inputs.user.id);
