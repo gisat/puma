@@ -122,12 +122,12 @@ class LayerImporter {
      * @param userId {Number} Id of the current user.
      * @returns {*}
      */
-    storeLayerMetadata(path, metadata, userId) {
+    storeLayerMetadata(path, userId) {
         // TODO: Move recognition of the type elsewhere.
         if(path.indexOf(':') === -1) {
             path = 'geonode:' + path;
         }
-        return this._pgLayers.add(metadata.name, path, userId, metadata.author, metadata.abstract, metadata.title, metadata.timeExtentFrom, metadata.timeExtentTo, metadata.contactEmail, metadata.organization).then(layer => {
+        return this._pgLayers.add(path, path, userId).then(layer => {
             return Promise.all([
                 this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.DELETE),
                 this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.READ),
