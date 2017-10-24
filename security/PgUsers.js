@@ -32,7 +32,8 @@ class PgUsers {
               WHERE permissions.resource_type = 'dataset'
                     OR permissions.resource_type = 'location'
                     OR permissions.resource_type = 'topic'
-                    OR permissions.resource_type = 'layer_wms';`).then(result => {
+                    OR permissions.resource_type = 'layer_wms'
+                    OR permissions.resource_type is null;`).then(result => {
             let groupped = _.groupBy(result.rows, 'id');
 
             return Object.keys(groupped).map(userId => {

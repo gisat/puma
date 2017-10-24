@@ -34,6 +34,7 @@ let LayerWmsController = require('../layers/wms/LayerWmsController');
 let WpsController = require('../integration/WpsController');
 let GeoServerLayersController = require('../layers/geoserver/GeoServerLayersController');
 let AggregatedAnalyticalUnitsController = require('../data/AggregatedAnalyticalUnitsController');
+let SharingController = require('../security/SharingController');
 
 var LodController = require('../linked_open_data/LodController');
 
@@ -71,48 +72,50 @@ module.exports = function(app) {
 			port: config.pgDataPortRemote
 		});
 	}
+	let mongo = conn.getMongoDb();
 	new DatabaseSchema(pool, config.postgreSqlSchema).create();
 
 	new StyleController(app, pool, config.postgreSqlSchema);
 	new AnalysisController(app, pool);
-	new AnalyticalUnitsController(app, pool, conn.getMongoDb());
+	new AnalyticalUnitsController(app, pool, mongo);
 	new AreaTemplateController(app, pool);
 	if(poolRemote) {
 		new ExportController(app, poolRemote);
 	} else {
 		new ExportController(app, pool);
 	}
-	new AttributeController(app, pool, poolRemote, conn.getMongoDb(), 'views');
+	new AttributeController(app, pool, poolRemote, mongo, 'views');
 	new LayerGeonodeController(app, pool);
-	new LayerWmsController(app, pool, conn.getMongoDb());
+	new LayerWmsController(app, pool, mongo);
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
 	new DataViewController(app, pool);
 	new CustomFeaturesController(app, pool);
 	new LayerGroupController(app, pool);
-	new LayerRefController(app, pool, conn.getMongoDb());
+	new LayerRefController(app, pool, mongo);
 	new LocationController(app, pool);
 	new LoginController(app, pool);
 	new PerformedAnalysisController(app, pool);
 	new ThemeController(app, pool);
 	new TopicController(app, pool);
-	new VisualizationController(app, pool, conn.getMongoDb());
+	new VisualizationController(app, pool, mongo);
 	new YearController(app, pool);
-	new IntegrationController(app, pool, conn.getMongoDb(),'public','views',config.postgreSqlSchema);
+	new IntegrationController(app, pool, mongo,'public','views',config.postgreSqlSchema);
 
 	new PrintController(app);
 	new LodController(app, pool);
-	new PermissionController(app, pool, config.postgreSqlSchema, conn.getMongoDb());
+	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
 	new GroupController(app, pool);
-	new PgAnalysisController(app, pool, conn.getMongoDb(), config.postgreSqlSchema);
-	new AreaController(app, pool, conn.getMongoDb());
+	new SharingController(app, pool, config.postgreSqlSchema, mongo);
+	new PgAnalysisController(app, pool, mongo, config.postgreSqlSchema);
+	new AreaController(app, pool, mongo);
 
-	new WpsController(app, pool, conn.getMongoDb(), null);
+	new WpsController(app, pool, mongo, null);
 
-	new LayerImporterController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
+	new LayerImporterController(app, mongo, pool, config.postgreSqlSchema);
 	// Schema containing the imported data for Geoserver and schema for created views.
-	new GeoServerLayersController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
+	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
