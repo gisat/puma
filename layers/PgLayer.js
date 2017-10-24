@@ -91,6 +91,10 @@ class PgLayer {
 		}
 		return config.workspaceSchemaMap[workspace] + '.\"' + layerName + '\"';
 	}
+
+    static type() {
+        return 'layer';
+    }
 }
 
 module.exports = PgLayer;
