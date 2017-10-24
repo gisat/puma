@@ -32,16 +32,22 @@ let PgLayerViews = require('../layers/PgLayerViews');
 let RasterToPGSQL = require('../integration/RasterToPGSQL');
 let PgPermissions = require('../security/PgPermissions');
 let LayerAnalysis = require('../analysis/spatial/LayerAnalysis');
-let Permissions = require('../security/Permission');
+let Permission = require('../security/Permission');
 
 let DBFEditor = require('./DBFEditor');
+let PgLayer = require('../layers/PgLayer');
+let PgLayers = require('../layers/PgLayers');
 
 class LayerImporter {
-    constructor(pgPool, mongo, importerTasks) {
+    constructor(pgPool, mongo, importerTasks, schema) {
         this._pgPool = pgPool;
         this._mongo = mongo;
         this._importerTasks = importerTasks;
         this._currentImportTask = {};
+        this._datastore = config.geoServerDataStore;
+
+        this._pgLayers = new PgLayers(pgPool, mongo, schema);
+        this._pgPermissions = new PgPermissions(pgPool, schema);
     }
 
     /**
@@ -50,6 +56,84 @@ class LayerImporter {
      */
     getCurrentImporterTask() {
         return this._currentImportTask;
+    }
+
+    /**
+     * Execute import of the layer withou executing the statistical part as well as
+     * @param inputs
+     */
+    importLayerWithoutMapping(inputs) {
+        logger.info('LayerImporter#importLayerWithoutMapping');
+
+        this._currentImportTask = this._importerTasks.createNewImportTask();
+
+        this._currentImportTask.inputs = inputs;
+
+        let totalImportSteps = 5, currentImportStep = 0;
+        return this.prepareLayerFilesForImport(this._currentImportTask).then((layer) => {
+            logger.info('LayerImporter#importLayerWithoutMapping. Layer', layer);
+            this._currentImportTask.layer = layer;
+            this._currentImportTask.layer.customName = inputs.customName;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            return this.getPublicWorkspaceSchema();
+        }).then((publicWorkspaceSchema) => {
+            logger.info('LayerImporter#importLayerWithoutMapping. Workspace schema retrieved', publicWorkspaceSchema);
+            this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
+            this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            let geoServerImporter = new GeoServerImporter(
+                config.geoserverHost + config.geoserverPath,
+                config.geoserverUsername,
+                config.geoserverPassword,
+                publicWorkspaceSchema.workspace,
+                this._datastore
+            );
+            return geoServerImporter.importLayer(this._currentImportTask.layer);
+        }).then((geoserverImportTaskResults) => {
+            logger.info('LayerImporter#importLayerWithoutMapping. Geoserver imported', geoserverImportTaskResults);
+            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            if (this._currentImportTask.layer.type === "raster") {
+                let rasterToPgsql = new RasterToPGSQL(config.pgDataHost, config.pgDataUser, config.pgDataPassword, config.pgDataDatabase);
+                return rasterToPgsql.import(this._currentImportTask.layer);
+            }
+        }).then(() => {
+            logger.info('LayerImporter#importLayerWithoutMapping. RasterToPgsql Finished');
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            return this.storeLayerMetadata(this._currentImportTask.layer.systemName, inputs.metadata, inputs.user.id);
+        }).then(() => {
+            logger.info('LayerImporter#importLayerWithoutMapping. Layer metadata stored');
+            this._currentImportTask.progress = 100;
+            this._currentImportTask.status = "done";
+            this._currentImportTask.ended = new Date();
+            logger.info(`LayerImporter#importLayerWithoutMapping #### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
+        }).catch(error => {
+            this._currentImportTask.status = "error";
+            this._currentImportTask.ended = new Date();
+            this._currentImportTask.message = error.message;
+            logger.error(`LayerImporter#importLayerWithoutMapping`, error);
+        })
+    }
+
+    /**
+     * It stores metadata about the layer in the database.
+     * @param path
+     * @param metadata
+     * @param userId {Number} Id of the current user.
+     * @returns {*}
+     */
+    storeLayerMetadata(path, metadata, userId) {
+        // TODO: Move recognition of the type elsewhere.
+        if(path.indexOf(':') === -1) {
+            path = 'geonode:' + path;
+        }
+        return this._pgLayers.add(metadata.name, path, userId, metadata.author, metadata.abstract, metadata.title, metadata.timeExtentFrom, metadata.timeExtentTo, metadata.contactEmail, metadata.organization).then(layer => {
+            return Promise.all([
+                this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.DELETE),
+                this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.READ),
+                this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.UPDATE)
+            ]);
+        });
     }
 
 	/**
@@ -61,52 +145,66 @@ class LayerImporter {
 
 		this._currentImportTask.inputs = inputs;
 
+		let totalImportSteps = 8, currentImportStep = 0, mongoLayerReferences;
 		this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
             logger.info('LayerImporter#importLayerWithoutStatistics. Metadata retrieved.');
 			this._currentImportTask.mongoScopes = pMongoScopes;
-			this._currentImportTask.progress = 14;
+			this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
 			return this.prepareLayerFilesForImport(this._currentImportTask);
 		}).then((layer) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Files prepared', layer);
 			this._currentImportTask.layer = layer;
-			this._currentImportTask.progress = 28;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
 			return this.getPublicWorkspaceSchema();
 		}).then((publicWorkspaceSchema) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Workspace schema retrieved', publicWorkspaceSchema);
 			this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
 			this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
-			this._currentImportTask.progress = 42;
-			// todo get datastore from configuration
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
 			let geoServerImporter = new GeoServerImporter(
 				config.geoserverHost + config.geoserverPath,
 				config.geoserverUsername,
 				config.geoserverPassword,
 				publicWorkspaceSchema.workspace,
-				"datastore"
+				this._datastore
 			);
 			return geoServerImporter.importLayer(this._currentImportTask.layer);
 		}).then((geoserverImportTaskResults) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Geoserver imported', geoserverImportTaskResults);
-            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
-            this._currentImportTask.progress = 70;
+			this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
 			return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
 		}).then((mongoMetadata) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Metadata prepared', mongoMetadata);
-			this._currentImportTask.progress = 84;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
 			this._currentImportTask.mongoMetadata = mongoMetadata;
 			return this.createMongoLayerReferencesAndUpdateTheme(this._currentImportTask, this._mongo);
-		}).then((mongoLayerReferences) => {
-			logger.info('LayerImporter#importLayerWithoutStatistics. Creted layerrefs', mongoLayerReferences);
+		}).then((pMongoLayerReferences) => {
+            logger.info('LayerImporter#importLayerWithoutStatistics. Import into the database.', mongoLayerReferences);
+            mongoLayerReferences = pMongoLayerReferences;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            if (this._currentImportTask.layer.type === "raster") {
+                let rasterToPgsql = new RasterToPGSQL(config.pgDataHost, config.pgDataUser, config.pgDataPassword, config.pgDataDatabase);
+                return rasterToPgsql.import(this._currentImportTask.layer);
+            }
+        }).then(() => {
+            logger.info('LayerImporter#importLayerWithoutStatistics. RasterToPgsql Finished');
+            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            this._currentImportTask.layer.customName = inputs.customName;
+            return this.storeLayerMetadata(this._currentImportTask.layer, inputs.user.id);
+        }).then(() => {
+			logger.info('LayerImporter#importLayerWithoutStatistics. Created layerrefs', mongoLayerReferences);
 			this._currentImportTask.progress = 100;
 			this._currentImportTask.mongoLayerReferences = mongoLayerReferences;
 			this._currentImportTask.status = "done";
 			this._currentImportTask.ended = new Date();
-			console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
+			logger.info(`LayerImporter#importLayerWithoutStatistics #### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
 		}).catch(error => {
 			this._currentImportTask.status = "error";
 			this._currentImportTask.ended = new Date();
 			this._currentImportTask.message = error.message;
-			console.log(`#9`, error);
+			logger.error(`LayerImporter#importLayerWithoutStatistics`, error);
 		})
     }
 
@@ -120,7 +218,7 @@ class LayerImporter {
         this._currentImportTask.inputs = inputs;
 
         let currentImportStep = 0;
-        let totalImportSteps = 11;
+        let totalImportSteps = 12;
         
         this.getBasicMetadataObjects(this._currentImportTask.inputs, this._mongo, this._pgPool).then((pMongoScopes) => {
             this._currentImportTask.mongoScopes = pMongoScopes;
@@ -135,16 +233,15 @@ class LayerImporter {
             this._currentImportTask.publicWorkspace = publicWorkspaceSchema.workspace;
             this._currentImportTask.publicSchema = publicWorkspaceSchema.schema;
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
-            // todo get datastore from configuration
             let geoServerImporter = new GeoServerImporter(
                 config.geoserverHost + config.geoserverPath,
                 config.geoserverUsername,
                 config.geoserverPassword,
                 publicWorkspaceSchema.workspace,
-                config.geoServerDataStore
+                this._datastore
             );
             return geoServerImporter.importLayer(this._currentImportTask.layer);
-        }).then(geoserverImportTaskResults => {
+        }).then((geoserverImportTaskResults) => {
             this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             if (this._currentImportTask.layer.type === "raster") {
@@ -170,6 +267,12 @@ class LayerImporter {
             this._currentImportTask.mongoLayerReferences = mongoLayerReferences;
             return this.updatePgViewWithPerformedAnalysisMongoLayerReferences(this._currentImportTask, this._mongo, this._pgPool);
         }).then(() => {
+            logger.info('LayerImporter#importLayerWithoutStatistics. RasterToPgsql Finished');
+            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+            this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
+            this._currentImportTask.layer.customName = inputs.customName;
+            return this.storeLayerMetadata(this._currentImportTask.layer, inputs.user.id);
+        }).then(() => {
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             return this.createMongoDataView(this._currentImportTask, this._mongo);
         }).then((mongoDataView) => {
@@ -177,12 +280,12 @@ class LayerImporter {
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.status = "done";
             this._currentImportTask.ended = new Date();
-            console.log(`#### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
+            logger.info(`LayerImporter#importLayer #### IMPORTED LAYER ${this._currentImportTask.layer.systemName} ####`);
         }).catch(error => {
             this._currentImportTask.status = "error";
             this._currentImportTask.ended = new Date();
             this._currentImportTask.message = error.message;
-            console.log(`#9`, error);
+            logger.error(`LayerImporter#importLayer`, error);
         });
     }
 
@@ -202,7 +305,7 @@ class LayerImporter {
             pgPermissions.forUser(user.id).then(results => {
                 let filter = {
                     resourceType: MongoScope.collectionName(),
-                    permission: Permissions.UPDATE,
+                    permission: Permission.UPDATE,
                 };
                 if (scopeIdFilter) {
                     filter.resourceId = String(scopeIdFilter);
@@ -506,16 +609,16 @@ class LayerImporter {
             }).then((result) => {
                 if (!result.insertedCount) reject(new Error(`topic was not created`));
                 return Promise.all([
-                    pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permissions.READ),
-                    pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permissions.UPDATE),
-                    pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permissions.DELETE)
+                    pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permission.READ),
+                    pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permission.UPDATE),
+                    pgPermissions.add(user.id, MongoTopic.collectionName(), topic._id, Permission.DELETE)
                 ]);
             }).then(() => {
                 return pgPermissions.forUser(user.id)
             }).then((userPermissions) => {
                 let promises = [];
                 _.each(userPermissions, userPermission => {
-                    if (userPermission.resourceType === MongoLayerGroup.collectionName() && userPermission.permission === Permissions.UPDATE) {
+                    if (userPermission.resourceType === MongoLayerGroup.collectionName() && userPermission.permission === Permission.UPDATE) {
                         promises.push(
                             new FilteredMongoLayerGroups({_id: Number(userPermission.resourceId)}, _mongo).json().then(mongoLayerGroups => {
                                 if (mongoLayerGroups.length) {
@@ -548,9 +651,9 @@ class LayerImporter {
                     return mongoLayerGroups.add(layerGroup).then((result) => {
                         if (!result.insertedCount) reject(new Error(`layer group was not created`));
                         return Promise.all([
-                            pgPermissions.add(user.id, MongoLayerGroup.collectionName(), layerGroup._id, Permissions.READ),
-                            pgPermissions.add(user.id, MongoLayerGroup.collectionName(), layerGroup._id, Permissions.UPDATE),
-                            pgPermissions.add(user.id, MongoLayerGroup.collectionName(), layerGroup._id, Permissions.DELETE)
+                            pgPermissions.add(user.id, MongoLayerGroup.collectionName(), layerGroup._id, Permission.READ),
+                            pgPermissions.add(user.id, MongoLayerGroup.collectionName(), layerGroup._id, Permission.UPDATE),
+                            pgPermissions.add(user.id, MongoLayerGroup.collectionName(), layerGroup._id, Permission.DELETE)
                         ]);
                     });
                 }
@@ -570,7 +673,6 @@ class LayerImporter {
                         });
                     });
                 } else if (layer.type === "vector") {
-                    console.log('ImportTaskResults: ', geoserverImportTaskResults);
                     _.each(attributeTypes, attributeType => {
                         _.each(geoserverImportTaskResults[0].attributes, attribute => {
                             if (this.isVectorLayerAttributeNumeric(attribute)) {
@@ -595,9 +697,9 @@ class LayerImporter {
                 let mongoAttributes = new MongoAttributes(_mongo);
                 _.each(attributes, attribute => {
                     promises.push(mongoAttributes.add(attribute));
-                    promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permissions.READ));
-                    promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permissions.UPDATE));
-                    promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permissions.DELETE));
+                    promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permission.READ));
+                    promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permission.UPDATE));
+                    promises.push(pgPermissions.add(user.id, MongoAttribute.collectionName(), attribute._id, Permission.DELETE));
                 });
 
                 return Promise.all(promises).then((results) => {
@@ -714,9 +816,9 @@ class LayerImporter {
 
             Promise.all(_.map(layerReferences, layerReference => {
                 layerReferencesPermissions.concat([
-                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.READ),
-                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.UPDATE),
-                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permissions.DELETE)
+                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permission.READ),
+                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permission.UPDATE),
+                    pgPermissions.add(user.id, MongoLayerReference.collectionName(), layerReference._id, Permission.DELETE)
                 ]);
                 return mongoLayerReferences.add(layerReference);
             })).then(() => {
