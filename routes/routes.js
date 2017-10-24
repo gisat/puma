@@ -110,7 +110,7 @@ module.exports = function(app) {
 
 	new WpsController(app, pool, conn.getMongoDb(), null);
 
-	new LayerImporterController(app, conn.getMongoDb(), pool);
+	new LayerImporterController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, conn.getMongoDb(), pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
