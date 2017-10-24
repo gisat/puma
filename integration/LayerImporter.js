@@ -87,7 +87,8 @@ class LayerImporter {
 			return geoServerImporter.importLayer(this._currentImportTask.layer);
 		}).then((geoserverImportTaskResults) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Geoserver imported', geoserverImportTaskResults);
-			this._currentImportTask.progress = 70;
+            this._currentImportTask.geoserverImportTaskResults = geoserverImportTaskResults;
+            this._currentImportTask.progress = 70;
 			return this.prepareAndGetMetadata(this._currentImportTask, this._mongo, this._pgPool);
 		}).then((mongoMetadata) => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Metadata prepared', mongoMetadata);
