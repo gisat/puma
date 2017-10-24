@@ -191,7 +191,7 @@ class LayerImporter {
             logger.info('LayerImporter#importLayerWithoutStatistics. RasterToPgsql Finished');
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.layer.customName = inputs.customName;
-            return this.storeLayerMetadata(this._currentImportTask.layer, inputs.user.id);
+            return this.storeLayerMetadata(this._currentImportTask.layer.systemName, inputs.user.id);
         }).then(() => {
 			logger.info('LayerImporter#importLayerWithoutStatistics. Created layerrefs', mongoLayerReferences);
 			this._currentImportTask.progress = 100;
@@ -269,7 +269,7 @@ class LayerImporter {
             logger.info('LayerImporter#importLayerWithoutStatistics. RasterToPgsql Finished');
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             this._currentImportTask.layer.customName = inputs.customName;
-            return this.storeLayerMetadata(this._currentImportTask.layer, inputs.user.id);
+            return this.storeLayerMetadata(this._currentImportTask.layer.systemName, inputs.user.id);
         }).then(() => {
             this._currentImportTask.progress = this.getPercentage(++currentImportStep, totalImportSteps);
             return this.createMongoDataView(this._currentImportTask, this._mongo);
