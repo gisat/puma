@@ -33,11 +33,11 @@ class SsoAuthentication {
                 if(!user) {
                     return this.pgUsers.add(email, username).then(user => {
                         request.session.userId = user.id;
-                        request.session.userName = username;
+                        request.session.username = username;
                     });
                 } else {
                     request.session.userId = user.id;
-                    request.session.userName = username;
+                    request.session.username = username;
                 }
             });
         } else {
