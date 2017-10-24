@@ -12,21 +12,23 @@ class ZipPackageCreator {
     }
 
     addFilesToZipPackage(filePaths, useFullPaths) {
-        for (let filePath of filePaths) {
-            let file = useFullPaths ? filePath : filePath.split('/').pop();
-            this._packageObject.file(
-                file,
-                new Promise((resolve, reject) => {
-                    fs.readFile(filePath, (error, data) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve(data);
-                        }
-                    });
-                })
-            );
-        }
+        return Promise.resolve().then(() => {
+            for (let filePath of filePaths) {
+                let file = useFullPaths ? filePath : filePath.split('/').pop();
+                this._packageObject.file(
+                    file,
+                    new Promise((resolve, reject) => {
+                        fs.readFile(filePath, (error, data) => {
+                            if (error) {
+                                reject(error);
+                            } else {
+                                resolve(data);
+                            }
+                        });
+                    })
+                );
+            }
+        });
     }
 
     storeZipPackageToFs() {
