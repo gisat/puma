@@ -569,6 +569,7 @@ class LayerImporter {
                         });
                     });
                 } else if (layer.type === "vector") {
+                    console.log('ImportTaskResults: ', geoserverImportTaskResults);
                     _.each(attributeTypes, attributeType => {
                         _.each(geoserverImportTaskResults[0].attributes, attribute => {
                             if (this.isVectorLayerAttributeNumeric(attribute)) {
