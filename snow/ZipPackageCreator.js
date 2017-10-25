@@ -12,21 +12,10 @@ class ZipPackageCreator {
     }
 
     addFilesToZipPackage(filePaths, useFullPaths) {
-        return Promise.resolve().then(() => {
+        return Promise.resolve().then(async () => {
             for (let filePath of filePaths) {
                 let file = useFullPaths ? filePath : filePath.split('/').pop();
-                this._packageObject.file(
-                    file,
-                    new Promise((resolve, reject) => {
-                        fs.readFile(filePath, (error, data) => {
-                            if (error) {
-                                reject(error);
-                            } else {
-                                resolve(data);
-                            }
-                        });
-                    })
-                );
+                this._packageObject.file(file, fs.readFileSync(filePath));
             }
         });
     }
@@ -37,11 +26,25 @@ class ZipPackageCreator {
                 .generateNodeStream({type: 'nodebuffer', streamFiles: true})
                 .pipe(fs.createWriteStream(this._packagePath))
                 .on('finish', () => {
-                    resolve(`Created zip package at ${this._packagePath}`);
-                })
-                .on('error', (error) => {
-                    reject(error);
+                    resolve(this._packagePath);
                 });
+        });
+    }
+
+    getMissingPaths(pathList) {
+        return Promise.resolve().then(async () => {
+                let missingPaths = [];
+            for (let path of pathList) {
+                    await new Promise((resolve, reject) => {
+                    fs.access(path, (error) => {
+                        if (error) {
+                            missingPaths.push(path);
+                        }
+                        resolve();
+                    });
+                });
+            }
+            return missingPaths;
         });
     }
 }
