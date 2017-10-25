@@ -16,6 +16,8 @@ var logger = require('./common/Logger').applicationWideLogger;
 var config = require('./config');
 
 let DirectoryCreator = require('./snow/DirectoryCreator');
+let ProcessManager = require(`./snow/ProcessManager`);
+let FileSystemManager = require(`./snow/FileSystemManager`);
 
 process.on('uncaughtException', function (err) {
     logger.error("Caught exception: ", err);
@@ -152,6 +154,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
     logger.info('Finished Migrations.');
 }).then(() => {
     prepareSnowDirecotries();
+}).then(() => {
+    new ProcessManager(pool).initProcessPgTable();
 }).then(() => {
     app = express();
     async.series([
