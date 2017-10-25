@@ -20,6 +20,7 @@ class GeoServerImporter {
     // TODO: Configure the name of the workspace to import into.
     // TODO: Configure the name of the target data store.
     importLayer(layer, replaceExisting) {
+        console.log(`#### importing ${layer.systemName} geotiff to geoserver`);
         let id;
         let vectorDatastore = {
             dataStore: {
@@ -31,8 +32,6 @@ class GeoServerImporter {
             if (layer.type === 'raster') {
                 if (replaceExisting) {
                     return this.removeRasterLayer(layer.systemName);
-                } else if (!replaceExisting) {
-                    throw new Error(`Layer already exists in geoserver!`);
                 }
             }
         }).then(() => {
@@ -118,6 +117,26 @@ class GeoServerImporter {
             });
     }
 
+    async getGeoserverLayers() {
+        return new Promise((resolve, reject) => {
+            request
+                .get(`${this._layersPath}.json`)
+                .set('Content-Type', 'application/json')
+                .auth(this._userName, this._password)
+                .then(response => {
+                    return _.map(response.body.layers.layer, geoserverLayer => {
+                        return geoserverLayer.name;
+                    });
+                })
+                .then((geoserverLayers) => {
+                    resolve(geoserverLayers);
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        });
+    }
+
     async getGeoserverMissingLayers(layerNames) {
         return request
             .get(`${this._layersPath}.json`)
@@ -127,6 +146,10 @@ class GeoServerImporter {
                 return _.reject(response.body.layers.layer, layer => {
                     return layerNames.includes(layer.name);
                 });
+            }).then((missingLayers) => {
+                return _.map(missingLayers, (missingLayer) => {
+                    return missingLayer.name;
+                })
             });
     }
 

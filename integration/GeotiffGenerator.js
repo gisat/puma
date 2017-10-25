@@ -19,6 +19,7 @@ class GeotiffGenerator {
      * @returns {Promise<any> | * | Promise | Promise.<RESULT> | Promise.<TResult>}
      */
     exportPgRasterAsGeotiff(sourceTable, sourceSchema, destinationFolder, colorMap, reclass) {
+        console.log(`#### exporting geotiff from ${sourceSchema}.${sourceTable}`);
         return Promise.resolve().then(() => {
             if (!sourceTable) {
                 throw new Error(`Missing source table name!`);
@@ -72,7 +73,7 @@ class GeotiffGenerator {
             let generatorPromises = [];
             let outputData = [];
 
-            let layersMissingInGeoserver = !replaceExisting ? await geoServerImporter.getGeoserverMissingLayers(_.map(data, layerData => {return layerData.key})) : [];
+            let geoserverLayers = await geoServerImporter.getGeoserverLayers();
 
             for (let dataIndex in data) {
                 if (!data[dataIndex].aoiCoverage) continue;
@@ -83,18 +84,18 @@ class GeotiffGenerator {
 
                 outputData.push(data[dataIndex]);
 
-                if(!replaceExisting && !layersMissingInGeoserver.includes(rasterName)) continue;
-
-                await this.generateGeotiff(
-                    geoServerImporter,
-                    rasterName,
-                    pgSchema,
-                    outputDirectory,
-                    rasterType,
-                    useReclass,
-                    useColors,
-                    replaceExisting
-                );
+                if(!geoserverLayers.includes(rasterName) || replaceExisting) {
+                    await this.generateGeotiff(
+                        geoServerImporter,
+                        rasterName,
+                        pgSchema,
+                        outputDirectory,
+                        rasterType,
+                        useReclass,
+                        useColors,
+                        replaceExisting
+                    );
+                }
             }
             return outputData;
         });
