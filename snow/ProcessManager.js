@@ -72,9 +72,9 @@ class ProcessManager {
         query.push(`'${key}',`);
         query.push(`${owner},`);
         query.push(`'${this.getActualSqlDateTime()}',`);
-        query.push(`'${JSON.stringify(request)}',`);
+        query.push(`'${JSON.stringify(request).replace(/'/g, "\\\"")}',`);
         query.push(`'${uri}',`);
-        query.push(`'${JSON.stringify(other)}'`);
+        query.push(`'${JSON.stringify(other).replace(/'/g, "\\\"")}'`);
         query.push(`);`);
         return this._pgPool.pool().query(query.join(` `)).then(() => {
             return key
@@ -100,7 +100,7 @@ class ProcessManager {
         let query = [];
         query.push(`UPDATE processes`);
         query.push(`SET`);
-        query.push(`result='${JSON.stringify(result)}',`);
+        query.push(`result='${JSON.stringify(result).replace(/'/g, "\\\"")}',`);
         query.push(`ended='${this.getActualSqlDateTime()}'`);
         query.push(`WHERE`);
 
@@ -136,6 +136,8 @@ class ProcessManager {
     }
 
     getProcessKey(owner, request, other) {
+        if (!other) other = {};
+        if (!owner) owner = 'NULL';
         return hash({owner: owner, request: request, other: other});
     }
 }
