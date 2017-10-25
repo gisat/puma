@@ -27,86 +27,80 @@ class GeoServerImporter {
             }
         };
 
-        return request
-            .get(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores.json`)
-            .set('Content-Type', 'application/json')
-            .auth(this._userName, this._password)
-            .then(async response => {
-                if (layer.type === 'raster') {
-                    if (replaceExisting && await this.isLayerExistsInGeoserver(layer.systemName) ) {
-                        this.removeExistingRasterLayer(layer.systemName);
-                    } else if (!replaceExisting) {
-                        throw new Error(`Layer already exists in geoserver!`);
-                    }
+        return Promise.resolve().then(() => {
+            if (layer.type === 'raster') {
+                if (replaceExisting) {
+                    return this.removeRasterLayer(layer.systemName);
+                } else if (!replaceExisting) {
+                    throw new Error(`Layer already exists in geoserver!`);
                 }
-            })
-            .then(() => {
-                return request
-                    .post(this._importPath)
-                    .set('Content-Type', 'application/json')
-                    .auth(this._userName, this._password)
-                    .send({
-                        import: {
-                            targetWorkspace: {
-                                workspace: {
-                                    name: this._workspace
-                                }
-                            },
-                            targetStore: layer.type === "vector" ? vectorDatastore : undefined,
-                            data: {
-                                type: `${layer.hasOwnProperty('direcotry') ? 'directory' : 'file'}`,
-                                [layer.hasOwnProperty('direcotry') ? 'directory' : 'file']: layer.hasOwnProperty('directory') ? layer.directory : layer.file
+            }
+        }).then(() => {
+            return request
+                .post(this._importPath)
+                .set('Content-Type', 'application/json')
+                .auth(this._userName, this._password)
+                .send({
+                    import: {
+                        targetWorkspace: {
+                            workspace: {
+                                name: this._workspace
                             }
+                        },
+                        targetStore: layer.type === "vector" ? vectorDatastore : undefined,
+                        data: {
+                            type: `${layer.hasOwnProperty('direcotry') ? 'directory' : 'file'}`,
+                            [layer.hasOwnProperty('direcotry') ? 'directory' : 'file']: layer.hasOwnProperty('directory') ? layer.directory : layer.file
                         }
-                    })
-            })
-            .then(response => {
-                let importerResponse = response.body.import;
-                let importUrl = importerResponse.href;
-                let importTasks = importerResponse.hasOwnProperty('tasks') ? importerResponse.tasks : [];
-
-                if (!importTasks.length) {
-                    throw new Error(importerResponse);
-                }
-
-                let allReady = true;
-                _.each(importTasks, importTask => {
-                    if (importTask.state !== "READY") {
-                        allReady = !allReady;
                     }
-                });
+                })
+        }).then(response => {
+            let importerResponse = response.body.import;
+            let importUrl = importerResponse.href;
+            let importTasks = importerResponse.hasOwnProperty('tasks') ? importerResponse.tasks : [];
 
-                if (!allReady) {
-                    throw new Error(importerResponse.href);
+            if (!importTasks.length) {
+                throw new Error(importerResponse);
+            }
+
+            let allReady = true;
+            _.each(importTasks, importTask => {
+                if (importTask.state !== "READY") {
+                    allReady = !allReady;
                 }
-
-                return request
-                    .post(importUrl)
-                    .auth(this._userName, this._password)
-                    .then(() => {
-                        return request
-                            .get(importUrl)
-                            .auth(this._userName, this._password)
-                            .then(response => {
-                                let importerResponse = response.body.import;
-                                let importerTasks = importerResponse.tasks;
-                                let taskResults = [];
-                                _.each(importerTasks, task => {
-                                    if (task.state === "ERROR") {
-                                        throw new Error(task.href);
-                                    }
-                                    taskResults.push(
-                                        request
-                                            .get(`${task.href}/layer`)
-                                            .then(response => {
-                                                return response.body.layer;
-                                            })
-                                    );
-                                });
-                                return Promise.all(taskResults);
-                            })
-                    });
             });
+
+            if (!allReady) {
+                throw new Error(importerResponse.href);
+            }
+
+            return request
+                .post(importUrl)
+                .auth(this._userName, this._password)
+                .then(() => {
+                    return request
+                        .get(importUrl)
+                        .auth(this._userName, this._password)
+                        .then(response => {
+                            let importerResponse = response.body.import;
+                            let importerTasks = importerResponse.tasks;
+                            let taskResults = [];
+                            _.each(importerTasks, task => {
+                                if (task.state === "ERROR") {
+                                    throw new Error(task.href);
+                                }
+                                taskResults.push(
+                                    request
+                                        .get(`${task.href}/layer`)
+                                        .then(response => {
+                                            return response.body.layer;
+                                        })
+                                );
+                            });
+                            return Promise.all(taskResults);
+                        })
+                });
+        });
     }
 
     async isLayerExistsInGeoserver(layerName) {
@@ -116,7 +110,7 @@ class GeoServerImporter {
             .auth(this._userName, this._password)
             .then(response => {
                 let existingLayers = _.filter(response.body.layers.layer, {name: layerName});
-                if(existingLayers.length) {
+                if (existingLayers.length) {
                     return true;
                 } else {
                     return false;
@@ -136,18 +130,31 @@ class GeoServerImporter {
             });
     }
 
-    removeExistingRasterLayer(layerName) {
-        return request
-            .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layerName}?recurse=true&purge=all`)
-            .auth(this._userName, this._password)
-            .then(() => {
-                return request
-                    .delete(`${this._geoserverPath}/rest/styles/${this._workspace}_${layerName}`)
-                    .auth(this._userName, this._password)
-                    .catch(error => {
-                        console.log(`#### GeoserverImporter#error: `, error.message);
-                    });
-            });
+    removeRasterLayer(layerName) {
+        console.log(`#### Trying to remove layer ${layerName}`);
+        return Promise.resolve().then(() => {
+            return request
+                .get(`${this._geoserverPath}/rest/layers/${layerName}.json`)
+                .auth(this._userName, this._password)
+                .then(async (response) => {
+                    let layerStyleName = response.body.layer.defaultStyle.name;
+                    await request
+                        .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layerName}?recurse=true&purge=all`)
+                        .auth(this._userName, this._password)
+                        .catch((error) => {
+                            console.log(`#### GeoserverImporter#error: `, error.message);
+                        });
+                    await request
+                        .delete(`${this._geoserverPath}/rest/styles/${layerStyleName}?recurse=true&purge=all`)
+                        .auth(this._userName, this._password)
+                        .catch((error) => {
+                            console.log(`#### GeoserverImporter#error: `, error.message);
+                        });
+                })
+                .catch((error) => {
+                    console.log(`#### GeoserverImporter#error: `, error.message);
+                });
+        });
     }
 }
 
