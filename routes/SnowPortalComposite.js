@@ -8,9 +8,6 @@ let logger = require('../common/Logger').applicationWideLogger;
 
 let config = require('../config');
 
-let GeotiffGenerator = require('../integration/GeotiffGenerator');
-let GeoserverImporter = require('../layers/GeoServerImporter');
-
 let composites = {};
 
 /**
@@ -55,8 +52,6 @@ class SnowPortalComposite {
         // input
         this._pgPool = pgPool;
         this._pgLongRunningPool = pgLongRunningPool;
-        this._geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool);
-        this._geoserverImporter = new GeoserverImporter();
         this._startDay = startDay;
         let completeDateConfiguration = SnowPortalComposite.getCompleteDateConfiguration(this._startDay, endDay, period);
         this._endDay = completeDateConfiguration.endDay;
@@ -402,16 +397,6 @@ class SnowPortalComposite {
                     reject(new Error(logger.error(`SnowPortalComposite#_create ------ Error. Creating composite, saving metadata Error: ${error.message} | ${error}`)));
                 });
             });
-        }).then(() => {
-            /**
-             * Export geotiff and propagate it to geoserver
-             */
-            return this._geotiffGenerator.prepareGeotiffs(
-                [{key: this._key, aoiCoverage: 1}],
-                config.snow.rasters.replaceExisting,
-                `composites`,
-                config.snow.paths.compositesGeotiffStoragePath
-            );
         }).then(() => {
             /**
              * Resolve composite metadata

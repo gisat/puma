@@ -27,12 +27,16 @@ let SnowPortalComposite = require('./SnowPortalComposite');
 
 let GeotiffGenerator = require('../integration/GeotiffGenerator');
 
+let FileSystemManager = require(`../snow/FileSystemManager`);
+
 let processes = {};
 
 class SnowPortal {
     constructor(app, pool, longRunningPool) {
         this._pgPool = pool;
         this._pgLongRunningPool = longRunningPool;
+        this._geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool);
+        this._fileSystemManager = new FileSystemManager(this._pgPool);
 
         this.initTables();
 
@@ -42,9 +46,21 @@ class SnowPortal {
 
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
 
+        app.post(`/rest/snowportal/download`, this.download.bind(this));
+
         this._area = 'europe'; // TODO set dynamicaly?
 
         this._visibleClasses = ["S", "NS", "C", "NC"];
+    }
+
+    download(request, response) {
+        this._fileSystemManager.publishPackageWithSnowGeoTiffs(request.body, request.url)
+            .then((fsmResponse) => {
+                response.status(fsmResponse.success ? 200 : 500).send(fsmResponse);
+            })
+            .catch((error) => {
+                response.status(500).send({message: error.message, success: false});
+            });
     }
 
     getCompositesMetadata(request, response) {
@@ -347,13 +363,31 @@ class SnowPortal {
             return Promise.all(compositeStats);
 
         }).then(data => {
-            let dataWithoutNulls = _.compact(data);
-
+            /**
+             * Export geotiff and propagate it to geoserver
+             */
+            return new Promise(async (resolve, reject) => {
+                let dataWithoutNulls = _.compact(data);
+                for (let compositeData of dataWithoutNulls) {
+                    await this._geotiffGenerator.prepareGeotiffs(
+                        [{key: compositeData.key, aoiCoverage: 1}],
+                        config.snow.rasters.replaceExisting,
+                        `composites`,
+                        config.snow.paths.compositesGeotiffStoragePath,
+                        false,
+                        false
+                    ).catch(error => {
+                        reject(error);
+                    });
+                }
+                resolve(dataWithoutNulls);
+            });
+        }).then(data => {
             logger.info(`SnowPortal#getComposites ------ get process data resolved!`);
             // console.log('data: ', dataWithoutNulls);
 
             processes[requestHash].ended = Date.now();
-            processes[requestHash].data = dataWithoutNulls;
+            processes[requestHash].data = data;
         }).catch(error => {
             logger.error(`SnowPortal#getComposites ------ get process data FAILED: ${error.message || error}`);
             processes[requestHash].ended = Date.now();
