@@ -27,7 +27,7 @@ class Filter {
     sql(requestAttributes, baseLayers, mongoAttributes) {
         let queries = baseLayers
 			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')},
-                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id} WHERE 
+                        ST_AsText(ST_Transform("the_geom", 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id} WHERE 
                         ${this._generateWhere(baseLayer.queriedColumns, mongoAttributes, requestAttributes).join(' AND ')}`);
 
         return new PgSequentialQuery(this._pgPool).query(queries);
