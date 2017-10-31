@@ -5,8 +5,9 @@ let config = require('../config');
 let GeoserverImporter = require('../layers/GeoServerImporter');
 
 class GeotiffGenerator {
-    constructor(pgLongPool) {
+    constructor(pgLongPool, promiseQueue) {
         this._pgLongPool = pgLongPool;
+        this._promiseQueue = promiseQueue;
     }
 
     /**
@@ -41,7 +42,7 @@ class GeotiffGenerator {
                       lowrite(lo_open(oid, 131072), tiff) AS num_bytes
                     FROM
                       (VALUES (lo_create(0),
-                               ST_Astiff((SELECT st_union(${rast}) AS rast FROM ${sourceSchema? sourceSchema : "public"}.${sourceTable}))
+                               ST_Astiff((SELECT st_union(${rast}) AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable}))
                       )) AS v(oid, tiff);
                 `);
         }).then(results => {
@@ -84,19 +85,22 @@ class GeotiffGenerator {
 
                 outputData.push(data[dataIndex]);
 
-                if(!geoserverLayers.includes(rasterName) || replaceExisting) {
-                    await this.generateGeotiff(
-                        geoServerImporter,
-                        rasterName,
-                        pgSchema,
-                        outputDirectory,
-                        rasterType,
-                        useReclass,
-                        useColors,
-                        replaceExisting
-                    );
+                if (!geoserverLayers.includes(rasterName) || replaceExisting) {
+                    this._promiseQueue.addToQueue(() => {
+                        return this.generateGeotiff(
+                            geoServerImporter,
+                            rasterName,
+                            pgSchema,
+                            outputDirectory,
+                            rasterType,
+                            useReclass,
+                            useColors,
+                            replaceExisting
+                        )
+                    });
                 }
             }
+            await this._promiseQueue.isQueueEmpty();
             return outputData;
         });
     };
