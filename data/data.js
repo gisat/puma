@@ -12,6 +12,8 @@ function getData(params, callback) {
 	var areas = JSON.parse(params['areas']);
 	var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
 	var defSelectedArea = params['defSelectedArea'] ? JSON.parse(params['defSelectedArea']) : null;
+
+	logger.info(`data#getData Areas: `, areas, ` Selected: `, selectedAreas, ` DefSelected: `, defSelectedArea);
 	var attrs = JSON.parse(params['attrs']);
 	if (attrs[0].normType=='select') {
 		params['normalization'] = 'select';
