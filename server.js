@@ -138,6 +138,12 @@ function prepareSnowDirecotries() {
             });
         }
     }
+    if(config.hasOwnProperty(`webArchivePath`)) {
+        let path = config.webArchivePath;
+        DirectoryCreator.createFullPathDirectory(path).catch(error => {
+            console.error(error);
+        });
+    }
 }
 
 new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
