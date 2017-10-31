@@ -53,52 +53,19 @@ class GeoServerImporter {
                         }
                     }
                 })
-        }).then(response => {
-            let importerResponse = response.body.import;
-            let importUrl = importerResponse.href;
-            let importTasks = importerResponse.hasOwnProperty('tasks') ? importerResponse.tasks : [];
-
-            if (!importTasks.length) {
-                throw new Error(importerResponse);
+        }).then((response) => {
+            let importTask = response.body.import;
+            if(importTask) {
+                return request
+                    .post(importTask.href)
+                    .set('Content-Type', 'application/json')
+                    .auth(this._userName, this._password)
+                    .then(() => {
+                        console.log(`#### GeoserverImporter#importTask id ${importTask.id} done!`);
+                    })
+            } else {
+                throw new Error(`#### GeoserverImporter#error: import task is missing`);
             }
-
-            let allReady = true;
-            _.each(importTasks, importTask => {
-                if (importTask.state !== "READY") {
-                    allReady = !allReady;
-                }
-            });
-
-            if (!allReady) {
-                throw new Error(importerResponse.href);
-            }
-
-            return request
-                .post(importUrl)
-                .auth(this._userName, this._password)
-                .then(() => {
-                    return request
-                        .get(importUrl)
-                        .auth(this._userName, this._password)
-                        .then(response => {
-                            let importerResponse = response.body.import;
-                            let importerTasks = importerResponse.tasks;
-                            let taskResults = [];
-                            _.each(importerTasks, task => {
-                                if (task.state === "ERROR") {
-                                    throw new Error(task.href);
-                                }
-                                taskResults.push(
-                                    request
-                                        .get(`${task.href}/layer`)
-                                        .then(response => {
-                                            return response.body.layer;
-                                        })
-                                );
-                            });
-                            return Promise.all(taskResults);
-                        })
-                });
         });
     }
 
@@ -109,11 +76,7 @@ class GeoServerImporter {
             .auth(this._userName, this._password)
             .then(response => {
                 let existingLayers = _.filter(response.body.layers.layer, {name: layerName});
-                if (existingLayers.length) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return !!existingLayers.length;
             });
     }
 
@@ -161,12 +124,14 @@ class GeoServerImporter {
                 .auth(this._userName, this._password)
                 .then(async (response) => {
                     let layerStyleName = response.body.layer.defaultStyle.name;
+                    console.log(`#### Removing coveragestore for ${layerName}`);
                     await request
                         .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layerName}?recurse=true&purge=all`)
                         .auth(this._userName, this._password)
                         .catch((error) => {
                             console.log(`#### GeoserverImporter#error: `, error.message);
                         });
+                    console.log(`#### Removing style ${layerStyleName}`);
                     await request
                         .delete(`${this._geoserverPath}/rest/styles/${layerStyleName}?recurse=true&purge=all`)
                         .auth(this._userName, this._password)
