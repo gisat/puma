@@ -28,6 +28,7 @@ let SnowPortalComposite = require('./SnowPortalComposite');
 let GeotiffGenerator = require('../integration/GeotiffGenerator');
 
 let FileSystemManager = require(`../snow/FileSystemManager`);
+let PromiseQueue = require(`../snow/PromiseQueue`);
 
 let processes = {};
 
@@ -35,7 +36,8 @@ class SnowPortal {
     constructor(app, pool, longRunningPool) {
         this._pgPool = pool;
         this._pgLongRunningPool = longRunningPool;
-        this._geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool);
+        this._promiseQueue = new PromiseQueue();
+        this._geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool, this._promiseQueue);
         this._fileSystemManager = new FileSystemManager(this._pgPool);
 
         this.initTables();
@@ -259,7 +261,7 @@ class SnowPortal {
             });
 
         }).then(data => {
-            return new GeotiffGenerator(this._pgLongRunningPool).prepareGeotiffs(
+            return this._geotiffGenerator.prepareGeotiffs(
                 data,
                 config.snow.rasters.replaceExisting,
                 `scenes`,
@@ -368,18 +370,19 @@ class SnowPortal {
              */
             return new Promise(async (resolve, reject) => {
                 let dataWithoutNulls = _.compact(data);
-                for (let compositeData of dataWithoutNulls) {
-                    await this._geotiffGenerator.prepareGeotiffs(
-                        [{key: compositeData.key, aoiCoverage: 1}],
-                        config.snow.rasters.replaceExisting,
-                        `composites`,
-                        config.snow.paths.compositesGeotiffStoragePath,
-                        false,
-                        false
-                    ).catch(error => {
-                        reject(error);
-                    });
-                }
+                let composites = _.map(dataWithoutNulls, dataWithoutNull => {
+                    return {key: dataWithoutNull.key, aoiCoverage: 1, satellite: `composite`}
+                });
+                await this._geotiffGenerator.prepareGeotiffs(
+                    composites,
+                    config.snow.rasters.replaceExisting,
+                    `composites`,
+                    config.snow.paths.compositesGeotiffStoragePath,
+                    false,
+                    true
+                ).catch(error => {
+                    reject(error);
+                });
                 resolve(dataWithoutNulls);
             });
         }).then(data => {
