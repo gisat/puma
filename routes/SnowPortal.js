@@ -261,14 +261,9 @@ class SnowPortal {
             });
 
         }).then(data => {
-            return this._geotiffGenerator.prepareGeotiffs(
-                data,
-                config.snow.rasters.replaceExisting,
-                `scenes`,
-                config.snow.paths.scenesGeotiffStoragePath,
-                false,
-                false
-            );
+            return this.createAndPublishGeotiffs(data, `scenes`, config.snow.paths.scenesGeotiffStoragePath).then(() => {
+                return data;
+            })
         }).then(data => {
             processes[requestHash].ended = Date.now();
             processes[requestHash].data = data;
@@ -368,23 +363,19 @@ class SnowPortal {
             /**
              * Export geotiff and propagate it to geoserver
              */
-            return new Promise(async (resolve, reject) => {
-                let dataWithoutNulls = _.compact(data);
-                let composites = _.map(dataWithoutNulls, dataWithoutNull => {
-                    return {key: dataWithoutNull.key, aoiCoverage: 1, satellite: `composite`}
-                });
-                await this._geotiffGenerator.prepareGeotiffs(
-                    composites,
-                    config.snow.rasters.replaceExisting,
-                    `composites`,
-                    config.snow.paths.compositesGeotiffStoragePath,
-                    false,
-                    true
-                ).catch(error => {
-                    reject(error);
-                });
-                resolve(dataWithoutNulls);
+            let dataWithoutNulls = _.compact(data);
+            let dataForGeotiffs = _.map(dataWithoutNulls, dataWithoutNull => {
+                return {key: dataWithoutNull.key, aoiCoverage: 1, satellite: `composite`}
             });
+            return this.createAndPublishGeotiffs(
+                dataForGeotiffs,
+                `composites`,
+                config.snow.paths.compositesGeotiffStoragePath,
+                false,
+                true
+            ).then(() => {
+                return dataWithoutNulls;
+            })
         }).then(data => {
             logger.info(`SnowPortal#getComposites ------ get process data resolved!`);
             // console.log('data: ', dataWithoutNulls);
@@ -401,6 +392,17 @@ class SnowPortal {
             ticket: requestHash,
             success: true
         });
+    }
+
+    createAndPublishGeotiffs(data, type, storagePath, useReclass, useColor) {
+        return this._geotiffGenerator.prepareGeotiffs(
+            data,
+            config.snow.rasters.replaceExisting,
+            type,
+            storagePath,
+            useReclass,
+            useColor
+        );
     }
 
     /**
