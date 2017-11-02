@@ -43,7 +43,7 @@ class GeotiffGenerator {
                       lowrite(lo_open(oid, 131072), tiff) AS num_bytes
                     FROM
                       (VALUES (lo_create(0),
-                               ST_AsTiff((SELECT ${rast} AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable} AS r${sqlJoin}${sqlWhere}), 'JPEG90')
+                               ST_AsTiff((SELECT ${rast} AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable} AS r${sqlJoin}${sqlWhere}), 'DEFLATE9')
                       )) AS v(oid, tiff);
                 `);
         }).then(results => {
