@@ -19,7 +19,7 @@ class GeotiffGenerator {
      * @param reclass
      * @returns {Promise<any> | * | Promise | Promise.<RESULT> | Promise.<TResult>}
      */
-    exportPgRasterAsGeotiff(sourceTable, sourceSchema, destinationFolder, colorMap, reclass) {
+    exportPgRasterAsGeotiff(sourceTable, sourceSchema, destinationFolder, outputFileName, colorMap, reclass, sqlJoin, sqlWhere, stClip) {
         console.log(`#### exporting geotiff from ${sourceSchema}.${sourceTable}`);
         return Promise.resolve().then(() => {
             if (!sourceTable) {
@@ -29,24 +29,26 @@ class GeotiffGenerator {
                 throw new Error(`Missing path to destination folder!`);
             }
         }).then(() => {
-            let rast = `rast`;
+            let rast = stClip ? `ST_Union(ST_Clip("rast", ${stClip}))` : `ST_Union("rast")`;
             if (reclass) {
                 rast = `ST_Reclass(${rast}, '${reclass.reclassexpr}', '${reclass.pixelType}')`;
             }
             if (colorMap) {
                 rast = `ST_ColorMap(${rast}, '${colorMap.colorMap}', '${colorMap.method}')`
             }
+            sqlJoin = sqlJoin ? ` ${sqlJoin}` : ``;
+            sqlWhere = sqlWhere ? ` ${sqlWhere}` : ``;
             return this._pgLongPool.pool().query(`
                     SELECT
                       oid,
                       lowrite(lo_open(oid, 131072), tiff) AS num_bytes
                     FROM
                       (VALUES (lo_create(0),
-                               ST_Astiff((SELECT st_union(${rast}) AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable}))
+                               ST_AsTiff((SELECT ${rast} AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable} AS r${sqlJoin}${sqlWhere}))
                       )) AS v(oid, tiff);
                 `);
         }).then(results => {
-            return this._pgLongPool.pool().query(`SELECT lo_export(${results.rows[0].oid}, '${destinationFolder}/${sourceTable}.tiff');`)
+            return this._pgLongPool.pool().query(`SELECT lo_export(${results.rows[0].oid}, '${destinationFolder}/${outputFileName ? outputFileName : sourceTable}.tiff');`)
                 .then(() => {
                     return this._pgLongPool.pool().query(`SELECT lo_unlink(${results.rows[0].oid});`)
                 });
@@ -62,7 +64,7 @@ class GeotiffGenerator {
      * @param useColors
      * @returns data
      */
-    prepareGeotiffs(data, replaceExisting, pgSchema, outputDirectory, useReclass, useColors) {
+    prepareGeotiffs(data, replaceExisting, pgSchema, outputDirectory, useReclass, useColors, sqlJoin, sqlWhere, stClip) {
         return Promise.resolve().then(async () => {
             let geoServerImporter = new GeoserverImporter(
                 config.geoserverHost + config.geoserverPath,
@@ -81,6 +83,7 @@ class GeotiffGenerator {
 
                 let rasterType = data[dataIndex].satellite;
                 let rasterName = data[dataIndex].key;
+                let outputFileName = data[dataIndex].area ? `${data[dataIndex].key}_${data[dataIndex].area}` : rasterName;
                 pgSchema = pgSchema ? pgSchema : `scenes`;
 
                 outputData.push(data[dataIndex]);
@@ -92,10 +95,14 @@ class GeotiffGenerator {
                             rasterName,
                             pgSchema,
                             outputDirectory,
+                            outputFileName,
                             rasterType,
                             useReclass,
                             useColors,
-                            replaceExisting
+                            replaceExisting,
+                            sqlJoin,
+                            sqlWhere,
+                            stClip
                         )
                     });
                 }
@@ -108,18 +115,22 @@ class GeotiffGenerator {
     /**
      * Generate geotiff and propagete it to geoserver
      */
-    async generateGeotiff(geoserverImporter, rasterName, pgSchema, outputDirecotry, rasterType, useReclass, useColors, replaceExisting) {
+    async generateGeotiff(geoserverImporter, rasterName, pgSchema, outputDirecotry, outputFileName, rasterType, useReclass, useColors, replaceExisting, sqlJoin, sqlWhere, stClip) {
         return this.exportPgRasterAsGeotiff(
             rasterName,
             pgSchema,
             outputDirecotry,
+            outputFileName,
             useColors ? config.snow.rasters.colorMap[rasterType] : null,
-            useReclass ? config.snow.rasters.reclass[rasterType] : null
+            useReclass ? config.snow.rasters.reclass[rasterType] : null,
+            sqlJoin,
+            sqlWhere,
+            stClip
         ).then(result => {
             let layerObject = {
-                customName: rasterName,
-                systemName: rasterName,
-                file: `${outputDirecotry}/${rasterName}.tiff`,
+                customName: outputFileName,
+                systemName: outputFileName,
+                file: `${outputDirecotry}/${outputFileName}.tiff`,
                 type: "raster"
             };
             return geoserverImporter.importLayer(layerObject, replaceExisting);
