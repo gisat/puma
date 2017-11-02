@@ -20,7 +20,6 @@ class GeoServerImporter {
     // TODO: Configure the name of the workspace to import into.
     // TODO: Configure the name of the target data store.
     importLayer(layer, replaceExisting) {
-        console.log(`#### importing ${layer.systemName} geotiff to geoserver`);
         let id;
         let vectorDatastore = {
             dataStore: {
@@ -60,9 +59,6 @@ class GeoServerImporter {
                     .post(importTask.href)
                     .set('Content-Type', 'application/json')
                     .auth(this._userName, this._password)
-                    .then(() => {
-                        console.log(`#### GeoserverImporter#importTask id ${importTask.id} done!`);
-                    })
             } else {
                 throw new Error(`#### GeoserverImporter#error: import task is missing`);
             }
@@ -117,21 +113,18 @@ class GeoServerImporter {
     }
 
     removeRasterLayer(layerName) {
-        console.log(`#### Trying to remove layer ${layerName}`);
         return Promise.resolve().then(() => {
             return request
                 .get(`${this._geoserverPath}/rest/layers/${layerName}.json`)
                 .auth(this._userName, this._password)
                 .then(async (response) => {
                     let layerStyleName = response.body.layer.defaultStyle.name;
-                    console.log(`#### Removing coveragestore for ${layerName}`);
                     await request
                         .delete(`${this._geoserverPath}/rest/workspaces/${this._workspace}/coveragestores/${layerName}?recurse=true&purge=all`)
                         .auth(this._userName, this._password)
                         .catch((error) => {
                             console.log(`#### GeoserverImporter#error: `, error.message);
                         });
-                    console.log(`#### Removing style ${layerStyleName}`);
                     await request
                         .delete(`${this._geoserverPath}/rest/styles/${layerStyleName}?recurse=true&purge=all`)
                         .auth(this._userName, this._password)
