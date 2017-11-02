@@ -41,11 +41,11 @@ class PromiseQueue {
     isQueueEmpty() {
         return new Promise((resolve, reject) => {
             let intervalId = setInterval(() => {
-                if (!this._runningPromises.length) {
+                if (!this._promiseQueue.length && !this._runningPromises.length) {
                     clearInterval(intervalId);
                     resolve();
                 }
-            }, 1000);
+            }, 2000);
         });
     }
 }
