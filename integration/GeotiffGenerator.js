@@ -20,7 +20,6 @@ class GeotiffGenerator {
      * @returns {Promise<any> | * | Promise | Promise.<RESULT> | Promise.<TResult>}
      */
     exportPgRasterAsGeotiff(sourceTable, sourceSchema, destinationFolder, outputFileName, colorMap, reclass, sqlJoin, sqlWhere, stClip) {
-        console.log(`#### exporting geotiff from ${sourceSchema}.${sourceTable}`);
         return Promise.resolve().then(() => {
             if (!sourceTable) {
                 throw new Error(`Missing source table name!`);
@@ -44,7 +43,7 @@ class GeotiffGenerator {
                       lowrite(lo_open(oid, 131072), tiff) AS num_bytes
                     FROM
                       (VALUES (lo_create(0),
-                               ST_AsTiff((SELECT ${rast} AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable} AS r${sqlJoin}${sqlWhere}))
+                               ST_AsTiff((SELECT ${rast} AS rast FROM ${sourceSchema ? sourceSchema : "public"}.${sourceTable} AS r${sqlJoin}${sqlWhere}), 'JPEG90')
                       )) AS v(oid, tiff);
                 `);
         }).then(results => {
