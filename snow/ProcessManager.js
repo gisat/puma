@@ -18,7 +18,7 @@ class ProcessManager {
         query.push(`uri text,`);
         query.push(`result json,`);
         query.push(`other json,`);
-        query.push(`error boolean`);
+        query.push(`error boolean,`);
         query.push(`PRIMARY KEY (id),`);
         query.push(`UNIQUE (key)`);
         query.push(`);`);
@@ -107,6 +107,52 @@ class ProcessManager {
         query.push(`result='${JSON.stringify(result).replace(/'/g, "\\\"")}',`);
         query.push(`ended='${this.getActualSqlDateTime()}'`);
         query.push(`error=${error}`);
+        query.push(`WHERE`);
+
+        if (id) {
+            query.push(`id=${id}`);
+        } else if (key) {
+            query.push(`key='${key}'`);
+        } else {
+            query.push(`owner=${owner}`);
+        }
+
+        query.push(`AND`);
+        query.push(`(SELECT count(*) FROM processes WHERE`);
+
+        if (id) {
+            query.push(`id=${id}`);
+        } else if (key) {
+            query.push(`key='${key}'`);
+        } else {
+            query.push(`owner=${owner}`);
+        }
+
+        query.push(`) = 1;`);
+
+        return this._pgPool.pool().query(query.join(` `))
+            .then((result) => {
+                if(!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
+            });
+    }
+
+    removeProcessById(id) {
+        return this.removeProcess(id);
+    }
+
+    removeProcessByKey(key) {
+        return this.removeProcess(null, key);
+    }
+
+    removeProcessByOwner(owner) {
+        return this.removeProcess(null, null, owner);
+    }
+
+    removeProcess(id, key, owner) {
+        if (!id && !key && !owner) return Promise.rejected(`no arguments`);
+
+        let query = [];
+        query.push(`DELETE FROM processes`);
         query.push(`WHERE`);
 
         if (id) {
