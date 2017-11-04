@@ -18,6 +18,7 @@ class ProcessManager {
         query.push(`uri text,`);
         query.push(`result json,`);
         query.push(`other json,`);
+        query.push(`error boolean`);
         query.push(`PRIMARY KEY (id),`);
         query.push(`UNIQUE (key)`);
         query.push(`);`);
@@ -81,27 +82,31 @@ class ProcessManager {
         });
     }
 
-    updateProcessById(id, result) {
-        return this.updateProcess(id, null, null, result);
+    updateProcessById(id, result, error) {
+        return this.updateProcess(id, null, null, result, error);
     }
 
-    updateProcessByKey(key, result) {
-        return this.updateProcess(null, key, null, result);
+    updateProcessByKey(key, result, error) {
+        return this.updateProcess(null, key, null, result, error);
     }
 
-    updateProcessByOwner(owner, result) {
-        return this.updateProcess(null, null, owner, result);
+    updateProcessByOwner(owner, result, error) {
+        return this.updateProcess(null, null, owner, result, error);
     }
 
-    updateProcess(id, key, owner, result) {
+    updateProcess(id, key, owner, result, error) {
         if (!id && !key && !owner) return Promise.rejected(`no arguments`);
         if (!result) return Promise.rejected(`no result`);
         if (!owner) owner = 'NULL';
+
+        error = error ? `TRUE` : `FALSE`;
+
         let query = [];
         query.push(`UPDATE processes`);
         query.push(`SET`);
         query.push(`result='${JSON.stringify(result).replace(/'/g, "\\\"")}',`);
         query.push(`ended='${this.getActualSqlDateTime()}'`);
+        query.push(`error=${error}`);
         query.push(`WHERE`);
 
         if (id) {
