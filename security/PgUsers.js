@@ -155,7 +155,7 @@ class PgUsers {
      * @returns {Promise<Number>} Promise of id of the
      */
     create(password, name, email) {
-        new PasswordHash(password).toString().then(hash => {
+        return new PasswordHash(password).toString().then(hash => {
             return this.pgPool.query(`
 			INSERT INTO ${this.schema}.panther_users (email, password, name) 
 				VALUES ('${email}', '${hash}', '${name}') 
@@ -174,7 +174,7 @@ class PgUsers {
      * @param email {String} Email of the user for the email communication
      */
     update(id, password, name, email) {
-        new PasswordHash(password).toString().then(hash => {
+        return new PasswordHash(password).toString().then(hash => {
             return this.pgPool.query(`
 			    UPDATE ${this.schema}.panther_users set password = '${hash}', name='${name}', email='${email}' WHERE id = ${id}
 		    `);
