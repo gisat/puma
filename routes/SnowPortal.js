@@ -423,24 +423,23 @@ class SnowPortal {
                     name: row.name
                 }
             });
-            return this._pgPool.pool().query(`
-                SELECT DISTINCT ON (m.source_id)
-                    m.source_id,
-                    MAX(s.satellite) AS satellite,
-                    MAX(s.satellite_key) AS satellite_key,
-                    MAX(s.sensor) AS sensor,
-                    MAX(s.sensor_key) AS sensor_key,
-                    MIN(date)::varchar AS from,
-                    MAX(date)::varchar AS to
-                FROM metadata AS m
-                    JOIN source AS s ON (m.source_id=s.id)
-                GROUP BY m.source_id;`);
-        }).then(rows => {
-            if (!rows.rows) {
+            return this._pgPool.pool().query(
+                `SELECT
+                        sat as satellite,
+                        sat_key as satellite_key,
+                        sensor,
+                        sensor_key,
+                        min(date) as from,
+                        max(date) as to
+                     FROM scenes.metadata
+                    GROUP BY satellite, satellite_key, sensor, sensor_key;
+               `);
+        }).then((result) => {
+            if (!result.rows) {
                 throw new Error(logger.error("Unable to get satellites and sensors from database..."));
             }
             let sensors = [];
-            _.each(rows.rows, row => {
+            _.each(result.rows, row => {
                 let sensor = _.find(sensors, {key: row.sensor_key});
                 if (!sensor) {
                     sensor = {
