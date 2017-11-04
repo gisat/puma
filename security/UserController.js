@@ -159,7 +159,7 @@ class UserController {
             let password = request.body.password;
             let email = request.body.email;
 
-            this.users.update(id, name, password, email).then(() => {
+            this.users.update(id, password, name, email).then(() => {
                 response.json({
                     data: {
                         id: id,
