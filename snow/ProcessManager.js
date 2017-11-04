@@ -26,18 +26,18 @@ class ProcessManager {
     }
 
     getProcessesById(id) {
-        return this.getProcess(id);
+        return this.getProcesses(id);
     }
 
     getProcessesByKey(key) {
-        return this.getProcess(null, key);
+        return this.getProcesses(null, key);
     }
 
     getProcessesByOwner(owner) {
-        return this.getProcess(null, null, owner);
+        return this.getProcesses(null, null, owner);
     }
 
-    getProcess(id, key, owner) {
+    getProcesses(id, key, owner) {
         if (!id && !key && !owner) return Promise.rejected(`no arguments`);
 
         let query = [];
@@ -78,7 +78,7 @@ class ProcessManager {
         query.push(`'${JSON.stringify(other).replace(/'/g, "\\\"")}'`);
         query.push(`);`);
         return this._pgPool.pool().query(query.join(` `)).then(() => {
-            return key
+            return this.getProcessesByKey(key);
         });
     }
 
@@ -105,7 +105,7 @@ class ProcessManager {
         query.push(`UPDATE processes`);
         query.push(`SET`);
         query.push(`result='${JSON.stringify(result).replace(/'/g, "\\\"")}',`);
-        query.push(`ended='${this.getActualSqlDateTime()}'`);
+        query.push(`ended='${this.getActualSqlDateTime()}',`);
         query.push(`error=${error}`);
         query.push(`WHERE`);
 
