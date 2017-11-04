@@ -146,7 +146,7 @@ class UserController {
      * @param response
      */
 	update(request, response) {
-        logger.info(`UserController#update Id: ${request.body.id}, Name: ${request.body.name}, Username: ${request.body.username}, Email: ${request.body.email}`);
+        logger.info(`UserController#update Id: ${request.body.id}, Name: ${request.body.name}, Username: ${request.body.username}, Email: ${request.body.username}`);
 
         let id = Number(request.body.id);
 
@@ -157,7 +157,7 @@ class UserController {
 		} else {
             let name = request.body.name;
             let password = request.body.password;
-            let email = request.body.email;
+            let email = request.body.username;
 
             this.users.update(id, password, name, email).then(() => {
                 response.json({
