@@ -197,6 +197,7 @@ class PgUsers {
             }
 
             user = results.rows[0];
+            logger.info(`PgUsers#verify User: `, user);
 
             return bcrypt.compare(password, user.password);
         }).then(result => {
