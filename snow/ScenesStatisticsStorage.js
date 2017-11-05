@@ -113,7 +113,7 @@ class ScenesStatisticsStorage {
         query.push(`${whereQuery.join(` AND `)}`);
 
         if(!removeAll) {
-            query.push(`(SELECT COUNT(*) FROM "scenes"."statistics" WHERE ${whereQuery.join(` AND `)}) = 1`);
+            query.push(`AND (SELECT COUNT(*) FROM "scenes"."statistics" WHERE ${whereQuery.join(` AND `)}) = 1`);
         }
 
         return this._pgPool.query(query.join(` `))
