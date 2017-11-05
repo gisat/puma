@@ -118,6 +118,18 @@ class FileSystemManager {
         });
     }
 
+    isFileExists(path) {
+        return new Promise((resolve) => {
+            fs.access(path, (error) => {
+                if (error) {
+                    resolve(false);
+                } else {
+                    resolve(true);
+                }
+            });
+        });
+    }
+
     initFileSystemManagerPgTable() {
         let query = [];
         query.push(`CREATE TABLE IF NOT EXISTS fsmanager`);
