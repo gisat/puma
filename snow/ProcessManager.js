@@ -59,10 +59,13 @@ class ProcessManager {
             })
             .then((processes) => {
                 processes.forEach((process) => {
-                    if(process.error || remove) {
+                    if (process.error) {
+                        this.removeProcessByKey(process.key);
+                    } else if (remove && process.ended) {
                         this.removeProcessByKey(process.key);
                     }
                 });
+                return processes;
             })
     }
 
@@ -139,7 +142,7 @@ class ProcessManager {
 
         return this._pgPool.pool().query(query.join(` `))
             .then((result) => {
-                if(!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
+                if (!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
             });
     }
 
@@ -185,7 +188,7 @@ class ProcessManager {
 
         return this._pgPool.pool().query(query.join(` `))
             .then((result) => {
-                if(!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
+                if (!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
             });
     }
 
