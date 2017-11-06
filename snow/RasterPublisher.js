@@ -6,8 +6,8 @@ class RasterPublisher {
         this._pgLongPool = pgLongPool;
     }
 
-    exportRasterFromPgTableToGeotiff(tableName, schemaName, rasterFileName, outputFilePath, rastColumn) {
-        if(!tableName || !schemaName || !rasterFileName || !outputFilePath) {
+    exportRasterFromPgTableToGeotiff(tableName, schemaName, rasterKey, outputFilePath, rastColumn, idColumn) {
+        if(!tableName || !schemaName || !rasterKey || !outputFilePath) {
             return Promise.reject(`Missing some arguments!`);
         }
 
@@ -19,8 +19,8 @@ class RasterPublisher {
         query.push(`FROM (`);
         query.push(`VALUES (`);
         query.push(`lo_create(0), ST_AsTIFF((`);
-        query.push(`SELECT r."${rastColumn}" FROM "${schemaName}"."${tableName}" AS r`);
-        query.push(`WHERE r."filename"='${rasterFileName}'), 'DEFLATE9'))`);
+        query.push(`SELECT r."${rastColumn ? rastColumn : 'rast'}" FROM "${schemaName}"."${tableName}" AS r`);
+        query.push(`WHERE r."${idColumn ? idColumn : 'filename'}"='${rasterKey}'), 'DEFLATE9'))`);
         query.push(`) AS foo(id, tiff);`);
 
         return this._pgLongPool.query(query.join(` `))
