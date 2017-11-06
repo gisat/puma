@@ -23,10 +23,6 @@ class SnowPortal {
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
 
         app.post(`/rest/snowportal/download`, this.download.bind(this));
-
-        this._area = 'europe'; // TODO set dynamicaly?
-
-        this._visibleClasses = ["S", "NS", "C", "NC"];
     }
 
     download(request, response) {
