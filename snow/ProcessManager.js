@@ -5,7 +5,7 @@ class ProcessManager {
         this._pgPool = pgPool;
     }
 
-    initProcessPgTable() {
+    static initProcessPgTable(pgPool) {
         let query = [];
         query.push(`CREATE TABLE IF NOT EXISTS processes`);
         query.push(`(`);
@@ -22,7 +22,7 @@ class ProcessManager {
         query.push(`PRIMARY KEY (id),`);
         query.push(`UNIQUE (key)`);
         query.push(`);`);
-        return this._pgPool.pool().query(query.join(` `));
+        return pgPool.query(query.join(` `));
     }
 
     getProcessesById(id) {
@@ -56,7 +56,14 @@ class ProcessManager {
         return this._pgPool.pool().query(query.join(` `))
             .then(result => {
                 return result.rows;
-            });
+            })
+            .then((processes) => {
+                processes.forEach((process) => {
+                    if(process.error) {
+                        this.removeProcessByKey(process.key);
+                    }
+                });
+            })
     }
 
     createProcess(owner, request, uri, other) {
