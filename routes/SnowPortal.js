@@ -1,12 +1,10 @@
 let _ = require("lodash");
 let logger = require('../common/Logger').applicationWideLogger;
 
-let GeotiffGenerator = require('../integration/GeotiffGenerator');
 let ScenesManager = require('../snow/ScenesManager');
 let CompositeManager = require('../snow/CompositeManager');
 
 let FileSystemManager = require(`../snow/FileSystemManager`);
-let PromiseQueue = require(`../snow/PromiseQueue`);
 
 let processes = {};
 
@@ -14,8 +12,6 @@ class SnowPortal {
     constructor(app, pool, longRunningPool) {
         this._pgPool = pool;
         this._pgLongRunningPool = longRunningPool;
-        this._promiseQueue = new PromiseQueue();
-        this._geotiffGenerator = new GeotiffGenerator(this._pgLongRunningPool, this._promiseQueue);
         this._fileSystemManager = new FileSystemManager(this._pgPool);
         this._scenesManager = new ScenesManager(this._pgPool, this._pgLongRunningPool);
         this._compositeManager = new CompositeManager(this._pgPool, this._pgLongRunningPool);
