@@ -158,6 +158,8 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`FROM public.areas WHERE "KEY" = '${areaKey}'),`);
+        } else if(areaType === `noLimit`) {
+            query.push(`FROM "public"."europe"), `);
         }
 
         query.push(`(SELECT sum(ST_Count(st_clip(s."reclass_rast", a."the_geom"))) * 250000`);
@@ -165,6 +167,8 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
+        } else if(areaType === `noLimit`) {
+            query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
         query.push(`WHERE m."id" = ${scene.key})`);
@@ -195,6 +199,8 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
+        } else if(areaType === `noLimit`) {
+            query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
         query.push(`WHERE`);
@@ -240,6 +246,8 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
+        } else if(areaType === `noLimit`) {
+            query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
         query.push(`WHERE`);
