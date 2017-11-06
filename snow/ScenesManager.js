@@ -81,7 +81,7 @@ class ScenesManager {
             let sceneKey = `scene_${sceneId}`;
             let satKey = scene.satellite;
             let sensorKey = scene.sensor;
-            let date = scene.date.toISOString().split(`T`)[0];
+            let date = scene.date;
             let areaType = filter.area.type;
             let areaKey = filter.area.value;
             statistics.push(
@@ -152,20 +152,23 @@ class ScenesManager {
         let areaKey = filter.area.value;
 
         let query = [];
-        query.push(`SELECT`);
-        query.push(`((aoiRasterSize / aoiAreaSize) * 100) AS aoi`);
-        query.push(`FROM (SELECT`);
-        query.push(`ST_Area(a."the_geom") AS aoiAreaSize,`);
-        query.push(`ST_Count(st_clip(s."reclass_rast", a."the_geom")) * 250000 AS aoiRasterSize`);
-        query.push(`FROM "scenes"."scenes" AS s`);
-        query.push(`LEFT JOIN "scenes"."metadata" AS m ON m."filename" = s."filename"`);
+        query.push(`SELECT foo.rasterSize / foo.aoiSize * 100 AS aoi`);
+        query.push(`FROM (VALUES (`);
+        query.push(`(SELECT sum(st_area(the_geom))`);
+
+        if (areaType === `key`) {
+            query.push(`FROM public.areas WHERE "KEY" = '${areaKey}'),`);
+        }
+
+        query.push(`(SELECT sum(ST_Count(st_clip(s."reclass_rast", a."the_geom"))) * 250000`);
+        query.push(`FROM "scenes"."scenes" AS s LEFT JOIN "scenes"."metadata" AS m ON m."filename" = s."filename"`);
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
         }
 
-        query.push(`WHERE m."id" = ${scene.key}) AS foo`);
-        query.push(`WHERE foo.aoiAreaSize > 0 AND foo.aoiRasterSize > 0;`);
+        query.push(`WHERE m."id" = ${scene.key})`);
+        query.push(`)) AS foo(aoiSize, rasterSize);`);
 
         return this._pgLongPool.query(query.join(` `))
             .then((result) => {
@@ -183,7 +186,8 @@ class ScenesManager {
 
         let query = [];
         query.push(`SELECT`);
-        query.push(`(foo.pvc).*`);
+        query.push(`(foo.pvc).value::integer AS value,`);
+        query.push(`sum((foo.pvc).count)::integer AS count`);
         query.push(`FROM`);
         query.push(`(SELECT ST_ValueCount(ST_Clip(s.reclass_rast, a.the_geom)) AS pvc`);
         query.push(`FROM "scenes"."scenes" AS s`);
@@ -195,7 +199,8 @@ class ScenesManager {
 
         query.push(`WHERE`);
         query.push(`m."id"=${scene.key}`);
-        query.push(`AND s."filename"=m."filename") as foo;`);
+        query.push(`) as foo`);
+        query.push(`GROUP BY value ORDER BY value;`);
 
         return this._pgLongPool.query(query.join(` `))
             .then((result) => {
@@ -224,11 +229,11 @@ class ScenesManager {
         });
 
         let query = [];
-        query.push(`SELECT`);
+        query.push(`SELECT DISTINCT`);
         query.push(`m."id" AS key,`);
         query.push(`m."sat_key" AS satellite,`);
         query.push(`m."sensor_key" AS sensor,`);
-        query.push(`m."date" AS date,`);
+        query.push(`m."date"::text AS date,`);
         query.push(`m."filename" AS filename`);
         query.push(`FROM "scenes"."metadata" AS m`);
         query.push(`LEFT JOIN "scenes"."scenes" AS s ON m."filename"=s."filename"`);
