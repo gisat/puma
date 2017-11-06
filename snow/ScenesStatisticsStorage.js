@@ -3,7 +3,7 @@ class ScenesStatisticsStorage {
         this._pgPool = pgPool;
     }
 
-    initScenesStatisticsPgTable() {
+    static initScenesStatisticsPgTable(pgPool) {
         let query = [];
 
         query.push(`CREATE TABLE IF NOT EXISTS "scenes"."statistics" (`);
@@ -19,7 +19,7 @@ class ScenesStatisticsStorage {
         query.push(`PRIMARY KEY (id),`);
         query.push(`UNIQUE (scene_id, date, sat_key, sensor_key, area_type, area_key, area_table));`);
 
-        return this._pgPool.query(query.join(` `));
+        return pgPool.query(query.join(` `));
     }
 
     insertSceneStatistics(sceneId, date, satKey, sensorKey, areaType, areaKey, stats, areaTable) {
