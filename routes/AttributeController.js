@@ -10,6 +10,7 @@ let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var Statistics = require('../attributes/Statistics');
 var Filter = require('../attributes/Filter');
 var Attributes = require('../attributes/Attributes');
+var AttributesForInfo = require('../attributes/AttributesForInfo');
 var Info = require('../attributes/Info');
 let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
 
@@ -149,7 +150,7 @@ class AttributeController extends Controller {
         var uuid = new UUID().toString();
         logger.info(`AttributeController#info UUID: ${uuid} Start: ${moment().format()}`);
 
-        let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
+        let attributesObj = new AttributesForInfo(options.areaTemplate, options.periods, options.places, options.attributes);
         this._info.statistics(attributesObj, options.attributesMap, gid).then(json => {
             response.json(json);
             logger.info(`AttributeController#info UUID: ${uuid} End: ${moment().format()}`);

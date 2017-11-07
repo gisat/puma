@@ -10,8 +10,9 @@ class Info {
     statistics(attributes, attributesMap, gids) {
         return attributes.attributes(this.sql.bind(this, gids)).then(attributes => {
             return attributes.map(attribute => {
-                var id = "as_" + attribute._attributeSet + "_attr_" + attribute._attribute;
-                return attribute.info({
+                if (attribute._attributeSet){
+                  var id = "as_" + attribute._attributeSet + "_attr_" + attribute._attribute;
+                  return attribute.info({
                     units: attributesMap[id].units,
                     color: attributesMap[id].color,
                     value: attributesMap[id].value,
@@ -19,7 +20,10 @@ class Info {
                     attributeName: attributesMap[id].attributeName,
                     attributeSetId: attributesMap[id].attributeSet,
                     attributeSetName: attributesMap[id].attributeSetName
-                })
+                  })
+                } else {
+                    return attribute;
+                }
             });
         }).then(json => {
             // Group per gid.
@@ -45,7 +49,9 @@ class Info {
                         units: value.units,
                         color: value.color
                     };
-                    result.attributes.push(attr);
+                    if (attr.id){
+                      result.attributes.push(attr);
+                    }
                 });
                 return result;
             }).filter(value => value);
