@@ -19,6 +19,7 @@ let DirectoryCreator = require('./snow/DirectoryCreator');
 let ProcessManager = require(`./snow/ProcessManager`);
 let ScenesStatisticsStorage = require(`./snow/ScenesStatisticsStorage`);
 let CompositeManager = require(`./snow/CompositeManager`);
+let CompositesStatisticsStorage = require(`./snow/CompositesStatisticsStorage`);
 
 process.on('uncaughtException', function (err) {
     logger.error("Caught exception: ", err);
@@ -164,8 +165,16 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
 }).then(() => {
     ProcessManager.initProcessPgTable(pool);
     ScenesStatisticsStorage.initScenesStatisticsPgTable(pool);
-    CompositeManager.initCompositesPgTable(pool);
-    CompositeManager.initMetadataPgTable(pool);
+    CompositeManager.initCompositesPgTable(pool)
+        .then(() => {
+            return CompositeManager.clearUnfinishedComposites(pool);
+        });
+    CompositeManager.initMetadataPgTable(pool)
+        .then(() => {
+            return CompositeManager.clearMetadataWithoutComposites(pool);
+        });
+    CompositeManager.initDurationPgTable(pool);
+    CompositesStatisticsStorage.initCompositesStatisticsPgTable(pool);
 }).then(() => {
     app = express();
     async.series([
