@@ -114,7 +114,7 @@ class ScenesManager {
                                     })
                             })
                             .then((sceneStatistics) => {
-                                let outputFilePath = `${config.snow.paths.scenesGeotiffStoragePath}/${sceneKey}.tiff`;
+                                let outputFilePath = `${config.snow.paths.scenesGeotiffStoragePath}/${sceneKey}.tif`;
                                 return this._fileSystemManager.isFileExists(outputFilePath)
                                     .then((exists) => {
                                         if (!exists) {
