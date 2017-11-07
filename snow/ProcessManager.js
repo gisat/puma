@@ -7,6 +7,7 @@ class ProcessManager {
 
     static initProcessPgTable(pgPool) {
         let query = [];
+
         query.push(`CREATE TABLE IF NOT EXISTS processes`);
         query.push(`(`);
         query.push(`id serial,`);
@@ -22,6 +23,7 @@ class ProcessManager {
         query.push(`PRIMARY KEY (id),`);
         query.push(`UNIQUE (key)`);
         query.push(`);`);
+
         return pgPool.query(query.join(` `));
     }
 
@@ -53,19 +55,24 @@ class ProcessManager {
         }
 
         query.push(`;`);
-        return this._pgPool.pool().query(query.join(` `))
+
+        return this._pgPool.query(query.join(` `))
             .then(result => {
                 return result.rows;
             })
             .then((processes) => {
+                let promises = [];
                 processes.forEach((process) => {
-                    if (process.error) {
-                        this.removeProcessByKey(process.key);
-                    } else if (remove && process.ended) {
-                        this.removeProcessByKey(process.key);
+                    if (process.error || (remove && process.ended)) {
+                        promises.push(
+                            this.removeProcessByKey(process.key)
+                        );
                     }
                 });
-                return processes;
+                return Promise.all(promises)
+                    .then(() => {
+                        return processes;
+                    })
             })
     }
 
@@ -171,25 +178,13 @@ class ProcessManager {
             query.push(`key='${key}'`);
         } else {
             query.push(`owner=${owner}`);
-        }
-
-        query.push(`AND`);
-        query.push(`(SELECT count(*) FROM processes WHERE`);
-
-        if (id) {
-            query.push(`id=${id}`);
-        } else if (key) {
-            query.push(`key='${key}'`);
-        } else {
+            query.push(`AND`);
+            query.push(`(SELECT count(*) FROM processes WHERE`);
             query.push(`owner=${owner}`);
+            query.push(`) = 1;`);
         }
 
-        query.push(`) = 1;`);
-
-        return this._pgPool.pool().query(query.join(` `))
-            .then((result) => {
-                if (!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
-            });
+        return this._pgPool.query(query.join(` `));
     }
 
     getActualSqlDateTime() {
