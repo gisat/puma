@@ -690,8 +690,6 @@ class CompositeManager {
         query.push(`AND s."reclass_rast" && e."the_geom"`);
         query.push(`ORDER BY date;`);
 
-        console.log(query.join(` `));
-
         return this._pgLongPool.query(query.join(` `))
             .then((result) => {
                 return result.rows;
@@ -796,7 +794,6 @@ class CompositeManager {
                     this.getFilteredScenes(filter)
                         .then((scenes) => {
                             if (scenes.length) {
-                                console.log(`#### BG #### Generate composite with filter`, filter);
                                 return this.createDayComposites(scenes, true);
                             }
                         });
