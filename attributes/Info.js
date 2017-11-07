@@ -66,9 +66,16 @@ class Info {
 
 
         return Promise.all(baseLayers
-            .map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
+            .map(baseLayer => {
+                let comma = "";
+                if (baseLayer.queriedColumns.length > 0){
+                    comma = ","
+                }
+
+                return `SELECT ${baseLayer.queriedColumns.join(',') + comma} 
                         ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM views.layer_${baseLayer._id} WHERE 
-                        gid IN ${list}`)
+                        gid IN ${list}`
+            })
             .map(sql => {
                 logger.info('Info#sql Sql', sql);
                 return this._pgPool.pool().query(sql)
