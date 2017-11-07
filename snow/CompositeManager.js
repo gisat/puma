@@ -306,7 +306,7 @@ class CompositeManager {
                         });
                     });
                 } else {
-                    promises.push(tasks.call());
+                    promises.push(task.call());
                 }
             }
             return Promise.all(promises);

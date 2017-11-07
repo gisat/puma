@@ -194,30 +194,84 @@ module.exports = {
         subject: 'Panther - Visualisation and analysis platform. Internal'
     },
 
-    /**
-     * Snow portal configurations
-     */
-    snow: {
-        cores: 6,
-        paths: {
-            scenesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/scenes",
-            compositesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/composites",
-            packagesForDownloadPath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/downloads"
-        },
-        rasters: {
-            replaceExisting: true,
-            reclass: {
-                sentinel3: {
-                    reclassexpr: "[0-0]:1, [211-211]:2, [250-250]:3,  [239-239]:4, [1-1]:5, [100-100]:100",
-                    pixelType: "8BUI"
+        /**
+         * Where are stored static files accessible from internet
+         */
+        webArchivePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/archive",
+        webArchivePublicPath: "/archive",
+
+        /**
+         * Snow portal configurations
+         */
+        snow: {
+            developement: true,
+            cores: 4,   // depends on available memory, creation of composites takes about 1GB of ram per core
+            geoserverWorkspace: `geonode`,
+            paths: {
+                scenesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/scenes",
+                compositesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/composites",
+                packagesForDownloadPath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/downloads"
+            },
+            rasters: {
+                replaceExisting: false,
+                reclass: {
+                    sentinel3: {
+                        reclassexpr: "[0-0]:1, [211-211]:2, [250-250]:3,  [239-239]:4, [1-1]:5, [100-100]:100",
+                        pixelType: "8BUI"
+                    }
+                },
+                colorMap: {
+                    sentinel3: {
+                        colorMap: "41 128 203 221\n5 173 234 166\n4 13 24 53\n3 61 61 61\n2 25 25 25\n1 102 0 20\nnv 0 0 0 0",
+                        method: "NEAREST"
+                    },
+                    composite: {
+                        colorMap: "41 128 203 221\n5 173 234 166\n4 13 24 53\n3 61 61 61\n2 25 25 25\n1 102 0 20\nnv 0 0 0 0",
+                        method: "NEAREST"
+                    }
                 }
             },
-            colorMap: {
-                sentinel3: {
-                    colorMap: "41 128 203 221\n5 173 234 166\n4 13 24 53\n3 61 61 61\n2 25 25 25\n1 102 0 20\nnv 0 0 0 0",
-                    method: "NEAREST"
+            classDistribution: {
+                1: {
+                    key: "ND",
+                    name: "No data"
+                },
+                2: {
+                    key: "N",
+                    name: "Night"
+                },
+                3: {
+                    key: "C",
+                    name: "Cloud"
+                },
+                4: {
+                    key: "O",
+                    name: "Ocean"
+                },
+                5: {
+                    key: "NS",
+                    name: "No snow"
+                },
+                6: {
+                    key: "S",
+                    name: "Snow"
+                }
+            },
+            backgroundGenerator: {
+                dailyComposites: {
+                    combinations: [
+                        {
+                            sensors: {
+                                modis: ['aqua', 'terra'],
+                                slstr: ['sentinel3']
+                            }
+                        }
+                    ],
+                    date: {
+                        from: null,
+                        to: null
+                    }
                 }
             }
-        }
     }
 };
