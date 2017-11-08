@@ -172,7 +172,8 @@ class CompositeManager {
         query.push(`date_to::text,`);
         query.push(`period,`);
         query.push(`sensors,`);
-        query.push(`satellites`);
+        query.push(`satellites,`);
+        query.push(`sources`);
         query.push(`FROM "composites"."metadata"`);
         query.push(`WHERE composite_key='${compositeKey}'`);
 
@@ -385,23 +386,49 @@ class CompositeManager {
                 return this.isCompositeExists(compositeKey)
             })
             .then((exists) => {
-                if (!exists) {
+                if (exists) {
+                    return this.getCompositeMetadata(compositeKey)
+                        .then((storedCompositeMetadata) => {
+                            return [
+                                exists,
+                                _.difference(
+                                    compositeMetadata.sources,
+                                    storedCompositeMetadata.sources
+                                )
+                            ];
+                        });
+                } else {
+                    return [exists, []];
+                }
+            })
+            .then(([exists, missingSources]) => {
+                if (!exists || missingSources.length) {
                     let durationStart = Date.now();
-                    return this.touchComposite(compositeKey)
+                    return Promise.resolve()
                         .then(() => {
-                            return this.createBaseCompositeRast(
-                                compositeKey,
-                                compositeMetadata.sources.shift(),
-                                compositeMetadata.sources.shift(),
-                                fromComposites
-                            )
+                            if (!exists) {
+                                return this.touchComposite(compositeKey)
+                            } else if (missingSources.length) {
+                                return this.setCompositeAsProcessing(compositeKey);
+                            }
                         })
                         .then(() => {
-                            if (compositeMetadata.sources.length) {
+                            if (!exists) {
+                                return this.createBaseCompositeRast(
+                                    compositeKey,
+                                    compositeMetadata.sources[0],
+                                    compositeMetadata.sources[1],
+                                    fromComposites
+                                )
+                            }
+                        })
+                        .then(() => {
+                            if (missingSources.length || compositeMetadata.sources.length > 2) {
                                 return this.appendSourcesToComposite(
                                     compositeKey,
                                     compositeMetadata.sources,
-                                    fromComposites
+                                    fromComposites,
+                                    missingSources.length ? missingSources : null
                                 );
                             }
                         })
@@ -512,6 +539,16 @@ class CompositeManager {
         return this._pgPool.query(query.join(` `));
     }
 
+    setCompositeAsProcessing(compositeKey) {
+        let query = [];
+
+        query.push(`UPDATE "composites"."composites"`);
+        query.push(`SET processing = TRUE`);
+        query.push(`WHERE key = '${compositeKey}';`);
+
+        return this._pgPool.query(query.join(` `));
+    }
+
     deleteCompositeMetadata(compositeKey) {
         let query = [];
 
@@ -564,26 +601,27 @@ class CompositeManager {
         return this._pgLongPool.query(query.join(` `));
     }
 
-    appendSourcesToComposite(compositeKey, sources, fromComposites) {
+    appendSourcesToComposite(compositeKey, sources, fromComposites, missingSources) {
         return Promise.resolve().then(async () => {
             let step = 0;
-            for (let sourceKey of sources) {
+            let sourcesToAppend = missingSources ? missingSources : sources.slice(2);
+            for(let source of sourcesToAppend) {
                 console.log(
-                    `#### Appending source ${sourceKey} to composite ${compositeKey} [${++step} of ${sources.length}]`
+                    `#### Appending source ${source} to composite ${compositeKey} [${++step} of ${sourcesToAppend.length}]`
                 );
                 let query = [];
 
                 query.push(`BEGIN;`);
-                query.push(`SET work_mem=524288;`);
+                query.push(`SET work_mem=786432;`);
                 query.push(`WITH rasters AS (`);
                 query.push(`SELECT unnest(ARRAY [c."rast", s."${fromComposites ? 'rast' : 'reclass_rast'}"]) AS rast`);
                 query.push(`FROM "composites"."composites" AS c`);
 
                 if (fromComposites) {
-                    query.push(`LEFT JOIN "composites"."metadata" AS m ON m."composite_key" = '${sourceKey}'`);
+                    query.push(`LEFT JOIN "composites"."metadata" AS m ON m."composite_key" = '${source}'`);
                     query.push(`LEFT JOIN "composites"."composites" AS s ON s."key" = m."composite_key"`);
                 } else {
-                    query.push(`LEFT JOIN "scenes"."metadata" AS m ON m.id = ${sourceKey}`);
+                    query.push(`LEFT JOIN "scenes"."metadata" AS m ON m.id = ${Number(source)}`);
                     query.push(`LEFT JOIN "scenes"."scenes" AS s ON s."filename" = m."filename"`);
                 }
 
@@ -606,7 +644,7 @@ class CompositeManager {
         let query = [];
 
         query.push(`BEGIN;`);
-        query.push(`SET work_mem=524288;`);
+        query.push(`SET work_mem=786432;`);
         query.push(`UPDATE "composites"."composites"`);
         query.push(`SET "rast" = foo."rast"`);
         query.push(`FROM (`);
@@ -635,9 +673,9 @@ class CompositeManager {
             }
         } else {
             if (first && second) {
-                query.push(`WHERE m."id"=ANY(ARRAY[${first}, ${second}])`);
+                query.push(`WHERE m."id"=ANY(ARRAY[${Number(first)}, ${Number(second)}])`);
             } else {
-                query.push(`WHERE m."id"=${first}`);
+                query.push(`WHERE m."id"=${Number(first)}`);
             }
         }
 
@@ -675,7 +713,7 @@ class CompositeManager {
 
         let query = [];
         query.push(`SELECT DISTINCT`);
-        query.push(`m."id" AS key,`);
+        query.push(`m."id"::text AS key,`);
         query.push(`m."sat_key" AS satellite,`);
         query.push(`m."sensor_key" AS sensor,`);
         query.push(`m."date"::text AS date,`);
@@ -752,11 +790,9 @@ class CompositeManager {
                         if (!processing) {
                             clearInterval(interval);
                             resolve();
-                        } else {
-                            console.log(`#### Processing of composite ${compositeKey} is running...`);
                         }
                     });
-            }, 3000);
+            }, 1000);
         });
     }
 
@@ -778,7 +814,7 @@ class CompositeManager {
     }
 
     backgroundDayCompositesGenerator() {
-        if(!config.snow.backgroundGenerator.enabled) return;
+        if (!config.snow.backgroundGenerator.enabled) return;
         return this.getAvailableDateBorders()
             .then((borders) => {
                 console.log(`#### BG #### Time range ${borders.start} - ${borders.end}`);
