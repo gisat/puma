@@ -140,7 +140,7 @@ function prepareSnowDirecotries() {
             });
         }
     }
-    if(config.hasOwnProperty(`webArchivePath`)) {
+    if (config.hasOwnProperty(`webArchivePath`)) {
         let path = config.webArchivePath;
         DirectoryCreator.createFullPathDirectory(path).catch(error => {
             console.error(error);
@@ -168,13 +168,17 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
     CompositeManager.initCompositesPgTable(pool)
         .then(() => {
             return CompositeManager.clearUnfinishedComposites(pool);
+        })
+        .then(() => {
+            return CompositeManager.initDurationPgTable(pool);
+        })
+        .then(() => {
+            CompositesStatisticsStorage.initCompositesStatisticsPgTable(pool);
         });
     CompositeManager.initMetadataPgTable(pool)
         .then(() => {
             return CompositeManager.clearMetadataWithoutComposites(pool);
         });
-    CompositeManager.initDurationPgTable(pool);
-    CompositesStatisticsStorage.initCompositesStatisticsPgTable(pool);
 }).then(() => {
     app = express();
     async.series([
