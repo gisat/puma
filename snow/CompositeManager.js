@@ -778,6 +778,7 @@ class CompositeManager {
     }
 
     backgroundDayCompositesGenerator() {
+        if(!config.snow.backgroundGenerator.enabled) return;
         return this.getAvailableDateBorders()
             .then((borders) => {
                 console.log(`#### BG #### Time range ${borders.start} - ${borders.end}`);
