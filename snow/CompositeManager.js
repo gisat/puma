@@ -459,6 +459,17 @@ class CompositeManager {
                         .then(() => {
                             return this.saveCompositeMetadata(compositeKey, compositeMetadata);
                         }).then(() => {
+                            return this._compositesStatisticsStorage.deleteStatistics(
+                                compositeKey,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                true
+                            )
+                        }).then(() => {
                             return this.setCompositeAsCreated(compositeKey);
                         })
                         .then(() => {
