@@ -605,7 +605,7 @@ class CompositeManager {
         return Promise.resolve().then(async () => {
             let step = 0;
             let sourcesToAppend = missingSources ? missingSources : sources.slice(2);
-            for(let source of sourcesToAppend) {
+            for (let source of sourcesToAppend) {
                 console.log(
                     `#### Appending source ${source} to composite ${compositeKey} [${++step} of ${sourcesToAppend.length}]`
                 );
@@ -815,27 +815,32 @@ class CompositeManager {
 
     backgroundDayCompositesGenerator() {
         if (!config.snow.backgroundGenerator.enabled) return;
-        return this.getAvailableDateBorders()
-            .then((borders) => {
-                console.log(`#### BG #### Time range ${borders.start} - ${borders.end}`);
-                let parameters = config.snow.backgroundGenerator.dailyComposites;
-                for (let combination of parameters.combinations) {
-                    let filter = {
-                        timeRange: {
-                            start: borders.start,
-                            end: borders.end
-                        },
-                        sensors: combination.sensors
-                    };
-                    console.log(`#### BG #### Filter`, filter);
-                    this.getFilteredScenes(filter)
-                        .then((scenes) => {
-                            if (scenes.length) {
-                                return this.createDayComposites(scenes, true);
+        Promise.resolve().then(async () => {
+                for (let i = 0; i < config.snow.backgroundGenerator.passes; i++) {
+                    await this.getAvailableDateBorders()
+                        .then(async (borders) => {
+                            console.log(`#### BG #### Time range ${borders.start} - ${borders.end}`);
+                            let parameters = config.snow.backgroundGenerator.dailyComposites;
+                            for (let combination of parameters.combinations) {
+                                let filter = {
+                                    timeRange: {
+                                        start: borders.start,
+                                        end: borders.end
+                                    },
+                                    sensors: combination.sensors
+                                };
+                                console.log(`#### BG #### Filter`, filter);
+                                await this.getFilteredScenes(filter)
+                                    .then((scenes) => {
+                                        if (scenes.length) {
+                                            return this.createDayComposites(scenes, true);
+                                        }
+                                    });
                             }
                         });
                 }
-            });
+            }
+        );
     }
 
     getAvailableDateBorders(limit) {
