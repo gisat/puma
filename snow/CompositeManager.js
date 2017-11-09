@@ -739,7 +739,7 @@ class CompositeManager {
         query.push(`AND s."reclass_rast" && e."the_geom"`);
         query.push(`ORDER BY date;`);
 
-        return this._pgLongPool.query(query.join(` `))
+        return this._pgPool.query(query.join(` `))
             .then((result) => {
                 return result.rows;
             });

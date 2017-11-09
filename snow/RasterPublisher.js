@@ -23,15 +23,15 @@ class RasterPublisher {
         query.push(`WHERE r."${idColumn ? idColumn : 'filename'}"='${rasterKey}'), 'DEFLATE9'))`);
         query.push(`) AS foo(id, tiff);`);
 
-        return this._pgLongPool.query(query.join(` `))
+        return this._pgPool.query(query.join(` `))
             .then((result) => {
                 return result.rows[0].id;
             })
             .then((id) => {
-                return this._pgLongPool.query(
+                return this._pgPool.query(
                     `SELECT lo_export(${id}, '${outputFilePath}');`
                 ).then(() => {
-                    return this._pgLongPool.query(
+                    return this._pgPool.query(
                         `SELECT lo_unlink(${id});`
                     )
                 });

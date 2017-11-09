@@ -104,7 +104,7 @@ class SnowPortal {
     getScopeOptions(request, response) {
         let options = {};
 
-        this._pgPool.pool().query(`SELECT DISTINCT "NAME" as name, "KEY" as key FROM areas ORDER BY "NAME"`).then(rows => {
+        this._pgPool.query(`SELECT DISTINCT "NAME" as name, "KEY" as key FROM areas ORDER BY "NAME"`).then(rows => {
             if (!rows.rows) {
                 throw new Error(logger.error("Unable to get areas from database..."));
             }
@@ -114,7 +114,7 @@ class SnowPortal {
                     name: row.name
                 }
             });
-            return this._pgPool.pool().query(
+            return this._pgPool.query(
                 `SELECT
                         sat as satellite,
                         sat_key as satellite_key,

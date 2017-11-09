@@ -130,7 +130,7 @@ class SnowPortalComposite {
                 }
 
                 let sql = SnowPortalComposite.findExistingStatsSql(this._key, areaString);
-                this._pgPool.pool().query(sql).then(result => {
+                this._pgPool.query(sql).then(result => {
                     logger.info(`SnowPortalComposite#getStatsForArea ----- Found ${result.rows.length} statistics for ${areaString} and ${this._key}`);
                     if(result.rows.length) {
                         let row = result.rows[0];
@@ -173,7 +173,7 @@ class SnowPortalComposite {
                      */
                     let sql = SnowPortalComposite.createStatsSql(this._key, areaObj.type, areaObj.value, this._sensors, this._satellites);
                     console.log(`#### SQL`, sql);
-                    this._pgLongRunningPool.pool().query(sql).then((results) => {
+                    this._pgLongRunningPool.query(sql).then((results) => {
                         let classDistribution = {};
                         let total = 0;
                         let visibleTotal = 0;
@@ -223,7 +223,7 @@ class SnowPortalComposite {
                             areaString,
                             statistics.aoiCoverage,
                             statistics.classDistribution);
-                        this._pgPool.pool().query(sql).then(() => {
+                        this._pgPool.query(sql).then(() => {
                             logger.info(`SnowPortalComposite#getStatsForArea ------ Saving stats OK`);
                             resolve(statistics);
                         }).catch(error => {
@@ -251,7 +251,7 @@ class SnowPortalComposite {
      */
     _initMetadata() {
         let getMetadataSql = SnowPortalComposite.getMetadataSql(this._startDay, this._endDay, this._period, this._sensors, this._satellites);
-        return this._pgPool.pool().query(getMetadataSql).then(result => {
+        return this._pgPool.query(getMetadataSql).then(result => {
             if (result.rows.length > 1) {
                 logger.warn(`SnowPortalComposite#constructor More then one metadata results! (${result.rows.length}) ${result.rows}`);
             }
@@ -327,7 +327,7 @@ class SnowPortalComposite {
                         `for sensors ${this._sensors} in area ${this._area} from scenes [${usedScenes}]
                     | key: ${this._key}
                     | SQL: ${sql}`);
-                    this._pgLongRunningPool.pool().query(sql).then(() => {
+                    this._pgLongRunningPool.query(sql).then(() => {
                         logger.info(`SnowPortalComposite#_create ------ Generating n-day composite finished.`);
                         resolve();
                     }).catch(error => {
@@ -349,7 +349,7 @@ class SnowPortalComposite {
                      * get IDs of used scenes
                      */
                     let sql = SnowPortalComposite.getScenesIDsSql(this._startDay, this._sensors);
-                    this._pgPool.pool().query(sql).then((results) => {
+                    this._pgPool.query(sql).then((results) => {
                         _.each(results.rows, scene => {
                             usedScenes.push(scene.id);
                         });
@@ -373,7 +373,7 @@ class SnowPortalComposite {
                             `for sensors ${this._sensors}/satellites ${this._satellites} in area ${this._area} from scenes ${usedScenes}
                         | key: ${this._key}
                         | SQL: ${sql}`);
-                        this._pgLongRunningPool.pool().query(sql).then(() => {
+                        this._pgLongRunningPool.query(sql).then(() => {
                             logger.info(`SnowPortalComposite#_create ------ Generating one-day composite finished.`);
                             resolve();
                         }).catch(error => {
@@ -390,7 +390,7 @@ class SnowPortalComposite {
                 usedScenes.sort();
                 let sql = SnowPortalComposite.saveCompositeMetadataSql(this._key, this._startDay, this._endDay, this._period, this._sensors, this._satellites, this._area, usedScenes);
                 logger.info(`SnowPortalComposite#_create ------ Saving composite metadata | SQL: ${sql}`);
-                this._pgPool.pool().query(sql).then(() => {
+                this._pgPool.query(sql).then(() => {
                     logger.info(`SnowPortalComposite#_create ------ Saving composite metadata finished.`);
                     resolve();
                 }).catch(error => {

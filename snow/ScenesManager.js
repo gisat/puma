@@ -257,7 +257,7 @@ class ScenesManager {
         query.push(`AND a."the_geom" && s."reclass_rast"`);
         query.push(`ORDER BY date;`);
 
-        return this._pgLongPool.query(query.join(` `))
+        return this._pgPool.query(query.join(` `))
             .then((result) => {
                 return result.rows;
             });

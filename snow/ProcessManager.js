@@ -94,7 +94,7 @@ class ProcessManager {
         query.push(`'${uri}',`);
         query.push(`'${JSON.stringify(other).replace(/'/g, "\\\"")}'`);
         query.push(`);`);
-        return this._pgPool.pool().query(query.join(` `)).then(() => {
+        return this._pgPool.query(query.join(` `)).then(() => {
             return this.getProcessesByKey(key);
         });
     }
@@ -147,7 +147,7 @@ class ProcessManager {
 
         query.push(`) = 1;`);
 
-        return this._pgPool.pool().query(query.join(` `))
+        return this._pgPool.query(query.join(` `))
             .then((result) => {
                 if (!result.rowCount) throw new Error(`probably more than one process, use key as identification`);
             });

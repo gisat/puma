@@ -25,7 +25,7 @@ class SnowConfigurationsTable extends SourceTable {
 
         logger.info(`INFO PolygonsSourceTable#create sql: ` + sql);
 
-        this._pgPool.pool().query(sql).then(function(res){
+        this._pgPool.query(sql).then(function(res){
             logger.info(`INFO PolygonsSourceTable#create : Table was created succesfully`);
         }).catch(err => {
             throw new Error(
@@ -56,7 +56,7 @@ class SnowConfigurationsTable extends SourceTable {
             `('${values.join("','")}', CURRENT_TIMESTAMP);`;
 
         logger.info(`INFO LinesSourceTable#insert sql: ` + sql);
-        return this._pgPool.pool().query(sql).then(function(res){
+        return this._pgPool.query(sql).then(function(res){
             logger.info(`INFO LinesSourceTable#insert : Record was inserted succesfully`);
             return {
                 status: "OK",
@@ -84,7 +84,7 @@ class SnowConfigurationsTable extends SourceTable {
             ` ORDER BY ts DESC;`;
 
         logger.info(`INFO SourceTable#selectAll sql: ` + sql);
-        return this._pgPool.pool().query(sql).then(function(res){
+        return this._pgPool.query(sql).then(function(res){
             return {
                 status: "OK",
                 message: "Selection successful",
