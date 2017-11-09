@@ -154,7 +154,7 @@ class PgUsers {
      * @returns {Promise<Number>} Promise of id of the
      */
     create(password, name, email) {
-        new PasswordHash(password).toString().then(hash => {
+        return new PasswordHash(password).toString().then(hash => {
             return this.pgPool.query(`
 			INSERT INTO ${this.schema}.panther_users (email, password, name) 
 				VALUES ('${email}', '${hash}', '${name}') 

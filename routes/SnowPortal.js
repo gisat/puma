@@ -3,8 +3,8 @@ let logger = require('../common/Logger').applicationWideLogger;
 
 let ScenesManager = require('../snow/ScenesManager');
 let CompositeManager = require('../snow/CompositeManager');
-
 let FileSystemManager = require(`../snow/FileSystemManager`);
+let UserRegistration = require(`../snow/UserRegistration`);
 
 let processes = {};
 
@@ -15,14 +15,26 @@ class SnowPortal {
         this._fileSystemManager = new FileSystemManager(this._pgPool);
         this._scenesManager = new ScenesManager(this._pgPool, this._pgLongRunningPool);
         this._compositeManager = new CompositeManager(this._pgPool, this._pgLongRunningPool);
+        this._userRegistration = new UserRegistration(this._pgPool);
 
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenes.bind(this));
         app.post("/api/snowportal/composites", this.getComposites.bind(this));
+        app.post(`/api/snowportal/registration`, this.registration.bind(this));
 
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
 
         app.post(`/rest/snowportal/download`, this.download.bind(this));
+    }
+
+    registration(request, response) {
+        this._userRegistration.register(request.body)
+            .then((registrationResponse) => {
+                response.status(registrationResponse.success ? 200 : 500).send(registrationResponse);
+            })
+            .catch((error) => {
+                response.status(500).send({message: error.message, success: false});
+            })
     }
 
     download(request, response) {
