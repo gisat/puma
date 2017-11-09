@@ -37,14 +37,14 @@ class FileSystemManager {
                             if (request.hasOwnProperty(`scenes`)) {
                                 request.scenes.forEach((sceneName) => {
                                     packageContentList.push(
-                                        `${config.snow.paths.scenesGeotiffStoragePath}/${sceneName}.tiff`
+                                        `${config.snow.paths.scenesGeotiffStoragePath}/${sceneName}.tif`
                                     );
                                 });
                             }
                             if (request.hasOwnProperty(`composites`)) {
                                 request.composites.forEach((compositeName) => {
                                     packageContentList.push(
-                                        `${config.snow.paths.compositesGeotiffStoragePath}/${compositeName}.tiff`
+                                        `${config.snow.paths.compositesGeotiffStoragePath}/${compositeName}.tif`
                                     );
                                 });
                             }
