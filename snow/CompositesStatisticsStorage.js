@@ -130,7 +130,7 @@ class CompositesStatisticsStorage {
 
         return this._pgPool.query(query.join(` `))
             .then((result) => {
-                if(result.rowCount === 0) {
+                if(result.rowCount === 0 && !removeAll) {
                     throw new Error(`Multiple records found! Use removeAll switch to force delete!`);
                 } else {
                     return true;
