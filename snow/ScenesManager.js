@@ -30,7 +30,7 @@ class ScenesManager {
 
         let processTicket = this._processManager.getProcessKey(owner, filter);
 
-        return this._processManager.getProcessesByKey(processTicket, config.snow.developement)
+        return this._processManager.getProcessesByKey(processTicket)
             .then((processes) => {
                 if (!processes.length) {
                     return this._processManager.createProcess(owner, filter)

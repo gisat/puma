@@ -27,19 +27,19 @@ class ProcessManager {
         return pgPool.query(query.join(` `));
     }
 
-    getProcessesById(id, remove) {
-        return this.getProcesses(id, null, null, remove);
+    getProcessesById(id) {
+        return this.getProcesses(id, null, null);
     }
 
-    getProcessesByKey(key, remove) {
-        return this.getProcesses(null, key, null, remove);
+    getProcessesByKey(key) {
+        return this.getProcesses(null, key, null);
     }
 
-    getProcessesByOwner(owner, remove) {
-        return this.getProcesses(null, null, owner, remove);
+    getProcessesByOwner(owner) {
+        return this.getProcesses(null, null, owner);
     }
 
-    getProcesses(id, key, owner, remove) {
+    getProcesses(id, key, owner) {
         if (!id && !key && !owner) return Promise.rejected(`no arguments`);
 
         let query = [];
@@ -63,7 +63,7 @@ class ProcessManager {
             .then((processes) => {
                 let promises = [];
                 processes.forEach((process) => {
-                    if (process.error || (remove && process.ended)) {
+                    if (process.ended) {
                         promises.push(
                             this.removeProcessByKey(process.key)
                         );
