@@ -196,6 +196,15 @@ class ProcessManager {
         if (!owner) owner = 'NULL';
         return hash({owner: owner, request: request, other: other});
     }
+
+    static clearUnfinishedProcesses(pgPool) {
+        let query = [];
+
+        query.push(`DELETE FROM "public"."processes"`);
+        query.push(`WHERE ended IS NULL;`);
+
+        return pgPool.query(query.join(` `));
+    }
 }
 
 module.exports = ProcessManager;

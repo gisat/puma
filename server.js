@@ -163,7 +163,10 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
 }).then(() => {
     prepareSnowDirecotries();
 }).then(() => {
-    ProcessManager.initProcessPgTable(pool);
+    ProcessManager.initProcessPgTable(pool)
+        .then(() => {
+            return ProcessManager.clearUnfinishedProcesses(pool);
+        });
     ScenesStatisticsStorage.initScenesStatisticsPgTable(pool);
     CompositeManager.initCompositesPgTable(pool)
         .then(() => {
