@@ -20,6 +20,7 @@ let ProcessManager = require(`./snow/ProcessManager`);
 let ScenesStatisticsStorage = require(`./snow/ScenesStatisticsStorage`);
 let CompositeManager = require(`./snow/CompositeManager`);
 let CompositesStatisticsStorage = require(`./snow/CompositesStatisticsStorage`);
+let FileSystemManager = require(`./snow/FileSystemManager`);
 
 process.on('uncaughtException', function (err) {
     logger.error("Caught exception: ", err);
@@ -182,6 +183,7 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
         .then(() => {
             return CompositeManager.clearMetadataWithoutComposites(pool);
         });
+    FileSystemManager.initFileSystemManagerPgTable(pool);
 }).then(() => {
     app = express();
     async.series([
