@@ -63,12 +63,18 @@ class AttributesForInfo extends Attributes {
       // if there are no attributes mapped for current gid
       if (attributesPromises.length === 0){
         attributesPromises.push(new Promise((resolve,reject) =>{
-          let data = dataViews[0].rows[0];
-          resolve({
-            gid: data.gid,
-            name: data.name,
-            geom: data.geometry
+          let data = null;
+          dataViews.map(view => {
+            if (view.rows.length > 0){
+              let info = view.rows[0];
+              data = {
+                gid: info.gid,
+                name: info.name,
+                geom: info.geometry
+              }
+            }
           });
+          resolve(data);
         }));
       }
 
