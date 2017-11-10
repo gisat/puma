@@ -17,7 +17,9 @@ class UserRegistration {
             if(!username || !password || !email) {
                 return Promise.reject(new Error(`No username, password or email!`));
             } else if(
-                !username.match(/^[a-zA-Z0-9_]{6,}$/)
+                (!username.match(/^[a-zA-Z0-9_]{6,}$/)
+                    && !username.match(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i)
+                )
                 || !password.match(/[a-zA-Z0-9_]{6,}/)
                 || !email.match(/^(([^<>()\[\]\.,;:\s@\"]+(\.[^<>()\[\]\.,;:\s@\"]+)*)|(\".+\"))@(([^<>()[\]\.,;:\s@\"]+\.)+[^<>()[\]\.,;:\s@\"]{2,})$/i)
             ) {
