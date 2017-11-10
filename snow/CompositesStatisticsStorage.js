@@ -24,7 +24,7 @@ class CompositesStatisticsStorage {
     }
 
     insertStatistics(key, date, satellites, sensors, areaType, areaKey, stats, areaTable) {
-        if(!key || !date || !satellites || !sensors || !areaType || !areaKey || !stats) {
+        if (!key || !date || !satellites || !sensors || !areaType || !areaKey || !stats) {
             return Promise.reject(`Missing some arguments!`);
         }
 
@@ -48,7 +48,7 @@ class CompositesStatisticsStorage {
 
         return this._pgPool.query(query.join(` `))
             .then((result) => {
-                if(result.rowCount === 0) {
+                if (result.rowCount === 0) {
                     throw new Error(`Unable to save composite statistics!`);
                 } else {
                     return true;
@@ -57,7 +57,7 @@ class CompositesStatisticsStorage {
     }
 
     getStatistics(key, date, satellites, sensors, areaType, areaKey, areaTable) {
-        if(!key || !date || !satellites || !sensors|| !areaType || !areaKey) {
+        if (!key || !date || !satellites || !sensors || !areaType || !areaKey) {
             return Promise.reject(`Missing some arguments!`);
         }
 
@@ -76,13 +76,13 @@ class CompositesStatisticsStorage {
         query.push(`AND area_type='${areaType}'`);
         query.push(`AND area_key='${areaKey}'`);
 
-        if(areaTable) {
+        if (areaTable) {
             query.push(`AND area_table='${areaTable}'`);
         }
 
         return this._pgPool.query(query.join(` `))
             .then((result) => {
-                if(result.rows.length) {
+                if (result.rows.length) {
                     return result.rows[0].stats;
                 } else {
                     return false;
@@ -91,32 +91,32 @@ class CompositesStatisticsStorage {
     }
 
     deleteStatistics(key, date, satKey, sensorKey, areaType, areaKey, areaTable, removeAll) {
-        if(!key && !date && !satKey && !sensorKey && !areaType && !areaKey) {
+        if (!key && !date && !satKey && !sensorKey && !areaType && !areaKey) {
             return Promise.reject(`Missing all arguments`);
         }
 
         let query = [];
         let whereQuery = [];
 
-        if(key) {
+        if (key) {
             whereQuery.push(`composite_key='${key}'`);
         }
-        if(date) {
+        if (date) {
             whereQuery.push(`date='${date}'`);
         }
-        if(satKey) {
+        if (satKey) {
             whereQuery.push(`sat_key='${satKey}'`);
         }
-        if(sensorKey) {
+        if (sensorKey) {
             whereQuery.push(`sensor_key='${sensorKey}'`);
         }
-        if(areaType) {
+        if (areaType) {
             whereQuery.push(`area_type='${areaType}'`);
         }
-        if(areaKey) {
+        if (areaKey) {
             whereQuery.push(`area_key='${areaKey}'`);
         }
-        if(areaTable) {
+        if (areaTable) {
             whereQuery.push(`area_table='${areaTable}'`);
         }
 
@@ -124,16 +124,33 @@ class CompositesStatisticsStorage {
         query.push(`WHERE`);
         query.push(`${whereQuery.join(` AND `)}`);
 
-        if(!removeAll) {
+        if (!removeAll) {
             query.push(`AND (SELECT COUNT(*) FROM "composites"."statistics" WHERE ${whereQuery.join(` AND `)}) = 1`);
         }
 
         return this._pgPool.query(query.join(` `))
             .then((result) => {
-                if(result.rowCount === 0 && !removeAll) {
+                if (result.rowCount === 0 && !removeAll) {
                     throw new Error(`Multiple records found! Use removeAll switch to force delete!`);
                 } else {
                     return true;
+                }
+            });
+    }
+
+    getComposites() {
+        let query = [];
+
+        query.push(`SELECT key`);
+        query.push(`FROM "composites"."composites"`);
+        query.push(`WHERE processing IS FALSE;`);
+
+        return this._pgPool.query(query.join(` `))
+            .then((result) => {
+                if (result.rows.length) {
+                    return _.map(result.rows, 'key');
+                } else {
+                    return false;
                 }
             });
     }

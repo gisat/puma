@@ -1,10 +1,15 @@
 let _ = require("lodash");
 let logger = require('../common/Logger').applicationWideLogger;
 
+let config = require(`../config`);
+
 let ScenesManager = require('../snow/ScenesManager');
 let CompositeManager = require('../snow/CompositeManager');
 let FileSystemManager = require(`../snow/FileSystemManager`);
 let UserRegistration = require(`../snow/UserRegistration`);
+let ScenesStatisticsStorage = require(`../snow/ScenesStatisticsStorage`);
+let CompositesStatisticsStorage = require(`../snow/CompositesStatisticsStorage`);
+let GeoserverImporter = require(`../layers/GeoServerImporter`);
 
 let processes = {};
 
@@ -16,6 +21,14 @@ class SnowPortal {
         this._scenesManager = new ScenesManager(this._pgPool, this._pgLongRunningPool);
         this._compositeManager = new CompositeManager(this._pgPool, this._pgLongRunningPool);
         this._userRegistration = new UserRegistration(this._pgPool);
+        this._scenesStatisticsStorage = new ScenesStatisticsStorage(this._pgPool);
+        this._compositesStatisticsStorage = new CompositesStatisticsStorage(this._pgPool);
+        this._geoserverImporter = new GeoserverImporter(
+            config.geoserverPath,
+            config.geoserverUsername,
+            config.geoserverPassword,
+            config.snow.geoserverWorkspace
+        );
 
         app.get("/api/snowportal/scopeoptions", this.getScopeOptions.bind(this));
         app.post("/api/snowportal/scenes", this.getScenes.bind(this));
@@ -25,6 +38,8 @@ class SnowPortal {
         app.get("/rest/composites/metadata", this.getCompositesMetadata.bind(this));
 
         app.post(`/rest/snowportal/download`, this.download.bind(this));
+
+        this.checkForMissingGeoserverLayers();
     }
 
     registration(request, response) {
@@ -63,7 +78,7 @@ class SnowPortal {
      */
     getScenes(request, response) {
         this._scenesManager.getScenesStatistics(request).then((result) => {
-            if(result.success) {
+            if (result.success) {
                 response.status(200).send(result);
             } else {
                 response.status(500).send(result);
@@ -83,7 +98,7 @@ class SnowPortal {
      */
     getComposites(request, response) {
         this._compositeManager.getCompositesStatistics(request).then((result) => {
-            if(result.success) {
+            if (result.success) {
                 response.status(200).send(result);
             } else {
                 response.status(500).send(result);
@@ -162,6 +177,66 @@ class SnowPortal {
                 success: false
             });
         });
+    }
+
+    checkForMissingGeoserverLayers() {
+        this._geoserverImporter.getGeoserverLayers()
+            .then(async (geoserverLayers) => {
+                await this._scenesStatisticsStorage.getScenesWithStatistics()
+                    .then(async (sceneIds) => {
+                        let sceneKeys = _.map(sceneIds, (sceneId) => {
+                            return `scene_${sceneId}`;
+                        });
+                        let geoserverSceneLayers = _.filter(geoserverLayers, (geoserverLayer) => {
+                            return geoserverLayer.startsWith(`scene_`);
+                        });
+                        for (let sceneKey of sceneKeys) {
+                            if (!geoserverSceneLayers.includes(sceneKey)) {
+                                console.log(`#### Importing missing geoserver layer ${sceneKey}`);
+                                await this._geoserverImporter.importLayer(
+                                    {
+                                        systemName: sceneKey,
+                                        type: `raster`,
+                                        file: `${config.snow.paths.scenesGeotiffStoragePath}/${sceneKey}.tif`
+                                    },
+                                    true
+                                );
+                            }
+                        }
+                        let unusedGoeserverLayers = _.difference(geoserverSceneLayers, sceneKeys);
+                        for(let unusedGeoserverLayer of unusedGoeserverLayers) {
+                            console.log(`#### Removing unused geoserver layer ${unusedGeoserverLayer}`);
+                            await this._geoserverImporter.removeRasterLayer(unusedGeoserverLayer);
+                        }
+                    });
+                await this._compositesStatisticsStorage.getComposites()
+                    .then(async (compositeKeys) => {
+                        compositeKeys = _.map(compositeKeys, (compositeKey) => {
+                            return `composite_${compositeKey}`;
+                        });
+                        let geoserverCompositeLayers = _.filter(geoserverLayers, (geoserverLayer) => {
+                            return geoserverLayer.startsWith(`composite_`);
+                        });
+                        for (let compositeKey of compositeKeys) {
+                            if (!geoserverCompositeLayers.includes(compositeKey)) {
+                                console.log(`#### Importing missing geoserver layer ${compositeKey}`);
+                                await this._geoserverImporter.importLayer(
+                                    {
+                                        systemName: compositeKey,
+                                        type: `raster`,
+                                        file: `${config.snow.paths.compositesGeotiffStoragePath}/${compositeKey}.tif`
+                                    },
+                                    true
+                                );
+                            }
+                        }
+                        let unusedGoeserverLayers = _.difference(geoserverCompositeLayers, compositeKeys);
+                        for(let unusedGeoserverLayer of unusedGoeserverLayers) {
+                            console.log(`#### Removing unused geoserver layer ${unusedGeoserverLayer}`);
+                            await this._geoserverImporter.removeRasterLayer(unusedGeoserverLayer);
+                        }
+                    });
+            });
     }
 }
 
