@@ -177,6 +177,9 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
             return CompositeManager.initDurationPgTable(pool);
         })
         .then(() => {
+            return CompositeManager.updateCompositeKeys(pool);
+        })
+        .then(() => {
             CompositesStatisticsStorage.initCompositesStatisticsPgTable(pool);
         });
     CompositeManager.initMetadataPgTable(pool)

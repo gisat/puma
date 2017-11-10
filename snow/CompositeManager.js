@@ -380,7 +380,7 @@ class CompositeManager {
     }
 
     createComposite(compositeMetadata, fromComposites) {
-        let compositeKey = this.getCompositeKey(compositeMetadata);
+        let compositeKey = CompositeManager.getCompositeKey(compositeMetadata);
         return this.checkForMissingMetadata(compositeKey, compositeMetadata)
             .then(() => {
                 return this.isCompositeExists(compositeKey)
@@ -730,13 +730,13 @@ class CompositeManager {
         query.push(`m."date"::text AS date,`);
         query.push(`m."filename" AS filename`);
         query.push(`FROM "scenes"."metadata" AS m`);
-        query.push(`LEFT JOIN "scenes"."scenes" AS s ON m."filename"=s."filename"`);
         query.push(`LEFT JOIN "public"."europe" AS e ON e."the_geom" IS NOT NULL`);
         query.push(`WHERE`);
-        query.push(`m."date" BETWEEN '${timeRange.start}' AND '${timeRange.end}'`);
+        query.push(`m."min_cxhull" IS NOT NULL`);
+        query.push(`AND m."date" BETWEEN '${timeRange.start}' AND '${timeRange.end}'`);
         query.push(`AND m."sensor_key"=ANY(ARRAY['${sensors.join(`', '`)}'])`);
         query.push(`AND m."sat_key"=ANY(ARRAY['${satellites.join(`', '`)}'])`);
-        query.push(`AND s."reclass_rast" && e."the_geom"`);
+        query.push(`AND m."min_cxhull" && e."the_geom"`);
         query.push(`ORDER BY date;`);
 
         return this._pgPool.query(query.join(` `))
@@ -776,8 +776,15 @@ class CompositeManager {
             });
     }
 
-    getCompositeKey(compositeMetadata) {
-        return hash(compositeMetadata);
+    static getCompositeKey(compositeMetadata) {
+        let metadata = {
+            from: compositeMetadata.from,
+            to: compositeMetadata.to,
+            period: compositeMetadata.period,
+            sensors: compositeMetadata.sensors.sort(),
+            satellites: compositeMetadata.satellites.sort()
+        };
+        return hash(metadata);
     }
 
     isCompositeExists(compositeKey) {
@@ -958,6 +965,45 @@ class CompositeManager {
                 `CREATE INDEX IF NOT EXISTS composites_compsites_color_rast_idx ON "composites"."composites" USING gist(ST_ConvexHull(color_rast));`
             );
         })
+    }
+
+    static updateCompositeKeys(pgPool) {
+        let query = [];
+
+        query.push(`SELECT`);
+        query.push(`composite_key,`);
+        query.push(`date_from::text AS from,`);
+        query.push(`date_to::text AS to,`);
+        query.push(`period::integer,`);
+        query.push(`sensors::text[],`);
+        query.push(`satellites::text[]`);
+        query.push(`FROM "composites"."metadata";`);
+
+        return pgPool.query(query.join(` `))
+            .then((result) => {
+                return result.rows;
+            })
+            .then((compositesMetadata) => {
+                compositesMetadata.forEach((compositeMetadata) => {
+                    let compositeKey = CompositeManager.getCompositeKey(compositeMetadata);
+                    if (compositeKey !== compositeMetadata.composite_key) {
+                        pgPool.query(
+                            `BEGIN;
+                                        UPDATE "composites"."composites"
+                                        SET key = '${compositeKey}'
+                                        WHERE key = '${compositeMetadata.composite_key}';
+                                        UPDATE "composites"."metadata"
+                                        SET composite_key = '${compositeKey}'
+                                        WHERE composite_key = '${compositeMetadata.composite_key}';
+                                    COMMIT;`
+                        ).then(() => {
+                            console.log(
+                                `#### Composite key changed from ${compositeKey} to ${compositeMetadata.composite_key}`
+                            );
+                        });
+                    }
+                });
+            });
     }
 }
 
