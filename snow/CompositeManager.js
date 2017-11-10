@@ -983,12 +983,13 @@ class CompositeManager {
             .then((result) => {
                 return result.rows;
             })
-            .then((compositesMetadata) => {
-                compositesMetadata.forEach((compositeMetadata) => {
+            .then(async (compositesMetadata) => {
+                for(let compositeMetadata of compositesMetadata) {
                     let compositeKey = CompositeManager.getCompositeKey(compositeMetadata);
                     if (compositeKey !== compositeMetadata.composite_key) {
-                        pgPool.query(
-                            `BEGIN;
+                        await new Promise((resolve) => {
+                            pgPool.query(
+                                `BEGIN;
                                         UPDATE "composites"."composites"
                                         SET key = '${compositeKey}'
                                         WHERE key = '${compositeMetadata.composite_key}';
@@ -996,13 +997,17 @@ class CompositeManager {
                                         SET composite_key = '${compositeKey}'
                                         WHERE composite_key = '${compositeMetadata.composite_key}';
                                     COMMIT;`
-                        ).then(() => {
-                            console.log(
-                                `#### Composite key changed from ${compositeKey} to ${compositeMetadata.composite_key}`
-                            );
+                            ).then(() => {
+                                console.log(
+                                    `#### Composite key changed from ${compositeKey} to ${compositeMetadata.composite_key}`
+                                );
+                                resolve();
+                            }).catch((error) => {
+                                console.log(error);
+                            });
                         });
                     }
-                });
+                }
             });
     }
 }
