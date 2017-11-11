@@ -835,7 +835,12 @@ class CompositeManager {
         if (!config.snow.backgroundGenerator.enabled) return;
         Promise.resolve().then(async () => {
                 for (let i = 0; i < config.snow.backgroundGenerator.passes; i++) {
-                    await this.getAvailableDateBorders()
+                    await this.getAvailableDateBorders(
+                        {
+                            from: config.snow.backgroundGenerator.dailyComposites.date.from,
+                            to: config.snow.backgroundGenerator.dailyComposites.date.to
+                        }
+                    )
                         .then(async (borders) => {
                             console.log(`#### BG #### Time range ${borders.start} - ${borders.end}`);
                             let parameters = config.snow.backgroundGenerator.dailyComposites;
