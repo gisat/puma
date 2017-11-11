@@ -40,6 +40,9 @@ class ScenesManager {
                                     return this.getStatisticsForFilteredScenes(scenes, filter);
                                 })
                                 .then((scenesStatistics) => {
+                                    scenesStatistics = _.filter(scenesStatistics, (sceneStatistics) => {
+                                        return sceneStatistics.aoiCoverage > 0;
+                                    });
                                     this._processManager.updateProcessByKey(processTicket, {
                                         data: scenesStatistics,
                                         success: true
@@ -242,7 +245,6 @@ class ScenesManager {
         query.push(`m."date"::text AS date,`);
         query.push(`m."filename" AS filename`);
         query.push(`FROM "scenes"."metadata" AS m`);
-        query.push(`LEFT JOIN "scenes"."scenes" AS s ON m."filename"=s."filename"`);
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
@@ -251,10 +253,11 @@ class ScenesManager {
         }
 
         query.push(`WHERE`);
-        query.push(`m."date" BETWEEN '${timeRange.start}' AND '${timeRange.end}'`);
+        query.push(`m."min_cxhull" IS NOT NULL`);
+        query.push(`AND m."date" BETWEEN '${timeRange.start}' AND '${timeRange.end}'`);
         query.push(`AND m."sensor_key"=ANY(ARRAY['${sensors.join(`', '`)}'])`);
         query.push(`AND m."sat_key"=ANY(ARRAY['${satellites.join(`', '`)}'])`);
-        query.push(`AND a."the_geom" && s."reclass_rast"`);
+        query.push(`AND a."the_geom" && m."min_cxhull"`);
         query.push(`ORDER BY date;`);
 
         return this._pgPool.query(query.join(` `))
