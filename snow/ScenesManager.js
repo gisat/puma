@@ -123,17 +123,18 @@ class ScenesManager {
                                         if (!exists) {
                                             return this._rasterPublisher.exportRasterFromPgTableToGeotiff(
                                                 `scenes`, `scenes`, scene.filename, outputFilePath, `color_rast`
-                                            ).then(() => {
-                                                return this._geoserverImporter.importLayer(
-                                                    {
-                                                        type: `raster`,
-                                                        systemName: sceneKey,
-                                                        file: outputFilePath
-                                                    },
-                                                    true
-                                                );
-                                            })
+                                            )
                                         }
+                                    })
+                                    .then(() => {
+                                        return this._geoserverImporter.importLayer(
+                                            {
+                                                type: `raster`,
+                                                systemName: sceneKey,
+                                                file: outputFilePath
+                                            },
+                                            true
+                                        );
                                     })
                                     .then(() => {
                                         return this._scenesStatisticsStorage.insertSceneStatistics(
