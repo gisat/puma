@@ -154,14 +154,23 @@ class ScenesManager {
                 });
                 await new Promise((resolve) => {
                     let timeout = setInterval(() => {
-                        if(running < config.snow.cores) {
+                        if (running < config.snow.cores) {
                             clearInterval(timeout);
                             resolve();
                         }
                     }, 100);
                 });
             }
-            resolve(statistics);
+            await new Promise((resolve) => {
+                let timeout = setInterval(() => {
+                    if (running === 0) {
+                        clearInterval(timeout);
+                        resolve();
+                    }
+                }, 100);
+            }).then(() => {
+                resolve(statistics);
+            });
         });
     }
 
