@@ -22,6 +22,8 @@ class ScenesManager {
             config.snow.geoserverWorkspace
         );
         this._fileSystemManager = new FileSystemManager(this._pgPool);
+
+        this.removeDuplicatedScenes();
     }
 
     getScenesStatistics(request) {
@@ -317,6 +319,44 @@ class ScenesManager {
             .then((result) => {
                 return result.rows;
             });
+    }
+
+    removeDuplicatedScenes() {
+        return this._pgPool.query(
+            `SELECT * FROM (
+                    SELECT
+                        substring(filename, 17, 15) AS filename_date,
+                        count(date)                AS count,
+                        array_agg(filename)        AS filenames
+                    FROM scenes.metadata
+                    WHERE sensor_key = 'slstr'
+                    GROUP BY filename_date) AS foo
+                 WHERE foo.count >= 2;`
+        ).then(async (result) => {
+            let duplicities = result.rows;
+            if (duplicities.length) {
+                for (let duplicity of duplicities) {
+                    let filenames = duplicity.filenames.sort();
+                    for (let i = 0; i < filenames.length - 1; i++) {
+                        console.log(`#### Removing duplicated scene ${filenames[i]}`);
+                        await this._pgPool.query(
+                            `DELETE FROM "scenes"."metadata"
+                                        WHERE filename = '${filenames[i]}';`
+                        ).then(() => {
+                            return this._pgPool.query(
+                                `DELETE FROM "scenes"."scenes"
+                                        WHERE filename = '${filenames[i]}';`
+                            );
+                        }).then(() => {
+                            return this._pgPool.query(
+                                `DELETE FROM "scenes"."statistics"
+                                        WHERE scene_id NOT IN (SELECT id FROM "scenes"."metadata");`
+                            );
+                        });
+                    }
+                }
+            }
+        })
     }
 
     getScenesTotalCount() {
