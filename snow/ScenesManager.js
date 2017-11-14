@@ -191,14 +191,8 @@ class ScenesManager {
         query.push(`UPDATE "scenes"."scenes" AS s`);
         query.push(`SET "color_rast" = ST_ColorMap(`);
         query.push(`"reclass_rast",`);
-        query.push(`'6 128 203 221\n`);
-        query.push(`5 173 234 166\n`);
-        query.push(`4 13 24 53\n`);
-        query.push(`3 61 61 61\n`);
-        query.push(`2 25 25 25\n`);
-        query.push(`1 102 0 20\n`);
-        query.push(`nv 255 255 255 255',`);
-        query.push(`'NEAREST')`);
+        query.push(`'${config.snow.rasters.colorMap.composite.colorMap}',`);
+        query.push(`'${config.snow.rasters.colorMap.composite.method}')`);
         query.push(`FROM (`);
         query.push(`SELECT filename`);
         query.push(`FROM "scenes"."metadata"`);
