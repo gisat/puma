@@ -120,6 +120,12 @@ class ScenesManager {
                                     })
                             })
                             .then((sceneStatistics) => {
+                                return this.createColoredScene(scene)
+                                    .then(() => {
+                                        return sceneStatistics;
+                                    });
+                            })
+                            .then((sceneStatistics) => {
                                 let outputFilePath = `${config.snow.paths.scenesGeotiffStoragePath}/${sceneKey}.tif`;
                                 return this._fileSystemManager.isFileExists(outputFilePath)
                                     .then((exists) => {
@@ -151,6 +157,8 @@ class ScenesManager {
                 }).then((sceneStatistics) => {
                     statistics.push(sceneStatistics);
                     running--;
+                }).catch((error) => {
+                    reject(error);
                 });
                 await new Promise((resolve) => {
                     let timeout = setInterval(() => {
@@ -158,7 +166,7 @@ class ScenesManager {
                             clearInterval(timeout);
                             resolve();
                         }
-                    }, 100);
+                    }, 10);
                 });
             }
             await new Promise((resolve) => {
@@ -167,11 +175,38 @@ class ScenesManager {
                         clearInterval(timeout);
                         resolve();
                     }
-                }, 100);
+                }, 10);
             }).then(() => {
                 resolve(statistics);
             });
         });
+    }
+
+    createColoredScene(scene) {
+        console.log(`#### Creating color scene for scene_${scene.key}`);
+        let query = [];
+
+        query.push(`BEGIN;`);
+        query.push(`SET work_mem=1048576;`);
+        query.push(`UPDATE "scenes"."scenes" AS s`);
+        query.push(`SET "color_rast" = ST_ColorMap(`);
+        query.push(`"reclass_rast",`);
+        query.push(`'6 128 203 221\n`);
+        query.push(`5 173 234 166\n`);
+        query.push(`4 13 24 53\n`);
+        query.push(`3 61 61 61\n`);
+        query.push(`2 25 25 25\n`);
+        query.push(`1 102 0 20\n`);
+        query.push(`nv 255 255 255 255',`);
+        query.push(`'NEAREST')`);
+        query.push(`FROM (`);
+        query.push(`SELECT filename`);
+        query.push(`FROM "scenes"."metadata"`);
+        query.push(`WHERE id = ${scene.key}) AS foo`);
+        query.push(`WHERE s."filename" = foo.filename;`);
+        query.push(`COMMIT`);
+
+        return this._pgLongPool.query(query.join(` `));
     }
 
     getAoiCoverageForSceneByFilter(scene, filter) {
