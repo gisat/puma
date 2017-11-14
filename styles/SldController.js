@@ -4,7 +4,7 @@ class SldController {
     constructor(app, pgPool) {
         this._pgPool = pgPool;
 
-        app.get('/rest/sld/choroplet', this.createChoroplethSld);
+        app.get('/rest/sld/choropleth', this.createChoroplethSld);
     }
 
     /**
