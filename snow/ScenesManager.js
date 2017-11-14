@@ -79,15 +79,18 @@ class ScenesManager {
 
     getStatisticsForFilteredScenes(scenes, filter) {
         let statistics = [];
-        scenes.forEach((scene) => {
-            let sceneId = scene.key;
-            let sceneKey = `scene_${sceneId}`;
-            let satKey = scene.satellite;
-            let sensorKey = scene.sensor;
-            let date = scene.date;
-            let areaType = filter.area.type;
-            let areaKey = filter.area.value;
-            statistics.push(
+        let running = 0;
+        return new Promise(async (resolve, reject) => {
+            for (let scene of scenes) {
+                let sceneId = scene.key;
+                let sceneKey = `scene_${sceneId}`;
+                let satKey = scene.satellite;
+                let sensorKey = scene.sensor;
+                let date = scene.date;
+                let areaType = filter.area.type;
+                let areaKey = filter.area.value;
+
+                running++;
                 this._scenesStatisticsStorage.getSceneStatistics(
                     sceneId,
                     date,
@@ -145,10 +148,21 @@ class ScenesManager {
                                     })
                             })
                     }
-                })
-            )
+                }).then((sceneStatistics) => {
+                    statistics.push(sceneStatistics);
+                    running--;
+                });
+                await new Promise((resolve) => {
+                    let timeout = setInterval(() => {
+                        if(running < config.snow.cores) {
+                            clearInterval(timeout);
+                            resolve();
+                        }
+                    }, 100);
+                });
+            }
+            resolve(statistics);
         });
-        return Promise.all(statistics);
     }
 
     getAoiCoverageForSceneByFilter(scene, filter) {
@@ -162,7 +176,7 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`FROM public.areas WHERE "KEY" = '${areaKey}'),`);
-        } else if(areaType === `noLimit`) {
+        } else if (areaType === `noLimit`) {
             query.push(`FROM "public"."europe"), `);
         }
 
@@ -171,7 +185,7 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
-        } else if(areaType === `noLimit`) {
+        } else if (areaType === `noLimit`) {
             query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
@@ -203,7 +217,7 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
-        } else if(areaType === `noLimit`) {
+        } else if (areaType === `noLimit`) {
             query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
@@ -249,7 +263,7 @@ class ScenesManager {
 
         if (areaType === `key`) {
             query.push(`LEFT JOIN "public"."areas" AS a ON a."KEY"='${areaKey}'`);
-        } else if(areaType === `noLimit`) {
+        } else if (areaType === `noLimit`) {
             query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
