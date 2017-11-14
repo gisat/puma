@@ -179,7 +179,7 @@ class ScenesManager {
                     }
                 }, 10);
             }).then(() => {
-                resolve(statistics);
+                resolve(_.orderBy(statistics, ['date'], ['asc']));
             });
         });
     }
