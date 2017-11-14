@@ -26,7 +26,10 @@ class CompositeManager {
         this._fileSystemManager = new FileSystemManager(this._pgPool);
         this._scenesManager = new ScenesManager(this._pgPool, this._pgLongPool);
 
-        this.backgroundDayCompositesGenerator();
+        this.recreateMissingColorComposites()
+            .then(() => {
+                return this.backgroundDayCompositesGenerator();
+            });
     }
 
     getCompositesStatistics(request) {
@@ -827,7 +830,7 @@ class CompositeManager {
 
     backgroundDayCompositesGenerator() {
         if (!config.snow.backgroundGenerator.enabled) return;
-        Promise.resolve().then(async () => {
+        return Promise.resolve().then(async () => {
                 for (let i = 0; i < config.snow.backgroundGenerator.passes; i++) {
                     await this.getAvailableDateBorders(
                         {
@@ -884,6 +887,47 @@ class CompositeManager {
                     end: result.rows[0].end
                 }
             });
+    }
+
+    recreateMissingColorComposites() {
+        return this._pgPool.query(
+            `SELECT key FROM "composites"."composites"
+                    WHERE "processing" IS FALSE
+                    AND "color_rast" IS NULL`
+        ).then((result) => {
+            return result.rows;
+        }).then((composites) => {
+            if (composites.length) {
+                let compositeKeys = _.map(composites, 'key');
+                return new Promise(async (resolve, reject) => {
+                    for (let compositeKey of compositeKeys) {
+                        await this.createColoredComposite(compositeKey)
+                            .then(() => {
+                                let compositeSystemName = `composite_${compositeKey}`;
+                                let compositePath = `${config.snow.paths.compositesGeotiffStoragePath}/${compositeSystemName}.tif`;
+                                return this._rasterPublisher.exportRasterFromPgTableToGeotiff(
+                                    `composites`,
+                                    `composites`,
+                                    compositeKey,
+                                    compositePath,
+                                    `color_rast`,
+                                    `key`
+                                ).then(() => {
+                                    return {
+                                        type: `raster`,
+                                        systemName: compositeSystemName,
+                                        file: compositePath
+                                    }
+                                })
+                            })
+                            .then((layer) => {
+                                return this._geoserverImporter.importLayer(layer, true)
+                            });
+                    }
+                    resolve();
+                });
+            }
+        });
     }
 
     static clearUnfinishedComposites(pgPool) {
@@ -983,7 +1027,7 @@ class CompositeManager {
                 return result.rows;
             })
             .then(async (compositesMetadata) => {
-                for(let compositeMetadata of compositesMetadata) {
+                for (let compositeMetadata of compositesMetadata) {
                     let compositeKey = CompositeManager.getCompositeKey(compositeMetadata);
                     if (compositeKey !== compositeMetadata.composite_key) {
                         await new Promise((resolve) => {
