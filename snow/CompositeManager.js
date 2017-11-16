@@ -9,6 +9,7 @@ let ScenesManager = require(`./ScenesManager`);
 let CompositesStatisticsStorage = require(`./CompositesStatisticsStorage`);
 let RasterPublisher = require(`./RasterPublisher`);
 let GeoserverImporter = require(`../layers/GeoServerImporter`);
+let NotificationWatchdog = require(`./NotificationWatchdog`);
 
 class CompositeManager {
     constructor(pgPool, pgLongPool) {
@@ -25,6 +26,7 @@ class CompositeManager {
         );
         this._fileSystemManager = new FileSystemManager(this._pgPool);
         this._scenesManager = new ScenesManager(this._pgPool, this._pgLongPool);
+        this._notificationWatchdog = new NotificationWatchdog(this._pgPool);
 
         this.recreateMissingColorComposites()
             .then(() => {
@@ -43,7 +45,10 @@ class CompositeManager {
                 if (!processes.length) {
                     return this._processManager.createProcess(owner, filter)
                         .then((processes) => {
-                            this.getFilteredScenes(filter)
+                            this._notificationWatchdog.add(owner, filter, `composites_${filter.period}`)
+                                .then(() => {
+                                    return this.getFilteredScenes(filter);
+                                })
                                 .then((scenes) => {
                                     if (scenes.length) {
                                         return this.createCompositesFromScenes(
@@ -61,13 +66,16 @@ class CompositeManager {
                                     }
                                 })
                                 .then((statistics) => {
-                                    this._processManager.updateProcessByKey(
-                                        processTicket,
-                                        {
-                                            data: statistics,
-                                            success: true
-                                        }
-                                    );
+                                    return this._notificationWatchdog.update(owner, filter, `composites_${filter.period}`, true)
+                                        .then(() => {
+                                            return this._processManager.updateProcessByKey(
+                                                processTicket,
+                                                {
+                                                    data: statistics,
+                                                    success: true
+                                                }
+                                            );
+                                        });
                                 })
                                 .catch((error) => {
                                     this._processManager.updateProcessByKey(

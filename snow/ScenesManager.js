@@ -5,6 +5,7 @@ let config = require(`../config`);
 let ProcessManager = require(`./ProcessManager`);
 let FileSystemManager = require(`./FileSystemManager`);
 let ScenesStatisticsStorage = require(`./ScenesStatisticsStorage`);
+let NotificationWatchdog = require(`./NotificationWatchdog`);
 let RasterPublisher = require(`./RasterPublisher`);
 let GeoserverImporter = require(`../layers/GeoServerImporter`);
 
@@ -22,6 +23,7 @@ class ScenesManager {
             config.snow.geoserverWorkspace
         );
         this._fileSystemManager = new FileSystemManager(this._pgPool);
+        this._notificationWatchdog = new NotificationWatchdog(this._pgPool);
 
         this.removeDuplicatedScenes();
     }
@@ -39,16 +41,22 @@ class ScenesManager {
                         .then((processes) => {
                             this.getFilteredScenes(filter)
                                 .then((scenes) => {
-                                    return this.getStatisticsForFilteredScenes(scenes, filter);
+                                    return this._notificationWatchdog.add(owner, filter, `scenes`)
+                                        .then(() => {
+                                            return this.getStatisticsForFilteredScenes(scenes, filter);
+                                        });
                                 })
                                 .then((scenesStatistics) => {
                                     scenesStatistics = _.filter(scenesStatistics, (sceneStatistics) => {
                                         return sceneStatistics.aoiCoverage > 0;
                                     });
-                                    this._processManager.updateProcessByKey(processTicket, {
-                                        data: scenesStatistics,
-                                        success: true
-                                    });
+                                    return this._notificationWatchdog.finish(owner, filter, `scenes`)
+                                        .then(() => {
+                                            return this._processManager.updateProcessByKey(processTicket, {
+                                                data: scenesStatistics,
+                                                success: true
+                                            });
+                                        });
                                 })
                                 .catch((error) => {
                                     this._processManager.updateProcessByKey(
