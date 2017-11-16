@@ -186,7 +186,7 @@ class NotificationWatchdog {
 
                         let sensorsString = ``;
                         _.each(sensors, (satellites, sensor) => {
-                            sensorsString += `${sensorsString.length ? '-' : ''}${sensor}`;
+                            sensorsString += `${sensorsString.length ? '_' : ''}${sensor}`;
                             _.each(satellites, satellite => {
                                 sensorsString += `-${satellite}`;
                             })
