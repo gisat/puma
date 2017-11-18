@@ -201,8 +201,15 @@ class ScenesManager {
         query.push(`UPDATE "scenes"."scenes" AS s`);
         query.push(`SET "color_rast" = ST_ColorMap(`);
         query.push(`"reclass_rast",`);
-        query.push(`'${config.snow.rasters.colorMap.composite.colorMap}',`);
-        query.push(`'${config.snow.rasters.colorMap.composite.method}')`);
+
+        if (scene.sensor === 'msi') {
+            query.push(`'${config.snow.rasters.colorMap.composite_s2.colorMap}',`);
+            query.push(`'${config.snow.rasters.colorMap.composite_s2.method}')`);
+        } else {
+            query.push(`'${config.snow.rasters.colorMap.composite.colorMap}',`);
+            query.push(`'${config.snow.rasters.colorMap.composite.method}')`);
+        }
+
         query.push(`FROM (`);
         query.push(`SELECT filename`);
         query.push(`FROM "scenes"."metadata"`);
@@ -228,7 +235,7 @@ class ScenesManager {
             query.push(`FROM "public"."europe"), `);
         }
 
-        query.push(`(SELECT sum(ST_Count(st_clip(s."reclass_rast", a."the_geom"))) * 250000`);
+        query.push(`(SELECT sum(ST_Count(ST_Clip(s."reclass_rast", 1, a."the_geom", 0, TRUE))) * ${scene.sensor === 'msi' ? config.snow.aoi.sentinel2 : config.snow.aoi.other}`);
         query.push(`FROM "scenes"."scenes" AS s LEFT JOIN "scenes"."metadata" AS m ON m."filename" = s."filename"`);
 
         if (areaType === `key`) {
@@ -237,7 +244,7 @@ class ScenesManager {
             query.push(`LEFT JOIN "public"."europe" AS a ON a."the_geom" IS NOT NULL`);
         }
 
-        query.push(`WHERE m."id" = ${scene.key})`);
+        query.push(`WHERE m."id" = ${scene.key} AND ST_Intersects(m."min_cxhull", a."the_geom"))`);
         query.push(`)) AS foo(aoiSize, rasterSize);`);
 
         return this._pgLongPool.query(query.join(` `))
@@ -259,7 +266,7 @@ class ScenesManager {
         query.push(`(foo.pvc).value::integer AS value,`);
         query.push(`sum((foo.pvc).count)::integer AS count`);
         query.push(`FROM`);
-        query.push(`(SELECT ST_ValueCount(ST_Clip(s.reclass_rast, a.the_geom)) AS pvc`);
+        query.push(`(SELECT ST_ValueCount(ST_Clip(s."reclass_rast", 1, a."the_geom", 0, TRUE)) AS pvc`);
         query.push(`FROM "scenes"."scenes" AS s`);
         query.push(`LEFT JOIN "scenes"."metadata" AS m ON m."filename"=s."filename"`);
 
@@ -270,7 +277,7 @@ class ScenesManager {
         }
 
         query.push(`WHERE`);
-        query.push(`m."id"=${scene.key}`);
+        query.push(`m."id"=${scene.key} AND ST_Intersects(m."min_cxhull", a."the_geom")`);
         query.push(`) as foo`);
         query.push(`GROUP BY value ORDER BY value;`);
 
@@ -281,8 +288,14 @@ class ScenesManager {
                 for (let row of result.rows) {
                     total += row.count;
                 }
-                for (let row of result.rows) {
-                    classDistribution[config.snow.classDistribution[row.value].key] = row.count / total * 100;
+                if (scene.sensor === `msi`) {
+                    for (let row of result.rows) {
+                        classDistribution[config.snow.classDistribution_s2[row.value].key] = row.count / total * 100;
+                    }
+                } else {
+                    for (let row of result.rows) {
+                        classDistribution[config.snow.classDistribution[row.value].key] = row.count / total * 100;
+                    }
                 }
                 return classDistribution;
             });
@@ -320,7 +333,7 @@ class ScenesManager {
         query.push(`AND m."date" BETWEEN '${timeRange.start}' AND '${timeRange.end}'`);
         query.push(`AND m."sensor_key"=ANY(ARRAY['${sensors.join(`', '`)}'])`);
         query.push(`AND m."sat_key"=ANY(ARRAY['${satellites.join(`', '`)}'])`);
-        query.push(`AND a."the_geom" && m."min_cxhull"`);
+        query.push(`AND ST_Intersects(a."the_geom", m."min_cxhull")`);
         query.push(`ORDER BY date;`);
 
         return this._pgPool.query(query.join(` `))

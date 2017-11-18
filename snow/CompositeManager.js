@@ -197,6 +197,7 @@ class CompositeManager {
     getAoiCoverageForCompositeByFilter(compositeKey, filter) {
         let areaType = filter.area.type;
         let areaKey = filter.area.value;
+        let sensors = filter.sensors;
 
         let query = [];
         query.push(`SELECT foo.rasterSize / foo.aoiSize * 100 AS aoi`);
@@ -209,7 +210,7 @@ class CompositeManager {
             query.push(`FROM "public"."europe"),`);
         }
 
-        query.push(`(SELECT sum(ST_Count(st_clip(c."rast", a."the_geom"))) * 250000`);
+        query.push(`(SELECT sum(ST_Count(ST_Clip(c."rast", 1, a."the_geom", 0, TRUE))) * ${sensors.hasOwnProperty(`msi`) ? config.snow.aoi.sentinel2 : config.snow.aoi.other}`);
         query.push(`FROM "composites"."composites" AS c`);
         query.push(`LEFT JOIN "composites"."metadata" AS m ON m."composite_key" = c."key"`);
 
@@ -235,13 +236,14 @@ class CompositeManager {
     getClassDistributionForCompositeByFilter(compositeKey, filter) {
         let areaType = filter.area.type;
         let areaKey = filter.area.value;
+        let sensors = filter.sensors;
 
         let query = [];
         query.push(`SELECT`);
         query.push(`(foo.pvc).value::integer AS value,`);
         query.push(`sum((foo.pvc).count)::integer AS count`);
         query.push(`FROM`);
-        query.push(`(SELECT ST_ValueCount(ST_Clip(c."rast", a."the_geom")) AS pvc`);
+        query.push(`(SELECT ST_ValueCount(ST_Clip(c."rast", 1, a."the_geom", 0, TRUE)) AS pvc`);
         query.push(`FROM "composites"."composites" AS c`);
         query.push(`LEFT JOIN "composites"."metadata" AS m ON m."composite_key" = c."key"`);
 
@@ -263,8 +265,14 @@ class CompositeManager {
                 for (let row of result.rows) {
                     total += row.count;
                 }
-                for (let row of result.rows) {
-                    classDistribution[config.snow.classDistribution[row.value].key] = row.count / total * 100;
+                if (sensors.hasOwnProperty(`msi`)) {
+                    for (let row of result.rows) {
+                        classDistribution[config.snow.classDistribution_s2[row.value].key] = row.count / total * 100;
+                    }
+                } else {
+                    for (let row of result.rows) {
+                        classDistribution[config.snow.classDistribution[row.value].key] = row.count / total * 100;
+                    }
                 }
                 return classDistribution;
             });
@@ -444,7 +452,7 @@ class CompositeManager {
                             }
                         })
                         .then(() => {
-                            return this.createColoredComposite(compositeKey);
+                            return this.createColoredComposite(compositeKey, compositeMetadata);
                         })
                         .then(() => {
                             let compositeSystemName = `composite_${compositeKey}`;
@@ -600,7 +608,7 @@ class CompositeManager {
         return this._pgLongPool.query(query.join(` `));
     }
 
-    createColoredComposite(compositeKey) {
+    createColoredComposite(compositeKey, compositeMetadata) {
         console.log(`#### Creating color composite for ${compositeKey}`);
         let query = [];
 
@@ -609,8 +617,14 @@ class CompositeManager {
         query.push(`UPDATE "composites"."composites"`);
         query.push(`SET "color_rast" = ST_ColorMap(`);
         query.push(`"rast",`);
-        query.push(`'${config.snow.rasters.colorMap.composite.colorMap}',`);
-        query.push(`'${config.snow.rasters.colorMap.composite.method}')`);
+
+        if(compositeMetadata.sensors.includes(`msi`)) {
+            query.push(`'${config.snow.rasters.colorMap.composite_s2.colorMap}',`);
+            query.push(`'${config.snow.rasters.colorMap.composite_s2.method}')`);
+        } else {
+            query.push(`'${config.snow.rasters.colorMap.composite.colorMap}',`);
+            query.push(`'${config.snow.rasters.colorMap.composite.method}')`);
+        }
         query.push(`WHERE "key"='${compositeKey}';`);
         query.push(`COMMIT`);
 
@@ -741,7 +755,7 @@ class CompositeManager {
         query.push(`AND m."date" BETWEEN '${timeRange.start}' AND '${timeRange.end}'`);
         query.push(`AND m."sensor_key"=ANY(ARRAY['${sensors.join(`', '`)}'])`);
         query.push(`AND m."sat_key"=ANY(ARRAY['${satellites.join(`', '`)}'])`);
-        query.push(`AND m."min_cxhull" && e."the_geom"`);
+        query.push(`AND ST_Intersects(m."min_cxhull", e."the_geom")`);
         query.push(`ORDER BY date;`);
 
         return this._pgPool.query(query.join(` `))
