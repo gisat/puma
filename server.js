@@ -164,13 +164,13 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
     logger.info('Finished Migrations.');
 }).then(() => {
     prepareSnowDirecotries();
-}).then(() => {
-    ProcessManager.initProcessPgTable(pool)
+}).then(async () => {
+    await ProcessManager.initProcessPgTable(pool)
         .then(() => {
             return ProcessManager.clearUnfinishedProcesses(pool);
         });
-    ScenesStatisticsStorage.initScenesStatisticsPgTable(pool);
-    CompositeManager.initCompositesPgTable(pool)
+    await ScenesStatisticsStorage.initScenesStatisticsPgTable(pool);
+    await CompositeManager.initCompositesPgTable(pool)
         .then(() => {
             return CompositeManager.clearUnfinishedComposites(pool);
         })
@@ -183,12 +183,12 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
         .then(() => {
             CompositesStatisticsStorage.initCompositesStatisticsPgTable(pool);
         });
-    CompositeManager.initMetadataPgTable(pool)
+    await CompositeManager.initMetadataPgTable(pool)
         .then(() => {
             return CompositeManager.clearMetadataWithoutComposites(pool);
         });
-    FileSystemManager.initFileSystemManagerPgTable(pool);
-    NotificationWatchdog.initNotificationWatchdogPgTable(pool)
+    await FileSystemManager.initFileSystemManagerPgTable(pool);
+    await NotificationWatchdog.initNotificationWatchdogPgTable(pool)
         .then(() => {
             return NotificationWatchdog.clearUnfinished(pool);
         })
