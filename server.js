@@ -178,14 +178,13 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function () {
             return CompositeManager.initDurationPgTable(pool);
         })
         .then(() => {
-            return CompositeManager.updateCompositeKeys(pool);
-        })
-        .then(() => {
             CompositesStatisticsStorage.initCompositesStatisticsPgTable(pool);
         });
     await CompositeManager.initMetadataPgTable(pool)
         .then(() => {
             return CompositeManager.clearMetadataWithoutComposites(pool);
+        }).then(() => {
+            return CompositeManager.updateCompositeKeys(pool);
         });
     await FileSystemManager.initFileSystemManagerPgTable(pool);
     await NotificationWatchdog.initNotificationWatchdogPgTable(pool)
