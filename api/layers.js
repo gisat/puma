@@ -1,5 +1,5 @@
-var http = require('http');
-var querystring = require('querystring');
+let superagent = require('superagent');
+
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
@@ -248,34 +248,24 @@ function activateLayerRef(params, user, res, callback) {
 
 
 function getLayerDetails(params, req, res, callback) {
-	var workspace = params.layer.split(':')[0];
-	var postData = {
-		SERVICE: 'wfs',
-		REQUEST: 'DescribeFeatureType',
-		TYPENAME: params.layer
-	};
-	postData = querystring.stringify(postData);
-	var options = {
-		host: config.geoserverHost,
-		port: config.geoserverPort,
-		path: config.geoserverPath + '/' + workspace + '/ows?' + postData,
-		method: 'GET',
-		headers: {
-			'Cookie': 'ssid=' + res.locals.ssid,
-		}
-	};
-	conn.request(options, null, function(err, output, resl) {
-		logger.trace(`api/layers.js getLayerDetails Output: `, output, ` Result: `, resl);
+    var workspace = params.layer.split(':')[0];
 
-		if (err) {
-			logger.error("api/layers.js getLayerDetails. Failed retrieving data about layer from geoserver. Options: ",
-				options, " Error: ", err);
-			return callback(err);
-		}
-
-		res.data = parseWfsDocument(output);
-		return callback();
-	});
+    return superagent
+        .get(`${config.geoServerUrl}${workspace}/ows`)
+        .data({
+            "SERVICE": "wfs",
+            "REQUEST": "DescribeFeatureType",
+            "TYPENAME": params.layer
+        })
+        .then(result => {
+            res.data = parseWfsDocument(result.body);
+            return callback();
+        })
+        .catch(err => {
+            logger.error("api/layers.js getLayerDetails. Failed retrieving data about layer from geoserver. Options: ",
+                options, " Error: ", err);
+            callback(err);
+        })
 }
 
 function parseWfsDocument(output) {
