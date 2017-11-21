@@ -78,6 +78,7 @@ class CompositeManager {
                                         });
                                 })
                                 .catch((error) => {
+                                    console.log(`#### SNOW PORTAL ERROR #`, error);
                                     this._processManager.updateProcessByKey(
                                         processTicket,
                                         {
