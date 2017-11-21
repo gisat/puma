@@ -258,9 +258,9 @@ function getLayerDetails(params, req, res, callback) {
             "TYPENAME": params.layer
         })
         .then(result => {
-        	logger.info(`api/layers.js getLayerDetails Result: `, result.body);
+        	logger.info(`api/layers.js getLayerDetails Result: `, result.text);
 
-            res.data = parseWfsDocument(result.body);
+            res.data = parseWfsDocument(result.text);
             return callback();
         })
         .catch(err => {
