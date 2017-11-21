@@ -68,4 +68,11 @@ osm, cartoDb, bingAerial, landsat
 
 ## aggregated
 
-It is used to handle cases for too many analytical units. 
+It is used to handle cases for too many analytical units.
+
+## layerOptions
+
+### ordering
+
+The option topBottomPanel changes ordering to use the ordering in the panel instead of the last is on the
+top which is default.   
