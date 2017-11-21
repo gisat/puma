@@ -84,6 +84,7 @@ class SnowPortal {
                 response.status(500).send(result);
             }
         }).catch((error) => {
+            console.log(`#### SNOW PORTAL ERROR #`, error);
             response.status(500).send({
                 message: error.message,
                 success: false
