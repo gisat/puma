@@ -95,7 +95,7 @@ class ProcessManager {
         query.push(`'${JSON.stringify(other).replace(/'/g, "\\\"")}'`);
         query.push(`);`);
         return this._pgPool.query(query.join(` `)).then(() => {
-            return this.getProcessesByKey(key);
+            return key;
         });
     }
 
