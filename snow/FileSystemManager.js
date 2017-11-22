@@ -29,7 +29,7 @@ class FileSystemManager {
                 }
             } else {
                 return this._processManager.createProcess(null, request, url, null)
-                    .then((processKey) => {
+                    .then((process) => {
                         let packageKey = this.generatePackageKey(request);
                         this.getFileMetadata(packageKey)
                             .then((packageMetadata) => {
@@ -102,12 +102,19 @@ class FileSystemManager {
                                     success: false
                                 }, true);
                             });
-                        return processKey;
+                        return process;
                     })
-                    .then((processKey) => {
-                        return {
-                            ticket: processKey,
-                            success: true
+                    .then((process) => {
+                        if(process) {
+                            return {
+                                ticket: process.key,
+                                success: true
+                            }
+                        } else {
+                            return {
+                                message: `unable to create new process`,
+                                success: false
+                            }
                         }
                     });
             }

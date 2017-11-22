@@ -93,9 +93,11 @@ class ProcessManager {
         query.push(`'${JSON.stringify(request).replace(/'/g, "\\\"")}',`);
         query.push(`'${uri}',`);
         query.push(`'${JSON.stringify(other).replace(/'/g, "\\\"")}'`);
-        query.push(`);`);
-        return this._pgPool.query(query.join(` `)).then(() => {
-            return key;
+        query.push(`) RETURNING *;`);
+        return this._pgPool.query(query.join(` `)).then((result) => {
+            if(result.rows.length) {
+                return result.rows[0];
+            }
         });
     }
 
