@@ -73,12 +73,12 @@ class Info {
 
         return Promise.all(baseLayers
             .map(baseLayer => {
-                let comma = "";
-                if (baseLayer.queriedColumns.length > 0){
-                    comma = ","
+                let columnsToQuery = baseLayer.queriedColumns.join(',').trim();
+                if(columnsToQuery !== '') {
+                    columnsToQuery += ','
                 }
 
-                return `SELECT ${baseLayer.queriedColumns.join(',') + comma} 
+                return `SELECT ${columnsToQuery} 
                         ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM views.layer_${baseLayer._id} WHERE 
                         gid IN ${list}`
             })

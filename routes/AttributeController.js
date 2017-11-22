@@ -155,6 +155,7 @@ class AttributeController extends Controller {
             response.json(json);
             logger.info(`AttributeController#info UUID: ${uuid} End: ${moment().format()}`);
         }).catch(err => {
+            response.status(500).json({status: 'err', message: err});
             throw new Error(
                 logger.error(`AttributeController#info Error: `, err)
             )
