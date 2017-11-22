@@ -100,8 +100,10 @@ function wms(params, req, res, callback) {
 			params['env'] = 'maxsize:'+maxSize;
 		}
 	}
-	if (params['REQUEST'] == 'GetFeatureInfo') {
+  var workspace = 'geonode';
+  if (params['REQUEST'] == 'GetFeatureInfo') {
 		useFirst = false;
+		workspace = config.geoserver2Workspace;
 		params['FORMAT'] = 'application/json';
 		params['INFO_FORMAT'] = 'application/json';
 		params['EXCEPTIONS'] = 'application/json';
@@ -109,10 +111,11 @@ function wms(params, req, res, callback) {
 	}
 	if (params['LAYERS']) {
 		params['LAYER'] = params['LAYERS'].split(',')[0];
+		workspace = params['LAYER'].split(':')[0];
 	}
 	var wmsParamLayers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
-	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/' + config.geoserver2Workspace + '/wms';
+	var path = useFirst ? config.geoserverPath + '/' + workspace + '/wms' : config.geoserver2Path+'/' + workspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
