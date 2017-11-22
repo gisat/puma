@@ -100,7 +100,7 @@ function wms(params, req, res, callback) {
 			params['env'] = 'maxsize:'+maxSize;
 		}
 	}
-  var workspace = 'geonode';
+  var workspace = useFirst ? 'geonode' : config.geoserver2Workspace;
   if (params['REQUEST'] == 'GetFeatureInfo') {
 		useFirst = false;
 		workspace = config.geoserver2Workspace;
@@ -108,10 +108,12 @@ function wms(params, req, res, callback) {
 		params['INFO_FORMAT'] = 'application/json';
 		params['EXCEPTIONS'] = 'application/json';
 		params['FEATURE_COUNT'] = '42';
+    if (params['LAYERS']) {
+      workspace = params['LAYERS'].split(':')[0];
+    }
 	}
 	if (params['LAYERS']) {
-		params['LAYER'] = params['LAYERS'].split(',')[0];
-		workspace = params['LAYER'].split(':')[0];
+    params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
 	var wmsParamLayers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
