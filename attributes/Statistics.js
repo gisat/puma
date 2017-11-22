@@ -32,8 +32,15 @@ class Statistics {
 		// It has to be restructured.
 		let queries = baseLayers
 			.filter(baseLayer => baseLayer.queriedColumns.length > 0)
-			.map(baseLayer => `SELECT ${baseLayer.queriedColumns.join(',')}, 
-                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`);
+			.map(baseLayer => {
+			    let columnsToQuery = baseLayer.queriedColumns.join(',').trim();
+                if(columnsToQuery !== '') {
+                    columnsToQuery += ','
+                }
+
+			    return `SELECT ${columnsToQuery} 
+                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`
+			});
 
 		return new PgSequentialQuery(this._pgPool).query(queries);
     }
