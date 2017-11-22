@@ -15,110 +15,110 @@ class FileSystemManager {
     publishPackageWithSnowGeoTiffs(request, url) {
         if (!Object.keys(request).length) return Promise.reject(`empty`);
 
-        return this._processManager.getProcessesByKey(
-            this._processManager.getProcessKey(null, request, null)
-        ).then((processes) => {
-            if (processes.length) {
-                if (processes[0].result) {
-                    return processes[0].result;
-                } else {
-                    return {
-                        ticket: processes[0].key,
-                        success: true
-                    }
-                }
-            } else {
-                return this._processManager.createProcess(null, request, url, null)
-                    .then((process) => {
-                        let packageKey = this.generatePackageKey(request);
-                        this.getFileMetadata(packageKey)
-                            .then((packageMetadata) => {
-                                if (!packageMetadata) {
-                                    let packageName = `${packageKey}.zip`;
-                                    let packagePath = `${config.snow.paths.packagesForDownloadPath}/${packageName}`;
-
-                                    let packageContentList = [];
-                                    if (request.hasOwnProperty(`scenes`)) {
-                                        request.scenes.forEach((sceneName) => {
-                                            packageContentList.push(
-                                                `${config.snow.paths.scenesGeotiffStoragePath}/${sceneName}.tif`
-                                            );
-                                        });
-                                    }
-                                    if (request.hasOwnProperty(`composites`)) {
-                                        request.composites.forEach((compositeName) => {
-                                            packageContentList.push(
-                                                `${config.snow.paths.compositesGeotiffStoragePath}/${compositeName}.tif`
-                                            );
-                                        });
-                                    }
-
-                                    let zipPackage = new ZipPackageCreator(packagePath);
-                                    return zipPackage.getMissingPaths(packageContentList)
-                                        .then((missingPaths) => {
-                                            if (missingPaths.length) {
-                                                throw new Error(`file not found (${missingPaths})`);
-                                            } else {
-                                                return zipPackage.addFilesToZipPackage(packageContentList);
-                                            }
-                                        })
-                                        .then(() => {
-                                            return zipPackage.storeZipPackageToFs()
-                                        })
-                                        .then(() => {
-                                            return packagePath;
-                                        })
-                                        .then((packagePath) => {
-                                            return this.createSymbolicLinkToFile(packagePath, `${config.webArchivePath}/${packageName}`)
-                                                .then(() => {
-                                                    return packagePath;
-                                                })
-                                        })
-                                        .then((packagePath) => {
-                                            return this.deleteFileMetadata(packageKey)
-                                                .then(() => {
-                                                    return packagePath;
-                                                });
-                                        })
-                                        .then((packagePath) => {
-                                            return this.insertFileMetadata(packageKey, request, packageName, packagePath);
-                                        });
-                                } else {
-                                    return packageMetadata;
-                                }
-                            })
-                            .then((packageMetadata) => {
-                                return `${config.remoteProtocol}://${config.remoteAddress}/${config.webArchivePublicPath}/${packageMetadata.filename}`;
-                            })
-                            .then((url) => {
-                                return this._processManager.updateProcessByKey(processKey, {
-                                    data: {url: url},
-                                    success: true
-                                });
-                            })
-                            .catch((error) => {
-                                this._processManager.updateProcessByKey(processKey, {
-                                    message: error.message,
-                                    success: false
-                                }, true);
-                            });
-                        return process;
-                    })
-                    .then((process) => {
-                        if(process) {
-                            return {
-                                ticket: process.key,
-                                success: true
-                            }
-                        } else {
-                            return {
-                                message: `unable to create new process`,
-                                success: false
-                            }
+        let processKey = this._processManager.getProcessKey(null, request, null);
+        return this._processManager.getProcessesByKey(processKey)
+            .then((processes) => {
+                if (processes.length) {
+                    if (processes[0].result) {
+                        return processes[0].result;
+                    } else {
+                        return {
+                            ticket: processes[0].key,
+                            success: true
                         }
-                    });
-            }
-        });
+                    }
+                } else {
+                    return this._processManager.createProcess(null, request, url, null)
+                        .then((processes) => {
+                            let packageKey = this.generatePackageKey(request);
+                            this.getFileMetadata(packageKey)
+                                .then((packageMetadata) => {
+                                    if (!packageMetadata) {
+                                        let packageName = `${packageKey}.zip`;
+                                        let packagePath = `${config.snow.paths.packagesForDownloadPath}/${packageName}`;
+
+                                        let packageContentList = [];
+                                        if (request.hasOwnProperty(`scenes`)) {
+                                            request.scenes.forEach((sceneName) => {
+                                                packageContentList.push(
+                                                    `${config.snow.paths.scenesGeotiffStoragePath}/${sceneName}.tif`
+                                                );
+                                            });
+                                        }
+                                        if (request.hasOwnProperty(`composites`)) {
+                                            request.composites.forEach((compositeName) => {
+                                                packageContentList.push(
+                                                    `${config.snow.paths.compositesGeotiffStoragePath}/${compositeName}.tif`
+                                                );
+                                            });
+                                        }
+
+                                        let zipPackage = new ZipPackageCreator(packagePath);
+                                        return zipPackage.getMissingPaths(packageContentList)
+                                            .then((missingPaths) => {
+                                                if (missingPaths.length) {
+                                                    throw new Error(`file not found (${missingPaths})`);
+                                                } else {
+                                                    return zipPackage.addFilesToZipPackage(packageContentList);
+                                                }
+                                            })
+                                            .then(() => {
+                                                return zipPackage.storeZipPackageToFs()
+                                            })
+                                            .then(() => {
+                                                return packagePath;
+                                            })
+                                            .then((packagePath) => {
+                                                return this.createSymbolicLinkToFile(packagePath, `${config.webArchivePath}/${packageName}`)
+                                                    .then(() => {
+                                                        return packagePath;
+                                                    })
+                                            })
+                                            .then((packagePath) => {
+                                                return this.deleteFileMetadata(packageKey)
+                                                    .then(() => {
+                                                        return packagePath;
+                                                    });
+                                            })
+                                            .then((packagePath) => {
+                                                return this.insertFileMetadata(packageKey, request, packageName, packagePath);
+                                            });
+                                    } else {
+                                        return packageMetadata;
+                                    }
+                                })
+                                .then((packageMetadata) => {
+                                    return `${config.remoteProtocol}://${config.remoteAddress}/${config.webArchivePublicPath}/${packageMetadata.filename}`;
+                                })
+                                .then((url) => {
+                                    return this._processManager.updateProcessByKey(processKey, {
+                                        data: {url: url},
+                                        success: true
+                                    });
+                                })
+                                .catch((error) => {
+                                    this._processManager.updateProcessByKey(processKey, {
+                                        message: error.message,
+                                        success: false
+                                    }, true);
+                                });
+                            return processes;
+                        })
+                        .then((processes) => {
+                            if (processes && processes.length) {
+                                return {
+                                    ticket: processes[0].key,
+                                    success: true
+                                }
+                            } else {
+                                return {
+                                    message: `unable to create new process`,
+                                    success: false
+                                }
+                            }
+                        });
+                }
+            });
     }
 
     createSymbolicLinkToFile(target, source) {
@@ -163,7 +163,7 @@ class FileSystemManager {
 
         return this._pgPool.query(query.join(` `))
             .then((result) => {
-                if(result.rows.length) {
+                if (result.rows.length) {
                     return result.rows[0];
                 } else {
                     throw new Error(`insert error`);

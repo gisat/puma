@@ -84,6 +84,7 @@ class ProcessManager {
 
         let key = this.getProcessKey(owner, request, other);
         let query = [];
+
         query.push(`INSERT INTO processes`);
         query.push(`(key, owner, started, request, uri, other)`);
         query.push(`VALUES (`);
@@ -94,11 +95,11 @@ class ProcessManager {
         query.push(`'${uri}',`);
         query.push(`'${JSON.stringify(other).replace(/'/g, "\\\"")}'`);
         query.push(`) RETURNING *;`);
-        return this._pgPool.query(query.join(` `)).then((result) => {
-            if(result.rows.length) {
-                return result.rows[0];
-            }
-        });
+
+        return this._pgPool.query(query.join(` `))
+            .then((result) => {
+                return result.rows;
+            });
     }
 
     updateProcessById(id, result, error) {
