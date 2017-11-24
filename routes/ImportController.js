@@ -43,7 +43,7 @@ class ImportController extends Controller {
         ).then(() => {
             response.status(200).send(
                 {
-                    success: false
+                    success: true
                 }
             );
         }).catch((error) => {
