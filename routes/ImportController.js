@@ -46,7 +46,7 @@ class ImportController extends Controller {
             true
         ).then(() => {
             return superagent
-                .get(`http://localhost/cgi-bin/updatelayers?f=${systemName}&s=datastore&w=geonode`);
+                .get(`http://localhost/cgi-bin/updatelayers?f=${systemName}&s=datastore&w=geonode&other=removeDeleted`);
         }).then(() => {
             response.status(200).send(
                 {
