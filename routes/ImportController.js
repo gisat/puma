@@ -1,6 +1,9 @@
-var Controller = require('./Controller');
-var logger = require('../common/Logger').applicationWideLogger;
-var PgCsvLayer = require('../layers/PgCsvLayer');
+let config = require(`../config`);
+
+let Controller = require('./Controller');
+let logger = require('../common/Logger').applicationWideLogger;
+let PgCsvLayer = require('../layers/PgCsvLayer');
+let GeoserverImporter = require(`../layers/GeoServerImporter`);
 
 class ImportController extends Controller {
     constructor(app, pgPool) {
@@ -8,7 +11,17 @@ class ImportController extends Controller {
 
         app.post('/rest/import/csv', this.csv.bind(this));
 
+        app.post(`/rest/import/layer`, this.layer.bind(this));
+
         this._pgPool = pgPool;
+
+        this._geoserverImporter = new GeoserverImporter(
+            `${config.remoteProtocol}://${config.remoteAddress}${config.geoserverPath}`,
+            config.geoserverUsername,
+            config.geoserverPassword,
+            `geonode`,
+            `datastore`
+        );
     }
 
     csv(request, response, next) {
@@ -16,6 +29,31 @@ class ImportController extends Controller {
             response.send(result);
         }).catch(error => {
             response.status(500).send(error);
+        });
+    }
+
+    layer(request, response, next) {
+        this._geoserverImporter.importLayer(
+            {
+                type: `vector`,
+                systemName: request.files.layer.name.toLowerCase().substring(0, -4),
+                file: request.files.layer.path
+            },
+            true
+        ).then(() => {
+            response.status(200).send(
+                {
+                    success: false
+                }
+            );
+        }).catch((error) => {
+            console.log(`# ERROR # ImportController #`, error);
+            response.status(500).send(
+                {
+                    message: error.message,
+                    success: false
+                }
+            );
         });
     }
 }
