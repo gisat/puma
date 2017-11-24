@@ -28,9 +28,11 @@ class GeoServerImporter {
         };
 
         return Promise.resolve().then(() => {
-            if (layer.type === 'raster') {
-                if (replaceExisting) {
+            if (replaceExisting) {
+                if (layer.type === `raster`) {
                     return this.removeRasterLayer(layer.systemName);
+                } else if (layer.type === `vector`) {
+                    return this.removeVectorLayer(layer.systemName);
                 }
             }
         }).then(() => {
@@ -55,7 +57,7 @@ class GeoServerImporter {
                 })
         }).then((response) => {
             let importTask = response.body.import;
-            if(importTask) {
+            if (importTask) {
                 return request
                     .post(importTask.href)
                     .set('Content-Type', 'application/json')
@@ -138,9 +140,34 @@ class GeoServerImporter {
                 });
         });
     }
+
+    removeVectorLayer(layerName) {
+        return Promise.resolve().then(() => {
+            return request
+                .get(`${this._geoserverPath}/rest/layers/${layerName}.json`)
+                .auth(this._userName, this._password)
+                .then(async (response) => {
+                    let layerStyleName = response.body.layer.defaultStyle.name;
+                    await request
+                        .delete(`${this._geoserverPath}/rest/layers/${layerName}?recurse=true&purge=all`)
+                        .auth(this._userName, this._password)
+                        .catch((error) => {
+                            console.log(`#### GeoserverImporter#error: `, error.message);
+                        });
+                    await request
+                        .delete(`${this._geoserverPath}/rest/styles/${layerStyleName}?recurse=true&purge=all`)
+                        .auth(this._userName, this._password)
+                        .catch((error) => {
+                            console.log(`#### GeoserverImporter#error: `, error.message);
+                        });
+                })
+                .catch((error) => {
+                    console.log(`#### GeoserverImporter#error: `, error.message);
+                });
+        });
+    }
 }
 
 // TODO: Store the data about the layer in the pg table for layer.
 
-module
-    .exports = GeoServerImporter;
+module.exports = GeoServerImporter;
