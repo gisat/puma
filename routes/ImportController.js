@@ -1,5 +1,7 @@
 let config = require(`../config`);
 
+let superagent = require('superagent');
+
 let Controller = require('./Controller');
 let logger = require('../common/Logger').applicationWideLogger;
 let PgCsvLayer = require('../layers/PgCsvLayer');
@@ -34,14 +36,18 @@ class ImportController extends Controller {
     }
 
     layer(request, response, next) {
+        let systemName = request.files.layer.name.toLowerCase().substring(0, -4);
         this._geoserverImporter.importLayer(
             {
                 type: `vector`,
-                systemName: request.files.layer.name.toLowerCase().substring(0, -4),
+                systemName: systemName,
                 file: request.files.layer.path
             },
             true
         ).then(() => {
+            return superagent
+                .get(`http://localhost/cgi-bin/updatelayers?f=${systemName}&s=datastore&w=geonode`);
+        }).then(() => {
             response.status(200).send(
                 {
                     success: true
