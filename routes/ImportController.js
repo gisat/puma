@@ -20,7 +20,8 @@ class ImportController extends Controller {
             config.geoserverUsername,
             config.geoserverPassword,
             `geonode`,
-            `datastore`
+            `datastore`,
+            this._pgPool
         );
     }
 

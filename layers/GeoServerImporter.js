@@ -6,7 +6,7 @@ let _ = require('lodash');
  * This class handles layers to be imported into the GeoServer.
  */
 class GeoServerImporter {
-    constructor(geoServerPath, userName, password, workspace, dataStore) {
+    constructor(geoServerPath, userName, password, workspace, dataStore, pgPool) {
         this._geoserverPath = geoServerPath;
         this._importPath = geoServerPath + '/rest/imports';
         this._layersPath = `${geoServerPath}/rest/layers`;
@@ -15,6 +15,8 @@ class GeoServerImporter {
         this._password = password;
         this._workspace = workspace;
         this._dataStore = dataStore;
+
+        this._pgPool = pgPool;
     }
 
     // TODO: Configure the name of the workspace to import into.
@@ -160,6 +162,7 @@ class GeoServerImporter {
                         .catch((error) => {
                             console.log(`#### GeoserverImporter#error: `, error.message);
                         });
+                    await this._pgPool.query(`DROP TABLE IF EXISTS "${layerName}" CASCADE;`)
                 })
                 .catch((error) => {
                     console.log(`#### GeoserverImporter#error: `, error.message);
