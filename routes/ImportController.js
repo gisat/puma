@@ -48,8 +48,13 @@ class ImportController extends Controller {
             return superagent
                 .get(`http://localhost/cgi-bin/updatelayers?f=${systemName}&s=datastore&w=geonode&other=removeDeleted`);
         }).then(() => {
+            return superagent
+                .get(`http://localhost/geoserver/rest/workspaces/geonode/datastores/datastore/featuretypes/${systemName}.json`)
+				.auth('admin', 'geoserver');
+        }).then((result) => {
             response.status(200).send(
                 {
+                    data: result.featureType,
                     success: true
                 }
             );
