@@ -162,7 +162,7 @@ class GeoServerImporter {
                         .catch((error) => {
                             console.log(`#### GeoserverImporter#error: `, error.message);
                         });
-                    await this._pgPool.query(`DROP TABLE IF EXISTS "${layerName}" CASCADE;`)
+                    await this._pgPool.query(`DROP TABLE IF EXISTS "public"."${layerName}" CASCADE;`);
                 })
                 .catch((error) => {
                     console.log(`#### GeoserverImporter#error: `, error.message);
