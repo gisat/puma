@@ -16,7 +16,7 @@ describe('FilterSpec', () => {
 			pgSchema = schema.schema;
 			pgPool = pool;
 
-			new AttributeController(app, pool, null, pgSchema);
+			new AttributeController(app, pool, null, pgSchema, pgSchema);
 
 			return mongoDb.collection("dataset").insertMany([{
 				_id: 314,
@@ -50,15 +50,24 @@ describe('FilterSpec', () => {
 					"type": "numeric",
 					"standardUnits": 'm2',
 					"color": "#0000ff"
-				}])
+				}, {
+                    "_id": 10002,
+                    "name": "Textual",
+                    "active": false,
+                    "type": "text",
+                    "standardUnits": '',
+                    "color": "#ff00ff"
+                }])
 			}).then(() => {
 				return new ValidLayers(pool, mongoDb, pgSchema, pgSchema).add(1, 'analytical_units_1', [{
 					attribute: 10000,
 					column: 'population',
 					type: 'int'
-				}, {attribute: 10001, column: 'area', type: 'int'}],
+				},
+						{attribute: 10001, column: 'area', type: 'int'},
+						{attribute: 10002, column: 'textual', type: 'text'}],
 					// Follows the values for rows.
-					[[2, 7], [8, 5], [4, 10], [12, 13]],
+					[[2, 7, 'T'], [8, 5, 'F'], [4, 10, 'R'], [12, 13, 'H']],
 					101, 6, 8, 201);
 			})
 		}, fixture);
@@ -176,6 +185,37 @@ describe('FilterSpec', () => {
 			})
 		});
 	});
+
+    describe('info', () => {
+        it('correctly receives information about specific gid.', done => {
+            supertest(integrationEnvironment.app)
+                .post('/rest/info/attribute')
+                .send({
+                    areaTemplate: 8,
+                    periods: [6],
+                    places: [101],
+					gid: 0,
+                    attributes: [{
+                        attribute: 10002,
+                        attributeSet: 201,
+						attributeName: "Textual",
+						attributeType: 'text',
+						attributeSetName: 'Textual Set',
+						units: '',
+						standardUnits: '',
+						active: false,
+						color: '#ff00ff'
+                    }]
+                })
+                .then(response => {
+                	console.log(response.body);
+
+                    done();
+                }).catch(error => {
+                done(error);
+            })
+        });
+    });
 
 	afterEach(done => {
 		integrationEnvironment.tearDown().then(() => {

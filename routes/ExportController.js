@@ -16,9 +16,9 @@ var Conversion = require('../custom_features/GeometryConversion');
  * It contains endpoints relevant for export of data.
  */
 class ExportController {
-    constructor(app, pgPool) {
+    constructor(app, pgPool, viewsSchema) {
         this._connection = conn.getMongoDb();
-        this._info = new Info(pgPool);
+        this._info = new Info(pgPool, viewsSchema);
 
         app.post('/export/json', this.selection2geojson.bind(this));
         app.post('/export/shp', this.selection2shapefile.bind(this));

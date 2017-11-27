@@ -3,7 +3,8 @@ var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 
 class Info {
-    constructor(pgPool) {
+    constructor(pgPool, schema) {
+        this._schema = schema;
         this._pgPool = pgPool;
     }
 
@@ -79,7 +80,7 @@ class Info {
                 }
 
                 return `SELECT ${columnsToQuery} 
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM views.layer_${baseLayer._id} WHERE 
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM ${this._schema}.layer_${baseLayer._id} WHERE 
                         gid IN ${list}`
             })
             .map(sql => {

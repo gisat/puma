@@ -27,8 +27,10 @@ class TextAttribute {
                     gid: this._jsonAttribute.gids[index],
                     name: this._jsonAttribute.names[index],
                     geom: this._jsonAttribute.geometries[index],
+                    attributeId: options.attributeId,
                     attributeName: options.attributeName,
                     attributeSetName: options.attributeSetName,
+                    attributeSetId: options.attributeSetId,
                     value: value
                 }
             }

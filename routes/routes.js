@@ -55,6 +55,7 @@ var api = {
 };
 
 module.exports = function(app) {
+	let viewsSchema = 'views';
 	var pool = new PgPool({
 		user: config.pgDataUser,
 		database: config.pgDataDatabase,
@@ -80,11 +81,11 @@ module.exports = function(app) {
 	new AnalyticalUnitsController(app, pool, mongo);
 	new AreaTemplateController(app, pool);
 	if(poolRemote) {
-		new ExportController(app, poolRemote);
+		new ExportController(app, poolRemote, viewsSchema);
 	} else {
-		new ExportController(app, pool);
+		new ExportController(app, pool, viewsSchema);
 	}
-	new AttributeController(app, pool, poolRemote, mongo, 'views');
+	new AttributeController(app, pool, poolRemote, mongo, viewsSchema);
 	new LayerGeonodeController(app, pool);
 	new LayerWmsController(app, pool, mongo);
 	new AttributeSetController(app, pool);
@@ -101,7 +102,7 @@ module.exports = function(app) {
 	new TopicController(app, pool);
 	new VisualizationController(app, pool, mongo);
 	new YearController(app, pool);
-	new IntegrationController(app, pool, mongo,'public','views',config.postgreSqlSchema);
+	new IntegrationController(app, pool, mongo,'public',viewsSchema,config.postgreSqlSchema);
 
 	new PrintController(app);
 	new LodController(app, pool);

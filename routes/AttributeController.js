@@ -26,7 +26,7 @@ class AttributeController extends Controller {
 
         this._statistics = new Statistics(pgPoolRemote || pgPool, viewsSchema);
         this._filter = new Filter(pgPoolRemote || pgPool, viewsSchema);
-        this._info = new Info(pgPoolRemote || pgPool);
+        this._info = new Info(pgPoolRemote || pgPool, viewsSchema);
 
         app.post('/rest/filter/attribute/statistics', this.statistics.bind(this));
         app.post('/rest/filter/attribute/filter', this.filter.bind(this));
