@@ -76,3 +76,13 @@ It is used to handle cases for too many analytical units.
 
 The option topBottomPanel changes ordering to use the ordering in the panel instead of the last is on the
 top which is default.   
+
+# URL Options
+
+## needLogin
+
+This options asks user to log in before moving further unless the user is already logged in. 
+
+## lang
+
+This options changes the language of the texts in the application. 
