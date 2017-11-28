@@ -86,3 +86,11 @@ This options asks user to log in before moving further unless the user is alread
 ## lang
 
 This options changes the language of the texts in the application. 
+
+# Changelog
+
+## 2.4 
+
+The components are versioned. It is possible to get the versions on the endpoint /rest/fo/version, /rest/bo/version and
+/rest/backend/version. To allow this it is necessary to update build to produce version.txt in the relevant 
+directories. 
