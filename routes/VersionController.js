@@ -14,7 +14,7 @@ class VersionController {
                 logger.error(`VersionController#version Error: `, err);
                 response.json({status: "err", message: err});
             } else {
-                response.json({status: "ok", version: content.toString()});
+                response.json({status: "ok", version: content.toString().trim()});
             }
         });
     }
