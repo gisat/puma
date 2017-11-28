@@ -35,6 +35,7 @@ let WpsController = require('../integration/WpsController');
 let GeoServerLayersController = require('../layers/geoserver/GeoServerLayersController');
 let AggregatedAnalyticalUnitsController = require('../data/AggregatedAnalyticalUnitsController');
 let SharingController = require('../security/SharingController');
+let VersionController = require('./VersionController');
 
 var LodController = require('../linked_open_data/LodController');
 
@@ -103,6 +104,7 @@ module.exports = function(app) {
 	new VisualizationController(app, pool, mongo);
 	new YearController(app, pool);
 	new IntegrationController(app, pool, mongo,'public',viewsSchema,config.postgreSqlSchema);
+	new VersionController(app, '/opt/frontoffice/version.txt', '/opt/backoffice/version.txt', '/opt/backend/version.txt');
 
 	new PrintController(app);
 	new LodController(app, pool);
