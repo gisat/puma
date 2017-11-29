@@ -3,6 +3,7 @@ var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
 var AnalysisController = require('./AnalysisController');
+var AnalyticalUnitsController = require('./AnalyticalUnitsController');
 var AreaTemplateController = require('./AreaTemplateController');
 var AttributeController = require('./AttributeController');
 var AttributeSetController = require('./AttributeSetController');
@@ -113,6 +114,8 @@ module.exports = function(app) {
 	new PlaceTemplatesController(app);
 
 	new LayerPolygonController(app, pool);
+
+	new AnalyticalUnitsController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
