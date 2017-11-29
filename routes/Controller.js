@@ -74,7 +74,8 @@ class Controller {
                     this.permissions.add(request.session.userId, this.type, result._id, "DELETE")
                 ]).then(() => {
                     response.data = result;
-                    resolve();
+					if(next) next();
+                    resolve(result);
                 }).catch(error => {
                     reject(error);
                 });
