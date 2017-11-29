@@ -52,8 +52,8 @@ class GeoServerImporter {
                         targetStore: layer.type === "vector" ? vectorDatastore : undefined,
                         data: {
                             name: layer.systemName,
-                            type: `${layer.hasOwnProperty('direcotry') ? 'directory' : 'file'}`,
-                            [layer.hasOwnProperty('direcotry') ? 'directory' : 'file']: layer.hasOwnProperty('directory') ? layer.directory : layer.file
+                            type: `${layer.hasOwnProperty('directory') ? 'directory' : 'file'}`,
+                            [layer.hasOwnProperty('directory') ? 'location' : 'file']: layer.hasOwnProperty('directory') ? layer.directory : layer.file
                         }
                     }
                 })
