@@ -248,6 +248,7 @@ function activateLayerRef(params, user, res, callback) {
 
 
 function getLayerDetails(params, req, res, callback) {
+    logger.info(`api/layers.js getLayerDetails Layer: `, params.layer);
     var workspace = params.layer.split(':')[0];
 
     return superagent
