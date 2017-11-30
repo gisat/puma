@@ -160,62 +160,6 @@ function gatherLayerData(featureInfo, callback) {
 }
 
 
-
-function getLayers(params, req, res, callback) {
-
-	var headers = {
-		'Cookie': 'sessionid=' + (req.cookies.sessionid || '')
-	};
-
-	var options = {
-		protocol: config.geonodeProtocol,
-		host: config.geonodeHost,
-		port: config.geonodePort || 80,
-		path: config.geonodePath + '/layers/acls',
-		headers: headers,
-		method: 'GET'
-	};
-
-	conn.request(options, null, function(err, output, resl) {
-		if (err) {
-			logger.error('api/layers.js getLayers. Request options: ', options, " Error: ", err);
-			return callback(err);
-		}
-		var layers = JSON.parse(output).rw;
-		var layerMap = {};
-		for (var i = 0; i < layers.length; i++) {
-			layerMap[layers[i]] = false;
-		}
-
-		var filter = {layer: {$in: layers}};
-		crud.read('layerref', filter, function(err, result) {
-			if (err) {
-				logger.error("api/layers.js getLayers. It wasn't possible to read layerref with Filter: ", filter, " Error: ", err);
-				return callback(err);
-			}
-
-			for (var i = 0; i < result.length; i++) {
-				layerMap[result[i].layer] = true;
-			}
-			var objs = [];
-			var layer;
-			for (layer in layerMap) {
-				var obj = {
-					name: layer,
-					referenced: layerMap[layer]
-				};
-				objs.push(obj);
-			}
-			objs.push({name: 'WMS', referenced: false, isWms: true});
-			res.data = objs;
-			return callback();
-		});
-
-	});
-}
-
-
-
 function activateLayerRef(params, user, res, callback) {
 	let userId = user.userId;
 	async.auto({
@@ -761,7 +705,6 @@ function getSymbologiesFromServer(params, req, res, callback) {
 
 
 module.exports = {
-	getLayers: getLayers,
 	getMetadata: getMetadata,
 	getLayerRefTable: getLayerRefTable,
 	getLayerDetails: getLayerDetails,

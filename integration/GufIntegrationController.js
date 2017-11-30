@@ -8,7 +8,6 @@ let superagent = require('superagent');
 var RasterToPSQL = require('../integration/RasterToPSQL');
 // Careful with renaming to uppercase start. Was created in windows with lowercase first.
 var RemoteFile = require('../integration/remoteFile');
-var ViewResolver = require('../integration/ViewResolver');
 
 var Process = require('../integration/Process');
 var Processes = require('../integration/Processes');
@@ -21,14 +20,12 @@ let Permission = require('../security/Permission');
 let MongoDataViews = require('../visualization/MongoDataViews');
 let MongoLocation = require('../metadata/MongoLocation');
 let MongoLocations = require('../metadata/MongoLocations');
-let MongoScope = require('../metadata/MongoScope');
 let MongoLayerReference = require('../layers/MongoLayerReference');
 let MongoLayerReferences = require('../layers/MongoLayerReferences');
 
 let PgLayerViews = require('../layers/PgLayerViews');
 let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
 let GeoServerLayers = require('../layers/GeoServerLayers');
-let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
 let RestLayer = require('../layers/RestLayer');
 let User = require('../security/User');
 
@@ -156,7 +153,7 @@ class GufIntegrationController {
 		}).then((pInformation) => {
 			information = pInformation;
 
-			process.status("Processing", logger.info("integration#process Publishing layers in GeoServer and GeoNode.", 60));
+			process.status("Processing", logger.info("integration#process Publishing layers in GeoServer.", 60));
 			processes.store(process);
 
 			// Create new publish layers.
@@ -833,9 +830,6 @@ SET non_urban = subquery.sum FROM (SELECT SUM(ST_Area(geography(ST_Envelope(rast
 	publishLayer(analyticalUnitsLayer) {
 		return this.getPublicWorkspaceSchema().then((publicWorkspaceSchema) => {
 			return this._geoServerLayers.create(new RestLayer(analyticalUnitsLayer, publicWorkspaceSchema.workspace, config.geoServerDataStore));
-		}).then(() => {
-			let geonodeUpdateLayers = new GeonodeUpdateLayers();
-			return geonodeUpdateLayers.filtered({layer: analyticalUnitsLayer});
 		});
 	}
 

@@ -42,13 +42,13 @@ class GeoServerLayersController {
 			let promise = Promise.resolve(null);
 			baseLayerIds.forEach(layerId => {
 				promise = promise.then(() => {
-					return this._styledLayers.create(`${config.geoserver2Workspace}:layer_${layerId}`, styleId)
+					return this._styledLayers.create(`${config.geoserverWorkspace}:layer_${layerId}`, styleId)
 				})
 			});
 
 			return promise
 		}).then(() => {
-			layers = baseLayerIds.map(id => `${config.geoserver2Workspace}:layer_${id}`).join(',');
+			layers = baseLayerIds.map(id => `${config.geoserverWorkspace}:layer_${id}`).join(',');
 			response.json({
 				layer: layers,
 				styleId: styleId

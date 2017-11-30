@@ -24,7 +24,7 @@ class PgLayers {
         return this.pgPool.query(`SELECT * FROM ${this.schema}.layers`).then(result => {
         	// From the mongo retrieve whether they are referenced. They are referenced when the are used in a layerref.
 			return Promise.all(result.rows.map(layer => {
-				return new FilteredMongoLayerReferences({layer: layer.name}, this._mongo).json().then(layerReferences => {
+				return new FilteredMongoLayerReferences({layer: layer.path}, this._mongo).json().then(layerReferences => {
 					return _.extend(layer, {
 						referenced: layerReferences.length > 0,
 						source: 'internal'
