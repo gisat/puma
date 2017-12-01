@@ -38,6 +38,7 @@ class Info {
                     gid: group[0].gid,
                     name: group[0].name,
                     geom: group[0].geom,
+                    wgsExtent: group[0].geomWgs,
                     attributes: []
                 };
                 group.forEach(value=> {
@@ -80,7 +81,7 @@ class Info {
                 }
 
                 return `SELECT ${columnsToQuery} 
-                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM ${this._schema}.layer_${baseLayer._id} WHERE 
+                        ST_AsText(ST_Transform(the_geom, 900913)) as geometry, ST_AsText(ST_Transform(the_geom, 4326)) as geomWgs, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate, name FROM ${this._schema}.layer_${baseLayer._id} WHERE 
                         gid IN ${list}`
             })
             .map(sql => {

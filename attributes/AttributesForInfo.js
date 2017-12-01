@@ -1,5 +1,7 @@
 var conn = require('../common/conn');
 var Promise = require('promise');
+var extent = require('geojson-extent');
+var wellknown = require('wellknown');
 
 let Attributes = require('./Attributes');
 
@@ -31,13 +33,14 @@ class AttributesForInfo extends Attributes {
       });
 
       let attributesPromises = Object.keys(attributes)
-        .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate' && attribute != 'name')
+        .filter(attribute => attribute != 'geometry' && attribute != 'geomwgs' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate' && attribute != 'name')
         .map(attribute => {
           var id = Number(attribute.split('_')[3]);
           let jsonAttribute = JSON.parse(JSON.stringify(mongoAttributes[id])); // deep clone of the object
 
           jsonAttribute.values = attributes[attribute];
           jsonAttribute.geometries = attributes['geometry'];
+          jsonAttribute.geomWgs = attributes['geomwgs'];
           jsonAttribute.names = attributes['name'];
           jsonAttribute.gids = attributes['gid'];
           jsonAttribute.color = attributes['color'];
@@ -67,10 +70,12 @@ class AttributesForInfo extends Attributes {
           dataViews.map(view => {
             if (view.rows.length > 0){
               let info = view.rows[0];
+              let wgsExtent = this.getExtentFromWkt(info.geomwgs);
               data = {
                 gid: info.gid,
                 name: info.name,
-                geom: info.geometry
+                geom: info.geometry,
+                  wgsExtent: wgsExtent
               }
             }
           });
@@ -80,6 +85,11 @@ class AttributesForInfo extends Attributes {
 
       return Promise.all(attributesPromises);
     });
+  }
+
+  getExtentFromWkt(geometry){
+      let json = wellknown(geometry);
+      return extent(json);
   }
 }
 
