@@ -14,16 +14,17 @@
   "dependencies": {
     "async": "1.5.x",
     "bower": "^1.6.5",
-    "csv-parser": "^1.11.0",
     "csv": "^1.1.0",
+    "csv-parser": "^1.11.0",
+    "dbffile": "^0.7.3",
     "deepcopy": "^0.6.1",
     "express": "3.x",
     "express-session": "^1.13.0",
     "geojson": "^0.4.0",
     "jsdom": "7.x.x",
-    "lodash": "^4.16.4",
     "json2csv": "^3.7.0",
     "json2xls": "^0.1.2",
+    "lodash": "^4.16.4",
     "moment": "^2.15.1",
     "mongodb": "~2.0",
     "node-sass": "^3.7.0",
@@ -40,11 +41,11 @@
     "superagent": "^2.1.0",
     "supertest-as-promised": "^3.2.0",
     "underscore": "1.8.x",
+    "validator": "latest",
     "wellknown": "^0.5.0",
     "xml2json": "0.9.x",
     "xmldoc": "^0.3.2",
-    "xmldom": "0.1.13",
-    "validator": "latest"
+    "xmldom": "0.1.13"
   },
   "devDependencies": {
     "chai": "^3.5.0",
