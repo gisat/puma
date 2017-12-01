@@ -2,6 +2,7 @@ var conn = require('../common/conn');
 var Promise = require('promise');
 var extent = require('geojson-extent');
 var wellknown = require('wellknown');
+var logger = require('../common/Logger').applicationWideLogger;
 
 let Attributes = require('./Attributes');
 
@@ -37,10 +38,10 @@ class AttributesForInfo extends Attributes {
         .map(attribute => {
           var id = Number(attribute.split('_')[3]);
           let jsonAttribute = JSON.parse(JSON.stringify(mongoAttributes[id])); // deep clone of the object
-
           jsonAttribute.values = attributes[attribute];
           jsonAttribute.geometries = attributes['geometry'];
           jsonAttribute.geomWgs = attributes['geomwgs'];
+            logger.info(`Statistics#statisticAttributes geomWgs: ${attributes['geomwgs']}`);
           jsonAttribute.names = attributes['name'];
           jsonAttribute.gids = attributes['gid'];
           jsonAttribute.color = attributes['color'];
@@ -55,7 +56,7 @@ class AttributesForInfo extends Attributes {
           } else if (jsonAttribute.type == 'text') {
             return new TextAttribute(jsonAttribute);
           } else {
-            logger.warn(`Statistics#statisticAttributes Unknown type of attribute. id: ${id}`);
+            logger.warn(`AttributesForInfo#statisticAttributes Unknown type of attribute. id: ${id}`);
             return null
           }
         })
@@ -71,6 +72,7 @@ class AttributesForInfo extends Attributes {
             if (view.rows.length > 0){
               let info = view.rows[0];
               let wgsExtent = this.getExtentFromWkt(info.geomwgs);
+                logger.info(`AttributesForInfo#statisticAttributes extent: ${wgsExtent}`);
               data = {
                 gid: info.gid,
                 name: info.name,

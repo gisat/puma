@@ -38,7 +38,7 @@ class Info {
                     gid: group[0].gid,
                     name: group[0].name,
                     geom: group[0].geom,
-                    wgsExtent: group[0].geomWgs,
+                    wgsExtent: group[0].wgsExtent,
                     attributes: []
                 };
                 group.forEach(value=> {
