@@ -16,6 +16,8 @@ let MongoLocations = require(`../metadata/MongoLocations`);
 let MongoLayerReference = require(`../layers/MongoLayerReference`);
 let MongoLayerReferences = require(`../layers/MongoLayerReferences`);
 
+let DBFEditor = require(`../integration/DBFEditor`);
+
 class ImportController {
 	constructor(app, pgPool) {
 		app.post('/rest/import/csv', this.csv.bind(this));
@@ -25,6 +27,7 @@ class ImportController {
 		this._app = app;
 		this._pgPool = pgPool;
 		this.permissions = new PgPermissions(pgPool, config.postgreSqlSchema);
+		this._dbfEditor = new DBFEditor();
 
 		this._geoserverImporter = new GeoserverImporter(
 			`${config.remoteProtocol}://${config.remoteAddress}${config.geoserverPath}`,
@@ -55,6 +58,26 @@ class ImportController {
 		let systemName = `au_${Math.random().toString(36).substring(3)}`;
 
 		Promise.resolve()
+			.then(() => {
+				if (files.shp && files.shx && files.dbf && files.prj) {
+					return this._dbfEditor.prepareDbfFileForImport(files.dbf.path)
+						.then(() => {
+							return this._dbfEditor.getDbfFileDescriptors(files.dbf.path);
+						})
+						.then((descriptors) => {
+							descriptors.forEach((descriptor) => {
+								if(!columnMap.hasOwnProperty(`name`) && descriptor.name.match(/name/i)) {
+									columnMap[`name`] = descriptor.name;
+								}
+							})
+						});
+				}
+			})
+			.then(() => {
+				if(!columnMap.hasOwnProperty(`name`)) {
+					throw new Error(`obligatory column is missing: name`);
+				}
+			})
 			.then(() => {
 				if (!place.hasOwnProperty(`dataset`)) {
 					place[`dataset`] = data.scope._id;
