@@ -51,7 +51,7 @@ class ImportController {
 		let data = JSON.parse(request.body.data);
 		let place = data.place;
 		let scope = data.scope;
-		let columnMap = data.columnMap ? data.columnMap : {};
+		let columnMap = {};
 		let files = request.files;
 		let userId = request.session.userId;
 		let isAdmin = response.locals.isAdmin;
