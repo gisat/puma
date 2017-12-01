@@ -14,7 +14,7 @@ class AnalyticalUnitsController {
 
 	getAuGeometries(request, response, next) {
 		return new Promise((resolve, reject) => {
-			let filter = request.body.data;
+			let filter = request.body;
 			let placeId = filter.place;
 			MongoClient.connect(config.mongoConnString)
 				.then((mongoDb) => {
