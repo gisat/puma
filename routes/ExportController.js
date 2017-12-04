@@ -139,6 +139,9 @@ class ExportController {
                 if (value.name){
                     value.name = self.constructor.removeDiacritics(value.name);
                 }
+                if (value.hasOwnProperty("wgsExtent")){
+                    delete value.wgsExtent;
+                }
                 delete value.attributes;
             });
 
@@ -170,6 +173,9 @@ class ExportController {
                     });
                     delete value.attributes;
                     delete value.geom;
+                    if (value.hasOwnProperty("wgsExtent")){
+                        delete value.wgsExtent;
+                    }
                 });
 
                 var csv = json2csv({ data: json, fields: Object.keys(json[0]) });
@@ -211,6 +217,9 @@ class ExportController {
                     });
                     delete value.attributes;
                     delete value.geom;
+                    if (value.hasOwnProperty("wgsExtent")){
+                        delete value.wgsExtent;
+                    }
                 });
 
                 self.prepareXlsExport(response, json);
