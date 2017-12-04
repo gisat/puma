@@ -45,7 +45,7 @@ class Attributes {
             });
 
             let attributesPromises = Object.keys(attributes)
-                .filter(attribute => attribute != 'geometry' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate' && attribute != 'name')
+                .filter(attribute => attribute != 'geometry' && attribute != 'geomwgs' && attribute != 'gid' && attribute != 'location' && attribute != 'areatemplate' && attribute != 'name')
                 .map(attribute => {
                     var id = Number(attribute.split('_')[3]);
                     let jsonAttribute = JSON.parse(JSON.stringify(mongoAttributes[id])); // deep clone of the object
