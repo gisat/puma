@@ -70,12 +70,12 @@ class ImportController {
 									columnMap[`name`] = descriptor.name;
 								}
 							})
+						})
+						.then(() => {
+							if(!columnMap.hasOwnProperty(`name`)) {
+								throw new Error(`obligatory column is missing: name`);
+							}
 						});
-				}
-			})
-			.then(() => {
-				if(!columnMap.hasOwnProperty(`name`)) {
-					throw new Error(`obligatory column is missing: name`);
 				}
 			})
 			.then(() => {
