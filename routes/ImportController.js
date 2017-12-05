@@ -147,6 +147,39 @@ class ImportController {
 				}
 			})
 			.then(() => {
+				return this._pgPool.query(
+					`WITH box AS (
+							SELECT st_envelope(st_union(the_geom)) AS bbox
+							FROM "public"."${systemName}"
+						)
+						SELECT
+						  st_distance_sphere(st_point(st_xmin(box.bbox), st_ymin(box.bbox)),
+									  st_point(st_xmax(box.bbox), st_ymax(box.bbox))) AS d_length,
+						  st_asgeojson(st_centroid(box.bbox))                         AS centroid
+						FROM box;`
+				).then((result) => {
+					console.log(result.rows);
+					if(result.rows.length) {
+						return {
+							diagonalLength: result.rows[0].d_length,
+							centroid: JSON.parse(result.rows[0].centroid)
+						}
+					} else {
+						throw new Error(`unable to get bounding box`);
+					}
+				}).then((bboxdata) => {
+					console.log(bboxdata);
+					return {
+						latitude: bboxdata.centroid.coordinates[1],
+						longitude: bboxdata.centroid.coordinates[0],
+						range: bboxdata.diagonalLength
+					}
+				}).then((mapState) => {
+					place.mapState = mapState;
+					return this._metadataUpdate(place, `location`, userId, isAdmin);
+				})
+			})
+			.then(() => {
 				response.status(200).send({
 					success: true
 				});

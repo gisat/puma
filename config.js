@@ -81,6 +81,13 @@ module.exports = {
 		//renameAdvancedFiltersTo: "Evaluation Tool"
 	},
 
+	insar: {
+		/**
+		 * Koeficient pro vypocet rozsahu mapy na zaklade bounding boxu polygonu mostu.
+		 */
+		rangeBuffer: 1.5
+	},
+
 	allowedOrigins: "http://localhost:5555",
 	/*
 	 * It decides to which level will be the information logged. Default value is 1 meaning Info and higher will be logged
