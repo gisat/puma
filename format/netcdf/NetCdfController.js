@@ -16,8 +16,7 @@ class NetCdfController {
 
         let data = file.root.subgroups.Surface.variables.T2M.readSlice(0,1,0,121,0,121);
 
-        let bbox = this.bboxForGeoTiff();
-        response.json({bbox: bbox, data: data});
+        response.json({bbox: [14,19,15,20], data: data});
     }
 
     bboxForGeoTiff() {
