@@ -32,7 +32,7 @@ class NetCdfController {
         let maxX = geoTransform[0] + (geoTransform[1] * numX);
         let maxY = geoTransform[3];
 
-        return `${minX},${minY},${maxX},${maxY}`;
+        return `${minX},${minY},${maxX},${maxY},${dataset.srs.toWKT()}`;
     }
 }
 
