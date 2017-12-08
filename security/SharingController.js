@@ -5,6 +5,7 @@ let _ = require('underscore');
 let Promise = require('promise');
 
 let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
+let MongoDataView = require('../visualization/MongoDataView');
 let MongoTopic = require('../metadata/MongoTopic');
 let MongoScope = require('../metadata/MongoScope');
 let MongoLocation = require('../metadata/MongoLocation');
@@ -38,9 +39,11 @@ class SharingController {
 
     shareToUser(request, response) {
         let userId = Number(request.body.user);
+        let dataViewId = Number(request.body.dataView);
         this.getMetadataToShare(Number(request.body.scope), request.body.places.map(place => Number(place))).then(metadata => {
             return Promise.all([
                 this.permissions.add(userId, MongoScope.collectionName(), metadata.scope._id, Permission.READ),
+                this.permissions.addGroup(userId, MongoDataView.collectionName(), dataViewId, Permission.READ),
                 this.permissions.addCollection(userId, MongoLocation.collectionName(), _.pluck(metadata.places, '_id'), Permission.READ),
                 this.permissions.addCollection(userId, MongoTopic.collectionName(), _.pluck(metadata.topics, '_id'), Permission.READ),
 
@@ -61,9 +64,11 @@ class SharingController {
 
     shareToGroup(request, response) {
         let groupId = Number(request.body.group);
+        let dataViewId = Number(request.body.dataView);
         this.getMetadataToShare(Number(request.body.scope), request.body.places.map(place => Number(place))).then(metadata => {
             return Promise.all([
                 this.permissions.addGroup(groupId, MongoScope.collectionName(), metadata.scope._id, Permission.READ),
+                this.permissions.addGroup(groupId, MongoDataView.collectionName(), dataViewId, Permission.READ),
                 this.permissions.addGroupCollection(groupId, MongoLocation.collectionName(), _.pluck(metadata.places, '_id'), Permission.READ),
                 this.permissions.addGroupCollection(groupId, MongoTopic.collectionName(), _.pluck(metadata.topics, '_id'), Permission.READ),
 
