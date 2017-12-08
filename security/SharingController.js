@@ -42,10 +42,10 @@ class SharingController {
         let dataViewId = Number(request.body.dataView);
         this.getMetadataToShare(Number(request.body.scope), request.body.places.map(place => Number(place))).then(metadata => {
             return Promise.all([
-                this.permissions.add(userId, MongoScope.collectionName(), metadata.scope._id, Permission.READ),
-                this.permissions.addGroup(userId, MongoDataView.collectionName(), dataViewId, Permission.READ),
-                this.permissions.addCollection(userId, MongoLocation.collectionName(), _.pluck(metadata.places, '_id'), Permission.READ),
-                this.permissions.addCollection(userId, MongoTopic.collectionName(), _.pluck(metadata.topics, '_id'), Permission.READ),
+                this.permissions.add(userId, MongoScope.collectionName(), metadata.scope, Permission.READ),
+                this.permissions.add(userId, MongoDataView.collectionName(), dataViewId, Permission.READ),
+                this.permissions.addCollection(userId, MongoLocation.collectionName(), metadata.places, Permission.READ),
+                this.permissions.addCollection(userId, MongoTopic.collectionName(), metadata.topics, Permission.READ),
 
                 this.permissions.addCollection(userId, PgWmsLayers.tableName(), _.pluck(metadata.wmsLayers, 'id'), Permission.READ)
             ]);
@@ -67,10 +67,10 @@ class SharingController {
         let dataViewId = Number(request.body.dataView);
         this.getMetadataToShare(Number(request.body.scope), request.body.places.map(place => Number(place))).then(metadata => {
             return Promise.all([
-                this.permissions.addGroup(groupId, MongoScope.collectionName(), metadata.scope._id, Permission.READ),
+                this.permissions.addGroup(groupId, MongoScope.collectionName(), metadata.scope, Permission.READ),
                 this.permissions.addGroup(groupId, MongoDataView.collectionName(), dataViewId, Permission.READ),
-                this.permissions.addGroupCollection(groupId, MongoLocation.collectionName(), _.pluck(metadata.places, '_id'), Permission.READ),
-                this.permissions.addGroupCollection(groupId, MongoTopic.collectionName(), _.pluck(metadata.topics, '_id'), Permission.READ),
+                this.permissions.addGroupCollection(groupId, MongoLocation.collectionName(), metadata.places, Permission.READ),
+                this.permissions.addGroupCollection(groupId, MongoTopic.collectionName(), metadata.topics, Permission.READ),
 
                 this.permissions.addGroupCollection(groupId, PgWmsLayers.tableName(), _.pluck(metadata.wmsLayers, 'id'), Permission.READ)
             ]);
