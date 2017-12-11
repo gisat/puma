@@ -4,6 +4,8 @@ let config = require(`../config`);
 
 let PgGeometry = require(`../data/PgGeometry`);
 let FilteredBaseLayerReferences = require(`../layers/FilteredBaseLayerReferences`);
+let FilteredMongoLocations = require(`../metadata/FilteredMongoLocations`);
+let FilteredMongoScopes = require(`../metadata/FilteredMongoScopes`);
 
 class AnalyticalUnitsController {
 	constructor(app, pgPool) {
@@ -18,7 +20,19 @@ class AnalyticalUnitsController {
 			let placeId = filter.place;
 			MongoClient.connect(config.mongoConnString)
 				.then((mongoDb) => {
-					return new FilteredBaseLayerReferences({location: Number(placeId)}, mongoDb).layerReferences();
+					return new FilteredMongoLocations({_id: Number(placeId)}, mongoDb).json()
+						.then((results) => {
+							return new FilteredMongoScopes({_id: Number(results[0].dataset)}, mongoDb).json();
+						}).then((results) => {
+							return new FilteredBaseLayerReferences(
+								{
+									location: Number(placeId),
+									isData: false,
+									areaTemplate: Number(results[0].featureLayers[0])
+								},
+								mongoDb
+							).layerReferences();
+						})
 				})
 				.then((result) => {
 					let tableName = result[0].layer.split(`:`)[1];
