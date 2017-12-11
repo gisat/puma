@@ -101,6 +101,12 @@ function getLocationConf(params, req, res, callback) {
 				}); // todo
 
 			}, function datasetMapIterationFinalCallback(err){
+				if(err){
+					logger.error('theme#getLocationInfo Error: ', err);
+					return callback(err);
+				}
+
+				logger.info('theme#getLocationInfo Finished: ', resultArr);
 				if (resultArr.length>1 && !config.isUrbis) {
 					resultArr.unshift({
 						name: 'All places',
