@@ -63,7 +63,7 @@ class ProcessManager {
             .then((processes) => {
                 let promises = [];
                 processes.forEach((process) => {
-                    if (process.ended) {
+                    if (process.ended && process.error) {
                         promises.push(
                             this.removeProcessByKey(process.key)
                         );
