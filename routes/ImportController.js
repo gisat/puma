@@ -181,6 +181,9 @@ class ImportController {
 			})
 			.then(() => {
 				response.status(200).send({
+					data: {
+						place: place
+					},
 					success: true
 				});
 			})
