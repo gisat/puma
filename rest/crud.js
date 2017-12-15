@@ -9,6 +9,9 @@ var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('lodash');
 var Promise = require('promise');
 
+let Permission = require(`../security/Permission`);
+let PgPermissions = require(`../security/PgPermissions`);
+
 function ensureCollection(req, res, next) {
     if (collections.indexOf(req.params.objType) != -1) {
         next();
@@ -142,6 +145,20 @@ function create(collName, obj, params, callback) {
             });
         });
     }).then((object) => {
+		let pgPermissions = new PgPermissions(conn.getPgDataDb(), `data`);
+
+		let isPublic = object.isPublic;
+		delete object.isPublic;
+
+		if (isPublic) {
+			return pgPermissions.addGroup(2, collName, object._id, Permission.READ)
+				.then(() => {
+					return object;
+				});
+		} else {
+			return object
+		}
+	}).then((object) => {
         console.log(`#### data6`, object);
         // create
         let collection = db.collection(collName);
