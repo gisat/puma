@@ -32,12 +32,12 @@ class ScenesManager {
         let owner = request.session.user.id;
         let filter = request.body;
 
-        let processTicket = this._processManager.getProcessKey(owner, filter);
+        let processTicket = this._processManager.getProcessKey(null, filter);
 
         return this._processManager.getProcessesByKey(processTicket)
             .then((processes) => {
                 if (!processes.length) {
-                    return this._processManager.createProcess(owner, filter)
+                    return this._processManager.createProcess(null, filter)
                         .then((processes) => {
                             this.getFilteredScenes(filter)
                                 .then((scenes) => {
