@@ -7,36 +7,28 @@ let unzip = require('unzip');
 
 let conn = require('../common/conn');
 let config = require('../config');
-let utils = require('../tacrpha/utils');
 let logger = require('../common/Logger').applicationWideLogger;
 
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
 let FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
 let FilteredMongoLayerGroups = require('../metadata/FilteredMongoLayerGroups');
-let FilteredMongoLayerTemplates = require('../layers/FilteredMongoLayerTemplates');
 let FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 let GeoServerImporter = require('../layers/GeoServerImporter');
-let PgTable = require('../data/PgTable');
 let MongoAttribute = require('../attributes/MongoAttribute');
 let MongoAttributes = require('../attributes/MongoAttributes');
-let MongoAttributeSet = require('../attributes/MongoAttributeSet');
 let MongoAttributeSets = require('../attributes/MongoAttributeSets');
 let MongoLayerReferences = require('../layers/MongoLayerReferences');
 let MongoLayerReference = require('../layers/MongoLayerReference');
 let MongoLayerTemplates = require('../layers/MongoLayerTemplates');
-let MongoLayerTemplate = require('../layers/MongoLayerTemplate');
 let MongoLayerGroups = require('../layers/MongoLayerGroups');
 let MongoLayerGroup = require('../layers/MongoLayerGroup');
 let MongoTopics = require('../metadata/MongoTopics');
 let MongoTopic = require('../metadata/MongoTopic');
-let MongoThemes = require('../metadata/MongoThemes');
 let MongoTheme = require('../metadata/MongoTheme');
 let MongoScope = require('../metadata/MongoScope');
-let MongoDataView = require('../visualization/MongoDataView');
 let MongoDataViews = require('../visualization/MongoDataViews');
 let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
-let PgBaseLayerTables = require('../layers/PgBaseLayerTables');
 let PgLayerViews = require('../layers/PgLayerViews');
 let RasterToPGSQL = require('../integration/RasterToPGSQL');
 let PgPermissions = require('../security/PgPermissions');
@@ -785,6 +777,9 @@ class LayerImporter {
             customLayerName = importerTask.inputs.customName || sourceFileName;
             systemLayerName = `i${importerTask.id}_${customLayerName.toLowerCase().substring(0, 50).replace(/[|&;$%@"<>()+, ]/g, "_")}`;
             filePath = `${importFolderPath}${sourceFileName}${fileExtension}`;
+            logger.info(`LayerImporter#prepareLayerFilesForImport FileExtension: ${fileExtension}, SourceFileName: ${sourceFileName}, 
+                CustomLayerName: ${customLayerName}, SystemLayerName: ${systemLayerName}, FilePath: ${filePath}
+            `);
 
             if (importerTask.inputs.url) {
                 return new Promise((resolve, reject) => {
@@ -807,6 +802,7 @@ class LayerImporter {
                 })
             }
         }).then(() => {
+            logger.info(`LayerImporter#prepareLayerFilesForImport Unzip`);
             return new Promise((resolve, reject) => {
                 if (fileExtension.toLowerCase() === '.zip') {
                     let fsRs = fs.createReadStream(filePath).pipe(unzip.Extract({
@@ -824,6 +820,7 @@ class LayerImporter {
                 }
             });
         }).then(() => {
+            logger.info(`LayerImporter#prepareLayerFilesForImport Rename`);
             return new Promise((resolve, reject) => {
                 fs.readdir(importFolderPath, (error, files) => {
                     if (error) reject(error);
@@ -846,6 +843,7 @@ class LayerImporter {
                 })
             });
         }).then(() => {
+            logger.info(`LayerImporter#prepareLayerFilesForImport Read All`);
             return new Promise((resolve, reject) => {
                 fs.readdir(importFolderPath, (error, files) => {
                     if (error) reject(error);
@@ -856,7 +854,8 @@ class LayerImporter {
                 });
             });
 		}).then((files) => {
-			let dbfEditor = new DBFEditor();
+            logger.info(`LayerImporter#prepareLayerFilesForImport DBF Update`);
+            let dbfEditor = new DBFEditor();
 			let file = _.filter(files, (file) => {
 				return file.toLowerCase().endsWith('.dbf');
 			});
@@ -864,6 +863,7 @@ class LayerImporter {
 				return files;
 			});
         }).then((files) => {
+            logger.info(`LayerImporter#prepareLayerFilesForImport Finished`);
             return ({
 				customName: customLayerName,
 				systemName: systemLayerName,
