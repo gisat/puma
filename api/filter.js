@@ -1,17 +1,118 @@
-
+var logger = require('../common/Logger').applicationWideLogger;
 var conn = require('../common/conn');
 var data = require('../data/data');
+var datanew = require('../data/datanew');
 var async = require('async');
 var crud = require('../rest/crud');
 var _ = require('underscore');
+var Promise = require('promise');
 
 
+/**
+ * Prepare parameters for filtering
+ * @param filters {Array}
+ * @returns {Array}
+ */
+function prepareParamsForFiltering(filters){
+	var selectedFilters = [];
+	filters.forEach(function(filter){
+		if (filter.attrType == "boolean" || filter.attrType == "text"){
+			var obj = {
+				field: 'as_' + filter.as + '_attr_' + filter.attr,
+				type: filter.attrType,
+				comparison: '=',
+				value: filter.values.value
+			};
+			selectedFilters.push(obj);
+		}
+	});
+	return selectedFilters;
+}
 
+/**
+ * Prepare parameters for unique values filtering
+ * @param attrs
+ * @returns {Array}
+ */
+function prepareParamsForUniqueValues(attrs){
+	var params = [];
+	attrs.forEach(function(attribute){
+		var obj = {
+			field: 'as_' + attribute.as + '_attr_' + attribute.attr,
+			type: attribute.attrType
+		};
+		params.push(obj);
+	});
+	return params;
+}
 
+/**
+ * Filter params.areas according to values in params.filters
+ * @param params
+ * @param req
+ * @param res
+ * @param callback
+ */
+function multifilter(params, req, res, callback){
+	var opts = {
+		data: function(asyncCallback) {
+			var filters = JSON.parse(params.filters);
+			params['filtersReady'] = prepareParamsForFiltering(filters);
+
+			datanew.getAreas(params).then(function(result){
+				var output = {};
+				// prepare areas to format {place:{at:[gids]}}
+				result.forEach(function(location){
+					if(location.length > 0){
+						var place = location[0].loc;
+						var areaTemplate = location[0].at;
+						output[place] = {};
+						var areas = [];
+						location.forEach(function(area){
+							areas.push(area.gid);
+						});
+						output[place][areaTemplate] = areas;
+					}
+				});
+				return asyncCallback(null,output)
+			});
+		},
+
+		result: ['data', function(asyncCallback, results) {
+			res.data = results;
+			return callback();
+		}]
+	};
+	async.auto(opts);
+}
+
+/**
+ * It returns unique values for given attribute
+ * @param params
+ * @param req
+ * @param res
+ * @param callback
+ */
+function getUniqueValues(params, req, res, callback){
+	var attrs = JSON.parse(params.attrs);
+	params['filtersReady'] = prepareParamsForUniqueValues(attrs);
+
+	var opts = {
+		data: function(asyncCallback) {
+			datanew.getUniqueValues(params).then(function(result){
+				return asyncCallback(null,result)
+			});
+		},
+
+		result: ['data', function(asyncCallback, results) {
+			res.data = results;
+			return callback();
+		}]
+	};
+	async.auto(opts);
+}
 
 function filter(params, req, res, callback) {
-
-
 //    var params2 = _.clone(params);
 
 	params.filter = null;
@@ -46,15 +147,17 @@ function filter(params, req, res, callback) {
 				return asyncCallback(null);
 			}
 			data.getAttrConf(params, function(err, attrConf) {
-				if (err)
+				if (err) {
+					logger.error("api/filter.js filter attrConf Params: ", params, " Error: ", err);
 					return callback(err);
+				}
 
 				return asyncCallback(null, attrConf);
 			})
 		},
 		data: ['attrConf', function(asyncCallback, results) {
 				if (!results.attrConf) {
-
+					logger.error("api/filter.js filter data: No attribute config");
 					return callback(null);
 				}
 				if (!params['requireData']) {
@@ -68,22 +171,22 @@ function filter(params, req, res, callback) {
 					if (filter.inactive) continue;
 					var obj1 = {
 						field: 'as_' + filter.as + '_attr_' + filter.attr,
-						comparison: 'gt',
+						comparison: 'gteq',
 						value: filter.min
 					};
 					var obj2 = {
 						field: 'as_' + filter.as + '_attr_' + filter.attr,
-						comparison: 'lt',
+						comparison: 'lteq',
 						value: filter.max
 					};
 					filterParam.push(obj1);
 					filterParam.push(obj2);
 				}
-
 				params['filter'] = JSON.stringify(filterParam);
 				data.getData(params, function(err, dataObj) {
 					var newData = [];
 					if (err) {
+						logger.error("api/filter.js filter data. Params: ", params, " Error: ", err);
 						res.data = [];
 						return callback(null);
 					}
@@ -129,12 +232,12 @@ function filter(params, req, res, callback) {
 						}
 						var obj1 = {
 							field: attrName,
-							comparison: 'gt',
+							comparison: 'gteq',
 							value: filter.min
 						};
 						var obj2 = {
 							field: attrName,
-							comparison: 'lt',
+							comparison: 'lteq',
 							value: filter.max
 						};
 						filterParam.push(obj1);
@@ -143,8 +246,10 @@ function filter(params, req, res, callback) {
 					//console.log(filterParam)
 					newParams.filter = JSON.stringify(filterParam);
 					data.getData(newParams, function(err, dataObj) {
-						if (err)
+						if (err) {
+							logger.error("api/filter.js filter data getData. Params: ", newParams, " Error: ", err);
 							return callback(err);
+						}
 						dataObj.units = results.attrConf.attrMap[attr.as][attr.attr].units;
 						//dataObj.units = results.attrConf.attrMap[attr.attr].units
 						return mapCallback(null, dataObj);
@@ -195,8 +300,10 @@ function filter(params, req, res, callback) {
 				var newParams = _.clone(params);
 				newParams.aggregate = 'min,max';
 				data.getData(newParams, function(err, dataObj) {
-					if (err)
+					if (err) {
+						logger.error("api/filter.js filter metaData. Params: ", newParams, " Error: ", err);
 						return callback(err);
+					}
 					var attrs = JSON.parse(params['attrs']);
 					var data = {};
 					for (var i=0;i<attrs.length;i++) {
@@ -263,9 +370,13 @@ function getFilterConfig(params, req, res, callback) {
 
 	var opts = {
 		locations: function(asyncCallback) {
-			crud.read('location', {dataset: parseInt(params['dataset'])}, function(err, resls) {
-				if (err)
+			var filter = {dataset: parseInt(params['dataset'])};
+			crud.read('location', filter, function(err, resls) {
+				if (err) {
+					logger.error("api/filter.js getFilterConfig locations. It wasn't possible to read location. Filter: ", 
+						filter, " Error: ", err);
 					return callback(err);
+				}
 				var locs = [];
 				for (var i=0;i<resls.length;i++) {
 					locs.push(resls[i]._id);
@@ -292,6 +403,7 @@ function getFilterConfig(params, req, res, callback) {
 					attrConf: function(asyncCallback2) {
 						data.getAttrConf(newParams, function(err, attrConf) {
 							if (err) {
+								logger.error("api/filter.js getFilterConfig data attrConf. Params: ", newParams, " Error: ", err);
 								return callback(err);
 							}
 							return asyncCallback2(null, attrConf);
@@ -300,8 +412,10 @@ function getFilterConfig(params, req, res, callback) {
 					res: ['attrConf', function(asyncCallback2, results) {
 							newParams.attrMap = results.attrConf.prevAttrMap;
 							data.getData(newParams, function(err, dataObj) {
-							if (err)
+							if (err) {
+								logger.error("api/filter.js getFilterConfig data res. Params: ", newParams, " Error: ", err);
 								return callback(err);
+							}
 							dataObj.units = results.attrConf.attrMap.units;
 							return mapCallback(null, dataObj);
 						})
@@ -352,5 +466,7 @@ function getFilterConfig(params, req, res, callback) {
 }
 module.exports = {
 	getFilterConfig: getFilterConfig,
-	filter: filter
+	filter: filter,
+	multifilter: multifilter,
+	getUniqueValues: getUniqueValues
 };

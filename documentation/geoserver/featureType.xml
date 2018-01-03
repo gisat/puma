@@ -1,0 +1,55 @@
+<featureType>
+    <id>FeatureTypeInfoImpl--1e417bec:15607bbc70b:4d6d</id>
+    <name>che_75m_binconnectivity_10km_5km_3km_2_km_1km</name>
+    <nativeName>che_75m_binconnectivity_10km_5km_3km_2_km_1km</nativeName>
+    <namespace>
+        <id>NamespaceInfoImpl-78ff667e:12476299803:-7ffe</id>
+    </namespace>
+    <title>che_75m_binconnectivity_10km_5km_3km_2_km_1km</title>
+    <abstract>No abstract provided</abstract>
+    <keywords>
+        <string>features</string>
+        <string>che_75m_binconnectivity_10km_5km_3km_2_km_1km</string>
+    </keywords>
+    <nativeCRS>GEOGCS[&quot;WGS 84&quot;,
+        DATUM[&quot;World Geodetic System 1984&quot;,
+        SPHEROID[&quot;WGS 84&quot;, 6378137.0, 298.257223563, AUTHORITY[&quot;EPSG&quot;,&quot;7030&quot;]],
+        AUTHORITY[&quot;EPSG&quot;,&quot;6326&quot;]],
+        PRIMEM[&quot;Greenwich&quot;, 0.0, AUTHORITY[&quot;EPSG&quot;,&quot;8901&quot;]],
+        UNIT[&quot;degree&quot;, 0.017453292519943295],
+        AXIS[&quot;Geodetic longitude&quot;, EAST],
+        AXIS[&quot;Geodetic latitude&quot;, NORTH],
+        AUTHORITY[&quot;EPSG&quot;,&quot;4326&quot;]]</nativeCRS>
+    <srs>EPSG:4326</srs>
+    <nativeBoundingBox>
+        <minx>5.45643639102258</minx>
+        <maxx>10.966214230036</maxx>
+        <miny>45.3219288680574</miny>
+        <maxy>48.3008177900537</maxy>
+        <crs>EPSG:4326</crs>
+    </nativeBoundingBox>
+    <latLonBoundingBox>
+        <minx>5.45643639102258</minx>
+        <maxx>10.966214230036</maxx>
+        <miny>45.3219288680574</miny>
+        <maxy>48.3008177900537</maxy>
+        <crs>GEOGCS[&quot;WGS84(DD)&quot;,
+            DATUM[&quot;WGS84&quot;,
+            SPHEROID[&quot;WGS84&quot;, 6378137.0, 298.257223563]],
+            PRIMEM[&quot;Greenwich&quot;, 0.0],
+            UNIT[&quot;degree&quot;, 0.017453292519943295],
+            AXIS[&quot;Geodetic longitude&quot;, EAST],
+            AXIS[&quot;Geodetic latitude&quot;, NORTH]]</crs>
+    </latLonBoundingBox>
+    <projectionPolicy>FORCE_DECLARED</projectionPolicy>
+    <enabled>true</enabled>
+    <advertised>true</advertised>
+    <store class="dataStore">
+        <id>DataStoreInfoImpl--1e417bec:155e9a492e6:-7ffe</id>
+    </store>
+    <maxFeatures>0</maxFeatures>
+    <numDecimals>0</numDecimals>
+    <overridingServiceSRS>false</overridingServiceSRS>
+    <skipNumberMatched>false</skipNumberMatched>
+    <circularArcPresent>false</circularArcPresent>
+</featureType>

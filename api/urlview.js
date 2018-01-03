@@ -3,6 +3,7 @@ var fs = require('fs');
 var proxy = require('./proxy');
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function saveChart(params, req, res, callback) {
 	var cfg = JSON.parse(params['cfg']);
@@ -16,11 +17,15 @@ function saveChart(params, req, res, callback) {
 			}
 		}
 	}
-	crud.create(collName, cfg, {userId: req.userId}, function(err, result) {
+	crud.create(collName, cfg, {userId: req.session.userId}, function(err, result) {
 		if (err) {
+			logger.error("api/urlview.js saveChart. It wasn't possible to create: ", collName, " Configuration: ", cfg,
+				" Error: ", err);
 			return callback(err);
 		}
 		if (typeof result == "undefined"){
+			logger.error("api/urlview.js saveChart. It wasn't possible to create: ", collName, " Configuration: ", cfg,
+				" Result: ", result);
 			return callback({message: "API/urlview.saveChart crud.create: result undefined"});
 		}
 		res.data = result._id;
@@ -33,7 +38,11 @@ function getChart(params,req,res,callback) {
 	var collName = req.isView ? 'viewcfg' : 'chartcfg';
 	var filter = {_id: parseInt(params['_id'])};
 		crud.read(collName,filter,function(err,result) {
-			if (err) return callback(err);
+			if (err) {
+				logger.error("api/urlview.js getChart. It wasn't possible to read: ", collName, " Filter: ", filter,
+					" Error: ", err);
+				return callback(err);
+			}
 			var cfg = result[0];
 			if (cfg.type=='map') {
 				var layers = cfg.layers;
@@ -47,7 +56,7 @@ function getChart(params,req,res,callback) {
 			}
 			res.data = cfg;
 			callback(null);
-			crud.update(collName,{_id:cfg._id},{userId: req.userId, isAdmin: req.isAdmin},function(err,r){});
+			crud.update(collName,{_id:cfg._id},{userId: req.session.userId, isAdmin: res.locals.isAdmin},function(err,r){});
 		})
 }
 

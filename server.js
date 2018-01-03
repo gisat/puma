@@ -1,94 +1,87 @@
+require('newrelic');
+
 var express = require('express');
 var app = express();
 var conn = require('./common/conn');
-var publicConfig = require('./common/public-config');
+var getCSS = require('./common/get-css');
+var getMngCSS = require('./common/get-mng-css');
 var staticFn = express['static'];
 var session = require('express-session');
+let xmlparser = require('express-xml-bodyparser');
 
 var async = require('async');
 var loc = require('./common/loc');
+var logger = require('./common/Logger').applicationWideLogger;
 
 var config = require('./config');
 
+process.on('uncaughtException', function (err) {
+	logger.error("Caught exception: ", err);
+});
+
+var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
+var PgPool = require('./postgresql/PgPool');
+var DatabaseSchema = require('./postgresql/DatabaseSchema');
+let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
+let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
+let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
+let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
+
+let CompoundAuthentication = require('./security/CompoundAuthentication');
+let PgAuthentication = require('./security/PgAuthentication');
+let SsoAuthentication = require('./security/SsoAuthentication');
+
+var pool = new PgPool({
+    user: config.pgDataUser,
+    database: config.pgDataDatabase,
+    password: config.pgDataPassword,
+    host: config.pgDataHost,
+    port: config.pgDataPort
+});
+
+var app;
+// TODO: Move to the API instead of public.
 function initServer(err) {
+	logger.info('server#initServer Initialize the server.');
+
 	if (err) {
 		console.log('Error: while initializing server: ', err);
 		return;
 	}
-	var oneDay = 60*60*24*1000;
-
 	// Order is important
+    
+    // Limit size of uploaded files
+    app.use(express.limit('256mb'));
 
-	// Log the requests to see then the error occurs.
+	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
-		console.log("Request: "+ req.method + " - " + req.url);
+		logger.info("Request: "+ req.method + " - " + req.url);
 		next();
 	});
 
-	//app.use(express.favicon());
-	//app.use(express.favicon(__dirname + '/public/images/project-logo.png'));
+	app.use('/app.css', getCSS);
+	app.use('/app-mng.css', getMngCSS);
 
-	app.use('/printpublic',function(req,res,next) {
-		if (req.path.search('.html')>-1 && req.path.search('index-for-export')<0) {
-			return next(new Error('unauthorized'));
-		}
-		return next(null);
-	});
-
-	/*
-	#######################################################################
-	Nastaveni apache.conf pro servirovani statickych souboru primo Apachem:
-
-	Alias /help /var/www/puma-app/public/help/
-
-	#### /tool/* static routing
-	RedirectMatch 301 ^/tool$ /tool/
-	RedirectMatch 301 ^/catalogue/(.*)$ /catalogue/$1
-
-	AliasMatch ^/tool/$ /var/www/puma-app/public/data-exploration.html
-	Alias /tool/css /var/www/puma-app/public/css
-	Alias /tool/ux /var/www/puma-app/public/ux
-	Alias /tool/_main /var/www/puma-app/public/_main
-	Alias /tool/_common /var/www/puma-app/public/_common
-	Alias /tool/images /var/www/puma-app/public/images
-	Alias /tool/devlib /var/www/puma-app/public/devlib
-	Alias /tool/lib /var/www/puma-app/public/lib
-	Alias /tool/gisatlib /var/www/puma-app/public/gisatlib
-	Alias /tool/extjs-4.1.3 /var/www/puma-app/public/extjs-4.1.3
-
-	ProxyPassMatch ^/tool/?$ !
-	ProxyPass /tool/css !
-	ProxyPass /tool/ux !
-	ProxyPass /tool/_main !
-	ProxyPass /tool/_common !
-	ProxyPass /tool/images !
-	ProxyPass /tool/devlib !
-	ProxyPass /tool/lib !
-	ProxyPass /tool/gisatlib !
-	ProxyPass /tool/extjs-4.1.3 !
-
-	#### /tool* non-static routing (and some minor static, not covered by above code)
-	ProxyPass /tool http://127.0.0.1:3000
-	ProxyPassReverse /tool http://127.0.0.1:3000
-	 */
-
-	app.use('/config.js', publicConfig);
-	app.use('/printpublic/config.js', publicConfig);
-
-	app.use('extjs-4.1.3',staticFn(__dirname + '/public/extjs-4.1.3', {maxAge: oneDay*7})); // jen pro jistotu, ale mel by to vyridit uz Apache
-	app.use('/printpublic',staticFn(__dirname + '/public'));
 	app.use(express.cookieParser());
-	app.use(express.bodyParser());
-	app.use(function(req, res, next){
-		req.ssid = req.cookies.ssid || req.ssid || '';
+	app.use(express.bodyParser({limit: '50mb'}));
+	app.use(xmlparser());
+	app.use(session({
+		name: "panthersid",
+		secret: "panther",
+		resave: false,
+		saveUninitialized: true
+	}));
+	app.use(function (request, response, next) {
+		response.locals.ssid = request.cookies.sessionid;
+		response.locals.isAdmin = request.session.groups && request.session.groups.indexOf("admingroup") != -1;
 		next();
 	});
 	app.use(loc.langParser);
-    // Allow CORS on the node level.
+    
+	// Allow CORS on the node level.
     app.use(function(req, res, next) {
-		// Allow CORS from anywhere.
 		// TODO: Fix security issues.
-		var url = req.headers.origin;
+		var url = req.headers.origin || 'http://localhost:63342';
 		res.header("Access-Control-Allow-Origin", url);
 		res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, access-control-allow-credentials, access-control-allow-origin, content-type, cookie");
 		res.header("Access-Control-Allow-Credentials", true);
@@ -96,21 +89,65 @@ function initServer(err) {
 		next();
     });
     // End of allow CORS.
-    require('./routes/security')(app);
+
+	// Make sure that every request knows the current information about user.
+	app.use((request, response, next) => {
+		let authenticators = [new PgAuthentication(pool, config.postgreSqlSchema)];
+		if(config.toggles.useEoSso) {
+			authenticators.unshift(new SsoAuthentication(pool, config.postgreSqlSchema));
+		}
+
+		new CompoundAuthentication(authenticators).authenticate(request, response, next).then(() => {
+			logger.info('server#authentication User: ', request.session.user.id);
+			if(!request.session.user && config.toggles.loggedOnly) {
+				logger.info('server#authentication User not logged in');
+				response.redirect(config.notAuthenticatedUrl);
+			} else {
+				next();
+			}
+		}).catch(err => {
+			logger.error(`server#authentication Error: `, err);
+			if(config.toggles.loggedOnly) {
+				response.redirect(config.notAuthenticatedUrl);
+			}
+		})
+	});
+
+	require('./routes/security')(app);
 	require('./routes/routes')(app);
 	require('./routes/finish')(app);
 	app.use('/', staticFn(__dirname + '/public'));
-	console.log('Going to listen on port ' + config.localPort + '...');
+	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
+
+	logger.info('Going to listen on port ' + config.localPort + '...');
 	app.listen(config.localPort);
-	console.log('Listening on port ' + config.localPort);
+	logger.info('Listening on port ' + config.localPort);
 }
 
-async.series([
-	function(callback) {
-		conn.init(app,callback);
-	},
-	function(callback) {
-		loc.init(callback);
-	}],
-	initServer
-);
+
+new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
+	return new SymbologyToPostgreSqlMigration().run();
+}).then(()=>{
+	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
+}).then(()=>{
+	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new PrepareForInternalUser(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddCustomInfoToWms(config.postgreSqlSchema).run();
+}).then(function(){
+	logger.info('Finished Migrations.');
+
+	app = express();
+	async.series([
+			function(callback) {
+				conn.init(app,callback);
+			},
+			function(callback) {
+				loc.init(callback);
+			}],
+		initServer
+	);
+}).catch((err) => {
+	logger.error('Error with Migration. Error: ', err);
+});

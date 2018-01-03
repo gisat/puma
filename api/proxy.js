@@ -12,12 +12,31 @@ var crud = require('../rest/crud');
 var layers = require('./layers');
 var _ = require('underscore');
 var jsid = null;
-var cacheStyleMap = null;
 var layerGroupMap = null;
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
+let promisedFs = require('pn/fs');
+let path = require('path');
 
 function wms(params, req, res, callback) {
+
+	keysToUpperCase(params);
+	// todo find out why is not possible to use CRS
+	if (params.hasOwnProperty('CRS')){
+		params['SRS'] = params['CRS'];
+		delete params['CRS'];
+	}
+	// it solves an issue with choropleths in 3D
+	if (params.hasOwnProperty('VERSION')){
+		params['VERSION'] = params['1.1.1'];
+	}
+	// it solves wrong bbox for combination geoserver-web world wind
+	if (params.hasOwnProperty('SRS') && params['SRS'] == "EPSG:4326"){
+		var bounbox = params['BBOX'].split(',');
+		params['BBOX'] = bounbox[1] + "," + bounbox[0] + "," + bounbox[3] + "," + bounbox[2];
+	}
+
 
 	if (!layerGroupMap) {
 		crud.read('layergroupgs',{},function(err,items) {
@@ -37,10 +56,10 @@ function wms(params, req, res, callback) {
 	if (params['LAYERS'] && params['LAYERS'].indexOf('#userpolygon#')>-1) {
 		useFirst = false;
 		params['LAYERS'] = params['LAYERS'].replace('#userpolygon#','');
-		params['LAYERS'] = params['LAYERS'].replace('#userid#',req.userId);
+		params['LAYERS'] = params['LAYERS'].replace('#userid#', req.session.userId);
 		if (params['QUERY_LAYERS']) {
 			params['QUERY_LAYERS'] = params['QUERY_LAYERS'].replace('#userpolygon#','');
-			params['QUERY_LAYERS'] = params['QUERY_LAYERS'].replace('#userid#',req.userId);
+			params['QUERY_LAYERS'] = params['QUERY_LAYERS'].replace('#userid#', req.session.userId);
 		}
 		if (params['REQUEST'] == 'GetMap') {
 			params['STYLES'] = 'polygon';
@@ -81,23 +100,28 @@ function wms(params, req, res, callback) {
 			params['env'] = 'maxsize:'+maxSize;
 		}
 	}
-	if (params['REQUEST'] == 'GetFeatureInfo') {
+  var workspace = useFirst ? 'geonode' : config.geoserver2Workspace;
+  if (params['REQUEST'] == 'GetFeatureInfo') {
 		useFirst = false;
+		workspace = config.geoserver2Workspace;
 		params['FORMAT'] = 'application/json';
 		params['INFO_FORMAT'] = 'application/json';
 		params['EXCEPTIONS'] = 'application/json';
 		params['FEATURE_COUNT'] = '42';
+    if (params['LAYERS']) {
+      workspace = params['LAYERS'].split(':')[0];
+    }
 	}
 	if (params['LAYERS']) {
-		params['LAYER'] = params['LAYERS'].split(',')[0];
+    params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
+	var wmsParamLayers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
-	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserver2Path+'/' + config.geoserver2Workspace + '/wms';
+	var path = useFirst ? config.geoserverPath + '/' + workspace + '/wms' : config.geoserver2Path+'/' + workspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
-	var layers = params['LAYERS'];
-	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[layers]) ? layerGroupMap[layers][style || 'def'] : '';
+	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[wmsParamLayers]) ? layerGroupMap[wmsParamLayers][style || 'def'] : '';
 
 	
 	//console.log("================layerGroup: ", layerGroup, "\n==========layerGroupMap: ",layerGroupMap);
@@ -108,10 +132,10 @@ function wms(params, req, res, callback) {
 		//delete params['TRANSPARENT'];
 		delete params['LAYER'];
 		// single layer
-		if (layers.search(',')<0) {
+		if (wmsParamLayers.search(',')<0) {
 			if(style && !layerGroup){
 				//console.log('Add style '+layers+' '+style)
-				createLayerGroup(layers,style,true);
+				createLayerGroup(wmsParamLayers,style,true);
 			}else{
 				//console.log('Single layer '+layers+' '+style)
 				path = config.geoserverPath+'/gwc/service/wms';
@@ -127,11 +151,10 @@ function wms(params, req, res, callback) {
 		// layer group to be created
 		else {
 			//console.log('Creating group, styles: '+style)
-			createLayerGroup(layers,style);
+			createLayerGroup(wmsParamLayers,style);
 		}
 		method = 'GET';
-		port = null; //// JJJJJ Proc to?
-
+		
 	}else{
 		//console.log("useFirst: ", useFirst, "params[request]:",params['request']);
 	}
@@ -172,34 +195,35 @@ function wms(params, req, res, callback) {
 		options.resEncoding = 'binary';
 	}
 	if (params['REQUEST'] == 'GetLegendGraphic') {
+		// TODO: Figure out sane solution to handling the legend.
+		if(wmsParamLayers && wmsParamLayers.indexOf(',') == -1 && wmsParamLayers.indexOf('panther:') != 0) {
+			options.path = options.path.replace('geonode', wmsParamLayers.split(':')[0]);
+		}
 	}
-	var time = new Date().getTime();
-	//console.log("\n\n========= WMS "+(useFirst ? "geoserver":"geoserver_i2")+". PARAMS: ",params);
+
 	conn.request(options, method=='GET' ? null : data, function(err, output, resl) {
 		if (err) {
-			console.log("\nProxy error: ", err, "options: ", options);
+			logger.error("Proxy error: ", err, " Options: ", options);
 			return callback(err);
 		}
-		//console.log(new Date().getTime()-time);
-		if (useFirst) {
-			//console.log(req.originalUrl);
-			//console.log(output.length);
 
-		}
 		if (output.length<10000 && (output.indexOf("PNG") == -1 || output.indexOf("PNG") > 8)) {
-			console.log("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options,"\n\nDATA: "+data);
+			logger.info("\nDostatecne maly vystup: " + output + "  \nOPTIONS: ",options);
 		}
 		res.data = output;
 		if (params['REQUEST'] == 'GetFeatureInfo') {
 			if (params['COMPLETELAYER']) {
 				layers.gatherLayerData(output,function(err,layerData) {
 					if (err) {
+						logger.error("api/proxy.js Error: ", err, " Output:", output);
 						return callback(err);
 					}
 					res.data = layerData;
 					return callback(null);
 				});
 				return;
+			} else if (params['EXPECTJSON']) {
+				res.isJson = true;
 			} else {
 				res.noJson = true;
 			}
@@ -214,13 +238,35 @@ function wms(params, req, res, callback) {
 
 }
 
+/**
+ * Convert all keys of object to uppercase
+ * @param obj {Object}
+ * @returns {Object}
+ */
+function keysToUpperCase (obj){
+	for (var key in obj){
+		var upper = key.toUpperCase();
+		if( upper !== key ){
+			obj[ upper ] = obj[key];
+			delete obj[key];
+		}
+	}
+}
+
+function storeTemporarySld(id, sld) {
+	let pathSld = path.resolve(config.temporarySldFilesPath + id + '.sld');
+	return promisedFs.writeFile(pathSld, sld);
+}
+
 function saveSld(params, req, res, callback) {
 	var id = generateId();
 	var oldId = params['oldId'];
 	var sld = params['sldBody'];
 	var legendSld = params['legendSld'] || '';
-	params['userId'] = req.userId;
-	var userLocation = 'user_'+req.userId+'_loc_'+params['location'];
+	params['userId'] = req.session.userId;
+	var userLocation = 'user_' + req.session.userId + '_loc_' + params['location'];
+
+	logger.info(`api/proxy.js#saveSld Save New Id: ${id} OldId: ${oldId} userLocation: ${userLocation}`);
 	sld = sld.replace(new RegExp('#userlocation#','g'),userLocation);
 	if (params['showChoropleth']) {
 		var attrs = JSON.parse(params['attrs']);
@@ -237,7 +283,8 @@ function saveSld(params, req, res, callback) {
 			normAttrName = 'as_'+normObj.as+'_attr_'+normObj.attr;
 		}
 	}
-	
+
+	// Why the hell would I do this?
 	legendSld = legendSld.replace(/<sld\:Name>#val_(\d+)# \- #val_(\d+)#<\/sld\:Name>/g, "<sld:Name>#val_$1#—#val_$2#</sld:Name>");
 	legendSld = legendSld.replace(/<sld\:Name>#val_(\d+)# &gt;<\/sld\:Name>/g, "<sld:Name>&gt; #val_$1#</sld:Name>");
 
@@ -257,6 +304,9 @@ function saveSld(params, req, res, callback) {
 			if (!params['showChoropleth'] && !params['showMapChart']) {
 				return asyncCallback(null);
 			}
+
+			logger.info(`api/proxy.js#saveSld#data ShowChoropleth: ${params["showChoropleth"]} AttrConfig: `, results.attrConf);
+
 			var dataParams = _.clone(params);
 			dataParams['aggregate'] = 'min,max';
 			if (params['showChoropleth']) {
@@ -285,6 +335,7 @@ function saveSld(params, req, res, callback) {
 			dataParams.attrMap = results.attrConf.prevAttrMap;
 			data.getData(dataParams, function(err, dataObj) {
 				if (err) {
+					logger.error("api/proxy.js getData. Params: ", dataParams, " Error: ", err);
 					return callback(err);
 				}
 				if (params['altYears']) {
@@ -326,8 +377,11 @@ function saveSld(params, req, res, callback) {
 				{active: {$ne:false}}
 			]};
 			crud.read('layerref',query,function(err,resls) {
-				if (err) return callback(err);
-				var layerName = resls[0] ? resls[0]._id : ('user_'+req.userId+'_loc_'+params['location']+'_y_'+year);
+				if (err) {
+					logger.error("api/proxy.js layerRef. It wasn't possible to read Layerref with filter: ", query, " Error: ", err);
+					return callback(err);
+				}
+				var layerName = resls[0] ? resls[0]._id : ('user_' + req.session.userId + '_loc_' + params['location'] + '_y_' + year);
 				//console.log(layerName);
 				//console.log(params['location']);
 				return asyncCallback(null,layerName);
@@ -342,8 +396,10 @@ function saveSld(params, req, res, callback) {
 			sql = sql.replace(new RegExp('#bbox#','g'),'ST_Extent(ST_Transform(the_geom,900913))');
 			var client = conn.getPgDataDb();
 			client.query(sql, [], function(err, resls) {
-				if (err)
+				if (err) {
+					logger.error("api/proxy.js density. Sql: ", sql, " Error: ", err);
 					return callback(err);
+				}
 				var obj = resls.rows[0];
 				var density = obj.width*obj.height/obj.count;
 				//console.log(density)
@@ -352,7 +408,7 @@ function saveSld(params, req, res, callback) {
 			})
 		}],
 		result: ['data', 'layerRef','density','attrConf',function(asyncCallback, results) {
-
+			logger.info(`api/proxy.js#saveSld#result Data: `,results.data,` LayerRef: ${results.layerRef} Density: ${results.density} AttrConf: ${results.attrConf}`);
 
 			var topTreeNorm = params['normalization'] == 'toptree';
 			if (params['showMapChart']) {
@@ -400,6 +456,8 @@ function saveSld(params, req, res, callback) {
 					var newRest = restSize;
 					var catIdx = 0;
 					var val = 0;
+					logger.info(`api/proxy.js#saveSld#result Data length: ${dataLength}, Category size: ${catSize}, NumberOfCategories: ${numCat}, RestSize: ${restSize}, Attribute Name: ${attrName}`);
+					// In this part we actually decide what amounts will be used for which part of legend.
 					for (var i=1;i<dataLength;i++) {
 						var idx = i;
 						var diff = catSize + ((newRest>0) ? 1 : 0);
@@ -407,8 +465,9 @@ function saveSld(params, req, res, callback) {
 							newRest--;
 							catIdx++;
 							var item = results.data.data[idx];
-							var current = results.data.data[idx][attrName];
-							var prev = results.data.data[idx - 1][attrName];
+							var current = Number(results.data.data[idx][attrName]);
+							var prev = Number(results.data.data[idx - 1][attrName]);
+							logger.info(`api/proxy.js#saveSld#result Current: ${current}, Previous: ${prev}, ActualValue: ${val}`);
 							if (prev!=null && dataLength!=1) {
 								val = prev+(current-prev)/2;
 								val = val.toFixed(fixNum);
@@ -431,10 +490,9 @@ function saveSld(params, req, res, callback) {
 					}
 				}
 			}
-			//console.log(sld);
 			if (results.attrConf) {
-				//console.log(results.attrConf.attrMap.units);
-				legendSld = legendSld.replace(new RegExp('#units#','g'),results.attrConf.attrMap.units).replace('<sup>','').replace('</sup>','');
+				logger.info('api/proxy#saveSld Handle Units: ', results.attrConf.attrMap);
+				legendSld = legendSld.replace(new RegExp('#units#','g'), results.attrConf.attrMap.units);
 			}
 			sldMap[id] = {
 				sld: sld,
@@ -455,8 +513,10 @@ function saveSld(params, req, res, callback) {
 			if (densityMap[oldId]) {
 				delete densityMap[oldId];
 			}
+			logger.info(`api/proxy.js#saveSld#result Id: ${id}`);
 
-			//console.log(sld);
+			storeTemporarySld(id, sld);
+			storeTemporarySld(id + 'legend', legendSld);
 
 			res.data = id;
 			return callback(null);
@@ -520,7 +580,7 @@ function createLayerGroup(layers,style,addStyle) {
 	//console.log("################ ### ### ### ### proxy.createLayerGroup options: ",options,"\n####### data:", data);
 	conn.request(options, data, function(err, output, resl) {
 		if(err){
-			console.log("\n\n------ LayerGroup not created! -------\n\nError:",err);
+			logger.error("\n\n------ LayerGroup not created! -------\n\nError:",err);
 		}else if(!config.toggles.noGeoserverLayerGroups){
 			//console.log("####### output: ", output);
 			layerGroupMap[layers][style || 'def'] = name;

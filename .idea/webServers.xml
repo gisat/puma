@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="23c8b249-9f97-4e86-abbd-7d93b39ced8a" name="Mellodies" url="http://ec2-52-38-7-183.us-west-2.compute.amazonaws.com">
+        <fileTransfer host="ec2-52-38-7-183.us-west-2.compute.amazonaws.com" port="22" privateKey="C:\Users\jbalhar\Downloads\Gisat-AWS-Cert.ppk" accessType="SFTP" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

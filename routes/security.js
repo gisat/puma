@@ -1,12 +1,7 @@
-var auth = require('../common/auth');
+var AuthController = require("./AuthController");
 
 module.exports = function(app) {
- 
-
-	app.post('/rest/*',auth.auth,auth.anyUser);
-	app.put('/rest/*',auth.auth,auth.anyUser);
-	app.delete('/rest/*',auth.auth,auth.anyUser);
-	app.get('/rest/*',auth.auth);
-	app.all('/api/urlview/saveChart',auth.auth);
-	app.all('/api/*',auth.auth);
+	var authController = new AuthController();
+	app.put('/rest/*', authController.anyUser.bind(authController));
+	app.delete('/rest/*', authController.anyUser.bind(authController));
 };

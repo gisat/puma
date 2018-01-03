@@ -1,15 +1,19 @@
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
+var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 
-function getData(params, callback) {
+let Units = require('../attributes/Units');
 
+function getData(params, callback) {
 	var client = conn.getPgDataDb();
 
 	var areas = JSON.parse(params['areas']);
 	var selectedAreas = params['selectedAreas'] ? JSON.parse(params['selectedAreas']) : [];
 	var defSelectedArea = params['defSelectedArea'] ? JSON.parse(params['defSelectedArea']) : null;
+
+	logger.info(`data#getData Areas: `, areas, ` Selected: `, selectedAreas, ` DefSelected: `, defSelectedArea);
 	var attrs = JSON.parse(params['attrs']);
 	if (attrs[0].normType=='select') {
 		params['normalization'] = 'select';
@@ -20,22 +24,6 @@ function getData(params, callback) {
 	var normalizationAttributeSet = params['normalizationAttributeSet'] ? parseInt(params['normalizationAttributeSet']) : null;
 	var normalizationAttribute = params['normalizationAttribute'] ? parseInt(params['normalizationAttribute']) : null;
 
-
-//    var userAggregates = {
-//        276: {
-//            281: {
-//                3507: {
-//                    name: 'Malang',
-//                    gids: [3507, 3514]
-//                },
-//                3515: {
-//                    name: 'Sidoarjo',
-//                    gids: [3515, 3516]
-//                }
-//            }
-//        }
-//    }
-	//params['useAggregation'] = true;
 
 	var sort = params['sort'] ? JSON.parse(params['sort']) : [{property: 'name', direction: 'ASC'}];
 	var sortProperty = sort ? sort[0].property : null;
@@ -52,6 +40,12 @@ function getData(params, callback) {
 				break;
 			case 'gt':
 				compOperator = '>';
+				break;
+			case 'lteq':
+				compOperator = '<=';
+				break;
+			case 'gteq':
+				compOperator = '>=';
 				break;
 			case 'eq':
 				compOperator = '=';
@@ -92,6 +86,8 @@ function getData(params, callback) {
 		attrsWithSort = _.union(attrs, [attrObj]);
 	}
 
+	logger.info('data/data.js#getData Years: ', years, ' attrsWithSort: ', attrsWithSort, ' Normalization: ', params['normalization'], ' Normalization2: ', normalization, ' NormalizationAttribute: ', normalizationAttribute);
+
 	for (var i = 0; i < years.length; i++) {
 		var yearId = years[i];
 		var pre = 'x_' + yearId + '.';
@@ -126,37 +122,47 @@ function getData(params, callback) {
 			var currentNorm = attr.normType;
 			var currentNormAttr = attr.normAttr || (attr.normAs ? attr.attr : null) || normalizationAttribute;
 			var currentNormAttrSet = attr.normAs || normalizationAttributeSet;
+			let normalizationUnits = attr.normalizationUnits;
+			let customFactor = attr.customFactor;
+
 			var normAttrName = null;
 			var norm = '';
 			var attrUnits = null;
 			var normAttrUnits = null;
 			var factor = 1;
 			var attrMap = params.attrMap;
-			//var prevAttrMap = params.prevAttrMap;
 
 
+			// This represents unit of the source attribute.
 			if (attrMap && attrMap[attr.as] && attrMap[attr.as][attr.attr]) {
 				attrUnits = attrMap[attr.as][attr.attr].units;
 			}
+			// If there is normalization attribute set, load units from that data set. These represents target units.
 			if (attrMap && attrMap[currentNormAttrSet] && attrMap[currentNormAttrSet][currentNormAttr]) {
 				normAttrUnits = attrMap[currentNormAttrSet][currentNormAttr].units;
 			}
-			//console.log(attrUnits,normAttrUnits)
+
+			units = new Units();
+			customFactor = customFactor || 1;
 			if (currentNorm=='area') {
-				normAttrUnits = 'm2';
+				normAttrUnits = attr.areaUnits || 'm2';
 			}
-			if (attrUnits && attrUnits=='m2') {
-				factor /= 1000000;
+
+			// Specific use case is when I normalize over attribute. In this case, it is necessary to first handle the
+			// Basic factor handling and then use normalizationUnits to get final.
+			// TODO: Make sure that the units are correctly counted.
+
+			if(currentNorm) {
+				factor = units.translate(attrUnits, normAttrUnits, false);
+			} else {
+				factor = 1;
 			}
-			if (normAttrUnits && normAttrUnits=='m2') {
-				factor *= 1000000;
-			}
-			if ((normAttrUnits=='m2' || normAttrUnits=='km2') && (attrUnits=='m2' || attrUnits=='km2')) {
-				factor *= 100;
-			}
-			else if (attrUnits && attrUnits==normAttrUnits) {
-				factor *= 100;
-			}
+			logger.info('data/data#getData Factor: ', factor, ' Attr units: ', attrUnits, ' Norm Attr Units ', normAttrUnits);
+
+			factor = factor * customFactor;
+			logger.info('data/data#getData Factor: ', factor, ' Normalization units: ', normalizationUnits);
+
+			// How do you count factor of difference? The source data set is in one unit.
 
 			if (currentNorm == 'area') {
 				norm = normPre + '"area"';
@@ -165,6 +171,7 @@ function getData(params, callback) {
 				normAttrName = 'as_' + currentNormAttrSet + '_attr_' + currentNormAttr;
 				norm = normPre + '"' + normAttrName + '"';
 			}
+			// If normalization is over attribute set.
 			if (currentNorm == 'attributeset') {
 				normAttrName = 'as_' + currentNormAttrSet + '_attr_' + attr.attr;
 				norm = normPre + '"' + normAttrName + '"';
@@ -201,6 +208,7 @@ function getData(params, callback) {
 
 		}
 	}
+
 	//console.log(select);
 	if (anotherNormYear) {
 		years.push(normalizationYear);
@@ -247,11 +255,14 @@ function getData(params, callback) {
 	allMap.push(areas);
 	var opts = {
 		dataset: function(asyncCallback) {
-
-			crud.read('dataset', {featureLayers: areaIds[0]}, function(err, resls) {
-				if (err)
+			var filter = {featureLayers: areaIds[0]};
+			crud.read('dataset', filter, function(err, resls) {
+				if (err) {
+					logger.error('data#getData Read dataset. Error: ', err);
 					return callback(err);
+				}
 				if (!resls.length) {
+					logger.error('data#getData Read dataset. No data set was returned. Filter: ', filter);
 					return callback(new Error('nodataset'));
 				}
 
@@ -296,8 +307,10 @@ function getData(params, callback) {
 					return asyncCallback(null, null);
 				}
 				crud.read('location', {dataset: results.dataset._id}, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error('data#getData Read location. Error: ', err);
 						return callback(err);
+					}
 					for (var i = 0; i < resls.length; i++) {
 						locationIds.push(resls[i]._id);
 					}
@@ -314,10 +327,13 @@ function getData(params, callback) {
 					isData: false
 				};
 				crud.read('layerref', dbFilter, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error('data#getData Read layerref. Error: ', err);
 						return callback(err);
+					}
 					if (!resls.length && areaIds.indexOf(-1) < 0) {
-						return callback(new Error('notexistingdata'));
+						logger.error('data#getData Read dataset. No data set was returned. Filter: ', dbFilter);
+						return callback(new Error('notexistingdata (1)'));
 					}
 					var layerRefMap = {};
 					for (var i = 0; i < resls.length; i++) {
@@ -355,11 +371,11 @@ function getData(params, callback) {
 									var aggObj = userAggregates[locationId][areaId][aggGid];
 									var aggGids = aggObj.gids;
 									var aggName = aggObj.name;
-									gidSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (' + aggGids.join(',') + ")) THEN " + aggGid + ' ELSE ';
-									nameSql += 'CASE WHEN (x_' + years[0] + '."gid" IN (' + aggGids.join(',') + ")) THEN '" + aggName + "' ELSE ";
+									gidSql += 'CASE WHEN (x_' + years[0] + '."gid"::text IN (\'' + aggGids.join('\',\'') + "\')) THEN " + aggGid + ' ELSE ';
+									nameSql += 'CASE WHEN (x_' + years[0] + '."gid"::text IN (\'' + aggGids.join('\',\'') + "\')) THEN '" + aggName + "' ELSE ";
 									x++;
 								}
-								gidSql += 'x_' + years[0] + '."gid"';
+								gidSql += 'x_' + years[0] + '."gid"::text';
 								nameSql += 'x_' + years[0] + '."name"';
 								if (gidSql) {
 									for (var j = 0; j < x; j++) {
@@ -371,7 +387,7 @@ function getData(params, callback) {
 							}
 
 							if (!gidSql) {
-								gidSql = 'x_' + years[0] + '."gid"';
+								gidSql = 'x_' + years[0] + '."gid"::text';
 								nameSql = 'x_' + years[0] + '."name"';
 							}
 							var prIdx = (sort && sortProperty!='name') ? 1 : i;
@@ -402,7 +418,7 @@ function getData(params, callback) {
 									baseLayerRef = layerRef;
 								} else {
 									oneSql += ' INNER JOIN ' + tableSql + ' x_' + year;
-									oneSql += ' ON x_' + baseYear + '."gid" = x_' + year + '."gid"';
+									oneSql += ' ON x_' + baseYear + '."gid"::text = x_' + year + '."gid"::text';
 								}
 							}
 							if (!atLeastOne) {
@@ -411,8 +427,8 @@ function getData(params, callback) {
 							oneSql += ' WHERE 1=1';
 
 							if (gids !== true) {
-								oneSql += ' AND x_' + baseYear + '."gid" IN ';
-								oneSql += '(' + gids.join(',') + ')';
+								oneSql += ' AND x_' + baseYear + '."gid"::text IN ';
+								oneSql += '(\'' + gids.join('\',\'') + '\')';
 							}
 							if (params['useAggregation'] || topAll) {
 								oneSql += ' GROUP BY 1,2,3,4'
@@ -449,19 +465,18 @@ function getData(params, callback) {
 				}
 				dataSql += (params['limit'] && !topAll && !topLoc) ? (' LIMIT ' + parseInt(params['limit'])) : '';
 				dataSql += (params['start'] && !topAll && !topLoc) ? (' OFFSET ' + parseInt(params['start'])) : '';
-				//console.log(dataSql);
+
 				client.query(dataSql, function(err, resls) {
+					logger.info('api/data#getData Sql query: ',dataSql,' Results of Sql Query: ', resls && resls.rows);
 					if (err) {
-						//console.log(dataSql)
-						return callback(new Error('notexistingdata'));
+						logger.error('data#getData Read dataset. Sql: ', sql, ' Error: ', err);
+						return callback(new Error('notexistingdata (2)'));
 					}
 					var aggData = [];
 					var normalData = [];
 					var locAggDataMap = {};
 
 					if (topLoc || topAll || aggSelect) {
-						var aggColorPassed = false;
-							//console.log(originalSelected);
 						for (var i = 0; i < resls.rows.length; i++) {
 							var row = resls.rows[i];
 
@@ -481,9 +496,7 @@ function getData(params, callback) {
 								locAggDataMap[row.loc] = aggRow;
 
 							} else if (aggSelect && defSelectedArea && defSelectedArea.at==row.at && defSelectedArea.loc==row.loc && defSelectedArea.gid==row.gid) {
-								//if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
-									normalData.push(row);
-								//}
+								normalData.push(row);
 								var aggRow = _.clone(row);
 								aggData.push(aggRow);
 								locAggDataMap['select'] = aggRow;
@@ -525,16 +538,18 @@ function getData(params, callback) {
 					} else {
 						normalData = resls.rows;
 					}
-					if (!normalData.length) return callback(new Error('nodata'));
+					if (!normalData.length) {
+						logger.error(``);
+						return callback(new Error('nodata'));
+					}
 					return asyncCallback(null, {normalData: normalData, aggData: aggData, aggDataMap: locAggDataMap});
 				});
 			}],
 		total: ['sql', 'data', function(asyncCallback, results) {
-
+				logger.info(`data/data#getData total`);
 				var aggregate = params['aggregate'];
 				var aggregates = aggregate ? aggregate.split(',') : null;
 				var aggData = results.data.aggData;
-				//console.log(aliases)
 				var totalSql = 'SELECT COUNT(*) as cnt';
 				if (aggregates && aggregates[0] in {min: true, avg: true, max: true}) {
 					for (var i = 0; i < aliases.length; i++) {
@@ -554,12 +569,14 @@ function getData(params, callback) {
 					if (originalAreas[row.loc] && originalAreas[row.loc][row.at] && (originalAreas[row.loc][row.at] === true || originalAreas[row.loc][row.at].indexOf(row.gid) >= 0)) {
 						continue;
 					}
-					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid<>' + row.gid + ')';
+					totalSql += ' AND (loc<>' + row.loc + ' OR at<>' + row.at + ' OR gid::text<>\'' + row.gid + '\')';
 				}
 				totalSql += ') as b';
 				client.query(totalSql, function(err, resls) {
-					if (err)
+					if (err) {
+						logger.error('data#getData Read dataset. Sql: ', sql, " Error: ", err);
 						return callback(err);
+					}
 					if ((params['normalization'] == 'toptree' || params['normalization'] == 'topall') && aggregates) {
 						if (params['normalization'] == 'topall') {
 							aggData = results.data.aggDataMap[-1];
@@ -592,7 +609,7 @@ function getData(params, callback) {
 				})
 			}],
 		res: ['data', 'total', 'sql', function(asyncCallback, results) {
-				//console.log(results.data.normalData)
+				logger.info(`data/data#getData res`);
 				var data = {
 					data: results.data.normalData,
 					aggData: results.data.aggData,
@@ -609,10 +626,13 @@ function getData(params, callback) {
 
 }
 
-
+/**
+ * One of the most important roles of this function is to return units, which will be displayed to the user in the case
+ * of the charts and thematic maps.
+ * @param params
+ * @param callback
+ */
 function getAttrConf(params, callback) {
-
-
 	var attrs = JSON.parse(params['attrs']);
 	var attrSetIds = [];
 	var attrIds = [];
@@ -637,10 +657,13 @@ function getAttrConf(params, callback) {
 
 	var opts = {
 		attrSet: function(asyncCallback) {
+			logger.info(`data/data#getAttrConf attrSet AttrSetIds `, attrSetIds);
 			crud.read('attributeset', {_id: {$in: attrSetIds}}, function(err, resls) {
 				var attrSetMap = {};
-				if (err)
+				if (err) {
+					logger.error('data#getAttrConf Read attributeset. Error: ', err);
 					return callback(err);
+				}
 				for (var i = 0; i < resls.length; i++) {
 					var attrSet = resls[i];
 					attrSetMap[attrSet._id] = attrSet;
@@ -649,10 +672,13 @@ function getAttrConf(params, callback) {
 			})
 		},
 		attr: function(asyncCallback) {
+			logger.info(`data/data#getAttrConf attr AttrIds: `, attrIds);
 			crud.read('attribute', {_id: {$in: attrIds}}, function(err, resls) {
 				var attrMap = {};
-				if (err)
+				if (err) {
+					logger.error('data#getAttrConf Read attribute. Error: ', err);
 					return callback(err);
+				}
 				for (var i = 0; i < resls.length; i++) {
 					var attr = resls[i];
 					attrMap[attr._id] = attr;
@@ -661,21 +687,24 @@ function getAttrConf(params, callback) {
 			})
 		},
 		res: ['attr', 'attrSet', function(asyncCallback, results) {
+				logger.info(`data/data#getAttrConf res Attrs: `, attrs);
 				var attrMap = {};
 				var prevAttrMap = {};
 				var unitsArr = [];
 				for (var i = 0; i < attrs.length; i++) {
-					var attrRec = attrs[i];
-					attrMap[attrRec.as] = attrMap[attrRec.as] || {};
-					attrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
-					prevAttrMap[attrRec.as] = prevAttrMap[attrRec.as] || {};
-					prevAttrMap[attrRec.as][attrRec.attr] = _.clone(results.attr[attrRec.attr]);
-					var normType = attrRec.normType;
-					var units = results.attr[attrRec.attr].units || '';
+					var attrReceived = attrs[i];
+					attrMap[attrReceived.as] = attrMap[attrReceived.as] || {};
+					attrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
+					prevAttrMap[attrReceived.as] = prevAttrMap[attrReceived.as] || {};
+					prevAttrMap[attrReceived.as][attrReceived.attr] = _.clone(results.attr[attrReceived.attr]);
+					var normType = attrReceived.normType;
+					let normalizationUnits = attrReceived.normalizationUnits;
+
+					var units = results.attr[attrReceived.attr].units || '';
 					var normUnits = null;
 
 					if (normType == 'area') {
-						normUnits = 'm2';
+						normUnits = normalizationUnits || attrReceived.areaUnits;
 					}
 					if (normType == 'year') {
 						normUnits = units;
@@ -684,9 +713,8 @@ function getAttrConf(params, callback) {
 						normUnits = units;
 					}
 					if (normType == 'attribute' || normType == 'attributeset') {
-						var normAttr = attrRec.normAttr || attrRec.attr || params['normalizationAttribute'];
-						var normAttrSet = attrRec.normAs || params['normalizationAttributeSet'];
-						//console.log(normAttrSet,normAttr)
+						var normAttr = attrReceived.normAttr || attrReceived.attr || params['normalizationAttribute'];
+						var normAttrSet = attrReceived.normAs || params['normalizationAttributeSet'];
 						if (normAttr && normAttrSet) {
 							var normAttrRec = results.attr[normAttr];
 							normUnits = normAttrRec.units || '';
@@ -697,17 +725,19 @@ function getAttrConf(params, callback) {
 						}
 					}
 
-					if (units == 'm2') {
-						units = 'km2';
-					}
-					if (normUnits == 'm2') {
-						normUnits = 'km2';
-					}
-					var unitsTotal = units.replace('2', '<sup>2</sup>') + (normUnits ? ('/' + normUnits.replace('2', '<sup>2</sup>')) : '');
-					if (units == normUnits) {
+					var areaUnits = ['m2', 'km2', 'ha'];
+					var unitsTotal = units + (normUnits ? ('/' + normUnits) : '');
+					if(units == normUnits ||
+						(areaUnits.indexOf(units) != -1 && areaUnits.indexOf(normUnits) != -1)) {
 						unitsTotal = '%';
 					}
-					attrMap[attrRec.as][attrRec.attr].units = unitsTotal;
+
+					// The normalization units are change units and override the other types.
+					if(normalizationUnits) {
+						unitsTotal = normalizationUnits;
+					}
+					logger.info(`data/data#getAttrConf res Units: ${units} Normalization Units: ${normUnits} Total units: ${unitsTotal}`);
+					attrMap[attrReceived.as][attrReceived.attr].units = unitsTotal;
 					unitsArr.push(unitsTotal);
 				}
 

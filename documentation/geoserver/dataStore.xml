@@ -1,0 +1,24 @@
+<dataStore>
+    <id>DataStoreInfoImpl--1e417bec:155e9a492e6:-7ffe</id>
+    <name>datastore</name>
+    <type>PostGIS</type>
+    <enabled>true</enabled>
+    <workspace>
+        <id>WorkspaceInfoImpl-78ff667e:12476299803:-7ffd</id>
+    </workspace>
+    <connectionParameters>
+        <entry key="port">5432</entry>
+        <entry key="passwd">crypt1:w2/WZjRj+hrUzE93CvFrmg==</entry>
+        <entry key="dbtype">postgis</entry>
+        <entry key="host">localhost</entry>
+        <entry key="validate connections">true</entry>
+        <entry key="fetch size">1000</entry>
+        <entry key="max connections">10</entry>
+        <entry key="user">geonode</entry>
+        <entry key="database">geonode_data</entry>
+        <entry key="namespace">http://www.geonode.org/</entry>
+        <entry key="min connections">1</entry>
+        <entry key="Expose primary keys">true</entry>
+    </connectionParameters>
+    <__default>false</__default>
+</dataStore>

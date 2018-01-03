@@ -1,0 +1,300 @@
+
+#agreement-detail ol li {
+    list-style:decimal;
+    margin-bottom: 16px;}
+#agreement-detail ul, #agreement-detail ol {
+    padding-left: 2em;}
+
+body.rendering {
+    background: none ! important
+}
+.rendering div .olControlZoom {
+    display: none
+}
+.intro .olControlZoom {
+    display: none;
+}
+
+#legend .legend-container {
+    float: left
+}
+#legend .legend-text {
+    margin: 6px 6px 6px 6px;
+}
+div .olImageLoadError {
+    background-color: transparent;
+}
+div.olControlZoom {
+    top: auto ! important;
+    left: auto ! important;
+    bottom: 18px ! important;
+    right: 8px ! important;
+}
+div .olLayerGoogleV3.olLayerGoogleCopyright {
+    right: 0px ! important;
+    left: auto ! important;   
+}
+div .olLayerGoogleV3.olLayerGooglePoweredBy {
+    right: 32px ! important;
+    left: auto ! important;
+}
+.rendering .olLayerGoogleV3.olLayerGooglePoweredBy,#app-reports-accordeon .olLayerGoogleV3.olLayerGooglePoweredBy {
+    right: 0px ! important;
+}
+
+
+div .olControlAttribution {
+    right: 3px;
+    bottom: 5px;
+}
+div.noattrib .olLayerGoogleV3.olLayerGoogleCopyright,div.noattrib .olLayerGoogleV3.olLayerGooglePoweredBy,div.noattrib .olControlAttribution {
+    display: none;
+}
+
+
+
+div .x-grid-dirty-cell {
+    background-image: none;
+}
+.screenshot {
+    margin: 5px;  
+    position: relative; 
+    display: inline-block;
+    background           : url(./images/loading.gif) no-repeat 50% 50%;
+}
+
+#app-tools-accordeon > div, #app-reports-accordeon > div {
+    overflow-x: hidden ! important;
+}
+.help-over {
+    border-style: solid ! important;
+    border-width: 2px ! important;
+    border-color: red ! important;
+    cursor: help;
+}
+/*#app-map2 .olLayerGooglePoweredBy,#app-map2 .olLayerGoogleCopyright {
+    display: none;
+}*/
+.extentoutline-notfirst .olLayerGooglePoweredBy {
+    display: none;
+}
+
+/*.screenshot, .screenshot div {
+    width: 175px; 
+    height: 120px;
+}*/
+.screenshot .screenshoticon {
+    display: none;
+    position:absolute;
+    bottom:0;
+    cursor: pointer;
+    z-index: 1
+}
+.screenshot .screenshotpng {
+    right: 35px;
+}
+.screenshot .screenshotremove {
+    right: 0;
+}
+.screenshot div {
+    position:absolute;
+    background-color:#000;
+    opacity:0.3;
+    top:0px;
+    overflow:hidden;
+    display: none;
+}
+.screenshot.screenshotover div,.screenshot.screenshotover .screenshoticon {
+    display: block;
+}
+
+
+img.invisible {
+    visibility: hidden
+}
+img.invisiblecomplete {
+    display: none;
+}
+
+.x-boundlist li {
+    font-size: 11px;
+}
+
+
+.x-action-col-cell .x-grid-cell-inner img {
+    margin-right: 5px;
+}
+
+
+
+#msg-div {
+    position:absolute;
+    top:30%;
+    width:400px;
+    margin-bottom: 50px;
+    z-index:20000;
+}
+#msg-div.right{
+    right:10px;
+    
+}
+#msg-div.left{
+    left:10px;
+    
+}
+
+#msg-div .msg {
+    border-radius: 8px;
+    -moz-border-radius: 8px;
+    background: #F6F6F6;
+    border: 2px solid #ccc;
+    margin-top: 2px;
+    padding: 10px 15px;
+    color: #555;
+}
+#msg-div .msg h3 {
+    margin: 0 0 8px;
+    font-weight: bold;
+    font-family: "Open Sans", sans-serif;
+    font-size: 14px;
+}
+#msg-div .msg p {
+    margin: 0;
+}
+
+
+
+.analysis-grid.x-grid-with-row-lines .x-grid-cell-inner {
+    line-height: 20px;
+    padding-bottom: 4px;
+}
+
+a.noref {
+    color: red
+}
+a.cannotref {
+    color: #999
+}
+a.ref {
+    color: #0b0
+}
+a.ref.refanalysis {
+    color: #070;
+}
+a.ref.refnoactive {
+    color: #00b;
+}
+a.ref.refnoactive.refanalysis {
+    color: #007;
+}
+
+a.editedref {
+    font-weight: bolder
+}
+
+html {
+    overflow: hidden ! important
+}
+
+/*FIX ME*/
+
+tbody .x-grid-row .select_ff4c39, tbody .x-grid-row.select_ff4c39 .x-grid-cell {
+    background-color: #FFDAD6 ! important
+}
+
+tbody .x-grid-row .select_34ea81, tbody .x-grid-row.select_34ea81 .x-grid-cell {
+    background-color: #C5EAD4 ! important
+}
+tbody .x-grid-row .select_39b0ff, tbody .x-grid-row.select_39b0ff .x-grid-cell {
+    background-color: #D6EFFF ! important
+}
+tbody .x-grid-row .select_ffde58, tbody .x-grid-row.select_ffde58 .x-grid-cell {
+    background-color: #FFF8DE ! important
+}
+tbody .x-grid-row .select_5c6d7e, tbody .x-grid-row.select_5c6d7e .x-grid-cell {
+    background-color: #CAD1D9 ! important
+}
+tbody .x-grid-row .select_d97dff, tbody .x-grid-row.select_d97dff .x-grid-cell {
+    background-color: #F8E6FF ! important
+}
+/*.detached-window .detach {
+    display: none;
+}*/
+
+
+/*div::-webkit-scrollbar {
+    width: 12px;
+}
+.myButton span {
+    font-size: 24px ! important;
+    
+}*/
+/*.x-btn.locationbutton {
+    background-color: #fcc ! important;
+    background-image: none ! important;
+}
+.x-btn-pressed.locationbutton {
+    background-color: #f22 ! important;
+    background-image: none ! important;
+}
+.x-btn.themebutton {
+    background-color: #cfc ! important;
+    background-image: none ! important;
+}
+.x-btn-pressed.themebutton {
+    background-color: #2f2 ! important;
+    background-image: none ! important;
+}
+.x-btn.treebutton {
+    background-color: #ccf ! important;
+    background-image: none ! important;
+}
+.x-btn-pressed.treebutton {
+    background-color: #22f ! important;
+    background-image: none ! important;
+}
+.x-btn.yearbutton {
+    background-color: #ffc ! important;
+    background-image: none ! important;
+}
+.x-btn-pressed.yearbutton {
+    background-color: #ff2 ! important;
+    background-image: none ! important;
+}*/
+
+/*div::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2); 
+    border-radius: 10px;
+}
+ 
+div::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.7); 
+}*/
+
+/*#map,#map2 {
+    border-radius: 4px;
+    border-width: 2px;
+    border-color: #777;
+    border-style: solid;
+    overflow: hidden ! important;
+}*/
+
+/*.x-border-layout-ct {
+background-color: #ffffff ! important; 
+position: relative;
+}*/
+
+
+/*div .x-grid-row .x-grid-cell {
+    background-color: transparent;
+}
+
+div .x-grid-row-focused .x-grid-cell, div .x-grid-row-focused .x-grid-rowwrap-div {
+    border-color: #ddd;
+    background-color: #efefef;
+}
+
+div .x-grid-row-selected .x-grid-cell, div .x-grid-row-selected .x-grid-rowwrap-div, div .x-grid-row-selected .x-grid-cell-rowbody {
+background-color: #f4f4dd!important;
+}*/

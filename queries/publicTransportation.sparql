@@ -1,0 +1,31 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX ogc: <http://www.opengis.net/ont/geosparql#>
+PREFIX geom: <http://geovocab.org/geometry#>
+PREFIX spatial: <http://geovocab.org/spatial#>
+PREFIX wgs: <http://www.w3.org/2003/01/geo/wgs84_pos#>
+PREFIX lgdo: <http://linkedgeodata.org/ontology/>
+PREFIX meta: <http://linkedgeodata.org/meta/>
+PREFIX lgd-geom: <http://linkedgeodata.org/geometry/>
+PREFIX lgd: <http://linkedgeodata.org/triplify/>
+PREFIX gadm-o: <http://linkedgeodata.org/ld/gadm2/ontology/>
+PREFIX gadm-r: <http://linkedgeodata.org/ld/gadm2/resource/>
+PREFIX meta-o: <http://linkedgeodata.org/ld/meta/ontology/>
+PREFIX bif: <http://www.openlinksw.com/schemas/bif#>
+Prefix lgdo: <http://linkedgeodata.org/ontology/>
+Prefix geom: <http://geovocab.org/geometry#>
+Prefix ogc: <http://www.opengis.net/ont/geosparql#>
+Prefix owl: <http://www.w3.org/2002/07/owl#>
+
+Select * {
+  ?x
+    a lgdo:StopPosition ;
+    rdfs:label ?label ;
+    geom:geometry [
+      ogc:asWKT ?geo
+    ] .
+    Filter(bif:st_intersects (?geo, bif:st_geomFromText("POLYGON((14.654388427734375 50.0032362037181,14.659194946289062 50.02662140139294,14.65301513671875 50.045585935694646,14.617996215820312 50.05660838448788,14.563751220703125 50.04514498508358,14.538345336914062 50.0222099710207,14.530792236328125 49.996615685164265,14.531478881835938 49.979839624345196,14.6063232421875 50.00588415586985,14.640655517578125 50.0014708212464,14.654388427734375 50.0032362037181))"))) .
+}

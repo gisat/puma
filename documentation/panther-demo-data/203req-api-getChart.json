@@ -1,0 +1,17 @@
+{
+	"title": "Land cover types - structure",
+	"type": "piechart",
+	"attrs": "[{\"as\":343,\"attr\":313,\"normType\":\"area\",\"normAs\":\"\",\"normAttr\":\"\",\"normYear\":\"\",\"attrNameNormalized\":\"\",\"checked\":true,\"numCategories\":\"\",\"classType\":\"\",\"zeroesAsNull\":\"\",\"attrName\":\"Artificial areas\",\"asName\":\"Aggregated LC classes\"},{\"as\":321,\"attr\":303,\"normType\":\"area\",\"normAs\":\"\",\"normAttr\":\"\",\"normYear\":\"\",\"attrNameNormalized\":\"\",\"checked\":true,\"numCategories\":\"\",\"classType\":\"\",\"zeroesAsNull\":\"\",\"attrName\":\"Agricultural Land\",\"asName\":\"Land Cover classes L3\"},{\"as\":343,\"attr\":315,\"normType\":\"area\",\"normAs\":\"\",\"normAttr\":\"\",\"normYear\":\"\",\"attrNameNormalized\":\"\",\"checked\":true,\"numCategories\":\"\",\"classType\":\"\",\"zeroesAsNull\":\"\",\"attrName\":\"Natural and semi-natural areas\",\"asName\":\"Aggregated LC classes\"},{\"as\":343,\"attr\":316,\"normType\":\"area\",\"normAs\":\"\",\"normAttr\":\"\",\"normYear\":\"\",\"attrNameNormalized\":\"\",\"checked\":true,\"numCategories\":\"\",\"classType\":\"\",\"zeroesAsNull\":\"\",\"attrName\":\"Water\",\"asName\":\"Aggregated LC classes\"}]",
+	"classType": "quantiles",
+	"numCategories": "3",
+	"constrainFl": "[0,4]",
+	"stacking": "none",
+	"chartId": "7945263",
+	"areas": "{\"1869\":{\"280\":[456,457,458,459,462,466,467,470,472,474,490]}}",
+	"years": "[278]",
+	"start": "0",
+	"limit": "15",
+	"sort": "",
+	"selectedAreas": "[]",
+	"defSelectedArea": "null"
+}

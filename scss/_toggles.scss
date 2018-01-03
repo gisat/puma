@@ -1,0 +1,82 @@
+@if $useWBAgreement == true {
+	body.intro div#content-intro-terms{
+		display: block;
+	}
+	body.dataview div#content-intro-terms{
+		display: block;
+	}
+}
+
+@if $useWBHeader == true {
+	#wb-header{
+		display: block;
+		height: 42px;
+	}
+	#header{
+		top: 42px;
+	}
+	#main{
+		padding-top: 72px;
+	}
+	body.application #main {
+		padding-top: 162px;
+	}
+	#content-application {
+		top: 72px;
+	}
+}
+
+@if $useHeader == true {
+	#header{
+		display: block;
+	}
+	#content-application {
+		top: 30px;
+	}
+}
+
+@if $useWBFooter == true {
+	#footer-bar,
+	#puma-footer-links,
+	#puma-wb-copyright,
+	#puma-contact{
+		display: block;
+	}
+	#footer-legal{
+		border-top: 1px solid #d3d2d2;
+	}
+
+	#main{
+		padding-bottom: 108px;
+	}
+
+	#gisat-copyright{
+		display: none;
+	}
+}
+
+@if $useFooterLegal == true {
+	#footer-legal{
+		display: block;
+	}
+}
+
+@if $usePumaLogo == true {
+	.fields-holder > .label {
+		background: url(./images/puma-logo.png) no-repeat 0 8px;
+		padding-left: 81px;
+	}
+}
+
+@if $allowDownloadsLink == true {
+	#downloads-link{
+		display: block;
+	}
+}
+
+@if $allowPumaHelp == true {
+	#help-link{
+		display: inline;
+	}
+}
+

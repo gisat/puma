@@ -1,9 +1,12 @@
 var config = require('../config');
 var pg = require('pg');
 var MongoClient = require('mongodb').MongoClient;
+var Promise = require('promise');
 
+var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
+var util = require('util');
 
 //maybe one day we can switch to request instead of http and https
 //var requestPackage = require('request'); // request was taken by conn.request
@@ -23,11 +26,8 @@ var objectId = null;
 
 
 
-
 function request(options,dataToWrite,callback) {
-
-	console.log("\n\n============= common/conn.request options:\n", options); ////////////////////////////////////////////
-	console.log("==========================================\n\n"); ///////////////////////////////////////////////////////
+	logger.info("conn#request Options: ", options);
 
 	var time = new Date().getTime();
 //	if (!options.headers || !options.headers['Authorization']) {
@@ -85,7 +85,7 @@ function initGeoserver() {
 	var jsid = null;
 	request(options, null, function(err, output, resl) {
 		if (err) {
-			console.log("\n\ncommon/conn.initGeoserver Geoserver request error:", err, "\noutput:", output, "\n\n");
+			logger.error("conn#init Geoserver request error:", err, "\noutput:", output);
 			return;
 		}
 		var cookies = resl.headers['set-cookie'] || [];
@@ -97,12 +97,6 @@ function initGeoserver() {
 			}
 		}
 		require('../api/proxy').setJsid(jsid);
-
-		//console.log("");
-		//console.log("");
-		//console.log("############### JSID ###############");
-		//console.log("# "+jsid+" #");
-		//console.log("####################################");
 
 	});
 }
@@ -124,9 +118,9 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 				pgDataDB.end();
 				pgDataDB = new pg.Client(config.pgDataConnString);
 				pgDataDB.connect();
-				console.log('Data DB reconnected');
+				logger.info('conn#initDatabases Data DB reconnected');
 			}else{
-				console.log('Data DB waiting for reconnect');
+				logger.info('conn#initDatabases Data DB waiting for reconnect');
 			}
 		},2000);
 	},Math.round(1000*60*60*5.9));
@@ -141,9 +135,9 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 				pgGeonodeDB.end();
 				pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
 				pgGeonodeDB.connect();
-				console.log('Geonode DB reconnected');
+				logger.info('conn#initDatabases Geonode DB reconnected');
 			}else{
-				console.log('Geonode DB waiting for reconnect');
+				logger.info('conn#initiDatabases Geonode DB waiting for reconnect');
 			}
 		},2000);
 	},Math.round(1000*60*60*5.42));
@@ -180,10 +174,10 @@ function getIo() {
 }
 
 function getNextId() {
-	objectId++;
+	var newId = ++objectId;
 	var mongoSettings = getMongoDb().collection('settings');
-	mongoSettings.update({_id: 1}, {_id: 1,objectId: objectId}, {upsert: true}, function() {});
-	return objectId;
+	mongoSettings.update({_id: 1}, {_id: 1,objectId: newId}, {upsert: true}, function() {});
+	return newId;
 }
 
 function getMongoDb() {
@@ -203,19 +197,109 @@ function connectToPgDb(connectionString) {
 	return pgDatabase;
 }
 
-function getLayerTable(layer){
-	var workspaceDelimiterIndex = layer.indexOf(":");
-	if(workspaceDelimiterIndex == -1){
-		console.log("Warning: getLayerTable got parameter '"+layer+"' without schema delimiter (colon).");
-		return layer;
+function connectToMongo(connectionString) {
+	return MongoClient.connect(connectionString).then(function(dbs){
+		mongodb = dbs;
+
+		return dbs;
+	}).then(function(){
+		var mongoSettings = mongodb.collection('settings');
+		return mongoSettings.findOne({_id:1});
+	}).then(function(newId){
+		objectId = (newId && newId.objectId) || 1;
+		return mongodb;
+	});
+}
+
+function getLayerTable(layerName) {
+	logger.info('common/conn.js#getLayerTable Name: ', layerName);
+	// Extract workspaceName and tableName.
+	var nameParts = layerName.split(":");
+	if (nameParts.length != 2) {
+		let errMsg = util.format("Error: layerName does not keep the format 'workspace:table': '%s'.", layerName);
+		logger.warn('common/conn.js# getLayerTable: Error: ', errMsg);
+		return layerName;
 	}
-	var workspace = layer.substr(0, workspaceDelimiterIndex);
-	var layerName = layer.substr(workspaceDelimiterIndex + 1);
-	if(!config.workspaceSchemaMap.hasOwnProperty(workspace)){
-		console.log("Error: getLayerTable got layer with unknown workspace '"+ workspace +"'.");
-		return workspace + "." + layerName;
+	var workspaceName = nameParts[0];
+	var tableName = nameParts[1];
+	if (workspaceName == "" || tableName == "") {
+		let errMsg = util.format("Error: layerName has empty workspace or table: '%s'.", layerName);
+		throw new Error(
+			logger.error('common/conn.js# getLayerTable: Error: ', errMsg)
+		);
 	}
-	return config.workspaceSchemaMap[workspace] + "." + layerName;
+
+	// Do lookup for schema.
+	var schemaName = getSchemaName(workspaceName);
+
+	return util.format("%s.\"%s\"", schemaName, tableName);
+}
+
+function getSchemaName(workspaceName) {
+	var schemaName = null;
+	if (config.workspaceSchemaMap.hasOwnProperty(workspaceName)) {
+		schemaName = config.workspaceSchemaMap[workspaceName];
+	} else {
+		throw new Error(
+			logger.error("common/conn.js#getSchemaName Error: Workspace name '%s' is not defined in the configuration file.", workspaceName)
+		);
+	}
+	return schemaName;
+}
+
+/**
+ * Gets the name of the geometry column used by particular table.
+ *
+ * @param {string} sourceTableName - The name of the table holding the geometry column.
+ *   The value must always keep the format "schemaName.tableName".
+ * @return {string} Geometry column name.
+ *   If the table has more geometry columns than the column returned is the first column alphabetically.
+ */
+function getGeometryColumnName(sourceTableName) {
+	console.log(sourceTableName);
+	return new Promise(function (resolve, reject) {
+		// Extract schema name and table name.
+		var nameParts = sourceTableName.split(".");
+		if (nameParts.length != 2) {
+			var err_msg = util.format("Error: sourceTableName does not keep the format 'schema.table': '%s'.", nameParts);
+			logger.error(err_msg);
+			return reject(new Error(err_msg));
+		}
+		var schemaName = nameParts[0];
+		var tableName = nameParts[1].replace(/"/g, '');
+		if (schemaName == "" || tableName == "") {
+			var err_msg = util.format("Error: sourceTableName has empty schema or table: '%s'.", nameParts);
+			logger.error(err_msg);
+			return reject(new Error(err_msg));
+		}
+
+		// TODO: FIX It doesnt work with mixed case table names.
+		// Do lookup for geometry column name.
+		var sql = "SELECT column_name"
+                          + " FROM information_schema.columns"
+		          + " WHERE table_schema = $1 AND table_name = $2 AND udt_name = 'geometry'"
+		          + " ORDER BY column_name;";
+		logger.info('conn#getGeometryColumnName SQL: ', sql, ' Schema name: ', schemaName, ' tableName: ', tableName);
+		var client = getPgDataDb();
+		client.query(sql, [schemaName, tableName], function(err, results) {
+			if (err) {
+				var err_msg = util.format("Error querying geometry column name, query=%s, error=%s.", sql, err);
+				logger.error(err_msg);
+				return reject(new Error(err_msg));
+			}
+			// TODO: Remove later. Necessary for mapping of certain information now.
+			if(config.toggles.useEoSso) {
+				// return resolve('the_geom');
+			}
+			if (results.rows.length < 1) {
+				var err_msg = util.format("Error: table '%s' has no geometry column.", sourceTableName);
+				logger.error(err_msg);
+				return reject(new Error(err_msg));
+			}
+			var colName = results.rows[0]['column_name'];
+			return resolve(colName);
+		});
+	});
 }
 
 
@@ -224,7 +308,9 @@ module.exports = {
 	getIo: getIo,
 	request: request,
 	connectToPgDb: connectToPgDb,
+	connectToMongo: connectToMongo,
 	initDatabases: initDatabases,
+	getGeometryColumnName: getGeometryColumnName,
 	getMongoDb: getMongoDb,
 	getPgDataDb: getPgDataDb,
 	getPgGeonodeDb: getPgGeonodeDb,

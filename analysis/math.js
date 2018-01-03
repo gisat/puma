@@ -3,6 +3,7 @@ var crud = require('../rest/crud');
 var async = require('async');
 var pg = require('pg');
 var config = require('../config');
+var logger = require('../common/Logger').applicationWideLogger;
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
@@ -18,12 +19,15 @@ function check(analysisObj, performedAnalysisObj, callback) {
 	var opts = {
 		'layerRefFl': [function(asyncCallback, results) {
 				async.map(featureLayerTemplates, function(flTemplate, mapCallback) {
-					crud.read('layerref', {areaTemplate: flTemplate, location: location, year: year, isData: false}, function(err, resls) {
-						if (err)
+					var filter =  {areaTemplate: flTemplate, location: location, year: year, isData: false};
+					crud.read('layerref', filter, function(err, resls) {
+						if (err) {
+							logger.error("It wasn't possible to read layerref with filter: ", filter, " Error: " ,err);
 							return callback(err);
+						}
 						if (!resls.length) {
-							console.log("LAYERREF missing 1||||| areaTemplate: "+flTemplate+" | location: "+location+" | year: "+year);
-							return callback(new Error('missinglayerref'));
+							logger.error("Layerref is missing for filter: ", filter);
+							return callback(new Error('There is no base reference layer for combination of year ('+year+'), location ('+location+') and Vector Layer Template ('+flTemplate+') Please try to take a look whether you have correctly associated Vector Layer Template with this number to the vector data layer from which the attributes for analysis comes. '));
 						}
 						return mapCallback(null, resls[0]);
 					});
@@ -37,9 +41,12 @@ function check(analysisObj, performedAnalysisObj, callback) {
 			}],
 		'layerRefAs': ['layerRefFl', function(asyncCallback, results) {
 				async.map(featureLayerTemplates, function(featureLayerTemplate, mapCallback) {
-					crud.read('layerref', {areaTemplate: featureLayerTemplate, location: location, year: year, isData: true, attributeSet: {$in: attrSets}}, function(err, resls) {
-						if (err)
+					var filter = {areaTemplate: featureLayerTemplate, location: location, year: year, isData: true, attributeSet: {$in: attrSets}};
+					crud.read('layerref', filter, function(err, resls) {
+						if (err) {
+							logger.error("It wasn't possible to read layerref with filter: ", filter, " Error: ", err);
 							return callback(err);
+						}
 						var map = {};
 						for (var i = 0; i<resls.length; i++) {
 							var resl = resls[i];
@@ -48,9 +55,12 @@ function check(analysisObj, performedAnalysisObj, callback) {
 						for (var i = 0; i < attrSets.length; i++) {
 							var attrSet = attrSets[i];
 							if (!map[attrSet]) {
-								console.log("LAYERREF missing 2||||| areaTemplate: "+featureLayerTemplate+" | location: "+location+" | year: "+year+" | analysisObj.attributeSets: "+analysisObj.attributeSets+" | attrSet: "+attrSet);
-								return callback(new Error('missinglayerref'))
-							} else console.log("ok\n");
+								logger.error("LayerRef is missing AreaTemplate: ", featureLayerTemplate, " Location: ",
+									location, "Year: ", year, " Analysis: ", analysisObj, " Attribute set: ", attrSet);
+								return callback(new Error('There is no reference layer for combination of year ('+year+'), location ('+location+'), Vector Layer Template ('+featureLayerTemplate+') and Attribute Set ('+attrSets+')'))
+							} else {
+								logger.trace("ok\n");
+							}
 						}
 						return mapCallback(null, resls[0]);
 					});
@@ -81,7 +91,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 		'attributes': function(asyncCallback) {
 			crud.read('attributeset', {_id: attrSets[0]}, function(err, resls) {
 				if (err){
-					console.log("Unexpected PG Error!");
+					logger.error("It wasn't possible to read attribute set: ", attrSets[0], " Error: ", err);
 					return callback(err);
 				}
 				return asyncCallback(null, resls[0].attributes);
@@ -96,7 +106,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			var select = 'SELECT gid,';
 			for (var i = 0; i < results.attributes.length; i++) {
 				var attr = results.attributes[i];
-				var sign = analysisObj.useSum ? '+' : '-';
+				sign = analysisObj.useSum ? '+' : '-';
 				select += i != 0 ? ',' : '';
 				for (var j = 0; j < attrSets.length; j++) {
 					select += j != 0 ? sign : '';
@@ -124,10 +134,12 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				currentSql = currentSql.replace('$INDEX$', item);
 				//console.log("analysis/math.js currentSql: " + currentSql);
 				client.query(currentSql, function(err, resls) {
-					if (err)
-						return asyncCallback({message: "SQL query error ("+err+")"});
-					//console.log("analysis/math.js currentSql: a");
-					crud.create('layerref', {
+					if (err) {
+						logger.error("It wasn't possible to run SQL query ", currentSql, " Error: ", err);
+						return asyncCallback({message: "SQL query error (" + err + ")"});
+					}
+
+					var data = {
 						location: location,
 						year: year,
 						areaTemplate: item,
@@ -137,8 +149,10 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 						columnMap: columnMap,
 						layer: 'analysis:an_' + performedAnalysisObj['_id']+'_'+item,
 						analysis: performedAnalysisObj['_id']
-					}, function(err) {
+					};
+					crud.create('layerref', data, function(err) {
 						if(err) {
+							logger.error("It wasn't possible to create layerref: ", data, " Error: ", err);
 							return asyncCallback({message: "MongoDB creating 'layerref' ("+err+")"});
 						}
 						return eachCallback(null);
@@ -146,21 +160,22 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 				});
 			}, function(err, resls) {
 				client.end();
-				//if (performedAnalysisObj.ghost) {
+				if (performedAnalysisObj.ghost) {
 					//return callback(null);
-					console.log("\n\n    .-.\n   (o o) bubu, "+(performedAnalysisObj.ghost ? "true":"false")+"!\n   | O \\ \n    \\   \\ \n     `~~~' \n   Duch Cát\n\n");
-				//}
+					logger.warn("Performed analysis is ghost: ", performedAnalysisObj);
+				}
 				if(!performedAnalysisObj.status){
 					if(err){
+						logger.error("The analysis: ", performedAnalysisObj, " Failed", " With Error: ", err);
 						performedAnalysisObj.status = "Failed. "+err;
 					}else{
 						performedAnalysisObj.status = "Successful";
 					}
 				}
 				performedAnalysisObj.finished = new Date();
-				crud.update('performedanalysis', performedAnalysisObj, {userId: req.userId,isAdmin: true}, function(err) {
+				crud.update('performedanalysis', performedAnalysisObj, {userId: req.session.userId, isAdmin: true}, function(err) {
 					if(err){
-						console.log("Failed to write in MongoDB performedanalysis. Error message:\n"+err);
+						logger.error("Failed to write in MongoDB performedanalysis:", performedAnalysisObj, " Error", err);
 						return callback(err);
 					}
 					return callback(null);

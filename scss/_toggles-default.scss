@@ -1,0 +1,76 @@
+// This file should be only temporary file, until these rules are changed in main panther styles
+
+
+//$useWBAgreement == false {
+body.intro div#content-intro-terms{
+	display: none;
+}
+body.dataview div#content-intro-terms{
+	display: none;
+}
+
+
+//$useWBHeader == false {
+#wb-header{
+	display: none;
+	height: 0;
+}
+#header{
+	top: 0;
+}
+#main{
+	padding-top: 30px;
+}
+body.application #main {
+	padding-top: 120px;
+}
+#content-application {
+	top: 30px;
+}
+
+//@if $useHeader == true {
+#header{
+	display: none;
+}
+#main{
+	padding-top: 0;
+}
+#content-application {
+	top: 0;
+}
+
+
+//$useWBFooter == false {
+#footer-bar,
+#footer-legal,
+#puma-wb-copyright,
+#puma-contact{
+  display: none;
+}
+#footer-legal{
+	border: 0 none transparent;
+}
+#main{
+	padding-bottom: 34px;
+}
+
+//$useFooterLegal == true {
+#footer-legal{
+	display: none;
+}
+body.application #main{
+	padding-top: 90px;
+}
+
+//$allowDownloadsLink == false {
+#downloads-link{
+	display: none;
+}
+
+
+//$allowPumaHelp == false {
+#help-link, #toolbar .group .field.help {
+	display: none;
+}
+
+
