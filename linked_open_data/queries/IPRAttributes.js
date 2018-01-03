@@ -9,7 +9,7 @@ let CsvParser = require('../../format/csv/CsvParser');
 class IPRAttributes {
 	constructor(dataset) {
 		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets';
-		this._resources = 'http://onto.fel.cvut.cz/ontologies/town-plan/resource/vocab/';
+		this._resources = 'http://onto.fel.cvut.cz/ontologies/town-plan/';
 		this._dataset = dataset;
 	}
 
@@ -60,12 +60,14 @@ class IPRAttributes {
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
+			PREFIX datasetDescriptor: <http://onto.fel.cvut.cz/ontologies/dataset-descriptor/>
 			
 			SELECT
 				(MIN(?kod) as ?minValue)
 				(MAX(?kod) as ?maxValue)
 			WHERE {
-				?dataset dataset:${attribute.attributeKey} ?kod .
+				?feature datasetDescriptor:has-published-dataset-snapshot ?publishedFeature.
+    			?publishedFeature dataset:${attribute.attributeKey} ?kod.
 			}
 		`;
 
@@ -85,12 +87,14 @@ class IPRAttributes {
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
+			PREFIX datasetDescriptor: <http://onto.fel.cvut.cz/ontologies/dataset-descriptor/>
 			
 			SELECT
 				(MIN(?kod) as ?minValue)
 				(MAX(?kod) as ?maxValue)
 			WHERE {
-				?dataset dataset:${attribute.attributeKey} ?kod .
+				?feature datasetDescriptor:has-published-dataset-snapshot ?publishedFeature.
+    			?publishedFeature dataset:${attribute.attributeKey} ?kod.
 			}
 		`;
 
@@ -110,11 +114,13 @@ class IPRAttributes {
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
+			PREFIX datasetDescriptor: <http://onto.fel.cvut.cz/ontologies/dataset-descriptor/>
 			
 			SELECT DISTINCT
 				?kod
 			WHERE {
-				?dataset dataset:${attribute.attributeKey} ?kod .
+				?feature datasetDescriptor:has-published-dataset-snapshot ?publishedFeature.
+    			?publishedFeature dataset:${attribute.attributeKey} ?kod.
 			}
 		`;
 

@@ -83,11 +83,13 @@ class IPRData {
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._dataset}>
+			PREFIX geosparql: <http://www.opengis.net/ont/geosparql#>
 			
 			SELECT
 			  ?geometry
 			WHERE {
-				?ipr_o dataset:wkt_geometry ?geometry;
+				?object geosparql:asWKT ?geometry.
+				?ipr_o geosparql:hasGeometry ?object;
 				${data.triplets.join(';')}.
 				${data.filters.join(' ')}
 			} 
@@ -111,11 +113,12 @@ class IPRData {
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
 			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._dataset}>
+			PREFIX geosparql: <http://www.opengis.net/ont/geosparql#>
 			
 			SELECT
 			  (COUNT(?geometry) as ?amount)
 			WHERE {
-				?ipr_o dataset:wkt_geometry ?geometry;
+				?ipr_o geosparql:hasGeometry ?geometry;
 					   ${data.triplets.join(';')}.
 				
 				${data.filters.join(' ')}
