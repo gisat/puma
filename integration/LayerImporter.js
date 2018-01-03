@@ -859,9 +859,13 @@ class LayerImporter {
 			let file = _.filter(files, (file) => {
 				return file.toLowerCase().endsWith('.dbf');
 			});
-			return dbfEditor.prepareDbfFileForImport(`${importFolderPath}/${file}`).then(() => {
-				return files;
-			});
+			if(file) {
+                return dbfEditor.prepareDbfFileForImport(`${importFolderPath}/${file}`).then(() => {
+                    return files;
+                });
+            } else {
+			    return files;
+            }
         }).then((files) => {
             logger.info(`LayerImporter#prepareLayerFilesForImport Finished`);
             return ({
