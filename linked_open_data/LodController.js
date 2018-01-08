@@ -93,7 +93,9 @@ class LodController {
     
     data(request, response) {
         let hash;
-        this.getFiltersHash(request.query.filters).then(pHash => {
+        let hashParams = request.query.filters;
+        hashParams.push(request.query.area);
+        this.getFiltersHash(hashParams).then(pHash => {
             hash = pHash;
             return this._iprDataQueryProcesses.getExistingProcess(pHash);
         }).then((result) => {
@@ -105,7 +107,7 @@ class LodController {
                 state = process.state;
             } else {
                 this._iprDataQueryProcesses.createNewProcess(hash, results, state).then(() => {
-                    new IPRData(request.query.filters).json().then(data => {
+                    new IPRData(request.query.filters, request.query.area).json().then(data => {
                         console.log(`#### CREATING WMS LAYER ####`);
                         let values = data.values;
                         let srid = data.srid;
