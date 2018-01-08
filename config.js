@@ -1,48 +1,65 @@
 module.exports = {
-	localHost       : "10.0.75.2",
-	localPort       : 4000,
-	localPath       : "",
+	localHost: "localhost",
+	localPort: 3000,
+	localPath: "",
 
-	remoteProtocol  : "http",
-	remoteAddress   : "10.0.75.2:4000",
-	projectHome     : "",
+	remoteProtocol: "http",
+	remoteAddress: "localhost",
+	projectHome: "",
 
-	pgDataConnString   : "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@10.0.75.2:5432/geonode",
-	mongoConnString    : "mongodb://10.0.75.2:27017/panther",
+	pgDataConnString: "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
+	mongoConnString: "mongodb://localhost:27017/panther",
 
 	workspaceSchemaMap: {
 		geonode: "public",
+		panther: "views",
 		analysis: "analysis"
 	},
 
-	geoserverHost   : "10.0.75.2",
-	geoserverPort   : 8080,
-	geoserverPath   : "/geoserver",
-	geoserverUsername : "admin",
-	geoserverPassword : "geoserver",
+	geoserverHost: "localhost",
+	geoserverPort: 80,
+	geoserverPath: "/geoserver",
+	geoserverUsername: "admin",
+	geoserverPassword: "geoserver",
 	/*
 	 * It contains workspace, which is used when storing and generating things in the geoserver.
 	 */
-	geoserverWorkspace: "puma",
+	geoserverWorkspace: "panther",
 
-	geoserver2Host  : "10.0.75.2",
-	geoserver2Port  : 8080,
-	geoserver2Path  : "/geoserver",
-	geoserver2Username  : "admin",
-	geoserver2Password  : "geoserver",
-	geoserver2Workspace : "puma",
+	geoserver2Host: "localhost",
+	geoserver2Port: 80,
+	geoserver2Path: "/geoserver",
+	geoserver2Username: "admin",
+	geoserver2Password: "geoserver",
+	geoserver2Workspace: "panther",
 
-	geonodeProtocol : "http",
-	geonodeHost     : "10.0.75.2",
-	geonodePort			: 80,
-	geonodePath     : "/",
-	geonodeHome     : "/",
+	geonodeProtocol: "http",
+	geonodeHost: "localhost",
+	geonodePort: 80,
+	geonodePath: "/",
+	geonodeHome: "/",
 
 	/**
 	 * Full URL of the geonode usable for the requests.
 	 */
-	geonodeUrl: "http://10.0.75.2:80/",
+	geonodeUrl: "http://localhost:80/",
+
+	/**
+	 * Full URL of the GeoServer usable for the requests.
+	 */
+	geoServerUrl: "http://localhost:80/geoserver/",
+
+	/**
+	 * Data store used for storing the layers.
+	 */
+	geoServerDataStore: "datastore",
+
+	/**
+	 * Path to the directory where temporary sld will be stored. It is used mainly for debugging. It is about thematic
+	 * maps and the borders of the analytical units.
+	 */
+	temporarySldFilesPath: "/tmp/",
 
 	googleAnalyticsTracker: '',
 	googleAnalyticsCookieDomain: 'auto',
@@ -50,10 +67,10 @@ module.exports = {
 
 	/*
 	 * Different options about what map should be shown as the first one.
-     * osm - OpenStreetMap using Mapnik
-     * hybrid - Google hybrid solution
-     * roadmap - Google road map
-     * terrain - Google terrain map
+	 * osm - OpenStreetMap using Mapnik
+	 * hybrid - Google hybrid solution
+	 * roadmap - Google road map
+	 * terrain - Google terrain map
 	 */
 	initialBaseMap: "terrain",
 
@@ -69,23 +86,15 @@ module.exports = {
 	],
 
 	toggles: {
-		noGeoserverLayerGroups: false,
-		useWBAgreement: false,
-		useWBHeader: false,
-		useHeader: false,
-		useWBFooter: false,
-		allowPumaHelp: false,
-		allowDownloadsLink: false,
-		usePumaLogo: false,
-		advancedFiltersFirst: false
-		//renameAdvancedFiltersTo: "Evaluation Tool"
-	},
-
-	insar: {
 		/**
-		 * Koeficient pro vypocet rozsahu mapy na zaklade bounding boxu polygonu mostu.
+		 * When this flag is set, the EO SSO protocol is used to supply the information about the user.
 		 */
-		rangeBuffer: 1.5
+		useEoSso: true,
+
+		/**
+		 * If only logged in users are allowed, then the all the requests will redirect the user to the login point.
+		 */
+		loggedOnly: false
 	},
 
 	allowedOrigins: "http://localhost:5555",
@@ -103,18 +112,7 @@ module.exports = {
 	/*
 	 * UrbanTEP - Destination of temporary downloaded files.
 	 */
-	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
-
-	/*
-	 * UrbanTEP - UserName and Password under which the layers are uploaded
-	 */
-	urbanTepGeonodeUserName: '',
-	urbanTepGeonodeUserPassword: '',
-
-	/*
-	 * UrbanTep - Approximate pixel size in input tif file, m^2
-	 */
-	urbanTepTifPixelSize: 75*75,
+	temporaryDownloadedFilesLocation: '/tmp/',
 
 	/*
 	* Environment in which is the application run. The used libraries will differ.
@@ -126,7 +124,7 @@ module.exports = {
 	/*
 	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
-	postgreSqlSchema: 'data_test',
+	postgreSqlSchema: 'data',
 
 	/*
 	 * Schema containing produced tables and views - base_ and layers_ with the data for usge in Panther.
@@ -139,11 +137,11 @@ module.exports = {
 	pgDataUser: 'geonode',
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
-	pgDataHost: '10.0.75.2',
+	pgDataHost: 'localhost',
 	pgDataPort: '5432',
-	
+
 	/*
-	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long. 
+	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long.
 	*/
 	snapshotDirectory: '/tmp/',
 
@@ -152,5 +150,168 @@ module.exports = {
 	 */
 	exportDirectory: '/tmp/',
 
-	isUrbis: false
+	isUrbis: false,
+
+	/**
+	 * Name of the application used for watching the servers.
+	 */
+	appName: 'Localhost',
+
+	/**
+	 * When is isn't allowed for unauthenticated users to access the system, this is the Url to which they will be
+	 * redirected instead.
+	 */
+	notAuthenticatedUrl: 'localhost/tool/',
+
+	/**
+	 * Deafult admin user for Geonode usable to login users to Geonode.
+	 */
+	geonodeAdminUser: {
+		name: 'admin',
+		password: 'admin'
+	},
+
+	/**
+	 * Url used for generating the screenshots.
+	 */
+	printUrl: 'http://localhost/tool/index.html',
+
+	/**
+	 * Information necessary to send emails to the users.
+	 * host: Hostname of the SMTP server e.g. zimbra.gisat.cz
+	 * user: Username of the user using server e.g. puma.geonode@gisat.cz
+	 * port: Port of the SMTP service. Usually 587
+	 * password: Password of the user e.g. XXXXXXX
+	 * from: The email address sending the email e.g. puma.geonode@gisat.cz
+	 * subject: Subject of the email. It should contain the core information about the service
+	 */
+	email: {
+		host: 'zimbra.gisat.cz',
+		user: 'panther@gisat.cz',
+		port: 587,
+		password: '7Mn3+wXcQ2',
+		from: 'panther@gisat.cz',
+		subject: 'Panther - Visualisation and analysis platform. Internal'
+	},
+
+	insar: {
+		/**
+		 * Koeficient pro vypocet rozsahu mapy na zaklade bounding boxu polygonu mostu.
+		 */
+		rangeBuffer: 1.5
+	},
+
+	/**
+	 * Where are stored static files accessible from internet
+	 */
+	webArchivePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/archive",
+	webArchivePublicPath: "/archive",
+
+	/**
+	 * Snow portal configurations
+	 */
+	snow: {
+		cores: 4,   // depends on available memory, creation of composites takes about 1GB of ram per core
+		geoserverWorkspace: `geonode`,
+		paths: {
+			scenesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/scenes",
+			compositesGeotiffStoragePath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/composites",
+			packagesForDownloadPath: "/home/mbabic/Dokumenty/TempStorage/Snow_Portal/server_data/downloads"
+		},
+		rasters: {
+			replaceExisting: false,
+			reclass: {
+				sentinel3: {
+					reclassexpr: "[0-0]:1, [211-211]:2, [250-250]:3,  [239-239]:4, [1-1]:5, [100-100]:100",
+					pixelType: "8BUI"
+				}
+			},
+			colorMap: {
+				sentinel3: {
+					colorMap: "41 128 203 221\n5 173 234 166\n4 13 24 53\n3 61 61 61\n2 25 25 25\n1 102 0 20\nnv 0 0 0 0",
+					method: "NEAREST"
+				},
+				composite: {
+					colorMap: "41 128 203 221\n5 173 234 166\n4 13 24 53\n3 61 61 61\n2 25 25 25\n1 102 0 20\nnv 0 0 0 0",
+					method: "NEAREST"
+				}
+			}
+		},
+		classDistribution: {
+			1: {
+				key: "ND",
+				name: "No data"
+			},
+			2: {
+				key: "N",
+				name: "Night"
+			},
+			3: {
+				key: "C",
+				name: "Cloud"
+			},
+			4: {
+				key: "O",
+				name: "Ocean"
+			},
+			5: {
+				key: "NS",
+				name: "No snow"
+			},
+			6: {
+				key: "S",
+				name: "Snow"
+			}
+		},
+		backgroundGenerator: {
+			enabled: false,
+			passes: 2,
+			dailyComposites: {
+				combinations: [
+					{
+						sensors: {
+							modis: ['aqua', 'terra'],
+							slstr: ['sentinel3']
+						}
+					},
+					{
+						sensors: {
+							modis: ['aqua', 'terra']
+						}
+					},
+					{
+						sensors: {
+							modis: ['aqua']
+						}
+					},
+					{
+						sensors: {
+							modis: ['terra']
+						}
+					},
+					{
+						sensors: {
+							slstr: ['sentinel3']
+						}
+					},
+					{
+						sensors: {
+							modis: ['aqua'],
+							slstr: ['sentinel3']
+						}
+					},
+					{
+						sensors: {
+							modis: ['terra'],
+							slstr: ['sentinel3']
+						}
+					}
+				],
+				date: {
+					from: null,
+					to: null
+				}
+			}
+		}
+	}
 };
