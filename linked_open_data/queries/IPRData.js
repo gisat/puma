@@ -41,7 +41,7 @@ class IPRData {
 		if (this._area){
 			let conventer = new ProjectionConventer();
 			let area5514 = conventer.convertWktEpsg4326ToEpsg5514(this._area);
-            filters.push(`FILTER (geof:sfWithin(?wktLiteral, "${area5514}"))`);
+            filters.push(`FILTER (geof:sfIntersects(?wktLiteral, "${area5514}"))`);
 		}
 
 		return {
@@ -141,7 +141,7 @@ class IPRData {
             return this.queryForAllData(amount);
         }).then(results => {
             return {
-                color: randomColor({luminosity: 'light'}),
+                color: randomColor({luminosity: 'bright'}),
                 values: results,
                 srid: this.srid(),
                 amount: amount
