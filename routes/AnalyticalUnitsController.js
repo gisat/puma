@@ -22,31 +22,36 @@ class AnalyticalUnitsController {
 				.then((mongoDb) => {
 					return new FilteredMongoLocations({_id: Number(placeId)}, mongoDb).json()
 						.then((results) => {
-							return new FilteredMongoScopes({_id: Number(results[0].dataset)}, mongoDb).json();
-						}).then((results) => {
-							return new FilteredBaseLayerReferences(
-								{
-									location: Number(placeId),
-									isData: false,
-									areaTemplate: Number(results[0].featureLayers[0])
-								},
-								mongoDb
-							).layerReferences();
+							if (results[0].geometry) {
+								resolve(results[0].geometry);
+							} else {
+								new FilteredMongoScopes({_id: Number(results[0].dataset)}, mongoDb).json()
+									.then((results) => {
+										return new FilteredBaseLayerReferences(
+											{
+												location: Number(placeId),
+												isData: false,
+												areaTemplate: Number(results[0].featureLayers[0])
+											},
+											mongoDb
+										).layerReferences();
+									})
+									.then((result) => {
+										let tableName = result[0].layer.split(`:`)[1];
+										let optionalColumns = {
+											fid: result[0].fidColumn,
+											name: result[0].nameColumn
+										};
+										return new PgGeometry(this._pgPool, `public`, tableName, `the_geom`, optionalColumns).json();
+									})
+									.then((geometry) => {
+										resolve(geometry)
+									})
+									.catch((error) => {
+										reject(error);
+									})
+							}
 						})
-				})
-				.then((result) => {
-					let tableName = result[0].layer.split(`:`)[1];
-					let optionalColumns = {
-						fid: result[0].fidColumn,
-						name: result[0].nameColumn
-					};
-					return new PgGeometry(this._pgPool, `public`, tableName, `the_geom`, optionalColumns).json();
-				})
-				.then((geometry) => {
-					resolve(geometry)
-				})
-				.catch((error) => {
-					reject(error);
 				})
 		}).then((result) => {
 			response.status(200).send(
