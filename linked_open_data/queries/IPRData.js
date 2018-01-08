@@ -52,16 +52,17 @@ class IPRData {
 
 	queryForAllData(amount) {
 		let current = 0;
-		let increment = 100000;
+		let amt = Number(amount);
+		let increment = 10000;
 		let promise = Promise.resolve(null);
 		let results = [];
-		while(amount > current) {
+		while(amt > current) {
 			promise = this.queryPromise(promise, current, increment).then(result => {
 				return new CsvParser(result.text).objects();
-			}).then(objects => {
+			}).catch(err => {logger.error(err)}).then(objects => {
 				results.push.apply(results, objects.map(object => object.wktLiteral));
 				return results;
-			});
+			}).catch(err => {logger.error(err)});
 
 			current += increment;
 		}
