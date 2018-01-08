@@ -22,10 +22,18 @@ class AnalyticalUnitsController {
 				.then((mongoDb) => {
 					return new FilteredMongoLocations({_id: Number(placeId)}, mongoDb).json()
 						.then((results) => {
-							if(!results || !results.length) {
+							if (!results || !results.length) {
 								reject(new Error(`place not found`));
 							} else if (results[0].geometry) {
-								resolve([results[0].geometry]);
+								resolve(
+									[
+										{
+											geometry: results[0].geometry,
+											fid: 1,
+											name: results[0].name
+										}
+									]
+								);
 							} else {
 								new FilteredMongoScopes({_id: Number(results[0].dataset)}, mongoDb).json()
 									.then((results) => {
