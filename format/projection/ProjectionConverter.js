@@ -68,7 +68,10 @@ class ProjectionConverter {
         let convertedCoordinates = _.map(geojson.coordinates, coordinates => {
             if(coordinates[0] instanceof Array) {
                 return _.map(coordinates, coordinates => {
-                    return proj4(this._wgs,this._krovakEastNorth,coordinates);
+                    let coord = proj4(this._wgs,this._krovakEastNorth,coordinates);
+                    return _.map(coord, (coor) => {
+                       return Math.round(coor, 1);
+                    });
                 })
             } else {
                 return proj4(this._wgs,this._krovakEastNorth,coordinates);
