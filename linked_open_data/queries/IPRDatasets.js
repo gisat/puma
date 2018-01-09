@@ -23,7 +23,8 @@ class IPRDatasets {
 			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> 
 			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
 			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/> 
-			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/> `;
+			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
+			PREFIX purl: <http://purl.org/dc/elements/1.1/>`;
 		}
 
 	getFilters(name){
@@ -71,16 +72,19 @@ class IPRDatasets {
 		let sparql = this._prefixes + `
 			SELECT DISTINCT ?datasetLabel ?dataset ?datasetComment
 				WHERE {{ ?dataset rdf:type common:Dataset.
+				    ?dataset purl:source ?source.
 					?dataset rdfs:label ?datasetLabel.
 					?subject common:isInContextOfDataset ?dataset.
 					${filter.uri}
 				} UNION {
 					?dataset rdf:type common:Dataset.
+					?dataset purl:source ?source.
 					?dataset rdfs:label ?datasetLabel.
 					?subject common:isInContextOfDataset ?dataset.
 					${filter.label}
 				} UNION {
 					?dataset rdf:type common:Dataset.
+					?dataset purl:source ?source.
 					?dataset rdfs:label ?datasetLabel.
 					?dataset rdfs:comment ?datasetComment.
 					?subject common:isInContextOfDataset ?dataset.
@@ -101,18 +105,21 @@ class IPRDatasets {
 			SELECT DISTINCT ?dataset ?datasetLabel ?datasetComment ?subject ?subjectLabel ?subjectComment ?subjectDefinition ?predicateLabel
 				WHERE {{
 					?subject common:isInContextOfDataset ?dataset.
+					?dataset purl:source ?source.
 					common:isInContextOfDataset rdfs:label ?predicateLabel.
 					?dataset rdfs:label ?datasetLabel.
 					?subject rdfs:label ?subjectLabel.
 					${filter.uri}
 				} UNION {
 					?subject common:isInContextOfDataset ?dataset.
+					?dataset purl:source ?source.
 					common:isInContextOfDataset rdfs:label ?predicateLabel.
 					?dataset rdfs:label ?datasetLabel.
 					?subject rdfs:label ?subjectLabel
 					${filter.label}
 				} UNION {
 					?subject common:isInContextOfDataset ?dataset.
+					?dataset purl:source ?source.
 					common:isInContextOfDataset rdfs:label ?predicateLabel.
 					?dataset rdfs:label ?datasetLabel.
 					?subject rdfs:label ?subjectLabel.
@@ -121,6 +128,7 @@ class IPRDatasets {
                 }
                 UNION {
                     ?subject common:isInContextOfDataset ?dataset.
+                    ?dataset purl:source ?source.
                     common:isInContextOfDataset rdfs:label ?predicateLabel.
                     ?dataset rdfs:label ?datasetLabel.
                     ?subject rdfs:label ?subjectLabel.
@@ -143,17 +151,20 @@ class IPRDatasets {
 			SELECT DISTINCT ?dataset ?datasetLabel ?subjectParent ?subjectParentLabel ?subjectParentComment ?subjectParentDefinition
                 WHERE {{
                     ?subject common:isInContextOfDataset ?dataset.
+                    ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
                     ?dataset rdfs:label ?datasetLabel.
                     ${filter.uri}
                 } UNION {
                     ?subject common:isInContextOfDataset ?dataset.
+                    ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
                     ?dataset rdfs:label ?datasetLabel.
                     ?subjectParent rdfs:label ?subjectParentLabel
                     ${filter.label}
                 } UNION {
                     ?subject common:isInContextOfDataset ?dataset.
+                    ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
                     ?dataset rdfs:label ?datasetLabel.
                     ?subjectParent rdfs:label ?subjectParentLabel.
@@ -161,6 +172,7 @@ class IPRDatasets {
                     ${filter.comment}
                 } UNION {
                     ?subject common:isInContextOfDataset ?dataset.
+                    ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
                     ?dataset rdfs:label ?datasetLabel.
                     ?subjectParent rdfs:label ?subjectParentLabel.
