@@ -180,7 +180,7 @@ class IPRAttributes {
 			let attributes = [];
 			results.map(attribute => {
                 let values = attribute.values;
-                if (values.length > 0){
+                if (values.length > 0 && values[0]){
                     attributes.push(attribute);
                 }
 			});
