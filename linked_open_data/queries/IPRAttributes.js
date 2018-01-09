@@ -116,12 +116,15 @@ class IPRAttributes {
 			PREFIX dataset: <${this._resources}${attribute.datasetKey}/>
 			PREFIX datasetDescriptor: <http://onto.fel.cvut.cz/ontologies/dataset-descriptor/>
 			
-			SELECT DISTINCT
-				?kod
-			WHERE {
-				?feature datasetDescriptor:has-published-dataset-snapshot ?publishedFeature.
-    			?publishedFeature dataset:${attribute.attributeKey} ?kod.
-			}
+			SELECT DISTINCT ?kod ?label
+				WHERE {
+					?feature datasetDescriptor:has-published-dataset-snapshot ?publishedFeature.
+					?publishedFeature dataset:${attribute.attributeKey} ?kod.
+    				OPTIONAL { ?code rdf:type common:CodelistValue.
+					?code rdfs:label ?label.	
+						FILTER (regex(str(?code), CONCAT("/",CONCAT(?kod,"$")), "m")) }				
+ 
+			} 
 		`;
 
 		logger.info(`IPRAttributes#stringQuery Sparql: `, sparql);
@@ -165,7 +168,7 @@ class IPRAttributes {
 						if(result.type === 'integer' || result.type === 'double' || result.type === 'dateTimeStamp') {
                             result.values = [objects[0].minValue, objects[0].maxValue];
 						} else {
-                            result.values = objects.map(object => object.kod);
+                            result.values = objects.map(object => object);
 						}
 					}
 					return result;
@@ -177,7 +180,7 @@ class IPRAttributes {
 			let attributes = [];
 			results.map(attribute => {
                 let values = attribute.values;
-                if (values.length > 0 && (values[0].length > 0 || values[1].length > 0)){
+                if (values.length > 0){
                     attributes.push(attribute);
                 }
 			});
