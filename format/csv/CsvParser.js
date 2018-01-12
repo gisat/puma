@@ -10,7 +10,7 @@ class CsvParser {
 	objects() {
 		var self = this;
 		return new Promise(function(resolve, reject) {
-			csv.parse(self._text, function(error, result){
+			csv.parse(self._text, {max_limit_on_data_read: 50000000},function(error, result){
 				if(error){
 					logger.error(`ERROR CsvParser#objects csv.parse:` + error);
 					reject(error);
