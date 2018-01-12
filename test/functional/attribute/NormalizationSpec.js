@@ -50,7 +50,7 @@ describe('NormalizationSpec', () => {
 				}, {
 					attribute: 1,
 					attributeSet: 2,
-					normAttribute: 3,
+					calcAttribute: 3,
 					type: 'avgattrarea'
 				}, {
 					attribute: 1,

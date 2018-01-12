@@ -126,7 +126,7 @@ function initServer(err) {
 
 
 new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
-	return new SymbologyToPostgreSqlMigration().run();
+	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
 }).then(()=>{
 	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
 }).then(()=>{

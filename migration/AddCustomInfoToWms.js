@@ -1,11 +1,9 @@
 let Migration = require('./Migration');
 let PgWmsLayer = require('../layers/wms/PgWmsLayers');
 
-let config = require('../config');
-
 class AddCustomInfoToWms extends Migration {
     constructor(schema) {
-        super('AddCustomInfoToWms');
+        super('AddCustomInfoToWms', schema);
 
         this._schema = schema;
     }
