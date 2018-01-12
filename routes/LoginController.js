@@ -1,7 +1,6 @@
 let config = require('../config');
 let logger = require('../common/Logger').applicationWideLogger;
 
-let Geonode = require('../security/Geonode');
 let PgUsers = require('../security/PgUsers');
 
 /**
@@ -9,103 +8,86 @@ let PgUsers = require('../security/PgUsers');
  * to log the user in.
  */
 class LoginController {
-	constructor(app, pgPool, commonSchema) {
-		if (!app) {
-			throw new Error(logger.error("LoginController#constructor The controller must receive valid app."));
-		}
-		app.get("/rest/logged", this.logged.bind(this));
-		app.post("/api/login/login", this.login.bind(this));
-		app.post("/api/login/logout", this.logout.bind(this));
-		app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
+    constructor(app, pgPool, commonSchema) {
+        if (!app) {
+            throw new Error(logger.error("LoginController#constructor The controller must receive valid app."));
+        }
+        app.get("/rest/logged", this.logged.bind(this));
+        app.post("/api/login/login", this.login.bind(this));
+        app.post("/api/login/logout", this.logout.bind(this));
+        app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
 
-		this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
-		this.geonode = new Geonode();
-	}
+        this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
+    }
 
-	logged(request, response) {
-		// It is possible that nobody will be logged. In this case return 404
-		if(request.session.user) {
-			response.json(request.session.user.json());
-		} else {
-			response.status(404);
-			response.json({status: 'Nobody is logged in.'});
-		}
-	}
+    logged(request, response) {
+        // It is possible that nobody will be logged. In this case return 404
+        if(request.session.user) {
+            response.json(request.session.user.json());
+        } else {
+            response.status(404);
+            response.json({status: 'Nobody is logged in.'});
+        }
+    }
 
-	login(request, response, next) {
-		let user = null;
-		let username = request.body.username;
-		let password = request.body.password;
-		logger.info(`LoginController#login Username: ${username}, Password: ${password}`);
-		return new Promise((resolve) => {
-			// Destroy current and create a new session.
-			request.session.regenerate(resolve);
-		}).then(() => {
-			return this.pgUsers.verify(username, password);
-		}).then((pUser) => {
-			user = pUser;
-			if(user) {
-            	return this.geonode.login(config.geonodeAdminUser.name, config.geonodeAdminUser.password);
-			}
-        }).then((parsedCookies) => {
-			if(!user) {
+    login(request, response, next) {
+        let username = request.body.username;
+        let password = request.body.password;
+        logger.info(`LoginController#login Username: ${username}, Password: ${password}`);
+        return new Promise((resolve) => {
+            // Destroy current and create a new session.
+            request.session.regenerate(resolve);
+        }).then(() => {
+            return this.pgUsers.verify(username, password);
+        }).then((user) => {
+            if(!user) {
                 response.status(401).end();
-			} else {
+            } else {
                 Object.assign(request.session, {
-                	user: user.json()
+                    user: user.json()
                 });
-
-                // Proxy cookies to the client.
-                for (let name in parsedCookies) {
-                    response.set("Set-Cookie", parsedCookies[name].headerLine);
-                }
-
                 request.session.userId = user.id;
-                request.session.userName = user.username;
-                request.session.groups = user.json().groups;
                 response.status(200).json({
                     data: {
-                        status: "ok",
-                        ssid: parsedCookies["sessionid"].value,
-                        csrfToken: parsedCookies["csrftoken"].value
+                        status: "ok"
                     },
                     success: true
                 });
             }
-		}).catch(function (err) {
-			logger.error(`LoginController#login Error: `, err);
+        }).catch(function (err) {
+            logger.error(`LoginController#login Error: `, err);
 
-			next(err);
-		});
-	}
+            next(err);
+        });
+    }
 
-	logout(request, response, next) {
-		return new Promise(function (resolve) {
-			// Destroy current session.
-			request.session.destroy(resolve);
-		}).then(() => {
-			// FIXME: The complicated data structure is here due to FrontOffice.
-			response.status(200).json({success: true});
-		}).catch(function (err) {
-			next(err);
-		});
-	}
+    logout(request, response, next) {
+        return new Promise(function (resolve) {
+            // Destroy current session.
+            request.session.destroy(resolve);
+        }).then(() => {
+            // FIXME: The complicated data structure is here due to FrontOffice.
+            response.status(200).json({success: true});
+        }).catch(function (err) {
+            next(err);
+        });
+    }
 
-	getLoginInfo(request, response) {
-		if (request.session.userId) {
-			// FIXME: The complicated data structure is here due to FrontOffice.
-			response.status(200).json({
-				data: {
-					userId: request.session.userId,
-					userName: request.session.userName,
-					groups: request.session.groups
-				},
-				success: true
-			});
-		} else {
-			response.status(200).json({});
-		}
-	}
+    getLoginInfo(request, response) {
+        if (request.session.userId) {
+            // FIXME: The complicated data structure is here due to FrontOffice.
+            response.status(200).json({
+                data: {
+                    userId: request.session.userId,
+                    userName: request.session.username,
+                    groups: request.session.groups
+                },
+                success: true
+            });
+        } else {
+            response.status(200).json({});
+        }
+    }
 }
 
 

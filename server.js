@@ -1,7 +1,6 @@
 require('newrelic');
 
 var express = require('express');
-var app = express();
 var conn = require('./common/conn');
 var getCSS = require('./common/get-css');
 var getMngCSS = require('./common/get-mng-css');
@@ -26,6 +25,7 @@ let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup')
 let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
 let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
+let MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
 
 let CompoundAuthentication = require('./security/CompoundAuthentication');
 let PgAuthentication = require('./security/PgAuthentication');
@@ -135,6 +135,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new PrepareForInternalUser(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddCustomInfoToWms(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

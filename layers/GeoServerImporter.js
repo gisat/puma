@@ -1,4 +1,4 @@
-let request = require('superagent');
+let superagent = require('superagent');
 let Promise = require('promise');
 let _ = require('lodash');
 
@@ -8,7 +8,7 @@ let _ = require('lodash');
 class GeoServerImporter {
     constructor(geoServerPath, userName, password, workspace, dataStore) {
         this._importPath = geoServerPath + '/rest/imports';
-        
+
         this._userName = userName;
         this._password = password;
         this._workspace = workspace;
@@ -18,14 +18,13 @@ class GeoServerImporter {
     // TODO: Configure the name of the workspace to import into.
     // TODO: Configure the name of the target data store.
     importLayer(layer) {
-        let id;
         let vectorDatastore = {
             dataStore: {
                 name: this._dataStore
             }
         };
         
-        return request
+        return superagent
             .post(this._importPath)
             .set('Content-Type', 'application/json')
             .auth(this._userName, this._password)
@@ -62,12 +61,12 @@ class GeoServerImporter {
                 if (!allReady) {
                     throw new Error(importerResponse.href);
                 }
-                
-                return request
+
+                return superagent
                     .post(importUrl)
                     .auth(this._userName, this._password)
                     .then(() => {
-                        return request
+                        return superagent
                             .get(importUrl)
                             .auth(this._userName, this._password)
                             .then(response => {
@@ -79,8 +78,9 @@ class GeoServerImporter {
                                         throw new Error(task.href);
                                     }
                                     taskResults.push(
-                                        request
+                                        superagent
                                             .get(`${task.href}/layer`)
+                                            .auth(this._userName, this._password)
                                             .then(response => {
                                                 return response.body.layer;
                                             })
@@ -92,8 +92,6 @@ class GeoServerImporter {
             });
     }
 }
-
-// TODO: Store the data about the layer in the pg table for layer.
 
 module
     .exports = GeoServerImporter;

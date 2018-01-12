@@ -116,9 +116,9 @@ function wms(params, req, res, callback) {
     params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
 	var wmsParamLayers = params['LAYERS'];
-	var host = useFirst ? config.geoserverHost : config.geoserver2Host;
-	var path = useFirst ? config.geoserverPath + '/' + workspace + '/wms' : config.geoserver2Path+'/' + workspace + '/wms';
-	var port = useFirst ? config.geoserverPort : config.geoserver2Port;
+	var host = useFirst ? config.geoserverHost : config.geoserverHost;
+	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserverPath+'/' + config.geoserverWorkspace + '/wms';
+	var port = useFirst ? config.geoserverPort : config.geoserverPort;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
 	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[wmsParamLayers]) ? layerGroupMap[wmsParamLayers][style || 'def'] : '';
@@ -160,8 +160,8 @@ function wms(params, req, res, callback) {
 	}
 	
 	
-	var username = useFirst ? config.geoserverUsername : config.geoserver2Username;
-	var password = useFirst ? config.geoserverPassword : config.geoserver2Password;
+	var username = useFirst ? config.geoserverUsername : config.geoserverUsername;
+	var password = useFirst ? config.geoserverPassword : config.geoserverPassword;
 
 	var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
 	var headers = {};
