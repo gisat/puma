@@ -78,7 +78,7 @@ class PgGroups {
 					groups[row.id].users.push(row.user_id);
 				}
 
-				if(row.resource_type && row.permission) {
+				if(row.resource_type && row.permission && row.permission === Permission.CREATE) {
                     groups[row.id].permissionsTowards.push({
                         resourceId: row.resource_id,
                         resourceType: row.resource_type,
