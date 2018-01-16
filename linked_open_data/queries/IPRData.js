@@ -7,19 +7,21 @@ let logger = require('../../common/Logger').applicationWideLogger;
 let utils = require('../../tacrpha/utils');
 
 let CsvParser = require('../../format/csv/CsvParser');
+let ProjectionConventer = require('../../format/projection/ProjectionConverter');
 
 class IPRData {
-	constructor(filters) {
+	constructor(filters, area) {
 		this._url = 'http://onto.fel.cvut.cz:7200/repositories/ipr_datasets?query=';
 
 		this._filters = filters;
+		this._area = area;
+
 		this._dataset = null;
 	}
 
 	filter() {
 		let triplets = [];
 		let filters = [];
-		let optionals = [];
 		this._filters.forEach((filter, index) => {
 			if (filter.values){
                 triplets.push(`dataset:${filter.attributeKey} ?variable${index}`);
@@ -36,6 +38,12 @@ class IPRData {
 			}
 		});
 
+		if (this._area){
+			let conventer = new ProjectionConventer();
+			let area5514 = conventer.convertWktEpsg4326ToEpsg5514(this._area);
+            filters.push(`FILTER (geof:sfIntersects(?wktLiteral, "${area5514}"))`);
+		}
+
 		return {
 			triplets: triplets,
 			filters: filters
@@ -44,16 +52,17 @@ class IPRData {
 
 	queryForAllData(amount) {
 		let current = 0;
-		let increment = 100000;
+		let amt = Number(amount);
+		let increment = 10000;
 		let promise = Promise.resolve(null);
 		let results = [];
-		while(amount > current) {
+		while(amt > current) {
 			promise = this.queryPromise(promise, current, increment).then(result => {
 				return new CsvParser(result.text).objects();
-			}).then(objects => {
-				results.push.apply(results, objects.map(object => object.geometry));
+			}).catch(err => {logger.error(err)}).then(objects => {
+				results.push.apply(results, objects.map(object => object.wktLiteral));
 				return results;
-			});
+			}).catch(err => {logger.error(err)});
 
 			current += increment;
 		}
@@ -75,22 +84,19 @@ class IPRData {
 	limitedQuery(current, increment) {
 		let data = this.filter();
 
-		let sparql = `
-			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-			PREFIX owl: <http://www.w3.org/2002/07/owl#>
+		let sparql = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
-			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._dataset}>
-			PREFIX geosparql: <http://www.opengis.net/ont/geosparql#>
+			PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+			PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 			
 			SELECT
-			  ?geometry
+			  ?wktLiteral
 			WHERE {
-				?object geosparql:asWKT ?geometry.
-				?ipr_o geosparql:hasGeometry ?object;
+				?ipr_o geo:hasGeometry ?geometry;
 				${data.triplets.join(';')}.
+				?geometry rdf:type geo:Geometry;
+        				geo:asWKT ?wktLiteral.
 				${data.filters.join(' ')}
 			} 
 			LIMIT ${increment}
@@ -105,22 +111,19 @@ class IPRData {
     countQuery() {
         let data = this.filter();
         
-        let sparql = `
-			PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-			PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        let sparql = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 			PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-			PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-			PREFIX common: <http://onto.fel.cvut.cz/ontologies/town-plan/common/>
-			PREFIX ds: <http://onto.fel.cvut.cz/ontologies/town-plan/>
 			PREFIX dataset: <${this._dataset}>
-			PREFIX geosparql: <http://www.opengis.net/ont/geosparql#>
+			PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+			PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 			
 			SELECT
 			  (COUNT(?geometry) as ?amount)
 			WHERE {
-				?ipr_o geosparql:hasGeometry ?geometry;
-					   ${data.triplets.join(';')}.
-				
+				?ipr_o geo:hasGeometry ?geometry;
+				${data.triplets.join(';')}.
+				?geometry rdf:type geo:Geometry;
+        				geo:asWKT ?wktLiteral.
 				${data.filters.join(' ')}
 			}
 		`;
@@ -139,7 +142,7 @@ class IPRData {
             return this.queryForAllData(amount);
         }).then(results => {
             return {
-                color: randomColor({luminosity: 'light'}),
+                color: randomColor({luminosity: 'bright'}),
                 values: results,
                 srid: this.srid(),
                 amount: amount

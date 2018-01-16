@@ -1,8 +1,10 @@
-let Group = require('./Group');
-let PgPermissions = require('./PgPermissions');
 let moment = require('moment');
 let _ = require('underscore');
 let logger = require('../common/Logger').applicationWideLogger;
+
+let Group = require('./Group');
+let Permission = require('./Permission');
+let PgPermissions = require('./PgPermissions');
 
 /**
  * This class handles storage, retrieval and other associated operations for groups stored in the PostgreSQL database.
@@ -12,7 +14,7 @@ class PgGroups {
         this.pgPool = pgPool;
         this.schema = schema;
 
-        this.permissions = new PgPermissions(pgPool, schema);
+        this._permissions = new PgPermissions(pgPool, schema);
     }
 
 	/**
@@ -30,7 +32,7 @@ class PgGroups {
             }
 
             groups = result.rows.map(group => new Group(group.id, null, group.name, group.created, group.created_by, group.changed, group.changed_by));
-            return this.permissions.forGroup(groups[0].id);
+            return this._permissions.forGroup(groups[0].id);
         })).then((permissions => {
             groups[0].permissions = permissions;
             return groups[0];
@@ -47,7 +49,7 @@ class PgGroups {
             }
 
             groups = result.rows.map(group => new Group(group.id, null, group.name, group.created, group.created_by, group.changed, group.changed_by));
-            return this.permissions.forGroup(groups[0].id);
+            return this._permissions.forGroup(groups[0].id);
         })).then((permissions => {
             groups[0].permissions = permissions;
             return groups[0];
@@ -59,8 +61,8 @@ class PgGroups {
      * @return {Promise|Group[]} Promise of all groups.
 	 */
 	json() {
+        let groups = {}, groupKeys;
         return this.pgPool.pool().query(this.jsonSql()).then(result => {
-            let groups = {};
             result.rows.forEach(row => {
                 if(!groups[row.id]) {
                     groups[row.id] = {};
@@ -68,13 +70,15 @@ class PgGroups {
 					groups[row.id].name = row.name;
 					groups[row.id].users = [];
 					groups[row.id].permissionsTowards = [];
+                    groups[row.id].permissionsUsers = [];
+                    groups[row.id].permissionsGroups = [];
                 }
 
                 if(row.user_id && groups[row.id].users.indexOf(row.user_id) == -1) {
 					groups[row.id].users.push(row.user_id);
 				}
 
-				if(row.resource_type && row.permission) {
+				if(row.resource_type && row.permission && row.permission === Permission.CREATE) {
                     groups[row.id].permissionsTowards.push({
                         resourceId: row.resource_id,
                         resourceType: row.resource_type,
@@ -83,7 +87,29 @@ class PgGroups {
                 }
             });
 
-            return _.keys(groups).map(groupId => {
+            groupKeys = _.keys(groups);
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.permissions WHERE resource_id IN ('${groupKeys.join('\',\'')}')`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                groups[row.resource_id].permissionsUsers.push({
+                    userId: row.user_id,
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.group_permissions WHERE resource_id IN ('${groupKeys.join('\',\'')}')`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                groups[row.resource_id].permissionsGroups.push({
+                    groupId: row.group_id,
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return groupKeys.map(groupId => {
                 return groups[groupId];
             })
         });
@@ -133,16 +159,127 @@ class PgGroups {
         );
     }
 
-	/**
+    /**
      * It updates name of the group with given id. If there is no group with given id, nothing happens.
-	 * @param id {Number} Id of the group to be updated
-	 * @param name {String} New name of the group.
-	 */
-	update(id, name) {
-		return this.pgPool.pool().query(
-		    `UPDATE ${this.schema}.groups SET name = '${name}' WHERE id = ${id}`
-        );
+     * @param id {Number} Id of the group to be updated
+     * @param group {Object}
+        {
+	 		name: "Example",
+
+			members: [1,23,4],
+			permissions: ["location", "dataset"],
+
+            // Permissions of the users towards this group
+			users: {
+				read: [1,22,3],
+				update: [2,33,4],
+				delete: [2,15,3]
+			},
+
+            // Permissions of the users towards this group
+			groups: {
+				read: [1,23,4],
+				update: [1,23,4],
+				delete: [1,23,4]
+			}
+	     }
+     * @param current {Number} Id of the current user
+     */
+	update(id, group, current) {
+        let updateName = '', members = '', permissions = '', permissionsUser = '', permissionsGroup = '';
+
+        if(group.name) {
+            updateName = `UPDATE ${this.schema}.groups SET name = '${group.name}' WHERE id = ${id};`;
+        }
+
+        if(group.members) {
+            members = this.membersSql(id, group.members, current);
+        }
+
+        if(group.permissions) {
+            permissions += `DELETE FROM ${this.schema}.group_permissions WHERE group_id = ${id} AND resource_id IS NULL;`;
+
+            group.permissions.forEach(permission => {
+                permissions += this._permissions.addGroupSql(id, permission, null, Permission.CREATE);
+            })
+        }
+
+        if(group.users) {
+            let users = group.users;
+            permissionsUser += `DELETE FROM ${this.schema}.permissions WHERE resource_type = 'group' AND resource_id = '${id}';`;
+
+            if(users.read) {
+                users.read.forEach(read => {
+                    permissionsUser += this._permissions.addSql(read, 'group', id, Permission.READ);
+                })
+            }
+
+            if(users.update) {
+                users.update.forEach(read => {
+                    permissionsUser += this._permissions.addSql(read, 'group', id, Permission.UPDATE);
+                })
+            }
+
+            if(users.delete) {
+                users.delete.forEach(read => {
+                    permissionsUser += this._permissions.addSql(read, 'group', id, Permission.DELETE);
+                })
+            }
+        }
+
+        if(group.groups) {
+            let groups = group.groups;
+            permissionsUser += `DELETE FROM ${this.schema}.group_permissions WHERE resource_type = 'group' AND resource_id = '${id}';`;
+
+            if(groups.read) {
+                groups.read.forEach(read => {
+                    permissionsUser += this._permissions.addGroupSql(read, 'group', id, Permission.READ);
+                })
+            }
+
+            if(groups.update) {
+                groups.update.forEach(read => {
+                    permissionsUser += this._permissions.addGroupSql(read, 'group', id, Permission.UPDATE);
+                })
+            }
+
+            if(groups.delete) {
+                groups.delete.forEach(read => {
+                    permissionsUser += this._permissions.addGroupSql(read, 'group', id, Permission.DELETE);
+                })
+            }
+        }
+
+	    // I create all the necessary information here. In order to make sure that we call just one SQL query.
+		return this.pgPool.pool().query(`
+		    ${updateName};
+            
+            ${members};
+            
+            ${permissions};
+            
+            ${permissionsUser};
+            
+            ${permissionsGroup};
+        `);
 	}
+
+    /**
+     * It set the members as the current members of the group by removing previous state and setting the new state.
+     * @param group {Number} Id of the group.
+     * @param members {Number[]} Ids of the members of the group
+     * @param creator {Number} Id of the curren user.
+     */
+	membersSql(group, members, creator) {
+	    let membersSql = members.map(member => {
+	        return this.addMemberSql(member, group, creator);
+        }).join(';');
+	    return `
+	        DELETE FROM ${this.schema}.group_has_members WHERE group_id = ${group};
+	        
+	        ${membersSql}
+	    `;
+    }
 
 	/**
      * It adds member to the given group. If there is no such user or group, it is still added into the database. If at
@@ -153,11 +290,13 @@ class PgGroups {
 	 * @param creatorId {Number} Id of the user responsible for this operation.
 	 */
 	addMember(userId, groupId, creatorId) {
-		let time = moment().format('YYYY-MM-DD HH:mm:ss');
-		return this.pgPool.pool().query(
-		    `INSERT INTO ${this.schema}.group_has_members (group_id, user_id, created, created_by, changed, changed_by) 
-            VALUES (${groupId},${userId}, '${time}', ${creatorId}, '${time}', ${creatorId})`
-        );
+		return this.pgPool.pool().query(this.addMemberSql(userId, groupId, creatorId));
+    }
+
+    addMemberSql(userId, groupId, creatorId) {
+        let time = moment().format('YYYY-MM-DD HH:mm:ss');
+        return `INSERT INTO ${this.schema}.group_has_members (group_id, user_id, created, created_by, changed, changed_by) 
+            VALUES (${groupId},${userId}, '${time}', ${creatorId}, '${time}', ${creatorId})`;
     }
 
     isMember(userId, groupId) {
@@ -170,17 +309,6 @@ class PgGroups {
                 return false;
             }
         });
-    }
-
-	/**
-     * It removes member from given group. If there is no member with this id or group with this id, nothing happens.
-	 * @param userId {Number} Id of the user to remove from group.
-	 * @param groupId {Number} Id of the group to remove the user from.
-	 */
-	removeMember(userId, groupId) {
-        return this.pgPool.pool().query(
-            `DELETE FROM ${this.schema}.group_has_members WHERE user_id = ${userId} AND group_id = ${groupId}`
-        );
     }
 }
 

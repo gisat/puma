@@ -68,8 +68,7 @@ class PgPermissions {
     }
 
     /**
-	 * @private
-     * @param userId
+	 * @param userId
      * @param resourceType
      * @param resourceId
      * @param permission
@@ -95,8 +94,7 @@ class PgPermissions {
     }
 
     /**
-	 * @private
-     * @param groupId
+	 * @param groupId
      * @param resourceType
      * @param resourceId
      * @param permission

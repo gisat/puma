@@ -130,66 +130,6 @@ describe('User', function () {
         });
     });
 
-    describe('load permissions for the user', () => {
-        beforeEach(done => {
-            permissionFixture.setup().then(() => {
-                done();
-            });
-        });
-
-        it('loads user by id', done => {
-            fixture.user = new User(0, [{
-                resourceType: 'user',
-                permission: 'GET',
-                resourceId: permissionFixture.jbalharUserId()
-            }]);
-            supertest(app)
-                .get('/rest/user/' + permissionFixture.jbalharUserId())
-                .set('Content-Type', 'application/json')
-                .set('Accepts', 'application/json')
-                .expect(200)
-            .then((response) => {
-                should(Number(response.body.data._id)).be.exactly(2);
-                should(response.body.data.permissions.length).be.exactly(4);
-                done();
-            }).catch(err => {
-                done(err);
-            })
-        });
-
-        afterEach(done => {
-            permissionFixture.teardown().then(() => {
-                done();
-            });
-        });
-    });
-
-    describe('Load all users', function(){
-        it('returns all users from Geonode enriched with permissions', function(done){
-            this.timeout(5000);
-
-            fixture.user = new User(0, [{
-				resourceType: 'user',
-				permission: 'GET',
-                resourceId: 1
-			}, {
-				resourceType: 'user',
-				permission: 'GET',
-				resourceId: 2
-			}]);
-			supertest(app)
-                .get('/rest/user')
-                .expect(200)
-                .then((response) => {
-                    let users = JSON.parse(response.body).data;
-                    should(users.length).be.exactly(2);
-                    done();
-            }).catch(error => {
-                done(error);
-            });
-		});
-    });
-
     afterEach(function (done) {
         schema.drop().then(function () {
             server.close();

@@ -7,6 +7,12 @@ let PgPool = require('../../postgresql/PgPool');
 let DatabaseSchema = require('../../postgresql/DatabaseSchema');
 let config = require('./config');
 
+let SymbologyToPostgreSqlMigration = require('../../migration/SymbologyToPostgreSql');
+let CreateDefaultUserAndGroup = require('../../migration/CreateDefaultUserAndGroup');
+let IdOfTheResourceMayBeText = require('../../migration/IdOfTheResourceMayBeText');
+let PrepareForInternalUser = require('../../migration/PrepareForInternalUser');
+let AddCustomInfoToWms = require('../../migration/AddCustomInfoToWms');
+
 /**
  * Purpose of this class is to allow me to simply set up and tear down the environment for integration tests.
  */
@@ -57,6 +63,16 @@ class IntegrationEnvironment {
 			return this.dropMongoCollections();
 		}).then(() => {
             return this.schema.create();
+        }).then(() => {
+            return new SymbologyToPostgreSqlMigration(this._commonSchema).run();
+        }).then(()=>{
+            return new CreateDefaultUserAndGroup(this._commonSchema).run();
+        }).then(()=>{
+            return new IdOfTheResourceMayBeText(this._commonSchema).run();
+        }).then(()=>{
+            return new PrepareForInternalUser(this._commonSchema).run();
+        }).then(()=>{
+            return new AddCustomInfoToWms(this._commonSchema).run();
         }).then(() => {
             return this._onApplicationReady(app, pool, this.schema, this._mongoDb);
         }).then(() => {

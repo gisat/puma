@@ -57,6 +57,29 @@ class ProjectionConverter {
         geojson.coordinates = convertedCoordinates;
         return wellknown.stringify(geojson);
     }
+
+    /**
+     * Convert geometry in WKT from EPSG:4326 to EPSG:5514
+     * @param wkt4326 {string} WKT geometry in EPSG:4326
+     * @returns {string} WKT geometry in EPSG:5514
+     */
+    convertWktEpsg4326ToEpsg5514(wkt4326){
+        let geojson = wellknown(wkt4326);
+        let convertedCoordinates = _.map(geojson.coordinates, coordinates => {
+            if(coordinates[0] instanceof Array) {
+                return _.map(coordinates, coordinates => {
+                    let coord = proj4(this._wgs,this._krovakEastNorth,coordinates);
+                    return _.map(coord, (coor) => {
+                       return Math.round(coor, 1);
+                    });
+                })
+            } else {
+                return proj4(this._wgs,this._krovakEastNorth,coordinates);
+            }
+        });
+        geojson.coordinates = convertedCoordinates;
+        return wellknown.stringify(geojson);
+    }
 }
 
 module.exports = ProjectionConverter;

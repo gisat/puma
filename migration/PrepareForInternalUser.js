@@ -1,11 +1,9 @@
 let Migration = require('./Migration');
 let bcrypt = require('bcrypt');
 
-let config = require('../config');
-
 class PrepareForInternalUser extends Migration {
     constructor(schema) {
-        super('PrepareForInternalUser');
+        super('PrepareForInternalUser', schema);
 
         this._schema = schema;
     }

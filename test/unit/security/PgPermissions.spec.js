@@ -8,7 +8,7 @@ describe('PgPermissions', () => {
             let pgPermissions = new PgPermissions({pool: function(){}}, 'test');
 
             let result = pgPermissions.forUserSql(10);
-            should(result).be.exactly(`SELECT * FROM test.permissions WHERE user_id = 10`);
+            should(result).be.exactly(`SELECT * FROM test.permissions WHERE user_id = 10 AND resource_type <> 'layerref'`);
         });
     });
 
@@ -17,7 +17,7 @@ describe('PgPermissions', () => {
             let pgPermissions = new PgPermissions({pool: function(){}}, 'test');
 
             let result = pgPermissions.addSql(10, 'scope', 5, 'PUT');
-            should(result).be.exactly(`INSERT INTO test.permissions (user_id, resource_type, resource_id, permission) VALUES (10, 'scope', '5', 'PUT')`);
+            should(result).be.exactly(`INSERT INTO test.permissions (user_id, resource_type, resource_id, permission) VALUES (10, 'scope', '5', 'PUT');`);
         });
     });
 

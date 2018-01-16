@@ -4,6 +4,7 @@ let Promise = require('promise');
 
 let PgGroups = require('./PgGroups');
 let PgPermissions = require('./PgPermissions');
+let PgTransaction = require('../postgresql/PgTransaction');
 let Permission = require('./Permission');
 
 /**
@@ -15,17 +16,12 @@ class GroupController {
         app.get('/rest/group', this.readAll.bind(this));
 
 		app.put('/rest/group/:id', this.update.bind(this));
-
 		app.post('/rest/group', this.create.bind(this));
-        app.post('/rest/member/group', this.addUserToGroup.bind(this));
-        app.post('/rest/permission/group', this.addPermission.bind(this));
-
         app.delete('/rest/group/:id', this.delete.bind(this));
-        app.delete('/rest/permission/group', this.removePermission.bind(this));
-		app.delete('/rest/member/group', this.removeUserFromGroup.bind(this));
 
 		this.groups = new PgGroups(pool, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
+		this.transaction = new PgTransaction(pool);
     }
 
     /**
@@ -39,6 +35,7 @@ class GroupController {
         this.groups.json().then(pGroups => {
 			groups = pGroups
 				.filter(group => this.hasRights(request.session.user, Permission.READ, group._id));
+			// I am missing information about rights towards this group.
 			let promises = groups.map(element => {
 				return this.permissions.forType(this.type, element._id).then(permissions => {
 					element.permissions = permissions;
@@ -81,6 +78,29 @@ class GroupController {
 
 	/**
 	 * If the user have rights to update the group, then this method is used for update of such group.
+	 * The structure for update of the group. Tthe Patch approach is applied with respect to what is changed for the
+	 * group. It means that when I provide the name, name is changed otherwise it is ignored. The same applies for
+	 * the permissions if they are provided, they represent the current state.
+	 * {
+	 		name: "Example",
+
+			members: [1,23,4],
+			permissions: ["location", "dataset"],
+
+            // Permissions of the users towards this group
+			users: {
+				read: [1,22,3],
+				update: [2,33,4],
+				delete: [2,15,3]
+			},
+
+            // Permissions of the users towards this group
+			groups: {
+				read: [1,23,4],
+				update: [1,23,4],
+				delete: [1,23,4]
+			}
+	 * }
 	 * @param request
 	 * @param response
 	 */
@@ -91,10 +111,20 @@ class GroupController {
 			return;
 		}
 
-		this.groups.update(request.params.id, request.body.name).then(() => {
-			response.json({status: "Ok"});
+		let id = request.params.id;
+		let group = request.body.group;
+
+		let currentUserId = request.session.user.id;
+
+		this.transaction.start().then(() => {
+            return this.groups.update(id, group, currentUserId);
+		}).then(() => {
+			return this.transaction.end();
+		}).then(() => {
+            response.json({status: "Ok"});
 		}).catch(err => {
 			logger.error("GroupController#create Error: ", err);
+			this.transaction.rollback();
 			response.status(500);
 		});
 	}
@@ -112,89 +142,6 @@ class GroupController {
         }
 
         this.groups.delete(request.params.id).then(() => {
-            response.json({status: "Ok"});
-        }).catch(err => {
-            logger.error("GroupController#delete Error: ", err);
-            response.status(500);
-        });
-    }
-
-	/**
-	 * If the user has right to update the group, he can actually add user to the group.
-	 * @param request
-	 * @param response
-	 */
-	addUserToGroup(request, response) {
-		if(!request.session.user.hasPermission('group', Permission.UPDATE, request.body.groupId)) {
-			response.status(403);
-			response.json({"status": "err"});
-			return;
-		}
-
-		this.groups.addMember(request.body.userId, request.body.groupId, request.session.user.id).then(() => {
-			response.json({status: "Ok"});
-		}).catch(err => {
-			logger.error("GroupController#delete Error: ", err);
-			response.status(500);
-		});
-    }
-
-	/**
-	 * If the user has right to update the group, he can actually remove user from the group.
-	 * @param request
-	 * @param response
-	 */
-	removeUserFromGroup(request, response) {
-		if(!request.session.user.hasPermission('group', Permission.UPDATE, request.body.groupId)) {
-			response.status(403);
-			response.json({"status": "err"});
-			return;
-		}
-
-		this.groups.removeMember(request.body.userId, request.body.groupId).then(() => {
-			response.json({status: "Ok"});
-		}).catch(err => {
-			logger.error("GroupController#delete Error: ", err);
-			response.status(500);
-		});
-    }
-
-	/**
-	 * This is endpoint for adding a permissions. The users typically won't have these permissions. These permissions are
-	 * mainly for specification of creation rights for different concepts.
-	 * It is probably possible to say that only admin have rights toward
-	 * @param request
-	 * @param response
-	 */
-	addPermission(request, response) {
-        if(!request.session.user.hasPermission('group_permission', Permission.CREATE, request.body.groupId)) {
-            response.status(403);
-            response.json({"status": "err"});
-            return;
-        }
-
-        this.permissions.addGroup(request.body.groupId, request.body.resourceType, request.body.resourceId, request.body.permission).then(() => {
-            response.json({status: "Ok"});
-        }).catch(err => {
-            logger.error("GroupController#delete Error: ", err);
-            response.status(500);
-        });
-    }
-
-	/**
-	 * This is endpoint for removing permissions. The users typically won't have these permissions. These permissions are
-	 * mainly for specification of creation rights for different concepts.
-	 * @param request
-	 * @param response
-	 */
-	removePermission(request, response) {
-        if(!request.session.user.hasPermission('group_permission', Permission.DELETE, request.body.groupId)) {
-            response.status(403);
-            response.json({"status": "err"});
-            return;
-        }
-
-        this.permissions.removeGroup(request.body.groupId, request.body.resourceType, request.body.resourceId, request.body.permission).then(() => {
             response.json({status: "Ok"});
         }).catch(err => {
             logger.error("GroupController#delete Error: ", err);

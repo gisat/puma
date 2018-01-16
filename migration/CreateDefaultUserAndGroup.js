@@ -10,7 +10,7 @@ let Promise = require('promise');
 
 class CreateDefaultUserAndGroup extends Migration {
 	constructor(schema) {
-		super('createDefaultUserAndGroup');
+		super('createDefaultUserAndGroup', schema);
 
 		this.schema = schema;
 	}

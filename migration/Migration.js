@@ -6,7 +6,7 @@ var DatabaseSchema = require('../postgresql/DatabaseSchema');
 var MongoClient = require('mongodb').MongoClient;
 
 class Migration {
-	constructor(name) {
+	constructor(name, schema) {
 		this._name = name;
 		this._connectionPool = new PgPool({
 			user: config.pgDataUser,
@@ -16,7 +16,7 @@ class Migration {
 			port: config.pgDataPort
 		});
 		this._pool = this._connectionPool.pool();
-		this.schema = config.postgreSqlSchema;
+		this.schema = schema || config.postgreSqlSchema;
 	}
 
 	run() {
