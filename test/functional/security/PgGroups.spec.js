@@ -4,11 +4,12 @@ let moment = require('moment');
 let IntegrationEnvironment = require('../IntegrationEnvironment');
 let logger = require('../../../common/Logger').applicationWideLogger;
 
+let Permission = require('../../../security/Permission');
 let PgGroups = require('../../../security/PgGroups');
 
 describe('PgGroupsSpec', () => {
     let integrationEnvironment, fixture = {user: null};
-    let pgGroups, pgPool, pgSchema, groupId = 6;
+    let pgGroups, pgPool, pgSchema, groupId = 6, toReadGroupId = 7;
     beforeEach(done => {
         integrationEnvironment = new IntegrationEnvironment((app, pool, schema, mongoDb) => {
             pgSchema = schema.schema;
@@ -22,6 +23,16 @@ describe('PgGroupsSpec', () => {
                 
                 INSERT INTO ${pgSchema}.panther_users (id, email, name) VALUES (10, 'jakub@balhar.net','Jakub Balhar');
                 INSERT INTO ${pgSchema}.panther_users (id, email, name) VALUES (13, 'martin.babic@gisat.cz','Martin Babic');
+                
+                INSERT INTO ${pgSchema}.groups (id, name, created, created_by, changed, changed_by) VALUES (${toReadGroupId}, 'test1', '${time}', 1, '${time}', 1);
+                
+                INSERT INTO ${pgSchema}.permissions (user_id, resource_type, resource_id, permission) VALUES (1, 'group', '${toReadGroupId}', '${Permission.READ}');
+                INSERT INTO ${pgSchema}.permissions (user_id, resource_type, resource_id, permission) VALUES (1, 'group', '${toReadGroupId}', '${Permission.UPDATE}');
+                INSERT INTO ${pgSchema}.permissions (user_id, resource_type, resource_id, permission) VALUES (1, 'group', '${toReadGroupId}', '${Permission.DELETE}');
+                
+                INSERT INTO ${pgSchema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (1, 'group', '${toReadGroupId}', '${Permission.READ}');
+                INSERT INTO ${pgSchema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (1, 'group', '${toReadGroupId}', '${Permission.UPDATE}');
+                INSERT INTO ${pgSchema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (1, 'group', '${toReadGroupId}', '${Permission.DELETE}');
             `);
         }, fixture);
         integrationEnvironment.setup().then(() => {
@@ -77,6 +88,23 @@ describe('PgGroupsSpec', () => {
                 done(err);
             });
         });
+    });
+
+    describe('json', () => {
+        it('returns the information about the group enriched with permissions', done => {
+            pgGroups.json().then(groups => {
+                let group = groups.filter(group => {
+                    return group._id === toReadGroupId;
+                })[0];
+
+                should(group.permissionsUsers.length).equal(3);
+                should(group.permissionsGroups.length).equal(3);
+
+                done()
+            }).catch(err => {
+                done(err);
+            });
+        })
     });
 
     afterEach(done => {

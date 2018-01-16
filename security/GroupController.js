@@ -35,6 +35,7 @@ class GroupController {
         this.groups.json().then(pGroups => {
 			groups = pGroups
 				.filter(group => this.hasRights(request.session.user, Permission.READ, group._id));
+			// I am missing information about rights towards this group.
 			let promises = groups.map(element => {
 				return this.permissions.forType(this.type, element._id).then(permissions => {
 					element.permissions = permissions;

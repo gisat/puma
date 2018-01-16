@@ -28,7 +28,6 @@ let MongoTopic = require('../metadata/MongoTopic');
 let MongoTheme = require('../metadata/MongoTheme');
 let MongoScope = require('../metadata/MongoScope');
 let MongoDataViews = require('../visualization/MongoDataViews');
-let GeonodeUpdateLayers = require('../layers/GeonodeUpdateLayers');
 let PgLayerViews = require('../layers/PgLayerViews');
 let RasterToPGSQL = require('../integration/RasterToPGSQL');
 let PgPermissions = require('../security/PgPermissions');

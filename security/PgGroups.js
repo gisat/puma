@@ -61,8 +61,8 @@ class PgGroups {
      * @return {Promise|Group[]} Promise of all groups.
 	 */
 	json() {
+        let groups = {}, groupKeys;
         return this.pgPool.pool().query(this.jsonSql()).then(result => {
-            let groups = {};
             result.rows.forEach(row => {
                 if(!groups[row.id]) {
                     groups[row.id] = {};
@@ -70,6 +70,8 @@ class PgGroups {
 					groups[row.id].name = row.name;
 					groups[row.id].users = [];
 					groups[row.id].permissionsTowards = [];
+                    groups[row.id].permissionsUsers = [];
+                    groups[row.id].permissionsGroups = [];
                 }
 
                 if(row.user_id && groups[row.id].users.indexOf(row.user_id) == -1) {
@@ -85,7 +87,29 @@ class PgGroups {
                 }
             });
 
-            return _.keys(groups).map(groupId => {
+            groupKeys = _.keys(groups);
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.permissions WHERE resource_id IN ('${groupKeys.join('\',\'')}')`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                groups[row.resource_id].permissionsUsers.push({
+                    userId: row.user_id,
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.group_permissions WHERE resource_id IN ('${groupKeys.join('\',\'')}')`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                groups[row.resource_id].permissionsGroups.push({
+                    groupId: row.group_id,
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return groupKeys.map(groupId => {
                 return groups[groupId];
             })
         });
@@ -285,17 +309,6 @@ class PgGroups {
                 return false;
             }
         });
-    }
-
-	/**
-     * It removes member from given group. If there is no member with this id or group with this id, nothing happens.
-	 * @param userId {Number} Id of the user to remove from group.
-	 * @param groupId {Number} Id of the group to remove the user from.
-	 */
-	removeMember(userId, groupId) {
-        return this.pgPool.pool().query(
-            `DELETE FROM ${this.schema}.group_has_members WHERE user_id = ${userId} AND group_id = ${groupId}`
-        );
     }
 }
 
