@@ -92,7 +92,7 @@ module.exports = function(app) {
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
-	new DataViewController(app, pool);
+	new DataViewController(app, pool, mongo);
 	new CustomFeaturesController(app, pool);
 	new LayerGroupController(app, pool);
 	new LayerRefController(app, pool, mongo);
