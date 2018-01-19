@@ -1,4 +1,4 @@
-let supertest = require('supertest-as-promised');
+let supertest = require('supertest');
 let should = require('should');
 
 let logger = require('../../../common/Logger').applicationWideLogger;

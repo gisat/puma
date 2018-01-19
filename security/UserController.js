@@ -24,10 +24,9 @@ class UserController {
         app.get('/rest/user', this.readAll.bind(this));
 		app.post('/rest/user', this.create.bind(this));
 		app.put('/rest/user', this.update.bind(this));
-        app.get('/rest/user/:id', this.byId.bind(this));
+		app.delete('/rest/user', this.delete.bind(this));
 
-        app.post('/rest/permission/user', this.addPermission.bind(this));
-		app.delete('/rest/permission/user', this.removePermission.bind(this));
+        app.get('/rest/user/:id', this.byId.bind(this));
 
 		this.permissions = new PgPermissions(pgPool, commonSchema || config.postgreSqlSchema);
 		this.users = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
@@ -142,38 +141,75 @@ class UserController {
 
     /**
 	 * It is full update the whole information about the user is expected.
+	 * {
+	 		name: "Jakub Balhar",
+	 		password: "someRandomLongPassword",
+	 		username: "jakub@balhar.net"
+
+			permissions: ["location", "dataset"],
+
+            // Permissions of the users towards this user
+			users: {
+				read: [1,22,3],
+				update: [2,33,4],
+				delete: [2,15,3]
+			},
+
+            // Permissions of the groups towards this user
+			groups: {
+				read: [1,23,4],
+				update: [1,23,4],
+				delete: [1,23,4]
+			}
+	 * }
      * @param request
      * @param response
      */
 	update(request, response) {
         logger.info(`UserController#update Id: ${request.body.id}, Name: ${request.body.name}, Username: ${request.body.username}, Email: ${request.body.username}`);
 
-        let id = Number(request.body.id);
+        let user = request.body;
+        let id = Number(user.id);
+        if(!this.hasRights(request.session.user, Permission.UPDATE, id)) {
+            response.status(403);
+            response.json({"status": "err"});
+            return;
+        }
 
-		if(request.session.user.id != id) {
-			response.status(403).json({
-				error: 'You are trying to update other than logged in user.'
+		this.users.update(id, user).then(() => {
+			response.json({
+				message: 'The user was correctly created.'
 			});
-		} else {
-            let name = request.body.name;
-            let password = request.body.password;
-            let email = request.body.username;
+		}).catch(err => {
+			logger.error(`UserController#update Error: `, err);P
+			response.status(500).json({error: err});
+		});
+    }
 
-            this.users.update(id, password, name, email).then(() => {
-                response.json({
-                    data: {
-                        id: id,
-                        password: password,
-                        name: name,
-                        email: email
-                    },
-                    message: 'The user was correctly created.'
-                });
-			}).catch(err => {
-                logger.error(`UserController#update Error: `, err);
-                response.status(500).json({error: err});
-			});
-		}
+    /**
+	 * If the current user has the rights to delete the user with passed id, this user is deleted. At the moment it keeps
+	 * references other than the permissions and groups.
+     * @param request
+     * @param response
+     */
+    delete(request, response) {
+        logger.info(`UserController#delete Id: ${request.body.id}`);
+
+		let userId = request.body.id;
+        if(!this.hasRights(request.session.user, Permission.DELETE, userId)) {
+            response.status(403);
+            response.json({"status": "err"});
+            return;
+        }
+
+        this.users.delete(userId).then(() => {
+			response.json({
+				message: 'The user was correctly deleted.'
+			})
+		}).catch(err => {
+            logger.error(`UserController#delete Error: `, err);
+            response.status(500).json({error: err});
+		});
     }
 
 	getInvitation(hash){
@@ -187,52 +223,8 @@ class UserController {
         }, hash);
 	}
 
-	/**
-	 * It adds permission for given user to given resource.
-	 * @param request {Object}
-	 * @param request.body {Object}
-	 * @param request.body.userId {Number}
-	 * @param request.body.resourceId {Number}
-	 * @param request.body.resourceType {String}
-	 * @param response
-	 */
-	addPermission(request, response) {
-		if (!request.session.user.hasPermission('permission', Permission.CREATE, request.body.userId)) {
-			response.status(403);
-			response.json({"status": "err"});
-			return;
-		}
-
-		let permission = request.body;
-		this.permissions.add(permission.userId, permission.resourceType, permission.resourceId, permission.permission)
-			.then(() => {
-
-				response.json({status: "Ok"});
-			}).catch(err => {
-			logger.error('UserController#addPermission Error: ', err);
-			response.status(500);
-		});
-	}
-
-	removePermission(request, response) {
-		if (!request.session.user.hasPermission('permission', Permission.DELETE, request.body.userId)) {
-			response.status(403);
-			response.json({"status": "err"});
-			return;
-		}
-
-		let permission = request.body;
-		this.permissions.remove(permission.userId, permission.resourceType, permission.resourceId, permission.permission)
-			.then(() => {
-				response.json({status: "Ok"});
-			}).catch(err => {
-			logger.error('UserController#removePermission Error: ', err);
-			response.status(500);
-		});
-	}
-
 	hasRights(user, method, id) {
-		return user.hasPermission('user', method, id) || user.id == id;
+		return user.hasPermission('user', method, id) || user.id === id;
 	}
 }
 

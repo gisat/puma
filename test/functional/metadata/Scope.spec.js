@@ -1,5 +1,5 @@
 let should = require('should');
-let supertest = require('supertest-as-promised');
+let supertest = require('supertest');
 let conn = require('../../../common/conn');
 
 let moment = require('moment');

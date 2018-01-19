@@ -229,23 +229,23 @@ class PgGroups {
 
         if(group.groups) {
             let groups = group.groups;
-            permissionsUser += `DELETE FROM ${this.schema}.group_permissions WHERE resource_type = 'group' AND resource_id = '${id}';`;
+            permissionsGroup += `DELETE FROM ${this.schema}.group_permissions WHERE resource_type = 'group' AND resource_id = '${id}';`;
 
             if(groups.read) {
                 groups.read.forEach(read => {
-                    permissionsUser += this._permissions.addGroupSql(read, 'group', id, Permission.READ);
+                    permissionsGroup += this._permissions.addGroupSql(read, 'group', id, Permission.READ);
                 })
             }
 
             if(groups.update) {
                 groups.update.forEach(read => {
-                    permissionsUser += this._permissions.addGroupSql(read, 'group', id, Permission.UPDATE);
+                    permissionsGroup += this._permissions.addGroupSql(read, 'group', id, Permission.UPDATE);
                 })
             }
 
             if(groups.delete) {
                 groups.delete.forEach(read => {
-                    permissionsUser += this._permissions.addGroupSql(read, 'group', id, Permission.DELETE);
+                    permissionsGroup += this._permissions.addGroupSql(read, 'group', id, Permission.DELETE);
                 })
             }
         }

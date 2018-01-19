@@ -128,18 +128,6 @@ class PgPermissions {
 		return `DELETE FROM ${this.schema}.permissions WHERE user_id = ${userId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
 	}
 
-	removeGroup(groupId, resourceType, resourceId, permission) {
-		return this.pgPool.pool().query(this.removeGroupSql(groupId, resourceType, resourceId, permission));
-	}
-
-	removeGroupSql(groupId, resourceType, resourceId, permission) {
-		let andResourceId = '';
-		if (resourceId) {
-			andResourceId = ` AND resource_id = '${resourceId}' `;
-		}
-		return `DELETE FROM ${this.schema}.group_permissions WHERE group_id = ${groupId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
-	}
-
 	forType(type, resourceId) {
 		let groupPermissions = [];
 		let userPermissions = [];

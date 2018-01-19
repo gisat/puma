@@ -26,6 +26,7 @@ let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
 let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
 let MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
+let AddAuditInformation = require('./migration/AddAuditInformation');
 
 let CompoundAuthentication = require('./security/CompoundAuthentication');
 let PgAuthentication = require('./security/PgAuthentication');
@@ -137,6 +138,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddCustomInfoToWms(config.postgreSqlSchema).run();
 }).then(()=>{
     return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddAuditInformation(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
