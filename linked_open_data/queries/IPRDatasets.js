@@ -7,10 +7,11 @@ let utils = require('../../tacrpha/utils');
 let CsvParser = require('../../format/csv/CsvParser');
 
 class IPRDatasets {
-	constructor(keywords, type) {
+	constructor(keywords, type, extended) {
 		this._datasetEndpoint = "http://onto.fel.cvut.cz:7200/repositories/ipr_datasets";
 		this._keywords = keywords;
 		this._type = '||';
+		this._extended = extended;
 		this._keywordsReference = `jedno nebo více z hledaných slov`;
 		if (type === 'and'){
 			this._type = '&&';
@@ -69,27 +70,33 @@ class IPRDatasets {
         let query = this._datasetEndpoint + `?query=`;
         let filter = this.getFilters("dataset");
 
-		let sparql = this._prefixes + `
-			SELECT DISTINCT ?datasetLabel ?dataset ?datasetComment
-				WHERE {{ ?dataset rdf:type common:Dataset.
+        let whereStatements = [];
+
+        whereStatements.push(`{ ?dataset rdf:type common:Dataset.
 				    ?dataset purl:source ?source.
 					?dataset rdfs:label ?datasetLabel.
 					?subject common:isInContextOfDataset ?dataset.
 					${filter.uri}
-				} UNION {
-					?dataset rdf:type common:Dataset.
+				}`);
+        whereStatements.push(`{?dataset rdf:type common:Dataset.
 					?dataset purl:source ?source.
 					?dataset rdfs:label ?datasetLabel.
 					?subject common:isInContextOfDataset ?dataset.
-					${filter.label}
-				} UNION {
+					${filter.label}}`);
+        if (this._extended){
+            whereStatements.push(`{
 					?dataset rdf:type common:Dataset.
 					?dataset purl:source ?source.
 					?dataset rdfs:label ?datasetLabel.
 					?dataset rdfs:comment ?datasetComment.
 					?subject common:isInContextOfDataset ?dataset.
 					${filter.comment}
-				}} `;
+				}`);
+        }
+
+		let sparql = this._prefixes + `
+			SELECT DISTINCT ?datasetLabel ?dataset ?datasetComment
+				WHERE {${whereStatements.join(` UNION `)}}`;
 
 		logger.info(`INFO IPRDatasets#searchingInDatasets sparql: ` + sparql);
 		logger.info(`INFO IPRDatasets#searchingInDatasets full query: ` + query + sparql);
@@ -101,23 +108,25 @@ class IPRDatasets {
         let query = this._datasetEndpoint + `?query=`;
         let filter = this.getFilters("subject");
 
-        let sparql = this._prefixes + `
-			SELECT DISTINCT ?dataset ?datasetLabel ?datasetComment ?subject ?subjectLabel ?subjectComment ?subjectDefinition ?predicateLabel
-				WHERE {{
+        let whereStatements = [];
+        whereStatements.push(`{
 					?subject common:isInContextOfDataset ?dataset.
 					?dataset purl:source ?source.
 					common:isInContextOfDataset rdfs:label ?predicateLabel.
 					?dataset rdfs:label ?datasetLabel.
 					?subject rdfs:label ?subjectLabel.
 					${filter.uri}
-				} UNION {
+				}`);
+        whereStatements.push(`{
 					?subject common:isInContextOfDataset ?dataset.
 					?dataset purl:source ?source.
 					common:isInContextOfDataset rdfs:label ?predicateLabel.
 					?dataset rdfs:label ?datasetLabel.
 					?subject rdfs:label ?subjectLabel
 					${filter.label}
-				} UNION {
+				}`);
+        if (this._extended){
+            whereStatements.push(`{
 					?subject common:isInContextOfDataset ?dataset.
 					?dataset purl:source ?source.
 					common:isInContextOfDataset rdfs:label ?predicateLabel.
@@ -125,8 +134,8 @@ class IPRDatasets {
 					?subject rdfs:label ?subjectLabel.
 					?subject rdfs:comment ?subjectComment
 					${filter.comment}
-                }
-                UNION {
+                }`);
+            whereStatements.push(`{
                     ?subject common:isInContextOfDataset ?dataset.
                     ?dataset purl:source ?source.
                     common:isInContextOfDataset rdfs:label ?predicateLabel.
@@ -134,8 +143,12 @@ class IPRDatasets {
                     ?subject rdfs:label ?subjectLabel.
                     ?subject common:ma_definici ?subjectDefinition
                     ${filter.definition}
-                }
-            } `;
+                }`);
+        }
+
+        let sparql = this._prefixes + `
+			SELECT DISTINCT ?dataset ?datasetLabel ?datasetComment ?subject ?subjectLabel ?subjectComment ?subjectDefinition ?predicateLabel
+				WHERE {${whereStatements.join(` UNION `)}}`;
 
         logger.info(`INFO IPRDatasets#searchingInTerms sparql: ` + sparql);
         logger.info(`INFO IPRDatasets#searchingInTerms full query: ` + query + sparql);
@@ -147,22 +160,24 @@ class IPRDatasets {
         let query = this._datasetEndpoint + `?query=`;
         let filter = this.getFilters("subjectParent");
 
-        let sparql = this._prefixes + `
-			SELECT DISTINCT ?dataset ?datasetLabel ?subjectParent ?subjectParentLabel ?subjectParentComment ?subjectParentDefinition
-                WHERE {{
+        let whereStatements = [];
+        whereStatements.push(`{
                     ?subject common:isInContextOfDataset ?dataset.
                     ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
                     ?dataset rdfs:label ?datasetLabel.
                     ${filter.uri}
-                } UNION {
+                }`);
+        whereStatements.push(`{
                     ?subject common:isInContextOfDataset ?dataset.
                     ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
                     ?dataset rdfs:label ?datasetLabel.
                     ?subjectParent rdfs:label ?subjectParentLabel
                     ${filter.label}
-                } UNION {
+                }`);
+        if (this._extended){
+            whereStatements.push(`{
                     ?subject common:isInContextOfDataset ?dataset.
                     ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
@@ -170,7 +185,8 @@ class IPRDatasets {
                     ?subjectParent rdfs:label ?subjectParentLabel.
                     ?subjectParent rdfs:comment ?subjectParentComment
                     ${filter.comment}
-                } UNION {
+                }`);
+            whereStatements.push(`{
                     ?subject common:isInContextOfDataset ?dataset.
                     ?dataset purl:source ?source.
                     ?subject rdfs:subClassOf  ?subjectParent.
@@ -178,8 +194,12 @@ class IPRDatasets {
                     ?subjectParent rdfs:label ?subjectParentLabel.
                     ?subjectParent common:ma_definici ?subjectParentDefinition
                     ${filter.definition}
-                }
-            }`;
+                }`);
+        }
+
+        let sparql = this._prefixes + `
+			SELECT DISTINCT ?dataset ?datasetLabel ?subjectParent ?subjectParentLabel ?subjectParentComment ?subjectParentDefinition
+                WHERE {${whereStatements.join(`UNION`)}}`;
 
         logger.info(`INFO IPRDatasets#searchingInTermsParents sparql: ` + sparql);
         logger.info(`INFO IPRDatasets#searchingInTermsParents full query: ` + query + sparql);

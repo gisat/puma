@@ -225,6 +225,7 @@ class LodController {
     datasets(request, response){
         let keywords = LodController.parseRequestString(request.query.search);
         let type = request.query.settings.type;
+        let extended = (request.query.settings.extended === "true");
         let self = this;
 
         if (keywords.original.length === 0) {
@@ -239,7 +240,7 @@ class LodController {
             logger.info(`INFO iprquery#dataset keywords original: ` + keywords.original.join(", "));
             logger.info(`INFO iprquery#dataset keywords adjusted CZ: ` + keywords.adjustedCZ.join(", "));
             logger.info(`INFO iprquery#dataset keywords adjusted EN: ` + keywords.adjustedEN.join(", "));
-            new IPRDatasets(keywords, type).json().then(results => {
+            new IPRDatasets(keywords, type, extended).json().then(results => {
                 let json = {
                     status: "ok",
                     keywords: keywords,
