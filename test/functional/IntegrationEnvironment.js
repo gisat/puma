@@ -12,6 +12,7 @@ let CreateDefaultUserAndGroup = require('../../migration/CreateDefaultUserAndGro
 let IdOfTheResourceMayBeText = require('../../migration/IdOfTheResourceMayBeText');
 let PrepareForInternalUser = require('../../migration/PrepareForInternalUser');
 let AddCustomInfoToWms = require('../../migration/AddCustomInfoToWms');
+let AddAuditInformation = require('../../migration/AddAuditInformation');
 
 /**
  * Purpose of this class is to allow me to simply set up and tear down the environment for integration tests.
@@ -73,6 +74,8 @@ class IntegrationEnvironment {
             return new PrepareForInternalUser(this._commonSchema).run();
         }).then(()=>{
             return new AddCustomInfoToWms(this._commonSchema).run();
+        }).then(()=>{
+            return new AddAuditInformation(this._commonSchema).run();
         }).then(() => {
             return this._onApplicationReady(app, pool, this.schema, this._mongoDb);
         }).then(() => {

@@ -3,11 +3,12 @@ let bcrypt = require('bcrypt');
 
 let logger = require('../common/Logger').applicationWideLogger;
 
+let Group = require('./Group');
 let PasswordHash = require('./PasswordHash');
 let PgPermissions = require('./PgPermissions');
 let PgGroups = require('./PgGroups');
+let Permission = require('./Permission');
 let User = require('./User');
-let Group = require('./Group');
 
 let _ = require('underscore');
 
@@ -21,6 +22,7 @@ class PgUsers {
     }
 
     all() {
+        let usersByKeys = {}, userKeys = [];
         return this.pgPool.query(`SELECT usr.id, usr.email, usr.password, usr.name, permissions.resource_id, permissions.resource_type, 
             permissions.permission, gp.resource_id as gresource_id, gp.resource_type as gresource_type, gp.permission as gpermission,
             groups.id as group_id, groups.name as group_name
@@ -36,7 +38,8 @@ class PgUsers {
                     OR permissions.resource_type is null;`).then(result => {
             let groupped = _.groupBy(result.rows, 'id');
 
-            return Object.keys(groupped).map(userId => {
+            userKeys = Object.keys(groupped);
+            userKeys.forEach(userId => {
                 let permissions = [];
 
                 groupped[userId].forEach(permission => {
@@ -68,8 +71,42 @@ class PgUsers {
                 let user = new User(groupped[userId][0].id, permissions, groups);
                 user.username = groupped[userId][0].name;
                 user.email = groupped[userId][0].email;
-                return user;
+
+                usersByKeys[user.id] = user;
             });
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.permissions WHERE permission = '${Permission.CREATE}' AND user_id IN ('${userKeys.join('\',\'')}');`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                usersByKeys[row.user_id].permissionsTowards.push({
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.permissions WHERE resource_id IN ('${userKeys.join('\',\'')}')`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                usersByKeys[row.resource_id].permissionsUsers.push({
+                    userId: row.user_id,
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return this.pgPool.query(`SELECT * FROM ${this.schema}.group_permissions WHERE resource_id IN ('${userKeys.join('\',\'')}')`);
+        }).then(result => {
+            result.rows.forEach(row => {
+                usersByKeys[row.resource_id].permissionsGroups.push({
+                    groupId: row.group_id,
+                    resourceType: row.resource_type,
+                    permission: row.permission
+                });
+            });
+
+            return userKeys.map(userId => {
+                return usersByKeys[userId];
+            })
         });
     }
 
@@ -167,18 +204,125 @@ class PgUsers {
     }
 
     /**
-     * It updates existing user.
-     * @param id {Number} Id of the user.
-     * @param password {String} Password used for login
-     * @param name {String} Name displayed in the BackOffice
-     * @param email {String} Email of the user for the email communication
+     * It updates existing user and inserts relevant permissions.
+     * {
+	 		name: "Jakub Balhar",
+	 		password: "someRandomLongPassword",
+	 		username: "jakub@balhar.net"
+
+			permissions: ["location", "dataset"],
+
+            // Permissions of the users towards this user
+			users: {
+				read: [1,22,3],
+				update: [2,33,4],
+				delete: [2,15,3]
+			},
+
+            // Permissions of the groups towards this user
+			groups: {
+				read: [1,23,4],
+				update: [1,23,4],
+				delete: [1,23,4]
+			}
+	 * }
      */
-    update(id, password, name, email) {
-        return new PasswordHash(password).toString().then(hash => {
+    update(id, user) {
+        let permissions = ``, permissionsUser = ``, permissionsGroup = ``, updateUser = ``, passwordHashPromise;
+        if(user.password) {
+            passwordHashPromise = new PasswordHash(user.password).toString();
+        } else {
+            passwordHashPromise = Promise.resolve(null);
+        }
+
+        if(user.name) {
+            updateUser += `UPDATE ${this.schema}.panther_users set name = '${user.name}' WHERE id = ${id};`;
+        }
+
+        if(user.username) {
+            updateUser += `UPDATE ${this.schema}.panther_users set email = '${user.username}' WHERE id = ${id};`;
+        }
+
+        if(user.permissions) {
+            permissions += `DELETE FROM ${this.schema}.permissions WHERE user_id = ${id} AND resource_id IS NULL;`;
+
+            user.permissions.forEach(permission => {
+                permissions += this.permissions.addSql(id, permission, null, Permission.CREATE);
+            })
+        }
+
+        if(user.users) {
+            let users = user.users;
+            permissionsUser += `DELETE FROM ${this.schema}.permissions WHERE resource_type = 'user' AND resource_id = '${id}';`;
+
+            if(users.read) {
+                users.read.forEach(read => {
+                    permissionsUser += this.permissions.addSql(read, 'user', id, Permission.READ);
+                })
+            }
+
+            if(users.update) {
+                users.update.forEach(read => {
+                    permissionsUser += this.permissions.addSql(read, 'user', id, Permission.UPDATE);
+                })
+            }
+
+            if(users.delete) {
+                users.delete.forEach(read => {
+                    permissionsUser += this.permissions.addSql(read, 'user', id, Permission.DELETE);
+                })
+            }
+        }
+
+        if(user.groups) {
+            let groups = user.groups;
+            permissionsUser += `DELETE FROM ${this.schema}.group_permissions WHERE resource_type = 'user' AND resource_id = '${id}';`;
+
+            if(groups.read) {
+                groups.read.forEach(read => {
+                    permissionsUser += this.permissions.addGroupSql(read, 'user', id, Permission.READ);
+                })
+            }
+
+            if(groups.update) {
+                groups.update.forEach(read => {
+                    permissionsUser += this.permissions.addGroupSql(read, 'user', id, Permission.UPDATE);
+                })
+            }
+
+            if(groups.delete) {
+                groups.delete.forEach(read => {
+                    permissionsUser += this.permissions.addGroupSql(read, 'user', id, Permission.DELETE);
+                })
+            }
+        }
+
+        //
+        return passwordHashPromise.then(hash => {
+            if(hash) {
+                updateUser += `UPDATE ${this.schema}.panther_users set password = '${hash}' WHERE id = ${id};`;
+            }
+
             return this.pgPool.query(`
-			    UPDATE ${this.schema}.panther_users set password = '${hash}', name='${name}', email='${email}' WHERE id = ${id}
+			    ${updateUser};
+            
+                ${permissions};
+                
+                ${permissionsUser};
+                
+                ${permissionsGroup};
 		    `);
         });
+    }
+
+    delete(currentUserId, deleteId) {
+        return this.pgPool.query(`
+            DELETE FROM ${this.schema}.group_has_members WHERE user_id = ${deleteId};
+            
+            DELETE FROM ${this.schema}.panther_users WHERE id = ${deleteId};
+            
+            INSERT INTO ${this.schema}.audit (action, userId) VALUES ('Delete User ${deleteId}',${currentUserId});
+        `);
     }
 
     /**

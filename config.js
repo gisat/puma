@@ -172,5 +172,11 @@ module.exports = {
 		password: '7Mn3+wXcQ2',
 		from: 'panther@gisat.cz',
 		subject: 'Panther - Visualisation and analysis platform. Internal'
-	}
+	},
+
+    /**
+	 * It ignores following migration steps if the isCleanInstance is true.
+	 *  MigrateAwayFromGeonode
+     */
+	isCleanInstance: true
 };

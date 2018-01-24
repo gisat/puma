@@ -4,10 +4,7 @@ let config = require('../config');
 let conn = require('../common/conn');
 let logger = require('../common/Logger').applicationWideLogger;
 
-let FilteredMongoLayerGroups = require('./FilteredMongoLayerGroups');
 let FrontOfficeLayers = require('./FrontOfficeLayers');
-let GeonodeLayers = require('./GeonodeLayers');
-let MongoLayerReferences = require('./MongoLayerReferences');
 let PgLayers = require('./PgLayers');
 let PgPermissions = require('../security/PgPermissions');
 let Permission = require('../security/Permission');
@@ -15,6 +12,8 @@ let Permission = require('../security/Permission');
 /**
  * This controller represents layers where source of the data is in the geonode and therefore also geoserver.
  * The application will support other types of the layers as well.
+ *
+ * TODO: Remove Geonode from name
  */
 class LayerGeonodeController {
 	constructor(app, pgPool, schema) {
@@ -42,15 +41,9 @@ class LayerGeonodeController {
 		logger.info('LayerGeonodeController#readAl Read all layers By User: ', request.session.userId);
 
 		let currentUser = request.session.user;
-		let geonode = new GeonodeLayers(response.locals.ssid, config.geonodeUrl, this.mongo);
 		let layers = [];
 		// Load actually accessible from the GeoNode
-		geonode.all().then(geoNodeLayers => {
-			logger.info(`LayerController#readAll GeoNode Loaded: ${geoNodeLayers.length}`);
-			// Name and path needs to be returned. For the ones from geonode it will be the same. For the ones in pg it can differ.
-			layers = layers.concat(geoNodeLayers);
-			return this.pgLayers.all();
-		}).then(pgLayers => {
+		this.pgLayers.all().then(pgLayers => {
 			pgLayers = pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
 			layers = layers.concat(pgLayers);
 

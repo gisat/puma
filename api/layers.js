@@ -1,5 +1,5 @@
-var http = require('http');
-var querystring = require('querystring');
+let superagent = require('superagent');
+
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var async = require('async');
@@ -160,62 +160,6 @@ function gatherLayerData(featureInfo, callback) {
 }
 
 
-
-function getLayers(params, req, res, callback) {
-
-	var headers = {
-		'Cookie': 'sessionid=' + (req.cookies.sessionid || '')
-	};
-
-	var options = {
-		protocol: config.geonodeProtocol,
-		host: config.geonodeHost,
-		port: config.geonodePort || 80,
-		path: config.geonodePath + '/layers/acls',
-		headers: headers,
-		method: 'GET'
-	};
-
-	conn.request(options, null, function(err, output, resl) {
-		if (err) {
-			logger.error('api/layers.js getLayers. Request options: ', options, " Error: ", err);
-			return callback(err);
-		}
-		var layers = JSON.parse(output).rw;
-		var layerMap = {};
-		for (var i = 0; i < layers.length; i++) {
-			layerMap[layers[i]] = false;
-		}
-
-		var filter = {layer: {$in: layers}};
-		crud.read('layerref', filter, function(err, result) {
-			if (err) {
-				logger.error("api/layers.js getLayers. It wasn't possible to read layerref with Filter: ", filter, " Error: ", err);
-				return callback(err);
-			}
-
-			for (var i = 0; i < result.length; i++) {
-				layerMap[result[i].layer] = true;
-			}
-			var objs = [];
-			var layer;
-			for (layer in layerMap) {
-				var obj = {
-					name: layer,
-					referenced: layerMap[layer]
-				};
-				objs.push(obj);
-			}
-			objs.push({name: 'WMS', referenced: false, isWms: true});
-			res.data = objs;
-			return callback();
-		});
-
-	});
-}
-
-
-
 function activateLayerRef(params, user, res, callback) {
 	let userId = user.userId;
 	async.auto({
@@ -304,34 +248,26 @@ function activateLayerRef(params, user, res, callback) {
 
 
 function getLayerDetails(params, req, res, callback) {
-	var workspace = params.layer.split(':')[0];
-	var postData = {
-		SERVICE: 'wfs',
-		REQUEST: 'DescribeFeatureType',
-		TYPENAME: params.layer
-	};
-	postData = querystring.stringify(postData);
-	var options = {
-		host: config.geoserverHost,
-		port: config.geoserverPort,
-		path: config.geoserverPath + '/' + workspace + '/ows?' + postData,
-		method: 'GET',
-		headers: {
-			'Cookie': 'ssid=' + res.locals.ssid,
-		}
-	};
-	conn.request(options, null, function(err, output, resl) {
-		logger.trace(`api/layers.js getLayerDetails Output: `, output, ` Result: `, resl);
+    var workspace = params.layer.split(':')[0];
 
-		if (err) {
-			logger.error("api/layers.js getLayerDetails. Failed retrieving data about layer from geoserver. Options: ",
-				options, " Error: ", err);
-			return callback(err);
-		}
+    return superagent
+        .get(`${config.geoServerUrl}${workspace}/ows`)
+        .query({
+            "SERVICE": "wfs",
+            "REQUEST": "DescribeFeatureType",
+            "TYPENAME": params.layer
+        })
+        .then(result => {
+        	logger.info(`api/layers.js getLayerDetails Result: `, result.text);
 
-		res.data = parseWfsDocument(output);
-		return callback();
-	});
+            res.data = parseWfsDocument(result.text);
+            return callback();
+        })
+        .catch(err => {
+            logger.error("api/layers.js getLayerDetails. Failed retrieving data about layer from geoserver. Options: ",
+                options, " Error: ", err);
+            callback(err);
+        })
 }
 
 function parseWfsDocument(output) {
@@ -761,7 +697,6 @@ function getSymbologiesFromServer(params, req, res, callback) {
 
 
 module.exports = {
-	getLayers: getLayers,
 	getMetadata: getMetadata,
 	getLayerRefTable: getLayerRefTable,
 	getLayerDetails: getLayerDetails,
