@@ -94,3 +94,8 @@ This options changes the language of the texts in the application.
 The components are versioned. It is possible to get the versions on the endpoint /rest/fo/version, /rest/bo/version and
 /rest/backend/version. To allow this it is necessary to update build to produce version.txt in the relevant 
 directories. 
+
+## 2.5
+
+It is now possible to update users and groups with all the permissions using one call. It isn't possible
+anymore to use the old approach with adding and removing permissions. 
