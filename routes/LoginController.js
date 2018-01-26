@@ -79,7 +79,7 @@ class LoginController {
             response.status(200).json({
                 data: {
                     userId: request.session.userId,
-                    userName: request.session.username,
+                    userName: request.session.username || request.session.userName,
                     groups: request.session.groups
                 },
                 success: true
