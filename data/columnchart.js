@@ -63,6 +63,7 @@ function getChart(params, callback) {
 
 				var areas = JSON.parse(oldAreas);
 				var categories = [];
+				let extendedCategories = [];
 				var aggregate = params['aggregate'];
 				var aggData = results.data.aggData;
 
@@ -149,6 +150,7 @@ function getChart(params, callback) {
 
 					}
 					categories.push(row['name']);
+					extendedCategories.push(row['gid']);
 				}
 				var series = [];
 				var plotLines = [];
@@ -199,7 +201,7 @@ function getChart(params, callback) {
                         var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
                         var visible = invisibleAttrsMap[dataIndex] ? false : true;
                         if (params['stacking'] != 'double') {
-                            var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j), name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
+                            var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j, extendedCategories), name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
                             if (!params['stacking'] || params['stacking']=='none') {
                                 delete serieData.stack;
                             }
@@ -214,7 +216,7 @@ function getChart(params, callback) {
                             //var name = obj.name + (inFirst ? ' +' : ' -');
                             var name = obj.name;
                             if (inFirst) {
-                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j), name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
+                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j, extendedCategories), name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
 
                                 if (j==0) {
                                     serieData.id = 'a'+i;
@@ -225,7 +227,7 @@ function getChart(params, callback) {
                             } else {
                                 var newIndex = i - offset;
                                 var insertIndex = newIndex * 2 * years.length + j * 2 + 1;
-                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j), name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
+                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j, extendedCategories), name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
                                 series.splice(insertIndex, 0, serieData);
                             }
                         }
@@ -299,33 +301,90 @@ module.exports = {
 /**
  * Prepare data for given period (represented by index) according to periodSettings
  * @param series {Array} data
- * @param periodSettings {string} specifies which data should be taken
+ * @param periodSettings {string} specifies how should be the data calculated
  * @param index {number} index of serie
- * @returns {Array} Serie for period/calculated serie
+ * @param categories {Array} sorted list of categories (gids)
+ * @returns {Array} Sorted serie for period/calculated serie
  */
-let prepareDataForPeriod = function(series, periodSettings, index){
+let prepareDataForPeriod = function(series, periodSettings, index, categories){
 	if (periodSettings === 'all'){
 		return series[index];
-    } else if (periodSettings === 'latest') {
-        return getDataForLatestPeriod(series);
-	}
+    } else {
+	    let groupedData = groupDataByGid(series);
+	    let serie;
+
+	    if (periodSettings === 'average'){
+	        serie = getAverageValue(groupedData);
+        } else if (periodSettings === 'latest'){
+	        serie = getDataForExtremeValue(groupedData, 'yearName', true);
+        } else if (periodSettings === 'min'){
+            serie = getDataForExtremeValue(groupedData, 'y', false);
+        } else {
+            serie = getDataForExtremeValue(groupedData, 'y', true);
+        }
+
+        return sortSerieByCategories(serie, categories);
+    }
+};
+
+/**
+ * Sort records in serie according to a order in categories
+ * @param serie {Array} Serie for period/calculated serie
+ * @param categories {Array} sorted list of categories (gids)
+ * @returns {Array} Sorted serie
+ */
+let sortSerieByCategories = function(serie, categories){
+    let sortedSerie = [];
+    categories.map(category => {
+        let records = _.filter(serie, function (item) {return item.gid === category});
+        sortedSerie.push(records[0]);
+    });
+    return sortedSerie;
 };
 
 /**
  * TODO currently, the latest period is the highest yearName value
- * @param series {Array} Original series
- * @returns {Array} Serie for latest period
+ * @param dataForGids {Object} Data grouped by gid
+ * @param column {string} source column for data
+ * @param isMax {boolean} false for min
+ * @returns {Array} Serie for given setting
  */
-let getDataForLatestPeriod = function(series){
-	let dataForGids = groupDataByGid(series);
+let getDataForExtremeValue = function(dataForGids, column, isMax){
 	let serie = [];
 
 	for (let gid in dataForGids){
-        let record = _.max(dataForGids[gid], function(item){ return Number(item.yearName); });
+        let record = _.max(dataForGids[gid], function(item){ return Number(item[column]); });
+        if (!isMax){
+            record = _.min(dataForGids[gid], function(item){ return Number(item[column]); });
+        }
         serie.push(record);
 	}
 	return serie;
 };
+
+/**
+ * @param dataForGids {Object} Data grouped by gid
+ * @returns {Array} Serie with average values
+ */
+let getAverageValue = function(dataForGids){
+    let serie = [];
+    for (let gid in dataForGids){
+        let records = dataForGids[gid];
+        let refRecord = records[0];
+        let sum = 0;
+        let count = 0;
+        records.map(record => {
+           sum += record.y;
+           count++;
+        });
+
+        refRecord.y = Math.round((sum/count), 2);
+        refRecord.yearName = "average";
+        serie.push(refRecord);
+    }
+    return serie;
+};
+
 
 /**
  * @param series {Array} Original series
