@@ -53,20 +53,7 @@ function getChart(params, callback) {
 				return asyncCallback(null, attrConf);
 			})
 		},
-		years: function(asyncCallback) {
-			crud.read('year', {}, function(err, resls) {
-				if (err){
-					logger.error("columnchart#getChart Read years. Error: ", err);
-					return callback(err);
-				}
-				var map = {};
-				for (var i=0;i<resls.length;i++) {
-					var resl = resls[i];
-					map[resl['_id']] = resl.name;
-				}
-				return asyncCallback(null,map);
-			})
-		},
+		years: getYears,
 		res: ['years','data', 'attrConf',  function(asyncCallback, results) {
 				var data = results.data.data;
 				var attrConf = results.attrConf.attrMap;
@@ -167,6 +154,7 @@ function getChart(params, callback) {
 				var plotLines = [];
 				//var units = [];
 				var offset = Math.ceil(attrs.length / 2);
+
 				for (var i = 0; i < attrs.length; i++) {
 					var attr = attrs[i];
 					//console.log(attr.series)
@@ -174,68 +162,74 @@ function getChart(params, callback) {
 						continue;
 					}
 					var obj = attrConf[attr.as][attr.attr];
-					for (var j = 0; j < years.length; j++) {
-						var color = obj.color;
-						if ((!params['stacking'] || params['stacking']=='none') && j!=0) {
-							var rgb = hexToColor(color);
-							var opacity = Math.max(0.2,1-j*0.4);
-							color = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
-						}
-						if (attr.plotValues && attr.plotValues[j]) {
-							plotLines.push({
-								color: color,
-								width: 1,
-								id: 'i' + i,
-								value: attr.plotValues[j],
-								dashStyle: 'Dash',
-								zIndex: 5
-										,
-								label: {
-									text: attr.plotNames[j] + ': ' + attr.plotValues[j].toFixed(2),
-									align: 'left',
-									style: {
-										color: '#333',
-										fontFamily: '"Open Sans", sans-serif',
-										fontSize: '12px'
-									}
-								}
-							});
-						}
-						var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
-						var visible = invisibleAttrsMap[dataIndex] ? false : true;
-						if (params['stacking'] != 'double') {
-							var serieData = {data: attr.series[j], name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
-							if (!params['stacking'] || params['stacking']=='none') {
-								delete serieData.stack;
-							}
-							if (j==0) {
-								serieData.id = 'a'+i;
-							} else {
-								serieData.linkedTo = 'a'+i;
-							}
-							series.push(serieData);
-						} else {
-							var inFirst = i < offset;
-							//var name = obj.name + (inFirst ? ' +' : ' -');
-							var name = obj.name;
-							if (inFirst) {
-								var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
 
-								if (j==0) {
-									serieData.id = 'a'+i;
-								} else {
-									serieData.linkedTo = 'a'+i;
-								}
-								series.push(serieData);
-							} else {
-								var newIndex = i - offset;
-								var insertIndex = newIndex * 2 * years.length + j * 2 + 1;
-								var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
-								series.splice(insertIndex, 0, serieData);
-							}
-						}
 
-					}
+					// show time serie or just one value in chart
+					let numberOfPeriods = years.length;
+					let periodsSettings = 'all';
+                    if (params['periodsSettings'] && (params['periodsSettings'] !== 'all')){
+                        numberOfPeriods = 1;
+                        periodsSettings = params['periodsSettings'];
+                    }
+
+                    for (var j = 0; j < numberOfPeriods; j++) {
+                        var color = obj.color;
+                        if ((!params['stacking'] || params['stacking']=='none') && j!=0) {
+                            color = getColorRgbaString(color, j);
+                        }
+                        if (attr.plotValues && attr.plotValues[j]) {
+                            plotLines.push({
+                                color: color,
+                                width: 1,
+                                id: 'i' + i,
+                                value: attr.plotValues[j],
+                                dashStyle: 'Dash',
+                                zIndex: 5,
+                                label: {
+                                    text: attr.plotNames[j] + ': ' + attr.plotValues[j].toFixed(2),
+                                    align: 'left',
+                                    style: {
+                                        color: '#333',
+                                        fontFamily: '"Open Sans", sans-serif',
+                                        fontSize: '12px'
+                                    }
+                                }
+                            });
+                        }
+                        var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
+                        var visible = invisibleAttrsMap[dataIndex] ? false : true;
+                        if (params['stacking'] != 'double') {
+                            var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j), name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
+                            if (!params['stacking'] || params['stacking']=='none') {
+                                delete serieData.stack;
+                            }
+                            if (j==0) {
+                                serieData.id = 'a'+i;
+                            } else {
+                                serieData.linkedTo = 'a'+i;
+                            }
+                            series.push(serieData);
+                        } else {
+                            var inFirst = i < offset;
+                            //var name = obj.name + (inFirst ? ' +' : ' -');
+                            var name = obj.name;
+                            if (inFirst) {
+                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j), name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
+
+                                if (j==0) {
+                                    serieData.id = 'a'+i;
+                                } else {
+                                    serieData.linkedTo = 'a'+i;
+                                }
+                                series.push(serieData);
+                            } else {
+                                var newIndex = i - offset;
+                                var insertIndex = newIndex * 2 * years.length + j * 2 + 1;
+                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j), name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
+                                series.splice(insertIndex, 0, serieData);
+                            }
+                        }
+                    }
 
 				}
 				var areasNum = data.length;
@@ -278,8 +272,89 @@ function getChart(params, callback) {
 
 }
 
+/**
+ * Get all available years
+ * @param asyncCallback {function}
+ */
+function getYears(asyncCallback) {
+    crud.read('year', {}, function(err, resls) {
+        if (err){
+            logger.error("columnchart#getChart Read years. Error: ", err);
+            return callback(err);
+        }
+        var map = {};
+        for (var i=0;i<resls.length;i++) {
+            var resl = resls[i];
+            map[resl['_id']] = resl.name;
+        }
+        return asyncCallback(null,map);
+    });
+}
+
 module.exports = {
-	getChart: getChart
+	getChart: getChart,
+	getYears: getYears
+};
+
+/**
+ * Prepare data for given period (represented by index) according to periodSettings
+ * @param series {Array} data
+ * @param periodSettings {string} specifies which data should be taken
+ * @param index {number} index of serie
+ * @returns {Array} Serie for period/calculated serie
+ */
+let prepareDataForPeriod = function(series, periodSettings, index){
+	if (periodSettings === 'all'){
+		return series[index];
+    } else if (periodSettings === 'latest') {
+        return getDataForLatestPeriod(series);
+	}
+};
+
+/**
+ * TODO currently, the latest period is the highest yearName value
+ * @param series {Array} Original series
+ * @returns {Array} Serie for latest period
+ */
+let getDataForLatestPeriod = function(series){
+	let dataForGids = groupDataByGid(series);
+	let serie = [];
+
+	for (let gid in dataForGids){
+        let record = _.max(dataForGids[gid], function(item){ return Number(item.yearName); });
+        serie.push(record);
+	}
+	return serie;
+};
+
+/**
+ * @param series {Array} Original series
+ * @returns {Object} Data grouped by gid
+ */
+let groupDataByGid = function(series){
+	let data = {};
+	series.map(serie => {
+		serie.map(record => {
+			let gid = record.gid;
+			if (!data[gid]){
+				data[gid] = [record];
+			} else {
+				data[gid].push(record);
+			}
+		});
+	});
+
+	return data;
+};
+
+/**
+ * @param color {string} color in HEX format
+ * @returns {string} string in rgba format
+ */
+let getColorRgbaString = function(color, j){
+    let rgb = hexToColor(color);
+    let opacity = Math.max(0.2,1-j*0.4);
+    return 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
 };
 
 
