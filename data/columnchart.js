@@ -175,17 +175,21 @@ function getChart(params, callback) {
 					// if periodsSettings, use it for creating data series
 					if (params['periodsSettings'] && (params['periodsSettings'] !== 'all')){
                         let newApproachData = getDataForNewApproachChartCreation({
+                        	aggregate: params['aggregate'],
                             attributeConfiguration: obj,
 							attributeIndex: i,
                             attributeMetadata: attr,
                             originalSeries: attr.series,
                             periodSettings: params['periodsSettings'],
-                            sortedCategories: extendedCategories
+							plotLines: plotLines,
+                            sortedCategories: extendedCategories,
+							stacking: params['stacking']
                         });
                         series = series.concat(newApproachData.series);
+                        plotLines = newApproachData.plotLines;
                     }
 
-                    // else use old approach
+                    // else use old approach (for all periods)
                     else {
                         for (var j = 0; j < numberOfColumns; j++) {
                             // set color of column
@@ -194,7 +198,7 @@ function getChart(params, callback) {
                                 color = getColorRgbaString(color, j);
                             }
 
-                            // ???
+                            // average values
                             if (attr.plotValues && attr.plotValues[j]) {
                                 plotLines.push({
                                     color: color,
@@ -314,12 +318,15 @@ module.exports = {
 /**
  * Collect all relevant data for chart creation
  * @param params {Object}
+ * @param params.aggregate {string}
  * @param params.attributeConfiguration {Object}
  * @param params.attributeIndex {number}
  * @param params.attributeMetadata {Object}
  * @param params.originalSeries {Array} List of orriginal data
  * @param params.periodSettings {string} specifies how should be the data calculated (e.g. min, max, average,...)
+ * @param params.plotLines {Array}
  * @param params.sortedCategories {Array} orted list of categories for x-axis (gids in this case)
+ * @param params.stacking {string}
  * @returns {Object}
  */
 let getDataForNewApproachChartCreation = function(params){
@@ -338,11 +345,18 @@ let getDataForNewApproachChartCreation = function(params){
         if (index !== 0) {
             columnColor = getColorRgbaString(columnColor, index);
         }
+        let attr = params.attributeMetadata;
+
+        // average values TODO other possibilities
+		if (params.aggregate && params.aggregate === "avg"){
+            params.plotLines.push(setChartLineForAggregation(params.aggregate, columnColor, params.attributeIndex, serie));
+		}
 
         // prepare serie data
-        let attr = params.attributeMetadata;
         let serieData = {data: serie, name: params.attributeConfiguration.name, color: columnColor, stack: 'y' + index, as: attr.as, attr: attr.attr, visible: true};
-        delete serieData.stack;
+        if (!params.stacking || params.stacking === 'none') {
+            delete serieData.stack;
+        }
 
         if (index === 0) {
             serieData.id = 'a' + params.attributeIndex;
@@ -353,6 +367,7 @@ let getDataForNewApproachChartCreation = function(params){
     });
 
     return {
+    	plotLines: params.plotLines,
         series: outputSeries
     }
 };
@@ -531,6 +546,55 @@ let findCollection = function(type, data, column){
         collection.yearName += " - maximum";
         return collection;
     }
+};
+
+/**
+ * Set line for averages
+ * @param type {string} type of aggregation
+ * @param color {string}
+ * @param attributeIndex {number}
+ * @param serie {Array}
+ * @returns {{color: *, width: number, id: string, value: *, dashStyle: string, zIndex: number, label: {text: string, align: string, style: {color: string, fontFamily: string, fontSize: string}}}}
+ */
+let setChartLineForAggregation = function(type, color, attributeIndex, serie){
+	let value = 0;
+	let name = "";
+	if (type === 'avg'){
+		name = "Average";
+		value = calculateValueForAverageLine(serie);
+	}
+
+    return {
+		color: color,
+		width: 1,
+		id: 'i' + attributeIndex,
+		value: value,
+		dashStyle: 'Dash',
+		zIndex: 5,
+		label: {
+			text: name + ': ' + value.toFixed(2),
+			align: 'left',
+			style: {
+				color: '#333',
+				fontFamily: '"Open Sans", sans-serif',
+				fontSize: '12px'
+			}
+		}
+    }
+};
+
+/**
+ * Calculate average from data
+ * @param serie {Array} source data
+ * @returns {number} average value of serie
+ */
+let calculateValueForAverageLine = function(serie){
+	let sum = 0;
+	let numberOfRecords = serie.length;
+	serie.map(record => {
+		sum += record.y;
+	});
+	return (sum/numberOfRecords);
 };
 
 /**
