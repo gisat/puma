@@ -68,7 +68,7 @@ class PgPermissions {
 	}
 
 	addGroup(groupId, resourceType, resourceId, permission) {
-		return this.pgPool.pool().query(this.addGroupSql(groupId, resourceType, resourceId, permission));
+		return this.pgPool.query(this.addGroupSql(groupId, resourceType, resourceId, permission));
 	}
 
 	addGroupSql(groupId, resourceType, resourceId, permission) {
