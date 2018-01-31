@@ -170,6 +170,10 @@ class FrontOfficeLayers {
 			return grouped[key][0];
 		});
 
+		uniqueLayers = _.filter(uniqueLayers, uniqueLayer => {
+			return uniqueLayer.layerGroup;
+		});
+
 		var groupedByLayerGroup = _.groupBy(uniqueLayers, (layer) => {
 			return (layer.layerGroup && layer.layerGroup.name) || 'Other';
 		});
