@@ -182,6 +182,7 @@ function getChart(params, callback) {
                             originalSeries: attr.series,
                             periodSettings: params['periodsSettings'],
 							plotLines: plotLines,
+							selectedArea: aggRow,
                             sortedCategories: extendedCategories,
 							stacking: params['stacking']
                         });
@@ -201,7 +202,7 @@ function getChart(params, callback) {
                             // average values
                             if (attr.plotValues && attr.plotValues[j]) {
                                 plotLines.push({
-                                    color: color,
+                                    color: '#ff4c39',
                                     width: 1,
                                     id: 'i' + i,
                                     value: attr.plotValues[j],
@@ -211,9 +212,10 @@ function getChart(params, callback) {
                                         text: attr.plotNames[j] + ': ' + attr.plotValues[j].toFixed(2),
                                         align: 'left',
                                         style: {
-                                            color: '#333',
+                                            color: '#ff4c39',
                                             fontFamily: '"Open Sans", sans-serif',
-                                            fontSize: '12px'
+                                            fontSize: '12px',
+											fontWeight: 'bold'
                                         }
                                     }
                                 });
@@ -325,6 +327,7 @@ module.exports = {
  * @param params.originalSeries {Array} List of orriginal data
  * @param params.periodSettings {string} specifies how should be the data calculated (e.g. min, max, average,...)
  * @param params.plotLines {Array}
+ * @param params.selectedArea {Object} Data about first selected area
  * @param params.sortedCategories {Array} orted list of categories for x-axis (gids in this case)
  * @param params.stacking {string}
  * @returns {Object}
@@ -347,9 +350,9 @@ let getDataForNewApproachChartCreation = function(params){
         }
         let attr = params.attributeMetadata;
 
-        // average values TODO other possibilities
-		if (params.aggregate && params.aggregate === "avg"){
-            params.plotLines.push(setChartLineForAggregation(params.aggregate, columnColor, params.attributeIndex, serie));
+        // add line/lines for average values TODO other possibilities
+		if (params.aggregate && (params.aggregate === "avg" || params.aggregate === "select")){
+            params.plotLines.push(setChartLineForAggregation(params.aggregate, params.attributeIndex, serie, params.selectedArea));
 		}
 
         // prepare serie data
@@ -551,21 +554,24 @@ let findCollection = function(type, data, column){
 /**
  * Set line for averages
  * @param type {string} type of aggregation
- * @param color {string}
  * @param attributeIndex {number}
  * @param serie {Array}
+ * @param selectedArea {Object} Data about first selected area
  * @returns {{color: *, width: number, id: string, value: *, dashStyle: string, zIndex: number, label: {text: string, align: string, style: {color: string, fontFamily: string, fontSize: string}}}}
  */
-let setChartLineForAggregation = function(type, color, attributeIndex, serie){
+let setChartLineForAggregation = function(type, attributeIndex, serie, selectedArea){
 	let value = 0;
 	let name = "";
 	if (type === 'avg'){
 		name = "Average";
 		value = calculateValueForAverageLine(serie);
+	} else if (type === 'select' && selectedArea){
+		name = selectedArea.name;
+		value = calculateValueForSelectedLine(serie, selectedArea.gid)
 	}
 
     return {
-		color: color,
+		color: '#ff4c39',
 		width: 1,
 		id: 'i' + attributeIndex,
 		value: value,
@@ -575,9 +581,10 @@ let setChartLineForAggregation = function(type, color, attributeIndex, serie){
 			text: name + ': ' + value.toFixed(2),
 			align: 'left',
 			style: {
-				color: '#333',
+				color: '#ff4c39',
 				fontFamily: '"Open Sans", sans-serif',
-				fontSize: '12px'
+				fontSize: '12px',
+                fontWeight: 'bold'
 			}
 		}
     }
@@ -595,6 +602,19 @@ let calculateValueForAverageLine = function(serie){
 		sum += record.y;
 	});
 	return (sum/numberOfRecords);
+};
+
+/**
+ * Get value from data by area
+ * @param serie {Array} source data
+ * @param gid {string} gid of area
+ * @returns {number} value for area
+ */
+let calculateValueForSelectedLine = function(serie, gid){
+    let area = lodash.filter(serie, function(record){return record.gid === gid});
+    if (area.length){
+        return area[0].y;
+	}
 };
 
 /**
