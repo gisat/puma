@@ -108,8 +108,7 @@ class Controller {
             }
 
             if (!self.hasRights(request.session.user, Permission.READ, request.params.id, result)) {
-                response.status(403);
-                return;
+                return next(new Error('Forbidden'));
             }
 
             response.data = result;
