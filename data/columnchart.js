@@ -214,7 +214,7 @@ function getChart(params, callback) {
                                         style: {
                                             color: '#ff4c39',
                                             fontFamily: '"Open Sans", sans-serif',
-                                            fontSize: '12px',
+                                            fontSize: '14px',
 											fontWeight: 'bold'
                                         }
                                     }
@@ -583,7 +583,7 @@ let setChartLineForAggregation = function(type, attributeIndex, serie, selectedA
 			style: {
 				color: '#ff4c39',
 				fontFamily: '"Open Sans", sans-serif',
-				fontSize: '12px',
+				fontSize: '14px',
                 fontWeight: 'bold'
 			}
 		}
