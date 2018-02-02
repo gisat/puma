@@ -6,6 +6,8 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 var _ = require('underscore');
 
+let lodash = require('lodash');
+
 function getChart(params, callback) {
 	var conf = cfg();
 	conf = _.extend(conf,require('../data/defaultchart'));
@@ -53,20 +55,7 @@ function getChart(params, callback) {
 				return asyncCallback(null, attrConf);
 			})
 		},
-		years: function(asyncCallback) {
-			crud.read('year', {}, function(err, resls) {
-				if (err){
-					logger.error("columnchart#getChart Read years. Error: ", err);
-					return callback(err);
-				}
-				var map = {};
-				for (var i=0;i<resls.length;i++) {
-					var resl = resls[i];
-					map[resl['_id']] = resl.name;
-				}
-				return asyncCallback(null,map);
-			})
-		},
+		years: getYears,
 		res: ['years','data', 'attrConf',  function(asyncCallback, results) {
 				var data = results.data.data;
 				var attrConf = results.attrConf.attrMap;
@@ -76,6 +65,7 @@ function getChart(params, callback) {
 
 				var areas = JSON.parse(oldAreas);
 				var categories = [];
+				let extendedCategories = [];
 				var aggregate = params['aggregate'];
 				var aggData = results.data.aggData;
 
@@ -162,11 +152,18 @@ function getChart(params, callback) {
 
 					}
 					categories.push(row['name']);
+					extendedCategories.push(row['gid']);
 				}
+
+				// === prepare data series ===
+                // how many colums will each category have
+                let numberOfColumns = years.length;
+                let periodsSettings = 'all';
+
 				var series = [];
 				var plotLines = [];
-				//var units = [];
 				var offset = Math.ceil(attrs.length / 2);
+
 				for (var i = 0; i < attrs.length; i++) {
 					var attr = attrs[i];
 					//console.log(attr.series)
@@ -174,76 +171,96 @@ function getChart(params, callback) {
 						continue;
 					}
 					var obj = attrConf[attr.as][attr.attr];
-					for (var j = 0; j < years.length; j++) {
-						var color = obj.color;
-						if ((!params['stacking'] || params['stacking']=='none') && j!=0) {
-							var rgb = hexToColor(color);
-							var opacity = Math.max(0.2,1-j*0.4);
-							color = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
-						}
-						if (attr.plotValues && attr.plotValues[j]) {
-							plotLines.push({
-								color: color,
-								width: 1,
-								id: 'i' + i,
-								value: attr.plotValues[j],
-								dashStyle: 'Dash',
-								zIndex: 5
-										,
-								label: {
-									text: attr.plotNames[j] + ': ' + attr.plotValues[j].toFixed(2),
-									align: 'left',
-									style: {
-										color: '#333',
-										fontFamily: '"Open Sans", sans-serif',
-										fontSize: '12px'
-									}
-								}
-							});
-						}
-						var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
-						var visible = invisibleAttrsMap[dataIndex] ? false : true;
-						if (params['stacking'] != 'double') {
-							var serieData = {data: attr.series[j], name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
-							if (!params['stacking'] || params['stacking']=='none') {
-								delete serieData.stack;
-							}
-							if (j==0) {
-								serieData.id = 'a'+i;
-							} else {
-								serieData.linkedTo = 'a'+i;
-							}
-							series.push(serieData);
-						} else {
-							var inFirst = i < offset;
-							//var name = obj.name + (inFirst ? ' +' : ' -');
-							var name = obj.name;
-							if (inFirst) {
-								var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
 
-								if (j==0) {
-									serieData.id = 'a'+i;
-								} else {
-									serieData.linkedTo = 'a'+i;
-								}
-								series.push(serieData);
-							} else {
-								var newIndex = i - offset;
-								var insertIndex = newIndex * 2 * years.length + j * 2 + 1;
-								var serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
-								series.splice(insertIndex, 0, serieData);
-							}
-						}
+					// if periodsSettings, use it for creating data series
+					if (params['periodsSettings'] && (params['periodsSettings'] !== 'all')){
+                        let newApproachData = getDataForNewApproachChartCreation({
+                        	aggregate: params['aggregate'],
+                            attributeConfiguration: obj,
+							attributeIndex: i,
+                            attributeMetadata: attr,
+                            originalSeries: attr.series,
+                            periodSettings: params['periodsSettings'],
+							plotLines: plotLines,
+							selectedArea: aggRow,
+                            sortedCategories: extendedCategories,
+							stacking: params['stacking']
+                        });
+                        series = series.concat(newApproachData.series);
+                        plotLines = newApproachData.plotLines;
+                    }
 
-					}
+                    // else use old approach (for all periods)
+                    else {
+                        for (var j = 0; j < numberOfColumns; j++) {
+                            // set color of column
+                            var color = obj.color;
+                            if ((!params['stacking'] || params['stacking']=='none') && j!=0) {
+                                color = getColorRgbaString(color, j);
+                            }
 
+                            // average values
+                            if (attr.plotValues && attr.plotValues[j]) {
+                                plotLines.push({
+                                    color: '#ff4c39',
+                                    width: 1,
+                                    id: 'i' + i,
+                                    value: attr.plotValues[j],
+                                    dashStyle: 'Dash',
+                                    zIndex: 5,
+                                    label: {
+                                        text: attr.plotNames[j] + ': ' + attr.plotValues[j].toFixed(2),
+                                        align: 'left',
+                                        style: {
+                                            color: '#ff4c39',
+                                            fontFamily: '"Open Sans", sans-serif',
+                                            fontSize: '14px',
+											fontWeight: 'bold'
+                                        }
+                                    }
+                                });
+                            }
+
+
+                            var dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
+                            var visible = invisibleAttrsMap[dataIndex] ? false : true;
+                            if (params['stacking'] != 'double') {
+                                var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j, extendedCategories), name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
+                                if (!params['stacking'] || params['stacking']=='none') {
+                                    delete serieData.stack;
+                                }
+                                if (j==0) {
+                                    serieData.id = 'a'+i;
+                                } else {
+                                    serieData.linkedTo = 'a'+i;
+                                }
+                                series.push(serieData);
+                            } else {
+                                var inFirst = i < offset;
+                                //var name = obj.name + (inFirst ? ' +' : ' -');
+                                var name = obj.name;
+                                if (inFirst) {
+                                    var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j, extendedCategories), name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
+
+                                    if (j==0) {
+                                        serieData.id = 'a'+i;
+                                    } else {
+                                        serieData.linkedTo = 'a'+i;
+                                    }
+                                    series.push(serieData);
+                                } else {
+                                    var newIndex = i - offset;
+                                    var insertIndex = newIndex * 2 * years.length + j * 2 + 1;
+                                    var serieData = {data: prepareDataForPeriod(attr.series, periodsSettings, j, extendedCategories), name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
+                                    series.splice(insertIndex, 0, serieData);
+                                }
+                            }
+                        }
+                    }
 				}
 				var areasNum = data.length;
-				if (!data) {
-					//console.log('nodata')
-				}
 				var stacking = params['stacking'];
-				var columnNum = (!stacking || stacking == 'none' || stacking == 'double') ? areasNum * attrs.length * years.length : areasNum * years.length;
+				var columnNum = (!stacking || stacking == 'none' || stacking == 'double') ? areasNum * attrs.length * numberOfColumns : areasNum * numberOfColumns;
 				columnNum = stacking == 'double' ? columnNum / 2 : columnNum;
 				stacking = stacking == 'double' ? 'normal' : stacking;
 				stacking = (!stacking || stacking=='none') ? null : stacking;
@@ -270,16 +287,344 @@ function getChart(params, callback) {
 					conf.chart.width = Math.min(400, Math.max(areasNum * 30, columnNum * 10));
 				}
 				return callback(null, conf);
-
 			}]
 	};
 
 	async.auto(opts);
+}
 
+/**
+ * Get all available years
+ * @param asyncCallback {function}
+ */
+function getYears(asyncCallback) {
+    crud.read('year', {}, function(err, resls) {
+        if (err){
+            logger.error("columnchart#getChart Read years. Error: ", err);
+            return callback(err);
+        }
+        var map = {};
+        for (var i=0;i<resls.length;i++) {
+            var resl = resls[i];
+            map[resl['_id']] = resl.name;
+        }
+        return asyncCallback(null,map);
+    });
 }
 
 module.exports = {
-	getChart: getChart
+	getChart: getChart,
+	getYears: getYears
+};
+
+/**
+ * Collect all relevant data for chart creation
+ * @param params {Object}
+ * @param params.aggregate {string}
+ * @param params.attributeConfiguration {Object}
+ * @param params.attributeIndex {number}
+ * @param params.attributeMetadata {Object}
+ * @param params.originalSeries {Array} List of orriginal data
+ * @param params.periodSettings {string} specifies how should be the data calculated (e.g. min, max, average,...)
+ * @param params.plotLines {Array}
+ * @param params.selectedArea {Object} Data about first selected area
+ * @param params.sortedCategories {Array} orted list of categories for x-axis (gids in this case)
+ * @param params.stacking {string}
+ * @returns {Object}
+ */
+let getDataForNewApproachChartCreation = function(params){
+    let outputSeries = [];
+    let series = prepareDataForPeriod(params.originalSeries, params.periodSettings, 0, params.sortedCategories);
+
+    let hasNestedArrays = _.isArray(series[0]);
+    if (!hasNestedArrays){
+        series = [series];
+    }
+
+    series.map((serie, index) => {
+
+        // set color of column
+        let columnColor = params.attributeConfiguration.color;
+        if (index !== 0) {
+            columnColor = getColorRgbaString(columnColor, index);
+        }
+        let attr = params.attributeMetadata;
+
+        // add line/lines for average values TODO other possibilities
+		if (params.aggregate && (params.aggregate === "avg" || params.aggregate === "select")){
+            params.plotLines.push(setChartLineForAggregation(params.aggregate, params.attributeIndex, serie, params.selectedArea));
+		}
+
+        // prepare serie data
+        let serieData = {data: serie, name: params.attributeConfiguration.name, color: columnColor, stack: 'y' + index, as: attr.as, attr: attr.attr, visible: true};
+        if (!params.stacking || params.stacking === 'none') {
+            delete serieData.stack;
+        }
+
+        if (index === 0) {
+            serieData.id = 'a' + params.attributeIndex;
+        } else {
+            serieData.linkedTo = 'a' + params.attributeIndex;
+        }
+        outputSeries.push(serieData);
+    });
+
+    return {
+    	plotLines: params.plotLines,
+        series: outputSeries
+    }
+};
+
+/**
+ * Prepare data for given period (represented by index) according to periodSettings
+ * @param series {Array} data
+ * @param periodSettings {string} specifies how should be the data calculated
+ * @param index {number} index of serie
+ * @param categories {Array} sorted list of categories (gids)
+ * @returns {Array} Sorted serie for period/calculated serie
+ */
+let prepareDataForPeriod = function(series, periodSettings, index, categories){
+	if (periodSettings === 'all'){
+		return series[index];
+    } else {
+	    let groupedData = lodash.cloneDeep(groupDataByGid(series));
+	    let serie;
+
+	    if (periodSettings === 'average'){
+	        serie = getAverageValue(groupedData);
+        } else if (periodSettings === 'latest'){
+	        serie = getDataForExtremeValue(groupedData, 'yearName', true);
+        } else if (periodSettings === 'min'){
+            serie = getDataForExtremeValue(groupedData, 'y', false);
+        } else if (periodSettings === 'max'){
+            serie = getDataForExtremeValue(groupedData, 'y', true);
+        } else if (periodSettings === 'minMax') {
+            serie = getDataForMoreValues(groupedData, false);
+        } else if (periodSettings === 'minAverageMax') {
+            serie = getDataForMoreValues(groupedData, true);
+        }
+        return sortSerieByCategories(serie, categories);
+    }
+};
+
+/**
+ * Sort records in serie according to a order in categories
+ * @param series {Array} Serie for period/calculated serie
+ * @param categories {Array} sorted list of categories (gids)
+ * @returns {Array} Sorted serie/series
+ */
+let sortSerieByCategories = function(series, categories){
+    let sorted = [];
+    let hasNestedArrays = _.isArray(series[0]);
+
+    if (!hasNestedArrays){
+        categories.map(category => {
+            let records = _.filter(series, function (item) {return item.gid === category});
+            sorted.push(records[0]);
+        });
+    } else {
+        let columns = series.length;
+        for(let i = 0; i < columns; i++){
+            sorted.push([]);
+        }
+        categories.map(category => {
+            series.map((serie, index) => {
+                let records = _.filter(serie, function (item) {return item.gid === category});
+                sorted[index].push(records[0]);
+            });
+        });
+    }
+    return sorted;
+};
+
+/**
+ * TODO currently, the latest period is the highest yearName value
+ * @param dataForGids {Object} Data grouped by gid
+ * @param column {string} source column for data
+ * @param isMax {boolean} false for min
+ * @returns {Array} Serie for given setting
+ */
+let getDataForExtremeValue = function(dataForGids, column, isMax){
+	let serie = [];
+
+	for (let gid in dataForGids){
+        let type = "max";
+        if (!isMax){
+            type = "min";
+        }
+        serie.push(findCollection(type, dataForGids[gid], column));
+	}
+	return serie;
+};
+
+/**
+ * Get data for more than one value. Currently is implemented combination of min and max TODO min, average and max value
+ * @param dataForGids {Object} Data grouped by gid
+ * @param withAverage {boolean} true, if series should contain average value
+ * @returns {Array} Series for given settings
+ */
+let getDataForMoreValues = function(dataForGids, withAverage){
+    let series = [];
+
+    let serieMin = [];
+    for (let gid in dataForGids){
+        serieMin.push(findCollection("min", dataForGids[gid], 'y'));
+    }
+    series.push(serieMin);
+
+    if (withAverage){
+        series.push(getAverageValue(dataForGids));
+	}
+
+    let serieMax = [];
+    for (let gid in dataForGids){
+        serieMax.push(findCollection("max", dataForGids[gid], 'y'));
+    }
+    series.push(serieMax);
+
+    return series;
+};
+
+/**
+ * @param dataForGids {Object} Data grouped by gid
+ * @returns {Array} Serie with average values
+ */
+let getAverageValue = function(dataForGids){
+    let serie = [];
+    for (let gid in dataForGids){
+        let records = dataForGids[gid];
+        let refRecord = lodash.cloneDeep(records[0]);
+        let sum = 0;
+        let count = 0;
+        records.map(record => {
+           sum += record.y;
+           count++;
+        });
+
+        refRecord.y = Math.round((sum/count), 2);
+        refRecord.year = null;
+        refRecord.yearName = "average";
+        serie.push(refRecord);
+    }
+    return serie;
+};
+
+
+/**
+ * @param series {Array} Original series
+ * @returns {Object} Data grouped by gid
+ */
+let groupDataByGid = function(series){
+	let data = {};
+	series.map(serie => {
+		serie.map(record => {
+			let gid = record.gid;
+			if (!data[gid]){
+				data[gid] = [record];
+			} else {
+				data[gid].push(record);
+			}
+		});
+	});
+
+	return data;
+};
+
+/**
+ * Find collection by min or max value of the property in the list of collections
+ * @param type {string} min or max
+ * @param data {Array} List of collections
+ * @param column {string} name of property key
+ * @return collection {Object}
+ */
+let findCollection = function(type, data, column){
+    if (type === "min"){
+    	let filtered = _.min(data, function(item){ return Number(item[column]);});
+        let collection = lodash.cloneDeep(filtered);
+        collection.yearName += " - minimum";
+        return collection;
+    } else if (type === "max"){
+        let filtered =  _.max(data, function(item){return Number(item[column]);});
+        let collection = lodash.cloneDeep(filtered);
+        collection.yearName += " - maximum";
+        return collection;
+    }
+};
+
+/**
+ * Set line for averages
+ * @param type {string} type of aggregation
+ * @param attributeIndex {number}
+ * @param serie {Array}
+ * @param selectedArea {Object} Data about first selected area
+ * @returns {{color: *, width: number, id: string, value: *, dashStyle: string, zIndex: number, label: {text: string, align: string, style: {color: string, fontFamily: string, fontSize: string}}}}
+ */
+let setChartLineForAggregation = function(type, attributeIndex, serie, selectedArea){
+	let value = 0;
+	let name = "";
+	if (type === 'avg'){
+		name = "Average";
+		value = calculateValueForAverageLine(serie);
+	} else if (type === 'select' && selectedArea){
+		name = selectedArea.name;
+		value = calculateValueForSelectedLine(serie, selectedArea.gid)
+	}
+
+    return {
+		color: '#ff4c39',
+		width: 1,
+		id: 'i' + attributeIndex,
+		value: value,
+		dashStyle: 'Dash',
+		zIndex: 5,
+		label: {
+			text: name + ': ' + value.toFixed(2),
+			align: 'left',
+			style: {
+				color: '#ff4c39',
+				fontFamily: '"Open Sans", sans-serif',
+				fontSize: '14px',
+                fontWeight: 'bold'
+			}
+		}
+    }
+};
+
+/**
+ * Calculate average from data
+ * @param serie {Array} source data
+ * @returns {number} average value of serie
+ */
+let calculateValueForAverageLine = function(serie){
+	let sum = 0;
+	let numberOfRecords = serie.length;
+	serie.map(record => {
+		sum += record.y;
+	});
+	return (sum/numberOfRecords);
+};
+
+/**
+ * Get value from data by area
+ * @param serie {Array} source data
+ * @param gid {string} gid of area
+ * @returns {number} value for area
+ */
+let calculateValueForSelectedLine = function(serie, gid){
+    let area = lodash.filter(serie, function(record){return record.gid === gid});
+    if (area.length){
+        return area[0].y;
+	}
+};
+
+/**
+ * @param color {string} color in HEX format
+ * @returns {string} string in rgba format
+ */
+let getColorRgbaString = function(color, j){
+    let rgb = hexToColor(color);
+    let opacity = Math.max(0.2,1-j*0.4);
+    return 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
 };
 
 
