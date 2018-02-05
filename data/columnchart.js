@@ -546,7 +546,9 @@ let findCollection = function(type, data, column){
     } else if (type === "max"){
         let filtered =  _.max(data, function(item){return Number(item[column]);});
         let collection = lodash.cloneDeep(filtered);
-        collection.yearName += " - maximum";
+        if (column === 'y'){
+            collection.yearName += " - maximum";
+		}
         return collection;
     }
 };
