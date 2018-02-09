@@ -6,6 +6,7 @@ var charts = {
 	piechart: require('../data/piechart'),
 	featurecount: require('../data/featurecount'),
 	extentoutline: require('../data/extentoutline'),
+	polarchart: require('../data/polarchart'),
 	filter: require('../data/filter')
 };
 var _ = require('underscore');
