@@ -191,6 +191,12 @@ function getData(params, callback) {
 				}
 
 			}
+
+			let factorString = ' * ' + factor;
+			if (attr.attrType !== "numeric"){
+                factorString = '';
+			}
+
 			if (params['useAggregation'] || topAll) {
 				if (norm) {
 					select += ', CASE WHEN (SUM(' + norm + ')=0) THEN NULL ELSE SUM(' + pre + '"' + attrName + '") / SUM(' + norm + ')*100 END';
@@ -199,9 +205,9 @@ function getData(params, callback) {
 				}
 			} else {
 				if (norm) {
-					select += ', CASE WHEN (' + norm + '=0) THEN NULL ELSE ' + pre + '"' + attrName + '"::float / ' + norm + ' * '+factor+' END';
+					select += ', CASE WHEN (' + norm + '=0) THEN NULL ELSE ' + pre + '"' + attrName + '"::float / ' + norm + factorString +' END';
 				} else {
-					select += ',' + pre + '"' + attrName + '" * '+factor;
+					select += ',' + pre + '"' + attrName + '"' + factorString;
 				}
 			}
 			select += ' AS ' + aliasAttrName + ' ';

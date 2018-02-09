@@ -7,6 +7,9 @@ class User {
     constructor(id, permissions, groups) {
         this.id = id;
         this.permissions = permissions || [];
+        this.permissionsUsers = [];
+        this.permissionsGroups = [];
+        this.permissionsTowards = [];
         this.groups = groups || [];
         this._username = '';
         this._email = '';
@@ -49,6 +52,9 @@ class User {
         return {
             _id: this.id,
             permissions: this.permissions,
+            permissionsUsers: this.permissionsUsers,
+            permissionsGroups: this.permissionsGroups,
+            permissionsTowards: this.permissionsTowards,
             groups: this.groups.map(group => group.json()),
             username: this.username,
             email: this.email

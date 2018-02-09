@@ -1,5 +1,8 @@
 let moment = require('moment');
 
+let Permission = require('../../../security/Permission');
+let User = require('../../../security/User');
+
 class PermissionFixture {
     constructor(connection, pool, schema) {
         this.connection = connection;
@@ -291,6 +294,14 @@ class PermissionFixture {
 		}).then(() => {
             return this.createGroup('iluminati');
         }).then(() => {
+            return this.createUser(11, 'admin');
+        }).then(() => {
+            return this.createUser(12, 'jbalhar');
+        }).then(() => {
+            return this.createUser(13, 'iluminati');
+        }).then(() => {
+            return this.createUser(14, 'iluminati2');
+        }).then(() => {
             return this.addMemberToGroup(this.adminId(), this.adminUserId());
         }).then(() => {
             return this.addMemberToGroup(this.iluminatiId(), this.iluminatUserId());
@@ -340,23 +351,27 @@ class PermissionFixture {
     }
 
     adminUserId() {
-        return 1;
+        return 11;
     }
 
     jbalharUserId() {
-        return 2;
+        return 12;
     }
 
     iluminatUserId() {
-        return 3;
+        return 13;
     }
 
     iluminat2UserId() {
-        return 4;
+        return 14;
     }
 
     createGroup(name) {
         return this.pool.pool().query(`INSERT INTO ${this.schema}.groups (name, created, created_by, changed, changed_by) VALUES ('${name}', '${this.time}', ${this.userId}, '${this.time}', ${this.userId})`);
+    }
+
+    createUser(id, name) {
+        return this.pool.pool().query(`INSERT INTO ${this.schema}.panther_users (id, email) VALUES (${id}, '${name}')`);
     }
 
     addMemberToGroup(groupId, userId) {

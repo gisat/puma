@@ -1,15 +1,15 @@
 let Migration = require('./Migration');
 
-let config = require('../config');
-
 class IdOfTheResourceMayBeText extends Migration {
-	constructor() {
-		super('IdOfTheResourceMayBeText');
+	constructor(schema) {
+		super('IdOfTheResourceMayBeText', schema);
+
+		this._schema = schema;
 	}
 
 	process(mongo, pool) {
-		return pool.query(`ALTER TABLE ${config.postgreSqlSchema}.permissions ALTER COLUMN resource_id TYPE text`).then(() => {
-			return pool.query(`ALTER TABLE ${config.postgreSqlSchema}.group_permissions ALTER COLUMN resource_id TYPE text`);
+		return pool.query(`ALTER TABLE ${this._schema}.permissions ALTER COLUMN resource_id TYPE text`).then(() => {
+			return pool.query(`ALTER TABLE ${this._schema}.group_permissions ALTER COLUMN resource_id TYPE text`);
 		});
 	}
 }

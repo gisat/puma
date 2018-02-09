@@ -211,8 +211,8 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
 };
 
 function changeLayerGeoserver(layerId, method, callback) {
-    var username = config.geoserver2Username;
-    var password = config.geoserver2Password;
+    var username = config.geoserverUsername;
+    var password = config.geoserverPassword;
     var auth = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
     var headers = {
         'Content-type': 'application/json',
@@ -220,7 +220,7 @@ function changeLayerGeoserver(layerId, method, callback) {
     };
     var name = 'layer_' + layerId;
 
-    var path = method != 'DELETE' ? config.geoserver2Path + '/rest/workspaces/' + config.geoserver2Workspace + '/datastores/views/featuretypes' : config.geoserver2Path + 'rest/layers';
+    var path = method != 'DELETE' ? config.geoserverPath + '/rest/workspaces/' + config.geoserverWorkspace + '/datastores/views/featuretypes' : config.geoserverPath + 'rest/layers';
     var data = null;
 
     if (method == 'POST') {
@@ -243,10 +243,10 @@ function changeLayerGeoserver(layerId, method, callback) {
     logger.info("layers#changeLayerGeoserver method: " + method);
 
     var options = {
-        host: config.geoserver2Host,
+        host: config.geoserverHost,
         path: path,
         headers: headers,
-        port: config.geoserver2Port,
+        port: config.geoserverPort,
         method: method
     };
     conn.request(options, data, function (err, output, resl) {

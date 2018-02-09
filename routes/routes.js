@@ -92,7 +92,7 @@ module.exports = function(app) {
 	new AttributeSetController(app, pool);
 	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
-	new DataViewController(app, pool);
+	new DataViewController(app, pool, mongo);
 	new CustomFeaturesController(app, pool);
 	new LayerGroupController(app, pool);
 	new LayerRefController(app, pool, mongo);
@@ -116,7 +116,7 @@ module.exports = function(app) {
 
 	new WpsController(app, pool, mongo, null);
 
-	new LayerImporterController(app, mongo, pool);
+	new LayerImporterController(app, mongo, pool, config.postgreSqlSchema);
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');

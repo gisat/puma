@@ -1,4 +1,4 @@
-let supertest = require('supertest-as-promised');
+let supertest = require('supertest');
 let should = require('should');
 
 let logger = require('../../../common/Logger').applicationWideLogger;
@@ -29,7 +29,7 @@ describe('GufIntegrationController', () => {
 	describe('createAdministrativeUnit', () => {
 		it('correctly recognizes extent', done => {
 			controller.createAdministrativeUnit('test/functional/integration/gufde.tif', pgSchema + '.adm_1').then(result => {
-				should(result).be.exactly('8.60566676234157,48.780556097881345,8.82155565363064,48.967444988848');
+				should(result.box).be.exactly('8.60566676234157,48.780556097881345,8.82155565363064,48.967444988848');
 				done();
 			}).catch(err => {
 				done(err);

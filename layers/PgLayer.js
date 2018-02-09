@@ -5,7 +5,7 @@ var Promise = require('promise');
 class PgLayer {
 	/**
 	 * Name represents the name of the layer.
-	 * @param name {String} Name of the layer as perceived by Geoserver and Geonode.
+	 * @param name {String} Name of the layer as perceived by Geoserver.
 	 * @param fidColumn {String} Name of the column which is created. In case of raster layer there is no need for this.
 	 * @param type {String} Represents type of the layer - au, vector, raster
 	 * @param connectionPool {PgPool}
@@ -91,6 +91,10 @@ class PgLayer {
 		}
 		return config.workspaceSchemaMap[workspace] + '.\"' + layerName + '\"';
 	}
+
+    static type() {
+        return 'layer';
+    }
 }
 
 module.exports = PgLayer;

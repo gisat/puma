@@ -1,4 +1,3 @@
-var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 
@@ -8,16 +7,18 @@ var RestStyle = require('../styles/RestStyle');
 var Migration = require('./Migration');
 
 class SymbologyToPostgreSql extends Migration {
-	constructor() {
-		super('symbologyToPostgreSql');
+	constructor(schema) {
+		super('symbologyToPostgreSql', schema);
+
+		this._schema = schema;
 	}
 
 	process(mongoDatabase, pool){
 		logger.info('SymbologyToPostgreSql#process Started processing.');
 
 		return mongoDatabase.collection('symbology').find().toArray()
-			.then(function (symbologies) {
-				var styles = new PgStyles(pool, config.postgreSqlSchema);
+			.then((symbologies) => {
+				var styles = new PgStyles(pool, this._schema);
 				var promises = [];
 				symbologies.forEach(function (symbology) {
 					symbology.source = 'geoserver';

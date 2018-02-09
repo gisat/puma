@@ -93,7 +93,17 @@ class LodController {
     
     data(request, response) {
         let hash;
-        this.getFiltersHash(request.query.filters).then(pHash => {
+        let hashParams = [];
+        if (request.query.filters){
+            hashParams = request.query.filters;
+        }
+        if (request.query.area){
+            hashParams.push(request.query.area);
+        }
+        if (request.query.datasetUri){
+            hashParams.push(request.query.datasetUri);
+        }
+        this.getFiltersHash(hashParams).then(pHash => {
             hash = pHash;
             return this._iprDataQueryProcesses.getExistingProcess(pHash);
         }).then((result) => {
@@ -105,7 +115,7 @@ class LodController {
                 state = process.state;
             } else {
                 this._iprDataQueryProcesses.createNewProcess(hash, results, state).then(() => {
-                    new IPRData(request.query.filters).json().then(data => {
+                    new IPRData(request.query.filters, request.query.area, request.query.datasetUri).json().then(data => {
                         console.log(`#### CREATING WMS LAYER ####`);
                         let values = data.values;
                         let srid = data.srid;
@@ -215,6 +225,7 @@ class LodController {
     datasets(request, response){
         let keywords = LodController.parseRequestString(request.query.search);
         let type = request.query.settings.type;
+        let extended = (request.query.settings.extended === "true");
         let self = this;
 
         if (keywords.original.length === 0) {
@@ -229,7 +240,7 @@ class LodController {
             logger.info(`INFO iprquery#dataset keywords original: ` + keywords.original.join(", "));
             logger.info(`INFO iprquery#dataset keywords adjusted CZ: ` + keywords.adjustedCZ.join(", "));
             logger.info(`INFO iprquery#dataset keywords adjusted EN: ` + keywords.adjustedEN.join(", "));
-            new IPRDatasets(keywords, type).json().then(results => {
+            new IPRDatasets(keywords, type, extended).json().then(results => {
                 let json = {
                     status: "ok",
                     keywords: keywords,
