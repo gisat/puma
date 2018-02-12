@@ -68,19 +68,28 @@ class PgCsvLayer {
                                 let createTable = `CREATE TABLE ${tableName} (_id serial primary key, ${columns.slice(0, -2)}, the_geom geometry);`;
 
                                 pgPool.pool().query(createTable).then(queryResult => {
+                                    let queries = [];
                                     let correctKeys = _.map(keys, key => {
                                         return `"${key}"`;
                                     });
-                                    let csvToPsql = `INSERT INTO ${tableName} (${correctKeys.slice()}, the_geom) VALUES `;
                                     for (let csvLine of csvLines) {
                                         let values = [];
                                         for (let key of keys) {
                                             values.push(csvLine[key]);
                                         }
-                                        csvToPsql += `(${values.slice()}, ST_SetSRID(ST_MakePoint(${csvLine.LON}, ${csvLine.LAT}), 4326)), `;
+										queries.push(
+										    `INSERT INTO ${tableName} (${correctKeys.slice()}, the_geom) VALUES (${values.slice()}, ST_SetSRID(ST_MakePoint(${csvLine.LON}, ${csvLine.LAT}), 4326));`
+                                        );
                                     }
-                                    csvToPsql = csvToPsql.slice(0, -2);
-                                    pgPool.pool().query(csvToPsql).then(queryResult => {
+
+									let result = Promise.resolve();
+									queries.forEach(query => {
+										result = result.then(() => {
+										    return pgPool.pool().query(query);
+                                        });
+									});
+
+                                    result.then(queryResult => {
                                         superagent
                                             .get(`http://localhost/cgi-bin/publishlayer?l=${tableName}&d=datastore&p=EPSG:4326`)
                                             .end(function (error, response) {
