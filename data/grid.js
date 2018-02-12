@@ -38,7 +38,7 @@ function getChart(params, callback) {
 							dataIndex: 'name',
 							text: 'Name',
 							flex: 1,
-							minWidth: 120,
+							minWidth: 140,
 							filter: {
 								type: 'string'
 							}
@@ -71,10 +71,10 @@ function getChart(params, callback) {
 								units: attrConf.units,
 								xtype: 'numbercolumn',
 								tooltip: attrConf.name + ' '+results.years[year],
-								text: attrName,
+								text: fullName,
 								yearName: results.years[year],
 								fullName: fullName,
-								minWidth: 100,
+								minWidth: 150,
 								filter: filter
 							})
 							fields.push(dataIndex);
