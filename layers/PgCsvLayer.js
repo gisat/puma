@@ -82,14 +82,12 @@ class PgCsvLayer {
                                         );
                                     }
 
-									let result = Promise.resolve();
+									let chainPromise = Promise.resolve();
 									queries.forEach(query => {
-										result = result.then(() => {
-										    return pgPool.pool().query(query);
-                                        });
+										chainPromise = chainPromise.then(() => pgPool.pool().query(query));
 									});
 
-                                    result.then(queryResult => {
+									chainPromise.then(queryResult => {
                                         superagent
                                             .get(`http://localhost/cgi-bin/publishlayer?l=${tableName}&d=datastore&p=EPSG:4326`)
                                             .end(function (error, response) {
