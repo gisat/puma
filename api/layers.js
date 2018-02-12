@@ -265,6 +265,7 @@ function getLayerDetails(params, req, res, callback) {
         })
         .catch(err => {
             logger.error("api/layers.js getLayerDetails. Failed retrieving data about layer from geoserver. Error: ", err);
+            res.data = [];
             callback();
         })
 }
