@@ -58,7 +58,7 @@ class Info {
                 return result;
             }).filter(value => value);
         });
-    }
+    };
 
     sql(gids, baseLayers) {
         logger.info('Info#sql baseLayers', baseLayers);

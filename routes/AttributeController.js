@@ -5,6 +5,7 @@ var Controller = require('./Controller');
 var UUID = require('../common/UUID');
 var _ = require('underscore');
 var moment = require('moment');
+let Promise = require('promise');
 
 let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var Statistics = require('../attributes/Statistics');
@@ -33,6 +34,7 @@ class AttributeController extends Controller {
         app.post('/rest/filter/attribute/amount', this.amount.bind(this));
 
         app.post('/rest/info/attribute', this.info.bind(this));
+        app.post('/rest/info/bboxes', this.getBoundingBoxes.bind(this));
     }
 
 	/**
@@ -118,27 +120,6 @@ class AttributeController extends Controller {
         }
     }
 
-    _parseRequest(params) {
-        let attributes;
-        if (!params.isArray){
-            attributes = _.toArray(params.attributes);
-        } else {
-            attributes = params.attributes;
-        }
-
-        var attributesMap = {};
-        attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-        return {
-            attributes: attributes,
-            attributesMap: attributesMap,
-            areaTemplate: Number(params.areaTemplate),
-            periods: params.periods.map(period => Number(period)),
-            places: params.places && params.places.map(place => Number(place)) || []
-        };
-    }
-
     /**
      * Returns values for received attributes for specific polygon.
      * @param request
@@ -162,6 +143,80 @@ class AttributeController extends Controller {
         });
 
     }
+
+    getBoundingBoxes(request,response){
+        let areas = request.body.areas;
+        let periods = request.body.periods;
+        let promises = [];
+
+        areas.map(area => {
+            let options = this._parseRequestForBoundingBox(area, periods);
+            let attributesObj = new AttributesForInfo(options.areaTemplate, options.periods, options.places, options.attributes);
+            promises.push(this._info.statistics(attributesObj,  options.attributesMap, area.gid));
+        });
+
+        Promise.all(promises).then(function(result){
+            if (result && result.length){
+                let extents = [];
+                result.map(area => {
+                    extents.push(area[0].wgsExtent);
+                });
+                response.json({
+                   status: "ok",
+                   data: extents
+                });
+            } else {
+                response.json({
+                    status: "error",
+                    message: "No selected area!"
+                })
+            }
+            // response.json("a");
+        }).catch(err => {
+            response.status(500).json({status: 'err', message: err});
+            throw new Error(
+                logger.error(`AttributeController#getBoundingBox Error: `, err)
+            )
+        });
+    }
+
+    _parseRequestForBoundingBox(area, periods) {
+        let attributes = [];
+        let attributesMap = {};
+        attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
+        return {
+            attributes: attributes,
+            attributesMap: attributesMap,
+            areaTemplate: Number(area.at),
+            periods: periods.map(period => Number(period)),
+            places: [Number(area.loc)]
+        };
+    }
+
+
+    _parseRequest(params) {
+        let attributes;
+        if (!params.isArray){
+            attributes = _.toArray(params.attributes);
+        } else {
+            attributes = params.attributes;
+        }
+
+        var attributesMap = {};
+        attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
+        return {
+            attributes: attributes,
+            attributesMap: attributesMap,
+            areaTemplate: Number(params.areaTemplate),
+            periods: params.periods.map(period => Number(period)),
+            places: params.places && params.places.map(place => Number(place)) || []
+        };
+    }
+
 
     /**
      * Simply removes duplicates from the result.
