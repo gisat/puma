@@ -11,6 +11,8 @@ var NumericAttribute = require('../attributes/NumericAttribute');
 var TextAttribute = require('../attributes/TextAttribute');
 var BooleanAttribute = require('../attributes/BooleanAttribute');
 
+var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
+
 class AttributesForInfo extends Attributes {
   constructor(areaTemplate, periods, places, attributes){
     super(areaTemplate, periods, places, attributes);
@@ -87,6 +89,20 @@ class AttributesForInfo extends Attributes {
 
       return Promise.all(attributesPromises);
     });
+  }
+
+  getDataviewsForBbox(){
+      let areaTemplate = this._areaTemplate;
+      let periods = this._periods;
+      let places = this._places;
+      return new FilteredBaseLayers({
+          areaTemplate: areaTemplate,
+          isData: false,
+          year: {$in: periods},
+          location: {$in: places}
+      }, conn.getMongoDb()).read().then(baseLayers => {
+          return baseLayers;
+      })
   }
 
   getExtentFromWkt(geometry){

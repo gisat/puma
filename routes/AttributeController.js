@@ -34,7 +34,7 @@ class AttributeController extends Controller {
         app.post('/rest/filter/attribute/amount', this.amount.bind(this));
 
         app.post('/rest/info/attribute', this.info.bind(this));
-        app.post('/rest/info/bboxes', this.getBoundingBoxes.bind(this));
+        app.post('/rest/info/bboxes', this.getBoundingBox.bind(this));
     }
 
 	/**
@@ -144,26 +144,31 @@ class AttributeController extends Controller {
 
     }
 
-    getBoundingBoxes(request,response){
+    /**
+     * Get bounding box for given areas
+     * @param request
+     * @param response
+     */
+    getBoundingBox(request,response){
         let areas = request.body.areas;
         let periods = request.body.periods;
         let promises = [];
 
-        areas.map(area => {
-            let options = this._parseRequestForBoundingBox(area, periods);
+        areas.map(locationObj => {
+            let areaTemplate = locationObj.at;
+            let options = this._parseRequestForBoundingBox(areaTemplate, locationObj.loc, periods);
             let attributesObj = new AttributesForInfo(options.areaTemplate, options.periods, options.places, options.attributes);
-            promises.push(this._info.statistics(attributesObj,  options.attributesMap, area.gid));
+            promises.push(this._info.getBboxes(attributesObj, locationObj.gids));
         });
 
+        let self = this;
         Promise.all(promises).then(function(result){
+            let extents = [];
             if (result && result.length){
-                let extents = [];
-                result.map(area => {
-                    extents.push(area[0].wgsExtent);
-                });
-                response.json({
-                   status: "ok",
-                   data: extents
+                result.map(areas => {
+                    areas.map(extent => {
+                       extents.push(extent);
+                    });
                 });
             } else {
                 response.json({
@@ -171,7 +176,27 @@ class AttributeController extends Controller {
                     message: "No selected area!"
                 })
             }
+            return extents;
             // response.json("a");
+        }).catch(err => {
+            response.status(500).json({status: 'err', message: err});
+            throw new Error(
+                logger.error(`AttributeController#getBoundingBox Error: `, err)
+            )
+        }).then(function(extents){
+            if (extents.length){
+                let points = [];
+                extents.map(extent => {
+                    extent.map(coord => {
+                       points.push(coord);
+                    });
+                });
+                let bbox = self._info.getExtentFromPoints(points);
+                response.json({
+                   status: "ok",
+                   bbox: bbox
+                });
+            }
         }).catch(err => {
             response.status(500).json({status: 'err', message: err});
             throw new Error(
@@ -180,7 +205,7 @@ class AttributeController extends Controller {
         });
     }
 
-    _parseRequestForBoundingBox(area, periods) {
+    _parseRequestForBoundingBox(areaTemplate, location, periods) {
         let attributes = [];
         let attributesMap = {};
         attributes.forEach(
@@ -189,9 +214,9 @@ class AttributeController extends Controller {
         return {
             attributes: attributes,
             attributesMap: attributesMap,
-            areaTemplate: Number(area.at),
+            areaTemplate: Number(areaTemplate),
             periods: periods.map(period => Number(period)),
-            places: [Number(area.loc)]
+            places: [Number(location)]
         };
     }
 
