@@ -61,7 +61,9 @@ class PgWmsLayers {
 
 			restrictionsSql += restriction;
 		});
-		return this._pool.query(`${this.readSql()} ${restrictionsSql}`).then(result => {
+		let sql = `${this.readSql()} ${restrictionsSql}`;
+		logger.info(`PgWmsLayer#filtered SQL: ${sql}`);
+		return this._pool.query(sql).then(result => {
 			return this._transformRows(result.rows);
 		});
 	}
