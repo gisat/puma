@@ -16,7 +16,7 @@ class LayerWmsController {
 	constructor(app, pool, mongo, schema){
 		this._pgLayers = new PgWmsLayers(pool, mongo, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
-		this.type = "layer_wms";
+		this.type = PgWmsLayers.tableName();
 
 		app.get('/rest/wms/layer', this.readAll.bind(this));
 		app.post('/rest/wms/layer', this.add.bind(this));
@@ -40,7 +40,7 @@ class LayerWmsController {
 			layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
 
 			let promises = layers.map(layer => {
-				return this.permissions.forType("layer", layer.id).then(permissions => {
+				return this.permissions.forType(this.type, layer.id).then(permissions => {
 					layer.permissions = permissions;
 				});
 			});
