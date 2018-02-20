@@ -2,12 +2,15 @@ var Promise = require('promise');
 var logger = require('../common/Logger').applicationWideLogger;
 var _ = require('underscore');
 let wellknown = require('wellknown');
-let d3geo = require('d3-geo');
+
+let BoundingBox = require('../custom_features/BoundingBox');
 
 class Info {
     constructor(pgPool, schema) {
         this._schema = schema;
         this._pgPool = pgPool;
+
+        this.boundingBox = new BoundingBox();
     }
 
     statistics(attributes, attributesMap, gids) {
@@ -70,13 +73,12 @@ class Info {
      */
     getBoundingBoxes(attributes, gids){
         let self = this;
-        return attributes.getDataviewsForBbox().then(this.sqlForBboxes.bind(this,gids)).then(result => {
+        return attributes.getDataviewsForBbox().then(this.sqlForBoundingBoxes.bind(this,gids)).then(result => {
             let extents = [];
             if (result && result.length){
                result.map(data => {
                   data.rows.map(record => {
-                      let jsonExtent = wellknown(record.extent);
-                      let extent = self.getExtentForArea(jsonExtent, record.gid, record.tablename);
+                      let extent = self.getExtentForArea(record.extent, record.gid, record.tablename);
                       extents.push(extent);
                   });
                });
@@ -89,13 +91,14 @@ class Info {
 
     /**
      * Check the extent of an area. If it was calculated wrong by PostGIS, use D3
-     * @param originalExtent {JSON} extent of the area calculated by PostGIS
+     * @param originalExtent {string} extent of the area in WKT format
      * @param gid {string} id of gid
      * @param sourceTable {string} name of source table
      * @returns {Promise}
      */
     getExtentForArea(originalExtent, gid, sourceTable){
-        let extentCoord = originalExtent.coordinates[0];
+        let jsonExtent = wellknown(originalExtent);
+        let extentCoord = jsonExtent.coordinates[0];
         let minLon = 0;
         let maxLon = 0;
         extentCoord.map(coordinate =>{
@@ -116,8 +119,8 @@ class Info {
             return this.sqlForGeometry(gid, sourceTable).then(function(result){
                 if (result && result.rows.length){
                     let geometry = result.rows[0].geometry;
-                    let corners = self.calculateExtent(wellknown(geometry));
-                    return self.getBoundingBoxFromCorners(corners);
+                    let corners = self.boundingBox.getExtentFromWkt(geometry);
+                    return self.boundingBox.completeBoundingBox(corners);
                 }
             });
         }
@@ -134,71 +137,11 @@ class Info {
     }
 
     /**
-     * Get complete bounding box from two corners.
-     * @param corners {Array} Bottom-left and upper-right corner of the bounding box
-     * @returns {Array} 4 definition points of the area represented by [lon,lat] coordinates
-     */
-    getBoundingBoxFromCorners(corners){
-        let points = [];
-
-        let minLon = Number(corners[0][0]);
-        let minLat = Number(corners[0][1]);
-        let maxLon = Number(corners[1][0]);
-        let maxLat = Number(corners[1][1]);
-        points.push([minLon,minLat]);
-        points.push([maxLon,minLat]);
-        points.push([maxLon,maxLat]);
-        points.push([minLon,maxLat]);
-        return points;
-    }
-
-    /**
-     * It converts list of points [lon,lat] to GeoJSON structure
-     * @param points {Array} list of points
-     * @returns {Object} GeoJSON
-     */
-    getGeoJsonFromPoints (points){
-        let json = {
-            "type": "FeatureCollection",
-            "features": []
-        };
-        points.forEach(function(point){
-            json["features"].push({
-                "type": "Feature",
-                "geometry": {
-                    "type": "Point",
-                    "coordinates": point
-                }
-            })
-        });
-        return json;
-    };
-
-    /**
-     * Get bounding box from a list of [lon,lat] points
-     * @param points
-     * @returns {Array}
-     */
-    getExtentFromPoints(points){
-        let json = this.getGeoJsonFromPoints(points);
-        return d3geo.geoBounds(json);
-    }
-
-    /**
-     * Calculate an enxtent for given geometry in GeoJSON
-     * @param geometry {JSON}
-     * @returns {Array} Bottom-left and upper-right corner of the bounding box
-     */
-    calculateExtent(geometry){
-        return d3geo.geoBounds(geometry);
-    }
-
-    /**
      * @param gids {Array} list of areas
      * @param baseLayers {Object}
      * @returns {Promise}
      */
-    sqlForBboxes(gids, baseLayers){
+    sqlForBoundingBoxes(gids, baseLayers){
         logger.info('Info#sqlForBboxes baseLayers', baseLayers);
         if (!Array.isArray(gids)){
             gids = [gids];

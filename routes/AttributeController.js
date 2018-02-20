@@ -197,7 +197,7 @@ class AttributeController extends Controller {
                        points.push(coord);
                     });
                 });
-                let bbox = self._info.getExtentFromPoints(points);
+                let bbox = self._info.boundingBox.getExtentFromPoints(points);
                 response.json({
                    status: "ok",
                    bbox: bbox
