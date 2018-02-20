@@ -62,7 +62,13 @@ class Info {
         });
     };
 
-    getBboxes(attributes, gids){
+    /**
+     * Get gids bounding boxes
+     * @param attributes {AttributesForInfo}
+     * @param gids {Array} list of gids
+     * @returns {Promise}
+     */
+    getBoundingBoxes(attributes, gids){
         let self = this;
         return attributes.getDataviewsForBbox().then(this.sqlForBboxes.bind(this,gids)).then(result => {
             let extents = [];
@@ -111,17 +117,16 @@ class Info {
                 if (result && result.rows.length){
                     let geometry = result.rows[0].geometry;
                     let corners = self.calculateExtent(wellknown(geometry));
-                    return self.getExtendedExtentFromCorners(corners);
+                    return self.getBoundingBoxFromCorners(corners);
                 }
             });
         }
 
         /**
-         * Else parse original extent and add centroid as fifth definition point
+         * Else use original extent
          */
         else {
             extentCoord.pop();
-            extentCoord.push(this.getCentroid(extentCoord));
             return new Promise(function(resolve,reject){
                resolve(extentCoord);
             });
@@ -129,11 +134,11 @@ class Info {
     }
 
     /**
-     * It returns extended bounding box. It means all bbox corners and centroid of the area
+     * It bounding box.
      * @param corners {Array} Bottom-left and upper-right corner of the bounding box
-     * @returns {Array} 5 definition points of the are represented by [lon,lat] coordinates
+     * @returns {Array} 4 definition points of the area represented by [lon,lat] coordinates
      */
-    getExtendedExtentFromCorners(corners){
+    getBoundingBoxFromCorners(corners){
         let points = [];
 
         let minLon = Number(corners[0][0]);
@@ -144,26 +149,15 @@ class Info {
         points.push([maxLon,minLat]);
         points.push([maxLon,maxLat]);
         points.push([minLon,maxLat]);
-        points.push(this.getCentroid(points));
         return points;
     }
-
-    /**
-     * Calculate centroid from bounding box
-     * @param corners {[[{Number}, {Number}],[{Number}, {Number}]]} bottom left and top right corner of the bounding box
-     * @returns {[lon,lat]} coordinates of centroid
-     */
-    getCentroid(corners){
-        let json = this.getGeoJsonFromPoints(corners);
-        return d3geo.geoCentroid(json);
-    };
 
     /**
      * It converts list of points [lon,lat] to GeoJSON structure
      * @param points {Array} list of points
      * @returns {Object} GeoJSON
      */
-   getGeoJsonFromPoints (points){
+    getGeoJsonFromPoints (points){
         let json = {
             "type": "FeatureCollection",
             "features": []
@@ -181,15 +175,6 @@ class Info {
     };
 
     /**
-     * Calculate an enxtent for given geometry in GeoJSON
-     * @param geometry {JSON}
-     * @returns {Array} Bottom-left and upper-right corner of the bounding box
-     */
-    calculateExtent(geometry){
-        return d3geo.geoBounds(geometry);
-    }
-
-    /**
      * Get bounding box from a list of [lon,lat] points
      * @param points
      * @returns {Array}
@@ -197,6 +182,15 @@ class Info {
     getExtentFromPoints(points){
         let json = this.getGeoJsonFromPoints(points);
         return d3geo.geoBounds(json);
+    }
+
+    /**
+     * Calculate an enxtent for given geometry in GeoJSON
+     * @param geometry {JSON}
+     * @returns {Array} Bottom-left and upper-right corner of the bounding box
+     */
+    calculateExtent(geometry){
+        return d3geo.geoBounds(geometry);
     }
 
     sqlForBboxes(gids, baseLayers){

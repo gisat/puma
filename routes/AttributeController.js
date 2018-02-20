@@ -154,11 +154,18 @@ class AttributeController extends Controller {
         let periods = request.body.periods;
         let promises = [];
 
+        if (!areas){
+            response.json({
+                status: "error",
+                message: "No selected area!"
+            });
+        }
+
         areas.map(locationObj => {
             let areaTemplate = locationObj.at;
             let options = this._parseRequestForBoundingBox(areaTemplate, locationObj.loc, periods);
             let attributesObj = new AttributesForInfo(options.areaTemplate, options.periods, options.places, options.attributes);
-            promises.push(this._info.getBboxes(attributesObj, locationObj.gids));
+            promises.push(this._info.getBoundingBoxes(attributesObj, locationObj.gids));
         });
 
         let self = this;
@@ -174,10 +181,9 @@ class AttributeController extends Controller {
                 response.json({
                     status: "error",
                     message: "No selected area!"
-                })
+                });
             }
             return extents;
-            // response.json("a");
         }).catch(err => {
             response.status(500).json({status: 'err', message: err});
             throw new Error(
