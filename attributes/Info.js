@@ -88,14 +88,14 @@ class Info {
     };
 
     /**
-     *
-     * @param extent {JSON} extent of an the calculated by PostGIS
+     * Check the extent of an area. If it was calculated wrong by PostGIS, use D3
+     * @param originalExtent {JSON} extent of the area calculated by PostGIS
      * @param gid {string} id of gid
      * @param sourceTable {string} name of source table
-     * @returns
+     * @returns {Promise}
      */
-    getExtentForArea(extent, gid, sourceTable){
-        let extentCoord = extent.coordinates[0];
+    getExtentForArea(originalExtent, gid, sourceTable){
+        let extentCoord = originalExtent.coordinates[0];
         let minLon = 0;
         let maxLon = 0;
         extentCoord.map(coordinate =>{
@@ -134,7 +134,7 @@ class Info {
     }
 
     /**
-     * It bounding box.
+     * Get complete bounding box from two corners.
      * @param corners {Array} Bottom-left and upper-right corner of the bounding box
      * @returns {Array} 4 definition points of the area represented by [lon,lat] coordinates
      */
@@ -193,6 +193,11 @@ class Info {
         return d3geo.geoBounds(geometry);
     }
 
+    /**
+     * @param gids {Array} list of areas
+     * @param baseLayers {Object}
+     * @returns {Promise}
+     */
     sqlForBboxes(gids, baseLayers){
         logger.info('Info#sqlForBboxes baseLayers', baseLayers);
         if (!Array.isArray(gids)){
@@ -218,6 +223,10 @@ class Info {
         );
     }
 
+    /**
+     * @param gid {Array} list of areas
+     * @param sourceTable {string} name of source table
+     */
     sqlForGeometry(gid, sourceTable){
         let sql = `SELECT ST_AsText(ST_Transform(the_geom, 4326)) as geometry FROM ${sourceTable} WHERE gid = '${gid}'`;
         logger.info('Info#sqlForGeometry sql', sql);
