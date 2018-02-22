@@ -154,6 +154,8 @@ class AttributeController extends Controller {
         let periods = request.body.periods;
         let promises = [];
 
+        logger.info(`AttributeController#getBoundingBox periods: `, periods);
+
         if (!areas){
             response.json({
                 status: "error",
@@ -164,6 +166,8 @@ class AttributeController extends Controller {
         areas.map(locationObj => {
             let areaTemplate = locationObj.at;
             let options = this._parseRequestForBoundingBox(areaTemplate, locationObj.loc, periods);
+            logger.info(`AttributeController#getBoundingBox at: `,areaTemplate);
+            logger.info(`AttributeController#getBoundingBox loc: `,locationObj.loc);
             let attributesObj = new AttributesForInfo(options.areaTemplate, options.periods, options.places, options.attributes);
             promises.push(this._info.getBoundingBoxes(attributesObj, locationObj.gids));
         });

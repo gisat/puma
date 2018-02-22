@@ -78,6 +78,9 @@ class Info {
             if (result && result.length){
                result.map(data => {
                   data.rows.map(record => {
+                      logger.info(`Info#getBoundingBoxes extent: `,record.extent);
+                      logger.info(`Info#getBoundingBoxes gid: `,record.gid);
+                      logger.info(`Info#getBoundingBoxes tablename: `,record.tablename);
                       let extent = self.getExtentForArea(record.extent, record.gid, record.tablename);
                       extents.push(extent);
                   });
