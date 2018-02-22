@@ -32,6 +32,8 @@ class DataSetController extends Controller {
 			return;
 		}
 
+		request.body.data.removedTools = ["2dmap", "scope"];
+
 		super.create(request, response, next);
 	}
 
