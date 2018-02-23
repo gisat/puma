@@ -34,10 +34,14 @@ class PrintController {
 
         let filePath = `/tmp/${new UUID().toString()}.${ext}`;
         console.log(`PrintController#snapshotUrl File`, filePath);
-        fs.writeFileSync(filePath, buffer);
-
-        console.log(`PrintController#snapshotUrl Download`);
-        response.download(filePath);
+        fs.writeFile(filePath, buffer, (err) => {
+        	if(err) {
+        		console.error(`PrintController#snapshotUrl Error: `, err);
+			} else {
+                console.log(`PrintController#snapshotUrl Download`);
+                response.download(filePath);
+			}
+		});
 	}
 
 	download(request, response, next) {
