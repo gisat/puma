@@ -24,7 +24,8 @@ class PrintController {
 
     snapshotUrl(request, response) {
 		let url = request.body.url;
-        let regex = /^data:.+\/(.+);base64,(.*)$/;
+		console.log('PrintController#snapshotUrl' , url);
+		let regex = /^data:.+\/(.+);base64,(.*)$/;
 
         let matches = url.match(regex);
         let ext = matches[1];
@@ -32,8 +33,10 @@ class PrintController {
         let buffer = new Buffer(data, 'base64');
 
         let filePath = `/tmp/${new UUID().toString()}.${ext}`;
+        console.log(`PrintController#snapshotUrl File`, filePath);
         fs.writeFileSync(filePath, buffer);
 
+        console.log(`PrintController#snapshotUrl Download`);
         response.download(filePath);
 	}
 
