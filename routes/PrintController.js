@@ -3,9 +3,9 @@ let GeneratedImage = require('../visualization/GeneratedImage');
 
 class PrintController {
 	constructor(app) {
-		app.post('/print/download/:id', this.download.bind(this));
+        app.post('/print/snapshot/:id', this.snapshot.bind(this));
+
 		app.get('/print/download/:id', this.download.bind(this));
-		app.get('/print/snapshot/:id', this.snapshot.bind(this));
 	}
 
 	snapshot(request, response) {
