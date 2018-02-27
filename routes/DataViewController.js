@@ -41,6 +41,7 @@ class DataViewController extends Controller {
                 .map(view => {
                     return {
                         _id: view._id,
+                        changed: view.changed,
                         conf: {
                             name: view.conf.name,
                             description: view.conf.description,
