@@ -41,6 +41,7 @@ class LayerRefController extends Controller {
                     delete layerRef.createdBy;
                     delete layerRef.changed;
                     delete layerRef.changedBy;
+                    return layerRef;
                 });
 
             response.json({data: resultsWithRights});
