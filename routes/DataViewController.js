@@ -57,6 +57,9 @@ class DataViewController extends Controller {
             response.json({data: resultsWithRights});
         }).catch(err => {
             logger.error(`DataViewController#readInitialViews Error: `, err);
+            response.status(500).json({
+                status: "Err"
+            })
         })
     }
 
