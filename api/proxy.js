@@ -170,6 +170,10 @@ function wms(params, req, res, callback) {
 		headers['Cookie'] = 'JSESSIONID='+jsid;
 	}
 
+	if (!params['VERSION']) {
+		params['VERSION'] = `1.1.1`;
+	}
+
 	headers['Authorization'] = auth;
     if (method=='GET') {
 		var queryParams = '?'+querystring.stringify(params);
