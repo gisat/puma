@@ -251,11 +251,11 @@ function getLayerDetails(params, req, res, callback) {
     var workspace = params.layer.split(':')[0];
 
     return superagent
-        .get(`${config.geoServerUrl}${workspace}/ows`)
+        .get(`${config.geoServerUrl}${workspace}/wfs`)
         .query({
-            "SERVICE": "wfs",
-            "REQUEST": "DescribeFeatureType",
-            "TYPENAME": params.layer
+            "service": "wfs",
+            "request": "DescribeFeatureType",
+            "typeName": params.layer
         })
         .then(result => {
         	logger.info(`api/layers.js getLayerDetails Result: `, result.text);
