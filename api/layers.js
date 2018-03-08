@@ -264,7 +264,7 @@ function getLayerDetails(params, req, res, callback) {
         .then(result => {
         	logger.info(`api/layers.js getLayerDetails Result: `, result.text);
 
-            res.data = parseWfsJsonDocument(result.text, layerName);
+            res.data = parseWfsJsonDocument(JSON.parse(result.text), layerName);
             return callback();
         })
         .catch(err => {
@@ -306,17 +306,17 @@ function parseWfsDocument(output) {
 }
 
 function parseWfsJsonDocument(output, layerName) {
-	logger.info(`api/layers.js parseWfsDocument. Output: `, output);
+	logger.info(`api/layers.js parseWfsJsonDocument. Output: `, output);
 
-	if(!output || !output.featureTypes) {
-		logger.warn("api/layers#parseWfsDocument There isn't a valid WFS response.", output);
+	if(!output) {
+		logger.warn("api/layers#parseWfsJsonDocument There isn't a valid WFS response.", output);
 		return [];
 	}
 
 	let featureType = _.find(output.featureTypes, {typeName: layerName});
 
 	if(!output || !output.featureTypes) {
-		logger.warn(`api/layers#parseWfsDocument There isn't a valid WFS response for ${layerName}` , output);
+		logger.warn(`api/layers#parseWfsJsonDocument There isn't a valid WFS response for ${layerName}` , output);
 		return [];
 	}
 
