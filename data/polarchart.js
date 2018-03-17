@@ -255,7 +255,7 @@ function getChart(params, callback) {
 					// }
 
 					// fill chartData from attr.series
-					let min = polarAxesNormalization ? attrPeriodMinMap[attributeIndex][periodIndex] | totalMin;
+					let min = polarAxesNormalization ? attrPeriodMinMap[attributeIndex][periodIndex] : totalMin;
 					let max = polarAxesNormalization ? attrPeriodMaxMap[attributeIndex][periodIndex] : totalMax;
 					for(let serieIndex = 0; serieIndex < attr.series[periodIndex].length; serieIndex++) {
 						let serie = attr.series[periodIndex][serieIndex];
