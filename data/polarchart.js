@@ -8,7 +8,7 @@ const _ = require('underscore');
 
 function getChart(params, callback) {
 	let conf = cfg();
-	conf = _.extend(conf,require('../data/defaultchart'));
+	conf = _.extend(conf,require('../data/defaultD3Chart'));
 	let attrs = JSON.parse(params['attrs']);
 	let width = params['width'] || 560;
 	let areas = JSON.parse(params['areas']);
@@ -16,6 +16,7 @@ function getChart(params, callback) {
 	let years = JSON.parse(params['years']);
 	let currentAt = null;
 	for (let loc in areas) {
+		if (!areas.hasOwnProperty(loc)) continue;
 		for (let at in areas[loc]) {
 			currentAt = at;
 			// break;
@@ -29,19 +30,21 @@ function getChart(params, callback) {
 		invisibleAttrsMap[dataIndex] = true;
 	}
 
+
+	// TODO rewrite to promises
 	async.auto({
 		data: ['attrConf',function(asyncCallback,results) {
-				params.attrMap = results.attrConf.prevAttrMap;
-				let stacking = params['stacking'];
-				let attrsNum = (!stacking || stacking == 'none' || stacking == 'double') ? attrs.length * years.length : years.length;
-				dataMod.getData(params, function(err, dataObj) {
-					if (err) {
-						logger.error("columnchart#getChart data. Error: ", err);
-						return callback(err);
-					}
-					return asyncCallback(null, dataObj);
-				})
-			}],
+			params.attrMap = results.attrConf.prevAttrMap;
+			let stacking = params['stacking'];
+			let attrsNum = (!stacking || stacking == 'none' || stacking == 'double') ? attrs.length * years.length : years.length;
+			dataMod.getData(params, function(err, dataObj) {
+				if (err) {
+					logger.error("columnchart#getChart data. Error: ", err);
+					return callback(err);
+				}
+				return asyncCallback(null, dataObj);
+			})
+		}],
 		attrConf: function(asyncCallback) {
 
 			dataMod.getAttrConf(params, function(err, attrConf) {
@@ -77,16 +80,18 @@ function getChart(params, callback) {
 			let areas = JSON.parse(oldAreas);
 			let categories = [];
 			let aggregate = params['aggregate'];
+			let polarAxesNormalization = (params['polarAxesNormalizationSettings'] === "yes");
 			let aggData = results.data.aggData;
 
 			let yUnits = '';
-			let attr = null;
+			// let attr = null;
 
+			// iterate data
 			for (let i = 0; i < data.length; i++) {
 				let row = data[i];
 
 				for (let j = 0; j < attrs.length; j++) {
-					attr = attrs[j];
+					let attr = attrs[j];
 					if (!attr.units) {
 						let obj = attrConf[attr.as][attr.attr];
 						attr.units = obj.units;
@@ -137,6 +142,7 @@ function getChart(params, callback) {
 							attr.plotNames.push(aggregate);
 						}
 
+						// pushing data values to series here
 						if (params['stacking'] != 'double' || j < (attrs.length / 2)) {
 							attr.series[k].push({
 								y: +row[yearAttrName],
@@ -164,77 +170,151 @@ function getChart(params, callback) {
 				}
 				categories.push(row['name']);
 			}
-			let series = [];
+
+
+
+
+
+
+
+
+
+
+			let chartData = [];
+			// let series = [];
 			let plotLines = [];
 			// var units = [];
 			let offset = Math.ceil(attrs.length / 2);
-			for (let i = 0; i < attrs.length; i++) {
-				attr = attrs[i];
+
+			// find out mins and maxs of series
+			let totalMin = null;
+			let totalMax = null;
+			let attrPeriodMinMap = {};
+			let attrPeriodMaxMap = {};
+			for (let attributeIndex = 0; attributeIndex < attrs.length; attributeIndex++) {
+				let series = attrs[attributeIndex].series;
+				for (let periodIndex = 0; periodIndex < series.length; periodIndex++) {
+					// pole objektů
+					let serie = series[periodIndex];
+					let min = Math.min.apply(Math, serie.map(function(o){return o.y;}));
+					let max = Math.max.apply(Math, serie.map(function(o){return o.y;}));
+					attrPeriodMinMap[attributeIndex] = attrPeriodMinMap[attributeIndex] || {};
+					attrPeriodMaxMap[attributeIndex] = attrPeriodMaxMap[attributeIndex] || {};
+					attrPeriodMinMap[attributeIndex][periodIndex]
+						= (attrPeriodMinMap[attributeIndex][periodIndex])
+						? Math.min(attrPeriodMinMap[attributeIndex][periodIndex], min)
+						: min;
+					attrPeriodMaxMap[attributeIndex][periodIndex]
+						= (attrPeriodMaxMap[attributeIndex][periodIndex])
+						? Math.max(attrPeriodMaxMap[attributeIndex][periodIndex], max)
+						: max;
+					totalMin = totalMin ? Math.min(totalMin, min) : min;
+					totalMax = totalMax ? Math.max(totalMax, max) : max;
+				}
+			}
+
+			// iterate attributes...
+			for (let attributeIndex = 0; attributeIndex < attrs.length; attributeIndex++) {
+				let attr = attrs[attributeIndex];
 				// console.log(attr.series)
+
+				// skip invisible attributes
 				if (params['forExport'] && invisibleAttrsMap['as_'+attr.as+'_attr_'+attr.attr]) {
 					continue;
 				}
-				let obj = attrConf[attr.as][attr.attr];
-				for (let j = 0; j < years.length; j++) {
-					let color = obj.color;
-					if ((!params['stacking'] || params['stacking']=='none') && j!=0) {
+
+				let attributeObject = attrConf[attr.as][attr.attr];
+
+				/////// ITERATE years / periods
+				for (let periodIndex = 0; periodIndex < years.length; periodIndex++) {
+					let color = attributeObject.color;
+					// let serieData = {};
+					if ((!params['stacking'] || params['stacking']=='none') && periodIndex!=0) {
 						let rgb = hexToColor(color);
-						let opacity = Math.max(0.2,1-j*0.4);
+						let opacity = Math.max(0.2,1-periodIndex*0.4);
 						color = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
 					}
-					if (attr.plotValues && attr.plotValues[j]) {
-						plotLines.push({
-							color: color,
-							width: 1,
-							id: 'i' + i,
-							value: attr.plotValues[j],
-							dashStyle: 'Dash',
-							zIndex: 5,
-							label: {
-								text: attr.plotNames[j] + ': ' + attr.plotValues[j].toFixed(2),
-								align: 'left',
-								style: {
-									color: '#333',
-									fontFamily: '"Open Sans", sans-serif',
-									fontSize: '12px'
-								}
-							}
-						});
-					}
-					let dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
-					let visible = invisibleAttrsMap[dataIndex] ? false : true;
-					if (params['stacking'] != 'double') {
-						let serieData = {data: attr.series[j], name: obj.name, color: color, stack: 'y' + j, as: attr.as,attr:attr.attr,visible:visible};
-						if (!params['stacking'] || params['stacking']=='none') {
-							delete serieData.stack;
-						}
-						if (j==0) {
-							serieData.id = 'a'+i;
-						} else {
-							serieData.linkedTo = 'a'+i;
-						}
-						series.push(serieData);
-					} else {
-						let inFirst = i < offset;
-						// var name = obj.name + (inFirst ? ' +' : ' -');
-						let name = obj.name;
-						let serieData = {};
-						if (inFirst) {
-							serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + i+'y'+j, as: attr.as,attr:attr.attr,visible:visible};
+					// if (attr.plotValues && attr.plotValues[periodIndex]) {
+					// 	plotLines.push({
+					// 		color: color,
+					// 		width: 1,
+					// 		id: 'attributeIndex' + attributeIndex,
+					// 		value: attr.plotValues[periodIndex],
+					// 		dashStyle: 'Dash',
+					// 		zIndex: 5,
+					// 		label: {
+					// 			text: attr.plotNames[periodIndex] + ': ' + attr.plotValues[periodIndex].toFixed(2),
+					// 			align: 'left',
+					// 			style: {
+					// 				color: '#333',
+					// 				fontFamily: '"Open Sans", sans-serif',
+					// 				fontSize: '12px'
+					// 			}
+					// 		}
+					// 	});
+					// }
 
-							if (j==0) {
-								serieData.id = 'a'+i;
-							} else {
-								serieData.linkedTo = 'a'+i;
-							}
-							series.push(serieData);
-						} else {
-							let newIndex = i - offset;
-							let insertIndex = newIndex * 2 * years.length + j * 2 + 1;
-							serieData = {data: attr.series[j], name: name, color: color, stack: 'a' + newIndex+'y'+j, linkedTo: 'a' + newIndex,visible:visible};
-							series.splice(insertIndex, 0, serieData);
-						}
+					// fill chartData from attr.series
+					let min = polarAxesNormalization ? attrPeriodMinMap[attributeIndex][periodIndex] | totalMin;
+					let max = polarAxesNormalization ? attrPeriodMaxMap[attributeIndex][periodIndex] : totalMax;
+					for(let serieIndex = 0; serieIndex < attr.series[periodIndex].length; serieIndex++) {
+						let serie = attr.series[periodIndex][serieIndex];
+
+						// count percentage value
+						let minimumPosition = ((min >= 0.05*max) || (min < 0)) ? 0.05 : 0;
+						let maximumPosition = 1;
+						let value = ((serie.y - min) / (max - min)) * (maximumPosition - minimumPosition) + minimumPosition;
+
+						chartData[serieIndex] = chartData[serieIndex] ? chartData[serieIndex] : [];
+						chartData[serieIndex][attributeIndex] = {
+							axis: attributeObject.name,
+							value: value,
+							label: serie.y + " " + serie.units
+						};
 					}
+
+
+					// let dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
+					// let visible = !invisibleAttrsMap[dataIndex];
+					// serieData.name = attributeObject.name;
+					// serieData.data = attr.series[periodIndex];
+					// serieData.color = color;
+					// serieData.as = attr.as;
+					// serieData.attr = attr.attr;
+					// serieData.visible = visible;
+					// if (periodIndex==0) {
+					// 	serieData.id = 'a'+attributeIndex;
+					// } else {
+					// 	serieData.linkedTo = 'a'+attributeIndex;
+					// }
+
+					// let insertIndex = null;
+
+					// set stacking
+					// if (params['stacking'] != 'double') {
+					// 	serieData.stack = 'y' + periodIndex;
+					// 	if (!params['stacking'] || params['stacking']=='none') {
+					// 		delete serieData.stack;
+					// 	}
+					// } else {
+					// 	let inFirst = attributeIndex < offset;
+					// 	if (inFirst) {
+					// 		serieData.stack = 'a' + attributeIndex+'y'+periodIndex;
+					// 	} else {
+					// 		let newIndex = attributeIndex - offset;
+					// 		insertIndex = newIndex * 2 * years.length + periodIndex * 2 + 1;
+					// 		serieData.stack = 'a' + newIndex+'y'+periodIndex;
+					// 		serieData.linkedTo = 'a' + newIndex;
+					//
+					// 	}
+					// }
+
+					// // insert serieData to series
+					// if (insertIndex !== null) {
+					// 	series.splice(insertIndex, 0, serieData);
+					// } else {
+					// 	series.push(serieData);
+					// }
 
 				}
 
@@ -250,25 +330,27 @@ function getChart(params, callback) {
 			stacking = (!stacking || stacking=='none') ? null : stacking;
 			let optimalWidth = Math.max(areasNum * 30, columnNum * 10, width);
 			let staggerLines = Math.ceil(120 / (optimalWidth / areasNum));
-			conf.chart.width = optimalWidth;
-			conf.chart.height = 382;
-			conf.yAxis.plotLines = plotLines.length ? plotLines : null;
-			conf.xAxis.labels.staggerLines = staggerLines;
-			conf.series = series;
-			conf.xAxis.categories = categories;
-			conf.yAxis.title.text = (stacking && stacking == 'percent') ? '%' : yUnits;
-			conf.tooltip.valueSuffix = ' ' + attrConf.units;
-			conf.plotOptions.series.stacking = stacking;
+			// conf.chart.width = optimalWidth;
+			// conf.chart.height = 382;
+			// conf.yAxis.plotLines = plotLines.length ? plotLines : null;
+			// conf.xAxis.labels.staggerLines = staggerLines;
+			// conf.series = series;
+			conf.chartData = chartData;
+			conf.categories = categories;
+			// conf.xAxis.categories = categories;
+			// conf.yAxis.title.text = (stacking && stacking == 'percent') ? '%' : yUnits;
+			// conf.tooltip.valueSuffix = ' ' + attrConf.units;
+			// conf.plotOptions.series.stacking = stacking;
 			if (params['forMap']) {
-				conf.title = null;
-				conf.legend = null;
-				conf.xAxis.title = null;
-				conf.yAxis.title = null;
-				conf.xAxis.labels.enabled = false;
-				conf.yAxis.labels.enabled = false;
-				conf.yAxis.gridLineWidth = 0;
-				conf.chart.height = 200;
-				conf.chart.width = Math.min(400, Math.max(areasNum * 30, columnNum * 10));
+				// conf.title = null;
+				// conf.legend = null;
+				// conf.xAxis.title = null;
+				// conf.yAxis.title = null;
+				// conf.xAxis.labels.enabled = false;
+				// conf.yAxis.labels.enabled = false;
+				// conf.yAxis.gridLineWidth = 0;
+				// conf.chart.height = 200;
+				// conf.chart.width = Math.min(400, Math.max(areasNum * 30, columnNum * 10));
 			}
 			return callback(null, conf);
 
@@ -302,49 +384,6 @@ let hexToColor = function(color) {
 
 let cfg = function() {
 	return {
-		chart: {
-			type: 'column',
-			spacingRight: 25,
-			spacingBottom: 4
-		},
-		xAxis: {
-			labels: {}
 
-		},
-		yAxis: {
-			labels: {},
-			title: {
-				text: 'Y axis',
-				style: {
-					color: '#222',
-					fontWeight: 'normal'
-				},
-				useHTML: true
-			},
-			endOnTick: false
-
-		},
-		tooltip: {
-			hideDelay: 0,
-			valueDecimals: 2,
-			valueSuffix: ' %',
-			useHTML: true,
-			followPointer: true,
-			stickyTracking: false
-		},
-		plotOptions: {
-			column: {
-
-			},
-			series: {
-				pointPadding: 0.2,
-				groupPadding: 0.1,
-				events: {},
-				borderWidth: 0,
-				point: {
-					events: {}
-				}
-			}
-		}
 	};
 };
