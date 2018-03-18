@@ -5,6 +5,7 @@ var Controller = require('./Controller');
 var UUID = require('../common/UUID');
 var _ = require('underscore');
 var moment = require('moment');
+let Promise = require('promise');
 
 let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 var Statistics = require('../attributes/Statistics');
@@ -33,6 +34,7 @@ class AttributeController extends Controller {
         app.post('/rest/filter/attribute/amount', this.amount.bind(this));
 
         app.post('/rest/info/attribute', this.info.bind(this));
+        app.post('/rest/info/bboxes', this.getBoundingBox.bind(this));
     }
 
 	/**
@@ -118,27 +120,6 @@ class AttributeController extends Controller {
         }
     }
 
-    _parseRequest(params) {
-        let attributes;
-        if (!params.isArray){
-            attributes = _.toArray(params.attributes);
-        } else {
-            attributes = params.attributes;
-        }
-
-        var attributesMap = {};
-        attributes.forEach(
-            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
-        );
-        return {
-            attributes: attributes,
-            attributesMap: attributesMap,
-            areaTemplate: Number(params.areaTemplate),
-            periods: params.periods.map(period => Number(period)),
-            places: params.places && params.places.map(place => Number(place)) || []
-        };
-    }
-
     /**
      * Returns values for received attributes for specific polygon.
      * @param request
@@ -162,6 +143,111 @@ class AttributeController extends Controller {
         });
 
     }
+
+    /**
+     * Get bounding box for given areas
+     * @param request
+     * @param response
+     */
+    getBoundingBox(request,response){
+        let areas = request.body.areas;
+        let periods = request.body.periods;
+        let promises = [];
+
+        if (!areas){
+            response.json({
+                status: "error",
+                message: "No selected area!"
+            });
+        }
+
+        areas.map(locationObj => {
+            let areaTemplate = locationObj.at;
+            let options = this._parseRequestForBoundingBox(areaTemplate, locationObj.loc, periods);
+            let attributesObj = new AttributesForInfo(options.areaTemplate, options.periods, options.places, options.attributes);
+            promises.push(this._info.getBoundingBoxes(attributesObj, locationObj.gids));
+        });
+
+        let self = this;
+        Promise.all(promises).then(function(result){
+            let extents = [];
+            if (result && result.length){
+                result.map(areas => {
+                    areas.map(extent => {
+                       extents.push(extent);
+                    });
+                });
+            } else {
+                response.json({
+                    status: "error",
+                    message: "No selected area!"
+                });
+            }
+            return extents;
+        }).catch(err => {
+            response.status(500).json({status: 'err', message: err});
+            throw new Error(
+                logger.error(`AttributeController#getBoundingBox Error: `, err)
+            )
+        }).then(function(extents){
+            if (extents.length){
+                let points = [];
+                extents.map(extent => {
+                    extent.map(coord => {
+                       points.push(coord);
+                    });
+                });
+                let bbox = self._info.boundingBox.getExtentFromPoints(points);
+                response.json({
+                   status: "ok",
+                   bbox: bbox
+                });
+            }
+        }).catch(err => {
+            response.status(500).json({status: 'err', message: err});
+            throw new Error(
+                logger.error(`AttributeController#getBoundingBox Error: `, err)
+            )
+        });
+    }
+
+    _parseRequestForBoundingBox(areaTemplate, location, periods) {
+        let attributes = [];
+        let attributesMap = {};
+        attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
+        return {
+            attributes: attributes,
+            attributesMap: attributesMap,
+            areaTemplate: Number(areaTemplate),
+            periods: periods.map(period => Number(period)),
+            places: [Number(location)]
+        };
+    }
+
+
+    _parseRequest(params) {
+        let attributes;
+        if (!params.isArray){
+            attributes = _.toArray(params.attributes);
+        } else {
+            attributes = params.attributes;
+        }
+
+        var attributesMap = {};
+        attributes.forEach(
+            attribute => attributesMap[`as_${attribute.attributeSet}_attr_${attribute.attribute}`] = attribute
+        );
+        return {
+            attributes: attributes,
+            attributesMap: attributesMap,
+            areaTemplate: Number(params.areaTemplate),
+            periods: params.periods.map(period => Number(period)),
+            places: params.places && params.places.map(place => Number(place)) || []
+        };
+    }
+
 
     /**
      * Simply removes duplicates from the result.

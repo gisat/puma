@@ -2,7 +2,7 @@ let Migration = require('./Migration');
 
 class AddAuditInformation extends Migration {
     constructor(schema) {
-        super('AddCustomInfoToWms', schema);
+        super('AddAuditInformation', schema);
 
         this._schema = schema;
     }
