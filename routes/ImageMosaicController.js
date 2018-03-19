@@ -2,7 +2,7 @@ const Controller = require('./Controller');
 const ImageMosaic = require(`../geoserver/ImageMosaic`);
 
 class ImageMosaicController {
-	constructor(app, pool) {
+	constructor(app) {
 		this._imageMosaic = new ImageMosaic(
 			`/mnt/pracovni-archiv-01/Sentinel-2/MSI`,
 			`/data/geoserver/dromas-time-serie-data`
