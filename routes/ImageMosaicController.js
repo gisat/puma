@@ -1,19 +1,18 @@
 const Controller = require('./Controller');
 const ImageMosaic = require(`../geoserver/ImageMosaic`);
 
-class ImageMosaicController extends Controller {
+class ImageMosaicController {
 	constructor(app, pool) {
-		super(app, 'imagemosaic');
-
 		this._imageMosaic = new ImageMosaic(
 			`/mnt/pracovni-archiv-01/Sentinel-2/MSI`,
 			`/data/geoserver/dromas-time-serie-data`
 		);
 
 		app.get('/rest/imagemosaic/prepare', this.prepareImageMosaicData.bind(this));
+		app.post('/rest/imagemosaic/getDates', this.getDatesByGeometry.bind(this));
 	}
 
-	readAll(request, response, next) {
+	getDatesByGeometry(request, response, next) {
 		Promise.resolve(() => {
 			return this._imageMosaic.getDatesByGeometry(request.body.data.geometry);
 		}).then((dates) => {
