@@ -51,7 +51,7 @@ class ImageMosaic {
 		let geojsons = this.getFilesInDirectory(this._source);
 		let sources = [];
 		geojsons.forEach(pathToGeojson => {
-			let geojson = dtdp.getJsonObjectFromFile(pathToGeojson);
+			let geojson = this.getJsonObjectFromFile(pathToGeojson);
 			if (geojson.features[0].geometry) {
 				let pathToSourceTif = pathToGeojson.replace(`.geojson`, `_str.tif`);
 				let fileMetadata = this.getFIleMetadata(pathToSourceTif);
