@@ -36,6 +36,7 @@ let GeoServerLayersController = require('../layers/geoserver/GeoServerLayersCont
 let AggregatedAnalyticalUnitsController = require('../data/AggregatedAnalyticalUnitsController');
 let SharingController = require('../security/SharingController');
 let VersionController = require('./VersionController');
+let ImageMosaicController = require('./ImageMosaicController');
 
 var LodController = require('../linked_open_data/LodController');
 
@@ -120,6 +121,8 @@ module.exports = function(app) {
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
+
+	new ImageMosaicController(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
