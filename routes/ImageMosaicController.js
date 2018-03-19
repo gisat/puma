@@ -13,7 +13,7 @@ class ImageMosaicController {
 	}
 
 	getDatesByGeometry(request, response, next) {
-		Promise.resolve(() => {
+		Promise.resolve().then(() => {
 			return this._imageMosaic.getDatesByGeometry(request.body.data.geometry);
 		}).then((dates) => {
 			response.status(200).json(
@@ -31,7 +31,7 @@ class ImageMosaicController {
 	}
 
 	prepareImageMosaicData(request, response, next) {
-		Promise.resolve(() => {
+		Promise.resolve().then(() => {
 			this._imageMosaic.prepareImageMosaicFsStructure();
 			this._imageMosaic.prepareImageMosaicMetadata();
 			this._imageMosaic.prepareImageMosaicData();
