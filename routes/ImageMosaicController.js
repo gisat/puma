@@ -22,6 +22,7 @@ class ImageMosaicController {
 				}
 			)
 		}).catch((error) => {
+			console.log(`ImageMosaicController#getDatesByGeometry: ERR`, error);
 			response.status(500).json(
 				{
 					status: 'err'
@@ -38,6 +39,7 @@ class ImageMosaicController {
 		}).then(() => {
 			response.status(200).json({status: 'ok'});
 		}).catch((error) => {
+			console.log(`ImageMosaicController#prepareImageMosaicData: ERR`, error);
 			response.status(500).json({status: 'err'});
 		});
 	}
