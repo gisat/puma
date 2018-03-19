@@ -37,7 +37,7 @@ class ImageMosaic {
 			`Schema=*the_geom:Polygon,location:String,time:java.util.Date`,
 			`PropertyCollectors=TimestampFileNameExtractorSPI[timeregex](time)`
 		];
-		fs.writeFileSync(`${this._destinationPath}/indexer.properties`, indexer.join(`\n`));
+		fs.writeFileSync(`${this._destination}/indexer.properties`, indexer.join(`\n`));
 
 		let timeregex = [
 			`regex=[0-9]{8}T[0-9]{6}`
