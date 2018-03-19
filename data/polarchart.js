@@ -264,6 +264,7 @@ function getChart(params, callback) {
 						let minimumPosition = ((min >= 0.05*max) || (min < 0)) ? 0.05 : 0;
 						let maximumPosition = 1;
 						let value = ((serie.y - min) / (max - min)) * (maximumPosition - minimumPosition) + minimumPosition;
+						value = Math.round(value * 100) / 100;
 
 						chartData[serieIndex] = chartData[serieIndex] ? chartData[serieIndex] : [];
 						chartData[serieIndex][attributeIndex] = {
