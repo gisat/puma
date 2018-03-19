@@ -15,7 +15,7 @@ class ImageMosaicController extends Controller {
 
 	readAll(request, response, next) {
 		Promise.resolve(() => {
-			return this._imageMosaic.getDatesByGeometry(geometry);
+			return this._imageMosaic.getDatesByGeometry(request.body.data.geometry);
 		}).then((dates) => {
 			response.status(200).json(
 				{
