@@ -13,6 +13,11 @@ class ImageMosaic {
 		let sourcesFile = fs.readFileSync(sourcesFilepath);
 		let sourcesJson = JSON.parse(sourcesFile);
 
+		if(geometry.type === `MultiPolygon`) {
+			geometry.type = `Polygon`;
+			geometry.coordinates = geometry.coordinates[0]
+		}
+
 		let dates = [];
 		sourcesJson.sources.forEach(source => {
 			if(turf.booleanOverlap(geometry, source.geometry)) {
