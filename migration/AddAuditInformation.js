@@ -12,7 +12,7 @@ class AddAuditInformation extends Migration {
             CREATE TABLE ${this.schema}.audit (
                 id SERIAL,
                 action text,
-                userId number 
+                userId integer
             );         
         `);
     }
