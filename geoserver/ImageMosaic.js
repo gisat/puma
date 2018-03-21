@@ -20,7 +20,7 @@ class ImageMosaic {
 
 		let dates = [];
 		sourcesJson.sources.forEach(source => {
-			if(turf.booleanOverlap(geometry, source.geometry)) {
+			if(turf.intersect(geometry, source.geometry)) {
 				dates.push(source.acquisition);
 			}
 		});
