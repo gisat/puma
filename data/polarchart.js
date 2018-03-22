@@ -266,11 +266,16 @@ function getChart(params, callback) {
 						let value = ((serie.y - min) / (max - min)) * (maximumPosition - minimumPosition) + minimumPosition;
 						value = Math.round(value * 100) / 100;
 
+						let label = categories[serieIndex] + ": " + serie.y;
+						if (serie.units){
+							label += " " + serie.units;
+						}
+
 						chartData[serieIndex] = chartData[serieIndex] ? chartData[serieIndex] : [];
 						chartData[serieIndex][attributeIndex] = {
 							axis: attributeObject.name,
 							value: value,
-							label: serie.y + " " + serie.units
+							label: label
 						};
 					}
 
