@@ -77,18 +77,15 @@ function getChart(params, callback) {
 				attrs[i].serie = [];
 			}
 
-			let areas = JSON.parse(oldAreas);
 			let categories = [];
 			let aggregate = params['aggregate'];
 			let polarAxesNormalization = (params['polarAxesNormalizationSettings'] === "yes");
-			let aggData = results.data.aggData;
 
 			let yUnits = '';
-			// let attr = null;
 
 			// iterate data
-			for (let i = 0; i < data.length; i++) {
-				let row = data[i];
+			for (let i = 0; i < data.length; i++) { //
+				let row = data[i]; //
 
 				for (let j = 0; j < attrs.length; j++) {
 					let attr = attrs[j];
@@ -110,30 +107,6 @@ function getChart(params, callback) {
 						attr.series[k] = attr.series[k] || [];
 
 						let yearAttrName = years.length > 1 ? attrName + '_y_' + years[k] : attrName;
-						if (params['aggregate'] == 'toptree' && row.loc!=-1 && !attr.topTreeAlready) {
-							let aggRow = results.data.aggDataMap[row.loc];
-							let value = parseFloat(aggRow[yearAttrName]);
-							if (aggRow) {
-								attr.topTreeAlready = true;
-								attr.plotValues.push(value);
-								attr.plotNames.push(aggRow['name']);
-							}
-						}
-						if (params['aggregate'] == 'topall' && i==0) {
-							let aggRow = results.data.aggDataMap[-1];
-							let value = parseFloat(aggRow[yearAttrName]);
-							if (aggRow) {
-								attr.plotValues.push(value);
-								attr.plotNames.push(aggRow['name']);
-							}
-						}
-						if (params['aggregate'] == 'select' && i==0) {
-							let aggRow = results.data.aggDataMap['select'];
-							let value = parseFloat(aggRow[yearAttrName]);
-							attr.plotValues.push(value);
-							attr.plotNames.push(aggRow['name']);
-						}
-
 
 						if (aggregate && aggregate in {min: true, avg: true, max: true}) {
 							let value = results.data.aggregate[aggregate + '_' + yearAttrName];
@@ -143,27 +116,15 @@ function getChart(params, callback) {
 						}
 
 						// pushing data values to series here
-						if (params['stacking'] != 'double' || j < (attrs.length / 2)) {
-							attr.series[k].push({
-								y: +row[yearAttrName],
-								units: attr.displayUnits || attr.units,
-								loc: row.loc,
-								at: row.at,
-								gid: row.gid,
-								year: years[k],
-								yearName: results.years[years[k]]
-							});
-						} else {
-							attr.series[k].push({
-								y: -row[yearAttrName],
-								units: attr.displayUnits || attr.units,
-								loc: row.loc,
-								at: row.at,
-								gid: row.gid,
-								year: years[k],
-								yearName: results.years[years[k]]
-							});
-						}
+						attr.series[k].push({
+							y: +row[yearAttrName],
+							units: attr.displayUnits || attr.units,
+							loc: row.loc,
+							at: row.at,
+							gid: row.gid,
+							year: years[k],
+							yearName: results.years[years[k]]
+						});
 					}
 
 
@@ -172,19 +133,7 @@ function getChart(params, callback) {
 			}
 
 
-
-
-
-
-
-
-
-
 			let chartData = [];
-			// let series = [];
-			let plotLines = [];
-			// var units = [];
-			let offset = Math.ceil(attrs.length / 2);
 
 			// find out mins and maxs of series
 			let totalMin = null;
@@ -234,25 +183,6 @@ function getChart(params, callback) {
 						let opacity = Math.max(0.2,1-periodIndex*0.4);
 						color = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
 					}
-					// if (attr.plotValues && attr.plotValues[periodIndex]) {
-					// 	plotLines.push({
-					// 		color: color,
-					// 		width: 1,
-					// 		id: 'attributeIndex' + attributeIndex,
-					// 		value: attr.plotValues[periodIndex],
-					// 		dashStyle: 'Dash',
-					// 		zIndex: 5,
-					// 		label: {
-					// 			text: attr.plotNames[periodIndex] + ': ' + attr.plotValues[periodIndex].toFixed(2),
-					// 			align: 'left',
-					// 			style: {
-					// 				color: '#333',
-					// 				fontFamily: '"Open Sans", sans-serif',
-					// 				fontSize: '12px'
-					// 			}
-					// 		}
-					// 	});
-					// }
 
 					// fill chartData from attr.series
 					let min = polarAxesNormalization ? attrPeriodMinMap[attributeIndex][periodIndex] : totalMin;
@@ -278,86 +208,10 @@ function getChart(params, callback) {
 							label: label
 						};
 					}
-
-
-					// let dataIndex = 'as_'+attr.as+'_attr_'+attr.attr;
-					// let visible = !invisibleAttrsMap[dataIndex];
-					// serieData.name = attributeObject.name;
-					// serieData.data = attr.series[periodIndex];
-					// serieData.color = color;
-					// serieData.as = attr.as;
-					// serieData.attr = attr.attr;
-					// serieData.visible = visible;
-					// if (periodIndex==0) {
-					// 	serieData.id = 'a'+attributeIndex;
-					// } else {
-					// 	serieData.linkedTo = 'a'+attributeIndex;
-					// }
-
-					// let insertIndex = null;
-
-					// set stacking
-					// if (params['stacking'] != 'double') {
-					// 	serieData.stack = 'y' + periodIndex;
-					// 	if (!params['stacking'] || params['stacking']=='none') {
-					// 		delete serieData.stack;
-					// 	}
-					// } else {
-					// 	let inFirst = attributeIndex < offset;
-					// 	if (inFirst) {
-					// 		serieData.stack = 'a' + attributeIndex+'y'+periodIndex;
-					// 	} else {
-					// 		let newIndex = attributeIndex - offset;
-					// 		insertIndex = newIndex * 2 * years.length + periodIndex * 2 + 1;
-					// 		serieData.stack = 'a' + newIndex+'y'+periodIndex;
-					// 		serieData.linkedTo = 'a' + newIndex;
-					//
-					// 	}
-					// }
-
-					// // insert serieData to series
-					// if (insertIndex !== null) {
-					// 	series.splice(insertIndex, 0, serieData);
-					// } else {
-					// 	series.push(serieData);
-					// }
-
 				}
-
 			}
-			let areasNum = data.length;
-			if (!data) {
-				// console.log('nodata')
-			}
-			let stacking = params['stacking'];
-			let columnNum = (!stacking || stacking == 'none' || stacking == 'double') ? areasNum * attrs.length * years.length : areasNum * years.length;
-			columnNum = stacking == 'double' ? columnNum / 2 : columnNum;
-			stacking = stacking == 'double' ? 'normal' : stacking;
-			stacking = (!stacking || stacking=='none') ? null : stacking;
-			let optimalWidth = Math.max(areasNum * 30, columnNum * 10, width);
-			let staggerLines = Math.ceil(120 / (optimalWidth / areasNum));
-			// conf.chart.width = optimalWidth;
-			// conf.chart.height = 382;
-			// conf.yAxis.plotLines = plotLines.length ? plotLines : null;
-			// conf.xAxis.labels.staggerLines = staggerLines;
-			// conf.series = series;
 			conf.chartData = chartData;
 			conf.categories = categories;
-			// conf.xAxis.categories = categories;
-			// conf.yAxis.title.text = (stacking && stacking == 'percent') ? '%' : yUnits;
-			// conf.tooltip.valueSuffix = ' ' + attrConf.units;
-			// conf.plotOptions.series.stacking = stacking;
-			if (params['forMap']) {
-				// conf.title = null;
-				// conf.legend = null;
-				// conf.xAxis.title = null;
-				// conf.yAxis.title = null;
-				// conf.xAxis.labels.enabled = false;
-				// conf.yAxis.labels.enabled = false;
-				// conf.yAxis.gridLineWidth = 0;
-				// conf.chart.height = 200;
-				// conf.chart.width = Math.min(400, Math.max(areasNum * 30, columnNum * 10));
-			}
 			return callback(null, conf);
 
 		}]
