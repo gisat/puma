@@ -13,15 +13,21 @@ class ImageMosaic {
 		let sourcesFile = fs.readFileSync(sourcesFilepath);
 		let sourcesJson = JSON.parse(sourcesFile);
 
-		if(geometry.type === `MultiPolygon`) {
+		if (geometry.type === `MultiPolygon`) {
 			geometry.type = `Polygon`;
 			geometry.coordinates = geometry.coordinates[0]
 		}
 
 		let dates = [];
 		sourcesJson.sources.forEach(source => {
-			if(turf.intersect(geometry, source.geometry)) {
-				dates.push(source.acquisition);
+			if (turf.intersect(geometry, source.geometry)) {
+				let year = source.acquisition.substring(0, 4);
+				let month = source.acquisition.substring(4, 6);
+				let day = source.acquisition.substring(6, 8);
+				let hour = source.acquisition.substring(9, 11);
+				let min = source.acquisition.substring(11, 13);
+				let sec = source.acquisition.substring(13);
+				dates.push(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
 			}
 		});
 
