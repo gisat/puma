@@ -176,13 +176,6 @@ function getChart(params, callback) {
 
 				/////// ITERATE years / periods
 				for (let periodIndex = 0; periodIndex < years.length; periodIndex++) {
-					let color = attributeObject.color;
-					// let serieData = {};
-					if ((!params['stacking'] || params['stacking']=='none') && periodIndex!=0) {
-						let rgb = hexToColor(color);
-						let opacity = Math.max(0.2,1-periodIndex*0.4);
-						color = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+opacity+')';
-					}
 
 					// fill chartData from attr.series
 					let min = polarAxesNormalization ? attrPeriodMinMap[attributeIndex][periodIndex] : totalMin;
@@ -222,25 +215,6 @@ function getChart(params, callback) {
 module.exports = {
 	getChart: getChart
 };
-
-
-let hexToColor = function(color) {
-	let r = null;
-	let g = null;
-	let b = null;
-	if (color.length==4) {
-		r = color.slice(1,2)+color.slice(1,2);
-		g = color.slice(2,3)+color.slice(2,3);
-		b = color.slice(3,4)+color.slice(3,4);
-	}
-	if (color.length==7) {
-		r = color.slice(1,3);
-		g = color.slice(3,5);
-		b = color.slice(5,7);
-	}
-	return [parseInt(r,16),parseInt(g,16),parseInt(b,16)];
-};
-
 
 let cfg = function() {
 	return {
