@@ -61,7 +61,7 @@ class ImageMosaic {
 			`port=5432`,
 			`database=geonode_data`,
 			`schema=public`,
-			`user=geonoge`,
+			`user=geonode`,
 			`passwd=geonode`,
 			`Loose\\ bbox=true`,
 			`Estimated\\ extends=false`,
