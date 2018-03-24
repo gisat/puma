@@ -69,7 +69,7 @@ class ImageMosaic {
 			`Connection\\ timeout=10`,
 			`preparedStatements=true`
 		];
-		fs.writeFileSync(`${this._destinationPath}/datastore.properties`, datastore.join(`\n`));
+		fs.writeFileSync(`${this._destination}/datastore.properties`, datastore.join(`\n`));
 	}
 
 	prepareImageMosaicData() {
