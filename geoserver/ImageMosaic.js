@@ -51,9 +51,25 @@ class ImageMosaic {
 		fs.writeFileSync(`${this._destination}/indexer.properties`, indexer.join(`\n`));
 
 		let timeregex = [
-			`regex=[0-9]{8}T[0-9]{6}`
+			`regex=[0-9]{8}T[0-9]{9}Z`
 		];
 		fs.writeFileSync(`${this._destination}/timeregex.properties`, timeregex.join(`\n`));
+
+		let datastore = [
+			`SPI=org.geotools.data.postgis.PostgisNGDataStoreFactory`,
+			`host=localhost`,
+			`port=5432`,
+			`database=geonode_data`,
+			`schema=public`,
+			`user=geonoge`,
+			`passwd=geonode`,
+			`Loose\\ bbox=true`,
+			`Estimated\\ extends=false`,
+			`validate\\ connections=true`,
+			`Connection\\ timeout=10`,
+			`preparedStatements=true`
+		];
+		fs.writeFileSync(`${this._destinationPath}/datastore.properties`, datastore.join(`\n`));
 	}
 
 	prepareImageMosaicData() {
@@ -105,7 +121,7 @@ class ImageMosaic {
 		let acquisition = filename.match(/([0-9]{8}T[0-9]{6})/)[0];
 
 		return {
-			filename: `S2_${code}_${acquisition}`,
+			filename: `S2_${code}_${acquisition}000Z`,
 			acquisition: acquisition
 		}
 	}
