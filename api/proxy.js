@@ -158,6 +158,11 @@ function wms(params, req, res, callback) {
 	}else{
 		//console.log("useFirst: ", useFirst, "params[request]:",params['request']);
 	}
+
+
+	if(!params['VERSION']) {
+		params['VERSION'] = "1.1.1"
+	}
 	
 	
 	var username = useFirst ? config.geoserverUsername : config.geoserverUsername;

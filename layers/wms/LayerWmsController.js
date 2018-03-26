@@ -16,7 +16,7 @@ class LayerWmsController {
 	constructor(app, pool, mongo, schema){
 		this._pgLayers = new PgWmsLayers(pool, mongo, schema || config.postgreSqlSchema);
 		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
-		this.type = "layer_wms";
+		this.type = PgWmsLayers.tableName();
 
 		app.get('/rest/wms/layer', this.readAll.bind(this));
 		app.post('/rest/wms/layer', this.add.bind(this));
@@ -36,11 +36,11 @@ class LayerWmsController {
 		let currentUser = request.session.user;
 		let layers;
 		// Load actually accessible from the GeoNode
-		return this._pgLayers.filtered(request.query.scope, [request.query.place], request.query.periods).then(pgLayers => {
+		return this._pgLayers.filtered(null, [request.query.place], request.query.periods).then(pgLayers => {
 			layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
 
 			let promises = layers.map(layer => {
-				return this.permissions.forType("layer", layer.id).then(permissions => {
+				return this.permissions.forType(this.type, layer.id).then(permissions => {
 					layer.permissions = permissions;
 				});
 			});

@@ -15,6 +15,9 @@ var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoLayerReference = require('../layers/MongoLayerReference');
 
 let FilteredMongoLocations = require('../metadata/FilteredMongoLocations');
+let FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
+
+let Permission = require('../security/Permission');
 
 /**
  * @augments Controller
@@ -25,6 +28,29 @@ class LayerRefController extends Controller {
 
 		this.pgPool = pgPool;
 		this.mongo = mongo;
+	}
+
+	readAll(request, response, next) {
+        this._filteredReferences = new FilteredMongoLayerReferences({}, this.mongo);
+
+        this._filteredReferences.json().then(layerRefs => {
+            let resultsWithRights = layerRefs
+                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element))
+                .map(layerRef => {
+                    delete layerRef.created;
+                    delete layerRef.createdBy;
+                    delete layerRef.changed;
+                    delete layerRef.changedBy;
+                    return layerRef;
+                });
+
+            response.json({data: resultsWithRights});
+        }).catch(err => {
+            logger.error(`DataViewController#readInitialViews Error: `, err);
+            response.status(500).json({
+                status: "Err"
+            })
+        })
 	}
 
 	// Styles are defined in the layer template, which means that we need to update them in the geoserver whenever the layer template changes for all associated layerrefs.
