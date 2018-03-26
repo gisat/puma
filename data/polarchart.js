@@ -80,6 +80,8 @@ function getChart(params, callback) {
 			let categories = [];
 			let aggregate = params['aggregate'];
 			let polarAxesNormalization = (params['polarAxesNormalizationSettings'] === "yes");
+			let periodsSettingsPolarChart = params['periodsSettingsPolarChart'];
+			let latestPeriodIndex = years.length-1;
 
 			let yUnits = '';
 
@@ -133,74 +135,117 @@ function getChart(params, callback) {
 			}
 
 
-			let chartData = [];
+
+			// prepare series data according to PERIODS counting method
+			// seriesByPeriods - 3D array: seriesByPeriods[attributeIndex][serieIndex][periodIndex]
+			// computedSeries - array of attr objects
+			//     computedSeries[attributeIndex].serie (array of values)
+			//                                   .units
+			//                                   .as (id)
+			//                                   .attr (id)
+			let seriesByPeriods = [];
+			for (let attributeIndex = 0; attributeIndex < attrs.length; attributeIndex++) {
+				let series = attrs[attributeIndex].series;
+				seriesByPeriods[attributeIndex] = seriesByPeriods[attributeIndex] || [];
+				for (let periodIndex = 0; periodIndex < series.length; periodIndex++) {
+					let serie = series[periodIndex];
+					for (let serieIndex = 0; serieIndex < serie.length; serieIndex++) {
+						seriesByPeriods[attributeIndex][serieIndex] = seriesByPeriods[attributeIndex][serieIndex] || [];
+						seriesByPeriods[attributeIndex][serieIndex][periodIndex] = serie[serieIndex].y;
+					}
+				}
+			}
+			let computedSeries = [];
+			for (let attributeIndex = 0; attributeIndex < seriesByPeriods.length; attributeIndex++) {
+				computedSeries[attributeIndex] = computedSeries[attributeIndex] || {
+					serie: [],
+					units: attrs[attributeIndex].units,
+					as: attrs[attributeIndex].as,
+					attr: attrs[attributeIndex].attr,
+					name: attrs[attributeIndex].attrName
+				};
+				for (let serieIndex = 0; serieIndex < seriesByPeriods[attributeIndex].length; serieIndex++) {
+					switch(periodsSettingsPolarChart){
+						case "latest":
+							computedSeries[attributeIndex].serie[serieIndex] = seriesByPeriods[attributeIndex][serieIndex][latestPeriodIndex];
+							break;
+
+						case "average":
+							let values = seriesByPeriods[attributeIndex][serieIndex];
+							let total = 0;
+							for(let i = 0; i < values.length; i++) {
+								total += values[i];
+							}
+							computedSeries[attributeIndex].serie[serieIndex] = total / values.length;
+							break;
+
+						case "min":
+							computedSeries[attributeIndex].serie[serieIndex] = Math.min.apply(Math, seriesByPeriods[attributeIndex][serieIndex]);
+							break;
+
+						case "max":
+							computedSeries[attributeIndex].serie[serieIndex] = Math.max.apply(Math, seriesByPeriods[attributeIndex][serieIndex]);
+							break;
+					}
+				}
+			}
+
 
 			// find out mins and maxs of series
 			let totalMin = null;
 			let totalMax = null;
-			let attrPeriodMinMap = {};
-			let attrPeriodMaxMap = {};
-			for (let attributeIndex = 0; attributeIndex < attrs.length; attributeIndex++) {
-				let series = attrs[attributeIndex].series;
-				for (let periodIndex = 0; periodIndex < series.length; periodIndex++) {
-					// pole objektů
-					let serie = series[periodIndex];
-					let min = Math.min.apply(Math, serie.map(function(o){return o.y;}));
-					let max = Math.max.apply(Math, serie.map(function(o){return o.y;}));
-					attrPeriodMinMap[attributeIndex] = attrPeriodMinMap[attributeIndex] || {};
-					attrPeriodMaxMap[attributeIndex] = attrPeriodMaxMap[attributeIndex] || {};
-					attrPeriodMinMap[attributeIndex][periodIndex]
-						= (attrPeriodMinMap[attributeIndex][periodIndex])
-						? Math.min(attrPeriodMinMap[attributeIndex][periodIndex], min)
-						: min;
-					attrPeriodMaxMap[attributeIndex][periodIndex]
-						= (attrPeriodMaxMap[attributeIndex][periodIndex])
-						? Math.max(attrPeriodMaxMap[attributeIndex][periodIndex], max)
-						: max;
-					totalMin = totalMin ? Math.min(totalMin, min) : min;
-					totalMax = totalMax ? Math.max(totalMax, max) : max;
-				}
+			let attrMinMap = [];
+			let attrMaxMap = [];
+			for (let attributeIndex = 0; attributeIndex < computedSeries.length; attributeIndex++) {
+				let serie = computedSeries[attributeIndex].serie;
+				let min = Math.min.apply(Math, serie);
+				let max = Math.max.apply(Math, serie);
+				attrMinMap[attributeIndex]
+					= (attrMinMap[attributeIndex])
+					? Math.min(attrMinMap[attributeIndex], min)
+					: min;
+				attrMaxMap[attributeIndex]
+					= (attrMaxMap[attributeIndex])
+					? Math.max(attrMaxMap[attributeIndex], max)
+					: max;
+				totalMin = totalMin ? Math.min(totalMin, min) : min;
+				totalMax = totalMax ? Math.max(totalMax, max) : max;
 			}
 
-			// iterate attributes...
-			for (let attributeIndex = 0; attributeIndex < attrs.length; attributeIndex++) {
-				let attr = attrs[attributeIndex];
-				// console.log(attr.series)
+
+			// complete chartData
+			let chartData = [];
+			for (let attributeIndex = 0; attributeIndex < computedSeries.length; attributeIndex++) {
+				let attr = computedSeries[attributeIndex];
 
 				// skip invisible attributes
 				if (params['forExport'] && invisibleAttrsMap['as_'+attr.as+'_attr_'+attr.attr]) {
 					continue;
 				}
 
-				let attributeObject = attrConf[attr.as][attr.attr];
+				// fill chartData from attr.series
+				let min = polarAxesNormalization ? attrMinMap[attributeIndex] : totalMin;
+				let max = polarAxesNormalization ? attrMaxMap[attributeIndex] : totalMax;
+				for(let serieIndex = 0; serieIndex < attr.serie.length; serieIndex++) {
+					let serieValue = attr.serie[serieIndex];
 
-				/////// ITERATE years / periods
-				for (let periodIndex = 0; periodIndex < years.length; periodIndex++) {
+					// count percentage value
+					let minimumPosition = ((min >= 0.05*max) || (min < 0)) ? 0.05 : 0;
+					let maximumPosition = 1;
+					let value = ((serieValue - min) / (max - min)) * (maximumPosition - minimumPosition) + minimumPosition;
+					value = Math.round(value * 100) / 100;
 
-					// fill chartData from attr.series
-					let min = polarAxesNormalization ? attrPeriodMinMap[attributeIndex][periodIndex] : totalMin;
-					let max = polarAxesNormalization ? attrPeriodMaxMap[attributeIndex][periodIndex] : totalMax;
-					for(let serieIndex = 0; serieIndex < attr.series[periodIndex].length; serieIndex++) {
-						let serie = attr.series[periodIndex][serieIndex];
-
-						// count percentage value
-						let minimumPosition = ((min >= 0.05*max) || (min < 0)) ? 0.05 : 0;
-						let maximumPosition = 1;
-						let value = ((serie.y - min) / (max - min)) * (maximumPosition - minimumPosition) + minimumPosition;
-						value = Math.round(value * 100) / 100;
-
-						let label = categories[serieIndex] + ": " + serie.y;
-						if (serie.units){
-							label += " " + serie.units;
-						}
-
-						chartData[serieIndex] = chartData[serieIndex] ? chartData[serieIndex] : [];
-						chartData[serieIndex][attributeIndex] = {
-							axis: attributeObject.name,
-							value: value,
-							label: label
-						};
+					let label = categories[serieIndex] + ": " + serieValue;
+					if (attr.units){
+						label += " " + attr.units;
 					}
+
+					chartData[serieIndex] = chartData[serieIndex] ? chartData[serieIndex] : [];
+					chartData[serieIndex][attributeIndex] = {
+						axis: attr.name,
+						value: value,
+						label: label
+					};
 				}
 			}
 			conf.chartData = chartData;
