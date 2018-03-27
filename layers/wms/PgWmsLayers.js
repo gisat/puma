@@ -141,7 +141,7 @@ class PgWmsLayers {
 
 		// TODO: Enclose into transaction. Handle Rollback correctly.
 		return this._pool.query(`
-			INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} created, created_by, changed, changed_by, custom, get_date) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} '${time}', ${userId}, '${time}', ${userId}, '${layer.custom}', ${layer.getDates}) RETURNING id;`).then(result => {
+			INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} created, created_by, changed, changed_by, custom, get_date) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} '${time}', ${userId}, '${time}', ${userId}, '${layer.custom}', ${layer.getDates || false}) RETURNING id;`).then(result => {
 			id = result.rows[0].id;
 			return this.insertDependencies(id, layer.places, layer.periods);
 		}).then(() => {
@@ -194,7 +194,7 @@ class PgWmsLayers {
 		}
 
 		logger.info('PgWmsLayer#update Layer: ', layer, ' SQL: ', `UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId}, get_date=${layer.getDates} where id = ${layer.id}`);
-		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId}, custom='${layer.custom}', get_date=${layer.getDates} where id = ${layer.id}`).then(() => {
+		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId}, custom='${layer.custom}', get_date=${layer.getDates || false} where id = ${layer.id}`).then(() => {
 			return this._pool.query(this.deleteDependenciesSql(layer.id));
 		}).then(() => {
 			return this.insertDependencies(layer.id, layer.places, layer.periods);
