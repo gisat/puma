@@ -1,15 +1,16 @@
 var conn = require('../common/conn');
 var Promise = require('promise');
-var extent = require('geojson-extent');
-var wellknown = require('wellknown');
 var logger = require('../common/Logger').applicationWideLogger;
 
 let Attributes = require('./Attributes');
+let BoundingBox = require('../custom_features/BoundingBox');
 
 var MongoAttribute = require('../attributes/MongoAttribute');
 var NumericAttribute = require('../attributes/NumericAttribute');
 var TextAttribute = require('../attributes/TextAttribute');
 var BooleanAttribute = require('../attributes/BooleanAttribute');
+
+var FilteredBaseLayers = require('../layers/FilteredBaseLayers');
 
 class AttributesForInfo extends Attributes {
   constructor(areaTemplate, periods, places, attributes){
@@ -71,7 +72,7 @@ class AttributesForInfo extends Attributes {
           dataViews.map(view => {
             if (view.rows.length > 0){
               let info = view.rows[0];
-              let wgsExtent = this.getExtentFromWkt(info.geomwgs);
+              let wgsExtent = new BoundingBox().getExtentFromWkt(info.geomwgs);
                 logger.info(`AttributesForInfo#statisticAttributes extent: ${wgsExtent}`);
               data = {
                 gid: info.gid,
@@ -89,9 +90,18 @@ class AttributesForInfo extends Attributes {
     });
   }
 
-  getExtentFromWkt(geometry){
-      let json = wellknown(geometry);
-      return extent(json);
+  getDataviewsForBbox(){
+      let areaTemplate = this._areaTemplate;
+      let periods = this._periods;
+      let places = this._places;
+      return new FilteredBaseLayers({
+          areaTemplate: areaTemplate,
+          isData: false,
+          year: {$in: periods},
+          location: {$in: places}
+      }, conn.getMongoDb()).read().then(baseLayers => {
+          return baseLayers;
+      })
   }
 }
 

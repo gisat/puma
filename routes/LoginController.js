@@ -75,11 +75,11 @@ class LoginController {
 
     getLoginInfo(request, response) {
         if (request.session.userId) {
-            // FIXME: The complicated data structure is here due to FrontOffice.
+            logger.info('LoginController#getLoginInfo Logged User: ', request.session.user);
             response.status(200).json({
                 data: {
                     userId: request.session.userId,
-                    userName: request.session.username,
+                    userName: request.session.user.username,
                     groups: request.session.groups
                 },
                 success: true

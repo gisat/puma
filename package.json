@@ -20,6 +20,7 @@
     "csv": "1.2.1",
     "dbffile": "0.7.2",
     "deepcopy": "0.6.3",
+    "d3-geo": "1.9.1",
     "epsg-to-proj": "1.0.0",
     "express": "3.21.2",
     "express-session": "1.15.6",

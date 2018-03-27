@@ -27,6 +27,7 @@ let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
 let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
 let MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
 let AddAuditInformation = require('./migration/AddAuditInformation');
+let AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
 
 let CompoundAuthentication = require('./security/CompoundAuthentication');
 let PgAuthentication = require('./security/PgAuthentication');
@@ -52,7 +53,7 @@ function initServer(err) {
 	// Order is important
     
     // Limit size of uploaded files
-    app.use(express.limit('256mb'));
+    app.use(express.limit('2048mb'));
 
 	// Log the requests to see when the error occurs.
 	app.use(function(req, res, next) {
@@ -140,6 +141,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddAuditInformation(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
