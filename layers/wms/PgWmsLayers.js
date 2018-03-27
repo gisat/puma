@@ -94,6 +94,7 @@ class PgWmsLayers {
 		rows.forEach(layer => {
 			if(!layers[layer.id]) {
 				layers[layer.id] = layer;
+                layers[layer.id].getDates = layers[layer.id].get_date;
 				layer.periods = [];
 				layer.places = [];
 			}
