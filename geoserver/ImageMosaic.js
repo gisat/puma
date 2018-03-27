@@ -3,9 +3,12 @@ const fs = require(`fs`);
 const turf = require(`@turf/turf`);
 
 class ImageMosaic {
-	constructor(source, destination) {
+	constructor(source, destination, pgOptions) {
 		this._source = source;
 		this._destination = destination;
+		this._pgOptions = pgOptions;
+
+		this.prepareImageMosaicDataStructure();
 	}
 
 	getDatesByGeometry(geometry) {
@@ -36,12 +39,14 @@ class ImageMosaic {
 
 
 	prepareImageMosaicFsStructure() {
+		console.log(`ImageMosaic#prepareImageMosaicFsStructure: destination`, this._destination);
 		this.deleteFolderRecursive(this._destination);
 		fs.mkdirSync(this._destination);
 		fs.mkdirSync(`${this._destination}/scenes`);
 	}
 
 	prepareImageMosaicMetadata() {
+		console.log(`ImageMosaic#prepareImageMosaicMetadata`);
 		let indexer = [
 			`Caching=false`,
 			`TimeAttribute=time`,
@@ -57,12 +62,12 @@ class ImageMosaic {
 
 		let datastore = [
 			`SPI=org.geotools.data.postgis.PostgisNGDataStoreFactory`,
-			`host=localhost`,
-			`port=5432`,
-			`database=geonode_data`,
-			`schema=public`,
-			`user=geonode`,
-			`passwd=geonode`,
+			`host=${this._pgOptions.host}`,
+			`port=${this._pgOptions.port}`,
+			`database=${this._pgOptions.database}`,
+			`schema=${this._pgOptions.schema}`,
+			`user=${this._pgOptions.user}`,
+			`passwd=${this._pgOptions.passwd}`,
 			`Loose\\ bbox=true`,
 			`Estimated\\ extends=false`,
 			`validate\\ connections=true`,
@@ -73,15 +78,14 @@ class ImageMosaic {
 	}
 
 	prepareImageMosaicData() {
-		this.prepareImageMosaicFsStructure();
-		this.prepareImageMosaicMetadata();
+		console.log(`ImageMosaic#prepareImageMosaicData`);
 		let geojsons = this.getFilesInDirectory(this._source);
 		let sources = [];
 		geojsons.forEach(pathToGeojson => {
 			let geojson = this.getJsonObjectFromFile(pathToGeojson);
 			if (geojson.features[0].geometry) {
 				let pathToSourceTif = pathToGeojson.replace(`.geojson`, `_str.tif`);
-				let fileMetadata = this.getFIleMetadata(pathToSourceTif);
+				let fileMetadata = this.getFileMetadata(pathToSourceTif);
 				if (fs.existsSync(pathToSourceTif)) {
 					let source = {
 						geometry: geojson.features[0].geometry,
@@ -89,7 +93,7 @@ class ImageMosaic {
 					};
 					fs.symlinkSync(pathToSourceTif, `${this._destination}/scenes/${fileMetadata.filename}.tif`);
 					sources.push(source);
-					console.log(`Created link to file`, pathToSourceTif);
+					console.log(`ImageMosaic#prepareImageMosaicData: link`, pathToSourceTif);
 				}
 			}
 		});
@@ -97,6 +101,7 @@ class ImageMosaic {
 	}
 
 	getJsonObjectFromFile(path) {
+		console.log(`ImageMosaic#getJsonObjectFromFile: path`, path);
 		return JSON.parse(fs.readFileSync(path));
 	}
 
@@ -114,7 +119,8 @@ class ImageMosaic {
 		return files;
 	}
 
-	getFIleMetadata(path) {
+	getFileMetadata(path) {
+		console.log(`ImageMosaic#getFileMetadata: path`, path);
 		let pathParts = path.split(`/`);
 		let filename = pathParts.pop();
 		let code = pathParts.pop();
@@ -140,6 +146,19 @@ class ImageMosaic {
 			fs.rmdirSync(path);
 		}
 	};
+
+	prepareImageMosaicDataStructure() {
+		return Promise.resolve().then(() => {
+			if(fs.existsSync(this._destination) && !fs.existsSync(`${this._destination}/scenes`)) {
+				throw new Error(`Unable to delete non-imagemosaic folder!`);
+			}
+			this.prepareImageMosaicFsStructure();
+			this.prepareImageMosaicMetadata();
+			this.prepareImageMosaicData();
+		}).catch((error) => {
+			console.log(`ImageMosaic#prepareImageMosaicDataStructure: error`, error);
+		});
+	}
 }
 
 module.exports = ImageMosaic;

@@ -178,5 +178,18 @@ module.exports = {
 	 * It ignores following migration steps if the isCleanInstance is true.
 	 *  MigrateAwayFromGeonode
      */
-	isCleanInstance: true
+	isCleanInstance: true,
+
+	dromasLpis: {
+		pathTo2SScenes: `/mnt/gisat-network-devices/nas/pracovni-archiv-01/Sentinel_L2I_10m/Sentinel-2/MSI`,
+		pathToImageMosaicDirectory: `/home/mbabic/Dokumenty/TempStorage/Dromas/data_pro_casovou_radu/dromas_s2_scenes_for_lpis_10m`,
+		imageMosaicPgStorage: {
+			host: `localhost`,
+			port: 5432,
+			database: `geonode_data`,
+			schema: `public`,
+			user: `geonode`,
+			passwd: `geonode`
+		}
+	}
 };
