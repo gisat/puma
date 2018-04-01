@@ -16,11 +16,35 @@ class AnalyticalUnitsController {
 		this._analyticalUnits = new PgAnalyticalUnits(this._pool);
 
 		app.get('/rest/au', this.read.bind(this));
-		app.get('/rest/filtered/au', this.filtered.bind(this));
+        app.get('/rest/au/:id', this.byId.bind(this));
+        app.get('/rest/filtered/au', this.filtered.bind(this));
+	}
+
+    /**
+	 * It returns detailed information about the specific unit from given analytical units table.
+     * @param request
+     * @param response
+     */
+	byId(request, response) {
+		let analyticalUnitsId = request.query.id;
+		let id = request.params.id;
+
+		this._analyticalUnits.byId(analyticalUnitsId, id).then(analyticalUnit => {
+			response.json({
+				data: analyticalUnit
+			})
+		}).catch(err => {
+			logger.error('AnalyticalUnitsController#byId Error: ', err);
+
+			response.status(500).json({
+				status: 'err',
+				message: err
+			})
+		})
 	}
 
 	/**
-	 *
+	 * It returns only general information about the analytical units. If you need more detailed
 	 * @param request
 	 * @param response
 	 */

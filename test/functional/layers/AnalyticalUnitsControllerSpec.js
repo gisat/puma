@@ -145,6 +145,24 @@ describe('AnalyticalUnitsController', () => {
 		});
 	});
 
+	describe('byId', () => {
+		it('returns information about specific analytical unit', done => {
+            let params = {
+                id: 3
+            };
+
+            // Expected je Array ktere dostava id, name a geometrii.
+            supertest(integrationEnvironment.app)
+                .get('/rest/au/2')
+                .query(params).then(result => {
+                should(result.body.data.gid).be.exactly(2);
+                done();
+            }).catch(error => {
+                done(error);
+            })
+		})
+	});
+
 	afterEach(done => {
 		integrationEnvironment.tearDown().then(() => {
 			return pgPool.query(`

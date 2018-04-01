@@ -76,10 +76,39 @@ class PgAnalyticalUnits {
             let sql = this.getSql(srid, analyticalUnitId, filterSql);
 
             return this._pool.query(sql).then(result => {
+            	result.rows.forEach(row => {
+            		delete row.geom;
+				});
+
                 return result.rows;
             });
 		})
 	}
+
+    /**
+	 * It returns specific analytical unit with all associated information.
+     * @param analyticalUnitId {Number} Id of the table to retrieve the analytical units from.
+     * @param idOfSpecificUnit {Number} Id of the specific row in the table.
+     * @return {Object} Analytical unit with all the associated information.
+     */
+	byId(analyticalUnitId, idOfSpecificUnit) {
+        if (typeof analyticalUnitId === 'undefined') {
+            throw new Error(logger.error(`PgAnalyticalUnits#byId Id of the analytical unit table isn't present`));
+        }
+        if (typeof idOfSpecificUnit === 'undefined') {
+            throw new Error(logger.error(`PgAnalyticalUnits#byId Id of the specific unit isn't present`));
+        }
+
+        return this.getSrid(analyticalUnitId).then(srid => {
+            let filterSql = ` WHERE gid = ${idOfSpecificUnit}; `;
+
+            let sql = this.getSql(srid, analyticalUnitId, filterSql);
+
+            return this._pool.query(sql).then(result => {
+                return result.rows[0];
+            });
+        })
+    }
 }
 
 module.exports = PgAnalyticalUnits;
