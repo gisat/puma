@@ -44,6 +44,8 @@ var DatabaseSchema = require('../postgresql/DatabaseSchema');
 
 let LayerImporterController = require('../integration/LayerImporterController');
 
+let ImageMosaicController = require(`./ImageMosaicController`);
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -120,6 +122,8 @@ module.exports = function(app) {
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
+
+	new ImageMosaicController(app);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
