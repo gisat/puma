@@ -57,7 +57,7 @@ GeoserverStyles.prototype.add = function (style) {
 			.post(config.geoserverHost + ':' + config.geoserverPort + config.geoserverPath + '/rest/styles')
 			.auth(config.geoserverUsername, config.geoserverPassword)
 			.set('Accept','*/*')
-			.set('Content-Type', 'application/vnd.ogc.sld+xml; charset=utf-8')
+			.set('Content-Type', 'application/vnd.ogc.sld+xml')
 			.query({name: name})
 			.send(sld)
 	});
