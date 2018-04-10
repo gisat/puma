@@ -56,7 +56,7 @@ GeoserverStyles.prototype.add = function (style) {
 		return superagent
 			.post(config.geoserverHost + ':' + config.geoserverPort + config.geoserverPath + '/rest/styles')
 			.auth(config.geoserverUsername, config.geoserverPassword)
-			.set('Accept','*/*')
+			.set('Accept','text/plain')
 			.set('Content-Type', 'application/vnd.ogc.sld+xml')
 			.query({name: name})
 			.send(sld)
@@ -76,7 +76,7 @@ GeoserverStyles.prototype.update = function(style){
 		return superagent
 			.put(config.geoserverHost + ':' + config.geoserverPort + config.geoserverPath + '/rest/styles/' + name)
 			.auth(config.geoserverUsername, config.geoserverPassword)
-			.set('Accept','*/*')
+			.set('Accept','text/plain')
 			.set('Content-Type', 'application/vnd.ogc.sld+xml; charset=utf-8')
 			.send(sld)
 	});
