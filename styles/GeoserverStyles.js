@@ -61,6 +61,8 @@ GeoserverStyles.prototype.add = function (style) {
 			.set('Content-Type', 'application/vnd.ogc.sld+xml')
 			.query({name: name})
 			.send(sld)
+	}).catch(err => {
+		logger.error(`GeoserverStyles#add Error: ${err}`);
 	});
 };
 
@@ -80,7 +82,9 @@ GeoserverStyles.prototype.update = function(style){
 			.set('Accept','application/json')
 			.set('Content-Type', 'application/vnd.ogc.sld+xml; charset=utf-8')
 			.send(sld)
-	});
+	}).catch(err => {
+        logger.error(`GeoserverStyles#update Error: ${err}`);
+    });
 };
 
 module.exports = GeoserverStyles;
