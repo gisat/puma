@@ -49,7 +49,8 @@ class GeoServerLayersController {
 			return promise
 		}).then(() => {
 			layers = baseLayerIds.map(id => `${config.geoserverWorkspace}:layer_${id}`).join(',');
-			response.json({
+            logger.info(`GeoServerLayersController#createLayer Layers: ${layers}, Style Id: ${styleId}`); // TODO: Deploy and verify.
+            response.json({
 				layer: layers,
 				styleId: styleId
 			});
