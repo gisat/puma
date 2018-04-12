@@ -2,19 +2,25 @@ const _ = require(`lodash`);
 const fs = require(`fs`);
 const turf = require(`@turf/turf`);
 
+const czechRepublicBboxGeometry = {
+	"type": "Polygon",
+	"coordinates": [[[12.09059, 48.551807], [18.859217, 48.551807], [18.859217, 51.055702], [12.09059, 51.055702], [12.09059, 48.551807]]]
+};
+
 class ImageMosaic {
-	constructor(source, destination, pgOptions, prepareData) {
+	constructor(source, destination, pgOptions, groupBy, prepareData) {
 		this._source = source;
 		this._destination = destination;
 		this._pgOptions = pgOptions;
+		this._groupBy = groupBy;
 
-		if(prepareData) {
+		if (prepareData) {
 			this.prepareImageMosaicDataStructure();
 		}
 	}
 
 	getDatesByGeometry(geometry) {
-		let sourcesFilepath = `${this._destination}/scenes/.sources.json`;
+		let sourcesFilepath = `${this._destination}/.sources.json`;
 		let sourcesFile = fs.readFileSync(sourcesFilepath);
 		let sourcesJson = JSON.parse(sourcesFile);
 
@@ -39,71 +45,92 @@ class ImageMosaic {
 		return _.uniq(dates);
 	}
 
+	prepareImageMosaicFsStructure(groups) {
+		return Promise.resolve().then(() => {
+			if (fs.existsSync(this._destination) && !fs.existsSync(`${this._destination}/.sources.json`)) {
+				throw new Error(`Unable to delete non-imagemosaic folder!`);
+			}
 
-	prepareImageMosaicFsStructure() {
-		console.log(`ImageMosaic#prepareImageMosaicFsStructure: destination`, this._destination);
-		this.deleteFolderRecursive(this._destination);
-		fs.mkdirSync(this._destination);
-		fs.mkdirSync(`${this._destination}/scenes`);
+			this.deleteFolderRecursive(this._destination);
+
+			fs.mkdirSync(this._destination);
+
+			groups.forEach((groupName) => {
+				fs.mkdirSync(`${this._destination}/_${groupName}`);
+				fs.mkdirSync(`${this._destination}/_${groupName}/scenes`);
+			});
+		});
 	}
 
-	prepareImageMosaicMetadata() {
-		console.log(`ImageMosaic#prepareImageMosaicMetadata`);
-		let indexer = [
-			`Caching=false`,
-			`TimeAttribute=time`,
-			`Schema=*the_geom:Polygon,location:String,time:java.util.Date`,
-			`PropertyCollectors=TimestampFileNameExtractorSPI[timeregex](time)`
-		];
-		fs.writeFileSync(`${this._destination}/indexer.properties`, indexer.join(`\n`));
+	prepareImageMosaicMetadata(groups) {
+		return Promise.resolve().then(() => {
+			let indexer = [
+				`Caching=false`,
+				`TimeAttribute=time`,
+				`Schema=*the_geom:Polygon,location:String,time:java.util.Date`,
+				`PropertyCollectors=TimestampFileNameExtractorSPI[timeregex](time)`
+			];
 
-		let timeregex = [
-			`regex=[0-9]{8}T[0-9]{9}Z`
-		];
-		fs.writeFileSync(`${this._destination}/timeregex.properties`, timeregex.join(`\n`));
+			let timeregex = [
+				`regex=[0-9]{8}T[0-9]{9}Z`
+			];
 
-		let datastore = [
-			`SPI=org.geotools.data.postgis.PostgisNGDataStoreFactory`,
-			`host=${this._pgOptions.host}`,
-			`port=${this._pgOptions.port}`,
-			`database=${this._pgOptions.database}`,
-			`schema=${this._pgOptions.schema}`,
-			`user=${this._pgOptions.user}`,
-			`passwd=${this._pgOptions.passwd}`,
-			`Loose\\ bbox=true`,
-			`Estimated\\ extends=false`,
-			`validate\\ connections=true`,
-			`Connection\\ timeout=10`,
-			`preparedStatements=true`
-		];
-		fs.writeFileSync(`${this._destination}/datastore.properties`, datastore.join(`\n`));
+			let datastore = [
+				`SPI=org.geotools.data.postgis.PostgisNGDataStoreFactory`,
+				`host=${this._pgOptions.host}`,
+				`port=${this._pgOptions.port}`,
+				`database=${this._pgOptions.database}`,
+				`schema=${this._pgOptions.schema}`,
+				`user=${this._pgOptions.user}`,
+				`passwd=${this._pgOptions.passwd}`,
+				`Loose\\ bbox=true`,
+				`Estimated\\ extends=false`,
+				`validate\\ connections=true`,
+				`Connection\\ timeout=10`,
+				`preparedStatements=true`
+			];
+
+			groups.forEach(group => {
+				fs.writeFileSync(`${this._destination}/_${group}/indexer.properties`, indexer.join(`\n`));
+				fs.writeFileSync(`${this._destination}/_${group}/timeregex.properties`, timeregex.join(`\n`));
+				fs.writeFileSync(`${this._destination}/_${group}/datastore.properties`, datastore.join(`\n`));
+			});
+		});
 	}
 
-	prepareImageMosaicData() {
-		console.log(`ImageMosaic#prepareImageMosaicData`);
+	prepareImageMosaicData(groups) {
 		let geojsons = this.getFilesInDirectory(this._source);
 		let sources = [];
-		geojsons.forEach(pathToGeojson => {
-			let geojson = this.getJsonObjectFromFile(pathToGeojson);
-			if (geojson.features[0].geometry) {
+
+		groups.forEach(group => {
+			geojsons.forEach(pathToGeojson => {
 				let pathToSourceTif = pathToGeojson.replace(`.geojson`, `.tif`);
 				let fileMetadata = this.getFileMetadata(pathToSourceTif);
-				if (fs.existsSync(pathToSourceTif)) {
-					let source = {
-						geometry: geojson.features[0].geometry,
-						acquisition: fileMetadata.acquisition
-					};
-					fs.symlinkSync(pathToSourceTif, `${this._destination}/scenes/${fileMetadata.filename}.tif`);
-					sources.push(source);
-					console.log(`ImageMosaic#prepareImageMosaicData: link`, pathToSourceTif);
+
+				if (this.getGroupFromAcquisition(fileMetadata.acquisition) === group) {
+					let geojson = this.getJsonObjectFromFile(pathToGeojson);
+					if (
+						geojson.features[0].geometry
+						&& turf.intersect(geojson.features[0].geometry, czechRepublicBboxGeometry)
+					) {
+						let pathToSourceTif = pathToGeojson.replace(`.geojson`, `.tif`);
+						let fileMetadata = this.getFileMetadata(pathToSourceTif);
+						if (fs.existsSync(pathToSourceTif)) {
+							let source = {
+								geometry: geojson.features[0].geometry,
+								acquisition: fileMetadata.acquisition
+							};
+							fs.symlinkSync(pathToSourceTif, `${this._destination}/_${group}/scenes/${fileMetadata.filename}.tif`);
+							sources.push(source);
+						}
+					}
 				}
-			}
+			});
 		});
-		fs.writeFileSync(`${this._destination}/scenes/.sources.json`, JSON.stringify({sources: sources}));
+		fs.writeFileSync(`${this._destination}/.sources.json`, JSON.stringify({sources: sources}));
 	}
 
 	getJsonObjectFromFile(path) {
-		console.log(`ImageMosaic#getJsonObjectFromFile: path`, path);
 		return JSON.parse(fs.readFileSync(path));
 	}
 
@@ -122,7 +149,6 @@ class ImageMosaic {
 	}
 
 	getFileMetadata(path) {
-		console.log(`ImageMosaic#getFileMetadata: path`, path);
 		let pathParts = path.split(`/`);
 		let filename = pathParts.pop();
 		let code = pathParts.pop();
@@ -149,17 +175,46 @@ class ImageMosaic {
 		}
 	};
 
-	prepareImageMosaicDataStructure() {
+	getAvailableFilesGrouped() {
 		return Promise.resolve().then(() => {
-			if(fs.existsSync(this._destination) && !fs.existsSync(`${this._destination}/scenes`)) {
-				throw new Error(`Unable to delete non-imagemosaic folder!`);
-			}
-			this.prepareImageMosaicFsStructure();
-			this.prepareImageMosaicMetadata();
-			this.prepareImageMosaicData();
-		}).catch((error) => {
-			console.log(`ImageMosaic#prepareImageMosaicDataStructure: error`, error);
+			let files = this.getFilesInDirectory(this._source, []);
+			let filesMetadata = _.map(files, file => {
+				return this.getFileMetadata(file);
+			});
+			return Object.keys(_.groupBy(filesMetadata, fileMetadata => {
+				return this.getGroupFromAcquisition(fileMetadata.acquisition);
+			}));
 		});
+	}
+
+	prepareImageMosaicDataStructure() {
+		return this.getAvailableFilesGrouped()
+			.then(groups => {
+				return this.prepareImageMosaicFsStructure(groups)
+					.then(() => {
+						return groups;
+					})
+			}).then((groups) => {
+				return this.prepareImageMosaicMetadata(groups)
+					.then(() => {
+						return groups;
+					})
+			}).then((groups) => {
+				return this.prepareImageMosaicData(groups);
+			}).catch((error) => {
+				console.log(`ImageMosaic#prepareImageMosaicDataStructure: error`, error);
+			});
+	}
+
+	getGroupFromAcquisition(acquisition) {
+		switch (this._groupBy) {
+			case `year-month-day`:
+				return acquisition.substring(0, 8);
+			case `year-month`:
+				return acquisition.substring(0, 6);
+			default:
+				return acquisition.substring(0, 4);
+		}
 	}
 }
 
