@@ -9,7 +9,8 @@ class ImageMosaicController {
 			config.dromasLpis.pathTo2SScenes,
 			config.dromasLpis.pathToImageMosaicDirectory,
 			config.dromasLpis.imageMosaicPgStorage,
-			config.dromasLpis.enabled
+			config.dromasLpis.groupBy,
+			config.dromasLpis.enabled,
 		);
 
 		app.post('/rest/imagemosaic/getDates', this.getDatesByGeometry.bind(this));

@@ -46,6 +46,8 @@ let LayerImporterController = require('../integration/LayerImporterController');
 
 let ImageMosaicController = require(`./ImageMosaicController`);
 
+let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -124,6 +126,7 @@ module.exports = function(app) {
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
 	new ImageMosaicController(app);
+	new SzifCaseCreatorController(app, pool, mongo);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
