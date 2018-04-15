@@ -51,8 +51,8 @@ class PgAnalyticalUnits {
 	 * It returns filtered analytical units. The units are stably ordere by their gid.
      * @param analyticalUnitId {Number} Id of the table of the analytical units. It reflects base layerref id.
      * @param filter {Object}
-	 * @param filter.offset {Number} The number of the analytical unit, which we should start with.
-	 * @param filter.limit {Number} The maximum amount of analytical units to retrieve.
+	 * @param filter.offset {Number} The number of the analytical unit, which we should start with. Optional.
+	 * @param filter.limit {Number} The maximum amount of analytical units to retrieve. Optional.
 	 * @param filter.filter {String} Optional.
      * @returns {*}
      */
@@ -60,17 +60,17 @@ class PgAnalyticalUnits {
         if(typeof analyticalUnitId === 'undefined') {
             throw new Error(logger.error(`PgAnalyticalUnits#filtered Id of the analytical unit isn't present`));
         }
-        if(typeof filter.offset === 'undefined') {
-			throw new Error(logger.error(`PgAnalyticalUnits#filtered Offset isn't present`));
-		}
-		if(typeof filter.limit === 'undefined') {
-            throw new Error(logger.error(`PgAnalyticalUnits#filtered Limit isn't present`));
-		}
 
 		return this.getSrid(analyticalUnitId).then(srid => {
-			let filterSql = ` ORDER BY gid LIMIT ${filter.limit} OFFSET ${filter.offset}`;
+			let filterSql = ` ORDER BY gid `;
+			if(filter.limit) {
+			    filterSql += ` LIMIT ${filter.limit} `;
+            }
+            if(filter.offset) {
+			    filterSql += ` OFFSET ${filter.offset} `;
+            }
 			if(filter.filter) {
-				filterSql = ` WHERE name ilike '%${filter.filter}%' ` + filterSql;
+				filterSql += ` WHERE name ilike '%${filter.filter}%' ` + filterSql;
 			}
 
             let sql = this.getSql(srid, analyticalUnitId, filterSql);
