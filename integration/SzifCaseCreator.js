@@ -1,5 +1,6 @@
 const shpjs = require('shpjs');
 const zipLocal = require('zip-local');
+const turf = require('@turf/turf');
 
 const conn = require('../common/conn');
 
@@ -39,7 +40,7 @@ class SzifCaseCreator {
 				_id: conn.getNextId(),
 				active: true,
 				name: szifCaseMetadata.caseName,
-				bbox: szifCaseMetadata.afterGeometry.bbox.join(`,`),
+				geometry: turf.union(szifCaseMetadata.beforeGeometry, szifCaseMetadata.afterGeometry),
 				dataset: Number(szifCaseMetadata.scopeId),
 				changeReviewGeometryBefore: szifCaseMetadata.beforeGeometry,
 				changeReviewGeometryAfter: szifCaseMetadata.afterGeometry
