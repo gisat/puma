@@ -40,7 +40,7 @@ class SzifCaseCreator {
 				_id: conn.getNextId(),
 				active: true,
 				name: szifCaseMetadata.caseName,
-				geometry: turf.union(szifCaseMetadata.beforeGeometry, szifCaseMetadata.afterGeometry),
+				geometry: turf.union({geometry: szifCaseMetadata.beforeGeometry, type: `Feature`}, {geometry: szifCaseMetadata.afterGeometry, type: `Feature`}).geometry,
 				dataset: Number(szifCaseMetadata.scopeId),
 				changeReviewGeometryBefore: szifCaseMetadata.beforeGeometry,
 				changeReviewGeometryAfter: szifCaseMetadata.afterGeometry
