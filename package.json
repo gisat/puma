@@ -49,6 +49,7 @@
     "promise": "7.3.1",
     "properties": "0.3.3",
     "randomcolor": "0.5.3",
+    "reproject": "1.2.1",
     "request": "2.83.0",
     "shp-write": "0.3.2",
     "shpjs": "3.4.2",
