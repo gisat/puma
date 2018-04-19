@@ -37,10 +37,12 @@ class GeoServerLayersController {
 				throw new Error(`No base layers found for given combination.`);
 			}
 			baseLayerIds = layers.map(layer => layer._id);
-			return this._styles.add(new SldStyle(styleId, style));
+            logger.info(`GeoServerLayersController#createLayer Style: ${style}`); // TODO: Deploy and verify.
+            return this._styles.add(new SldStyle(styleId, style));
 		}).then(() => {
 			let promise = Promise.resolve(null);
-			baseLayerIds.forEach(layerId => {
+            logger.info(`GeoServerLayersController#createLayer Layers: ${baseLayerIds.join(',')}, Style Id: ${styleId}`); // TODO: Deploy and verify.
+            baseLayerIds.forEach(layerId => {
 				promise = promise.then(() => {
 					return this._styledLayers.create(`${config.geoserverWorkspace}:layer_${layerId}`, styleId)
 				})
@@ -49,7 +51,8 @@ class GeoServerLayersController {
 			return promise
 		}).then(() => {
 			layers = baseLayerIds.map(id => `${config.geoserverWorkspace}:layer_${id}`).join(',');
-			response.json({
+            logger.info(`GeoServerLayersController#createLayer Layers: ${layers}, Style Id: ${styleId}`); // TODO: Deploy and verify.
+            response.json({
 				layer: layers,
 				styleId: styleId
 			});
