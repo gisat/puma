@@ -1,5 +1,7 @@
 const shpjs = require('shpjs');
 const zipLocal = require('zip-local');
+const turf = require('@turf/turf');
+const reproject = require('reproject');
 
 const conn = require('../common/conn');
 
@@ -20,13 +22,19 @@ class SzifCaseCreator {
 		};
 
 		return this.getGeojsonGeometry(beforeFilePath)
+			.then((geometry) => {
+				return this.reprojectGeojsonGeometryFromKrovakToWgs(geometry);
+			})
 			.then((beforeGeometry) => {
 				caseMetadata.beforeGeometry = beforeGeometry;
 				return this.getGeojsonGeometry(afterFilePath)
+					.then((geometry) => {
+						return this.reprojectGeojsonGeometryFromKrovakToWgs(geometry);
+					});
 			})
 			.then((afterGeometry) => {
 				caseMetadata.afterGeometry = afterGeometry;
-				return this.prepareMongoLocationMetadata(caseMetadata);
+				return this.prepareMongoLocationMetadata(caseMetadata)
 			})
 			.then((mongoLocationMetadata) => {
 				return new MongoLocations(this._mongo).add(mongoLocationMetadata);
@@ -39,7 +47,7 @@ class SzifCaseCreator {
 				_id: conn.getNextId(),
 				active: true,
 				name: szifCaseMetadata.caseName,
-				bbox: szifCaseMetadata.afterGeometry.bbox.join(`,`),
+				geometry: turf.union({geometry: szifCaseMetadata.beforeGeometry, type: `Feature`}, {geometry: szifCaseMetadata.afterGeometry, type: `Feature`}).geometry,
 				dataset: Number(szifCaseMetadata.scopeId),
 				changeReviewGeometryBefore: szifCaseMetadata.beforeGeometry,
 				changeReviewGeometryAfter: szifCaseMetadata.afterGeometry
@@ -47,11 +55,22 @@ class SzifCaseCreator {
 		});
 	}
 
+	reprojectGeojsonGeometryFromKrovakToWgs(geometry) {
+		console.log(`######`, geometry);
+		return Promise.resolve().then(() => {
+			return reproject.reproject(
+				geometry,
+				`+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=542.5,89.2,456.9,5.517,2.275,5.516,6.96 +pm=greenwich +units=m +no_defs`,
+				`+proj=longlat +datum=WGS84 +no_defs`
+			);
+		});
+	}
+
 	getGeojsonGeometry(zipBufferOrStringPathToZipInput) {
 		return new Promise((resolve, reject) => {
 			zipLocal.unzip(zipBufferOrStringPathToZipInput, (error, unzipped) => {
 				if (!error) {
-					let prjString, shpBuffer;
+					let shpBuffer;
 
 					unzipped.save(null, () => {
 					});
@@ -59,15 +78,13 @@ class SzifCaseCreator {
 					let unzippedFs = unzipped.memory();
 
 					unzippedFs.contents().forEach((contentFile) => {
-						if (contentFile.toLowerCase().endsWith(`.prj`)) {
-							prjString = unzippedFs.read(contentFile, `text`);
-						} else if (contentFile.toLowerCase().endsWith(`.shp`)) {
+						if (contentFile.toLowerCase().endsWith(`.shp`)) {
 							shpBuffer = unzippedFs.read(contentFile, `buffer`);
 						}
 					});
 
-					if (shpBuffer && prjString) {
-						resolve(shpjs.parseShp(shpBuffer, prjString)[0]);
+					if (shpBuffer) {
+						resolve(shpjs.parseShp(shpBuffer)[0]);
 					} else {
 						reject(new Error(`missing prj or shp`));
 					}

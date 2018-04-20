@@ -1,15 +1,15 @@
 module.exports = {
 	localHost       : "localhost",
-	localPort       : 4000,
+	localPort       : 3000,
 	localPath       : "",
 
 	remoteProtocol  : "http",
 	remoteAddress   : "localhost",
 	projectHome     : "",
 
-	pgDataConnString   : "postgres://geonode:geonode@10.0.75.2:5432/geonode_data",
-	pgGeonodeConnString: "postgres://geonode:geonode@10.0.75.2:5432/geonode",
-	mongoConnString    : "mongodb://10.0.75.2:27017/panther",
+	pgDataConnString   : "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
+	mongoConnString    : "mongodb://localhost:27017/panther",
 
     workspaceSchemaMap: {
         geonode: "public",
@@ -17,7 +17,7 @@ module.exports = {
         analysis: "analysis"
     },
 
-	geoserverHost   : "10.0.75.2",
+	geoserverHost   : "localhost",
 	geoserverPort   : 80,
 	geoserverPath   : "/geoserver",
 	geoserverUsername : "admin",
@@ -27,7 +27,7 @@ module.exports = {
 	 */
 	geoserverWorkspace: "panther",
 
-	geoserver2Host  : "10.0.75.2",
+	geoserver2Host  : "localhost",
 	geoserver2Port  : 80,
 	geoserver2Path  : "/geoserver",
 	geoserver2Username  : "admin",
@@ -35,7 +35,7 @@ module.exports = {
 	geoserver2Workspace : "panther",
 
 	geonodeProtocol : "http",
-	geonodeHost     : "10.0.75.2",
+	geonodeHost     : "localhost",
 	geonodePort			: 80,
 	geonodePath     : "/",
 	geonodeHome     : "/",
@@ -43,12 +43,12 @@ module.exports = {
 	/**
 	 * Full URL of the geonode usable for the requests.
 	 */
-	geonodeUrl: "http://10.0.75.2:80/",
+	geonodeUrl: "http://localhost:80/",
 
 	/**
 	 * Full URL of the GeoServer usable for the requests.
 	 */
-	geoServerUrl: "http://10.0.75.2:80/geoserver/",
+	geoServerUrl: "http://localhost:80/geoserver/",
 
 	/**
 	 * Data store used for storing the layers.
@@ -117,7 +117,7 @@ module.exports = {
 	pgDataUser: 'geonode',
 	pgDataPassword: 'geonode',
 	pgDataDatabase: 'geonode_data',
-	pgDataHost: '10.0.75.2',
+	pgDataHost: 'localhost',
 	pgDataPort: '5432',
 	
 	/*
@@ -141,7 +141,7 @@ module.exports = {
 	 * When is isn't allowed for unauthenticated users to access the system, this is the Url to which they will be
 	 * redirected instead.
 	 */
-	notAuthenticatedUrl: '10.0.75.2/tool/',
+	notAuthenticatedUrl: 'localhost/tool/',
 
 	/**
 	 * Deafult admin user for Geonode usable to login users to Geonode.
@@ -154,7 +154,7 @@ module.exports = {
 	/**
 	 * Url used for generating the screenshots.
 	 */
-	printUrl: 'http://10.0.75.2/tool/index.html',
+	printUrl: 'http://localhost/tool/index.html',
 
     /**
 	 * Information necessary to send emails to the users.
@@ -182,8 +182,9 @@ module.exports = {
 
 	dromasLpis: {
 		enabled: false,
-		pathTo2SScenes: `/mnt/pracovni-archiv-01/Sentinel_L2I_10m_5514`,
-		pathToImageMosaicDirectory: `/mnt/volume-panther/datasources/dromas/dromas_s2_scenes_for_lpis_10m`,
+		groupBy: `year`,	// possible values: year, year-month, year-month-day
+		pathTo2SScenes: `/mnt/gisat-network-devices/nas/pracovni-archiv-01/Sentinel_L2I_10m_5514`,
+		pathToImageMosaicDirectory: `/home/mbabic/Dokumenty/TempStorage/Dromas/data_pro_casovou_radu/s2_scenes_for_lpis_10m`,
 		imageMosaicPgStorage: {
 			host: `localhost`,
 			port: 5432,
