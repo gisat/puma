@@ -125,6 +125,123 @@ DatabaseSchema.prototype.create = function () {
     );  
     `;
 
+    let createMetadataStructure = `
+    CREATE TABLE IF NOT EXISTS ${this.schema}.period (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.layer_group (
+      id       SERIAL PRIMARY KEY,
+      name     text,
+      priority integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.analytical_unit_template (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope (
+      id            SERIAL PRIMARY KEY,
+      name          text,
+      configuration jsonb
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_period (
+      id        SERIAL PRIMARY KEY,
+      scope_id  integer REFERENCES ${this.schema}.scope (id),
+      period_id integer REFERENCES ${this.schema}.period (id)
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_analytical_unit_template (
+      id                          SERIAL PRIMARY KEY,
+      scope_id                    integer REFERENCES ${this.schema}.scope (id),
+      analytical_unit_template_id integer REFERENCES ${this.schema}.analytical_unit_template (id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.place (
+      id       SERIAL PRIMARY KEY,
+      name     text,
+      bbox     text,
+      scope_id integer REFERENCES ${this.schema}.scope (id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template (
+      id             SERIAL PRIMARY KEY,
+      layer_group_id integer REFERENCES ${this.schema}.layer_group (id)
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template_has_style (
+      id                SERIAL PRIMARY KEY,
+      layer_template_id integer REFERENCES ${this.schema}.layer_template (id),
+      style_id          text REFERENCES ${this.schema}.style (id)
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layer_has_layer_template (
+      id                SERIAL PRIMARY KEY,
+      wms_layer_id      integer REFERENCES ${this.schema}.wms_layers (id),
+      layer_template_id integer REFERENCES ${this.schema}.layer_template (id)
+    );
+    
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute (
+      id    SERIAL PRIMARY KEY,
+      name  text,
+      type  text,
+      unit  text,
+      color text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_set (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_set_has_attribute (
+      id               SERIAL PRIMARY KEY,
+      attribute_set_id integer REFERENCES ${this.schema}.attribute_set (id),
+      attribute_id     integer REFERENCES ${this.schema}.attribute (id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scenario (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_type (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_data_source (
+      id       SERIAL PRIMARY KEY,
+      type_id  integer REFERENCES ${this.schema}.spatial_type (id),
+      layer_id integer REFERENCES ${this.schema}.wms_layers (id)
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_relation (
+      id             SERIAL PRIMARY KEY,
+      scope_id       integer REFERENCES ${this.schema}.scope (id),
+      period_id      integer REFERENCES ${this.schema}.period (id),
+      place_id       integer REFERENCES ${this.schema}.place (id),
+      data_source_id integer REFERENCES ${this.schema}.spatial_data_source (id),
+      scenario_id    integer REFERENCES ${this.schema}.scenario (id)
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_type (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_data_source (
+      id       SERIAL PRIMARY KEY,
+      type_id  integer REFERENCES ${this.schema}.attribute_type (id),
+      table_id integer REFERENCES ${this.schema}.postgis_table (id)
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_relation (
+      id               SERIAL PRIMARY KEY,
+      scope_id         integer REFERENCES ${this.schema}.scope (id),
+      period_id        integer REFERENCES ${this.schema}.period (id),
+      place_id         integer REFERENCES ${this.schema}.place (id),
+      attribute_id     integer REFERENCES ${this.schema}.attribute (id),
+      attribute_set_id integer REFERENCES ${this.schema}.attribute_set (id),
+      data_source_id   integer REFERENCES ${this.schema}.attribute_data_source (id)
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
+      id   SERIAL PRIMARY KEY,
+      name text,
+      col  text
+    );
+    `;
 
     var self = this;
     return this._pool.query(createSchema).then(function () {
@@ -138,19 +255,21 @@ DatabaseSchema.prototype.create = function () {
     }).then(function () {
         return self._pool.query(createGroup);
     }).then(function () {
-		return self._pool.query(createGroupHasMembers);
-	}).then(function () {
+        return self._pool.query(createGroupHasMembers);
+    }).then(function () {
         return self._pool.query(createAnalysis);
     }).then(function () {
         return self._pool.query(createViews);
     }).then(function () {
-		return self._pool.query(createLayers);
-	}).then(function () {
-		return self._pool.query(createWmsLayers);
-	}).then(function () {
-		return self._pool.query(createInternalUsersTable);
-	}).then(function () {
+        return self._pool.query(createLayers);
+    }).then(function () {
+        return self._pool.query(createWmsLayers);
+    }).then(function () {
+        return self._pool.query(createInternalUsersTable);
+    }).then(function () {
         return self._pool.query(createInvitation);
+    }).then(function () {
+        return self._pool.query(createMetadataStructure);
     }).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });

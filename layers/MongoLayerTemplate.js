@@ -9,7 +9,6 @@ var FilteredMongoPerformedAnalysis = require('../analysis/FilteredMongoPerformed
 var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 var FilteredMongoLayerReferences = require('./FilteredMongoLayerReferences');
-var FilteredMongoChartConfigurations = require('../visualization/FilteredMongoChartConfigurations');
 var FilteredMongoVisualizations = require('../visualization/FilteredMongoVisualizations');
 
 // Probably contains the Chart configuration as well.
@@ -39,7 +38,6 @@ class MongoLayerTemplate extends Audit {
 		this._scopes = new FilteredMongoScopes({featureLayers: {$in: [id]}}, connection);
 		this._layerReferences = new FilteredMongoLayerReferences({areaTemplate: id}, connection);
 		this._performedAnalysis = new FilteredMongoPerformedAnalysis({featureLayerTemplates: {$in: [id]}}, connection);
-		this._chartConfigurations = new FilteredMongoChartConfigurations({}, connection);
 		this._visualizations = new FilteredMongoVisualizations({"visibleLayers.at": id}, connection);
 	}
 

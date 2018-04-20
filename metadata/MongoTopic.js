@@ -1,7 +1,6 @@
 var Promise = require('promise');
 var FilteredMongoThemes = require('./FilteredMongoThemes');
 var FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
-var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
 var FilteredMongoLayerTemplates = require('../layers/FilteredMongoLayerTemplates');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 

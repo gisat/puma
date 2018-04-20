@@ -34,7 +34,7 @@ describe('LayerWmsControllerSpec', () => {
 	describe('#readAll', () => {
 		it('correctly retrieves all WMS layers', done => {
 			fixture.user = new User(0, [{
-				resourceType: 'layer_wms',
+				resourceType: PgWmsLayers.tableName(),
 				permission: Permission.READ,
 				resourceId: 10
 			}]);
@@ -59,7 +59,7 @@ describe('LayerWmsControllerSpec', () => {
 	describe('#add', () => {
 		it('correctly adds WMS layer', done => {
 			fixture.user = new User(0, [{
-				resourceType: 'layer_wms',
+				resourceType: PgWmsLayers.tableName(),
 				permission: Permission.CREATE,
 				resourceId: null
 			}]);
@@ -100,7 +100,7 @@ describe('LayerWmsControllerSpec', () => {
 	describe('#update', () => {
 		it('correctly updates the WMS layer', done => {
 			fixture.user = new User(0, [{
-				resourceType: 'layer_wms',
+				resourceType: PgWmsLayers.tableName(),
 				permission: Permission.UPDATE,
 				resourceId: 10
 			}]);
@@ -141,7 +141,7 @@ describe('LayerWmsControllerSpec', () => {
 	describe('#delete', () => {
 		it('correctly deletes the WMS layer', done => {
 			fixture.user = new User(0, [{
-				resourceType: 'layer_wms',
+				resourceType: PgWmsLayers.tableName(),
 				permission: Permission.DELETE,
 				resourceId: 11
 			}]);
@@ -169,7 +169,7 @@ describe('LayerWmsControllerSpec', () => {
 
 		it('rejects deleting the WMS layer without permission', done => {
 			fixture.user = new User(0, [{
-				resourceType: 'layer_wms',
+				resourceType: PgWmsLayers.tableName(),
 				permission: Permission.DELETE,
 				resourceId: 10
 			}]);

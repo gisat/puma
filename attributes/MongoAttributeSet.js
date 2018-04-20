@@ -6,7 +6,6 @@ var FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
 var FilteredMongoVisualizations = require('../visualization/FilteredMongoVisualizations');
 var MongoUniqueInstance = require('../data/MongoUniqueInstance');
 var FilteredCompoundCollection = require('../data/FilteredCompoundCollection');
-var FilteredMongoChartConfiguration = require('../visualization/FilteredMongoChartConfigurations');
 
 class MongoAttributeSet {
 	constructor(id, connection) {
@@ -23,10 +22,6 @@ class MongoAttributeSet {
 			new FilteredMongoAnalysis({"attributeMap.normAttributeSet": id}, connection),
 			new FilteredMongoAnalysis({"groupAttributeSet": id}, connection)]
 		);
-		this._chartConfiguration = new FilteredCompoundCollection([
-			new FilteredMongoChartConfiguration({"attrs.as": id}, connection),
-			new FilteredMongoChartConfiguration({"attrs.normAs": id}, connection)
-		]);
 		this._dataViews = new FilteredCompoundCollection([
 			new FilteredMongoDataViews({"conf.choroplethCfg.as": id}, connection),
 			new FilteredMongoDataViews({"conf.cfgs.cfg.attrs.as": id}, connection),

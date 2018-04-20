@@ -1,7 +1,6 @@
 var MongoTopic = require('../metadata/MongoTopic');
 var MongoThemes = require('../metadata/MongoThemes');
 var MongoAttributeSets = require('../attributes/MongoAttributeSets');
-var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoLayerTemplates = require('../layers/MongoLayerTemplates');
 var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
 var Promise = require('promise');
@@ -12,7 +11,6 @@ class MongoTopics {
 
 		this._themes = new MongoThemes(connection);
 		this._attributeSets = new MongoAttributeSets(connection);
-		this._chartConfigurations = new MongoChartConfigurations(connection);
 		this._layerTemplates = new MongoLayerTemplates(connection);
 	}
 

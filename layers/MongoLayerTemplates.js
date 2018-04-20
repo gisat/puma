@@ -6,7 +6,6 @@ var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
 var MongoScopes = require('../metadata/MongoScopes');
 var MongoLayerReferences = require('./MongoLayerReferences');
 var MongoPerformedAnalysis = require('../analysis/MongoPerformedAnalysis');
-var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoLayerTemplate = require('./MongoLayerTemplate');
 var MongoVisualizations = require('../visualization/MongoVisualization');
 
@@ -19,7 +18,6 @@ class MongoLayerTemplates {
 		this._scopes = new MongoScopes(connection);
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._performedAnalysis = new MongoPerformedAnalysis(connection);
-		this._chartConfigurations = new MongoChartConfigurations(connection);
 		this._visualizations = new MongoVisualizations(connection);
 	}
 
