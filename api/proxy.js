@@ -101,31 +101,29 @@ function wms(params, req, res, callback) {
 		}
 	}
   var workspace = useFirst ? 'geonode' : config.geoserver2Workspace;
+  var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserverPath+'/' + config.geoserverWorkspace + '/wms';
   if (params['REQUEST'] == 'GetFeatureInfo') {
 		useFirst = false;
-		workspace = config.geoserver2Workspace;
+		workspace = params['LAYERS'] && params['LAYERS'].split(':').length > 0 && params['LAYERS'].split(':')[0] || config.geoserver2Workspace;
+		path = config.geoserverPath+'/' + workspace + '/wms';
 		params['FORMAT'] = 'application/json';
 		params['INFO_FORMAT'] = 'application/json';
 		params['EXCEPTIONS'] = 'application/json';
 		params['FEATURE_COUNT'] = '42';
-    if (params['LAYERS']) {
-      workspace = params['LAYERS'].split(':')[0];
-    }
 	}
 	if (params['LAYERS']) {
-    params['LAYER'] = params['LAYERS'].split(',')[0];
+    	params['LAYER'] = params['LAYERS'].split(',')[0];
 	}
 	var wmsParamLayers = params['LAYERS'];
 	var host = useFirst ? config.geoserverHost : config.geoserverHost;
-	var path = useFirst ? config.geoserverPath + '/geonode/wms' : config.geoserverPath+'/' + config.geoserverWorkspace + '/wms';
 	var port = useFirst ? config.geoserverPort : config.geoserverPort;
 	var method = 'POST';
 	var style = params['STYLES'] ? params['STYLES'].split(',')[0] : '';
 	var layerGroup = (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroupMap[wmsParamLayers]) ? layerGroupMap[wmsParamLayers][style || 'def'] : '';
 
-	
+
 	//console.log("================layerGroup: ", layerGroup, "\n==========layerGroupMap: ",layerGroupMap);
-	
+
 	if (useFirst && params['REQUEST']=='GetMap' && layerGroupMap && layerGroup!=1){
 
 		delete params['TILED'];
@@ -154,7 +152,7 @@ function wms(params, req, res, callback) {
 			createLayerGroup(wmsParamLayers,style);
 		}
 		method = 'GET';
-		
+
 	}else{
 		//console.log("useFirst: ", useFirst, "params[request]:",params['request']);
 	}
@@ -163,8 +161,8 @@ function wms(params, req, res, callback) {
 	if(!params['VERSION']) {
 		params['VERSION'] = "1.1.1"
 	}
-	
-	
+
+
 	var username = useFirst ? config.geoserverUsername : config.geoserverUsername;
 	var password = useFirst ? config.geoserverPassword : config.geoserverPassword;
 
