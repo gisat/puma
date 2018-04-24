@@ -193,5 +193,7 @@ module.exports = {
 			user: `geonode`,
 			passwd: `geonode`
 		}
-	}
+	},
+
+	pantherUploadStoragePath: `/home/mbabic/Dokumenty/TempStorage/Panther/UploadManager/upload`
 };
