@@ -127,7 +127,7 @@ class Attributes {
             location: {$in: places}
         }, conn.getMongoDb()).read().then(baseLayers => {
             // Store the base layers as they will be needed later.
-            // TODO: The bug is probably here.
+            logger.info(`Attributes#_dataViews BaseLayers: `, baseLayers);
             baseLayers.forEach(baseLayer => baseLayer.queriedColumns = []);
             this._attributes
                 .map(attribute => `as_${attribute.attributeSet}_attr_${attribute.attribute}`)
