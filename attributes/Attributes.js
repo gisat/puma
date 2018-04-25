@@ -127,13 +127,18 @@ class Attributes {
             location: {$in: places}
         }, conn.getMongoDb()).read().then(baseLayers => {
             // Store the base layers as they will be needed later.
+            // TODO: The bug is probably here.
             baseLayers.forEach(baseLayer => baseLayer.queriedColumns = []);
             this._attributes
                 .map(attribute => `as_${attribute.attributeSet}_attr_${attribute.attribute}`)
                 .forEach(column => {
+                    logger.info(`Attribute#_dataViews Prepared columns: `, column);
                     baseLayers
-                        .filter(baseLayer => baseLayer.columns.indexOf(column) != -1)
-                        .forEach(baseLayer => baseLayer.queriedColumns.push(column))
+                        .filter(baseLayer => baseLayer.columns.indexOf(column) !== -1)
+                        .forEach(baseLayer => {
+                            logger.info(`Attribute#_dataViews Put into queried Columns: `, column);
+                            baseLayer.queriedColumns.push(column)
+                        })
                 });
 
             return sqlProducer(baseLayers, mongoAttributes);
