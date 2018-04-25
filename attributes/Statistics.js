@@ -1,4 +1,5 @@
 let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
+let logger = require('../common/Logger').applicationWideLogger;
 
 /**
  * It retrieves statistical information about the attributes in the PostgreSQL datastore.
@@ -29,6 +30,7 @@ class Statistics {
 	 * @returns {Promise.<*>}
 	 */
 	sql(baseLayers) {
+	    logger.info(`Statistics#sql BaseLayers`, baseLayers);
 		// It has to be restructured.
 		let queries = baseLayers
 			.filter(baseLayer => baseLayer.queriedColumns.length > 0)
@@ -38,8 +40,10 @@ class Statistics {
                     columnsToQuery += ','
                 }
 
-			    return `SELECT ${columnsToQuery} 
-                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`
+                let sql = `SELECT ${columnsToQuery} 
+                        '' as geometry, gid, '${baseLayer.location}' as location, '${baseLayer.areaTemplate}' as areaTemplate FROM ${this._schema}.layer_${baseLayer._id}`;
+                logger.info(`Statistics#sql SQL for one Base Layer.: `, sql);
+			    return sql;
 			});
 
 		return new PgSequentialQuery(this._pgPool).query(queries);
