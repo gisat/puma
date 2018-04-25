@@ -128,7 +128,7 @@ class Attributes {
             location: {$in: places}
         }, conn.getMongoDb()).read().then(baseLayers => {
             // Store the base layers as they will be needed later.
-            logger.info(`Attributes#_dataViews BaseLayers: `, baseLayers);
+            logger.info(`Attributes#_dataViews BaseLayers: `, baseLayers, ` Attributes: `, this._attributes);
             baseLayers.forEach(baseLayer => baseLayer.queriedColumns = []);
             this._attributes
                 .map(attribute => `as_${attribute.attributeSet}_attr_${attribute.attribute}`)
