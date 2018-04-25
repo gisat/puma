@@ -32,6 +32,7 @@ class Attributes {
         return Promise.all(this._attributes.map(attribute => {
             return new MongoAttribute(Number(attribute.attribute), conn.getMongoDb()).json();
         })).then(attributes => {
+            logger.info(`Attributes#attributes Attributes: `, attributes);
             attributes.forEach(attribute => {
                 mongoAttributes[attribute._id] = attribute;
             });
