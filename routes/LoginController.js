@@ -80,7 +80,7 @@ class LoginController {
                 data: {
                     userId: request.session.userId,
                     userName: request.session.user.username,
-                    groups: request.session.groups
+                    groups: request.session.user.groups
                 },
                 success: true
             });
