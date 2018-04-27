@@ -23,7 +23,9 @@ shapefile.open('/data/Users/jbalhar/Projects/PUCS/Data/PUCS_prague_LR_AOI_MC.shp
 
 function handleResults(results) {
     console.log(`Polygon: ${results.value}`);
-    polygons.push(results.value);
+    if(results.value) {
+        polygons.push(results.value);
+    }
 
     if(!results.done) {
         return source.read().then(handleResults);
@@ -33,8 +35,16 @@ function handleResults(results) {
 }
 
 function processPolygons() {
-    let results = polygons.map(polygon => {
-        return handlePolygon(polygon.properties["Id"], polygon.geometry.coordinates[0], [
+    let shapefilePolygons = polygons.map(polygon => {
+        return {
+            id: polygon.properties["Id"],
+            coordinates: polygon.geometry.coordinates[0].map(coordinate => {
+                return {
+                    latitude: coordinate[1],
+                    longitude: coordinate[0]
+                }
+            }),
+            times: [
             {hours: hours, label: '1.5.2015 05:00', average: 0, total: 0},
             {hours: hours + 10, label: '1.5.2015 15:00', average: 0, total: 0},
 
@@ -79,8 +89,10 @@ function processPolygons() {
 
             {hours: hours + 280, label: '15.5.2015 05:00', average: 0, total: 0},
             {hours: hours + 290, label: '15.5.2015 15:00', average: 0, total: 0}
-        ]);
+        ]};
     });
+
+    let results = handlePolygons(shapefilePolygons);
 
     results.forEach(result=>{
         console.log(`Id: ${result.id}`);
@@ -91,14 +103,7 @@ function processPolygons() {
 }
 
 // Times per polygon
-function handlePolygon(id, coordinates, relevantTimes){
-    coordinates = coordinates.map(coordinate => {
-        return {
-            latitude: coordinate[1],
-            longitude: coordinate[0]
-        }
-    });
-
+function handlePolygons(polygons){
     let coords = file.root.dimensions['lat'].length;
     let points = 0;
     for(let lat = 0; lat < coords; lat++){
@@ -106,22 +111,20 @@ function handlePolygon(id, coordinates, relevantTimes){
             console.log(`Coords: ${coords} Lat: ${lat} Lon: ${lon} `);
 
             points++;
-            if(geolib.isPointInside(
-                {latitude: file.root.variables['lat'].read(lat), longitude: file.root.variables['lon'].read(lon)},
-                coordinates
-            )){
-                relevantTimes.forEach(time => {
-                    let result = file.root.variables['temperature'].read(time.hours, lon, lat);
-                    time.total++;
-                    time.average += result;
-                });
-            }
+            polygons.forEach(polygon => {
+                if(geolib.isPointInside(
+                    {latitude: file.root.variables['lat'].read(lat), longitude: file.root.variables['lon'].read(lon)},
+                    polygon.coordinates
+                )){
+                    polygon.times.forEach(time => {
+                        let result = file.root.variables['temperature'].read(time.hours, lon, lat);
+                        time.total++;
+                        time.average += result;
+                    });
+                }
+            })
         }
     }
 
-    return {
-        id: id,
-        coordinates: coordinates,
-        times: relevantTimes
-    }
+    return polygons;
 }
