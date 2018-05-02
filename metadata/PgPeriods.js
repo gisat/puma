@@ -3,7 +3,7 @@ let logger = require('../common/Logger').applicationWideLogger;
 let PgCollection = require('../common/PgCollection');
 
 /**
- * This class is responsible for handling the PgPeriods created in the database.
+ * This class is responsible for handling the PgPeriods created in the database. It is a low level API class.
  * @augments PgCollection
  */
 class PgPeriods extends PgCollection {
@@ -12,16 +12,20 @@ class PgPeriods extends PgCollection {
      * @param schema {String} Schema containing data tables.
      */
     constructor(pool, schema) {
-        super(pool, schema, PgPeriods.tableName());
+        super(pool, schema, `PgPeriods`);
     }
 
     /**
      * @inheritDoc
      */
-    create(id, userId) {
-        return super.create(id, userId).then(() => {
-            return this._pool.query(`INSERT INTO ${this._schema}.${PgPeriods.tableName()} (id) VALUES (${id})`);
-        });
+    create(id) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#create Id must be provided.`)
+            );
+        }
+
+        return this._pool.query(`INSERT INTO ${this._schema}.${PgPeriods.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -30,37 +34,45 @@ class PgPeriods extends PgCollection {
      * @param id {Number} Id of the scope to update.
      * @param period {Object}
      * @param period.name {String} Name of the period.
-     * @param userId {Number} Id of the User requesting the update.
      */
-    update(id, period, userId) {
-        return super.update(id, period, userId).then(() => {
+    update(id, period) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#update Id must be provided.`)
+            );
+        }
+        if(!period) {
+            throw new Error(
+                logger.error(`${this._name}#update Updated object must be provided.`)
+            );
+        }
+
+        if(period.name !== null) {
+            let sql = ``;
+            let changes = [];
+
             if(period.name !== null) {
-                let sql = `BEGIN TRANSACTION; `;
-                let changes = [];
-
-                if(period.name !== null) {
-                    changes.push(` name = '${name}' `);
-                }
-
-                sql += `UPDATE ${this._schema}.${PgPeriods.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
-                sql += `COMMIT; `;
-
-                logger.info(`PgPeriods#update SQL: ${sql}`);
-                return this._pool.query(sql)
+                changes.push(` name = '${name}' `);
             }
-        }).catch(err => {
-            logger.error(`PgPeriods#update ERROR: `, err);
-            return this._pool.query(`ROLLBACK`);
-        });
+
+            sql += `UPDATE ${this._schema}.${PgPeriods.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
+
+            logger.info(`PgPeriods#update SQL: ${sql}`);
+            return this._pool.query(sql)
+        }
     }
 
     /**
      * @inheritDoc
      */
-    delete(id, userId) {
-        return super.delete(id, userId).then(() => {
-            return this._pool.query(`DELETE FROM ${this._schema}.${PgPeriods.tableName()} WHERE id = ${id} CASCADE;`);
-        });
+    delete(id) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#delete Id must be provided.`)
+            );
+        }
+        
+        return this._pool.query(`DELETE FROM ${this._schema}.${PgPeriods.tableName()} WHERE id = ${id} CASCADE;`);
     }
 
     static tableName() {

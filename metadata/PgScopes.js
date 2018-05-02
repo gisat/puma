@@ -12,7 +12,7 @@ class PgScopes extends PgCollection {
      * @param schema {String} Schema containing data tables.
      */
     constructor(pool, schema) {
-        super(pool, schema);
+        super(pool, schema, `PgScopes`);
     }
 
     /**
@@ -20,7 +20,13 @@ class PgScopes extends PgCollection {
      * @param id {Number}
      */
     create(id) {
-        return this._pool.query(`INSERT INTO ${this._schema}.${PgScopes.tableName()} (id) VALUES (${id})`);
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#create Id must be provided.`)
+            );
+        }
+
+        return this._pool.query(`INSERT INTO ${this._schema}.${PgScopes.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -34,28 +40,9 @@ class PgScopes extends PgCollection {
      * @param scope.active {Boolean} It is possible to have inactive scope for purposes of preparation.
      */
     update(id, scope) {
-        if(!id) {
-            throw new Error(
-                logger.error(`PgScopes#update Id must be provided.`)
-            );
-        }
-        if(!scope) {
-            throw new Error(
-                logger.error(`PgScopes#update Updated scope must be provided.`)
-            );
-        }
-        if(scope.analyticalUnitLevel && !_.isArray(scope.analyticalUnitLevel)) {
-            throw new Error(
-                logger.error(`PgScopes#update Analytical units must be either null or array.`)
-            );
-        }
-        if(scope.periods && !_.isArray(scope.periods)) {
-            throw new Error(
-                logger.error(`PgScopes#update Periods must be either null or array.`)
-            );
-        }
+        this.verifyUpdate(id, scope);
 
-        let sql = `BEGIN TRANSACTION; `;
+        let sql = ``;
         let changes = [];
 
         if(scope.name !== null) {
@@ -80,13 +67,37 @@ class PgScopes extends PgCollection {
         if(changes.length > 0) {
             sql += `UPDATE ${this._schema}.${PgScopes.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
         }
-        sql += `COMMIT; `;
 
         logger.info(`PgScopes#update SQL: ${sql}`);
-        return this._pool.query(sql).catch(err => {
-            logger.error(`PgScopes#update ERROR: `, err);
-            return this._pool.query(`ROLLBACK`);
-        })
+        return this._pool.query(sql);
+    }
+
+    /**
+     * It verifies that all the data necessary for update were provided. The params are explained in the update method
+     * documentation.
+     * @private
+     */
+    verifyUpdate(id, scope) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#update Id must be provided.`)
+            );
+        }
+        if(!scope) {
+            throw new Error(
+                logger.error(`${this._name}#update Updated object must be provided.`)
+            );
+        }
+        if(scope.analyticalUnitLevel && !_.isArray(scope.analyticalUnitLevel)) {
+            throw new Error(
+                logger.error(`${this._name}#update Analytical units must be either null or array.`)
+            );
+        }
+        if(scope.periods && !_.isArray(scope.periods)) {
+            throw new Error(
+                logger.error(`${this._name}#update Periods must be either null or array.`)
+            );
+        }
     }
 
     /**
@@ -95,7 +106,13 @@ class PgScopes extends PgCollection {
      * @return {*}
      */
     delete(id) {
-        return this._pool.query(`DELETE FROM ${this._schema}.${PgScopes.tableName()} WHERE id = ${id} CASCADE`);
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#delete Id must be provided.`)
+            );
+        }
+        
+        return this._pool.query(`DELETE FROM ${this._schema}.${PgScopes.tableName()} WHERE id = ${id} CASCADE;`);
     }
 
     static tableName() {

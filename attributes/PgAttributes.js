@@ -12,16 +12,20 @@ class PgAttributes extends PgCollection {
      * @param schema {String} Schema containing data tables.
      */
     constructor(pool, schema) {
-        super(pool, schema, PgAttributes.tableName());
+        super(pool, schema, `PgAttributes`);
     }
 
     /**
      * @inheritDoc
      */
-    create(id, userId) {
-        return super.create(id, userId).then(() => {
-            return this._pool.query(`INSERT INTO ${this._schema}.${PgAttributes.tableName()} (id) VALUES (${id})`);
-        });
+    create(id) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#create Id must be provided.`)
+            );
+        }
+
+        return this._pool.query(`INSERT INTO ${this._schema}.${PgAttributes.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -33,49 +37,57 @@ class PgAttributes extends PgCollection {
      * @param attribute.standardUnits {String} The areal units suchs as m2, km2, ha
      * @param attribute.units {String} Custom units to be used that aren't area based. These are just updated.
      * @param attribute.color {String} Hex code representing the color of this attribute.
-     * @param userId {Number} Id of the user for update.
      */
-    update(id, attribute, userId) {
-        return super.update(id, attribute, userId).then(()=>{
-            let sql = `BEGIN TRANSACTION; `;
-            let changes = [];
+    update(id, attribute) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#update Id must be provided.`)
+            );
+        }
+        if(!attribute) {
+            throw new Error(
+                logger.error(`${this._name}#update Updated object must be provided.`)
+            );
+        }
 
-            if(attribute.name !== null) {
-                changes.push(` name = '${attribute.name}' `);
-            }
-            if(attribute.type !== null) {
-                changes.push(` type = '${attribute.type}' `);
-            }
-            if(attribute.standardUnits !== null) {
-                changes.push(` standard_units = '${attribute.standardUnits}' `);
-            }
-            if(attribute.units !== null) {
-                changes.push(` units = '${attribute.units}' `);
-            }
-            if(attribute.color !== null) {
-                changes.push(` color = '${attribute.color}' `);
-            }
+        let sql = ``;
+        let changes = [];
 
-            if(changes.length > 0) {
-                sql += `UPDATE ${this._schema}.${PgAttributes.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
-            }
-            sql += `COMMIT; `;
+        if(attribute.name !== null) {
+            changes.push(` name = '${attribute.name}' `);
+        }
+        if(attribute.type !== null) {
+            changes.push(` type = '${attribute.type}' `);
+        }
+        if(attribute.standardUnits !== null) {
+            changes.push(` standard_units = '${attribute.standardUnits}' `);
+        }
+        if(attribute.units !== null) {
+            changes.push(` units = '${attribute.units}' `);
+        }
+        if(attribute.color !== null) {
+            changes.push(` color = '${attribute.color}' `);
+        }
 
-            logger.info(`PgAttributes#update SQL: ${sql}`);
-            return this._pool.query(sql);
-        }).catch(err => {
-            logger.error(`PgAttributes#update ERROR: `, err);
-            return this._pool.query(`ROLLBACK`);
-        }) ;
+        if(changes.length > 0) {
+            sql += `UPDATE ${this._schema}.${PgAttributes.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
+        }
+
+        logger.info(`PgAttributes#update SQL: ${sql}`);
+        return this._pool.query(sql);
     }
 
     /**
      * @inheritDoc
      */
-    delete(id, userId) {
-        return super.delete(id, userId).then(() => {
-            return this._pool.query(`DELETE FROM ${this._schema}.${PgAttributes.tableName()} WHERE id = ${id} CASCADE`);
-        });
+    delete(id) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#delete Id must be provided.`)
+            );
+        }
+        
+        return this._pool.query(`DELETE FROM ${this._schema}.${PgAttributes.tableName()} WHERE id = ${id} CASCADE`);
     }
 
     static tableName() {

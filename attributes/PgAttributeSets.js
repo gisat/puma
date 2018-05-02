@@ -13,7 +13,7 @@ class PgAttributeSets extends PgCollection {
      * @param schema {String} Schema containing data tables.
      */
     constructor(pool, schema) {
-        super(pool, schema);
+        super(pool, schema, `PgAttributeSets`);
     }
 
     /**
@@ -21,7 +21,13 @@ class PgAttributeSets extends PgCollection {
      * @param id {Number}
      */
     create(id) {
-        return this._pool.query(`INSERT INTO ${this._schema}.${PgAttributeSets.tableName()} (id) VALUES (${id})`);
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#create Id must be provided.`)
+            );
+        }
+
+        return this._pool.query(`INSERT INTO ${this._schema}.${PgAttributeSets.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -35,28 +41,9 @@ class PgAttributeSets extends PgCollection {
      * @param attributeSet.topic {Number} Id of the topic associated with the attribute set.
      */
     update(id, attributeSet) {
-        if(!id) {
-            throw new Error(
-                logger.error(`PgAttributeSets#update Id must be provided.`)
-            );
-        }
-        if(!attributeSet) {
-            throw new Error(
-                logger.error(`PgAttributeSets#update Updated scope must be provided.`)
-            );
-        }
-        if(attributeSet.featureLayers && !_.isArray(attributeSet.featureLayers)) {
-            throw new Error(
-                logger.error(`PgAttributeSets#update Analytical units must be either null or array.`)
-            );
-        }
-        if(attributeSet.attributes && !_.isArray(attributeSet.attributes)) {
-            throw new Error(
-                logger.error(`PgAttributeSets#update Attributes must be either null or array.`)
-            );
-        }
+        this.verifyUpdate(id, attributeSet);
 
-        let sql = `BEGIN TRANSACTION; `;
+        let sql = ``;
         let changes = [];
 
         if(attributeSet.name !== null) {
@@ -73,21 +60,44 @@ class PgAttributeSets extends PgCollection {
         }
         if(attributeSet.attributes !== null) {
             sql += ` DELETE FROM ${this._schema}.${PgAttributeSets.attributes()} WHERE attribute_set_id = ${id}; `;
-            sql += attributeSet.attributes.map(atribute =>
-                ` INSERT INTO ${this._schema}.${PgAttributeSets.attributes()} (scope_id, period_id) VALUES (${id}, ${atribute}); `
+            sql += attributeSet.attributes.map(attribute =>
+                ` INSERT INTO ${this._schema}.${PgAttributeSets.attributes()} (scope_id, period_id) VALUES (${id}, ${attribute}); `
             );
         }
 
         if(changes.length > 0) {
             sql += `UPDATE ${this._schema}.${PgAttributeSets.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
         }
-        sql += `COMMIT; `;
 
         logger.info(`PgAttributeSets#update SQL: ${sql}`);
-        return this._pool.query(sql).catch(err => {
-            logger.error(`PgAttributeSets#update ERROR: `, err);
-            return this._pool.query(`ROLLBACK`);
-        })
+        return this._pool.query(sql);
+    }
+
+    /**
+     * Private verification that all necessary inputs for update were provided.
+     * @private
+     */
+    verifyUpdate(id, attributeSet) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#update Id must be provided.`)
+            );
+        }
+        if(!attributeSet) {
+            throw new Error(
+                logger.error(`${this._name}#update Updated scope must be provided.`)
+            );
+        }
+        if(attributeSet.featureLayers && !_.isArray(attributeSet.featureLayers)) {
+            throw new Error(
+                logger.error(`${this._name}#update Analytical units must be either null or array.`)
+            );
+        }
+        if(attributeSet.attributes && !_.isArray(attributeSet.attributes)) {
+            throw new Error(
+                logger.error(`${this._name}#update Attributes must be either null or array.`)
+            );
+        }
     }
 
     /**
@@ -96,6 +106,12 @@ class PgAttributeSets extends PgCollection {
      * @return {*}
      */
     delete(id) {
+        if(!id) {
+            throw new Error(
+                logger.error(`${this._name}#delete Id must be provided.`)
+            );
+        }
+
         return this._pool.query(`DELETE FROM ${this._schema}.${PgAttributeSets.tableName()} WHERE id = ${id} CASCADE`);
     }
 

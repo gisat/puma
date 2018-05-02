@@ -147,35 +147,35 @@ DatabaseSchema.prototype.create = function () {
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_period (
       id        SERIAL PRIMARY KEY,
-      scope_id  integer REFERENCES ${this.schema}.scope (id),
-      period_id integer REFERENCES ${this.schema}.period (id)
+      scope_id  integer,
+      period_id integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_analytical_unit_template (
       id                          SERIAL PRIMARY KEY,
-      scope_id                    integer REFERENCES ${this.schema}.scope (id),
-      analytical_unit_template_id integer REFERENCES ${this.schema}.analytical_unit_template (id)
+      scope_id                    integer,
+      analytical_unit_template_id integer
     );
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.place (
       id       SERIAL PRIMARY KEY,
       name     text,
       bbox     text,
-      scope_id integer REFERENCES ${this.schema}.scope (id)
+      scope_id integer
     );
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template (
       id             SERIAL PRIMARY KEY,
-      layer_group_id integer REFERENCES ${this.schema}.layer_group (id)
+      layer_group_id integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template_has_style (
       id                SERIAL PRIMARY KEY,
-      layer_template_id integer REFERENCES ${this.schema}.layer_template (id),
-      style_id          text REFERENCES ${this.schema}.style (id)
+      layer_template_id integer,
+      style_id          text
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layer_has_layer_template (
       id                SERIAL PRIMARY KEY,
-      wms_layer_id      integer REFERENCES ${this.schema}.wms_layers (id),
-      layer_template_id integer REFERENCES ${this.schema}.layer_template (id)
+      wms_layer_id      integer,
+      layer_template_id integer
     );
     
     
@@ -192,8 +192,8 @@ DatabaseSchema.prototype.create = function () {
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_set_has_attribute (
       id               SERIAL PRIMARY KEY,
-      attribute_set_id integer REFERENCES ${this.schema}.attribute_set (id),
-      attribute_id     integer REFERENCES ${this.schema}.attribute (id)
+      attribute_set_id integer,
+      attribute_id     integer
     );
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.scenario (
@@ -202,39 +202,48 @@ DatabaseSchema.prototype.create = function () {
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_type (
       id   SERIAL PRIMARY KEY,
-      name text
+      name text,
+      col text
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_data_source (
       id       SERIAL PRIMARY KEY,
-      type_id  integer REFERENCES ${this.schema}.spatial_type (id),
-      layer_id integer REFERENCES ${this.schema}.wms_layers (id)
+      type_id  integer,
+      wms_id integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_relation (
       id             SERIAL PRIMARY KEY,
-      scope_id       integer REFERENCES ${this.schema}.scope (id),
-      period_id      integer REFERENCES ${this.schema}.period (id),
-      place_id       integer REFERENCES ${this.schema}.place (id),
-      data_source_id integer REFERENCES ${this.schema}.spatial_data_source (id),
-      scenario_id    integer REFERENCES ${this.schema}.scenario (id)
+      scope_id       integer,
+      period_id      integer,
+      place_id       integer,
+      data_source_id integer,
+      scenario_id    integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.wms (
+        id SERIAL PRIMARY KEY,
+        name text,
+        url text,
+        layer text,
+        custom text
     );
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_type (
       id   SERIAL PRIMARY KEY,
-      name text
+      name text,
+      col text
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_data_source (
       id       SERIAL PRIMARY KEY,
-      type_id  integer REFERENCES ${this.schema}.attribute_type (id),
-      table_id integer REFERENCES ${this.schema}.postgis_table (id)
+      type_id  integer,
+      table_id integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_relation (
       id               SERIAL PRIMARY KEY,
-      scope_id         integer REFERENCES ${this.schema}.scope (id),
-      period_id        integer REFERENCES ${this.schema}.period (id),
-      place_id         integer REFERENCES ${this.schema}.place (id),
-      attribute_id     integer REFERENCES ${this.schema}.attribute (id),
-      attribute_set_id integer REFERENCES ${this.schema}.attribute_set (id),
-      data_source_id   integer REFERENCES ${this.schema}.attribute_data_source (id)
+      scope_id         integer,
+      period_id        integer,
+      place_id         integer,
+      attribute_id     integer,
+      attribute_set_id integer,
+      data_source_id   integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
       id   SERIAL PRIMARY KEY,
