@@ -47,13 +47,7 @@ class IntegrationEnvironment {
 			next();
 		});
 
-        let pool = this.pool = new PgPool({
-            user: config.pgDataUser,
-            database: config.pgDataDatabase,
-            password: config.pgDataPassword,
-            host: config.pgDataHost,
-            port: config.pgDataPort
-        });
+        let pool = this.pool = IntegrationEnvironment.pgPool();
 
         return conn.connectToMongo(config.mongoConnString).then((db) => {
 			this._mongoDb = db;
@@ -96,7 +90,7 @@ class IntegrationEnvironment {
         return this.schema.drop().then(() => {
         	this.server.close();
 
-            return this.dropMongoCollections();
+        	return this.dropMongoCollections();
         })
     }
 
@@ -111,6 +105,21 @@ class IntegrationEnvironment {
 			return this._mongoDb.collection(collection).deleteMany({});
 		}));
 	}
+
+	static pgPool() {
+        if(!IntegrationEnvironment.pool) {
+            console.log('Create new PgPool.');
+            return new PgPool({
+                user: config.pgDataUser,
+                database: config.pgDataDatabase,
+                password: config.pgDataPassword,
+                host: config.pgDataHost,
+                port: config.pgDataPort
+            });
+        } else {
+            return IntegrationEnvironment.pool;
+        }
+    }
 }
 
 module.exports = IntegrationEnvironment;

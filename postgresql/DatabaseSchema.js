@@ -125,6 +125,132 @@ DatabaseSchema.prototype.create = function () {
     );  
     `;
 
+    let createMetadataStructure = `
+    CREATE TABLE IF NOT EXISTS ${this.schema}.period (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.layer_group (
+      id       SERIAL PRIMARY KEY,
+      name     text,
+      priority integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.analytical_unit_template (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope (
+      id            SERIAL PRIMARY KEY,
+      name          text,
+      configuration jsonb
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_period (
+      id        SERIAL PRIMARY KEY,
+      scope_id  integer,
+      period_id integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_analytical_unit_template (
+      id                          SERIAL PRIMARY KEY,
+      scope_id                    integer,
+      analytical_unit_template_id integer
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.place (
+      id       SERIAL PRIMARY KEY,
+      name     text,
+      bbox     text,
+      scope_id integer
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template (
+      id             SERIAL PRIMARY KEY,
+      layer_group_id integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template_has_style (
+      id                SERIAL PRIMARY KEY,
+      layer_template_id integer,
+      style_id          text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layer_has_layer_template (
+      id                SERIAL PRIMARY KEY,
+      wms_layer_id      integer,
+      layer_template_id integer
+    );
+    
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute (
+      id    SERIAL PRIMARY KEY,
+      name  text,
+      type  text,
+      unit  text,
+      color text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_set (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_set_has_attribute (
+      id               SERIAL PRIMARY KEY,
+      attribute_set_id integer,
+      attribute_id     integer
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scenario (
+      id   SERIAL PRIMARY KEY,
+      name text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_type (
+      id   SERIAL PRIMARY KEY,
+      name text,
+      col text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_data_source (
+      id       SERIAL PRIMARY KEY,
+      type_id  integer,
+      wms_id integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_relation (
+      id             SERIAL PRIMARY KEY,
+      scope_id       integer,
+      period_id      integer,
+      place_id       integer,
+      data_source_id integer,
+      scenario_id    integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.wms (
+        id SERIAL PRIMARY KEY,
+        name text,
+        url text,
+        layer text,
+        custom text
+    );
+    
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_type (
+      id   SERIAL PRIMARY KEY,
+      name text,
+      col text
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_data_source (
+      id       SERIAL PRIMARY KEY,
+      type_id  integer,
+      table_id integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_relation (
+      id               SERIAL PRIMARY KEY,
+      scope_id         integer,
+      period_id        integer,
+      place_id         integer,
+      attribute_id     integer,
+      attribute_set_id integer,
+      data_source_id   integer
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
+      id   SERIAL PRIMARY KEY,
+      name text,
+      col  text
+    );
+    `;
 
     var self = this;
     return this._pool.query(createSchema).then(function () {
@@ -138,19 +264,21 @@ DatabaseSchema.prototype.create = function () {
     }).then(function () {
         return self._pool.query(createGroup);
     }).then(function () {
-		return self._pool.query(createGroupHasMembers);
-	}).then(function () {
+        return self._pool.query(createGroupHasMembers);
+    }).then(function () {
         return self._pool.query(createAnalysis);
     }).then(function () {
         return self._pool.query(createViews);
     }).then(function () {
-		return self._pool.query(createLayers);
-	}).then(function () {
-		return self._pool.query(createWmsLayers);
-	}).then(function () {
-		return self._pool.query(createInternalUsersTable);
-	}).then(function () {
+        return self._pool.query(createLayers);
+    }).then(function () {
+        return self._pool.query(createWmsLayers);
+    }).then(function () {
+        return self._pool.query(createInternalUsersTable);
+    }).then(function () {
         return self._pool.query(createInvitation);
+    }).then(function () {
+        return self._pool.query(createMetadataStructure);
     }).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });

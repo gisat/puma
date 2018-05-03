@@ -4,7 +4,6 @@ var MongoScopes = require('./MongoScopes');
 var MongoPeriod = require('./MongoPeriod');
 var MongoThemes = require('./MongoThemes');
 var MongoUniqueUpdate = require('../data/MongoUniqueUpdate');
-var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoDataViews = require('../visualization/MongoDataViews');
 var Promise = require('promise');
 
@@ -16,7 +15,6 @@ class MongoPeriods {
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._scope = new MongoScopes(connection);
 		this._themes = new MongoThemes(connection);
-		this._chartConfigurations = new MongoChartConfigurations(connection);
 		this._dataViews = new MongoDataViews(connection);
 	}
 

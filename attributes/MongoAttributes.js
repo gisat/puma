@@ -3,7 +3,6 @@ var MongoAttribute = require('./MongoAttribute');
 var MongoLayerReferences = require('../layers/MongoLayerReferences');
 var MongoAttributeSets = require('./MongoAttributeSets');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
-var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoDataViews = require('../visualization/MongoDataViews');
 var MongoVisualizations = require('../visualization/MongoVisualization');
 var Promise = require('promise');
@@ -14,7 +13,6 @@ class MongoAttributes {
 		this._layerReferences = new MongoLayerReferences(connection);
 		this._attributeSets = new MongoAttributeSets(connection);
 		this._analysis = new MongoAnalysis(connection);
-		this._chartConfigurations = new MongoChartConfigurations(connection);
 		this._dataViews = new MongoDataViews(connection);
 		this._visualizations = new MongoVisualizations(connection);
 	}
