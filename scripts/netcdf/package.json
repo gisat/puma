@@ -1,0 +1,20 @@
+{
+  "name": "OSMToGeoJSON",
+  "description": "Small tool for downloading the buildings osm data and exporting them as GeoJSON.",
+  "version": "0.1.0",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gisat/puma.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gisat/puma/issues"
+  },
+  "homepage": "https://puma.worldbank.org/",
+  "dependencies": {
+    "geolib": "^2.0.24",
+    "moment": "^2.22.1",
+    "netcdf4": "^0.3.1",
+    "shapefile": "^0.6.6"
+  }
+}
