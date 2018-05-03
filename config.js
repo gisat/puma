@@ -195,5 +195,6 @@ module.exports = {
 		}
 	},
 
-	pantherUploadStoragePath: `/home/mbabic/Dokumenty/TempStorage/Panther/UploadManager/upload`
+	pantherDataStoragePath: `/home/mbabic/Dokumenty/TempStorage/Panther`,
+	pantherTemporaryStoragePath: `/tmp/panther`
 };
