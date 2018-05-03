@@ -21,6 +21,7 @@ class SzifCaseCreator {
 			afterGeometry: null
 		};
 
+		let mongoLocation;
 		return this.getGeojsonGeometry(beforeFilePath)
 			.then((geometry) => {
 				return this.reprojectGeojsonGeometryFromKrovakToWgs(geometry);
@@ -37,7 +38,10 @@ class SzifCaseCreator {
 				return this.prepareMongoLocationMetadata(caseMetadata)
 			})
 			.then((mongoLocationMetadata) => {
+				mongoLocation = mongoLocationMetadata;
 				return new MongoLocations(this._mongo).add(mongoLocationMetadata);
+			}).then(() => {
+				return mongoLocation;
 			});
 	}
 

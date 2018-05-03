@@ -126,7 +126,7 @@ module.exports = function(app) {
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
 	new ImageMosaicController(app);
-	new SzifCaseCreatorController(app, pool, mongo);
+	new SzifCaseCreatorController(app, pool, mongo, config.postgreSqlSchema);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);

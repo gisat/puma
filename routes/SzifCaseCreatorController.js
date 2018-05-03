@@ -1,13 +1,14 @@
 const SzifCaseCreator = require(`../integration/SzifCaseCreator`);
-
-const config = require(`../config`);
+const PgPermissions = require('../security/PgPermissions');
+const Permission = require('../security/Permission');
 
 class SzifCaseCreatorController {
-	constructor(app, pgPool, mongo) {
+	constructor(app, pgPool, mongo, schema) {
 		this._pgPool = pgPool;
 		this._mongo = mongo;
 
-		app.post(`/rest/szif/case`, this.createNewSzifCase.bind(this));
+        this.permissions = new PgPermissions(pgPool, schema);
+        app.post(`/rest/szif/case`, this.createNewSzifCase.bind(this));
 	}
 
 	createNewSzifCase(request, response) {
@@ -16,11 +17,17 @@ class SzifCaseCreatorController {
 			request.body.scopeId,
 			request.files.changeReviewFileBefore.path,
 			request.files.changeReviewFileAfter.path
-		).then(() => {
-			response.status(200).json({
-				data: {},
-				success: true
-			});
+		).then(result => {
+            return Promise.all([
+                this.permissions.add(request.session.user.id, 'location', result._id, Permission.READ),
+                this.permissions.add(request.session.user.id, 'location', result._id, Permission.UPDATE),
+                this.permissions.add(request.session.user.id, 'location', result._id, Permission.DELETE)
+            ]);
+		}).then(() => {
+            response.status(200).json({
+                data: {},
+                success: true
+            });
 		}).catch((error) => {
 			console.log(`SzifCaseCreatorController: error`, error);
 			response.status(500).json({
