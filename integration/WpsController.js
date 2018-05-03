@@ -3,150 +3,142 @@ let conn = require('../common/conn');
 let MongoLocations = require('../metadata/MongoLocations');
 let MongoScopes = require('../metadata/MongoScopes');
 let config = require('../config');
+
 let _ = require('lodash');
 
 let LayerImporter = require('../integration/LayerImporter');
 let LayerImporterTasks = require('../integration/LayerImporterTasks');
 
+let Wps = require('../wps/Wps');
 
 let currentProcess = {};
 
 class WpsController {
-    /**
-     *
-     * @param app
-     * @param pgPool
-     * @param mongo
-     * @param wpsProcesses {Map} Map of the WPS processes available to run
-     */
-    constructor(app, pgPool, mongo, wpsProcesses) {
-        app.get('/rest/wps', this.wpsGet.bind(this));
-        app.post('/rest/wps', this.wpsPost.bind(this));
-        app.post('/rest/status/wps/:id', this.status.bind(this));
-        app.get('/rest/inputs/wps', this.inputs.bind(this));
-        
-        this.mapToAllPlaces = new MapToAllPlaces(pgPool, mongo);
-        
-        this._layerImporterTasks = new LayerImporterTasks();
-        this._layerImporter = new LayerImporter(pgPool, mongo, this._layerImporterTasks);
-    }
-    
-    /**
-     *
-     * @param request
-     * @param response
-     */
-    wpsGet(request, response) {
-        let requestAction = request.query.request.toLowerCase();
-        if (requestAction === 'getcapabilities') {
-            this.getCapabilities(response);
-        } else if (requestAction === 'describeprocess') {
-            this.describeProcess(request.query.identifier, response);
-        } else if (requestAction === 'execute') {
-            this.execute(request, response);
-        } else {
-            response.status(400).json({status: "Incorrect request. Valid choices are GetCapabilities and DescribeProcess for GET request."})
-        }
-    }
-    
-    /**
-     *
-     * @param request
-     * @param response
-     */
-    wpsPost(request, response) {
-        Promise.resolve().then(() => {
-            if (request.headers['content-type'] !== 'application/xml') throw new Error(`Content type 'application/xml' is expected!`);
-            return this.parseMethodInputsFromXmlDocument(request);
-        }).then(wpsInputs => {
-                if (wpsInputs.operation === 'getcapabilities') {
-                    this.getCapabilities(response);
-                } else if (wpsInputs.operation === 'describeprocess') {
-                    this.describeProcess(request.body.identifier, response);
-                } else if (wpsInputs.operation === 'execute') {
-                    this.execute(request, response, wpsInputs);
-                } else {
-                    throw new Error(`Incorrect request. Valid choices are GetCapabilities, DescribeProcess and Execute for POST request.`);
-                }
-            }
-        ).catch(error => {
-            response.status(400).json({status: `${error.message}`})
-        });
-    }
-    
-    inputs(request, response) {
-        let id = request.params.id;
-        
-        if (currentProcess[id] && currentProcess[id].file) {
-            response.download(currentProcess[id].file);
-        } else {
-            response.status(400).json({status: "Incorrect request. Process with given id doesn't exist."});
-        }
-    }
-    
-    status(request, response) {
-        let id = request.params.id;
-        if (currentProcess[id]) {
-            let method = currentProcess[id].method || ``;
-            let status = ``;
-            let started = ``;
-            let ended = ``;
-            let progress = ``;
-            let error = ``;
-            let url = ``;
+	/**
+	 *
+	 * @param app
+	 * @param pgPool
+	 * @param mongo
+	 * @param wpsProcesses {Map} Map of the WPS processes available to run
+	 */
+	constructor(app, pgPool, mongo, wpsProcesses) {
+		app.get('/rest/wps', this.wps.bind(this));
+		app.post('/rest/wps', this.wps.bind(this));
+		app.post('/rest/status/wps/:id', this.status.bind(this));
+		app.get('/rest/inputs/wps', this.inputs.bind(this));
 
-            if (method === `CustomLayerImport`) {
-                let layerImportTask = this._layerImporterTasks.getImporterTask(id);
-                status = layerImportTask.status || ``;
-                started = layerImportTask.started || ``;
-                ended = layerImportTask.ended || ``;
-                progress = layerImportTask.progress && layerImportTask.progress >= 0 ? `${layerImportTask.progress}%` : ``;
-                error = layerImportTask.message || ``;
-                url = layerImportTask.mongoMetadata && layerImportTask.mongoMetadata.dataView ? `${config.remoteProtocol}://${config.remoteAddress}/${config.projectHome}?id=${layerImportTask.mongoMetadata.dataView._id}` : ``;
-            }
-    
-            if (method) {
-                method = `
+		this.mapToAllPlaces = new MapToAllPlaces(pgPool, mongo);
+
+		this._layerImporterTasks = new LayerImporterTasks();
+		this._layerImporter = new LayerImporter(pgPool, mongo, this._layerImporterTasks);
+
+		this._wps = new Wps(pgPool);
+	}
+
+	/**
+	 *
+	 * @param request
+	 * @param response
+	 */
+	wps(request, response) {
+		this.parseWpsQuery(request).then((parsedRequest) => {
+			if (parsedRequest.service !== `wps`) {
+				this._wps.sendXmlResponse(response, this._wps.getExceptionXml(`Unknown service ${parsedRequest.service}`));
+			} else if (parsedRequest.version !== `1.0.0`) {
+				this._wps.sendXmlResponse(response, this._wps.getExceptionXml(`Currently supported version of wps is 1.0.0`));
+			} else {
+				this.processWpsRequest(response, parsedRequest);
+			}
+		}).catch((error) => {
+			this._wps.sendXmlResponse(response, this._wps.getExceptionXml(error.message));
+		});
+	}
+
+	processWpsRequest(response, parsedRequest) {
+		if (parsedRequest.request === 'getcapabilities') {
+			this._wps.getCapabilities(response);
+		} else if (parsedRequest.request === 'describeprocess') {
+			this._wps.describeProcess(parsedRequest.identifier, response);
+		} else if (parsedRequest.request === 'execute') {
+			this._wps.execute(parsedRequest, response);
+		} else {
+			response.status(400).json({status: "Incorrect request. Valid choices are GetCapabilities and DescribeProcess for GET request."})
+		}
+	}
+
+	inputs(request, response) {
+		let id = request.params.id;
+
+		if (currentProcess[id] && currentProcess[id].file) {
+			response.download(currentProcess[id].file);
+		} else {
+			response.status(400).json({status: "Incorrect request. Process with given id doesn't exist."});
+		}
+	}
+
+	status(request, response) {
+		let id = request.params.id;
+		if (currentProcess[id]) {
+			let method = currentProcess[id].method || ``;
+			let status = ``;
+			let started = ``;
+			let ended = ``;
+			let progress = ``;
+			let error = ``;
+			let url = ``;
+
+			if (method === `CustomLayerImport`) {
+				let layerImportTask = this._layerImporterTasks.getImporterTask(id);
+				status = layerImportTask.status || ``;
+				started = layerImportTask.started || ``;
+				ended = layerImportTask.ended || ``;
+				progress = layerImportTask.progress && layerImportTask.progress >= 0 ? `${layerImportTask.progress}%` : ``;
+				error = layerImportTask.message || ``;
+				url = layerImportTask.mongoMetadata && layerImportTask.mongoMetadata.dataView ? `${config.remoteProtocol}://${config.remoteAddress}/${config.projectHome}?id=${layerImportTask.mongoMetadata.dataView._id}` : ``;
+			}
+
+			if (method) {
+				method = `
                         <wps:Process>
 					        <ows:Identifier>${method}</ows:Identifier>
 				        </wps:Process>
                     `;
-            }
-            
-            if (status) {
-                status = `
+			}
+
+			if (status) {
+				status = `
                         <wps:Status started="${started}" ended="${ended || ''}">
 					        <ows:Value>${status}</ows:Value>
 				        </wps:Status>
                     `;
-            }
-            
-            if (progress) {
-                progress = `
+			}
+
+			if (progress) {
+				progress = `
                         <wps:Progress>
 					        <ows:Value>${progress}</ows:Value>
 				        </wps:Progress>
                     `;
-            }
-            
-            if (error) {
-                error = `
+			}
+
+			if (error) {
+				error = `
                         <wps:Error>
 					        <ows:Value>${error}</ows:Value>
 				        </wps:Error>
                     `;
-            }
-            
-            if (url) {
-                url = `
+			}
+
+			if (url) {
+				url = `
                         <wps:LayerUrl>
 					        <ows:Value>${url}</ows:Value>
 				        </wps:LayerUrl>
                     `;
-            }
-            
-            response.set('Content-Type', 'application/xml');
-            response.send(`
+			}
+
+			response.set('Content-Type', 'application/xml');
+			response.send(`
 				<wps:ExecuteResponse
 					xmlns:wps="http://www.opengis.net/wps/1.0.0"
 					xmlns:ows="http://www.opengis.net/ows/1.1"
@@ -165,155 +157,150 @@ class WpsController {
 				    ${url}
     			</wps:ExecuteResponse>
 			`);
-        } else {
-            response.status(400).json({status: "Incorrect request. Process with given id doesn't exist."})
-        }
-    }
-    
-    /**
-     *
-     * @param request
-     * @param response
-     */
-    execute(request, response, wpsInputs) {
-        switch (wpsInputs.method) {
-            case `CustomLayerImport`:
-                this.parseLayerImporterInputsFromWpsInputs(wpsInputs).then(layerImporterInputs => {
-                    this._layerImporter.importLayer(layerImporterInputs);
-                    let currentImporterTask = this._layerImporter.getCurrentImporterTask();
-                    currentProcess[currentImporterTask.id] = {
-                        created: new Date(),
-                        method: wpsInputs.method
-                    };
-                    request.params.id = currentImporterTask.id;
-                    this.status(request, response);
-                });
-                break;
-            default:
-                response.status(400).json({status: `Method ${inputs.method} was not found!`});
-                break;
-        }
-    }
-    
-    /**
-     *
-     * @param identifier {String}
-     * @param response
-     */
-    describeProcess(identifier, response) {
-        let description;
-        
-        if (identifier == 'ImportToExistingScope') {
-            description = this.mapToAllPlaces.describe();
-        } else {
-            response.status(400).json({status: "Err: Not supported identifier."});
-            return;
-        }
-        
-        response.set('Content-Type', 'text/xml');
-        response.send(description);
-    }
-    
-    /**
-     *
-     * @param response
-     */
-    getCapabilities(response) {
-        response.set('Content-Type', 'application/xml');
-        response.send(`
-			<wps:Capabilities xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xml:lang="en" service="WPS" version="1.0.0" xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
-				<ows:ServiceIdentification>
-					<ows:Title>Prototype Panther WPS</ows:Title>
-					<ows:Abstract/>
-					<ows:ServiceType>WPS</ows:ServiceType>
-					<ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
-				</ows:ServiceIdentification>
-				<ows:ServiceProvider>
-					<ows:ProviderName>Panther</ows:ProviderName>
-					<ows:ProviderSite xlink:href="http://www.gisat.cz"/>
-					<ows:ServiceContact/>
-				</ows:ServiceProvider>
-				<ows:OperationsMetadata>
-					<ows:Operation name="GetCapabilities">
-						<ows:DCP>
-							<ows:HTTP>
-								<ows:Get xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
-								<ows:Post xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
-							</ows:HTTP>
-						</ows:DCP>
-					</ows:Operation>
-					<ows:Operation name="DescribeProcess">
-						<ows:DCP>
-							<ows:HTTP>
-								<ows:Get xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
-								<ows:Post xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
-							</ows:HTTP>
-						</ows:DCP>
-					</ows:Operation>
-					<ows:Operation name="Execute">
-						<ows:DCP>
-							<ows:HTTP>
-								<ows:Post xlink:href="${config.remoteProtocol}/${config.remoteAddress}${config.projectHome}/geoserver/wps"/>
-							</ows:HTTP>
-						</ows:DCP>
-					</ows:Operation>
-				</ows:OperationsMetadata>
-				<wps:ProcessOfferings>
-					<wps:Process wps:processVersion="1.0.0">
-						<ows:Identifier>ImportToExistingScope</ows:Identifier>
-						<ows:Title>Import new data to existing Scope</ows:Title>
-						<ows:Abstract>
-							There must be valid User in the application. It also assumes that there is at least one valid Scope in the application with associated analytical units. 
-						</ows:Abstract>
-					</wps:Process>
-				</wps:ProcessOfferings>
-				<wps:Languages>
-					<wps:Default>
-						<ows:Language>en-US</ows:Language>
-					</wps:Default>
-					<wps:Supported>
-						<ows:Language>en-US</ows:Language>
-					</wps:Supported>
-				</wps:Languages>
-			</wps:Capabilities>
-		`);
-    }
-    
-    parseLayerImporterInputsFromWpsInputs(wpsInputs) {
-        return Promise.resolve().then(() => {
-            let layerImporterInputs = {
-                user: wpsInputs.user
-            };
-            
-            _.each(wpsInputs.arguments, argument => {
-                layerImporterInputs[argument.argument] = argument.value;
-            });
-            
-            layerImporterInputs.customName = layerImporterInputs.name;
-            layerImporterInputs.name = layerImporterInputs.url.split(`/`).pop();
-            
-            return layerImporterInputs;
-        });
-    }
-    
-    /**
-     * Parse method inputs from XML document
-     * @param request
-     */
-    parseMethodInputsFromXmlDocument(request) {
-        return Promise.resolve().then(() => {
-            return {
-                operation: Object.keys(request.body)[0].split(`:`).pop(),
-                method: request.body[Object.keys(request.body)[0]][`ows:identifier`][0],
-                user: {
-                    id: request.session.user.id
-                },
-                arguments: _.map(request.body[Object.keys(request.body)[0]][`wps:datainputs`][0][`wps:input`], param => {
-                    return {argument: param[`ows:identifier`][0], value: param[`wps:data`][`0`][`wps:literaldata`][0]}
-                }),
-            };
-        });
-    }
+		} else {
+			response.status(400).json({status: "Incorrect request. Process with given id doesn't exist."})
+		}
+	}
+
+	/**
+	 *
+	 * @param request
+	 * @param response
+	 */
+	execute(request, response, wpsInputs) {
+		switch (wpsInputs.method) {
+			case `CustomLayerImport`:
+				this.parseLayerImporterInputsFromWpsInputs(wpsInputs).then(layerImporterInputs => {
+					this._layerImporter.importLayer(layerImporterInputs);
+					let currentImporterTask = this._layerImporter.getCurrentImporterTask();
+					currentProcess[currentImporterTask.id] = {
+						created: new Date(),
+						method: wpsInputs.method
+					};
+					request.params.id = currentImporterTask.id;
+					this.status(request, response);
+				});
+				break;
+			default:
+				response.status(400).json({status: `Method ${inputs.method} was not found!`});
+				break;
+		}
+	}
+
+	parseWpsQuery(request) {
+		let parsedWpsQuery = {
+			service: null,
+			request: null,
+			version: null,
+			identifier: null,
+			dataInputs: null
+		};
+
+		Object.keys(request.query).forEach(queryKey => {
+			if (queryKey.toLowerCase() === `service`) {
+				parsedWpsQuery.service = request.query[queryKey].toLowerCase();
+			} else if (queryKey.toLowerCase() === `request`) {
+				parsedWpsQuery.request = request.query[queryKey].toLowerCase();
+			} else if (queryKey.toLowerCase() === `version`) {
+				parsedWpsQuery.version = request.query[queryKey].toLowerCase();
+			} else if (queryKey.toLowerCase() === `identifier`) {
+				parsedWpsQuery.identifier = request.query[queryKey];
+			} else if (queryKey.toLowerCase() === `datainputs`) {
+				parsedWpsQuery.dataInputs = _.map(request.query[queryKey].split(`;`), (dataInput) => {
+					dataInput = dataInput.split('=');
+					return {
+						identifier: dataInput[0],
+						data: dataInput[1]
+					}
+				});
+			}
+		});
+
+		if (request.headers['content-type'] === 'application/xml') {
+			let mainKeys = Object.keys(request.body);
+			let subKeys = Object.keys(request.body[mainKeys[0]]);
+
+			parsedWpsQuery.request = mainKeys[0].split(':')[1] || mainKeys[0];
+			parsedWpsQuery.request = parsedWpsQuery.request.toLowerCase();
+
+			parsedWpsQuery.version = (() => {
+				for (let key0 of subKeys) {
+					if (key0.toLowerCase().includes('acceptversions')) {
+						for(let object of request.body[mainKeys[0]][key0]) {
+							for(let key1 in object) {
+								if(key1.toLowerCase().includes('version')) return object[key1][0];
+							}
+						}
+					}
+				}
+			})() || request.body[mainKeys[0]]['$']['version'].toLowerCase();
+
+			parsedWpsQuery.service = request.body[mainKeys[0]]['$']['service'].toLowerCase();
+
+			parsedWpsQuery.identifier = (() => {
+				for (let key0 of subKeys) {
+					if (key0.toLowerCase().includes('identifier')) {
+						return request.body[mainKeys[0]][key0][0];
+					}
+				}
+			})();
+
+			parsedWpsQuery.dataInputs = (() => {
+				for (let key0 of subKeys) {
+					if (key0.toLowerCase().includes('datainputs')) {
+						for(let object of request.body[mainKeys[0]][key0]) {
+							for(let key1 in object) {
+								if(key1.toLowerCase().includes('input')) {
+									return _.map(object[key1], (input) => {
+										return ((input) => {
+											let dataInput = {};
+											for(let key in input) {
+												if(key.toLowerCase().includes('identifier')) {
+													dataInput.identifier = input[key][0];
+												} else if(key.toLowerCase().includes('data')) {
+													dataInput.data = ((input) => {
+														for(let key in input) {
+															if(key.toLowerCase().includes('literaldata')) return input[key][0];
+														}
+													})(input[key][0]);
+												} else if(key.toLowerCase().includes('reference')) {
+													dataInput.reference = ((input) => {
+														for(let key in input) {
+															if(key.toLowerCase().includes('href')) return input[key];
+														}
+													})(input[key][0]['$']);
+												}
+											}
+											return dataInput;
+										})(input);
+									});
+								}
+							}
+						}
+					}
+				}
+			})();
+		}
+
+		return Promise.resolve(parsedWpsQuery);
+	}
+
+	parseLayerImporterInputsFromWpsInputs(wpsInputs) {
+		return Promise.resolve().then(() => {
+			let layerImporterInputs = {
+				user: wpsInputs.user
+			};
+
+			_.each(wpsInputs.arguments, argument => {
+				layerImporterInputs[argument.argument] = argument.value;
+			});
+
+			layerImporterInputs.customName = layerImporterInputs.name;
+			layerImporterInputs.name = layerImporterInputs.url.split(`/`).pop();
+
+			return layerImporterInputs;
+		});
+	}
 }
 
 
