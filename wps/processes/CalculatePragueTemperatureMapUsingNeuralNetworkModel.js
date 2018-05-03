@@ -8,13 +8,14 @@ const WpsBaseProcess = require('../WpsBaseProcess');
 const PucsMatlabProcessor = require('../../integration/PucsMatlabProcessor');
 
 class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProcess {
-	constructor(pgPool, runningProcesses, pantherTemporaryStoragePath, postgreSqlSchema) {
+	constructor(pgPool, runningProcesses, pantherTemporaryStoragePath, pantherDataStoragePath, postgreSqlSchema) {
 		super();
 
 		this._pgPool = pgPool;
 		this._runningProcesses = runningProcesses;
 		this._pantherTemporaryStoragePath = pantherTemporaryStoragePath;
-		this._postgreSqlSchema = postgreSqlSchema;
+		this._pantherDataStoragePath = pantherDataStoragePath;
+		this._pgSchema = postgreSqlSchema;
 
 		this._describe = {
 			identifier: `CalculatePragueTemperatureMapUsingNeuralNetworkModel`,
@@ -30,7 +31,9 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 					required: true
 				}
 			}
-		}
+		};
+
+		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/Dokumenty/TempStorage/PUCS/matlab_ua_prague`,  `/usr/local/MATLAB/MATLAB_Runtime/v901`, this._pgPool, postgreSqlSchema);
 	}
 
 	execute(parsedRequest) {
@@ -51,27 +54,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			})
 			.then((processWorkDirectoryPath) => {
 				this._runningProcesses[processUuid].progress++;
-				let pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/Dokumenty/TempStorage/PUCS/matlab_ua_prague`);
-				return pucsMatlabProcessor.process(processWorkDirectoryPath)
-					.then(() => {
-						return processWorkDirectoryPath;
-					})
-			})
-			.then((processWorkDirectoryPath) => {
-				this._runningProcesses[processUuid].progress++;
-				return new Promise((resolve, reject) => {
-					fs.readdir(processWorkDirectoryPath, (error, files) => {
-						if(error) {
-							reject(error);
-						} else {
-							resolve(files);
-						}
-					})
-				})
-			})
-			.then((files) => {
-				this._runningProcesses[processUuid].progress++;
-				this._runningProcesses[processUuid].output = files;
+				return this._pucsMatlabProcessor.process(processWorkDirectoryPath, this._pantherDataStoragePath);
 			});
 	}
 
@@ -139,7 +122,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 				query.push(`SELECT`);
 				query.push(`*`);
 				query.push(`FROM`);
-				query.push(`"${this._postgreSqlSchema}"."uploads"`);
+				query.push(`"${this._pgSchema}"."uploads"`);
 				query.push(`WHERE`);
 				query.push(`uuid = '${localUploadUuid}';`);
 

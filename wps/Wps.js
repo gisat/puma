@@ -10,7 +10,7 @@ let runningProcesses = {};
 class Wps {
 	constructor(pgPool) {
 		this._processes = {
-			CalculatePragueTemperatureMapUsingNeuralNetworkModel: new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.postgreSqlSchema),
+			CalculatePragueTemperatureMapUsingNeuralNetworkModel: new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, config.postgreSqlSchema),
 			ImportToExistingScope: new ImportToExistingScope(runningProcesses)
 		};
 	}
