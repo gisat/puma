@@ -9,7 +9,6 @@ var AreaTemplateController = require('./AreaTemplateController');
 var AreaController = require('../layers/AreaController');
 var AttributeController = require('./AttributeController');
 var AttributeSetController = require('./AttributeSetController');
-var ChartCfgController = require('./ChartCfgController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var CustomFeaturesController = require('./CustomFeaturesController');
@@ -94,7 +93,6 @@ module.exports = function(app) {
 	new LayerGeonodeController(app, pool);
 	new LayerWmsController(app, pool, mongo);
 	new AttributeSetController(app, pool);
-	new ChartCfgController(app, pool);
 	new DataSetController(app, pool);
 	new DataViewController(app, pool, mongo);
 	new CustomFeaturesController(app, pool);
