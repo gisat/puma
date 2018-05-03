@@ -1,5 +1,4 @@
 var MongoAttributeSet = require('./MongoAttributeSet');
-var MongoChartConfigurations = require('../visualization/MongoChartConfigurations');
 var MongoDataViews = require('../visualization/MongoDataViews');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
 var MongoVisualizations = require('../visualization/MongoVisualization');
@@ -9,7 +8,6 @@ var Promise = require('promise');
 class MongoAttributeSets {
 	constructor(connection) {
 		this._connection = connection;
-		this._chartConfigurations = new MongoChartConfigurations(connection);
 		this._dataViews = new MongoDataViews(connection);
 		this._visualizations = new MongoVisualizations(connection);
 		this._analysis = new MongoAnalysis(connection);

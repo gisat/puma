@@ -53,10 +53,17 @@ class LayerRefController extends Controller {
         })
 	}
 
-	// Styles are defined in the layer template, which means that we need to update them in the geoserver whenever the layer template changes for all associated layerrefs.
-	// Reasons to change stuff in geoserver
-	//   New layer is mapped. It needs to associate all the styles relevant to the application. DONE
-	//   New style is added to the template - It must add styles to all associated layerrefs.
+    /**
+	 * Styles are defined in the layer template, which means that we need to update them in the geoserver whenever the layer template changes for all associated layerrefs.
+     *  Reasons to change stuff in geoserver
+     *    New layer is mapped. It needs to associate all the styles relevant to the application. DONE
+     *    New style is added to the template - It must add styles to all associated layerrefs.
+	 * Make sure that there is new View, which contains all analytical units for the whole level.
+     * @param request
+	 * @param request.body {Object} Layerref object containing the data.
+     * @param response
+     * @param next
+     */
 	create(request, response, next) {
 		var create = super.create.bind(this);
 		var self = this;

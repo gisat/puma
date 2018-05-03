@@ -1,14 +1,13 @@
 let moment = require('moment');
-let Promise = require('promise');
 let _ = require('underscore');
 let logger = require('../../common/Logger').applicationWideLogger;
 
-let FilteredMongoLayerReferences = require('../FilteredMongoLayerReferences');
+let PgCollection = require('../../common/PgCollection');
 
 /**
  * This class is responsible for handling the WMS related metadata.
  */
-class PgWmsLayers {
+class PgWmsLayers extends PgCollection {
 	/**
 	 *
 	 * @param pool
@@ -16,9 +15,7 @@ class PgWmsLayers {
 	 * @param schema
 	 */
 	constructor(pool, mongo, schema) {
-		this._pool = pool;
-		this._mongo = mongo;
-		this.schema = schema;
+		super(pool, schema);
 	}
 
 	/**
@@ -80,7 +77,7 @@ class PgWmsLayers {
 	}
 
 	readSql() {
-		return `SELECT * FROM ${this.schema}.${PgWmsLayers.tableName()} as layer LEFT JOIN ${this.schema}.wms_layer_has_places ON layer.id = wms_layer_has_places.wms_layer_id LEFT JOIN ${this.schema}.wms_layer_has_periods ON layer.id = wms_layer_has_periods.wms_layer_id`;
+		return `SELECT * FROM ${this._schema}.${PgWmsLayers.tableName()} as layer LEFT JOIN ${this._schema}.wms_layer_has_places ON layer.id = wms_layer_has_places.wms_layer_id LEFT JOIN ${this._schema}.wms_layer_has_periods ON layer.id = wms_layer_has_periods.wms_layer_id`;
 	}
 
 	/**
@@ -128,20 +125,25 @@ class PgWmsLayers {
 			throw new Error(`PgWmsLayer#add Incorrect arguments UserId: ${userId}`);
 		}
 
-		let time = moment().format('YYYY-MM-DD HH:mm:ss');
-
 		let scope = '';
 		let scopeValue = '';
+		let getDates = '';
+		let getDatesValues = '';
 		if(layer.scope) {
 			scope = 'scope, ';
 			scopeValue = `${layer.scope}, `;
 		}
+		if(layer.getDates) {
+			getDates = 'get_date, ';
+			getDatesValues = `${layer.getDates}, `;
+		}
 
 		let id;
 
-		// TODO: Enclose into transaction. Handle Rollback correctly.
-		return this._pool.query(`
-			INSERT INTO ${this.schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} created, created_by, changed, changed_by, custom, get_date) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} '${time}', ${userId}, '${time}', ${userId}, '${layer.custom}', ${layer.getDates || false}) RETURNING id;`).then(result => {
+		let sql = `
+			INSERT INTO ${this._schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} ${getDates} custom) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} ${getDatesValues} '${layer.custom}') RETURNING id;`;
+		logger.info(`PgWmsLayers#add SQL: ${sql}`);
+		return this._pool.query(sql).then(result => {
 			id = result.rows[0].id;
 			return this.insertDependencies(id, layer.places, layer.periods);
 		}).then(() => {
@@ -150,21 +152,25 @@ class PgWmsLayers {
 	}
 
 	insertDependencies(id, places, periods) {
-		let periodSql = '';
-		if(periods && periods.length) {
-			periods.forEach(period => {
-				periodSql += `INSERT INTO ${this.schema}.wms_layer_has_periods (period_id, wms_layer_id) VALUES (${period}, ${id});`;
-			});
-		}
+		return this._pool.query(this.insertDependenciesSql(id, places, periods));
+	}
 
-		let placeSql = '';
-		if(places && places.length) {
-			places.forEach(place => {
-				placeSql += `INSERT INTO ${this.schema}.wms_layer_has_places (place_id, wms_layer_id) VALUES (${place}, ${id});`;
-			});
-		}
+	insertDependenciesSql(id, places, periods) {
+        let periodSql = '';
+        if(periods && periods.length) {
+            periods.forEach(period => {
+                periodSql += `INSERT INTO ${this._schema}.wms_layer_has_periods (period_id, wms_layer_id) VALUES (${period}, ${id});`;
+            });
+        }
 
-		return this._pool.query(`${periodSql} ${placeSql}`);
+        let placeSql = '';
+        if(places && places.length) {
+            places.forEach(place => {
+                placeSql += `INSERT INTO ${this._schema}.wms_layer_has_places (place_id, wms_layer_id) VALUES (${place}, ${id});`;
+            });
+        }
+
+        return `${periodSql} ${placeSql}`;
 	}
 
 	/**
@@ -186,27 +192,52 @@ class PgWmsLayers {
 			throw new Error(`PgWmsLayer#update Incorrect arguments Id: ${layer.id}, UserId: ${userId}`);
 		}
 
+		let sql = 'BEGIN TRANSACTION; ';
 		let time = moment().format('YYYY-MM-DD HH:mm:ss');
 
-		let scopeSql = '';
-		if(layer.scope) {
-			scopeSql = `scope = ${layer.scope},`;
+		let changes = [];
+		if(layer.scope){
+			changes.push(` scope = ${layer.scope} `);
+		}
+		if(layer.name) {
+			changes.push(` name = '${layer.name}' `);
+		}
+		if(layer.url) {
+			changes.push(` url = '${layer.url}' `);
+		}
+		if(layer.layer) {
+			changes.push(` layer = '${layer.layer}' `);
+		}
+		if(layer.custom) {
+			changes.push(` custom = '${layer.custom}' `);
+		}
+		if(layer.getDates) {
+			changes.push(` get_date = ${layer.getDates}`)
 		}
 
-		logger.info('PgWmsLayer#update Layer: ', layer, ' SQL: ', `UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId}, get_date=${layer.getDates} where id = ${layer.id}`);
-		return this._pool.query(`UPDATE ${this.schema}.${PgWmsLayers.tableName()} SET name = '${layer.name}', url = '${layer.url}', layer='${layer.layer}', ${scopeSql} changed='${time}', changed_by=${userId}, custom='${layer.custom}', get_date=${layer.getDates || false} where id = ${layer.id}`).then(() => {
-			return this._pool.query(this.deleteDependenciesSql(layer.id));
-		}).then(() => {
-			return this.insertDependencies(layer.id, layer.places, layer.periods);
-		}).then(() => {
+		changes.push(` changed = '${time}' `);
+		changes.push(` changed_by = '${userId}' `);
+
+		sql += `UPDATE ${this._schema}.${PgWmsLayers.tableName()} SET ${changes.join(',')} WHERE id = ${layer.id};`;
+
+        sql += this.deleteDependenciesSql(layer.id);
+		sql += this.insertDependenciesSql(layer.id, layer.places, layer.periods);
+
+        sql += `COMMIT;`;
+
+        logger.info('PgWmsLayer#update Layer: ', layer, ' SQL: ', sql);
+		return this._pool.query(sql).then(() => {
 			return this.byId(layer.id);
-		});
+		}).catch(err => {
+            logger.error(`PgPeriods#update ERROR: `, err);
+            return this._pool.query(`ROLLBACK`);
+        });
 	}
 
 	deleteDependenciesSql(id) {
 		return `
-			DELETE FROM ${this.schema}.wms_layer_has_places WHERE wms_layer_id = ${id};
-			DELETE FROM ${this.schema}.wms_layer_has_periods WHERE wms_layer_id = ${id};
+			DELETE FROM ${this._schema}.wms_layer_has_places WHERE wms_layer_id = ${id};
+			DELETE FROM ${this._schema}.wms_layer_has_periods WHERE wms_layer_id = ${id};
 		`;
 	}
 
@@ -221,7 +252,7 @@ class PgWmsLayers {
 
 		return this._pool.query(`
 				${this.deleteDependenciesSql(id)}
-				DELETE from ${this.schema}.${PgWmsLayers.tableName()} WHERE id = ${id};
+				DELETE from ${this._schema}.${PgWmsLayers.tableName()} WHERE id = ${id};
 		`);
 	}
 
