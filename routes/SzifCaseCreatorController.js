@@ -19,9 +19,9 @@ class SzifCaseCreatorController {
 			request.files.changeReviewFileAfter.path
 		).then(result => {
             return Promise.all([
-                this.permissions.add(request.session.user.id, 'location', result._id, Permission.READ),
-                this.permissions.add(request.session.user.id, 'location', result._id, Permission.UPDATE),
-                this.permissions.add(request.session.user.id, 'location', result._id, Permission.DELETE)
+                this.permissions.add(request.session.userId, 'location', result._id, Permission.READ),
+                this.permissions.add(request.session.userId, 'location', result._id, Permission.UPDATE),
+                this.permissions.add(request.session.userId, 'location', result._id, Permission.DELETE)
             ]);
 		}).then(() => {
             response.status(200).json({
