@@ -120,7 +120,7 @@ module.exports = function(app) {
 
 	new WpsController(app, pool, mongo, null);
 
-	new LayerImporterController(app, mongo, pool, config.postgreSqlSchema, config.pantherUploadStoragePath);
+	new LayerImporterController(app, mongo, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 	// Schema containing the imported data for Geoserver and schema for created views.
 	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
