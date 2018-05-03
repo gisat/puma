@@ -5,23 +5,35 @@ const _ = require('lodash');
 const childProcess = require('child_process');
 
 class PucsMatlabProcessor {
-	constructor(pathToMatlabWorkDirectory) {
-		console.log(`PucsMatlabProcessor#constructor: pathToMatlabWorkDirectory`, pathToMatlabWorkDirectory);
-
+	constructor(pathToMatlabWorkDirectory, pathToMatlabRuntime, pgPool, postgreSqlSchema) {
 		this._pathToWorkDirectory = pathToMatlabWorkDirectory;
+		this._pathToMatlabRuntime = pathToMatlabRuntime;
+		this._pgPool = pgPool;
+		this._pgSchema = postgreSqlSchema;
+		this._pgTableName = `pucs_matlab_outputs`;
+
+		this._initMatlabProcessesPgTable();
 	}
 
-	process(pathToInput) {
-		return this._getVectorFiles(pathToInput)
+	process(inputPath, pantherDataStoragePath) {
+		return this._getVectorFiles(inputPath)
 			.then((inputVectors) => {
-				return this._rasterizeVectors(pathToInput, inputVectors);
+				return this._rasterizeVectors(inputPath, inputVectors);
 			})
 			.then((rasterizedVectors) => {
-				return this._processRasterizedVectors(pathToInput, rasterizedVectors);
+				return this._processRasterizedVectors(inputPath, rasterizedVectors, pantherDataStoragePath);
 			});
 	}
 
-	_processRasterizedVectors(pathToInput, rasterizedVectors) {
+	_moveDataToStorage(dataDirectory, pathToBaseStorage, processKey) {
+		let dataStoragePath = `${pathToBaseStorage}/pucs_matlab_outputs/${processKey}`;
+		return fse.move(dataDirectory, dataStoragePath)
+			.then(() => {
+				return dataStoragePath;
+			});
+	}
+
+	_processRasterizedVectors(pathToInput, rasterizedVectors, pantherDataStoragePath) {
 		let computePromises = [];
 
 		rasterizedVectors.forEach((rasterizedVector) => {
@@ -49,12 +61,69 @@ class PucsMatlabProcessor {
 						)
 					})
 					.then(() => {
+						return this._moveDataToStorage(pathToInput, pantherDataStoragePath, processKey);
+					})
+					.then((dataStoragePath) => {
+						return this._getOutputMetadata(dataStoragePath, processKey);
+					})
+					.then((outputMetadata) => {
+						return this._storeOutputMetadataIntoPgTable(outputMetadata);
+					})
+					.then(() => {
 						return this._cleanEnviroment(processKey);
+					})
+					.then(() => {
+						return processKey;
 					})
 			)
 		});
 
 		return Promise.all(computePromises);
+	}
+
+	_getOutputMetadata(dataStoragePath, processKey) {
+		return new Promise((resolve, reject) => {
+			fs.readdir(dataStoragePath, (error, files) => {
+				if(error) {
+					reject(error)
+				} else {
+					let metadata = {
+						uuid: processKey,
+						inputVectors: [],
+						inputRasters: [],
+						outputRasters: []
+					};
+
+					files.forEach((file) => {
+						if(file.toLowerCase().endsWith('.shp')) {
+							metadata.inputVectors.push(`${dataStoragePath}/${file}`);
+						} else if(file.toLowerCase().endsWith('_scenario.tif')) {
+							metadata.outputRasters.push(`${dataStoragePath}/${file}`);
+						} else if(file.toLowerCase().endsWith('.tif')) {
+							metadata.inputRasters.push(`${dataStoragePath}/${file}`);
+						}
+					});
+
+					resolve(metadata);
+				}
+			});
+		});
+	}
+
+	_storeOutputMetadataIntoPgTable(metadata) {
+		let query = [];
+
+		query.push(`INSERT INTO "${this._pgSchema}"."${this._pgTableName}"`);
+		query.push(`(uuid, input_vector_paths, input_raster_paths, output_raster_paths)`);
+		query.push(`VALUES`);
+		query.push(`(`);
+		query.push(`'${metadata.uuid}',`);
+		query.push(`ARRAY['${metadata.inputVectors.join("', '")}'],`);
+		query.push(`ARRAY['${metadata.inputRasters.join("', '")}'],`);
+		query.push(`ARRAY['${metadata.outputRasters.join("', '")}']`);
+		query.push(`);`);
+
+		return this._pgPool.query(query.join(' '));
 	}
 
 	_moveMatlabProcessorResults(baseFileName, matlabProcessorResults, source, destination) {
@@ -94,7 +163,7 @@ class PucsMatlabProcessor {
 				`mbabic84/matlab:R2016a`,
 				`bash`,
 				`./run_Runscript.sh`,
-				`/usr/local/MATLAB/MATLAB_Runtime/v901`,
+				`${this._pathToMatlabRuntime}`,
 				`./NN_Configfile.cfg`
 			];
 			childProcess.exec(command.join(` `), (error, stdout, stderr) => {
@@ -181,6 +250,18 @@ class PucsMatlabProcessor {
 
 	_cleanEnviroment(processKey) {
 		return fse.remove(`${this._pathToWorkDirectory}/${processKey}`);
+	}
+
+	_initMatlabProcessesPgTable() {
+		let query = [
+			`CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._pgTableName}" (`,
+			`uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),`,
+			`input_vector_paths TEXT[],`,
+			`input_raster_paths TEXT[],`,
+			`output_raster_paths TEXT[]);`
+		];
+
+		this._pgPool.query(query.join(' '));
 	}
 }
 
