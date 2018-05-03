@@ -15,7 +15,9 @@ class PrintController {
 		image.generate().then(function(image){
 			response.set('Content-Type','image/png');
 			response.set('Cache-Control','max-age=60000000');
-			response.end(image, 'binary');
+			response.json({
+				"success": "ok"
+			});
 		});
 	}
 
