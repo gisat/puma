@@ -198,7 +198,24 @@ DatabaseSchema.prototype.create = function () {
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.scenario (
       id   SERIAL PRIMARY KEY,
-      name text
+      name text,
+      description TEXT
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scenario_case (
+      id   SERIAL PRIMARY KEY,
+      name TEXT,
+      description TEXT,
+      bbox GEOMETRY
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scenario_scenario_case_relation (
+      id   SERIAL PRIMARY KEY,
+      scenario_id INTEGER,
+      scenario_case_id INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}.scope_scenario_case_relation (
+      id   SERIAL PRIMARY KEY,
+      scope_id INTEGER,
+      scenario_case_id INTEGER
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_type (
       id   SERIAL PRIMARY KEY,
