@@ -6,7 +6,7 @@ let LayerImporter = require('./LayerImporter');
 const UploadManager = require(`../integration/UploadManager`);
 
 class LayerImporterController {
-    constructor(app, mongo, pgPool, schema, pantherUploadStoragePath) {
+    constructor(app, mongo, pgPool, schema, pantherDataStoragePath) {
         app.get('/rest/layerImporter/status/:id', this.getLayerImportStatus.bind(this));
         app.post('/rest/layerImporter/import', this.importLayer.bind(this));
         app.post('/rest/layerImporter/importNoStatistics', this.importNoStatisticsLayer.bind(this));
@@ -17,7 +17,7 @@ class LayerImporterController {
         this._pgPool = pgPool;
         this._layerImporterTasks = new LayerImporterTasks();
         this._layerImporter = new LayerImporter(pgPool, mongo, this._layerImporterTasks, schema);
-        this._uploadManager = new UploadManager(pgPool, schema, pantherUploadStoragePath);
+        this._uploadManager = new UploadManager(pgPool, schema, `${pantherDataStoragePath}/upload_manager/uploads`);
     }
 
     /**
