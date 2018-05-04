@@ -210,12 +210,14 @@ DatabaseSchema.prototype.create = function () {
     CREATE TABLE IF NOT EXISTS ${this.schema}.scenario_scenario_case_relation (
       id   SERIAL PRIMARY KEY,
       scenario_id INTEGER,
-      scenario_case_id INTEGER
+      scenario_case_id INTEGER,
+      UNIQUE(scenario_id, scenario_case_id)
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.scope_scenario_case_relation (
       id   SERIAL PRIMARY KEY,
       scope_id INTEGER,
-      scenario_case_id INTEGER
+      scenario_case_id INTEGER,
+      UNIQUE(scope_id, scenario_case_id)
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_type (
       id   SERIAL PRIMARY KEY,
