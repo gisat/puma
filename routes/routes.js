@@ -47,6 +47,9 @@ let ImageMosaicController = require(`./ImageMosaicController`);
 
 let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
 
+const PgScenariosController = require('./PgScenariosController');
+const PgScenarioCasesController = require('./PgScenarioCasesController');
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -125,6 +128,9 @@ module.exports = function(app) {
 
 	new ImageMosaicController(app);
 	new SzifCaseCreatorController(app, pool, mongo);
+
+	new PgScenariosController(app, pool, config.postgreSqlSchema);
+	new PgScenarioCasesController(app, pool, config.postgreSqlSchema);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
