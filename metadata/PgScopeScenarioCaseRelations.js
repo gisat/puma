@@ -7,7 +7,7 @@ class PgScopeScenarioCaseRelations extends PgCollection {
 		super(pgPool, pgSchema, 'PgScenarios');
 	}
 
-	createWithouId(object) {
+	create(object) {
 		if (!object) throw new Error('empty input');
 
 		let keys = Object.keys(object);

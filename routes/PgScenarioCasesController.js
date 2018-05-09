@@ -11,7 +11,7 @@ class PgScenarioCasesController {
 	}
 
 	create(request, response) {
-		this._pgScenarioCases.createWithouId(request.body)
+		this._pgScenarioCases.create(request.body)
 			.then((scenario) => {
 				response.status(200).json({
 					data: scenario,

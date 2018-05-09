@@ -10,7 +10,7 @@ class PgScenarioCases extends PgCollection {
 		this._pgScopeScenarioCaseRelations = new PgScopeScenarioCaseRelations(pgPool, pgSchema);
 	}
 
-	createWithouId(object) {
+	create(object) {
 		if (!object) throw new Error('empty input');
 
 		let scopeId;
