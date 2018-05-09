@@ -145,12 +145,6 @@ DatabaseSchema.prototype.create = function () {
       name          text,
       configuration jsonb
     );
-    CREATE TABLE IF NOT EXISTS ${this.schema}.scope_configuration (
-      id            SERIAL PRIMARY KEY,
-      scope_id          integer,
-      key   varchar,
-      value varchar
-    );
     CREATE TABLE IF NOT EXISTS ${this.schema}.scope_has_period (
       id        SERIAL PRIMARY KEY,
       scope_id  integer,
