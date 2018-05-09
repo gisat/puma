@@ -16,11 +16,11 @@ class PgCollection {
         this._name = name;
     }
 
-    /**
-     * It should create empty object with provided id.
-     * @param id {Number} Id of the given object.
-     */
-    create(id) {}
+	/**
+	 * It should create empty object with provided id.
+	 * @param object {Object} Collection of object properties to be created.
+	 */
+    create(object) {}
 
     /**
      * It should update the object properties.
