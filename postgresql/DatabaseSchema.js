@@ -205,7 +205,7 @@ DatabaseSchema.prototype.create = function () {
       id   SERIAL PRIMARY KEY,
       name TEXT,
       description TEXT,
-      bbox GEOMETRY
+      geometry GEOMETRY
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.scenario_scenario_case_relation (
       id   SERIAL PRIMARY KEY,
