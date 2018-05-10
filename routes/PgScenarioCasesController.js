@@ -7,7 +7,7 @@ class PgScenarioCasesController {
 		app.post(`/rest/metadata/scenario_cases/create`, this.create.bind(this));
 
 		app.get(`/rest/metadata/scenario_cases/get`, this.get.bind(this));
-		app.get(`/rest/metadata/scenario_cases/get/:scope_id`, this.get.bind(this));
+		app.post(`/rest/metadata/scenario_cases/get`, this.get.bind(this));
 	}
 
 	create(request, response) {
@@ -27,7 +27,7 @@ class PgScenarioCasesController {
 	}
 
 	get(request, response) {
-		this._pgScenarioCases.getFiltered(request.params)
+		this._pgScenarioCases.getFiltered(request.body)
 			.then((results) => {
 				response.status(200).json({
 					data: results,
