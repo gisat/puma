@@ -24,10 +24,16 @@ class PgScenarioCases extends PgCollection {
 			return `"${key}"`;
 		});
 		let values = _.map(keys, (key) => {
-			return _.isNumber(object[key]) ? object[key] : `'${object[key]}'`;
+			if(key === "bbox") {
+				return `ST_GeomFromGeoJSON('${JSON.stringify(object[key])}')`;
+			} else if (_.isNumber(object[key])) {
+				return object[key];
+			} else {
+				return `'${object[key]}'`;
+			}
 		});
 
-		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING *;`)
+		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id, name, description, ST_AsGeoJSON(bbox) AS bbox;`)
 			.then((queryResult) => {
 				if (queryResult.rowCount) {
 					return queryResult.rows[0];
@@ -36,7 +42,7 @@ class PgScenarioCases extends PgCollection {
 				}
 			}).then((createdObject) => {
 				if(scopeId) {
-					return this._pgScopeScenarioCaseRelations.createWithouId({
+					return this._pgScopeScenarioCaseRelations.create({
 						scope_id: scopeId,
 						scenario_case_id: createdObject.id
 					}).then(() => {
@@ -53,7 +59,7 @@ class PgScenarioCases extends PgCollection {
 		let keys = filter ? Object.keys(filter) : [];
 
 		let query = [];
-		query.push(`SELECT cases.*, relations.scope_id`);
+		query.push(`SELECT cases.id, cases.name, cases.description, ST_AsGeoJSON(cases.bbox) AS bbox, relations.scope_id`);
 		query.push(`FROM "${this._schema}"."${PgScenarioCases.tableName()}" AS cases`);
 		query.push(`LEFT JOIN "${this._schema}"."${PgScenarioCases.relationTableName()}" AS relations`);
 		query.push(`ON relations.scenario_case_id = cases.id`);
