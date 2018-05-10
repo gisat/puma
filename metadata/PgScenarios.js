@@ -37,7 +37,7 @@ class PgScenarios extends PgCollection {
 			})
 			.then((createdObject) => {
 				if(scenarioCaseId) {
-					return this._pgScenarioScenarioCaseRelations.createWithouId({
+					return this._pgScenarioScenarioCaseRelations.create({
 						scenario_case_id: scenarioCaseId,
 						scenario_id: createdObject.id
 					}).then(() => {
@@ -52,14 +52,25 @@ class PgScenarios extends PgCollection {
 
 	getFiltered(filter) {
 		let keys = filter ? Object.keys(filter) : [];
-		let columns = _.map(keys, (key) => {
-			return `"${key}"`;
-		});
-		let values = _.map(keys, (key) => {
-			return _.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`;
-		});
 
-		return this._pool.query(`SELECT * FROM "${this._schema}"."${PgScenarios.tableName()}";`)
+		let query = [];
+		query.push(`SELECT scenarios.*, relations.scenario_case_id`);
+		query.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS scenarios`);
+		query.push(`LEFT JOIN "${this._schema}"."${PgScenarios.relationTableName()}" AS relations`);
+		query.push(`ON relations.scenario_id = scenarios.id`);
+
+		if(keys.length) {
+			let where = [];
+			keys.forEach((key) => {
+				where.push(`${key === "id" ? '"scenarios".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
+			});
+
+			query.push(`WHERE ${where.join(' AND ')}`);
+		}
+
+		query.push(`;`);
+
+		return this._pool.query(query.join(' '))
 			.then((queryResult) => {
 				return queryResult.rows;
 			});
@@ -67,6 +78,10 @@ class PgScenarios extends PgCollection {
 
 	static tableName() {
 		return `scenario`;
+	}
+
+	static relationTableName() {
+		return `scenario_scenario_case_relation`;
 	}
 }
 
