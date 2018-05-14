@@ -3,6 +3,7 @@ const _ = require('lodash');
 const PgCollection = require('../common/PgCollection');
 const PgScopeScenarioCaseRelations = require('./PgScopeScenarioCaseRelations');
 const PgPlaceScenarioCaseRelations = require('./PgPlaceScenarioCaseRelations');
+const PgScenarios = require('./PgScenarios');
 
 class PgScenarioCases extends PgCollection {
 	constructor(pgPool, pgSchema) {
@@ -10,6 +11,7 @@ class PgScenarioCases extends PgCollection {
 
 		this._pgScopeScenarioCaseRelations = new PgScopeScenarioCaseRelations(pgPool, pgSchema);
 		this._pgPlaceScenarioCaseRelations = new PgPlaceScenarioCaseRelations(pgPool, pgSchema);
+		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 	}
 
 	create(object) {
@@ -102,6 +104,21 @@ class PgScenarioCases extends PgCollection {
 		return this._pool.query(query.join(' '))
 			.then((queryResult) => {
 				return queryResult.rows;
+			})
+			.then((scenarioCases) => {
+				let promises = [];
+				scenarioCases.forEach((scenarioCase) => {
+					promises.push(
+						this._pgScenarios.getFiltered({scenario_case_id: scenarioCase.id})
+							.then((scenarios) => {
+								scenarioCase.scenario_ids = _.map(scenarios, "id");
+							})
+					)
+				});
+				return Promise.all(promises)
+					.then(() => {
+						return scenarioCases;
+					});
 			});
 	}
 
