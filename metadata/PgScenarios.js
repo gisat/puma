@@ -76,12 +76,80 @@ class PgScenarios extends PgCollection {
 			});
 	}
 
-	static tableName() {
-		return `scenario`;
+	getFiltered(filter) {
+		let limit = 100;
+		if (filter.hasOwnProperty('limit')) {
+			limit = filter['limit'] ? filter['limit'] : limit;
+			delete filter['limit'];
+		}
+
+		let offset = 0;
+		if (filter.hasOwnProperty('offset')) {
+			offset = filter['offset'] ? filter['offset'] : offset;
+			delete filter['offset'];
+		}
+
+		let like;
+		if (filter.hasOwnProperty('like')) {
+			like = filter['like'];
+			delete filter['like'];
+		}
+
+		let keys = filter ? Object.keys(filter) : [];
+
+		let pagingQuery = [];
+		pagingQuery.push(`SELECT COUNT(*) AS total`);
+		pagingQuery.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS scenarios`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS relations`);
+		pagingQuery.push(`ON "relations"."scenario_id" = "scenarios"."id"`);
+
+		let query = [];
+		query.push(`SELECT scenarios.*, relations.scenario_case_id`);
+		query.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS scenarios`);
+		query.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS relations`);
+		query.push(`ON "relations"."scenario_id" = "scenarios"."id"`);
+
+		if(keys.length || like) {
+			let where = [];
+			keys.forEach((key) => {
+				where.push(`${key === "id" ? '"scenarios".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
+			});
+
+			if(like) {
+				Object.keys(like).forEach((key) => {
+					where.push(`"${key}" ILIKE '%${like[key]}%'`);
+				});
+			}
+
+			query.push(`WHERE ${where.join(' AND ')}`);
+			pagingQuery.push(`WHERE ${where.join(' AND ')}`);
+		}
+
+		query.push(` ORDER BY "scenarios"."id" LIMIT ${limit} OFFSET ${offset};`);
+		pagingQuery.push(`;`);
+
+		let payload = {
+			data: null,
+			limit: limit,
+			offset: offset,
+			total: null
+		};
+		return this._pool.query(pagingQuery.join(' '))
+			.then((pagingResult) => {
+				payload.total = Number(pagingResult.rows[0].total);
+				return this._pool.query(query.join(' '))
+			})
+			.then((queryResult) => {
+				return queryResult.rows;
+			})
+			.then((scenarios) => {
+				payload.data = scenarios;
+				return payload;
+			});
 	}
 
-	static relationTableName() {
-		return `scenario_scenario_case_relation`;
+	static tableName() {
+		return `scenario`;
 	}
 }
 

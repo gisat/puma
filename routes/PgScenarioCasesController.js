@@ -28,11 +28,9 @@ class PgScenarioCasesController {
 
 	get(request, response) {
 		this._pgScenarioCases.getFiltered(request.body)
-			.then((results) => {
-				response.status(200).json({
-					data: results,
-					success: true
-				})
+			.then((payload) => {
+				payload.success = true;
+				response.status(200).json(payload)
 			})
 			.catch((error) => {
 				response.status(500).json({
