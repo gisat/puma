@@ -165,19 +165,14 @@ DatabaseSchema.prototype.create = function () {
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template (
       id             SERIAL PRIMARY KEY,
+      name  text,
       layer_group_id integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.layer_template_has_style (
       id                SERIAL PRIMARY KEY,
       layer_template_id integer,
       style_id          text
-    );
-    CREATE TABLE IF NOT EXISTS ${this.schema}.wms_layer_has_layer_template (
-      id                SERIAL PRIMARY KEY,
-      wms_layer_id      integer,
-      layer_template_id integer
-    );
-    
+    );   
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.attribute (
       id    SERIAL PRIMARY KEY,
@@ -241,6 +236,7 @@ DatabaseSchema.prototype.create = function () {
       period_id      integer,
       place_id       integer,
       data_source_id integer,
+      layer_template_id integer,      
       scenario_id    integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.wms (
