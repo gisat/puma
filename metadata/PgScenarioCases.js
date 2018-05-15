@@ -80,28 +80,72 @@ class PgScenarioCases extends PgCollection {
 	}
 
 	getFiltered(filter) {
+ 		let limit = 100;
+		if (filter.hasOwnProperty('limit')) {
+			limit = filter['limit'] ? filter['limit'] : limit;
+			delete filter['limit'];
+		}
+
+		let offset = 0;
+		if (filter.hasOwnProperty('offset')) {
+			offset = filter['offset'] ? filter['offset'] : offset;
+			delete filter['offset'];
+		}
+
+		let like;
+		if (filter.hasOwnProperty('like')) {
+			like = filter['like'];
+			delete filter['like'];
+		}
+
 		let keys = filter ? Object.keys(filter) : [];
+
+		let pagingQuery = [];
+		pagingQuery.push(`SELECT COUNT(*) AS total`);
+		pagingQuery.push(`FROM "${this._schema}"."${PgScenarioCases.tableName()}" AS cases`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgScopeScenarioCaseRelations.tableName()}" AS scope_relations`);
+		pagingQuery.push(`ON "scope_relations"."scenario_case_id" = "cases"."id"`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
+		pagingQuery.push(`ON "place_relations"."scenario_case_id" = "cases"."id"`);
 
 		let query = [];
 		query.push(`SELECT cases.id, cases.name, cases.description, ST_AsGeoJSON(cases.geometry) AS geometry, scope_relations.scope_id, place_relations.place_id`);
 		query.push(`FROM "${this._schema}"."${PgScenarioCases.tableName()}" AS cases`);
 		query.push(`LEFT JOIN "${this._schema}"."${PgScopeScenarioCaseRelations.tableName()}" AS scope_relations`);
-		query.push(`ON scope_relations.scenario_case_id = cases.id`);
+		query.push(`ON "scope_relations"."scenario_case_id" = "cases"."id"`);
 		query.push(`LEFT JOIN "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
-		query.push(`ON place_relations.scenario_case_id = cases.id`);
+		query.push(`ON "place_relations"."scenario_case_id" = "cases"."id"`);
 
-		if(keys.length) {
+		if(keys.length || like) {
 			let where = [];
 			keys.forEach((key) => {
 				where.push(`${key === "id" ? '"cases".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
 			});
 
+			if(like) {
+				Object.keys(like).forEach((key) => {
+					where.push(`"${key}" ILIKE '%${like[key]}%'`);
+				});
+			}
+
 			query.push(`WHERE ${where.join(' AND ')}`);
+			pagingQuery.push(`WHERE ${where.join(' AND ')}`);
 		}
 
-		query.push(`;`);
+		query.push(` ORDER BY "cases"."id" LIMIT ${limit} OFFSET ${offset};`);
+		pagingQuery.push(`;`);
 
-		return this._pool.query(query.join(' '))
+		let payload = {
+			data: null,
+			limit: limit,
+			offset: offset,
+			total: null
+		};
+		return this._pool.query(pagingQuery.join(' '))
+			.then((pagingResult) => {
+				payload.total = Number(pagingResult.rows[0].total);
+				return this._pool.query(query.join(' '))
+			})
 			.then((queryResult) => {
 				return queryResult.rows;
 			})
@@ -117,7 +161,8 @@ class PgScenarioCases extends PgCollection {
 				});
 				return Promise.all(promises)
 					.then(() => {
-						return scenarioCases;
+						payload.data = scenarioCases;
+						return payload;
 					});
 			});
 	}
