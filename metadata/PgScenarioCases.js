@@ -79,7 +79,7 @@ class PgScenarioCases extends PgCollection {
 			});
 	}
 
-	getFiltered(filter) {
+	get(filter) {
  		let limit = 100;
 		if (filter.hasOwnProperty('limit')) {
 			limit = filter['limit'] ? filter['limit'] : limit;
@@ -153,7 +153,7 @@ class PgScenarioCases extends PgCollection {
 				let promises = [];
 				scenarioCases.forEach((scenarioCase) => {
 					promises.push(
-						this._pgScenarios.getFiltered({scenario_case_id: scenarioCase.id})
+						this._pgScenarios.get({scenario_case_id: scenarioCase.id})
 							.then((scenarios) => {
 								scenarioCase.scenario_ids = _.map(scenarios, "id");
 							})
@@ -165,6 +165,54 @@ class PgScenarioCases extends PgCollection {
 						return payload;
 					});
 			});
+	}
+
+	update(id, data) {
+		return new Promise((resolve, reject) => {
+			id = Number(id || data.id);
+			delete data[id];
+
+			if(!_.isNaN(id)) {
+				let keys = Object.keys(data);
+				if(keys.length) {
+					let sets = [];
+					keys.forEach((key) => {
+						sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
+					});
+
+					return this._pool.query(`UPDATE "${this._schema}"."${PgScenarioCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+						.then((result) => {
+							if(result.rowCount) {
+								resolve(this.get({id: id}));
+							} else {
+								reject(new Error(`Unable to update record with ID ${id}`));
+							}
+						});
+				} else {
+					reject(new Error(`There is no data to use for update`));
+				}
+			} else {
+				reject(new Error(`Given ID has not numeric value`));
+			}
+		});
+	}
+
+	delete(id) {
+		return new Promise((resolve, reject) => {
+			id = Number(id);
+			if(!_.isNaN(id)) {
+				this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioCases.tableName()}" WHERE id = ${Number(id)};`)
+					.then((result) => {
+						if(result.rowCount) {
+							resolve();
+						} else {
+							reject(new Error(`Unable to delete record with ID ${id}`));
+						}
+					});
+			} else {
+				reject(new Error(`Given ID has not numeric value!`));
+			}
+		});
 	}
 
 	static tableName() {

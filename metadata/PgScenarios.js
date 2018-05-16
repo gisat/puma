@@ -50,33 +50,7 @@ class PgScenarios extends PgCollection {
 			});
 	}
 
-	getFiltered(filter) {
-		let keys = filter ? Object.keys(filter) : [];
-
-		let query = [];
-		query.push(`SELECT scenarios.*, relations.scenario_case_id`);
-		query.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS scenarios`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgScenarios.relationTableName()}" AS relations`);
-		query.push(`ON relations.scenario_id = scenarios.id`);
-
-		if(keys.length) {
-			let where = [];
-			keys.forEach((key) => {
-				where.push(`${key === "id" ? '"scenarios".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
-			});
-
-			query.push(`WHERE ${where.join(' AND ')}`);
-		}
-
-		query.push(`;`);
-
-		return this._pool.query(query.join(' '))
-			.then((queryResult) => {
-				return queryResult.rows;
-			});
-	}
-
-	getFiltered(filter) {
+	get(filter) {
 		let limit = 100;
 		if (filter.hasOwnProperty('limit')) {
 			limit = filter['limit'] ? filter['limit'] : limit;
@@ -146,6 +120,54 @@ class PgScenarios extends PgCollection {
 				payload.data = scenarios;
 				return payload;
 			});
+	}
+
+	update(id, data) {
+		return new Promise((resolve, reject) => {
+			id = Number(id || data.id);
+			delete data[id];
+
+			if(!_.isNaN(id)) {
+				let keys = Object.keys(data);
+				if(keys.length) {
+					let sets = [];
+					keys.forEach((key) => {
+						sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
+					});
+
+					return this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+						.then((result) => {
+							if(result.rowCount) {
+								resolve(this.get({id: id}));
+							} else {
+								reject(new Error(`Unable to update record with ID ${id}`));
+							}
+						});
+				} else {
+					reject(new Error(`There is no data to use for update`));
+				}
+			} else {
+				reject(new Error(`Given ID has not numeric value`));
+			}
+		});
+	}
+
+	delete(id) {
+		return new Promise((resolve, reject) => {
+			id = Number(id);
+			if(!_.isNaN(id)) {
+				this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarios.tableName()}" WHERE id = ${Number(id)};`)
+					.then((result) => {
+						if(result.rowCount) {
+							resolve();
+						} else {
+							reject(new Error(`Unable to delete record with ID ${id}`));
+						}
+					});
+			} else {
+				reject(new Error(`Given ID has not numeric value!`));
+			}
+		});
 	}
 
 	static tableName() {
