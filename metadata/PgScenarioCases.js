@@ -14,72 +14,92 @@ class PgScenarioCases extends PgCollection {
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 	}
 
-	create(object) {
-		if (!object) throw new Error('empty input');
+	create(objects) {
+		if (!objects || !objects.length) throw new Error(`There is nothing to create`);
 
-		let scopeId;
-		if(object.hasOwnProperty('scope_id')) {
-			scopeId = object['scope_id'];
-			delete object['scope_id'];
-		}
+		let promises = [];
+		objects.forEach((object) => {
+			let uuid = object.uuid;
+			let data = object.data;
 
-		let placeId;
-		if(object.hasOwnProperty('place_id')) {
-			placeId = object['place_id'];
-			delete object['place_id'];
-		}
-
-		let keys = Object.keys(object);
-		let columns = _.map(keys, (key) => {
-			return `"${key}"`;
-		});
-		let values = _.map(keys, (key) => {
-			if(key === "geometry") {
-				return `ST_GeomFromGeoJSON('${JSON.stringify(object[key])}')`;
-			} else if (_.isNumber(object[key])) {
-				return object[key];
-			} else {
-				return `'${object[key]}'`;
+			let scopeId;
+			if(data.hasOwnProperty('scope_id')) {
+				scopeId = data['scope_id'];
+				delete data['scope_id'];
 			}
+
+			let placeId;
+			if(data.hasOwnProperty('place_id')) {
+				placeId = data['place_id'];
+				delete data['place_id'];
+			}
+
+			let keys = Object.keys(data);
+			let columns = _.map(keys, (key) => {
+				return `"${key}"`;
+			});
+			let values = _.map(keys, (key) => {
+				if(key === "geometry") {
+					return `ST_GeomFromGeoJSON('${JSON.stringify(data[key])}')`;
+				} else if (_.isNumber(data[key])) {
+					return data[key];
+				} else {
+					return `'${data[key]}'`;
+				}
+			});
+
+			promises.push(
+				this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
+				.then((queryResult) => {
+					if (queryResult.rowCount) {
+						return queryResult.rows[0].id;
+					}
+				}).then((id) => {
+					return Promise.resolve()
+						.then(() => {
+							if(id && scopeId) {
+								return this._pgScopeScenarioCaseRelations.create({
+									scope_id: scopeId,
+									scenario_case_id: id
+								});
+							}
+						}).then(() => {
+							return id;
+						});
+				}).then((id) => {
+					return Promise.resolve()
+						.then(() => {
+							if(id && placeId) {
+								return this._pgPlaceScenarioCaseRelations.create({
+									place_id: placeId,
+									scenario_case_id: id
+								});
+							}
+						}).then(() => {
+							return id;
+						});
+				}).then((id) => {
+					if(id) {
+						return this.get({id: id, unlimited: true})
+							.then((payload) => {
+								return {
+									uuid: uuid,
+									data: payload.data[0]
+								}
+							});
+					}
+				})
+			);
 		});
 
-		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
-			.then((queryResult) => {
-				if (queryResult.rowCount) {
-					return queryResult.rows[0].id;
-				} else {
-					throw new Error('insert failed');
-				}
-			}).then((createdObjectId) => {
-				return Promise.resolve()
-					.then(() => {
-						if(scopeId) {
-							return this._pgScopeScenarioCaseRelations.create({
-								scope_id: scopeId,
-								scenario_case_id: createdObjectId
-							});
-						}
-					}).then(() => {
-						return createdObjectId;
-					});
-			}).then((createdObjectId) => {
-				return Promise.resolve()
-					.then(() => {
-						if(placeId) {
-							return this._pgPlaceScenarioCaseRelations.create({
-								place_id: placeId,
-								scenario_case_id: createdObjectId
-							});
-						}
-					}).then(() => {
-						return createdObjectId;
-					});
-			}).then((createdObjectId) => {
-				return this.getFiltered({id: createdObjectId});
-			});
+		return Promise.all(promises);
 	}
 
 	get(filter) {
+		let payload = {
+			data: null,
+		};
+
  		let limit = 100;
 		if (filter.hasOwnProperty('limit')) {
 			limit = filter['limit'] ? filter['limit'] : limit;
@@ -96,6 +116,18 @@ class PgScenarioCases extends PgCollection {
 		if (filter.hasOwnProperty('like')) {
 			like = filter['like'];
 			delete filter['like'];
+		}
+
+		let any;
+		if (filter.hasOwnProperty('any')) {
+			any = filter['any'];
+			delete filter['any'];
+		}
+
+		let unlimited;
+		if (filter.hasOwnProperty('unlimited')) {
+			unlimited = filter.unlimited;
+			delete filter['unlimited'];
 		}
 
 		let keys = filter ? Object.keys(filter) : [];
@@ -116,7 +148,7 @@ class PgScenarioCases extends PgCollection {
 		query.push(`LEFT JOIN "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
 		query.push(`ON "place_relations"."scenario_case_id" = "cases"."id"`);
 
-		if(keys.length || like) {
+		if(keys.length || like || any) {
 			let where = [];
 			keys.forEach((key) => {
 				where.push(`${key === "id" ? '"cases".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
@@ -128,22 +160,33 @@ class PgScenarioCases extends PgCollection {
 				});
 			}
 
+			if (any) {
+				Object.keys(any).forEach((key) => {
+					where.push(`${key === 'id' ? `"cases"."id"` : `"${key}"`} IN (${any[key].join(', ')})`);
+				});
+			}
+
 			query.push(`WHERE ${where.join(' AND ')}`);
 			pagingQuery.push(`WHERE ${where.join(' AND ')}`);
 		}
 
-		query.push(` ORDER BY "cases"."id" LIMIT ${limit} OFFSET ${offset};`);
+		query.push(`ORDER BY "cases"."id"`);
+		if (!unlimited) {
+			query.push(`LIMIT ${limit} OFFSET ${offset}`);
+
+			payload.limit = limit;
+			payload.offset = offset;
+			payload.total = null;
+		}
+
+		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		let payload = {
-			data: null,
-			limit: limit,
-			offset: offset,
-			total: null
-		};
 		return this._pool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
-				payload.total = Number(pagingResult.rows[0].total);
+				if (payload.hasOwnProperty('total')) {
+					payload.total = Number(pagingResult.rows[0].total);
+				}
 				return this._pool.query(query.join(' '))
 			})
 			.then((queryResult) => {

@@ -24,10 +24,9 @@ class PgCollection {
 
     /**
      * It should update the object properties.
-     * @param id {Number} Id of the object to be updated
-     * @param object {Object} Collection of object properties to be updated.
+     * @param object [{Object}] List of collection of object properties to be updated.
      */
-    update(id, object) {}
+    update(objects) {}
 
     /**
      * It should delete project with given id and all its dependencies. At this layer we expect the user to have the

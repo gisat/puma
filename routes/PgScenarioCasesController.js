@@ -11,7 +11,7 @@ class PgScenarioCasesController {
 
 		app.delete(`/rest/metadata/scenario_cases/:id`, this.delete.bind(this));
 
-		app.put(`/rest/metadata/scenario_cases/:id`, this.update.bind(this))
+		app.put(`/rest/metadata/scenario_cases`, this.update.bind(this))
 	}
 
 	create(request, response) {

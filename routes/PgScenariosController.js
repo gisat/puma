@@ -11,7 +11,7 @@ class PgScenariosController {
 
 		app.delete(`/rest/metadata/scenarios/:id`, this.delete.bind(this));
 
-		app.put(`/rest/metadata/scenarios/:id`, this.update.bind(this))
+		app.put(`/rest/metadata/scenarios`, this.update.bind(this))
 	}
 
 	create(request, response) {
@@ -60,7 +60,7 @@ class PgScenariosController {
 	}
 
 	update(request, response) {
-		this._pgScenarios.update(request.params.id || request.body.id, request.body)
+		this._pgScenarios.update(request.body)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);
