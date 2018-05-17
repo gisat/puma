@@ -222,13 +222,12 @@ DatabaseSchema.prototype.create = function () {
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_type (
       id   SERIAL PRIMARY KEY,
-      name text,
-      col text
+      name text
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_data_source (
       id       SERIAL PRIMARY KEY,
       type_id  integer,
-      wms_id integer
+      layer_id integer
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.spatial_relation (
       id             SERIAL PRIMARY KEY,
@@ -270,6 +269,14 @@ DatabaseSchema.prototype.create = function () {
       id   SERIAL PRIMARY KEY,
       name text,
       col  text
+    );
+    
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."original_filenames" (
+        id  SERIAL PRIMARY KEY,
+        path text,
+        system_filename text,
+        original_filename text,
+        UNIQUE(path, system_filename, original_filename) 
     );
     `;
 
