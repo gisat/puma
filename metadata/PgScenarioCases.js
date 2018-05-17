@@ -15,7 +15,11 @@ class PgScenarioCases extends PgCollection {
 	}
 
 	create(objects) {
-		if (!objects || !objects.length) throw new Error(`There is nothing to create`);
+		if (!objects) throw new Error(`There is nothing to create`);
+
+		objects = _.isArray(objects) ? objects : [objects];
+
+		if (!objects.length) throw new Error(`There is nothing to create`);
 
 		let promises = [];
 		objects.forEach((object) => {
@@ -82,8 +86,12 @@ class PgScenarioCases extends PgCollection {
 					if(id) {
 						return this.get({id: id, unlimited: true})
 							.then((payload) => {
+								let id = payload.data[0].id;
+								delete payload.data[0].id;
+
 								return {
 									uuid: uuid,
+									id: id,
 									data: payload.data[0]
 								}
 							});
