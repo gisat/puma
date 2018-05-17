@@ -196,9 +196,9 @@ class PgScenarioCases extends PgCollection {
 				let promises = [];
 				scenarioCases.forEach((scenarioCase) => {
 					promises.push(
-						this._pgScenarios.get({scenario_case_id: scenarioCase.id})
-							.then((scenarios) => {
-								scenarioCase.scenario_ids = _.map(scenarios, "id");
+						this._pgScenarios.get({scenario_case_id: scenarioCase.id, unlimited: true})
+							.then((payload) => {
+								scenarioCase.scenario_ids = _.map(payload.data, "id");
 							})
 					)
 				});
