@@ -228,7 +228,13 @@ class PgScenarioCases extends PgCollection {
 			if (keys.length) {
 				let sets = [];
 				keys.forEach((key) => {
-					sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
+						if(key === "geometry") {
+							sets.push(`"${key}" = ST_GeomFromGeoJSON('${JSON.stringify(data[key])}')`);
+						} else if (_.isNumber(data[key])) {
+							sets.push(`"${key}" = ${data[key]}`);
+						} else {
+							sets.push(`"${key}" = '${data[key]}'`);
+						}
 				});
 
 				promises.push(
