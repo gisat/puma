@@ -60,7 +60,7 @@ class PgScenarioCasesController {
 	}
 
 	update(request, response) {
-		this._pgScenarioCases.update(request.params.id || request.body.id, request.body)
+		this._pgScenarioCases.update(request.body)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);

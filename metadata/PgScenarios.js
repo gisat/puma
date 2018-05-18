@@ -168,34 +168,47 @@ class PgScenarios extends PgCollection {
 			});
 	}
 
-	update(data) {
-		return new Promise((resolve, reject) => {
-			id = Number(data.id);
-			delete data[id];
+	update(updates) {
+		let promises = [];
+		updates.forEach((record) => {
+			let id = record.id;
+			let data = record.data;
 
-			if (!_.isNaN(id)) {
-				let keys = Object.keys(data);
-				if (keys.length) {
-					let sets = [];
-					keys.forEach((key) => {
-						sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
-					});
+			let keys = Object.keys(data);
+			if (keys.length) {
+				let sets = [];
+				keys.forEach((key) => {
+					sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
+				});
 
-					return this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+				promises.push(
+					this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
 						.then((result) => {
 							if (result.rowCount) {
-								resolve(this.get({id: id, unlimited: true}));
-							} else {
-								reject(new Error(`Unable to update record with ID ${id}`));
+								return this.get({id: id, unlimited: true});
 							}
-						});
-				} else {
-					reject(new Error(`There is no data to use for update`));
-				}
-			} else {
-				reject(new Error(`Given ID has not numeric value`));
+						})
+						.then((updatedResults) => {
+							if (updatedResults) {
+								let data = updatedResults.data[0];
+								delete data['id'];
+
+								return {
+									id: id,
+									data: data
+								}
+							}
+						})
+				);
 			}
 		});
+
+		return Promise.all(promises)
+			.then((results) => {
+				return {
+					data: results
+				}
+			})
 	}
 
 	delete(id) {
