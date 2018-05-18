@@ -31,7 +31,7 @@ class PgScenarioCasesController {
 	}
 
 	get(request, response) {
-		this._pgScenarioCases.get(request.body)
+		this._pgScenarioCases.get(_.assign({}, request.query, request.body))
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
