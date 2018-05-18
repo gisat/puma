@@ -49,6 +49,7 @@ let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
 
 const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
+const PgSpatialRelationsController = require('./PgSpatialRelationsController');
 
 var api = {
 	layers: require('../api/layers'),
@@ -131,6 +132,7 @@ module.exports = function(app) {
 
 	new PgScenariosController(app, pool, config.postgreSqlSchema);
 	new PgScenarioCasesController(app, pool, config.postgreSqlSchema);
+	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
