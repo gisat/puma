@@ -163,7 +163,16 @@ class PgScenarios extends PgCollection {
 				return queryResult.rows;
 			})
 			.then((scenarios) => {
-				payload.data = scenarios;
+				payload.data = _.map(scenarios, (scenario) => {
+					let id = scenario.id;
+					let data = scenario;
+					delete data['id'];
+
+					return {
+						id: id,
+						data: data
+					}
+				});
 				return payload;
 			});
 	}

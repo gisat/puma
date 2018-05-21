@@ -212,7 +212,16 @@ class PgScenarioCases extends PgCollection {
 				});
 				return Promise.all(promises)
 					.then(() => {
-						payload.data = scenarioCases;
+						payload.data = _.map(scenarioCases, (scenarioCase) => {
+							let id = scenarioCase.id;
+							let data = scenarioCase;
+							delete data['id'];
+
+							return {
+								id: id,
+								data: data
+							}
+						});
 						return payload;
 					});
 			});
