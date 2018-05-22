@@ -79,7 +79,18 @@ class UploadManager {
 
 		return this._pgPool.query(query.join(' '))
 			.then((queryResult) => {
-				return queryResult.rows;
+				return {
+					data: _.map(queryResult.rows, (row) => {
+						let uuid = row.uuid;
+						let data = row;
+						delete data['uuid'];
+
+						return {
+							uuid: uuid,
+							data: data
+						}
+					})
+				};
 			});
 	}
 
