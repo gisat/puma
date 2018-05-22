@@ -51,6 +51,8 @@ const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
 const PgSpatialRelationsController = require('./PgSpatialRelationsController');
 
+const UploadManagerController = require('./UploadManagerController');
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -133,6 +135,8 @@ module.exports = function(app) {
 	new PgScenariosController(app, pool, config.postgreSqlSchema);
 	new PgScenarioCasesController(app, pool, config.postgreSqlSchema);
 	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
+
+	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
