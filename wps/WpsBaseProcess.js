@@ -28,10 +28,18 @@ class WpsBaseProcess {
 	}
 
 	inputs() {
-		if(this._describe.inputs && Object.keys(this._describe.inputs)) {
+		if(this._describe.inputs && Object.keys(this._describe.inputs).length) {
 			return this._describe.inputs;
 		} else {
 			throw new Error(`Inputs are not set!`);
+		}
+	}
+
+	outputs() {
+		if(this._describe.outputs && Object.keys(this._describe.outputs).length) {
+			return this._describe.outputs;
+		} else {
+			throw new Error(`Outputs are not set!`);
 		}
 	}
 
