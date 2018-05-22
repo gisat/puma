@@ -111,6 +111,32 @@ class Wps {
 			inputs.push(`</Input>`);
 			});
 
+			let outputs = [];
+			Object.keys(process.outputs()).forEach((outputKey) => {
+				let output = process.outputs()[outputKey];
+				outputs.push(`<Output>`);
+				outputs.push(`	<ows:Identifier>${output.identifier}</ows:Identifier>`);
+				outputs.push(`	<ows:Title>${output.title}</ows:Title>`);
+				outputs.push(`	<ows:Abstract>${output.abstract}</ows:Abstract>`);
+
+				if (output.dataType === `ComplexData`) {
+					outputs.push(`	<ComplexData>`);
+					outputs.push(`		<Default><Format><MimeType>${output.defaultDataType}</MimeType></Format></Default>`);
+					outputs.push(`		<Supported>`);
+
+					output.supportedDataTypes.forEach((supportedDataType) => {
+						outputs.push(`			<Default><Format><MimeType>${supportedDataType}</MimeType></Format></Default>`);
+					});
+
+					outputs.push(`		</Supported>`);
+					outputs.push(`	</ComplexData>`);
+				} else {
+					outputs.push(`<LiteralData><ows:DataType>${output.dataType}</ows:DataType><ows:AnyValue/></LiteralData>`);
+				}
+
+				outputs.push(`</Output>`);
+			});
+
 			this.sendXmlResponse(response, `<?xml version="1.0" encoding="UTF-8"?>
 				<wps:ProcessDescriptions xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ows="http://www.opengis.net/ows/1.1"
 								 xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -126,7 +152,9 @@ class Wps {
 						<DataInputs>
 							${inputs.join('\n')}
 						</DataInputs>
-						<ProcessOutputs></ProcessOutputs>
+						<ProcessOutputs>
+							${outputs.join('\n')}
+						</ProcessOutputs>
 					</ProcessDescription>
 				</wps:ProcessDescriptions>`);
 		}
@@ -139,12 +167,54 @@ class Wps {
 			this.sendXmlResponse(response, this.getExceptionXml(`No such process: ${parsedRequest.identifier}`));
 		} else {
 			process.execute(parsedRequest)
-				.then((xmlResponse) => {
-					this.sendXmlResponse(response, xmlResponse);
+				.then((results) => {
+					this.sendXmlResponse(response, this.getProcessResponseXml(identifierWithoutPrefix, results));
 				})
 				.catch((error) => {
 					this.sendXmlResponse(response, this.getExceptionXml(error.message));
 				});
+		}
+	}
+
+	getProcessResponseXml(identifier, results) {
+		let process = this._processes[identifier];
+		if(!process) {
+			this.getExceptionXml(`No such process: ${identifier}`)
+		} else {
+			let outputs = [];
+			results.forEach((outputData) => {
+				let output = process.outputs()[outputData.identifier];
+				outputs.push(`<Output>`);
+				outputs.push(`	<ows:Identifier>${output.identifier}</ows:Identifier>`);
+				outputs.push(`	<ows:Title>${output.title}</ows:Title>`);
+				outputs.push(`	<ows:Abstract>${output.abstract}</ows:Abstract>`);
+
+				if (output.dataType === `ComplexData`) {
+					outputs.push(`	<ComplexData mimeType="${output.dataType}">${outputData.data}</ComplexData>`);
+				} else {
+					outputs.push(`<LiteralData dataType="${output.dataType}">${outputData.data}</LiteralData>`);
+				}
+
+				outputs.push(`</Output>`);
+			});
+
+			return `<?xml version="1.0" encoding="UTF-8"?>
+				<wps:ProcessDescriptions xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ows="http://www.opengis.net/ows/1.1"
+								 xmlns:wps="http://www.opengis.net/wps/1.0.0" xmlns:xlink="http://www.w3.org/1999/xlink"
+								 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xml:lang="en" service="WPS"
+								 version="1.0.0"
+								 xsi:schemaLocation="http://www.opengis.net/wps/1.0.0 http://schemas.opengis.net/wps/1.0.0/wpsAll.xsd">
+					<ProcessDescription wps:processVersion="1.0.0" statusSupported="true" storeSupported="true">
+						<ows:Identifier>${process.identifier()}</ows:Identifier>
+						<ows:Title>${process.title()}</ows:Title>
+						<ows:Abstract>
+							${process.abstract()}    
+						</ows:Abstract>
+						<ProcessOutputs>
+							${outputs.join('\n')}
+						</ProcessOutputs>
+					</ProcessDescription>
+				</wps:ProcessDescriptions>`;
 		}
 	}
 

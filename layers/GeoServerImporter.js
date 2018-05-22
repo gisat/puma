@@ -14,6 +14,75 @@ class GeoServerImporter {
         this._workspace = workspace;
         this._dataStore = dataStore;
     }
+
+	/**
+	 * Import file from local file system to geoserver
+	 * @param metadata {type: "file", "format": "Shapefile|GeoTiff", file: "path-to-file", prj: "in-case-of-shape-path-to-prj", other: ["paths-to-other-additional-files]}
+	 */
+	importLocalFile(metadata) {
+	    let payload = {
+			"import": {
+				"data": {
+					"type": metadata.type,
+					"format": metadata.format,
+					"file": metadata.file,
+					"prj": metadata.prj,
+					"other": metadata.other
+				}
+			}
+		};
+
+	    if(this._workspace) {
+	        payload.import.targetWorkspace = {
+				"workspace": {
+					"name": `${this._workspace}`
+				}
+			}
+        }
+
+        if(this._dataStore) {
+	        payload.import.targetStore = {
+				"dataStore": {
+					"name": `${this._dataStore}`
+				}
+			}
+        }
+
+        return superagent
+            .post(this._importPath)
+            .set('Content-Type', 'application/json')
+            .auth(this._userName, this._password)
+            .send(payload)
+            .then((response) => {
+            	let importMeta = response.body.import;
+            	let importUrl = importMeta.href;
+            	if(importMeta.tasks.length && importMeta.tasks[0].state === 'READY') {
+            		let layerImportUrl = importMeta.tasks[0].href;
+            		return superagent
+						.post(importUrl)
+						.auth(this._userName, this._password)
+						.send()
+						.then(() => {
+							return superagent
+								.get(layerImportUrl)
+								.auth(this._userName, this._password)
+								.send()
+								.then((response) => {
+									return response.body.task.layer.name;
+								})
+								.catch(() => {
+									return false;
+								});
+						})
+						.catch(() => {
+							return false;
+						})
+				}
+            })
+			.catch(() => {
+				return false;
+			})
+	}
     
     // TODO: Configure the name of the workspace to import into.
     // TODO: Configure the name of the target data store.
@@ -93,5 +162,4 @@ class GeoServerImporter {
     }
 }
 
-module
-    .exports = GeoServerImporter;
+module.exports = GeoServerImporter;
