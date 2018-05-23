@@ -122,7 +122,7 @@ module.exports = function(app) {
 	new PgAnalysisController(app, pool, mongo, config.postgreSqlSchema);
 	new AreaController(app, pool, mongo);
 
-	new WpsController(app, pool, mongo, null);
+	new WpsController(app, pool, config.postgreSqlSchema, mongo, null);
 
 	new LayerImporterController(app, mongo, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 	// Schema containing the imported data for Geoserver and schema for created views.

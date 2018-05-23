@@ -7,16 +7,19 @@ const childProcess = require('child_process');
 const config = require('../config');
 
 const GeoServerImporter = require('../layers/GeoServerImporter');
+const PgLayers = require('../layers/PgLayers');
 
 class PucsMatlabProcessor {
-	constructor(pathToMatlabWorkDirectory, pathToMatlabRuntime, pgPool, postgreSqlSchema) {
+	constructor(pathToMatlabWorkDirectory, pathToMatlabRuntime, pgPool, pgSchema, mongo) {
 		this._pathToWorkDirectory = pathToMatlabWorkDirectory;
 		this._pathToMatlabRuntime = pathToMatlabRuntime;
 		this._pgPool = pgPool;
-		this._pgSchema = postgreSqlSchema;
+		this._pgSchema = pgSchema;
+
+		this._pgLayers = new PgLayers(pgPool, mongo, pgSchema)
 	}
 
-	process(inputPath, pantherDataStoragePath) {
+	process(inputPath, pantherDataStoragePath, owner) {
 		return this._getVectorFiles(inputPath)
 			.then((inputVectors) => {
 				return this._rasterizeVectors(inputPath, inputVectors);
@@ -29,7 +32,37 @@ class PucsMatlabProcessor {
 			})
 			.then((metadata) => {
 				return this._importIntoGeoserver(metadata);
+			})
+			.then((metadata) => {
+				return this._storeAsPgLayers(metadata, owner);
 			});
+	}
+
+	_storeAsPgLayers(metadata, owner) {
+		let promises = [];
+
+		metadata.forEach((processMetadata) => {
+			processMetadata.inputVectors.forEach((inputVector) => {
+				promises.push(
+					this._pgLayers.add(inputVector.originalName, inputVector.geoserverLayer, owner.id)
+				)
+			});
+			processMetadata.inputRasters.forEach((inputRaster) => {
+				promises.push(
+					this._pgLayers.add(inputRaster.originalName, inputRaster.geoserverLayer, owner.id)
+				)
+			});
+			processMetadata.outputRasters.forEach((outputRaster) => {
+				promises.push(
+					this._pgLayers.add(outputRaster.originalName, outputRaster.geoserverLayer, owner.id)
+				)
+			});
+		});
+
+		return Promise.all(promises)
+			.then(() => {
+				return metadata;
+			})
 	}
 
 	_importIntoGeoserver(metadataList) {

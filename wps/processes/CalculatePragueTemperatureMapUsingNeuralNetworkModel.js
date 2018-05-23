@@ -8,14 +8,15 @@ const WpsBaseProcess = require('../WpsBaseProcess');
 const PucsMatlabProcessor = require('../../integration/PucsMatlabProcessor');
 
 class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProcess {
-	constructor(pgPool, runningProcesses, pantherTemporaryStoragePath, pantherDataStoragePath, postgreSqlSchema) {
+	constructor(pgPool, runningProcesses, pantherTemporaryStoragePath, pantherDataStoragePath, pgSchema, mongo) {
 		super();
 
 		this._pgPool = pgPool;
 		this._runningProcesses = runningProcesses;
 		this._pantherTemporaryStoragePath = pantherTemporaryStoragePath;
 		this._pantherDataStoragePath = pantherDataStoragePath;
-		this._pgSchema = postgreSqlSchema;
+		this._pgSchema = pgSchema;
+		this._mongo = mongo;
 
 		this._describe = {
 			identifier: `CalculatePragueTemperatureMapUsingNeuralNetworkModel`,
@@ -41,7 +42,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			}
 		};
 
-		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/Dokumenty/TempStorage/PUCS/matlab_ua_prague`,  `/usr/local/MATLAB/MATLAB_Runtime/v901`, this._pgPool, postgreSqlSchema);
+		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/Dokumenty/TempStorage/PUCS/matlab_ua_prague`,  `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
 	}
 
 	execute(parsedRequest) {
@@ -62,7 +63,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			})
 			.then((processWorkDirectoryPath) => {
 				this._runningProcesses[processUuid].progress++;
-				return this._pucsMatlabProcessor.process(processWorkDirectoryPath, this._pantherDataStoragePath);
+				return this._pucsMatlabProcessor.process(processWorkDirectoryPath, this._pantherDataStoragePath, parsedRequest.owner);
 			})
 			.then((layersJson) => {
 				return [{
