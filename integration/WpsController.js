@@ -21,7 +21,7 @@ class WpsController {
 	 * @param mongo
 	 * @param wpsProcesses {Map} Map of the WPS processes available to run
 	 */
-	constructor(app, pgPool, mongo, wpsProcesses) {
+	constructor(app, pgPool, pgSchema, mongo, wpsProcesses) {
 		app.get('/rest/wps', this.wps.bind(this));
 		app.post('/rest/wps', this.wps.bind(this));
 		app.post('/rest/status/wps/:id', this.status.bind(this));
@@ -32,7 +32,7 @@ class WpsController {
 		this._layerImporterTasks = new LayerImporterTasks();
 		this._layerImporter = new LayerImporter(pgPool, mongo, this._layerImporterTasks);
 
-		this._wps = new Wps(pgPool);
+		this._wps = new Wps(pgPool, pgSchema, mongo);
 	}
 
 	/**
@@ -193,7 +193,8 @@ class WpsController {
 			request: null,
 			version: null,
 			identifier: null,
-			dataInputs: null
+			dataInputs: null,
+			owner: request.session.user
 		};
 
 		Object.keys(request.query).forEach(queryKey => {

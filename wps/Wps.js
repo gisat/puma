@@ -8,9 +8,9 @@ let ImportToExistingScope = require(`../wps/processes/ImportToExistingScope`);
 let runningProcesses = {};
 
 class Wps {
-	constructor(pgPool) {
+	constructor(pgPool, pgSchema, mongo) {
 		this._processes = {
-			CalculatePragueTemperatureMapUsingNeuralNetworkModel: new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, config.postgreSqlSchema),
+			CalculatePragueTemperatureMapUsingNeuralNetworkModel: new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo),
 			ImportToExistingScope: new ImportToExistingScope(runningProcesses)
 		};
 	}
