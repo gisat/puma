@@ -92,7 +92,7 @@ class PgScenarioCases extends PgCollection {
 								return {
 									uuid: uuid,
 									id: id,
-									data: payload.data[0]
+									data: payload.data[0].data
 								}
 							});
 					}
@@ -255,7 +255,7 @@ class PgScenarioCases extends PgCollection {
 						})
 						.then((updatedResults) => {
 							if (updatedResults) {
-								let data = updatedResults.data[0];
+								let data = updatedResults.data[0].data;
 								delete data['id'];
 
 								return {
