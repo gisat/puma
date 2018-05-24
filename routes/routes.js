@@ -50,6 +50,7 @@ let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
 const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
 const PgSpatialRelationsController = require('./PgSpatialRelationsController');
+const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
 
 const UploadManagerController = require('./UploadManagerController');
 
@@ -135,6 +136,7 @@ module.exports = function(app) {
 	new PgScenariosController(app, pool, config.postgreSqlSchema);
 	new PgScenarioCasesController(app, pool, config.postgreSqlSchema);
 	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
+	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 
