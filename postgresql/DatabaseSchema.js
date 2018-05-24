@@ -245,6 +245,16 @@ DatabaseSchema.prototype.create = function () {
         layer text,
         custom text
     );
+    CREATE TABLE IF NOT EXISTS ${this.schema}."spatial_data_source_shapefile" (
+        id SERIAL PRIMARY KEY,
+        layer_name TEXT,
+        table_name TEXT
+    );
+    CREATE TABLE IF NOT EXISTS ${this.schema}."spatial_data_source_geotiff" (
+        id SERIAL PRIMARY KEY,
+        layer_name TEXT,
+        table_name TEXT
+    );
     
     CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_type (
       id   SERIAL PRIMARY KEY,
