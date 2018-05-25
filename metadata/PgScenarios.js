@@ -44,11 +44,16 @@ class PgScenarios extends PgCollection {
 						}
 					})
 					.then((id) => {
-						if (id && scenarioCaseId) {
-							return this._pgScenarioScenarioCaseRelations.create({
-								scenario_case_id: scenarioCaseId,
-								scenario_id: id
-							}).then(() => {
+						return Promise.resolve()
+							.then(() => {
+								if (id && scenarioCaseId) {
+									return this._pgScenarioScenarioCaseRelations.create({
+										scenario_case_id: scenarioCaseId,
+										scenario_id: id
+									})
+								}
+							})
+							.then(() => {
 								return this.get({id: id, unlimited: true})
 									.then((payload) => {
 										let id = payload.data[0].id;
@@ -61,7 +66,6 @@ class PgScenarios extends PgCollection {
 										}
 									});
 							});
-						}
 					})
 			);
 		});
