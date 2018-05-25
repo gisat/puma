@@ -22,10 +22,10 @@ class PgScenarios extends PgCollection {
 			let uuid = object.uuid;
 			let data = object.data;
 
-			let scenarioCaseId;
-			if (data.hasOwnProperty('scenario_case_id')) {
-				scenarioCaseId = data['scenario_case_id'];
-				delete data['scenario_case_id'];
+			let scenarioCaseIds;
+			if (data.hasOwnProperty('scenario_case_ids')) {
+				scenarioCaseIds = data['scenario_case_ids'];
+				delete data['scenario_case_ids'];
 			}
 
 			let keys = Object.keys(data);
@@ -46,11 +46,16 @@ class PgScenarios extends PgCollection {
 					.then((id) => {
 						return Promise.resolve()
 							.then(() => {
-								if (id && scenarioCaseId) {
-									return this._pgScenarioScenarioCaseRelations.create({
-										scenario_case_id: scenarioCaseId,
-										scenario_id: id
-									})
+								if (id && scenarioCaseIds) {
+									return this._pgScenarioScenarioCaseRelations.create(_.map(scenarioCaseIds, (scenarioCaseId) => {
+										return {
+											data: {
+												scenario_case_id: scenarioCaseId,
+												scenario_id: id
+											}
+										}
+
+									}))
 								}
 							})
 							.then(() => {
@@ -112,20 +117,17 @@ class PgScenarios extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS scenarios`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS relations`);
-		pagingQuery.push(`ON "relations"."scenario_id" = "scenarios"."id"`);
+		pagingQuery.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS a`);
 
 		let query = [];
-		query.push(`SELECT scenarios.*, relations.scenario_case_id`);
-		query.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS scenarios`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS relations`);
-		query.push(`ON "relations"."scenario_id" = "scenarios"."id"`);
+		query.push(`SELECT a.*, array_agg(b.scenario_case_id) AS scenario_case_ids`);
+		query.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS a`);
+		query.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS b ON "a"."id" = "b"."scenario_id"`);
 
 		if (keys.length || like || any) {
 			let where = [];
 			keys.forEach((key) => {
-				where.push(`${key === "id" ? '"scenarios".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
+				where.push(`${key === "id" ? '"a".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
 			});
 
 			if (like) {
@@ -136,7 +138,7 @@ class PgScenarios extends PgCollection {
 
 			if (any) {
 				Object.keys(any).forEach((key) => {
-					where.push(`${key === 'id' ? `"scenarios"."id"` : `"${key}"`} IN (${any[key].join(', ')})`);
+					where.push(`${key === 'id' ? `"a"."id"` : `"${key}"`} IN (${any[key].join(', ')})`);
 				});
 			}
 
@@ -144,7 +146,8 @@ class PgScenarios extends PgCollection {
 			pagingQuery.push(`WHERE ${where.join(' AND ')}`);
 		}
 
-		query.push(`ORDER BY "scenarios"."id"`);
+		query.push(`GROUP BY "a"."id"`);
+		query.push(`ORDER BY "a"."id"`);
 		if (!unlimited) {
 			query.push(`LIMIT ${limit} OFFSET ${offset}`);
 
@@ -166,10 +169,10 @@ class PgScenarios extends PgCollection {
 			.then((queryResult) => {
 				return queryResult.rows;
 			})
-			.then((scenarios) => {
-				payload.data = _.map(scenarios, (scenario) => {
-					let id = scenario.id;
-					let data = scenario;
+			.then((rows) => {
+				payload.data = _.map(rows, (row) => {
+					let id = row.id;
+					let data = row;
 					delete data['id'];
 
 					return {
