@@ -118,6 +118,7 @@ class PgScenarios extends PgCollection {
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
 		pagingQuery.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS a`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS b ON "a"."id" = "b"."scenario_id"`);
 
 		let query = [];
 		query.push(`SELECT a.*, array_agg(b.scenario_case_id) AS scenario_case_ids`);
