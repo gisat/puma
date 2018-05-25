@@ -4,6 +4,7 @@ const PgCollection = require('../common/PgCollection');
 const PgScopeScenarioCaseRelations = require('./PgScopeScenarioCaseRelations');
 const PgPlaceScenarioCaseRelations = require('./PgPlaceScenarioCaseRelations');
 const PgScenarios = require('./PgScenarios');
+const PgScenarioScenarioCaseRelations = require('./PgScenarioScenarioCaseRelations');
 
 class PgScenarioCases extends PgCollection {
 	constructor(pgPool, pgSchema) {
@@ -12,6 +13,7 @@ class PgScenarioCases extends PgCollection {
 		this._pgScopeScenarioCaseRelations = new PgScopeScenarioCaseRelations(pgPool, pgSchema);
 		this._pgPlaceScenarioCaseRelations = new PgPlaceScenarioCaseRelations(pgPool, pgSchema);
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
+		this._pgScenarioScenarioCaseRelations = new PgScenarioScenarioCaseRelations(pgPool, pgSchema);
 	}
 
 	create(objects) {
@@ -36,6 +38,12 @@ class PgScenarioCases extends PgCollection {
 			if(data.hasOwnProperty('place_id')) {
 				placeId = data['place_id'];
 				delete data['place_id'];
+			}
+
+			let scenarioIds;
+			if(data.hasOwnProperty('scenario_ids')) {
+				scenarioIds = data['scenario_ids'];
+				delete data['scenario_ids'];
 			}
 
 			let keys = Object.keys(data);
@@ -78,6 +86,22 @@ class PgScenarioCases extends PgCollection {
 									place_id: placeId,
 									scenario_case_id: id
 								});
+							}
+						}).then(() => {
+							return id;
+						});
+				}).then((id) => {
+					return Promise.resolve()
+						.then(() => {
+							if(id && scenarioIds) {
+								return this._pgScenarioScenarioCaseRelations.create(_.map(scenarioIds, (scenarioId) => {
+									return {
+										data: {
+											scenario_case_id: id,
+											scenario_id: scenarioId
+										}
+									}
+								}));
 							}
 						}).then(() => {
 							return id;
