@@ -8,6 +8,7 @@ const config = require('../config');
 
 const GeoServerImporter = require('../layers/GeoServerImporter');
 const PgLayers = require('../layers/PgLayers');
+const PgSpatialDataSources = require('../metadata/PgSpatialDataSources');
 
 class PucsMatlabProcessor {
 	constructor(pathToMatlabWorkDirectory, pathToMatlabRuntime, pgPool, pgSchema, mongo) {
@@ -16,7 +17,8 @@ class PucsMatlabProcessor {
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
 
-		this._pgLayers = new PgLayers(pgPool, mongo, pgSchema)
+		this._pgLayers = new PgLayers(pgPool, mongo, pgSchema);
+		this._pgSpatialDataSources = new PgSpatialDataSources(pgPool, pgSchema);
 	}
 
 	process(inputPath, pantherDataStoragePath, owner) {
@@ -35,6 +37,67 @@ class PucsMatlabProcessor {
 			})
 			.then((metadata) => {
 				return this._storeAsPgLayers(metadata, owner);
+			})
+			.then((metadata) => {
+				return this._createSpatialDataSources(metadata);
+			});
+	}
+
+	_createSpatialDataSources(metadata) {
+		let promises = [];
+
+		metadata.forEach((layerMetadata) => {
+			layerMetadata.inputVectors.forEach((inputVectorLayer) => {
+				promises.push(
+					this._pgSpatialDataSources.create(
+						{
+							type: `shapefile`,
+							data: {
+								layer_name: inputVectorLayer.geoserverLayer,
+								table_name: inputVectorLayer.geoserverLayer.split(':')[1]
+							}
+						}
+					).then((payload) => {
+						console.log(payload);
+						inputVectorLayer['spatialDataSourceId'] = payload[0].id;
+					})
+				)
+			});
+
+			layerMetadata.inputRasters.forEach((inputRasterLayer) => {
+				promises.push(
+					this._pgSpatialDataSources.create(
+						{
+							type: `geotiff`,
+							data: {
+								layer_name: inputRasterLayer.geoserverLayer
+							}
+						}
+					).then((payload) => {
+						inputRasterLayer['spatialDataSourceId'] = payload[0].id;
+					})
+				)
+			});
+
+			layerMetadata.outputRasters.forEach((outputRasterLayer) => {
+				promises.push(
+					this._pgSpatialDataSources.create(
+						{
+							type: `geotiff`,
+							data: {
+								layer_name: outputRasterLayer.geoserverLayer
+							}
+						}
+					).then((payload) => {
+						outputRasterLayer['spatialDataSourceId'] = payload[0].id;
+					})
+				)
+			});
+		});
+
+		return Promise.all(promises)
+			.then(() => {
+				return metadata;
 			});
 	}
 
@@ -88,7 +151,7 @@ class PucsMatlabProcessor {
 							})
 						})
 						.then((layerName) => {
-							if(layerName) {
+							if (layerName) {
 								inputVector.geoserverLayer = `${geoserverWorkspace}:${layerName}`;
 							} else {
 								inputVector = {
@@ -109,7 +172,7 @@ class PucsMatlabProcessor {
 							file: `${metadata.directory}/${inputRaster.systemName}`
 						})
 						.then((layerName) => {
-							if(layerName) {
+							if (layerName) {
 								inputRaster.geoserverLayer = `${geoserverWorkspace}:${layerName}`;
 							} else {
 								inputRaster = {
@@ -130,11 +193,11 @@ class PucsMatlabProcessor {
 							file: `${metadata.directory}/${outputRaster.systemName}`
 						})
 						.then((layerName) => {
-							if(layerName) {
+							if (layerName) {
 								outputRaster.geoserverLayer = `${geoserverWorkspace}:${layerName}`;
-								if(outputRaster.originalName.includes('HWD')) {
+								if (outputRaster.originalName.includes('HWD')) {
 									outputRaster.indicator = 'hwd'
-								} else if(outputRaster.originalName.includes('UHI')) {
+								} else if (outputRaster.originalName.includes('UHI')) {
 									outputRaster.indicator = 'uhi'
 								}
 							} else {
@@ -193,11 +256,11 @@ class PucsMatlabProcessor {
 											let fileName = fileParts.join('.');
 
 											if (fileExt.toLowerCase() !== 'tif' && fileName === name) {
-												if(fileExt.toLowerCase() === 'prj') {
+												if (fileExt.toLowerCase() === 'prj') {
 													prj = `${systemName}.${fileExt}`;
 												}
 
-												if(fileExt.toLowerCase() === 'shx' || fileExt.toLowerCase() === 'dbf') {
+												if (fileExt.toLowerCase() === 'shx' || fileExt.toLowerCase() === 'dbf') {
 													other.push(`${systemName}.${fileExt}`);
 												}
 
