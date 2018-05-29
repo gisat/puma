@@ -43,6 +43,33 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 			});
 	}
 
+	update(updates) {
+		updates = _.isArray(updates) ? updates : [updates];
+
+		let promises = [];
+
+		updates.forEach((update) => {
+			let scenario_case_id = update.scenario_case_id;
+			let place_id = update.place_id;
+
+			if(scenario_case_id && (place_id || place_id === null)) {
+				promises.push(
+					this._pool.query(`DELETE FROM "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
+						.then(() => {
+							if(place_id) {
+								return this.create(update);
+							}
+						})
+				)
+			}
+		});
+
+		return Promise.all(promises)
+			.then(() => {
+				return true;
+			})
+	}
+
 	static tableName() {
 		return `place_scenario_case_relation`;
 	}

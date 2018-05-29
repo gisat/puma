@@ -157,6 +157,40 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 			});
 	}
 
+	update(updates) {
+		updates = _.isArray(updates) ? updates : [updates];
+
+		let promises = [];
+
+		updates.forEach((update) => {
+			let scenario_case_id = update.scenario_case_id;
+			let scenario_ids = update.scenario_ids;
+
+			if(scenario_case_id && scenario_ids) {
+				promises.push(
+					this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
+						.then(() => {
+							if(scenario_ids.length) {
+								return this.create(_.map(scenario_ids, (scenario_id) => {
+									return {
+										data: {
+											scenario_id: scenario_id,
+											scenario_case_id: scenario_case_id
+										}
+									}
+								}));
+							}
+						})
+				)
+			}
+		});
+
+		return Promise.all(promises)
+			.then(() => {
+				return true;
+			})
+	}
+
 	static tableName() {
 		return `scenario_scenario_case_relation`;
 	}
