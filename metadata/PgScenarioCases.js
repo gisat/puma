@@ -46,6 +46,12 @@ class PgScenarioCases extends PgCollection {
 				delete data['scenario_ids'];
 			}
 
+			let scenarios;
+			if(data.hasOwnProperty('scenarios')) {
+				scenarios = data['scenarios'];
+				delete data['scenarios'];
+			}
+
 			let keys = Object.keys(data);
 			let columns = _.map(keys, (key) => {
 				return `"${key}"`;
@@ -107,11 +113,26 @@ class PgScenarioCases extends PgCollection {
 							return id;
 						});
 				}).then((id) => {
+					return Promise.resolve()
+						.then(() => {
+							if(id && scenarios) {
+								return this._pgScenarios.create(_.map(scenarios, (scenario) => {
+									scenario.data.scenario_case_ids = [id];
+									return scenario;
+								}));
+							}
+						}).then((payload) => {
+							scenarios = payload;
+							return id;
+						});
+				}).then((id) => {
 					if(id) {
 						return this.get({id: id, unlimited: true})
 							.then((payload) => {
 								let id = payload.data[0].id;
 								delete payload.data[0].id;
+
+								payload.data[0].data.scenarios = scenarios;
 
 								return {
 									uuid: uuid,
