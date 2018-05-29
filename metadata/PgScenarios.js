@@ -186,6 +186,8 @@ class PgScenarios extends PgCollection {
 	}
 
 	update(updates) {
+		updates = _.isArray(updates) ? updates : [updates];
+
 		let promises = [];
 		updates.forEach((record) => {
 			let id = record.id;
