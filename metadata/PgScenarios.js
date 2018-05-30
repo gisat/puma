@@ -12,98 +12,15 @@ class PgScenarios extends PgCollection {
 
 	create(payloadData) {
 		let scenarios = payloadData['scenarios'];
-		let scenario_cases = payloadData['scenario_cases'];
 
 		if (scenarios) {
 			let promises = [];
 			scenarios.forEach((object) => {
-				let uuid = object.uuid;
-				let data = object.data;
-
-				if(object.id) {
-					promises.push(object);
-					return;
+				if (object.id) {
+					promises.push({id: object.id});
+				} else {
+					promises.push(this._createOne(object, payloadData));
 				}
-
-				let scenarioCaseIds;
-				if (data.hasOwnProperty('scenario_case_ids')) {
-					scenarioCaseIds = data['scenario_case_ids'];
-					delete data['scenario_case_ids'];
-				}
-
-				let keys = Object.keys(data);
-				let columns = _.map(keys, (key) => {
-					return `"${key}"`;
-				});
-				let values = _.map(keys, (key) => {
-					return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
-				});
-
-				promises.push(
-					this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
-						.then((queryResult) => {
-							if (queryResult.rowCount) {
-								return queryResult.rows[0].id;
-							}
-						})
-						.then((id) => {
-							return Promise.resolve()
-								.then(() => {
-									let promises = [];
-									if (id && scenarioCaseIds) {
-										scenarioCaseIds.forEach((scenarioCaseId) => {
-											promises.push(
-												Promise.resolve()
-													.then(() => {
-														if (_.isString(scenarioCaseId)) {
-															if (scenario_cases) {
-																let scenario_case = _.find(scenario_cases, {uuid: scenarioCaseId});
-																if (scenario_case && !scenario_case.id) {
-																	return this._pgScenarioCases.create(payloadData)
-																		.then((results) => {
-																			if (results.length) {
-																				scenario_case.id = results[0].id;
-																				return results[0].id;
-																			}
-																		});
-																} else if (scenario_case) {
-																	return scenario_case.id;
-																}
-															}
-														} else {
-															return scenarioCaseId;
-														}
-													})
-													.then((validScenarioCaseId) => {
-														if (validScenarioCaseId) {
-															return this._pgScenarioScenarioCaseRelations.create({
-																data: {
-																	scenario_case_id: validScenarioCaseId,
-																	scenario_id: id
-																}
-															});
-														}
-													})
-											);
-										});
-									}
-									return Promise.all(promises);
-								})
-								.then(() => {
-									return this.get({id: id, unlimited: true})
-										.then((payload) => {
-											let id = payload.data[0].id;
-											delete payload.data[0].id;
-
-											return {
-												uuid: uuid,
-												id: id,
-												data: payload.data[0].data
-											}
-										});
-								});
-						})
-				);
 			});
 
 			return Promise.all(promises)
@@ -112,6 +29,84 @@ class PgScenarios extends PgCollection {
 					return results;
 				});
 		}
+	}
+
+	_createOne(object, payloadData) {
+		let uuid = object.uuid;
+		let data = object.data;
+
+		let scenario_cases = payloadData['scenario_cases'];
+
+		let scenarioCaseIds;
+		if (data.hasOwnProperty('scenario_case_ids')) {
+			scenarioCaseIds = data['scenario_case_ids'];
+			delete data['scenario_case_ids'];
+		}
+
+		let keys = Object.keys(data);
+		let columns = _.map(keys, (key) => {
+			return `"${key}"`;
+		});
+		let values = _.map(keys, (key) => {
+			return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
+		});
+
+		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
+			.then((queryResult) => {
+				if (queryResult.rowCount) {
+					return queryResult.rows[0].id;
+				}
+			})
+			.then((id) => {
+				return Promise.resolve()
+					.then(() => {
+						let promises = [];
+						if (id && scenarioCaseIds) {
+							scenarioCaseIds.forEach((scenarioCaseId) => {
+								promises.push(
+									Promise.resolve()
+										.then(() => {
+											if (_.isString(scenarioCaseId)) {
+												if (scenario_cases) {
+													let scenario_case = _.find(scenario_cases, {uuid: scenarioCaseId});
+													if (scenario_case && !scenario_case.id) {
+														return this._pgScenarioCases.create(payloadData)
+															.then((results) => {
+																if (results.length) {
+																	scenario_case.id = results[0].id;
+																	return results[0].id;
+																}
+															});
+													} else if (scenario_case) {
+														return scenario_case.id;
+													}
+												}
+											} else {
+												return scenarioCaseId;
+											}
+										})
+										.then((validScenarioCaseId) => {
+											if (validScenarioCaseId) {
+												return this._pgScenarioScenarioCaseRelations.create({
+													data: {
+														scenario_case_id: validScenarioCaseId,
+														scenario_id: id
+													}
+												});
+											}
+										})
+								);
+							});
+						}
+						return Promise.all(promises);
+					})
+					.then(() => {
+						return {
+							id: id,
+							uuid: uuid
+						};
+					});
+			});
 	}
 
 	get(filter) {
