@@ -4,7 +4,7 @@ const PgCollection = require('../common/PgCollection');
 
 class PgScenarioScenarioCaseRelations extends PgCollection {
 	constructor(pgPool, pgSchema) {
-		super(pgPool, pgSchema, 'PgScenarios');
+		super(pgPool, pgSchema, 'PgScenarioScenarioCaseRelations');
 	}
 
 	create(objects) {
