@@ -1,8 +1,11 @@
 const PgScenarioCases = require('../metadata/PgScenarioCases');
+const PgScenarios = require('../metadata/PgScenarios');
 
 class PgScenarioCasesController {
 	constructor(app, pgPool, pgSchema) {
 		this._pgScenarioCases = new PgScenarioCases(pgPool, pgSchema);
+
+		this._pgScenarioCases.setPgScenariosClass(new PgScenarios(pgPool, pgSchema));
 
 		app.post(`/rest/metadata/scenario_cases`, this.create.bind(this));
 
