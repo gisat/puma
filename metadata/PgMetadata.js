@@ -6,7 +6,7 @@ const PgScenarioCases = require('./PgScenarioCases');
 
 class PgMetadata extends PgCollection {
 	constructor(pgPool, pgSchema) {
-		super(pgPool, pgSchema);
+		super(pgPool, pgSchema, 'PgMetadata');
 
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 		this._pgScenarioCases = new PgScenarioCases(pgPool, pgSchema);
@@ -16,8 +16,6 @@ class PgMetadata extends PgCollection {
 	}
 
 	async create(data) {
-		let promises = [];
-
 		for(let metadataType of Object.keys(data)) {
 			switch (metadataType) {
 				case 'scenarios':
@@ -32,6 +30,19 @@ class PgMetadata extends PgCollection {
 			}
 		}
 
+		for(let metadataType of Object.keys(data)) {
+			switch (metadataType) {
+				case 'scenarios':
+					await this._pgScenarios.populateData(data);
+					break;
+				case 'scenario_cases':
+					await this._pgScenarioCases.populateData(data);
+					break;
+				default:
+					delete data[metadataType];
+					break;
+			}
+		}
 		return data;
 	}
 
