@@ -15,27 +15,24 @@ class PgMetadata extends PgCollection {
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
 	}
 
-	create(data) {
+	async create(data) {
 		let promises = [];
 
-		Object.keys(data).forEach((metadataType) => {
+		for(let metadataType of Object.keys(data)) {
 			switch (metadataType) {
 				case 'scenarios':
-					promises.push(this._pgScenarios.create(data));
+					await this._pgScenarios.create(data);
 					break;
 				case 'scenario_cases':
-					promises.push(this._pgScenarioCases.create(data));
+					await this._pgScenarioCases.create(data);
 					break;
 				default:
 					delete data[metadataType];
 					break;
 			}
-		});
+		}
 
-		return Promise.all(promises)
-			.then(() => {
-				return data;
-			});
+		return data;
 	}
 
 	get(filter) {
