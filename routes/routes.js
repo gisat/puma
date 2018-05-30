@@ -51,6 +51,7 @@ const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
 const PgSpatialRelationsController = require('./PgSpatialRelationsController');
 const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
+const PgMetadataController = require('./PgMetadataController');
 
 const UploadManagerController = require('./UploadManagerController');
 
@@ -137,6 +138,7 @@ module.exports = function(app) {
 	new PgScenarioCasesController(app, pool, config.postgreSqlSchema);
 	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
+	new PgMetadataController(app, pool, config.postgreSqlSchema);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 
