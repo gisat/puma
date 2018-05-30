@@ -113,6 +113,21 @@ class PgScenarioCases extends PgCollection {
 			});
 	}
 
+	populateData(payloadData) {
+		return this.get({any: {id: _.map(payloadData['scenario_cases'], 'id')}, unlimited: true})
+			.then((currentScenarioCases) => {
+				payloadData.scenario_cases = _.map(payloadData.scenario_cases, scenario => {
+					if (scenario.id) {
+						let currentScenario = _.find(currentScenarioCases.data, {id: scenario.id});
+						if (currentScenario) {
+							scenario.data = currentScenario.data;
+						}
+					}
+					return scenario;
+				});
+			});
+	}
+
 	get(filter) {
 		let payload = {
 			data: null,
