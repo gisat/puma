@@ -74,6 +74,7 @@ class PgSpatialDataSources extends PgCollection {
 												return {
 													uuid: uuid,
 													id: id,
+													type: type,
 													data: payload.data[0].data
 												}
 											});
