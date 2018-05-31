@@ -22,12 +22,12 @@ class PgMetadataController {
 					success: true
 				})
 			})
-			// .catch((error) => {
-			// 	response.status(500).json({
-			// 		message: error.message,
-			// 		success: false
-			// 	})
-			// });
+			.catch((error) => {
+				response.status(500).json({
+					message: error.message,
+					success: false
+				})
+			});
 	}
 
 	get(request, response) {
