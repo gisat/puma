@@ -41,6 +41,18 @@ class PgScenarioCases extends PgCollection {
 
 		let scenarios = payloadData['scenarios'];
 
+		let scopeIds;
+		if (data.hasOwnProperty('scope_ids')) {
+			scopeIds = data['scope_ids'];
+			delete data['scope_ids'];
+		}
+
+		let placeIds;
+		if (data.hasOwnProperty('place_ids')) {
+			placeIds = data['place_ids'];
+			delete data['place_ids'];
+		}
+
 		let scenarioIds;
 		if (data.hasOwnProperty('scenario_ids')) {
 			scenarioIds = data['scenario_ids'];
@@ -52,7 +64,13 @@ class PgScenarioCases extends PgCollection {
 			return `"${key}"`;
 		});
 		let values = _.map(keys, (key) => {
-			return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
+			if (key === "geometry") {
+				return `ST_GeomFromGeoJSON('${JSON.stringify(data[key])}')`;
+			} else if (_.isNumber(data[key])) {
+				return data[key];
+			} else {
+				return `'${data[key]}'`;
+			}
 		});
 
 		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
@@ -103,6 +121,35 @@ class PgScenarioCases extends PgCollection {
 							});
 						}
 						return Promise.all(promises);
+					})
+					.then(() => {
+						return Promise.resolve()
+							.then(() => {
+								if (id && scopeIds) {
+									return this._pgScopeScenarioCaseRelations.create(_.map(scopeIds, (scopeId) => {
+										return {
+											data: {
+												scope_id: scopeId,
+												scenario_case_id: id
+											}
+										}
+									}));
+								}
+							});
+					}).then(() => {
+						return Promise.resolve()
+							.then(() => {
+								if (id && placeIds) {
+									return this._pgPlaceScenarioCaseRelations.create(_.map(placeIds, (placeId) => {
+										return {
+											data: {
+												place_id: placeId,
+												scenario_case_id: id
+											}
+										}
+									}));
+								}
+							});
 					})
 					.then(() => {
 						return {
