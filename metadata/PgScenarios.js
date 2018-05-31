@@ -48,10 +48,13 @@ class PgScenarios extends PgCollection {
 			return `"${key}"`;
 		});
 		let values = _.map(keys, (key) => {
-			return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
+			return data[key];
 		});
 
-		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
+		return this._pool.query(
+			`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {return `$${index+1}`}).join(', ')}) RETURNING id;`,
+			values
+		)
 			.then((queryResult) => {
 				if (queryResult.rowCount) {
 					return queryResult.rows[0].id;
