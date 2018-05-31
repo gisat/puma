@@ -7,25 +7,25 @@ class PgScopeScenarioCaseRelations extends PgCollection {
 		super(pgPool, pgSchema, 'PgScenarios');
 	}
 
-	create(object) {
-		if (!object) throw new Error('empty input');
+	create(objects) {
+		if (!objects) throw new Error('empty input');
 
-		let keys = Object.keys(object);
-		let columns = _.map(keys, (key) => {
-			return `"${key}"`;
-		});
-		let values = _.map(keys, (key) => {
-			return _.isNumber(object[key]) ? object[key] : `'${object[key]}'`;
-		});
+		objects = _.isArray(objects) ? objects : [objects];
 
-		return this._pool.query(`INSERT INTO "${this._schema}"."${PgScopeScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING *;`)
-			.then((queryResult) => {
-				if (queryResult.rowCount) {
-					return queryResult.rows[0];
-				} else {
-					throw new Error('insert failed');
-				}
+		objects.forEach((object) => {
+			let uuid = object.uuid;
+			let data = object.data;
+
+			let keys = Object.keys(data);
+			let columns = _.map(keys, (key) => {
+				return `"${key}"`;
 			});
+			let values = _.map(keys, (key) => {
+				return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
+			});
+
+			return this._pool.query(`INSERT INTO "${this._schema}"."${PgScopeScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`);
+		});
 	}
 
 	getFiltered(filter) {
