@@ -64,15 +64,11 @@ class PgScenarioCases extends PgCollection {
 			return `"${key}"`;
 		});
 		let values = _.map(keys, (key) => {
-			if (key === "geometry") {
-				return `ST_GeomFromGeoJSON('${JSON.stringify(data[key])}')`;
-			} else {
-				return data[key];
-			}
+			return data[key];
 		});
 
 		return this._pool.query(
-			`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {return `$${index+1}`}).join(', ')}) RETURNING id;`,
+			`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index+1})` : `$${index+1}`}).join(', ')}) RETURNING id;`,
 			values
 		)
 			.then((queryResult) => {
