@@ -31,7 +31,7 @@ class PgScenariosController {
 	}
 
 	get(request, response) {
-		this._pgSpatialRelations.get(request.body)
+		this._pgSpatialRelations.get(_.assign({}, request.query, request.body))
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
