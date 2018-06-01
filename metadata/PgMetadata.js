@@ -42,7 +42,7 @@ class PgMetadata extends PgCollection {
 	get(types, filter) {
 		let promises = [];
 
-		types = types.split(',');
+		types = types ? types.split(',') : [];
 
 		_.forEach(this._metadataTypes, (metadataClass, metadataType) => {
 			if(types.includes(metadataType)) {
