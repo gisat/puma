@@ -22,30 +22,18 @@ class PgMetadata extends PgCollection {
 
 	async create(data) {
 		for(let metadataType of Object.keys(data)) {
-			switch (metadataType) {
-				case 'scenarios':
-					await this._pgScenarios.create(data);
-					break;
-				case 'scenario_cases':
-					await this._pgScenarioCases.create(data);
-					break;
-				default:
-					delete data[metadataType];
-					break;
+			if(this._metadataTypes.hasOwnProperty(metadataType))  {
+				await this._metadataTypes[metadataType].create(data);
+			} else {
+				delete data[metadataType];
 			}
 		}
 
 		for(let metadataType of Object.keys(data)) {
-			switch (metadataType) {
-				case 'scenarios':
-					await this._pgScenarios.populateData(data);
-					break;
-				case 'scenario_cases':
-					await this._pgScenarioCases.populateData(data);
-					break;
-				default:
-					delete data[metadataType];
-					break;
+			if(this._metadataTypes.hasOwnProperty(metadataType))  {
+				await this._metadataTypes[metadataType].populateData(data);
+			} else {
+				delete data[metadataType];
 			}
 		}
 		return data;
