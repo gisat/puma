@@ -7,7 +7,9 @@ class PgMetadataController {
 		app.post(`/rest/metadata`, this.create.bind(this));
 
 		app.get(`/rest/metadata`, this.get.bind(this));
+		app.get(`/rest/metadata/:type`, this.get.bind(this));
 		app.post(`/rest/metadata/filtered`, this.get.bind(this));
+		app.post(`/rest/metadata/filtered/:type`, this.get.bind(this));
 
 		app.delete(`/rest/metadata`, this.delete.bind(this));
 
@@ -31,7 +33,7 @@ class PgMetadataController {
 	}
 
 	get(request, response) {
-		this._pgMetadata.get(_.assign({}, request.query, request.body))
+		this._pgMetadata.get(request.params['type'], _.assign({}, request.query, request.body))
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
