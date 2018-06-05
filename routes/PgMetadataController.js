@@ -63,9 +63,11 @@ class PgMetadataController {
 
 	update(request, response) {
 		this._pgMetadata.update(request.body.data)
-			.then((payload) => {
-				payload.success = true;
-				response.status(200).json(payload);
+			.then((data) => {
+				response.status(200).json({
+					data: data,
+					success: true
+				});
 			})
 			.catch((error) => {
 				response.status(500).json({
