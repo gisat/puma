@@ -286,18 +286,20 @@ class PgScenarios extends PgCollection {
 	}
 
 	populateData(payloadData) {
-		return this.get({any: {id: _.map(payloadData['scenarios'], 'id')}, unlimited: true})
-			.then((currentScenarios) => {
-				payloadData.scenarios = _.map(payloadData.scenarios, scenario => {
-					if (scenario.id) {
-						let currentScenario = _.find(currentScenarios.data, {id: scenario.id});
-						if (currentScenario) {
-							scenario.data = currentScenario.data;
+		if(payloadData.hasOwnProperty('scenarios') && payloadData['scenarios'].length) {
+			return this.get({any: {id: _.map(payloadData['scenarios'], 'id')}, unlimited: true})
+				.then((currentScenarios) => {
+					payloadData.scenarios = _.map(payloadData.scenarios, scenario => {
+						if (scenario.id) {
+							let currentScenario = _.find(currentScenarios.data, {id: scenario.id});
+							if (currentScenario) {
+								scenario.data = currentScenario.data;
+							}
 						}
-					}
-					return scenario;
+						return scenario;
+					});
 				});
-			});
+		}
 	}
 
 	setPgScenariosCasesClass(pgScenarioCases) {
