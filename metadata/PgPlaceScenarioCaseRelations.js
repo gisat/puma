@@ -12,6 +12,7 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 
 		objects = _.isArray(objects) ? objects : [objects];
 
+		let promises = [];
 		objects.forEach((object) => {
 			let uuid = object.uuid;
 			let data = object.data;
@@ -24,8 +25,12 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 				return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
 			});
 
-			return this._pool.query(`INSERT INTO "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
+			promises.push(
+				this._pool.query(`INSERT INTO "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
+			);
 		});
+
+		return Promise.all(promises);
 	}
 
 	getFiltered(filter) {
@@ -50,24 +55,28 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 
 		updates.forEach((update) => {
 			let scenario_case_id = update.scenario_case_id;
-			let place_id = update.place_id;
+			let place_ids = update.place_ids;
 
-			if(scenario_case_id && (place_id || place_id === null)) {
+			if(scenario_case_id && (place_ids || place_ids === null)) {
 				promises.push(
 					this._pool.query(`DELETE FROM "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
 						.then(() => {
-							if(place_id) {
-								return this.create(update);
+							if(place_ids) {
+								return this.create(_.map(place_ids, (place_id) => {
+									return {
+										data: {
+											place_id: place_id,
+											scenario_case_id: scenario_case_id
+										}
+									}
+								}));
 							}
 						})
 				)
 			}
 		});
 
-		return Promise.all(promises)
-			.then(() => {
-				return true;
-			})
+		return Promise.all(promises);
 	}
 
 	static tableName() {
