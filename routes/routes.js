@@ -134,6 +134,8 @@ module.exports = function(app) {
 	new ImageMosaicController(app);
 	new SzifCaseCreatorController(app, pool, mongo);
 
+	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
+	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
 	new PgMetadataController(app, pool, config.postgreSqlSchema);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
