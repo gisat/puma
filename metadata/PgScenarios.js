@@ -16,17 +16,19 @@ class PgScenarios extends PgCollection {
 		if (scenarios) {
 			let promises = [];
 			scenarios.forEach((object) => {
-				if (object.id) {
+				if (object.id && !object.data) {
 					promises.push({id: object.id});
-				} else {
+				} else if(!object.id && object.data) {
 					promises.push(this._createOne(object, payloadData));
 				}
 			});
 
 			return Promise.all(promises)
 				.then((results) => {
-					payloadData['scenarios'] = results;
-					return results;
+					if(results && results.length) {
+						payloadData['scenarios'] = results;
+						return results;
+					}
 				});
 		}
 	}
@@ -219,40 +221,41 @@ class PgScenarios extends PgCollection {
 			});
 	}
 
-	update(updates) {
-		updates = _.isArray(updates) ? updates : [updates];
+	update(payloadData) {
+		let scenarios = payloadData['scenarios'];
+		let scenario_cases = payloadData['scenario_cases'];
 
 		let promises = [];
-		updates.forEach((record) => {
-			let id = record.id;
-			let data = record.data;
+		scenarios.forEach((update) => {
+			let id = update.id;
+			let uuid = update.uuid;
+			let data = update.data;
 
-			let keys = Object.keys(data);
-			if (keys.length) {
-				let sets = [];
-				keys.forEach((key) => {
-					sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
-				});
+			if(data) {
+				let keys = Object.keys(data);
+				if (keys.length) {
+					let sets = [];
+					keys.forEach((key) => {
+						sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
+					});
 
-				promises.push(
-					this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
-						.then((result) => {
-							if (result.rowCount) {
-								return this.get({id: id, unlimited: true});
-							}
-						})
-						.then((updatedResults) => {
-							if (updatedResults) {
-								let data = updatedResults.data[0].data;
-								delete data['id'];
-
-								return {
-									id: id,
-									data: data
-								}
-							}
-						})
-				);
+					if(id) {
+						promises.push(
+							this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+								.then((result) => {
+									return {
+										id: id
+									}
+								})
+						);
+					} else if(uuid) {
+						promises.push(
+							this._createOne(update, payloadData)
+						);
+					}
+				}
+			} else {
+				promises.push({id: id, uuid: uuid});
 			}
 		});
 

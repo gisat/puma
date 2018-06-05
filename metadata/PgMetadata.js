@@ -80,8 +80,23 @@ class PgMetadata extends PgCollection {
 			});
 	}
 
-	update(data) {
-		return Promise.resolve();
+	async update(data) {
+		for(let metadataType of Object.keys(data)) {
+			if(this._metadataTypes.hasOwnProperty(metadataType))  {
+				await this._metadataTypes[metadataType].update(data);
+			} else {
+				delete data[metadataType];
+			}
+		}
+
+		for(let metadataType of Object.keys(data)) {
+			if(this._metadataTypes.hasOwnProperty(metadataType))  {
+				await this._metadataTypes[metadataType].populateData(data);
+			} else {
+				delete data[metadataType];
+			}
+		}
+		return data;
 	}
 
 	delete(data) {
