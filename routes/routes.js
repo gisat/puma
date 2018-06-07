@@ -55,6 +55,8 @@ const PgMetadataController = require('./PgMetadataController');
 
 const UploadManagerController = require('./UploadManagerController');
 
+const PucsMatlabProcessorController = require('../integration/PucsMatlabProcessorController');
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -139,6 +141,8 @@ module.exports = function(app) {
 	new PgMetadataController(app, pool, config.postgreSqlSchema);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
+
+	new PucsMatlabProcessorController(app, pool, config.postgreSqlSchema, mongo);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
