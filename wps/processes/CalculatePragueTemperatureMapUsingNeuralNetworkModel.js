@@ -42,7 +42,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			}
 		};
 
-		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/Dokumenty/TempStorage/PUCS/matlab_ua_prague`,  `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
+		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/matlab_ua_prague`,  `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
 	}
 
 	execute(parsedRequest) {
