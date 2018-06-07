@@ -17,7 +17,7 @@ class PgScenarios extends PgCollection {
 			let promises = [];
 			scenarios.forEach((object) => {
 				if (object.id && !object.data) {
-					promises.push({id: object.id});
+					promises.push({id: object.id, uuid: object.uuid});
 				} else if(!object.id && object.data) {
 					promises.push(this._createOne(object, payloadData));
 				}
