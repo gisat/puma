@@ -278,9 +278,11 @@ class PgScenarioCases extends PgCollection {
 				let promises = [];
 				scenarioCases.forEach((scenarioCase) => {
 					promises.push(
-						this._pgScenarios.get({scenario_case_id: scenarioCase.id, unlimited: true})
+						this._pgScenarioScenarioCaseRelations.get({scenario_case_id: scenarioCase.id, unlimited: true})
 							.then((payload) => {
-								scenarioCase.scenario_ids = _.map(payload.data, "id");
+								scenarioCase.scenario_ids = _.map(payload.data, relation => {
+									return relation.data.scenario_id;
+								})
 							})
 					)
 				});
@@ -378,25 +380,31 @@ class PgScenarioCases extends PgCollection {
 						}
 					})
 					.then(() => {
-						if (id && scenarioIds && scenarioIds.length) {
+						if (id && (scenarioIds || scenarioIds === null)) {
 							return this._pgScenarios.update(payloadData)
 								.then((results) => {
-									payloadData['scenarios'] = results.data;
-									return _.map(scenarioIds, (scenarioId) => {
-										if (_.isString(scenarioId)) {
-											let scenario = _.find(payloadData['scenarios'], {uuid: scenarioId});
-											if (scenario) {
-												return scenario.id;
+									if(scenarios && results.data) {
+										payloadData['scenarios'] = results.data;
+									}
+									if(scenarioIds) {
+										return _.map(scenarioIds, (scenarioId) => {
+											if (_.isString(scenarioId)) {
+												let scenario = _.find(payloadData['scenarios'], {uuid: scenarioId});
+												if (scenario) {
+													return scenario.id;
+												}
+											} else if (_.isNumber(scenarioId)) {
+												return scenarioId;
 											}
-										} else if (_.isNumber(scenarioId)) {
-											return scenarioId;
-										}
-									});
+										});
+									} else {
+										return scenarioIds;
+									}
 								});
 						}
 					})
 					.then((validScenarioIds) => {
-						if (id && validScenarioIds && validScenarioIds.length) {
+						if (id) {
 							return this._pgScenarioScenarioCaseRelations.update({
 								scenario_case_id: id,
 								scenario_ids: validScenarioIds

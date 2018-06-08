@@ -166,11 +166,11 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 			let scenario_case_id = update.scenario_case_id;
 			let scenario_ids = update.scenario_ids;
 
-			if(scenario_case_id && scenario_ids) {
+			if(scenario_case_id && (scenario_ids || scenario_ids === null)) {
 				promises.push(
 					this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
 						.then(() => {
-							if(scenario_ids.length) {
+							if(scenario_ids && scenario_ids.length) {
 								return this.create(_.map(scenario_ids, (scenario_id) => {
 									return {
 										data: {
