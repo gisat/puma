@@ -18,14 +18,14 @@ class PgScenarios extends PgCollection {
 			scenarios.forEach((object) => {
 				if (object.id && !object.data) {
 					promises.push({id: object.id, uuid: object.uuid});
-				} else if(!object.id && object.data) {
+				} else if (!object.id && object.data) {
 					promises.push(this._createOne(object, payloadData));
 				}
 			});
 
 			return Promise.all(promises)
 				.then((results) => {
-					if(results && results.length) {
+					if (results && results.length) {
 						payloadData['scenarios'] = results;
 						return results;
 					}
@@ -54,7 +54,9 @@ class PgScenarios extends PgCollection {
 		});
 
 		return this._pool.query(
-			`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {return `$${index+1}`}).join(', ')}) RETURNING id;`,
+			`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+				return `$${index + 1}`
+			}).join(', ')}) RETURNING id;`,
 			values
 		)
 			.then((queryResult) => {
@@ -226,38 +228,40 @@ class PgScenarios extends PgCollection {
 		let scenario_cases = payloadData['scenario_cases'];
 
 		let promises = [];
-		scenarios.forEach((update) => {
-			let id = update.id;
-			let uuid = update.uuid;
-			let data = update.data;
+		if (scenarios) {
+			scenarios.forEach((update) => {
+				let id = update.id;
+				let uuid = update.uuid;
+				let data = update.data;
 
-			if(data) {
-				let keys = Object.keys(data);
-				if (keys.length) {
-					let sets = [];
-					keys.forEach((key) => {
-						sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
-					});
+				if (data) {
+					let keys = Object.keys(data);
+					if (keys.length) {
+						let sets = [];
+						keys.forEach((key) => {
+							sets.push(`"${key}" = ${_.isNumber(data[key]) ? data[key] : `'${data[key]}'`}`);
+						});
 
-					if(id) {
-						promises.push(
-							this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
-								.then((result) => {
-									return {
-										id: id
-									}
-								})
-						);
-					} else if(uuid) {
-						promises.push(
-							this._createOne(update, payloadData)
-						);
+						if (id) {
+							promises.push(
+								this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+									.then((result) => {
+										return {
+											id: id
+										}
+									})
+							);
+						} else if (uuid) {
+							promises.push(
+								this._createOne(update, payloadData)
+							);
+						}
 					}
+				} else {
+					promises.push({id: id, uuid: uuid});
 				}
-			} else {
-				promises.push({id: id, uuid: uuid});
-			}
-		});
+			});
+		}
 
 		return Promise.all(promises)
 			.then((results) => {
@@ -286,7 +290,7 @@ class PgScenarios extends PgCollection {
 	}
 
 	populateData(payloadData) {
-		if(payloadData.hasOwnProperty('scenarios') && payloadData['scenarios'].length) {
+		if (payloadData.hasOwnProperty('scenarios') && payloadData['scenarios'].length) {
 			return this.get({any: {id: _.map(payloadData['scenarios'], 'id')}, unlimited: true})
 				.then((currentScenarios) => {
 					payloadData.scenarios = _.map(payloadData.scenarios, scenario => {
