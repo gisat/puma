@@ -24,7 +24,11 @@ class PucsMatlabProcessor {
 	process(inputPath, pantherDataStoragePath, owner) {
 		return this._getVectorFiles(inputPath)
 			.then((inputVectors) => {
-				return this._rasterizeVectors(inputPath, inputVectors);
+				if(inputVectors && inputVectors.length) {
+					return this._rasterizeVectors(inputPath, inputVectors);
+				} else {
+					throw new Error('Unable to find any vector files.');
+				}
 			})
 			.then((rasterizedVectors) => {
 				return this._processRasterizedVectors(inputPath, rasterizedVectors, pantherDataStoragePath);
@@ -491,6 +495,7 @@ class PucsMatlabProcessor {
 							} else if (stderr) {
 								reject(stderr);
 							} else {
+								console.log(`#### stdout`, stdout);
 								resolve(`${pathToInput}/${vectorName}.tif`);
 							}
 						});
