@@ -29,9 +29,21 @@ class PucsMatlabProcessorController {
 						status: "done",
 						result: result[0].data
 					};
+				}).catch((error) => {
+					processes[uploadKey] = {
+						status: "error",
+						message: error.message
+					}
 				});
 			}
-			response.status(200).json(processes[uploadKey]);
+			if(processes[uploadKey]['status'] === "error") {
+				response.status(500).json({
+					message: processes[uploadKey]['message'],
+					success: false
+				});
+			} else {
+				response.status(200).json(processes[uploadKey]);
+			}
 		} else {
 			response.status(500).json({
 				message: "unknown upload key",
