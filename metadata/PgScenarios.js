@@ -271,21 +271,38 @@ class PgScenarios extends PgCollection {
 			})
 	}
 
-	delete(id) {
-		return new Promise((resolve, reject) => {
-			id = Number(id);
-			if (!_.isNaN(id)) {
-				this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarios.tableName()}" WHERE id = ${Number(id)};`)
+	async delete(data) {
+		let scenarios = data['scenarios'];
+		if(scenarios) {
+			let promises = [];
+			for(let scenario of scenarios) {
+				await this._deleteOne(scenario.id)
 					.then((result) => {
-						if (result.rowCount) {
-							resolve();
-						} else {
-							reject(new Error(`Unable to delete record with ID ${id}`));
+						if(result.hasOwnProperty('deleted')) {
+							scenario.deleted = result.deleted;
 						}
-					});
-			} else {
-				reject(new Error(`Given ID has not numeric value!`));
+						if(result.hasOwnProperty('message')) {
+							scenario.message = result.message;
+						}
+					})
 			}
+		}
+	}
+
+	_deleteOne(scenarioId) {
+		let status = {
+			deleted: false
+		};
+		return this._pool.query(
+			`DELETE FROM "${this._schema}"."${PgScenarios.tableName()}" WHERE id = ${scenarioId}`
+		).then((result) => {
+			if(result.rowCount) {
+				status.deleted = true;
+			}
+		}).then(() => {
+			return this._pgScenarioScenarioCaseRelations.delete({scenario_id: scenarioId});
+		}).then(() => {
+			return status;
 		});
 	}
 
