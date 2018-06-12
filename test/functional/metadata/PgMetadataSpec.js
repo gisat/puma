@@ -110,6 +110,68 @@ describe('PgMetadataCRUD', () => {
 		});
 	});
 
+	describe('Create PgScenario with relations on some PgScenarioCases and then delete it', () => {
+		it('Execute...', (done) => {
+			let createData = {
+				scenarios: [
+					{
+						uuid: '3sf1s3f1sd3f1s3f',
+						data: {
+							name: "Test scenario",
+							scenario_case_ids: [1, 2, 3]
+						}
+					}
+				]
+			};
+
+			let deleteData = {
+				scenarios: [
+					{
+						id: 1
+					}
+				]
+			};
+
+			pgMetadata.create(createData)
+				.then((result) => {
+					expect(result).to.deep.equal(
+						{
+							scenarios: [{
+								id: 1,
+								uuid: "3sf1s3f1sd3f1s3f",
+								data: {
+									name: "Test scenario",
+									description: null,
+									scenario_case_ids: [1, 2, 3]
+								}
+							}]
+						}
+					)
+				})
+				.then(() => {
+					return pgMetadata.delete(deleteData);
+				})
+				.then((result) => {
+					expect(result).to.deep.equal(
+						{
+							scenarios: [
+								{
+									id: 1,
+									deleted: true
+								}
+							]
+						}
+					)
+				})
+				.then(() => {
+					done();
+				})
+				.catch((error) => {
+					done(error);
+				})
+		});
+	});
+
 	describe('Create PgScenarioCase with some scenarioIds and then update them', () => {
 		it('Test it...', done => {
 			let createData = {
