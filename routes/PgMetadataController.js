@@ -47,9 +47,10 @@ class PgMetadataController {
 	}
 
 	delete(request, response) {
-		this._pgMetadata.delete(request.params.id || request.body.id)
-			.then(() => {
+		this._pgMetadata.delete(request.body.data)
+			.then((data) => {
 				response.status(200).json({
+					data: data,
 					success: true
 				});
 			})
