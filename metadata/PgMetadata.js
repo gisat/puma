@@ -99,8 +99,16 @@ class PgMetadata extends PgCollection {
 		return data;
 	}
 
-	delete(data) {
-		return Promise.resolve();
+	async delete(data) {
+		for(let metadataType of Object.keys(data)) {
+			if(this._metadataTypes.hasOwnProperty(metadataType))  {
+				await this._metadataTypes[metadataType].delete(data);
+			} else {
+				delete data[metadataType];
+			}
+		}
+
+		return data;
 	}
 }
 

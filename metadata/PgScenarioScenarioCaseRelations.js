@@ -191,6 +191,13 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 			})
 	}
 
+	delete(filter) {
+		let scenarioCaseId = filter.scenario_case_id;
+		if(scenarioCaseId) {
+			return this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_case_id = ${scenarioCaseId}`);
+		}
+	}
+
 	static tableName() {
 		return `scenario_scenario_case_relation`;
 	}
