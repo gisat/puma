@@ -193,9 +193,20 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 
 	delete(filter) {
 		let scenarioCaseId = filter.scenario_case_id;
+		let scenarioId = filter.scenario_id;
+
+		let promises = [];
 		if(scenarioCaseId) {
-			return this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_case_id = ${scenarioCaseId}`);
+			promises.push(
+				this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_case_id = ${scenarioCaseId}`)
+			);
 		}
+		if(scenarioId) {
+			promises.push(
+				this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_id = ${scenarioId}`)
+			);
+		}
+		return Promise.all(promises);
 	}
 
 	static tableName() {
