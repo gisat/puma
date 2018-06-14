@@ -426,21 +426,38 @@ class PgScenarioCases extends PgCollection {
 			});
 	}
 
-	delete(id) {
-		return new Promise((resolve, reject) => {
-			id = Number(id);
-			if (!_.isNaN(id)) {
-				this._pool.query(`DELETE FROM "${this._schema}"."${PgScenarioCases.tableName()}" WHERE id = ${Number(id)};`)
+	async delete(data) {
+		let scenarioCases = data['scenario_cases'];
+		if(scenarioCases) {
+			let promises = [];
+			for(let scenarioCase of scenarioCases) {
+				await this._deleteOne(scenarioCase.id)
 					.then((result) => {
-						if (result.rowCount) {
-							resolve();
-						} else {
-							reject(new Error(`Unable to delete record with ID ${id}`));
+						if(result.hasOwnProperty('deleted')) {
+							scenarioCase.deleted = result.deleted;
 						}
-					});
-			} else {
-				reject(new Error(`Given ID has not numeric value!`));
+						if(result.hasOwnProperty('message')) {
+							scenarioCase.message = result.message;
+						}
+					})
 			}
+		}
+	}
+
+	_deleteOne(scenarioCaseId) {
+		let status = {
+			deleted: false
+		};
+		return this._pool.query(
+			`DELETE FROM "${this._schema}"."${PgScenarioCases.tableName()}" WHERE id = ${scenarioCaseId}`
+		).then((result) => {
+			if(result.rowCount) {
+				status.deleted = true;
+			}
+		}).then(() => {
+			return this._pgScenarioScenarioCaseRelations.delete({scenario_case_id: scenarioCaseId});
+		}).then(() => {
+			return status;
 		});
 	}
 
