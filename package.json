@@ -25,7 +25,7 @@
     "express": "3.21.2",
     "express-session": "1.15.6",
     "express-xml-bodyparser": "0.3.0",
-    "fs-extra": "5.0.0",
+    "fs-extra": "6.0.1",
     "gdal": "0.9.6",
     "geojson": "0.4.1",
     "geojson-extent": "0.3.2",
