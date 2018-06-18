@@ -1,5 +1,5 @@
 const superagent = require('superagent');
-const uuid = require('uuid');
+const uuid = require('uuid/v4');
 const fs = require('fs');
 const fse = require('fs-extra');
 const _ = require('lodash');
@@ -10,49 +10,77 @@ const config = require('../config');
 const GeoServerImporter = require('../layers/GeoServerImporter');
 
 class DataLayerDuplicator {
-	constructor() {
+	constructor(processes) {
 		this._geoserverPath = `http://${config.geoserverHost}/${config.geoserverPath}`;
 		this._geoserverUsername = config.geoserverUsername;
 		this._geoserverPassword = config.geoserverPassword;
 		this._geoserverWorkspace = `geonode`;
 		this._geoserverDatastore = `datastore`;
 		this._temporaryStoragePath = config.pantherTemporaryStoragePath;
+		this._processes = processes;
+		this._uuid = () => {
+			return uuid();
+		}
 	}
 
 	duplicateGeoserverLayer(layerName) {
-		return this.ensureFolder(this._temporaryStoragePath)
+		let uuid = this._uuid();
+		this._processes[uuid] = {
+			uuid: uuid,
+			inputLayer: layerName,
+			outputLayer: null,
+			progress: 0,
+			status: "running"
+		};
+
+		this.ensureFolder(this._temporaryStoragePath)
 			.then(() => {
+				this._processes[uuid].progress = 10;
 				return this.getGeoserverShapeLayerDownloadUrlByLayerName(layerName)
 			})
 			.then((url) => {
+				this._processes[uuid].progress = 20;
 				return this.downloadFileFromRemote(url)
 			})
 			.then((download) => {
+				this._processes[uuid].progress = 30;
 				return this.renameDownloadByContentType(download);
 			})
 			.then((renamed) => {
+				this._processes[uuid].progress = 40;
 				if (renamed.contentType === 'application/zip') {
 					return this.unzipPackage(renamed);
 				}
 			})
 			.then((directory) => {
+				this._processes[uuid].progress = 50;
 				return this.removeFile(directory.input)
 					.then(() => {
 						return directory;
 					})
 			})
 			.then((directory) => {
+				this._processes[uuid].progress = 60;
 				return this.renameFilesInDirectory(directory.path)
 					.then(() => {
 						return directory;
 					})
 			})
 			.then((directory) => {
+				this._processes[uuid].progress = 75;
 				return this.getImportMetadata(directory)
 			})
 			.then((metadata) => {
+				this._processes[uuid].progress = 90;
 				return this.importToGeoserver(metadata)
+			})
+			.then((resultLayerName) => {
+				this._processes[uuid].progress = 100;
+				this._processes[uuid].outputLayer = `${this._geoserverWorkspace}:${resultLayerName}`;
+				this._processes[uuid].status = "done";
 			});
+
+		return Promise.resolve(this._processes[uuid]);
 	}
 
 	getImportMetadata(directory) {
