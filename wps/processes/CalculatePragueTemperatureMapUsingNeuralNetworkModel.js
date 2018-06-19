@@ -6,6 +6,7 @@ const childProcess = require('child_process');
 
 const WpsBaseProcess = require('../WpsBaseProcess');
 const PucsMatlabProcessor = require('../../integration/PucsMatlabProcessor');
+const DataLayerDuplicator = require('../../layers/DataLayerDuplicator');
 
 class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProcess {
 	constructor(pgPool, runningProcesses, pantherTemporaryStoragePath, pantherDataStoragePath, pgSchema, mongo) {
@@ -42,7 +43,8 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			}
 		};
 
-		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/matlab_ua_prague`,  `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
+		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/matlab_ua_prague`, `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
+		this._dataLayerDuplicator = new DataLayerDuplicator(runningProcesses);
 	}
 
 	execute(parsedRequest) {
@@ -77,11 +79,64 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 		return Promise.resolve()
 			.then(() => {
 				this._runningProcesses[processUuid].progress++;
-				if(this._runningProcesses[processUuid].input.type === `upload`) {
+				if (this._runningProcesses[processUuid].input.type === `uploadKey`) {
 					return this._prepareLocalUploadForMatlabProcessor(processUuid);
+				} else if (this._runningProcesses[processUuid].input.type === `remotePath`) {
+					return this._prepareRemotePackageForMatlabProcessor(processUuid);
+				} else if (this._runningProcesses[processUuid].input.type === `localLayer`) {
+					return this._prepareLocalGeoserverLayerForMatlabProcessor(processUuid);
 				} else {
 					throw new Error(`Input type ${this._runningProcesses[processUuid].input.type} was not implemented yet.`);
 				}
+			});
+	}
+
+	_prepareLocalGeoserverLayerForMatlabProcessor(processUuid) {
+		let localLayerName = this._runningProcesses[processUuid].input.data;
+		return this._dataLayerDuplicator.getGeoserverShapeLayerDownloadUrlByLayerName(localLayerName)
+			.then((remotePath) => {
+				return this._dataLayerDuplicator.downloadFileFromRemote(remotePath);
+			})
+			.then((download) => {
+				return this._dataLayerDuplicator.renameDownloadByContentType(download);
+			})
+			.then((result) => {
+				return this._dataLayerDuplicator.unzipPackage(result);
+			})
+			.then((result) => {
+				return this._dataLayerDuplicator.removeFile(result.input)
+					.then(() => {
+						return result;
+					})
+			})
+			.then((result) => {
+				return this._dataLayerDuplicator.renameFilesInDirectory(result.path)
+					.then(() => {
+						return result.path;
+					})
+			});
+	}
+
+	_prepareRemotePackageForMatlabProcessor(processUuid) {
+		let remotePath = this._runningProcesses[processUuid].input.data;
+		return this._dataLayerDuplicator.downloadFileFromRemote(remotePath)
+			.then((download) => {
+				return this._dataLayerDuplicator.renameDownloadByContentType(download);
+			})
+			.then((result) => {
+				return this._dataLayerDuplicator.unzipPackage(result);
+			})
+			.then((result) => {
+				return this._dataLayerDuplicator.removeFile(result.input)
+					.then(() => {
+						return result;
+					})
+			})
+			.then((result) => {
+				return this._dataLayerDuplicator.renameFilesInDirectory(result.path)
+					.then(() => {
+						return result.path;
+					})
 			});
 	}
 
@@ -98,9 +153,9 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			})
 			.then((localUploadMetadata) => {
 				this._runningProcesses[processUuid].progress++;
-				if(localUploadMetadata.name.toLowerCase().endsWith('.zip')) {
+				if (localUploadMetadata.name.toLowerCase().endsWith('.zip')) {
 					return this._extractZippedArchiveToDirectory(localUploadMetadata.path, processWorkDirectoryPath);
-				} else if(localUploadMetadata.name.toLowerCase().endsWith('.shp')) {
+				} else if (localUploadMetadata.name.toLowerCase().endsWith('.shp')) {
 					return fse.copy(localUploadMetadata.path, `${processWorkDirectoryPath}/${localUploadMetadata.name}`);
 				} else {
 					throw new Error('unsupported file type');
@@ -143,7 +198,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 
 				return this._pgPool.query(query.join(` `))
 					.then((queryResult) => {
-						if(queryResult.rows) {
+						if (queryResult.rows) {
 							return queryResult.rows[0];
 						} else {
 							throw new Error(`local upload with uuid ${localUploadUuid} was not found.`);
@@ -156,11 +211,11 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 		return Promise.resolve()
 			.then(() => {
 				let input = _.find(parsedRequest.dataInputs, {identifier: 'inputFile'});
-				if(input) {
+				if (input) {
 					let inputParts = input.data.split(':');
 					return {
-						data: inputParts[1],
-						type: inputParts[0].toLowerCase()
+						type: inputParts.shift(),
+						data: inputParts.join(':')
 					}
 				} else {
 					throw new Error('unable to find data input "inputFile"');
