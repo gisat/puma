@@ -192,14 +192,14 @@ class DataLayerDuplicator {
 			});
 	}
 
-	downloadFileFromRemote(remtotePath) {
+	downloadFileFromRemote(remotePath) {
 		return new Promise((resolve, reject) => {
 			let temporaryFilename = `${uuid()}`;
 			let temporaryFilePath = `${this._temporaryStoragePath}/${temporaryFilename}.tmp`;
 			let contentType;
 
 			superagent
-				.get(remtotePath)
+				.get(remotePath)
 				.on('response', (response) => {
 					if (response.status === 200) {
 						contentType = response.headers['content-type'];
