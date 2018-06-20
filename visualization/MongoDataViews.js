@@ -21,8 +21,9 @@ class MongoDataViews {
 
     defaultForScope(scope, theme, location, period) {
         let collection = this._connection.collection(MongoDataView.collectionName());
+        let id = conn.getNextId();
         return collection.insert({
-            "_id": conn.getNextId(),
+            "_id": id,
             "conf" : {
                 "years" : [
                     period
@@ -38,6 +39,8 @@ class MongoDataViews {
                     location
                 ]
             }
+        }).then(() => {
+            return id;
         });
     }
 }
