@@ -243,7 +243,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 					});
 				});
 			}, function(err, resls) {
-                const url = 'http://' + config.geoserverHost + ":" + config.geoserverPort + config.geoserverPath + '/rest/';
+                const url = 'http://' + config.geoserverHost + ":" + config.geoserverPort + config.geoserverPath + '/rest/reload';
                 superagent.post(url)
                     .auth(config.geoserverUsername, config.geoserverPassword)
                     .set('Accept', '*/*')
