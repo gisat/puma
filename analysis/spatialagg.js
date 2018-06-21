@@ -245,7 +245,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 			}, function(err, resls) {
                 const url = 'http://' + config.geoserverHost + ":" + config.geoserverPort + config.geoserverPath + '/rest/';
                 superagent.post(url)
-                    .auth(self._userName, self._password)
+                    .auth(config.geoserverUsername, config.geoserverPassword)
                     .set('Accept', '*/*')
                     .set('Content-Type', 'application/json; charset=utf-8')
                     .send()
