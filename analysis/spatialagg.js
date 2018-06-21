@@ -276,6 +276,7 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
                             return callback(null);
                         });
                     }).catch(reloadError => {
+                    	logger.error("spatialagg#perform Error: ", reloadError);
 						client.end();
 						if (performedAnalysisObj.ghost) {
 							//return callback(null);
