@@ -20,20 +20,20 @@ class PgCollection {
 	 * It should create empty object with provided id.
 	 * @param object {Object} Collection of object properties to be created.
 	 */
-    create(object) {}
+    create(object, user) {}
 
     /**
      * It should update the object properties.
      * @param object [{Object}] List of collection of object properties to be updated.
      */
-    update(objects) {}
+    update(object, user) {}
 
     /**
      * It should delete project with given id and all its dependencies. At this layer we expect the user to have the
      * privileges to do so.
-     * @param id {Number} Id of the object to be deleted.
+     * @param object [{Object}] List of collection of object properties to be deleted.
      */
-    delete(id) {}
+    delete(object, user) {}
 }
 
 module.exports = PgCollection;
