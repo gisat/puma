@@ -473,6 +473,8 @@ class PgScenarioCases extends PgCollection {
 		}).then(() => {
 			return this._pgScenarioScenarioCaseRelations.delete({scenario_case_id: scenarioCaseId});
 		}).then(() => {
+			return this._pgPermissions.removeAllForResource(PgScenarioCases.tableName(), scenarioCaseId);
+		}).then(() => {
 			return status;
 		});
 	}
