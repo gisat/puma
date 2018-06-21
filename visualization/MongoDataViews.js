@@ -24,7 +24,9 @@ class MongoDataViews {
         let id = conn.getNextId();
         return collection.insert({
             "_id": id,
+            "name": "",
             "conf" : {
+                "multipleMaps": false,
                 "years" : [
                     period
                 ],
@@ -37,7 +39,16 @@ class MongoDataViews {
                 "language" : "en",
                 "locations" : [
                     location
-                ]
+                ],
+                "selMap": {},
+                "choroplethCfg": [],
+                "pagingUseSelected": false,
+                "filterMap": {},
+                "filterActive": false,
+                "layers": [],
+                "page": 1,
+                "selection": [],
+                "cfgs": []
             }
         }).then(() => {
             return id;
