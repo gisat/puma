@@ -2,15 +2,18 @@ const _ = require('lodash');
 
 const PgCollection = require('../common/PgCollection');
 const PgScenarioScenarioCaseRelations = require('./PgScenarioScenarioCaseRelations');
+const PgPermissions = require('../security/PgPermissions');
+const Permission = require('../security/Permission');
 
 class PgScenarios extends PgCollection {
 	constructor(pgPool, pgSchema) {
 		super(pgPool, pgSchema, 'PgScenarios');
 
 		this._pgScenarioScenarioCaseRelations = new PgScenarioScenarioCaseRelations(pgPool, pgSchema);
+		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
 	}
 
-	create(payloadData) {
+	create(payloadData, user) {
 		let scenarios = payloadData['scenarios'];
 
 		if (scenarios) {
@@ -19,7 +22,7 @@ class PgScenarios extends PgCollection {
 				if (object.id && !object.data) {
 					promises.push({id: object.id, uuid: object.uuid});
 				} else if (!object.id && object.data) {
-					promises.push(this._createOne(object, payloadData));
+					promises.push(this._createOne(object, payloadData, user));
 				}
 			});
 
@@ -33,7 +36,7 @@ class PgScenarios extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData) {
+	_createOne(object, payloadData, user) {
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -53,16 +56,30 @@ class PgScenarios extends PgCollection {
 			return data[key];
 		});
 
-		return this._pool.query(
-			`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
-				return `$${index + 1}`
-			}).join(', ')}) RETURNING id;`,
-			values
-		)
+		return this._pool
+			.query(
+				`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+					return `$${index + 1}`
+				}).join(', ')}) RETURNING id;`,
+				values
+			)
 			.then((queryResult) => {
 				if (queryResult.rowCount) {
 					return queryResult.rows[0].id;
 				}
+			})
+			.then((id) => {
+				let promises = [];
+
+				promises.push(this._pgPermissions.add(user.id, PgScenarios.tableName(), id, Permission.CREATE));
+				promises.push(this._pgPermissions.add(user.id, PgScenarios.tableName(), id, Permission.READ));
+				promises.push(this._pgPermissions.add(user.id, PgScenarios.tableName(), id, Permission.UPDATE));
+				promises.push(this._pgPermissions.add(user.id, PgScenarios.tableName(), id, Permission.DELETE));
+
+				return Promise.all(promises)
+					.then(() => {
+						return id;
+					})
 			})
 			.then((id) => {
 				return Promise.resolve()
@@ -114,6 +131,10 @@ class PgScenarios extends PgCollection {
 						};
 					});
 			});
+	}
+
+	setFullRightsForOwner(resourceId, ownerId) {
+
 	}
 
 	get(filter) {
@@ -273,15 +294,15 @@ class PgScenarios extends PgCollection {
 
 	async delete(data) {
 		let scenarios = data['scenarios'];
-		if(scenarios) {
+		if (scenarios) {
 			let promises = [];
-			for(let scenario of scenarios) {
+			for (let scenario of scenarios) {
 				await this._deleteOne(scenario.id)
 					.then((result) => {
-						if(result.hasOwnProperty('deleted')) {
+						if (result.hasOwnProperty('deleted')) {
 							scenario.deleted = result.deleted;
 						}
-						if(result.hasOwnProperty('message')) {
+						if (result.hasOwnProperty('message')) {
 							scenario.message = result.message;
 						}
 					})
@@ -296,7 +317,7 @@ class PgScenarios extends PgCollection {
 		return this._pool.query(
 			`DELETE FROM "${this._schema}"."${PgScenarios.tableName()}" WHERE id = ${scenarioId}`
 		).then((result) => {
-			if(result.rowCount) {
+			if (result.rowCount) {
 				status.deleted = true;
 			}
 		}).then(() => {

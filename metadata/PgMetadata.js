@@ -39,7 +39,7 @@ class PgMetadata extends PgCollection {
 
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
-				await this._metadataTypes[metadataType].store.create(data);
+				await this._metadataTypes[metadataType].store.create(data, user);
 			} else {
 				delete data[metadataType];
 			}
