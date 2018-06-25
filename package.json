@@ -13,6 +13,7 @@
   "homepage": "https://puma.worldbank.org/",
   "dependencies": {
     "@turf/turf": "5.1.6",
+    "appoptics-apm": "^5.0.1",
     "async": "1.5.2",
     "bcrypt": "1.0.3",
     "blueimp-md5": "2.10.0",
