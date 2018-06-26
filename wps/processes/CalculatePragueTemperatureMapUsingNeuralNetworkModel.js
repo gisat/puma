@@ -9,11 +9,11 @@ const PucsMatlabProcessor = require('../../integration/PucsMatlabProcessor');
 const DataLayerDuplicator = require('../../layers/DataLayerDuplicator');
 
 class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProcess {
-	constructor(pgPool, runningProcesses, pantherTemporaryStoragePath, pantherDataStoragePath, pgSchema, mongo) {
+	constructor(pgPool, pantherTemporaryStoragePath, pantherDataStoragePath, pgSchema, mongo) {
 		super();
 
 		this._pgPool = pgPool;
-		this._runningProcesses = runningProcesses;
+		this._runningProcesses = {};
 		this._pantherTemporaryStoragePath = pantherTemporaryStoragePath;
 		this._pantherDataStoragePath = pantherDataStoragePath;
 		this._pgSchema = pgSchema;
@@ -44,7 +44,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 		};
 
 		this._pucsMatlabProcessor = new PucsMatlabProcessor(`/home/mbabic/matlab_ua_prague`, `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
-		this._dataLayerDuplicator = new DataLayerDuplicator(runningProcesses);
+		this._dataLayerDuplicator = new DataLayerDuplicator();
 	}
 
 	execute(parsedRequest) {
