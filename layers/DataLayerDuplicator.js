@@ -17,7 +17,7 @@ class DataLayerDuplicator {
 		this._geoserverWorkspace = `geonode`;
 		this._geoserverDatastore = `datastore`;
 		this._temporaryStoragePath = config.pantherTemporaryStoragePath;
-		this._processes = processes;
+		this._processes = processes || {};
 	}
 
 	duplicateGeoserverLayer(layerName) {
