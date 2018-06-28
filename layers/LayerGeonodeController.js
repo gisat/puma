@@ -41,11 +41,10 @@ class LayerGeonodeController {
 		logger.info('LayerGeonodeController#readAl Read all layers By User: ', request.session.userId);
 
 		let currentUser = request.session.user;
-		let layers = [];
 		// Load actually accessible from the GeoNode
 		this.pgLayers.all().then(pgLayers => {
 			return pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
-		}).then(() => {
+		}).then(layers => {
 			response.json({data: layers});
 		}).catch(err => {
 			logger.error('LayerGeonodeController#readAll Error: ', err);
