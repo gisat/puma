@@ -23,14 +23,18 @@ class PgLayers {
         // It returns names of all views representing layers in the PostgreSql.
         return this.pgPool.query(`SELECT * FROM ${this.schema}.layers`).then(result => {
         	// From the mongo retrieve whether they are referenced. They are referenced when the are used in a layerref.
-			return Promise.all(result.rows.map(layer => {
-				return new FilteredMongoLayerReferences({layer: layer.path}, this._mongo).json().then(layerReferences => {
-					return _.extend(layer, {
-						referenced: layerReferences.length > 0,
-						source: 'internal'
-					});
-				});
-			}));
+			// Load LayerRefs with path in the layer path.
+			const paths = result.rows.map(layer => layer.path);
+			new FilteredMongoLayerReferences({layer: {$in: paths}}, this._mongo).json().then(layerReferences => {
+				const usedPaths = layerReferences.map(layerReference => layerReference.layer);
+
+				return result.rows.map(layer => {
+                    return _.extend(layer, {
+						referenced: usedPaths.indexOf(layer.path) !== -1,
+                        source: 'internal'
+                    })
+				})
+			});
         });
     }
 
