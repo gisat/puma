@@ -1,0 +1,9 @@
+GET http://localhost:3000/rest/symbology
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json; charset=utf-8
+
+<> 2018-06-28T114005.200.json
+
+###
+

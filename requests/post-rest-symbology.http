@@ -1,0 +1,9 @@
+POST http://localhost:3000/rest/symbology
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json; charset=utf-8
+
+{"data":{"active":false,"source":"definition","definition":{"type":"polygon","filterType":"no"}}}
+
+###
+

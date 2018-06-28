@@ -1,0 +1,11 @@
+GET http://localhost:3000/rest/user
+Accept: */*
+Cache-Control: no-cache
+Content-Type: application/json; charset=utf-8
+
+<> 2018-06-28T112949.200.json
+<> 2018-06-28T112534.200.json
+<> 2018-06-28T112448.200.json
+
+###
+

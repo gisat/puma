@@ -1,5 +1,5 @@
+const RestStyle = require('./RestStyle');
 var Styles = require('./Styles');
-var PgStyle = require('./PgStyle');
 var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
 
@@ -60,15 +60,10 @@ PgStyles.prototype.update = function(style) {
  */
 PgStyles.prototype.all = function () {
 	var self = this;
-	return this._pool.query('select id from ' + self._table).then(function (ids) {
-		ids = ids.rows.map(row => row.id);
-		var styles = [];
-
-		ids.forEach(function (id) {
-			styles.push(new PgStyle(self._connectionPool, id, self.schema));
+	return this._pool.query('select * from ' + self._table).then(function (result) {
+		return result.rows.map(row => {
+			return new RestStyle(row.id, row, 1);
 		});
-
-		return styles;
 	}).catch(function (err) {
 		logger.error("PgStyles#all Error when querying the database. Error: ", err);
 	});
