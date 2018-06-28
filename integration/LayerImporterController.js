@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 let logger = require('../common/Logger').applicationWideLogger;
 
 let LayerImporterTasks = require('./LayerImporterTasks');
@@ -15,9 +17,7 @@ class LayerImporterController {
 		app.post('/rest/layerImporter/importNoStatistics', this.importNoStatisticsLayer.bind(this));
 		app.post('/rest/importer/layer', this.importLayerWithoutMapping.bind(this));
 		app.post('/rest/importer/upload', this.upload.bind(this));
-		app.post('/rest/importer/duplicate', this.duplicateLocalGeoserverLayer.bind(this));
-		app.get('/rest/importer/duplicate', this.duplicateLocalGeoserverLayer.bind(this));
-		app.get('/rest/importer/duplicate/:uuid', this.duplicateLocalGeoserverLayer.bind(this));
+		app.post('/rest/importer/duplicate', this.duplicateLayer.bind(this));
 
 		this._mongo = mongo;
 		this._pgPool = pgPool;
@@ -26,72 +26,45 @@ class LayerImporterController {
 		this._uploadManager = new UploadManager(pgPool, schema, `${pantherDataStoragePath}/upload_manager/uploads`);
 	}
 
+	duplicateLayer(request, response) {
+		let duplicates = request.body.data;
+		if (duplicates) {
+			duplicates = _.isArray(duplicates) ? duplicates : [duplicates];
 
-	duplicateLocalGeoserverLayer(request, response) {
-		let method = request.method;
-		let payload = request.body.data;
-		let processUuid = request.params.uuid;
+			response.status(200).json({
+				data: _.map(duplicates, (duplicate) => {
+					let uuid = duplicate.uuid;
+					let data = duplicate.data;
 
-		if (method === 'POST') {
-			let layerName = payload ? payload.layerName : null;
-			if (layerName) {
-				new DataLayerDuplicator(duplicateProcesses)
-					.duplicateGeoserverLayer(layerName)
-					.then((process) => {
-						response
-							.status(200)
-							.json(
-								{
-									data: process,
-									success: true
-								}
-							);
-					})
-			} else {
-				response
-					.status(500)
-					.json(
-						{
-							message: `Layer not specified`,
-							success: false
+					if(uuid) {
+						if (!duplicateProcesses.hasOwnProperty(uuid)) {
+							duplicateProcesses[uuid] = {
+								data: data,
+								status: "running",
+								progress: "0"
+							};
+
+							new DataLayerDuplicator().duplicateLayer(duplicateProcesses[uuid]);
 						}
-					);
-			}
-		} else if (method === 'GET' && processUuid) {
-			if (duplicateProcesses.hasOwnProperty(processUuid)) {
-				response
-					.status(200)
-					.json(
-						{
-							data: duplicateProcesses[processUuid],
-							success: true
+
+						return _.assign(duplicateProcesses[uuid], {uuid: uuid});
+					} else {
+						return {
+							data: data,
+							status: "error",
+							progress: 0,
+							message: "missing uuid"
 						}
-					);
-			} else {
-				response
-					.status(500)
-					.json(
-						{
-							message: `Process not found.`,
-							success: false
-						}
-					);
-			}
-		} else if (method === 'GET') {
-			response
-				.status(200)
-				.json(
-					{
-						data: duplicateProcesses,
-						success: true
 					}
-				);
+				}),
+				success: true
+			});
 		} else {
 			response
 				.status(500)
 				.json(
 					{
-						message: `Unknown method`,
+						message: `Nothing to duplicate`,
 						success: false
 					}
 				);
