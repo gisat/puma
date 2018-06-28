@@ -86,38 +86,49 @@ describe('DataLayerDuplicator', () => {
 		});
 
 		it('Duplicate layer...', (done) => {
-			supertest(integrationEnviroment.app)
-				.post('/rest/importer/duplicate')
-				.set('Content-Type', 'application/json')
-				.set('Accepts', 'application/json')
-				.send({data: {layerName: "geonode:pucs_192351e289bf4c56a83fe700400771ae"}})
-				.then((response) => {
-					if(!response.body.data || !response.body.data.uuid) throw new Error('Unexpected response');
-					return response.body.data.uuid;
-				})
-				.then((processUuid) => {
-					let interval = setInterval(() => {
-						supertest(integrationEnviroment.app)
-							.get(`/rest/importer/duplicate/${processUuid}`)
-							.set('Content-Type', 'application/json')
-							.set('Accepts', 'application/json')
-							.then((response) => {
-								if(!response.body.data || !response.body.data.uuid) {
-									throw new Error('Unexpected response');
+			let interval, request = () => {
+				supertest(integrationEnviroment.app)
+					.post('/rest/importer/duplicate')
+					.set('Content-Type', 'application/json')
+					.set('Accepts', 'application/json')
+					.send(
+						{
+							data: [
+								{
+									uuid: "sd51f65s1fs61fs",
+									data: {
+										layerName: "geonode:pucs_192351e289bf4c56a83fe700400771ae"
+									}
 								}
-								if(response.body.data.status === 'done') {
-									clearInterval(interval);
-									done();
-								}
-							})
-							.catch((error) => {
-								done(error);
-							})
-					}, 1000);
-				})
-				.catch((error) => {
-					done(error);
-				});
-		}).timeout(90000);
+							]
+						}
+					)
+					.then((response) => {
+						console.log(JSON.stringify(response.body));
+
+						let running = false;
+						response.body.data.forEach((data) => {
+							if (data.status === 'running') {
+								running = true;
+							}
+						});
+
+						if (!running) {
+							clearInterval(interval);
+							done();
+						}
+					})
+					.catch((error) => {
+						clearInterval(interval);
+						done(error);
+					});
+			};
+
+			interval = setInterval(() => {
+				request();
+			}, 2000);
+
+			request();
+		}).timeout(120000);
 	});
 });
