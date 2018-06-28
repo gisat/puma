@@ -41,7 +41,7 @@ class LayerImporterController {
 							duplicateProcesses[uuid] = {
 								data: data,
 								status: "running",
-								progress: "0"
+								progress: 0
 							};
 
 							new DataLayerDuplicator().duplicateLayer(duplicateProcesses[uuid]);
