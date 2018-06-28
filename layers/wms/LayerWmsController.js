@@ -39,13 +39,7 @@ class LayerWmsController {
 		return this._pgLayers.filtered(null, [request.query.place], request.query.periods).then(pgLayers => {
 			layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
 
-			let promises = layers.map(layer => {
-				return this.permissions.forType(this.type, layer.id).then(permissions => {
-					layer.permissions = permissions;
-				});
-			});
-
-			return Promise.all(promises)
+			return layers;
 		}).then(() => {
 			response.json({data: layers});
 		}).catch(err => {
