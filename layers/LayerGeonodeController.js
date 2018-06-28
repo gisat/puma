@@ -44,10 +44,7 @@ class LayerGeonodeController {
 		let layers = [];
 		// Load actually accessible from the GeoNode
 		this.pgLayers.all().then(pgLayers => {
-			pgLayers = pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
-			layers = layers.concat(pgLayers);
-
-			return this.permissions.forTypeCollection("layer", layers);
+			return pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
 		}).then(() => {
 			response.json({data: layers});
 		}).catch(err => {
