@@ -26,7 +26,7 @@ class DataLayerDuplicator {
 
 		this.ensureFolder(this._temporaryStoragePath)
 			.then(() => {
-				process.progress = 10;
+				process.progress = 5;
 				if(layerName) {
 					return this.getGeoserverShapeLayerDownloadUrlByLayerName(layerName)
 				} else if(remotePath) {
@@ -36,39 +36,39 @@ class DataLayerDuplicator {
 				}
 			})
 			.then((url) => {
-				process.progress = 20;
+				process.progress = 10;
 				return this.downloadFileFromRemote(url)
 			})
 			.then((download) => {
-				process.progress = 30;
+				process.progress = 15;
 				return this.renameDownloadByContentType(download);
 			})
 			.then((renamed) => {
-				process.progress = 40;
+				process.progress = 20;
 				if (renamed.contentType === 'application/zip') {
 					return this.unzipPackage(renamed);
 				}
 			})
 			.then((directory) => {
-				process.progress = 50;
+				process.progress = 25;
 				return this.removeFile(directory.input)
 					.then(() => {
 						return directory;
 					})
 			})
 			.then((directory) => {
-				process.progress = 60;
+				process.progress = 30;
 				return this.renameFilesInDirectory(directory.path)
 					.then(() => {
 						return directory;
 					})
 			})
 			.then((directory) => {
-				process.progress = 75;
+				process.progress = 35;
 				return this.getImportMetadata(directory)
 			})
 			.then((metadata) => {
-				process.progress = 90;
+				process.progress = 50;
 				return this.importToGeoserver(metadata)
 			})
 			.then((resultLayerName) => {
