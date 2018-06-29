@@ -322,7 +322,7 @@ class PgScenarioCases extends PgCollection {
 			});
 	}
 
-	update(payloadData) {
+	update(payloadData, user) {
 		let scenario_cases = payloadData['scenario_cases'];
 		let scenarios = payloadData['scenarios'];
 
@@ -372,7 +372,7 @@ class PgScenarioCases extends PgCollection {
 								);
 							}
 						} else if (uuid) {
-							return this._createOne(update, payloadData)
+							return this._createOne(update, payloadData, user)
 								.then((result) => {
 									id = result.id;
 									uuid = result.uuid;
@@ -397,7 +397,7 @@ class PgScenarioCases extends PgCollection {
 					})
 					.then(() => {
 						if (id && (scenarioIds || scenarioIds === null)) {
-							return this._pgScenarios.update(payloadData)
+							return this._pgScenarios.update(payloadData, user)
 								.then((results) => {
 									if(scenarios && results.data) {
 										payloadData['scenarios'] = results.data;

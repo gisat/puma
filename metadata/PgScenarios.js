@@ -37,6 +37,7 @@ class PgScenarios extends PgCollection {
 	}
 
 	_createOne(object, payloadData, user) {
+		console.log(`#### user.id`, user.id);
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -244,7 +245,7 @@ class PgScenarios extends PgCollection {
 			});
 	}
 
-	update(payloadData) {
+	update(payloadData, user) {
 		let scenarios = payloadData['scenarios'];
 		let scenario_cases = payloadData['scenario_cases'];
 
@@ -274,7 +275,7 @@ class PgScenarios extends PgCollection {
 							);
 						} else if (uuid) {
 							promises.push(
-								this._createOne(update, payloadData)
+								this._createOne(update, payloadData, user)
 							);
 						}
 					}

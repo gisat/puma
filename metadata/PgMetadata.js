@@ -113,7 +113,7 @@ class PgMetadata extends PgCollection {
 
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
-				await this._metadataTypes[metadataType].store.update(data);
+				await this._metadataTypes[metadataType].store.update(data, user);
 			} else {
 				delete data[metadataType];
 			}
@@ -121,7 +121,7 @@ class PgMetadata extends PgCollection {
 
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
-				await this._metadataTypes[metadataType].store.populateData(data);
+				await this._metadataTypes[metadataType].store.populateData(data, user);
 			} else {
 				delete data[metadataType];
 			}
