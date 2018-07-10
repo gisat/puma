@@ -110,6 +110,18 @@ class PgUsers {
         });
     }
 
+	jsonSimple() {
+        return this.pgPool
+            .query(this.jsonSimpleSql())
+            .then((pgResults) => {
+                return pgResults.rows
+            });
+    }
+
+    jsonSimpleSql() {
+        return `SELECT "users"."id" AS id, "users"."name" AS name FROM "${this.schema}"."panther_users" AS users;`
+    }
+
     /**
      * Every existing user belongs on top of other groups to the groups guest and user.
      * Everyone accessing the platform belongs to the group guest.

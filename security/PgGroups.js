@@ -121,6 +121,17 @@ class PgGroups {
          left join ${this.schema}.group_permissions as permissions on groups.id = permissions.group_id`;
     }
 
+    jsonSimple() {
+		return this.pgPool.query(this.jsonSimpleSql())
+			.then((pgResults) => {
+				return pgResults.rows;
+			});
+	}
+
+	jsonSimpleSql() {
+		return `SELECT "groups"."id" AS id, "groups"."name" AS name FROM "${this.schema}"."groups";`;
+	}
+
 	/**
      * It returns all groups that given user is member of. If he is member of no group, empty array is returned.
 	 * @param userId {Number} Id of the user, whose group we want.

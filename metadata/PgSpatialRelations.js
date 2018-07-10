@@ -24,29 +24,30 @@ class PgSpatialRelations extends PgCollection {
 				return `"${key}"`;
 			});
 			let values = _.map(keys, (key) => {
-				return _.isNumber(data[key]) ? data[key] : `'${data[key]}'`;
+				return data[key] ? data[key] : null;
 			});
 
 			promises.push(
-				this._pool.query(`INSERT INTO "${this._schema}"."${PgSpatialRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
-					.then((queryResult) => {
-						if (queryResult.rowCount) {
-							return queryResult.rows[0].id;
-						}
-					})
-					.then((id) => {
-						return this.get({id: id, unlimited: true})
-							.then((payload) => {
-								let id = payload.data[0].id;
-								delete payload.data[0].id;
+				this._pool.query(
+					`INSERT INTO "${this._schema}"."${PgSpatialRelations.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {return `$${index + 1}`}).join(', ')}) RETURNING id;`,
+					values
+				).then((queryResult) => {
+					if (queryResult.rowCount) {
+						return queryResult.rows[0].id;
+					}
+				}).then((id) => {
+					return this.get({id: id, unlimited: true})
+						.then((payload) => {
+							let id = payload.data[0].id;
+							delete payload.data[0].id;
 
-								return {
-									uuid: uuid,
-									id: id,
-									data: payload.data[0]
-								}
-							});
-					})
+							return {
+								uuid: uuid,
+								id: id,
+								data: payload.data[0]
+							}
+						});
+				})
 			);
 		});
 

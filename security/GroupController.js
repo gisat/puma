@@ -12,8 +12,9 @@ let Permission = require('./Permission');
  * The system always contains default Group GUEST. Default setting for rights is that the userwho creates the concept has rights toward the concept.
  */
 class GroupController {
-    constructor(app, pool, schema) {
-        app.get('/rest/group', this.readAll.bind(this));
+	constructor(app, pool, schema) {
+		app.get('/rest/group', this.readAll.bind(this));
+		app.get('/rest/group/simple', this.readAllSimple.bind(this));
 
 		app.put('/rest/group/:id', this.update.bind(this));
 		app.post('/rest/group', this.create.bind(this));
@@ -50,17 +51,45 @@ class GroupController {
         })
     }
 
-    /**
-     * If the user have rights to add new group, then this method is used for creation of such group.
-     * @param request
-     * @param response
-     */
-    create(request, response) {
-        if(!this.hasRights(request.session.user, 'POST')) {
-            response.status(403);
-            response.json({"status": "err"});
-            return;
-        }
+	readAllSimple(request, response) {
+		return this.groups.jsonSimple()
+			.then((pGroups) => {
+				return _.map(pGroups, (pGroup) => {
+					return {
+						_id: pGroup.id,
+						name: pGroup.name
+					}
+				})
+			})
+			.then((pGroups) => {
+				response
+					.status(200)
+					.json({
+						data: pGroups,
+						success: true
+					});
+			}).catch(error => {
+				logger.error("GroupController#readAllSimple Error: ", error);
+				response
+					.status(500)
+					.json({
+						message: error.message,
+						success: false
+					});
+			})
+	}
+
+	/**
+	 * If the user have rights to add new group, then this method is used for creation of such group.
+	 * @param request
+	 * @param response
+	 */
+	create(request, response) {
+		if (!this.hasRights(request.session.user, 'POST')) {
+			response.status(403);
+			response.json({"status": "err"});
+			return;
+		}
 
         this.groups.add(request.body.name, request.session.user.id).then(result => {
         	return Promise.all([
@@ -130,7 +159,7 @@ class GroupController {
 	}
 
     /**
-     * With sufficient rights, this deletes the group. 
+     * With sufficient rights, this deletes the group.
      * @param request
      * @param response
      */
