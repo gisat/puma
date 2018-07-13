@@ -86,6 +86,13 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int  
     );`;
+    let createUserDetailsTable = `CREATE TABLE IF NOT EXISTS "${this.schema}"."user_details" (
+    		id SERIAL PRIMARY KEY,
+    		user_id INTEGER,
+    		name TEXT,
+    		phone TEXT,
+    		organisation TEXT
+    );`;
 
     // Path means the location where the layer resides. It can be something like geonode:stuff or analysis:stuff or even
     // something else.
@@ -339,6 +346,8 @@ DatabaseSchema.prototype.create = function () {
         return self._pool.query(createInternalUsersTable);
     }).then(function () {
         return self._pool.query(createInvitation);
+    }).then(function () {
+    	return self._pool.query(createUserDetailsTable);
     }).then(function () {
         return self._pool.query(createMetadataStructure);
     }).catch(function (err) {
