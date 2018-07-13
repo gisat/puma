@@ -17,7 +17,7 @@ class PgMetadataController {
 	}
 
 	create(request, response) {
-		this._pgMetadata.create(request.body.data)
+		this._pgMetadata.create(request.body.data, request.session.user)
 			.then((metadata) => {
 				response.status(200).json({
 					data: metadata,
@@ -25,20 +25,28 @@ class PgMetadataController {
 				})
 			})
 			.catch((error) => {
-				response.status(500).json({
-					message: error.message,
-					success: false
-				})
+				if(error.message === 'Forbidden') {
+					response.status(403).json({
+						message: error.message,
+						success: false
+					})
+				} else {
+					response.status(500).json({
+						message: error.message,
+						success: false
+					})
+				}
 			});
 	}
 
 	get(request, response) {
-		this._pgMetadata.get(request.params['type'], _.assign({}, request.query, request.body))
+		this._pgMetadata.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
 			})
 			.catch((error) => {
+				console.log(error);
 				response.status(500).json({
 					message: error.message,
 					success: false
@@ -47,7 +55,7 @@ class PgMetadataController {
 	}
 
 	delete(request, response) {
-		this._pgMetadata.delete(request.body.data)
+		this._pgMetadata.delete(request.body.data, request.session.user)
 			.then((data) => {
 				response.status(200).json({
 					data: data,
@@ -63,7 +71,7 @@ class PgMetadataController {
 	}
 
 	update(request, response) {
-		this._pgMetadata.update(request.body.data)
+		this._pgMetadata.update(request.body.data, request.session.user)
 			.then((data) => {
 				response.status(200).json({
 					data: data,
@@ -71,6 +79,7 @@ class PgMetadataController {
 				});
 			})
 			.catch((error) => {
+				console.log(`PgMetadataController#error`, error);
 				response.status(500).json({
 					message: error.message,
 					success: false

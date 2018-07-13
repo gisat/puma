@@ -119,6 +119,10 @@ class PgPermissions {
 		return this.pgPool.pool().query(this.removeSql(userId, resourceType, resourceId, permission));
 	}
 
+	removeAllForResource(resourceType, resourceId) {
+		return this.pgPool.query(this.removeAllForResourceSql(resourceType, resourceId));
+	}
+
 	// Private
 	removeSql(userId, resourceType, resourceId, permission) {
 		let andResourceId = '';
@@ -126,6 +130,10 @@ class PgPermissions {
 			andResourceId = ` AND resource_id = '${resourceId}' `;
 		}
 		return `DELETE FROM ${this.schema}.permissions WHERE user_id = ${userId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
+	}
+
+	removeAllForResourceSql(resourceType, resourceId) {
+		return `DELETE FROM "${this.schema}"."permissions" AS p WHERE "p"."resource_type" = '${resourceType}' AND "p"."resource_id" = '${resourceId}';`;
 	}
 
 	forType(type, resourceId) {

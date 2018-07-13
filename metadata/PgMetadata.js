@@ -1,5 +1,7 @@
 const _ = require('lodash');
 
+const Permission = require('../security/Permission');
+
 const PgCollection = require('../common/PgCollection');
 const PgScenarios = require('./PgScenarios');
 const PgScenarioCases = require('./PgScenarioCases');
@@ -15,23 +17,37 @@ class PgMetadata extends PgCollection {
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
 
 		this._metadataTypes = {
-			scenarios: this._pgScenarios,
-			scenario_cases: this._pgScenarioCases
-		}
+			scenarios: {
+				store: this._pgScenarios,
+				type: "scenario"
+			},
+			scenario_cases: {
+				store: this._pgScenarioCases,
+				type: "scenario_case"
+			}
+		};
 	}
 
-	async create(data) {
-		for(let metadataType of Object.keys(data)) {
-			if(this._metadataTypes.hasOwnProperty(metadataType))  {
-				await this._metadataTypes[metadataType].create(data);
+	async create(data, user) {
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				if (!user.hasPermission(this._metadataTypes[metadataType].type, Permission.CREATE, null)) {
+					throw new Error('Forbidden');
+				}
+			}
+		}
+
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				await this._metadataTypes[metadataType].store.create(data, user);
 			} else {
 				delete data[metadataType];
 			}
 		}
 
-		for(let metadataType of Object.keys(data)) {
-			if(this._metadataTypes.hasOwnProperty(metadataType))  {
-				await this._metadataTypes[metadataType].populateData(data);
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				await this._metadataTypes[metadataType].store.populateData(data);
 			} else {
 				delete data[metadataType];
 			}
@@ -39,15 +55,23 @@ class PgMetadata extends PgCollection {
 		return data;
 	}
 
-	get(types, filter) {
+	async get(types, filter, user) {
 		let promises = [];
 
 		types = types ? types.split(',') : [];
 
-		_.forEach(this._metadataTypes, (metadataClass, metadataType) => {
-			if(types.includes(metadataType)) {
+		for (let metadataType of types) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				if (!user.hasPermission(this._metadataTypes[metadataType].type, Permission.READ, null)) {
+					throw new Error('Forbidden');
+				}
+			}
+		}
+
+		_.forEach(this._metadataTypes, (metadataObject, metadataType) => {
+			if (types.includes(metadataType)) {
 				promises.push(
-					metadataClass.get(filter)
+					metadataObject.store.get(filter)
 						.then((results) => {
 							return {
 								type: metadataType,
@@ -64,11 +88,9 @@ class PgMetadata extends PgCollection {
 			}
 		});
 
-		return Promise.all(promises)
+		return await Promise.all(promises)
 			.then((results) => {
-				let data = {
-
-				};
+				let data = {};
 
 				results.forEach((result) => {
 					data[result.type] = result.data;
@@ -80,18 +102,26 @@ class PgMetadata extends PgCollection {
 			});
 	}
 
-	async update(data) {
-		for(let metadataType of Object.keys(data)) {
-			if(this._metadataTypes.hasOwnProperty(metadataType))  {
-				await this._metadataTypes[metadataType].update(data);
+	async update(data, user) {
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				if (!user.hasPermission(this._metadataTypes[metadataType].type, Permission.UPDATE, null)) {
+					throw new Error('Forbidden');
+				}
+			}
+		}
+
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				await this._metadataTypes[metadataType].store.update(data, user);
 			} else {
 				delete data[metadataType];
 			}
 		}
 
-		for(let metadataType of Object.keys(data)) {
-			if(this._metadataTypes.hasOwnProperty(metadataType))  {
-				await this._metadataTypes[metadataType].populateData(data);
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				await this._metadataTypes[metadataType].store.populateData(data, user);
 			} else {
 				delete data[metadataType];
 			}
@@ -99,10 +129,18 @@ class PgMetadata extends PgCollection {
 		return data;
 	}
 
-	async delete(data) {
-		for(let metadataType of Object.keys(data)) {
-			if(this._metadataTypes.hasOwnProperty(metadataType))  {
-				await this._metadataTypes[metadataType].delete(data);
+	async delete(data, user) {
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				if (!user.hasPermission(this._metadataTypes[metadataType].type, Permission.DELETE, null)) {
+					throw new Error('Forbidden');
+				}
+			}
+		}
+
+		for (let metadataType of Object.keys(data)) {
+			if (this._metadataTypes.hasOwnProperty(metadataType)) {
+				await this._metadataTypes[metadataType].store.delete(data);
 			} else {
 				delete data[metadataType];
 			}

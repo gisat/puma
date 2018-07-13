@@ -4,6 +4,8 @@ const PgCollection = require('../common/PgCollection');
 const PgScopeScenarioCaseRelations = require('./PgScopeScenarioCaseRelations');
 const PgPlaceScenarioCaseRelations = require('./PgPlaceScenarioCaseRelations');
 const PgScenarioScenarioCaseRelations = require('./PgScenarioScenarioCaseRelations');
+const PgPermissions = require('../security/PgPermissions');
+const Permission = require('../security/Permission');
 
 class PgScenarioCases extends PgCollection {
 	constructor(pgPool, pgSchema) {
@@ -12,9 +14,10 @@ class PgScenarioCases extends PgCollection {
 		this._pgScopeScenarioCaseRelations = new PgScopeScenarioCaseRelations(pgPool, pgSchema);
 		this._pgPlaceScenarioCaseRelations = new PgPlaceScenarioCaseRelations(pgPool, pgSchema);
 		this._pgScenarioScenarioCaseRelations = new PgScenarioScenarioCaseRelations(pgPool, pgSchema);
+		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
 	}
 
-	create(payloadData) {
+	create(payloadData, user) {
 		let scenario_cases = payloadData['scenario_cases'];
 
 		if (scenario_cases) {
@@ -23,7 +26,7 @@ class PgScenarioCases extends PgCollection {
 				if (object.id) {
 					promises.push({id: object.id});
 				} else {
-					promises.push(this._createOne(object, payloadData));
+					promises.push(this._createOne(object, payloadData, user));
 				}
 			});
 
@@ -35,7 +38,7 @@ class PgScenarioCases extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData) {
+	_createOne(object, payloadData, user) {
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -77,6 +80,19 @@ class PgScenarioCases extends PgCollection {
 				if (queryResult.rowCount) {
 					return queryResult.rows[0].id;
 				}
+			})
+			.then((id) => {
+				let promises = [];
+
+				promises.push(this._pgPermissions.add(user.id, PgScenarioCases.tableName(), id, Permission.CREATE));
+				promises.push(this._pgPermissions.add(user.id, PgScenarioCases.tableName(), id, Permission.READ));
+				promises.push(this._pgPermissions.add(user.id, PgScenarioCases.tableName(), id, Permission.UPDATE));
+				promises.push(this._pgPermissions.add(user.id, PgScenarioCases.tableName(), id, Permission.DELETE));
+
+				return Promise.all(promises)
+					.then(() => {
+						return id;
+					})
 			})
 			.then((id) => {
 				return Promise.resolve()
@@ -306,7 +322,7 @@ class PgScenarioCases extends PgCollection {
 			});
 	}
 
-	update(payloadData) {
+	update(payloadData, user) {
 		let scenario_cases = payloadData['scenario_cases'];
 		let scenarios = payloadData['scenarios'];
 
@@ -356,7 +372,7 @@ class PgScenarioCases extends PgCollection {
 								);
 							}
 						} else if (uuid) {
-							return this._createOne(update, payloadData)
+							return this._createOne(update, payloadData, user)
 								.then((result) => {
 									id = result.id;
 									uuid = result.uuid;
@@ -381,7 +397,7 @@ class PgScenarioCases extends PgCollection {
 					})
 					.then(() => {
 						if (id && (scenarioIds || scenarioIds === null)) {
-							return this._pgScenarios.update(payloadData)
+							return this._pgScenarios.update(payloadData, user)
 								.then((results) => {
 									if(scenarios && results.data) {
 										payloadData['scenarios'] = results.data;
@@ -456,6 +472,8 @@ class PgScenarioCases extends PgCollection {
 			}
 		}).then(() => {
 			return this._pgScenarioScenarioCaseRelations.delete({scenario_case_id: scenarioCaseId});
+		}).then(() => {
+			return this._pgPermissions.removeAllForResource(PgScenarioCases.tableName(), scenarioCaseId);
 		}).then(() => {
 			return status;
 		});

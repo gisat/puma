@@ -21,7 +21,8 @@ class UserController {
 
         app.post('/rest/invitation/user', this.invite.bind(this));
 
-        app.get('/rest/user', this.readAll.bind(this));
+		app.get('/rest/user', this.readAll.bind(this));
+		app.get('/rest/user/simple', this.readAllSimple.bind(this));
 		app.post('/rest/user', this.create.bind(this));
 		app.put('/rest/user', this.update.bind(this));
 		app.delete('/rest/user', this.delete.bind(this));
@@ -53,6 +54,35 @@ class UserController {
 			response.status(500);
 			response.json({status: "err"});
 		});
+	}
+
+	readAllSimple(request, response) {
+		this.users.jsonSimple()
+			.then((pgRows) => {
+				return _.map(pgRows, (pgRow) => {
+					return {
+						_id: pgRow.id,
+						username: pgRow.name
+					}
+				});
+			})
+			.then((pgUsers) => {
+				response
+					.status(200)
+					.json({
+						data: pgUsers,
+						success: true
+					});
+			})
+			.catch((error) => {
+				logger.error('UserController#readAllSimple Error: ', error);
+				response
+					.status(500)
+					.json({
+						message: error.message,
+						success: false
+					});
+			});
 	}
 
 	/**

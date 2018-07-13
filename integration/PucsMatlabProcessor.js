@@ -62,7 +62,6 @@ class PucsMatlabProcessor {
 							}
 						}
 					).then((payload) => {
-						console.log(payload);
 						inputVectorLayer['spatialDataSourceId'] = payload[0].id;
 					})
 				)
@@ -495,7 +494,6 @@ class PucsMatlabProcessor {
 							} else if (stderr) {
 								reject(stderr);
 							} else {
-								console.log(`#### stdout`, stdout);
 								resolve(`${pathToInput}/${vectorName}.tif`);
 							}
 						});
