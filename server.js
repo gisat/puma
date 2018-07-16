@@ -1,4 +1,4 @@
-require('newrelic');
+require('appoptics-apm');
 
 var express = require('express');
 var conn = require('./common/conn');
