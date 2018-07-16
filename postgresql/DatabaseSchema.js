@@ -291,7 +291,7 @@ DatabaseSchema.prototype.create = function () {
     `;
 
     let createUploadManagerTables = `
-    CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."uploads" (
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."uploads" (
     	uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     	path TEXT,
     	name TEXT,
