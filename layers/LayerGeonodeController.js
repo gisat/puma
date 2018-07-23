@@ -38,22 +38,18 @@ class LayerGeonodeController {
 	 * @param response
 	 */
 	readAll(request, response) {
-		logger.info('LayerGeonodeController#readAl Read all layers By User: ', request.session.userId);
+        logger.info('LayerGeonodeController#readAl Read all layers By User: ', request.session.userId);
 
-		let currentUser = request.session.user;
-		let layers = [];
-		// Load actually accessible from the GeoNode
-		this.pgLayers.all().then(pgLayers => {
-			pgLayers = pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
-			layers = layers.concat(pgLayers);
-
-			return this.permissions.forTypeCollection("layer", layers);
-		}).then(() => {
-			response.json({data: layers});
-		}).catch(err => {
-			logger.error('LayerGeonodeController#readAll Error: ', err);
-			response.status(500).json({status: "err"});
-		});
+        let currentUser = request.session.user;
+        // Load actually accessible from the GeoNode
+        this.pgLayers.all().then(pgLayers => {
+            return pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
+        }).then(layers => {
+            response.json({data: layers});
+        }).catch(err => {
+            logger.error('LayerGeonodeController#readAll Error: ', err);
+            response.status(500).json({status: "err"});
+        });
 	}
 
 	/**
