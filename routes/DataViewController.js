@@ -1,9 +1,9 @@
-var Controller = require('./Controller');
-let FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
-let MongoDataView = require('../visualization/MongoDataView');
+const Controller = require('./Controller');
+const FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
+const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
-let Permission = require('../security/Permission');
-let logger = require('../common/Logger').applicationWideLogger;
+const Permission = require('../security/Permission');
+const logger = require('../common/Logger').applicationWideLogger;
 
 class DataViewController extends Controller {
 	constructor(app, pool, mongoDb) {
@@ -24,8 +24,14 @@ class DataViewController extends Controller {
         const theme = request.body.theme;
         const period = request.body.period;
 
-        this._mongoDataViews.defaultForScope(scope, theme, place, period).then(() => {
-            response.send({"status": "ok"})
+        this._mongoDataViews.defaultForScope(scope, theme, place, period).then(id => {
+            return Promise.all([
+                this.permissions.add(request.session.user.id, this.type, id, Permission.READ),
+                this.permissions.add(request.session.user.id, this.type, id, Permission.UPDATE),
+                this.permissions.add(request.session.user.id, this.type, id, Permission.DELETE)
+            ]);
+        }).then(() => {
+            response.send({"status": "ok"});
         }).catch(err => {
             response.status(500).send({
                 "status": "err",
