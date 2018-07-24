@@ -5,13 +5,15 @@ const Permission = require('../security/Permission');
 const PgCollection = require('../common/PgCollection');
 const PgScenarios = require('./PgScenarios');
 const PgScenarioCases = require('./PgScenarioCases');
+const PgLpisCases = require('./PgLpisCases');
 
 class PgMetadata extends PgCollection {
-	constructor(pgPool, pgSchema) {
+	constructor(pgPool, pgSchema, mongo) {
 		super(pgPool, pgSchema, 'PgMetadata');
 
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 		this._pgScenarioCases = new PgScenarioCases(pgPool, pgSchema);
+		this._pgLspiCases = new PgLpisCases(pgPool, pgSchema, mongo);
 
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
@@ -24,11 +26,15 @@ class PgMetadata extends PgCollection {
 			scenario_cases: {
 				store: this._pgScenarioCases,
 				type: "scenario_case"
+			},
+			lpis_cases: {
+				store: this._pgLspiCases,
+				type: "lpis_case"
 			}
 		};
 	}
 
-	async create(data, user) {
+	async create(data, user, extra) {
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
 				if (!user.hasPermission(this._metadataTypes[metadataType].type, Permission.CREATE, null)) {
@@ -39,7 +45,7 @@ class PgMetadata extends PgCollection {
 
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
-				await this._metadataTypes[metadataType].store.create(data, user);
+				await this._metadataTypes[metadataType].store.create(data, user, extra);
 			} else {
 				delete data[metadataType];
 			}
@@ -102,7 +108,7 @@ class PgMetadata extends PgCollection {
 			});
 	}
 
-	async update(data, user) {
+	async update(data, user, extra) {
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
 				if (!user.hasPermission(this._metadataTypes[metadataType].type, Permission.UPDATE, null)) {
@@ -113,7 +119,7 @@ class PgMetadata extends PgCollection {
 
 		for (let metadataType of Object.keys(data)) {
 			if (this._metadataTypes.hasOwnProperty(metadataType)) {
-				await this._metadataTypes[metadataType].store.update(data, user);
+				await this._metadataTypes[metadataType].store.update(data, user, extra);
 			} else {
 				delete data[metadataType];
 			}
