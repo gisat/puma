@@ -284,9 +284,8 @@ DatabaseSchema.prototype.create = function () {
     );
     CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case" (
         id  SERIAL PRIMARY KEY,
-        uuid    UUID DEFAULT gen_random_uuid(),
         submit_date TIMESTAMP,
-        code_pdb    TEXT,
+        code_dpb    TEXT,
         code_ji TEXT,
         case_key    TEXT,
         change_description  TEXT,
@@ -296,15 +295,26 @@ DatabaseSchema.prototype.create = function () {
         evaluation_description  TEXT,
         evaluation_description_other    TEXT,
         evaluation_used_sources TEXT,
-        view_id INTEGER
+        geometry_before GEOMETRY,
+        geometry_after GEOMETRY
      );
-    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_changes" (
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case_change" (
         id SERIAL PRIMARY KEY,
         changed_by  INTEGER,
-        date    TIMESTAMP,
-        case_id INTEGER,
+        date    TIMESTAMP WITH TIME ZONE,
+        lpis_case_id INTEGER,
         status  TEXT,
         change  JSON
+    );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case_view_relation" (
+    	id	SERIAL PRIMARY KEY,
+    	lpis_case_id	INTEGER,
+    	view_id	INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case_place_relation" (
+    	id	SERIAL PRIMARY KEY,
+    	lpis_case_id	INTEGER,
+    	place_id	INTEGER
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
       id   SERIAL PRIMARY KEY,
