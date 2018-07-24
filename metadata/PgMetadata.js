@@ -63,6 +63,9 @@ class PgMetadata extends PgCollection {
 
 	async get(types, filter, user) {
 		let promises = [];
+		let payload = {
+			data: {}
+		};
 
 		types = types ? types.split(',') : [];
 
@@ -77,34 +80,30 @@ class PgMetadata extends PgCollection {
 		_.forEach(this._metadataTypes, (metadataObject, metadataType) => {
 			if (types.includes(metadataType)) {
 				promises.push(
-					metadataObject.store.get(filter)
+					metadataObject.store.get(filter, true)
 						.then((results) => {
-							return {
-								type: metadataType,
-								data: results
+							payload.data[metadataType] = results['data'];
+							if(_.isUndefined(payload['limit'])) {
+								payload['limit'] = results['limit'];
 							}
+							if(_.isUndefined(payload['offset'])) {
+								payload['offset'] = results['offset'];
+							}
+							if(_.isUndefined(payload['total'])) {
+								payload['total'] = results['total'];
+							}
+							return metadataObject.store.populateData(payload.data);
 						})
 						.catch(() => {
-							return {
-								type: metadataType,
-								data: []
-							}
+							payload.data[metadataType] = [];
 						})
 				)
 			}
 		});
 
 		return await Promise.all(promises)
-			.then((results) => {
-				let data = {};
-
-				results.forEach((result) => {
-					data[result.type] = result.data;
-				});
-
-				return {
-					data: data
-				}
+			.then(() => {
+				return payload;
 			});
 	}
 

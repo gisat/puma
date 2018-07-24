@@ -278,7 +278,7 @@ class PgLpisCases extends PgCollection {
 		return Promise.all(extraPopulations);
 	}
 
-	get(filter) {
+	get(filter, idOnly) {
 		let payload = {
 			data: null,
 		};
@@ -321,25 +321,34 @@ class PgLpisCases extends PgCollection {
 
 		let query = [];
 		query.push(`SELECT`);
-		query.push(`"a"."id" AS id,`);
-		query.push(`"a"."submit_date",`);
-		query.push(`"a"."code_dpb",`);
-		query.push(`"a"."code_ji",`);
-		query.push(`"a"."case_key",`);
-		query.push(`"a"."change_description",`);
-		query.push(`"a"."change_description_place",`);
-		query.push(`"a"."change_description_other",`);
-		query.push(`"a"."evaluation_result",`);
-		query.push(`"a"."evaluation_description",`);
-		query.push(`"a"."evaluation_description_other",`);
-		query.push(`"a"."evaluation_used_sources",`);
-		query.push(`array_agg("b"."place_id") FILTER (WHERE "b"."place_id" IS NOT NULL) AS place_ids,`);
-		query.push(`array_agg("c"."view_id") FILTER (WHERE "c"."view_id" IS NOT NULL) AS view_ids,`);
-		query.push(`ST_AsGeoJSON("a"."geometry_before") AS geometry_before,`);
-		query.push(`ST_AsGeoJSON("a"."geometry_after") AS geometry_after`);
+
+		if(idOnly) {
+			query.push(`"a"."id" AS id`);
+		} else {
+			query.push(`"a"."id" AS id,`);
+			query.push(`"a"."submit_date",`);
+			query.push(`"a"."code_dpb",`);
+			query.push(`"a"."code_ji",`);
+			query.push(`"a"."case_key",`);
+			query.push(`"a"."change_description",`);
+			query.push(`"a"."change_description_place",`);
+			query.push(`"a"."change_description_other",`);
+			query.push(`"a"."evaluation_result",`);
+			query.push(`"a"."evaluation_description",`);
+			query.push(`"a"."evaluation_description_other",`);
+			query.push(`"a"."evaluation_used_sources",`);
+			query.push(`array_agg("b"."place_id") FILTER (WHERE "b"."place_id" IS NOT NULL) AS place_ids,`);
+			query.push(`array_agg("c"."view_id") FILTER (WHERE "c"."view_id" IS NOT NULL) AS view_ids,`);
+			query.push(`ST_AsGeoJSON("a"."geometry_before") AS geometry_before,`);
+			query.push(`ST_AsGeoJSON("a"."geometry_after") AS geometry_after`);
+		}
+
 		query.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgLpisCasePlaceRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS c ON c.lpis_case_id = a.id`);
+
+		if(!idOnly) {
+			query.push(`LEFT JOIN "${this._schema}"."${PgLpisCasePlaceRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
+			query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS c ON c.lpis_case_id = a.id`);
+		}
 
 		if (keys.length || like || any) {
 			let where = [];
