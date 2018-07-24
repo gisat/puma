@@ -268,7 +268,7 @@ class PgLpisCases extends PgCollection {
 						this._pgLpisCaseChanges
 							.get({any: {lpis_case_id: lpisCaseIds}, unlimited: true})
 							.then((lpisCaseChanges) => {
-								payloadData[extraDataType] = lpisCaseChanges;
+								payloadData[extraDataType] = lpisCaseChanges.data;
 							})
 					)
 				}
