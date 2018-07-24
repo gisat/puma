@@ -1,8 +1,8 @@
 const PgMetadata = require('../metadata/PgMetadata');
 
 class PgMetadataController {
-	constructor(app, pgPool, pgSchema) {
-		this._pgMetadata = new PgMetadata(pgPool, pgSchema);
+	constructor(app, pgPool, pgSchema, mongo) {
+		this._pgMetadata = new PgMetadata(pgPool, pgSchema, mongo);
 
 		app.post(`/rest/metadata`, this.create.bind(this));
 
@@ -17,26 +17,29 @@ class PgMetadataController {
 	}
 
 	create(request, response) {
-		this._pgMetadata.create(request.body.data, request.session.user)
-			.then((metadata) => {
-				response.status(200).json({
-					data: metadata,
-					success: true
-				})
+		this._pgMetadata.create(
+			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
+			request.session.user,
+			{files: request.files}
+		).then((metadata) => {
+			response.status(200).json({
+				data: metadata,
+				success: true
 			})
-			.catch((error) => {
-				if(error.message === 'Forbidden') {
-					response.status(403).json({
-						message: error.message,
-						success: false
-					})
-				} else {
-					response.status(500).json({
-						message: error.message,
-						success: false
-					})
-				}
-			});
+		}).catch((error) => {
+			console.log(`ERROR # PgMetadataController # ERROR`, error);
+			if (error.message === 'Forbidden') {
+				response.status(403).json({
+					message: error.message,
+					success: false
+				})
+			} else {
+				response.status(500).json({
+					message: error.message,
+					success: false
+				})
+			}
+		});
 	}
 
 	get(request, response) {
@@ -71,20 +74,31 @@ class PgMetadataController {
 	}
 
 	update(request, response) {
-		this._pgMetadata.update(request.body.data, request.session.user)
-			.then((data) => {
-				response.status(200).json({
-					data: data,
-					success: true
-				});
-			})
-			.catch((error) => {
-				console.log(`PgMetadataController#error`, error);
-				response.status(500).json({
-					message: error.message,
-					success: false
-				});
+		this._pgMetadata.update(
+			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
+			request.session.user,
+			{files: request.files}
+		).then((data) => {
+			response.status(200).json({
+				data: data,
+				success: true
 			});
+		}).catch((error) => {
+			console.log(`PgMetadataController#error`, error);
+			response.status(500).json({
+				message: error.message,
+				success: false
+			});
+		});
+	}
+
+	_isJson(str) {
+		try {
+			JSON.parse(str);
+		} catch (e) {
+			return false;
+		}
+		return true;
 	}
 }
 
