@@ -41,22 +41,29 @@ class SzifCaseCreator {
 			});
 	}
 
-	prepareMongoLocationMetadata(szifCaseMetadata) {
+	prepareMongoLocationMetadata(szifCaseMetadata, omitId) {
 		return Promise.resolve().then(() => {
-			return {
-				_id: conn.getNextId(),
+			let metadata = {
 				active: true,
 				name: szifCaseMetadata.caseName,
-				geometry: turf.union({geometry: szifCaseMetadata.beforeGeometry, type: `Feature`}, {geometry: szifCaseMetadata.afterGeometry, type: `Feature`}).geometry,
-				dataset: Number(szifCaseMetadata.scopeId),
+				geometry: szifCaseMetadata.beforeGeometry && szifCaseMetadata.afterGeometry ? turf.union({geometry: szifCaseMetadata.beforeGeometry, type: `Feature`}, {geometry: szifCaseMetadata.afterGeometry, type: `Feature`}).geometry : szifCaseMetadata.beforeGeometry,
 				changeReviewGeometryBefore: szifCaseMetadata.beforeGeometry,
 				changeReviewGeometryAfter: szifCaseMetadata.afterGeometry
+			};
+
+			if(!omitId) {
+				metadata['_id'] = conn.getNextId();
 			}
+
+			if(szifCaseMetadata['scopeId']) {
+				metadata['dataset'] = Number(szifCaseMetadata['scopeId']);
+			}
+
+			return metadata;
 		});
 	}
 
 	reprojectGeojsonGeometryFromKrovakToWgs(geometry) {
-		console.log(`######`, geometry);
 		return Promise.resolve().then(() => {
 			return reproject.reproject(
 				geometry,
