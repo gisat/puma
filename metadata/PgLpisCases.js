@@ -141,6 +141,13 @@ class PgLpisCases extends PgCollection {
 					uuid: uuid
 				};
 			})
+			.catch((error) => {
+				return {
+					uuid: uuid,
+					status: `error`,
+					message: error.message
+				}
+			})
 	}
 
 	_createMongoPlace(keys, data) {
@@ -214,28 +221,31 @@ class PgLpisCases extends PgCollection {
 
 	populateData(payloadData) {
 		if (payloadData.hasOwnProperty('lpis_cases') && payloadData['lpis_cases'].length) {
-			return this.get({any: {id: _.map(payloadData['lpis_cases'], 'id')}, unlimited: true})
-				.then((currentResults) => {
-					let extra = currentResults.extra;
+			let listOfIds = _.compact(_.map(payloadData['lpis_cases'], 'id'));
+			if(listOfIds.length) {
+				return this.get({any: {id: listOfIds}, unlimited: true})
+					.then((currentResults) => {
+						let extra = currentResults.extra;
 
-					payloadData['lpis_cases'] = _.map(payloadData['lpis_cases'], record => {
-						if (record.id) {
-							let currentResult = _.find(currentResults.data, {id: record.id});
-							if (currentResult) {
-								record.data = currentResult.data;
+						payloadData['lpis_cases'] = _.map(payloadData['lpis_cases'], record => {
+							if (record.id) {
+								let currentResult = _.find(currentResults.data, {id: record.id});
+								if (currentResult) {
+									record.data = currentResult.data;
 
-								record.data['place_id'] = record.data['place_ids'] ? record.data['place_ids'][0] : null;
-								record.data['view_id'] = record.data['view_ids'] ? record.data['view_ids'][0] : null;
+									record.data['place_id'] = record.data['place_ids'] ? record.data['place_ids'][0] : null;
+									record.data['view_id'] = record.data['view_ids'] ? record.data['view_ids'][0] : null;
 
-								delete record.data['place_ids'];
-								delete record.data['view_ids'];
+									delete record.data['place_ids'];
+									delete record.data['view_ids'];
+								}
 							}
-						}
-						return record;
-					});
+							return record;
+						});
 
-					return this.populateExtraData(extra, payloadData)
-				});
+						return this.populateExtraData(extra, payloadData)
+					});
+			}
 		}
 	}
 
