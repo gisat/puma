@@ -4,6 +4,7 @@ var async = require('async');
 var pg = require('pg');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
+const superagent = require('superagent');
 
 function check(analysisObj, performedAnalysisObj, callback) {
 
@@ -242,27 +243,64 @@ function perform(analysisObj, performedAnalysisObj, layerRefMap, req, callback) 
 					});
 				});
 			}, function(err, resls) {
-				client.end();
-				if (performedAnalysisObj.ghost) {
-					//return callback(null);
-					logger.warn("spatialagg#perform Performed analysis is a ghost: ", performedAnalysisObj);
-				}
-				if(!performedAnalysisObj.status){
-					if(err){
-						logger.error("spatialagg#perform Analysis: ", performedAnalysisObj, " Failed with error: ", err);
-						performedAnalysisObj.status = "Failed. "+err;
-					}else{
-						performedAnalysisObj.status = "Successful";
-					}
-				}
-				performedAnalysisObj.finished = new Date();
-				crud.update('performedanalysis', performedAnalysisObj, {userId: req.session.userId, isAdmin: true}, function(err) {
-					if(err){
-						logger.error("spatialagg#perform Failed to write in MongoDB performedanalysis. Error:", err);
-						return callback(err);
-					}
-					return callback(null);
-				});
+                const url = 'http://' + config.geoserverHost + ":" + config.geoserverPort + config.geoserverPath + '/rest/reload';
+                superagent.post(url)
+                    .auth(config.geoserverUsername, config.geoserverPassword)
+                    .set('Accept', '*/*')
+                    .set('Content-Type', 'application/json; charset=utf-8')
+                    .send()
+                    .then(() => {
+                        client.end();
+                        if (performedAnalysisObj.ghost) {
+                            //return callback(null);
+                            logger.warn("spatialagg#perform Performed analysis is a ghost: ", performedAnalysisObj);
+                        }
+                        if (!performedAnalysisObj.status) {
+                            if (err) {
+                                logger.error("spatialagg#perform Analysis: ", performedAnalysisObj, " Failed with error: ", err);
+                                performedAnalysisObj.status = "Failed. " + err;
+                            } else {
+                                performedAnalysisObj.status = "Successful";
+                            }
+                        }
+                        performedAnalysisObj.finished = new Date();
+                        crud.update('performedanalysis', performedAnalysisObj, {
+                            userId: req.session.userId,
+                            isAdmin: true
+                        }, function (err) {
+                            if (err) {
+                                logger.error("spatialagg#perform Failed to write in MongoDB performedanalysis. Error:", err);
+                                return callback(err);
+                            }
+                            // Reload the layer in the GeoServer.
+                            return callback(null);
+                        });
+                    }).catch(reloadError => {
+                    logger.error("spatialagg#perform Error: ", reloadError);
+                    client.end();
+                    if (performedAnalysisObj.ghost) {
+                        //return callback(null);
+                        logger.warn("spatialagg#perform Performed analysis is a ghost: ", performedAnalysisObj);
+                    }
+                    if (!performedAnalysisObj.status) {
+                        performedAnalysisObj.status = "Failed. " + reloadError;
+                        if (err) {
+                            logger.error("spatialagg#perform Analysis: ", performedAnalysisObj, " Failed with error: ", err);
+                        }
+                    }
+                    performedAnalysisObj.finished = new Date();
+                    crud.update('performedanalysis', performedAnalysisObj, {
+                        userId: req.session.userId,
+                        isAdmin: true
+                    }, function (err) {
+                        if (err) {
+                            logger.error("spatialagg#perform Failed to write in MongoDB performedanalysis. Error:", err);
+                            return callback(err);
+                        }
+                        // Reload the layer in the GeoServer.
+                        return callback(null);
+                    });
+                });
 			});
 		}]
 	});

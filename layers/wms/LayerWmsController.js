@@ -31,27 +31,21 @@ class LayerWmsController {
 	 * @param response
 	 */
 	readAll(request, response) {
-		logger.info('LayerWmsController#readAll Read all layers By User: ', request.session.userId, 'With params: ', request.query);
+        logger.info('LayerWmsController#readAll Read all layers By User: ', request.session.userId, 'With params: ', request.query);
 
-		let currentUser = request.session.user;
-		let layers;
-		// Load actually accessible from the GeoNode
-		return this._pgLayers.filtered(null, [request.query.place], request.query.periods).then(pgLayers => {
-			layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
+        let currentUser = request.session.user;
+        let layers;
+        // Load actually accessible from the GeoNode
+        return this._pgLayers.filtered(null, [request.query.place], request.query.periods).then(pgLayers => {
+            layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
 
-			let promises = layers.map(layer => {
-				return this.permissions.forType(this.type, layer.id).then(permissions => {
-					layer.permissions = permissions;
-				});
-			});
-
-			return Promise.all(promises)
-		}).then(() => {
-			response.json({data: layers});
-		}).catch(err => {
-			logger.error('LayerWmsController#readAll Error: ', err);
-			response.status(500).json({status: "err"});
-		});
+            return layers;
+        }).then(() => {
+            response.json({data: layers});
+        }).catch(err => {
+            logger.error('LayerWmsController#readAll Error: ', err);
+            response.status(500).json({status: "err"});
+        });
 	}
 
 	/**
