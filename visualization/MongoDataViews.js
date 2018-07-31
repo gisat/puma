@@ -1,4 +1,5 @@
 var MongoDataView = require('./MongoDataView');
+const conn = require(`../common/conn`);
 
 class MongoDataViews {
     constructor(connection) {

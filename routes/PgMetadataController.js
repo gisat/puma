@@ -20,7 +20,10 @@ class PgMetadataController {
 		this._pgMetadata.create(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
 			request.session.user,
-			{files: request.files}
+			{
+				files: request.files,
+				configuration: this._isJson(request.body.configuration) ? JSON.parse(request.body.configuration) : request.body.configuration
+			}
 		).then((metadata) => {
 			response.status(200).json({
 				data: metadata,
@@ -77,7 +80,10 @@ class PgMetadataController {
 		this._pgMetadata.update(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
 			request.session.user,
-			{files: request.files}
+			{
+				files: request.files,
+				configuration: this._isJson(request.body.configuration) ? JSON.parse(request.body.configuration) : request.body.configuration
+			}
 		).then((data) => {
 			response.status(200).json({
 				data: data,

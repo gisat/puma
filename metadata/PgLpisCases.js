@@ -8,6 +8,7 @@ const MongoLocations = require('../metadata/MongoLocations');
 const PgLpisCasePlaceRelations = require('./PgLpisCasePlaceRelations');
 const PgLpisCaseViewRelations = require('./PgLpisCaseViewRelations');
 const PgLpisCaseChanges = require('./PgLpisCaseChanges');
+const MongoDataViews = require('../visualization/MongoDataViews');
 
 class PgLpisCases extends PgCollection {
 	constructor(pgPool, pgSchema, mongo) {
@@ -20,6 +21,7 @@ class PgLpisCases extends PgCollection {
 		this._pgLpisCasePlaceRelations = new PgLpisCasePlaceRelations(pgPool, pgSchema, mongo);
 		this._pgLpisCaseViewRelations = new PgLpisCaseViewRelations(pgPool, pgSchema, mongo);
 		this._pgLpisCaseChanges = new PgLpisCaseChanges(pgPool, pgSchema)
+		this._mongoDataViews = new MongoDataViews(mongo);
 	}
 
 	create(payloadData, user, extra) {
@@ -123,14 +125,41 @@ class PgLpisCases extends PgCollection {
 					})
 			})
 			.then((ids) => {
+				if (extra.configuration || extra.configuration.scope_id) {
+					return this._createMongoBasicDataView(extra.configuration.scope_id, ids.place_id)
+						.then((basicDataViewId) => {
+							return Promise
+								.all([
+									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.CREATE),
+									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.READ),
+									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.UPDATE),
+									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.DELETE)
+								])
+								.then(() => {
+									return basicDataViewId;
+								})
+						})
+						.then((basicDataViewId) => {
+							return this._pgLpisCaseViewRelations
+								.create({data: {lpis_case_id: ids.lpis_case_id, view_id: basicDataViewId}}, user, extra)
+						})
+						.then(() => {
+							return ids;
+						})
+				} else {
+					return ids;
+				}
+			})
+			.then((ids) => {
 				let promises = [];
 
-				promises.push(this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.CREATE));
-				promises.push(this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.READ));
-				promises.push(this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.UPDATE));
-				promises.push(this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.DELETE));
-
-				return Promise.all(promises)
+				return Promise
+					.all([
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.CREATE),
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.READ),
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.UPDATE),
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.DELETE)
+					])
 					.then(() => {
 						return ids;
 					})
@@ -146,6 +175,31 @@ class PgLpisCases extends PgCollection {
 					uuid: uuid,
 					status: `error`,
 					message: error.message
+				}
+			})
+	}
+
+	_createMongoBasicDataView(scope_id, place_id) {
+		return this._getMongoBasicDataViewParametersByScopeId(scope_id)
+			.then(([theme_id, period_id]) => {
+				if (!theme_id || !period_id || !scope_id || !place_id) {
+					throw new Error('missing id');
+				}
+				return this._mongoDataViews.defaultForScope(scope_id, theme_id, place_id, period_id);
+			});
+	}
+
+	_getMongoBasicDataViewParametersByScopeId(scope_id) {
+		return this._mongo
+			.collection(`theme`)
+			.find({dataset: scope_id})
+			.toArray()
+			.then((mongoResults) => {
+				if (mongoResults[0]) {
+					return [
+						mongoResults[0]['_id'],
+						mongoResults[0]['years'][0]
+					];
 				}
 			})
 	}
@@ -222,7 +276,7 @@ class PgLpisCases extends PgCollection {
 	populateData(payloadData) {
 		if (payloadData.hasOwnProperty('lpis_cases') && payloadData['lpis_cases'].length) {
 			let listOfIds = _.compact(_.map(payloadData['lpis_cases'], 'id'));
-			if(listOfIds.length) {
+			if (listOfIds.length) {
 				return this.get({any: {id: listOfIds}, unlimited: true})
 					.then((currentResults) => {
 						let extra = currentResults.extra;
@@ -281,6 +335,24 @@ class PgLpisCases extends PgCollection {
 								payloadData[extraDataType] = lpisCaseChanges.data;
 							})
 					)
+				} else if (extraDataType === `dataviews`) {
+					let dataViewsIds = _.map(payloadData['lpis_cases'], 'data.view_id');
+
+					extraPopulations.push(
+						this._mongo.collection('dataview').find({_id: {$in: dataViewsIds}}).toArray().then((mongoResults) => {
+							payloadData[extraDataType] = _.map(mongoResults, (mongoResult) => {
+								let data = () => {
+									delete mongoResult['_id'];
+									return mongoResult;
+								};
+
+								return {
+									id: mongoResult._id,
+									data: data()
+								}
+							});
+						})
+					);
 				}
 			}
 		});
@@ -332,7 +404,7 @@ class PgLpisCases extends PgCollection {
 		let query = [];
 		query.push(`SELECT`);
 
-		if(idOnly) {
+		if (idOnly) {
 			query.push(`"a"."id" AS id`);
 		} else {
 			query.push(`"a"."id" AS id,`);
@@ -355,7 +427,7 @@ class PgLpisCases extends PgCollection {
 
 		query.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
 
-		if(!idOnly) {
+		if (!idOnly) {
 			query.push(`LEFT JOIN "${this._schema}"."${PgLpisCasePlaceRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
 			query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS c ON c.lpis_case_id = a.id`);
 		}
@@ -427,7 +499,8 @@ class PgLpisCases extends PgCollection {
 
 				payload.extra = {
 					places: true,
-					lpis_case_changes: true
+					lpis_case_changes: true,
+					dataviews: true
 				};
 			})
 			.then(() => {
@@ -510,7 +583,7 @@ class PgLpisCases extends PgCollection {
 								}
 							})
 							.then(() => {
-								if(view_id) {
+								if (view_id) {
 									return this._pgLpisCaseViewRelations.update([{lpis_case_id: id, view_id: view_id}]);
 								}
 							})
