@@ -54,34 +54,34 @@ function getLocationConf(params, req, res, callback) {
 
 				var dataset = results.dataset[datasetId];
 
-				if(dataset && ((dataset.configuration && !dataset.configuration.plainScope) || !dataset.configuration)) {
-					async.each(locationsOfDataset, function(location, locationsIteratingCallback){
-						//var location = locationsOfDataset[i];
+				async.each(locationsOfDataset, function(location, locationsIteratingCallback){
+					//var location = locationsOfDataset[i];
 
-						/**
-						 * New approach: location has a BBOX, it is the same as location in Front Office
-						 */
-						if(location.hasOwnProperty("bbox") && location.bbox) {
-							var loc = {
-								name: location.name,
-								locGid: null,
-								id: location._id,
-								dataset: datasetId,
-								location: location._id,
-								at: dataset.featureLayers[0],
-								bbox: location.bbox
-							};
-							logger.info("theme# getLocationConf(), Adding normal location with bbox - ", loc.name, dataset._id);
-							resultArr.push(loc);
+					/**
+					 * New approach: location has a BBOX, it is the same as location in Front Office
+					 */
+					if(dataset && location.hasOwnProperty("bbox") && location.bbox) {
+						var loc = {
+							name: location.name,
+							locGid: null,
+							id: location._id,
+							dataset: datasetId,
+							location: location._id,
+							at: dataset.featureLayers[0],
+							bbox: location.bbox
+						};
+						logger.info("theme# getLocationConf(), Adding normal location with bbox - ", loc.name, dataset._id);
+						resultArr.push(loc);
+						return locationsIteratingCallback(null);
+					}
+					/**
+					 * Old approach: location has no BBOX, it's multilocation in AU layer - polygons are separate locations
+					 */
+					else{
+						if(!dataset || !dataset.hasOwnProperty("featureLayers")){
+							logger.trace("theme# getLocationConf(), empty dataset.featureLayers");
 							return locationsIteratingCallback(null);
-						}
-						/**
-						 * Old approach: location has no BBOX, it's multilocation in AU layer - polygons are separate locations
-						 */
-						else{
-							if(!dataset || !dataset.hasOwnProperty("featureLayers")){
-								logger.trace("theme# getLocationConf(), empty dataset.featureLayers");
-							}
+						} else {
 							getLocationsFromDB({
 								location: location._id,
 								areaTemplate: dataset.featureLayers[0],
@@ -99,13 +99,11 @@ function getLocationConf(params, req, res, callback) {
 								return locationsIteratingCallback(null)
 							});
 						}
+					}
 
-					}, function locationsIteratingFinalCallback(err){
-						datasetMapIterationCallback(err);
-					}); // todo
-				} else {
-					datasetMapIterationCallback();
-				}
+				}, function locationsIteratingFinalCallback(err){
+					datasetMapIterationCallback(err);
+				}); // todo
 			}, function datasetMapIterationFinalCallback(err){
 				if(err){
 					logger.error('theme#getLocationInfo Error: ', err);
