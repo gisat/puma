@@ -19,6 +19,11 @@ class MongoDataViews {
         return collection.insert(dataView);
     }
 
+    update(id, data) {
+		let collection = this._connection.collection(MongoDataView.collectionName());
+		return collection.update({_id: id}, {$set: data});
+    }
+
     defaultForScope(scope, theme, location, period) {
         let collection = this._connection.collection(MongoDataView.collectionName());
         let id = conn.getNextId();
@@ -37,9 +42,7 @@ class MongoDataViews {
                 "name" : "Initial",
                 "description" : "",
                 "language" : "en",
-                "locations" : [
-                    location
-                ],
+				"locations": location ? [location] : [],
                 "selMap": {},
                 "choroplethCfg": [],
                 "pagingUseSelected": false,

@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const turf = require('@turf/turf');
 
 const PgCollection = require('../common/PgCollection');
 const PgPermissions = require('../security/PgPermissions');
@@ -87,24 +88,7 @@ class PgLpisCases extends PgCollection {
 					return queryResult.rows[0].id;
 				}
 			})
-			.then((id) => {
-				if (id) {
-					return this._createMongoPlace(keys, data).then((pMongoPlace) => {
-						return {
-							lpis_case_id: id,
-							place_id: Number(pMongoPlace['ops'][0]['_id'])
-						}
-					})
-				}
-			})
-			.then((ids) => {
-				return this._pgLpisCasePlaceRelations
-					.create({data: ids}, user, extra)
-					.then(() => {
-						return ids;
-					});
-			})
-			.then((ids) => {
+			.then((lpis_case_id) => {
 				return this._pgLpisCaseChanges
 					.create(
 						{
@@ -112,7 +96,8 @@ class PgLpisCases extends PgCollection {
 								{
 									data: {
 										changed_by: user.id,
-										lpis_case_id: ids.lpis_case_id,
+										// lpis_case_id: ids.lpis_case_id,
+										lpis_case_id: lpis_case_id,
 										status: status
 									}
 								}
@@ -121,12 +106,12 @@ class PgLpisCases extends PgCollection {
 						user
 					)
 					.then(() => {
-						return ids;
+						return lpis_case_id;
 					})
 			})
-			.then((ids) => {
+			.then((lpis_case_id) => {
 				if (extra.configuration || extra.configuration.scope_id) {
-					return this._createMongoBasicDataView(extra.configuration.scope_id, ids.place_id)
+					return this._createMongoBasicDataView(extra.configuration.scope_id)
 						.then((basicDataViewId) => {
 							return Promise
 								.all([
@@ -140,33 +125,56 @@ class PgLpisCases extends PgCollection {
 								})
 						})
 						.then((basicDataViewId) => {
+							let featureBefore = {geometry: data['geometry_before'], type: `Feature`};
+							let featureAfter = {geometry: data['geometry_after'], type: `Feature`};
+							let mergedFeatures = data['geometry_before'] && data['geometry_after'] ? turf.union(featureBefore, featureAfter) : featureBefore;
+							let boundingBox = turf.bbox(mergedFeatures);
+							let diagonalDistance = turf.distance(turf.point([boundingBox[0], boundingBox[1]]), turf.point([boundingBox[2], boundingBox[3]]));
+							let centroid = turf.centroid(mergedFeatures);
+							return this._mongoDataViews
+								.update(
+									basicDataViewId,
+									{
+										"conf.worldWindState": {
+											"range": diagonalDistance * 1000 * 1.2, // set webworldwind range in meters plus buffer
+											"location": {
+												"latitude": centroid.geometry.coordinates[1],
+												"longitude": centroid.geometry.coordinates[0]
+											}
+										}
+									})
+								.then(() => {
+									return basicDataViewId;
+								})
+						})
+						.then((dataViewId) => {
 							return this._pgLpisCaseViewRelations
-								.create({data: {lpis_case_id: ids.lpis_case_id, view_id: basicDataViewId}}, user, extra)
+								.create({data: {lpis_case_id: lpis_case_id, view_id: dataViewId}}, user, extra)
 						})
 						.then(() => {
-							return ids;
+							return lpis_case_id;
 						})
 				} else {
-					return ids;
+					return lpis_case_id;
 				}
 			})
-			.then((ids) => {
+			.then((lpis_case_id) => {
 				let promises = [];
 
 				return Promise
 					.all([
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.CREATE),
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.READ),
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.UPDATE),
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), ids.lpis_case_id, Permission.DELETE)
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.CREATE),
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.READ),
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.UPDATE),
+						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.DELETE)
 					])
 					.then(() => {
-						return ids;
+						return lpis_case_id;
 					})
 			})
-			.then((ids) => {
+			.then((lpis_case_id) => {
 				return {
-					id: ids.lpis_case_id,
+					id: lpis_case_id,
 					uuid: uuid
 				};
 			})
@@ -179,13 +187,13 @@ class PgLpisCases extends PgCollection {
 			})
 	}
 
-	_createMongoBasicDataView(scope_id, place_id) {
+	_createMongoBasicDataView(scope_id) {
 		return this._getMongoBasicDataViewParametersByScopeId(scope_id)
 			.then(([theme_id, period_id]) => {
-				if (!theme_id || !period_id || !scope_id || !place_id) {
+				if (!theme_id || !period_id || !scope_id) {
 					throw new Error('missing id');
 				}
-				return this._mongoDataViews.defaultForScope(scope_id, theme_id, place_id, period_id);
+				return this._mongoDataViews.defaultForScope(scope_id, theme_id, null, period_id);
 			});
 	}
 
@@ -498,7 +506,7 @@ class PgLpisCases extends PgCollection {
 				});
 
 				payload.extra = {
-					places: true,
+					// places: true,
 					lpis_case_changes: true,
 					dataviews: true
 				};
