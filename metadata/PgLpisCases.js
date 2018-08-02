@@ -294,12 +294,6 @@ class PgLpisCases extends PgCollection {
 								let currentResult = _.find(currentResults.data, {id: record.id});
 								if (currentResult) {
 									record.data = currentResult.data;
-
-									record.data['place_id'] = record.data['place_ids'] ? record.data['place_ids'][0] : null;
-									record.data['view_id'] = record.data['view_ids'] ? record.data['view_ids'][0] : null;
-
-									delete record.data['place_ids'];
-									delete record.data['view_ids'];
 								}
 							}
 							return record;
@@ -408,12 +402,14 @@ class PgLpisCases extends PgCollection {
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
 		pagingQuery.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
 
 		let query = [];
 		query.push(`SELECT`);
 
 		if (idOnly) {
-			query.push(`"a"."id" AS id`);
+			query.push(`"a"."id" AS id,`);
+			query.push(`(array_agg("b"."view_id") FILTER (WHERE "b"."view_id" IS NOT NULL))[1] AS view_id`);
 		} else {
 			query.push(`"a"."id" AS id,`);
 			query.push(`"a"."submit_date",`);
@@ -427,18 +423,13 @@ class PgLpisCases extends PgCollection {
 			query.push(`"a"."evaluation_description",`);
 			query.push(`"a"."evaluation_description_other",`);
 			query.push(`"a"."evaluation_used_sources",`);
-			query.push(`array_agg("b"."place_id") FILTER (WHERE "b"."place_id" IS NOT NULL) AS place_ids,`);
-			query.push(`array_agg("c"."view_id") FILTER (WHERE "c"."view_id" IS NOT NULL) AS view_ids,`);
+			query.push(`(array_agg("b"."view_id") FILTER (WHERE "b"."view_id" IS NOT NULL))[1] AS view_id,`);
 			query.push(`ST_AsGeoJSON("a"."geometry_before") AS geometry_before,`);
 			query.push(`ST_AsGeoJSON("a"."geometry_after") AS geometry_after`);
 		}
 
 		query.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
-
-		if (!idOnly) {
-			query.push(`LEFT JOIN "${this._schema}"."${PgLpisCasePlaceRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
-			query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS c ON c.lpis_case_id = a.id`);
-		}
+		query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
 
 		if (keys.length || like || any) {
 			let where = [];
