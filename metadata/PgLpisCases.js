@@ -561,27 +561,6 @@ class PgLpisCases extends PgCollection {
 								values
 							)
 							.then(() => {
-								return this._pgLpisCasePlaceRelations.get({lpis_case_id: id, unlimited: true})
-							})
-							.then((lpis_case_place_relations) => {
-								let placeId = lpis_case_place_relations.data[0].data['place_id'];
-								let update = {};
-
-								if (data['case_key']) {
-									update['caseName'] = `lpis_case:${data['case_key']}`;
-								}
-								if (data['geometry_before']) {
-									update['beforeGeometry'] = data['geometry_before'];
-								}
-								if (data['geometry_after']) {
-									update['afterGeometry'] = data['geometry_after'];
-								}
-
-								if (Object.keys(update).length) {
-									return this._mongo.collection('location').update({_id: placeId}, update);
-								}
-							})
-							.then(() => {
 								if (view_id) {
 									return this._pgLpisCaseViewRelations.update([{lpis_case_id: id, view_id: view_id}]);
 								}
