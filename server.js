@@ -65,7 +65,7 @@ function initServer(err) {
 	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
-	app.use(express.bodyParser({limit: '50mb'}));
+	app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
 	app.use(session({
 		name: "panthersid",
@@ -122,7 +122,8 @@ function initServer(err) {
 	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
 
 	logger.info('Going to listen on port ' + config.localPort + '...');
-	app.listen(config.localPort);
+    let server = app.listen(config.localPort);
+    server.setTimeout(600000);
 	logger.info('Listening on port ' + config.localPort);
 }
 
