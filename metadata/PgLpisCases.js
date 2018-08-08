@@ -136,7 +136,8 @@ class PgLpisCases extends PgCollection {
 									basicDataViewId,
 									{
 										"conf.worldWindState": {
-											"range": diagonalDistance * 1000 * 1.2, // set webworldwind range in meters plus buffer
+											"range": diagonalDistance * 1000, // set webworldwind range in meters plus buffer
+											"considerElevation": true,
 											"location": {
 												"latitude": centroid.geometry.coordinates[1],
 												"longitude": centroid.geometry.coordinates[0]
