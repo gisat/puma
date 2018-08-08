@@ -555,34 +555,56 @@ class PgLpisCases extends PgCollection {
 						values.push(data[key]);
 					});
 
-					if (sets.length && sets.length === values.length) {
-						return this._pool
-							.query(
-								`UPDATE "${this._schema}"."${PgLpisCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id};`,
-								values
-							)
-							.then(() => {
-								if (view_id) {
-									return this._pgLpisCaseViewRelations.update([{lpis_case_id: id, view_id: view_id}]);
-								}
-							})
-							.then(() => {
-								this._pgLpisCaseChanges.create(
-									{
-										lpis_case_changes: [
-											{
-												data: {
-													changed_by: user.id,
-													lpis_case_id: id,
-													status: status
+					let updated = false;
+					return Promise
+						.resolve()
+						.then(() => {
+							if (sets.length && sets.length === values.length) {
+								return this._pool
+									.query(
+										`UPDATE "${this._schema}"."${PgLpisCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id};`,
+										values
+									)
+									.then((results) => {
+										if (view_id) {
+											return this._pgLpisCaseViewRelations.update([{
+												lpis_case_id: id,
+												view_id: view_id
+											}]);
+										}
+									})
+									.then(() => {
+										updated = true;
+									})
+							}
+						})
+						.then(() => {
+							if (status) {
+								return this._pgLpisCaseChanges
+									.create(
+										{
+											lpis_case_changes: [
+												{
+													data: {
+														changed_by: user.id,
+														lpis_case_id: id,
+														status: status
+													}
 												}
-											}
-										]
-									},
-									user
-								)
-							})
-					}
+											]
+										},
+										user
+									)
+									.then(() => {
+										updated = true;
+									})
+							}
+						})
+						.then(() => {
+							if(!updated) {
+								throw new Error(`nothing to update`);
+							}
+						})
 				} else if (uuid) {
 					return this._createOne(object, payloadData, user, extra)
 						.then((result) => {
@@ -595,6 +617,13 @@ class PgLpisCases extends PgCollection {
 				return {
 					id: id,
 					uuid: uuid
+				}
+			})
+			.catch((error) => {
+				return {
+					uuid: uuid,
+					status: `error`,
+					message: error.message
 				}
 			})
 	}
