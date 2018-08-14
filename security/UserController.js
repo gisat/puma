@@ -48,7 +48,7 @@ class UserController {
 
 		this.users.all().then(users => {
 			let jsonUsers = users.map(user => user.json());
-			response.json(JSON.stringify({data: jsonUsers}));
+			response.json({data: jsonUsers});
 		}).catch(err => {
 			logger.error('UserController#readAll Error: ', err);
 			response.status(500);

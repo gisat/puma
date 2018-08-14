@@ -21,94 +21,58 @@ class PgUsers {
         this.permissions = new PgPermissions(pool, schema);
     }
 
-    all() {
-        let usersByKeys = {}, userKeys = [];
-        return this.pgPool.query(`SELECT usr.id, usr.email, usr.password, usr.name, permissions.resource_id, permissions.resource_type, 
-            permissions.permission, gp.resource_id as gresource_id, gp.resource_type as gresource_type, gp.permission as gpermission,
-            groups.id as group_id, groups.name as group_name
-            FROM ${this.schema}.panther_users as usr
-              LEFT JOIN ${this.schema}.permissions as permissions on usr.id = permissions.user_id
-              LEFT JOIN ${this.schema}.group_has_members ghm ON usr.id = ghm.user_id
-              LEFT JOIN ${this.schema}.groups groups ON ghm.group_id = groups.id
-              LEFT JOIN ${this.schema}.group_permissions gp ON ghm.group_id = gp.id
-              WHERE permissions.resource_type = 'dataset'
-                    OR permissions.resource_type = 'location'
-                    OR permissions.resource_type = 'topic'
-                    OR permissions.resource_type = 'layer_wms'
-                    OR permissions.resource_type is null;`).then(result => {
-            let groupped = _.groupBy(result.rows, 'id');
+	all() {
+		return this.pgPool.query(
+			`
+			SELECT users.*,
+				   (SELECT json_agg(_)
+					FROM (SELECT resource_id AS resourceId, resource_type AS resourceType, permission
+						  FROM "${this.schema}"."permissions"
+						  WHERE user_id = users.id) AS _)     AS permissions,
+				   (SELECT json_agg(_)
+					FROM (SELECT g.id, g.name, (SELECT array_agg(_)
+												FROM (SELECT resource_id AS resourceId, resource_type AS resourceType, permission
+													  FROM "${this.schema}"."group_permissions" AS gp
+													  WHERE gp.group_id = g.id) AS _) AS permissions
+						  FROM "${this.schema}"."group_has_members" AS ghm
+								 LEFT JOIN "${this.schema}"."groups" AS g ON g.id = ghm.group_id
+						  WHERE ghm.user_id = users.id) AS _) AS groups,
+				   (SELECT json_agg(_)
+					FROM (SELECT DISTINCT p.resource_type AS "resourceType", p.permission
+						  FROM "${this.schema}"."permissions" AS p
+						  WHERE p.permission = 'POST'
+							AND p.user_id = users.id) AS _) AS "permissionsTowards",
+				   (SELECT json_agg(_)
+					FROM (SELECT p.resource_type AS "resourceType", p.permission, p.user_id
+						  FROM "${this.schema}"."permissions" AS p
+						  WHERE p.resource_id = users.id::TEXT AND p.resource_type = 'user') AS _) AS "permissionsUsers",
+				   (SELECT json_agg(_)
+					FROM (SELECT gp.resource_type AS "resourceType", gp.permission, gp.group_id
+						  FROM "${this.schema}"."group_permissions" AS gp
+						  WHERE gp.resource_id = users.id::TEXT AND gp.resource_type = 'user') AS _) AS "permissionsGroups"
+			FROM "${this.schema}"."panther_users" AS users;
+            `
+		).then((pgResult) => {
+			return _.map(pgResult.rows, (row) => {
+				let user = new User(
+					row.id,
+					row.permissions,
+					_.map(row.groups, (group) => {
+							return new Group(group.id, group.permissions, group.name)
+						}
+					)
+				);
 
-            userKeys = Object.keys(groupped);
-            userKeys.forEach(userId => {
-                let permissions = [];
+				user.email = row.email;
+				user.username = row.name;
+				user.permissionsTowards = row.permissionsTowards;
+				user.permissionsUsers = row.permissionsUsers;
+				user.permissionsGroups = row.permissionsGroups;
 
-                groupped[userId].forEach(permission => {
-                    permissions.push({
-                        resourceId: permission.resource_id,
-                        resourceType: permission.resource_type,
-                        permission: permission.permission,
-                        id: permission.id
-                    });
-                });
-
-                let grouppedByGroup = _.groupBy(groupped[userId], 'group_id');
-
-                let groups = Object.keys(grouppedByGroup).map(groupId => {
-                    let permissions = [];
-
-                    grouppedByGroup[groupId].forEach(permission => {
-                        permissions.push({
-                            resourceId: permission.gresource_id,
-                            resourceType: permission.gresource_type,
-                            permission: permission.gpermission,
-                            id: permission.group_id
-                        });
-                    });
-
-                    return new Group(grouppedByGroup[groupId][0].id, permissions, grouppedByGroup[groupId][0].name)
-                });
-
-                let user = new User(groupped[userId][0].id, permissions, groups);
-                user.username = groupped[userId][0].name;
-                user.email = groupped[userId][0].email;
-
-                usersByKeys[user.id] = user;
-            });
-
-            return this.pgPool.query(`SELECT * FROM ${this.schema}.permissions WHERE permission = '${Permission.CREATE}' AND user_id IN ('${userKeys.join('\',\'')}');`);
-        }).then(result => {
-            result.rows.forEach(row => {
-                usersByKeys[row.user_id].permissionsTowards.push({
-                    resourceType: row.resource_type,
-                    permission: row.permission
-                });
-            });
-
-            return this.pgPool.query(`SELECT * FROM ${this.schema}.permissions WHERE resource_id IN ('${userKeys.join('\',\'')}')`);
-        }).then(result => {
-            result.rows.forEach(row => {
-                usersByKeys[row.resource_id].permissionsUsers.push({
-                    userId: row.user_id,
-                    resourceType: row.resource_type,
-                    permission: row.permission
-                });
-            });
-
-            return this.pgPool.query(`SELECT * FROM ${this.schema}.group_permissions WHERE resource_id IN ('${userKeys.join('\',\'')}')`);
-        }).then(result => {
-            result.rows.forEach(row => {
-                usersByKeys[row.resource_id].permissionsGroups.push({
-                    groupId: row.group_id,
-                    resourceType: row.resource_type,
-                    permission: row.permission
-                });
-            });
-
-            return userKeys.map(userId => {
-                return usersByKeys[userId];
-            })
-        });
-    }
+				return user;
+			})
+		})
+	}
 
 	jsonSimple() {
         return this.pgPool
