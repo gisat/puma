@@ -9,7 +9,7 @@ const PgLpisCases = require('./PgLpisCases');
 
 class PgMetadata extends PgCollection {
 	constructor(pgPool, pgSchema, mongo) {
-		super(pgPool, pgSchema, 'PgMetadata');
+		super(pgPool, pgSchema, mongo, 'PgMetadata');
 
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 		this._pgScenarioCases = new PgScenarioCases(pgPool, pgSchema);
