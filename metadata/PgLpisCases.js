@@ -436,8 +436,9 @@ class PgLpisCases extends PgCollection {
 		query.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
 		query.push(`LEFT JOIN "${this._schema}"."panther_users" AS pu ON pu.id = p.user_id`);
 
+		let where = [];
+
 		if (keys.length || like || any) {
-			let where = [];
 			keys.forEach((key) => {
 				where.push(`${key === "id" ? '"a".' : ''}"${key}" = ${_.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`}`);
 			});
@@ -453,14 +454,14 @@ class PgLpisCases extends PgCollection {
 					where.push(`${key === 'id' ? `"a"."id"` : `"${key}"`} IN (${any[key].join(', ')})`);
 				});
 			}
-
-			where.push(`"p"."resource_type" = '${PgLpisCases.tableName()}'`);
-			where.push(`"p"."permission" = '${Permission.READ}'`);
-			where.push(`"pu"."id" = ${user.id}`);
-
-			query.push(`WHERE ${where.join(' AND ')}`);
-			pagingQuery.push(`WHERE ${where.join(' AND ')}`);
 		}
+
+		where.push(`"p"."resource_type" = '${PgLpisCases.tableName()}'`);
+		where.push(`"p"."permission" = '${Permission.READ}'`);
+		where.push(`"pu"."id" = ${user.id}`);
+
+		query.push(`WHERE ${where.join(' AND ')}`);
+		pagingQuery.push(`WHERE ${where.join(' AND ')}`);
 
 		query.push(`GROUP BY "a"."id"`);
 		query.push(`ORDER BY "a"."id"`);
