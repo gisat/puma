@@ -6,10 +6,12 @@ const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const SzifCaseCreator = require('../integration/SzifCaseCreator');
 const MongoLocations = require('../metadata/MongoLocations');
+const MongoScope = require('../metadata/MongoScope');
 const PgLpisCasePlaceRelations = require('./PgLpisCasePlaceRelations');
 const PgLpisCaseViewRelations = require('./PgLpisCaseViewRelations');
 const PgLpisCaseChanges = require('./PgLpisCaseChanges');
 const MongoDataViews = require('../visualization/MongoDataViews');
+const MongoFilteredCollection = require('../data/MongoFilteredCollection');
 
 class PgLpisCases extends PgCollection {
 	constructor(pgPool, pgSchema, mongo) {
@@ -54,10 +56,24 @@ class PgLpisCases extends PgCollection {
 		let keys = Object.keys(data);
 		let columns, values;
 
+		let mongoScope;
+
 		return Promise.resolve()
 			.then(() => {
 				if (!status) {
 					throw new Error(`status not specified`);
+				}
+			})
+			.then(() => {
+				if(extra && extra.configuration && extra.configuration.scope_id) {
+					return new MongoFilteredCollection({_id: extra.configuration.scope_id}, this._mongo, MongoScope.collectionName())
+						.json()
+						.then((mongoResults) => {
+							mongoScope = {
+								...mongoResults[0],
+								key: mongoResults[0]._id
+							};
+						});
 				}
 			})
 			.then(() => {
@@ -110,16 +126,44 @@ class PgLpisCases extends PgCollection {
 					})
 			})
 			.then((lpis_case_id) => {
-				if (extra.configuration || extra.configuration.scope_id) {
-					return this._createMongoBasicDataView(extra.configuration.scope_id)
+				if (mongoScope) {
+					return this._createMongoBasicDataView(mongoScope.key)
 						.then((basicDataViewId) => {
+							let promises = [
+								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.CREATE),
+								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.READ),
+								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.UPDATE),
+								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.DELETE)
+							];
+
+							if(
+								mongoScope
+								&& mongoScope.hasOwnProperty('configuration')
+								&& mongoScope.configuration.hasOwnProperty('dromasLpisChangeReview')
+								&& mongoScope.configuration.dromasLpisChangeReview.hasOwnProperty('groups')
+							) {
+								Object.keys(mongoScope.configuration.dromasLpisChangeReview.groups).forEach((group) => {
+									promises.push(
+										this._pgPermissions.addGroup(
+											mongoScope.configuration.dromasLpisChangeReview.groups[group],
+											`dataset`,
+											basicDataViewId,
+											Permission.READ
+										)
+									);
+									promises.push(
+										this._pgPermissions.addGroup(
+											mongoScope.configuration.dromasLpisChangeReview.groups[group],
+											`dataset`,
+											basicDataViewId,
+											Permission.UPDATE
+										)
+									);
+								});
+							}
+
 							return Promise
-								.all([
-									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.CREATE),
-									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.READ),
-									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.UPDATE),
-									this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.DELETE)
-								])
+								.all(promises)
 								.then(() => {
 									return basicDataViewId;
 								})
@@ -160,15 +204,46 @@ class PgLpisCases extends PgCollection {
 				}
 			})
 			.then((lpis_case_id) => {
-				let promises = [];
+				let promises = [
+					this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.CREATE),
+					this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.READ),
+					this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.UPDATE),
+					this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.DELETE)
+				];
+
+				if(
+					mongoScope
+					&& mongoScope.hasOwnProperty('configuration')
+					&& mongoScope.configuration.hasOwnProperty('dromasLpisChangeReview')
+					&& mongoScope.configuration.dromasLpisChangeReview.hasOwnProperty('groups')
+				) {
+					Object.keys(mongoScope.configuration.dromasLpisChangeReview.groups).forEach((group) => {
+						switch (group) {
+							case `gisatUsers`:
+							case `gisatAdmins`:
+							case `szifAdmins`:
+						}
+						promises.push(
+							this._pgPermissions.addGroup(
+								mongoScope.configuration.dromasLpisChangeReview.groups[group],
+								PgLpisCases.tableName(),
+								lpis_case_id,
+								Permission.READ
+							)
+						);
+						promises.push(
+							this._pgPermissions.addGroup(
+								mongoScope.configuration.dromasLpisChangeReview.groups[group],
+								PgLpisCases.tableName(),
+								lpis_case_id,
+								Permission.UPDATE
+							)
+						);
+					});
+				}
 
 				return Promise
-					.all([
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.CREATE),
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.READ),
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.UPDATE),
-						this._pgPermissions.add(user.id, PgLpisCases.tableName(), lpis_case_id, Permission.DELETE)
-					])
+					.all(promises)
 					.then(() => {
 						return lpis_case_id;
 					})
