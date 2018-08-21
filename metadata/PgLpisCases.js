@@ -282,11 +282,11 @@ class PgLpisCases extends PgCollection {
 		return Promise.all(parsedGeometries);
 	}
 
-	populateData(payloadData) {
+	populateData(payloadData, user) {
 		if (payloadData.hasOwnProperty('lpis_cases') && payloadData['lpis_cases'].length) {
 			let listOfIds = _.compact(_.map(payloadData['lpis_cases'], 'id'));
 			if (listOfIds.length) {
-				return this.get({any: {id: listOfIds}, unlimited: true})
+				return this.get({any: {id: listOfIds}, unlimited: true}, false, user)
 					.then((currentResults) => {
 						let extra = currentResults.extra;
 
@@ -363,7 +363,7 @@ class PgLpisCases extends PgCollection {
 		return Promise.all(extraPopulations);
 	}
 
-	get(filter, idOnly) {
+	get(filter, idOnly, user) {
 		let payload = {
 			data: null,
 		};
@@ -404,6 +404,8 @@ class PgLpisCases extends PgCollection {
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
 		pagingQuery.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
 		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."panther_users" AS pu ON pu.id = p.user_id`);
 
 		let query = [];
 		query.push(`SELECT`);
@@ -431,6 +433,8 @@ class PgLpisCases extends PgCollection {
 
 		query.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
 		query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
+		query.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
+		query.push(`LEFT JOIN "${this._schema}"."panther_users" AS pu ON pu.id = p.user_id`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -450,6 +454,10 @@ class PgLpisCases extends PgCollection {
 				});
 			}
 
+			where.push(`"p"."resource_type" = '${PgLpisCases.tableName()}'`);
+			where.push(`"p"."permission" = '${Permission.READ}'`);
+			where.push(`"pu"."id" = ${user.id}`);
+
 			query.push(`WHERE ${where.join(' AND ')}`);
 			pagingQuery.push(`WHERE ${where.join(' AND ')}`);
 		}
@@ -466,6 +474,8 @@ class PgLpisCases extends PgCollection {
 
 		query.push(`;`);
 		pagingQuery.push(`;`);
+
+		console.log(query.join(` `));
 
 		return this._pool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {

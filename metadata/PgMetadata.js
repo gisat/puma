@@ -80,7 +80,7 @@ class PgMetadata extends PgCollection {
 		_.forEach(this._metadataTypes, (metadataObject, metadataType) => {
 			if (types.includes(metadataType)) {
 				promises.push(
-					metadataObject.store.get(filter, true)
+					metadataObject.store.get(filter, true, user)
 						.then((results) => {
 							payload.data[metadataType] = results['data'];
 							if(_.isUndefined(payload['limit'])) {
@@ -92,7 +92,7 @@ class PgMetadata extends PgCollection {
 							if(_.isUndefined(payload['total'])) {
 								payload['total'] = results['total'];
 							}
-							return metadataObject.store.populateData(payload.data);
+							return metadataObject.store.populateData(payload.data, user);
 						})
 						.catch(() => {
 							payload.data[metadataType] = [];
