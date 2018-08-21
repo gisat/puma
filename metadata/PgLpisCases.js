@@ -551,8 +551,6 @@ class PgLpisCases extends PgCollection {
 		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		console.log(query.join(` `));
-
 		return this._pool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
 				if (payload.hasOwnProperty('total')) {
