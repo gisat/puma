@@ -10,6 +10,7 @@ const MongoScope = require('../metadata/MongoScope');
 const PgLpisCasePlaceRelations = require('./PgLpisCasePlaceRelations');
 const PgLpisCaseViewRelations = require('./PgLpisCaseViewRelations');
 const PgLpisCaseChanges = require('./PgLpisCaseChanges');
+const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
 const MongoFilteredCollection = require('../data/MongoFilteredCollection');
 
@@ -130,10 +131,10 @@ class PgLpisCases extends PgCollection {
 					return this._createMongoBasicDataView(mongoScope.key)
 						.then((basicDataViewId) => {
 							let promises = [
-								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.CREATE),
-								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.READ),
-								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.UPDATE),
-								this._pgPermissions.add(user.id, `dataset`, basicDataViewId, Permission.DELETE)
+								this._pgPermissions.add(user.id, MongoDataView.collectionName(), basicDataViewId, Permission.CREATE),
+								this._pgPermissions.add(user.id, MongoDataView.collectionName(), basicDataViewId, Permission.READ),
+								this._pgPermissions.add(user.id, MongoDataView.collectionName(), basicDataViewId, Permission.UPDATE),
+								this._pgPermissions.add(user.id, MongoDataView.collectionName(), basicDataViewId, Permission.DELETE)
 							];
 
 							if(
@@ -146,7 +147,7 @@ class PgLpisCases extends PgCollection {
 									promises.push(
 										this._pgPermissions.addGroup(
 											mongoScope.configuration.dromasLpisChangeReview.groups[group],
-											`dataset`,
+											MongoDataView.collectionName(),
 											basicDataViewId,
 											Permission.READ
 										)
@@ -154,7 +155,7 @@ class PgLpisCases extends PgCollection {
 									promises.push(
 										this._pgPermissions.addGroup(
 											mongoScope.configuration.dromasLpisChangeReview.groups[group],
-											`dataset`,
+											MongoDataView.collectionName(),
 											basicDataViewId,
 											Permission.UPDATE
 										)
