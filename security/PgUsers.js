@@ -40,7 +40,7 @@ class PgUsers {
 				   (SELECT json_agg(_)
 					FROM (SELECT DISTINCT p.resource_type AS "resourceType", p.permission
 						  FROM "${this.schema}"."permissions" AS p
-						  WHERE p.permission = 'POST'
+						  WHERE p.permission = '${Permission.CREATE}'
 							AND p.user_id = users.id) AS _) AS "permissionsTowards",
 				   (SELECT json_agg(_)
 					FROM (SELECT p.resource_type AS "resourceType", p.permission, p.user_id
