@@ -345,6 +345,10 @@ class PgUsers {
             return pUser;
         });
     }
+
+    static tableName() {
+        return `panther_users`;
+    }
 }
 
 module.exports = PgUsers;
