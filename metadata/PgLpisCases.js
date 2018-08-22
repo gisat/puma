@@ -222,23 +222,23 @@ class PgLpisCases extends PgCollection {
 							case `gisatUsers`:
 							case `gisatAdmins`:
 							case `szifAdmins`:
+								promises.push(
+									this._pgPermissions.addGroup(
+										mongoScope.configuration.dromasLpisChangeReview.groups[group],
+										PgLpisCases.tableName(),
+										lpis_case_id,
+										Permission.READ
+									)
+								);
+								promises.push(
+									this._pgPermissions.addGroup(
+										mongoScope.configuration.dromasLpisChangeReview.groups[group],
+										PgLpisCases.tableName(),
+										lpis_case_id,
+										Permission.UPDATE
+									)
+								);
 						}
-						promises.push(
-							this._pgPermissions.addGroup(
-								mongoScope.configuration.dromasLpisChangeReview.groups[group],
-								PgLpisCases.tableName(),
-								lpis_case_id,
-								Permission.READ
-							)
-						);
-						promises.push(
-							this._pgPermissions.addGroup(
-								mongoScope.configuration.dromasLpisChangeReview.groups[group],
-								PgLpisCases.tableName(),
-								lpis_case_id,
-								Permission.UPDATE
-							)
-						);
 					});
 				}
 
@@ -473,6 +473,8 @@ class PgLpisCases extends PgCollection {
 			delete filter['unlimited'];
 		}
 
+		let userGroupsIds = _.map(user.groups, 'id');
+
 		let keys = filter ? Object.keys(filter) : [];
 
 		let pagingQuery = [];
@@ -480,7 +482,7 @@ class PgLpisCases extends PgCollection {
 		pagingQuery.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
 		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
 		pagingQuery.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."panther_users" AS pu ON pu.id = p.user_id`);
+		pagingQuery.push(`LEFT JOIN "${this._schema}"."group_permissions" AS gp ON gp.resource_id = a.id::text`);
 
 		let query = [];
 		query.push(`SELECT`);
@@ -509,7 +511,7 @@ class PgLpisCases extends PgCollection {
 		query.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
 		query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
 		query.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
-		query.push(`LEFT JOIN "${this._schema}"."panther_users" AS pu ON pu.id = p.user_id`);
+		query.push(`LEFT JOIN "${this._schema}"."group_permissions" AS gp ON gp.resource_id = a.id::text`);
 
 		let where = [];
 
@@ -531,9 +533,19 @@ class PgLpisCases extends PgCollection {
 			}
 		}
 
-		where.push(`"p"."resource_type" = '${PgLpisCases.tableName()}'`);
-		where.push(`"p"."permission" = '${Permission.READ}'`);
-		where.push(`"pu"."id" = ${user.id}`);
+		let permissionsWhere = [
+			`p.resource_type = '${PgLpisCases.tableName()}' `,
+			`p.permission = '${Permission.READ}'`,
+			`p.user_id = ${user.id}`
+		];
+
+		let groupPermissionsWhere = [
+			`gp.resource_type = '${PgLpisCases.tableName()}'`,
+			`gp.permission = '${Permission.READ}'`,
+			`gp.group_id IN (${userGroupsIds.join(', ')})`
+		];
+
+		where.push(`((${permissionsWhere.join(' AND ')}) OR (${groupPermissionsWhere.join(' AND ')}))`);
 
 		query.push(`WHERE ${where.join(' AND ')}`);
 		pagingQuery.push(`WHERE ${where.join(' AND ')}`);
