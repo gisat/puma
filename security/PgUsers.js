@@ -65,6 +65,7 @@ class PgUsers {
 
 				user.email = row.email;
 				user.username = row.name;
+				user.phone = row.phone;
 				user.permissionsTowards = row.permissionsTowards;
 				user.permissionsUsers = row.permissionsUsers;
 				user.permissionsGroups = row.permissionsGroups;
@@ -161,17 +162,18 @@ class PgUsers {
     }
 
     /**
-     * It creates new user.* @param username {String} Username used for login and displayed in the BO
+     * It creates new user.
      * @param password {String} Password used for login.
      * @param name {String} Name displayed in the BackOffice
      * @param email {String} Email of the user used for email communication
+     * @param phone {String} Phone of the User. Used in the FrontOffice
      * @returns {Promise<Number>} Promise of id of the
      */
-    create(password, name, email) {
+    create(password, name, email, phone) {
         return new PasswordHash(password).toString().then(hash => {
             return this.pgPool.query(`
-			INSERT INTO ${this.schema}.panther_users (email, password, name) 
-				VALUES ('${email}', '${hash}', '${name}') 
+			INSERT INTO ${this.schema}.panther_users (email, password, name, phone) 
+				VALUES ('${email}', '${hash}', '${name}','${phone}') 
 				RETURNING id`
             )
         }).then(result => {
@@ -184,7 +186,8 @@ class PgUsers {
      * {
 	 		name: "Jakub Balhar",
 	 		password: "someRandomLongPassword",
-	 		username: "jakub@balhar.net"
+	 		username: "jakub@balhar.net",
+	 		phone: "713356732"
 
 			permissions: ["location", "dataset"],
 
@@ -217,6 +220,10 @@ class PgUsers {
 
         if(user.username) {
             updateUser += `UPDATE ${this.schema}.panther_users set email = '${user.username}' WHERE id = ${id};`;
+        }
+
+        if(user.phone) {
+            updateUser += `UPDATE ${this.schema}.panther_users set phone = '${user.phone}' WHERE id = ${id};`;
         }
 
         if(user.permissions) {
