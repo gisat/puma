@@ -144,7 +144,7 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
         }
 
         // Create view layer_xx.
-        sql += util.format('CREATE VIEW %s.%s AS SELECT ', SCHEMA, layerViewName);
+        sql += util.format('CREATE MATERIALIZED VIEW %s.%s AS SELECT ', SCHEMA, layerViewName);
         sql += 'a."' + areaLayerRef.fidColumn + '" AS gid,';
         sql += 'a."' + (areaLayerRef.nameColumn || areaLayerRef.fidColumn) + (areaLayerRef.nameColumn ? '"' : '"::VARCHAR') + ' AS name,';
         sql += areaLayerRef.parentColumn ? ('a."' + areaLayerRef.parentColumn + '" AS parentgid,') : 'NULL::integer AS parentgid,';
