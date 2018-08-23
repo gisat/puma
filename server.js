@@ -28,6 +28,7 @@ let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
 let MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
 let AddAuditInformation = require('./migration/AddAuditInformation');
 let AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
+let AddPhoneToUser = require('./migration/AddPhoneToUser');
 
 let CompoundAuthentication = require('./security/CompoundAuthentication');
 let PgAuthentication = require('./security/PgAuthentication');
@@ -144,6 +145,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddAuditInformation(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddPhoneToUser(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

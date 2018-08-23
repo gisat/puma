@@ -13,6 +13,7 @@ class User {
         this.groups = groups || [];
         this._username = '';
         this._email = '';
+        this._phone = '';
     }
 
     get username() {
@@ -29,6 +30,14 @@ class User {
 
     set email(value) {
         this._email = value;
+    }
+
+    get phone() {
+        return this._phone;
+    }
+
+    set phone(value) {
+        this._phone = value;
     }
 
     /**
@@ -57,7 +66,8 @@ class User {
             permissionsTowards: this.permissionsTowards,
             groups: this.groups.map(group => group.json()),
             username: this.username,
-            email: this.email
+            email: this.email,
+            phone: this.phone
         }
     }
 

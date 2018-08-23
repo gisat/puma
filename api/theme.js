@@ -6,6 +6,8 @@ var conn = require('../common/conn');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
+const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
+
 function getLocationConf(params, req, res, callback) {
 	async.auto({
 		dataset: function(asyncCallback) {
@@ -51,13 +53,14 @@ function getLocationConf(params, req, res, callback) {
 			async.forEachOf(datasetMap, function datasetMapIterator(locationsOfDataset, datasetId, datasetMapIterationCallback) {
 
 				var dataset = results.dataset[datasetId];
+
 				async.each(locationsOfDataset, function(location, locationsIteratingCallback){
 					//var location = locationsOfDataset[i];
 
 					/**
 					 * New approach: location has a BBOX, it is the same as location in Front Office
 					 */
-					if(location.hasOwnProperty("bbox") && location.bbox) {
+					if(dataset && location.hasOwnProperty("bbox") && location.bbox) {
 						var loc = {
 							name: location.name,
 							locGid: null,
@@ -67,7 +70,7 @@ function getLocationConf(params, req, res, callback) {
 							at: dataset.featureLayers[0],
 							bbox: location.bbox
 						};
-						logger.info("theme# getLocationConf(), Adding normal location with bbox - ",loc.name);
+						logger.info("theme# getLocationConf(), Adding normal location with bbox - ", loc.name, dataset._id);
 						resultArr.push(loc);
 						return locationsIteratingCallback(null);
 					}
@@ -77,29 +80,30 @@ function getLocationConf(params, req, res, callback) {
 					else{
 						if(!dataset || !dataset.hasOwnProperty("featureLayers")){
 							logger.trace("theme# getLocationConf(), empty dataset.featureLayers");
+							return locationsIteratingCallback(null);
+						} else {
+							getLocationsFromDB({
+								location: location._id,
+								areaTemplate: dataset.featureLayers[0],
+								isData: false,
+								dataset: datasetId
+							}, function getLocationsFromDBCallback(err, locations){
+								if(err){
+									logger.error("theme#getLocationConf getLocationsFromDB. Error: ", err);
+									return callback(err);
+								}
+								logger.info("theme# getLocationConf(), Adding multilocations of ", location.name, dataset._id);
+								if(locations != null){
+									resultArr = resultArr.concat(locations);
+								}
+								return locationsIteratingCallback(null)
+							});
 						}
-						getLocationsFromDB({
-							location: location._id,
-							areaTemplate: dataset.featureLayers[0],
-							isData: false,
-							dataset: datasetId
-						}, function getLocationsFromDBCallback(err, locations){
-							if(err){
-								logger.error("theme#getLocationConf getLocationsFromDB. Error: ", err);
-								return callback(err);
-							}
-							logger.info("theme# getLocationConf(), Adding multilocations of ", location.name);
-							if(locations != null){
-								resultArr = resultArr.concat(locations);
-							}
-							return locationsIteratingCallback(null)
-						});
 					}
 
 				}, function locationsIteratingFinalCallback(err){
 					datasetMapIterationCallback(err);
 				}); // todo
-
 			}, function datasetMapIterationFinalCallback(err){
 				if(err){
 					logger.error('theme#getLocationInfo Error: ', err);
@@ -160,7 +164,25 @@ function getLocationsFromDB(locationOptions, callback){
 	});
 }
 
-function getThemeYearConf(params, req, res, callback) {
+async function getThemeYearConf(params, req, res, callback) {
+	if (params['dataset']) {
+		let isPlainScope = await new FilteredMongoScopes({_id: Number(params['dataset'])}, conn.getMongoDb())
+			.json()
+			.then((filteredMongoScopes) => {
+				if (filteredMongoScopes && filteredMongoScopes.length) {
+					return filteredMongoScopes[0];
+				}
+			})
+			.then((mongoScope) => {
+				return mongoScope && mongoScope['configuration'] ? mongoScope['configuration']['plainScope'] : false;
+			});
+
+		if (isPlainScope) {
+			res.data = [];
+			return callback();
+		}
+	}
+
 	if (!params['dataset'] || !params['years']) {
 		res.data = [];
 		return callback(null);

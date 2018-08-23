@@ -1,4 +1,5 @@
 var MongoDataView = require('./MongoDataView');
+const conn = require(`../common/conn`);
 
 class MongoDataViews {
     constructor(connection) {
@@ -16,6 +17,11 @@ class MongoDataViews {
     add(dataView) {
         let collection = this._connection.collection(MongoDataView.collectionName());
         return collection.insert(dataView);
+    }
+
+    update(id, data) {
+		let collection = this._connection.collection(MongoDataView.collectionName());
+		return collection.update({_id: id}, {$set: data});
     }
 
     defaultForScope(scope, theme, location, period) {
@@ -36,9 +42,7 @@ class MongoDataViews {
                 "name" : "Initial",
                 "description" : "",
                 "language" : "en",
-                "locations" : [
-                    location
-                ],
+				"locations": location ? [location] : [],
                 "selMap": {},
                 "choroplethCfg": [],
                 "pagingUseSelected": false,

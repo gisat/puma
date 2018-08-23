@@ -86,6 +86,13 @@ DatabaseSchema.prototype.create = function () {
         changed timestamp, 
         changed_by int  
     );`;
+    let createUserDetailsTable = `CREATE TABLE IF NOT EXISTS "${this.schema}"."user_details" (
+    		id SERIAL PRIMARY KEY,
+    		user_id INTEGER,
+    		name TEXT,
+    		phone TEXT,
+    		organisation TEXT
+    );`;
 
     // Path means the location where the layer resides. It can be something like geonode:stuff or analysis:stuff or even
     // something else.
@@ -275,6 +282,40 @@ DatabaseSchema.prototype.create = function () {
       attribute_set_id integer,
       data_source_id   integer
     );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case" (
+        id  SERIAL PRIMARY KEY,
+        submit_date TIMESTAMP,
+        code_dpb    TEXT,
+        code_ji TEXT,
+        case_key    TEXT,
+        change_description  TEXT,
+        change_description_place    TEXT,
+        change_description_other    TEXT,
+        evaluation_result	    TEXT,
+        evaluation_description  TEXT,
+        evaluation_description_other    TEXT,
+        evaluation_used_sources TEXT,
+        geometry_before GEOMETRY,
+        geometry_after GEOMETRY
+     );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case_change" (
+        id SERIAL PRIMARY KEY,
+        changed_by  INTEGER,
+        date    TIMESTAMP WITH TIME ZONE,
+        lpis_case_id INTEGER,
+        status  TEXT,
+        change  JSON
+    );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case_view_relation" (
+    	id	SERIAL PRIMARY KEY,
+    	lpis_case_id	INTEGER,
+    	view_id	INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case_place_relation" (
+    	id	SERIAL PRIMARY KEY,
+    	lpis_case_id	INTEGER,
+    	place_id	INTEGER
+    );
     CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
       id   SERIAL PRIMARY KEY,
       name text,
@@ -315,6 +356,8 @@ DatabaseSchema.prototype.create = function () {
         return self._pool.query(createInternalUsersTable);
     }).then(function () {
         return self._pool.query(createInvitation);
+    }).then(function () {
+    	return self._pool.query(createUserDetailsTable);
     }).then(function () {
         return self._pool.query(createMetadataStructure);
     }).catch(function (err) {

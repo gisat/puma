@@ -13,6 +13,7 @@ class ImageMosaic {
 		this._destination = destination;
 		this._pgOptions = pgOptions;
 		this._groupBy = groupBy;
+		this._sources = null;
 
 		if (prepareData) {
 			this.prepareImageMosaicDataStructure();
@@ -21,8 +22,8 @@ class ImageMosaic {
 
 	getDatesByGeometry(geometry) {
 		let sourcesFilepath = `${this._destination}/.sources.json`;
-		let sourcesFile = fs.readFileSync(sourcesFilepath);
-		let sourcesJson = JSON.parse(sourcesFile);
+		this._sources = this._sources || fs.readFileSync(sourcesFilepath);
+		let sourcesJson = JSON.parse(this._sources);
 
 		if (geometry.type === `MultiPolygon`) {
 			geometry.type = `Polygon`;
@@ -31,18 +32,28 @@ class ImageMosaic {
 
 		let dates = [];
 		sourcesJson.sources.forEach(source => {
-			if (turf.intersect(geometry, source.geometry)) {
+			if(this.isSourceContainValidDataForGeometry(source, geometry)) {
 				let year = source.acquisition.substring(0, 4);
 				let month = source.acquisition.substring(4, 6);
 				let day = source.acquisition.substring(6, 8);
-				let hour = source.acquisition.substring(9, 11);
-				let min = source.acquisition.substring(11, 13);
-				let sec = source.acquisition.substring(13);
-				dates.push(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
+				// let hour = source.acquisition.substring(9, 11);
+				// let min = source.acquisition.substring(11, 13);
+				// let sec = source.acquisition.substring(13);
+				// dates.push(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
+				dates.push(`${year}-${month}-${day}`);
 			}
 		});
 
 		return _.uniq(dates);
+	}
+
+	isSourceContainValidDataForGeometry(source, geometry) {
+		for(let coordinates of source.geometry.coordinates) {
+			if (turf.intersect(geometry, turf.polygon(coordinates))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	prepareImageMosaicFsStructure(groups) {
@@ -72,7 +83,7 @@ class ImageMosaic {
 			];
 
 			let timeregex = [
-				`regex=[0-9]{8}T[0-9]{9}Z`
+				`regex=[0-9]{8}`
 			];
 
 			let datastore = [
@@ -109,11 +120,11 @@ class ImageMosaic {
 
 				if (this.getGroupFromAcquisition(fileMetadata.acquisition) === group) {
 					let geojson = this.getJsonObjectFromFile(pathToGeojson);
+					let geojsonBboxPolygon = turf.bboxPolygon(turf.bbox(geojson));
 					if (
 						geojson.features[0].geometry
-						&& turf.intersect(geojson.features[0].geometry, czechRepublicBboxGeometry)
+						&& turf.intersect(geojsonBboxPolygon, turf.polygon(czechRepublicBboxGeometry.coordinates))
 					) {
-						let pathToSourceTif = pathToGeojson.replace(`.geojson`, `.tif`);
 						let fileMetadata = this.getFileMetadata(pathToSourceTif);
 						if (fs.existsSync(pathToSourceTif)) {
 							let source = {
@@ -152,10 +163,10 @@ class ImageMosaic {
 		let pathParts = path.split(`/`);
 		let filename = pathParts.pop();
 		let code = pathParts.pop();
-		let acquisition = filename.match(/([0-9]{8}T[0-9]{6})/)[0];
+		let acquisition = filename.match(/([0-9]{8})/)[0];
 
 		return {
-			filename: `S2_${code}_${acquisition}000Z`,
+			filename: `S2_${code}_${acquisition}`,
 			acquisition: acquisition
 		}
 	}

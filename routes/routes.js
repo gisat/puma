@@ -138,7 +138,7 @@ module.exports = function(app) {
 
 	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
-	new PgMetadataController(app, pool, config.postgreSqlSchema);
+	new PgMetadataController(app, pool, config.postgreSqlSchema, mongo);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 

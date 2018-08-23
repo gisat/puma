@@ -10,9 +10,10 @@ class PgCollection {
      * @param schema {String} Schema containing data tables.
      * @param name {String} Name of this instance of Collection stored in PostgreSQL.
      */
-    constructor(pool, schema, name) {
+    constructor(pool, schema, mongo, name) {
         this._pool = pool;
         this._schema = schema;
+        this._mongo = mongo;
         this._name = name;
     }
 
@@ -20,20 +21,20 @@ class PgCollection {
 	 * It should create empty object with provided id.
 	 * @param object {Object} Collection of object properties to be created.
 	 */
-    create(object, user) {}
+    create(object, user, extra) {}
 
     /**
      * It should update the object properties.
      * @param object [{Object}] List of collection of object properties to be updated.
      */
-    update(object, user) {}
+    update(object, user, extra) {}
 
     /**
      * It should delete project with given id and all its dependencies. At this layer we expect the user to have the
      * privileges to do so.
      * @param object [{Object}] List of collection of object properties to be deleted.
      */
-    delete(object, user) {}
+    delete(object, user, extra) {}
 }
 
 module.exports = PgCollection;
