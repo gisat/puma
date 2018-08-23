@@ -78,7 +78,7 @@ function recreateLayerDb(layerRef, isUpdate, callback) {
 var removeLayerDbInternal = function (areaLayerRef, callback) {
     var viewName = 'views.layer_' + areaLayerRef['_id'];
     var tableName = 'views.base_' + areaLayerRef['_id'];
-    var sql = 'DROP VIEW IF EXISTS ' + viewName + ';';
+    var sql = 'DROP MATERIALIZED VIEW IF EXISTS ' + viewName + ';';
     sql += 'DROP TABLE IF EXISTS ' + tableName + ';';
     var client = conn.getPgDataDb();
     client.query(sql, function (err, results) {
@@ -122,7 +122,7 @@ var recreateLayerDbInternal = function (areaLayerRef, dataLayerRefs, isBase, isU
         var sql = 'BEGIN;\n';
 
         // Drop view layer_xx.
-        sql += util.format('DROP VIEW IF EXISTS %s.%s;\n', SCHEMA, layerViewName);
+        sql += util.format('DROP MATERIALIZED VIEW IF EXISTS %s.%s;\n', SCHEMA, layerViewName);
 
         // Create view base_xx.
         if (isBase && !isUpdate) {

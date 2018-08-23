@@ -53,7 +53,7 @@ class PgLayerViews {
             );
         }
         
-        return this._pgPool.pool().query(`DROP VIEW IF EXISTS ${this.targetSchema}.${PgLayerViews.name(layerReferenceId)}`);
+        return this._pgPool.pool().query(`DROP MATERIALIZED VIEW IF EXISTS ${this.targetSchema}.${PgLayerViews.name(layerReferenceId)}`);
     }
 
     // TODO: It wont work, when columns with same name from different tables are used.
