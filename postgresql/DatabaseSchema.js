@@ -331,6 +331,17 @@ DatabaseSchema.prototype.create = function () {
     );
     `;
 
+    let createUploadManagerTables = `
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."uploads" (
+    	uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    	path TEXT,
+    	name TEXT,
+    	owner INT,
+    	custom_name TEXT,
+    	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    `;
+
     var self = this;
     return this._pool.query(createSchema).then(function () {
         return self._pool.query(createStyleTable);
@@ -360,7 +371,9 @@ DatabaseSchema.prototype.create = function () {
     	return self._pool.query(createUserDetailsTable);
     }).then(function () {
         return self._pool.query(createMetadataStructure);
-    }).catch(function (err) {
+    }).then(function () {
+		return self._pool.query(createUploadManagerTables);
+	}).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });
 };

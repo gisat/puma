@@ -53,7 +53,7 @@ class PgLayerViews {
             );
         }
         
-        return this._pgPool.pool().query(`DROP VIEW IF EXISTS ${this.targetSchema}.${PgLayerViews.name(layerReferenceId)}`);
+        return this._pgPool.pool().query(`DROP MATERIALIZED VIEW IF EXISTS ${this.targetSchema}.${PgLayerViews.name(layerReferenceId)}`);
     }
 
     // TODO: It wont work, when columns with same name from different tables are used.
@@ -92,7 +92,7 @@ class PgLayerViews {
             attributes = pAttributes;
             return this.joinedDataTables(dataLayerReferences, sourceTable);
         }).then(joinedDataTables => {
-			let sql = `CREATE VIEW ${this.targetSchema}.${PgLayerViews.name(id)} AS SELECT
+			let sql = `CREATE MATERIALIZED VIEW ${this.targetSchema}.${PgLayerViews.name(id)} AS SELECT
                 ${sourceTable.alias}."${sourceTable.fidColumn}" AS gid,
                 ${this.nameColumn(sourceTable, nameColumn)},
                 ${sourceTable.alias}."the_geom" AS the_geom,
