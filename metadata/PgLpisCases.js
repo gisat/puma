@@ -170,9 +170,9 @@ class PgLpisCases extends PgCollection {
 								})
 						})
 						.then((basicDataViewId) => {
-							let featureBefore = {geometry: data['geometry_before'], type: `Feature`};
-							let featureAfter = {geometry: data['geometry_after'], type: `Feature`};
-							let mergedFeatures = data['geometry_before'] && data['geometry_after'] ? turf.union(featureBefore, featureAfter) : featureBefore;
+							let featureBefore = data['geometry_before'] ? {geometry: data['geometry_before'], type: `Feature`} : null;
+							let featureAfter = data['geometry_after'] ? {geometry: data['geometry_after'], type: `Feature`} : null;
+							let mergedFeatures = featureBefore && featureAfter ? turf.union(featureBefore, featureAfter) : featureBefore || featureAfter;
 							let boundingBox = turf.bbox(mergedFeatures);
 							let diagonalDistance = turf.distance(turf.point([boundingBox[0], boundingBox[1]]), turf.point([boundingBox[2], boundingBox[3]]));
 							let centroid = turf.centroid(mergedFeatures);
