@@ -20,6 +20,7 @@ class UserController {
         }
 
         app.post('/rest/invitation/user', this.invite.bind(this));
+        app.get('/rest/invitation/user/:hash', this.readInvitation.bind(this));
 
 		app.get('/rest/user', this.readAll.bind(this));
 		app.get('/rest/user/simple', this.readAllSimple.bind(this));
@@ -135,6 +136,39 @@ class UserController {
 			logger.error(`UserController#invite Error: `, err);
 			response.status(500).json({error: err});
 		});
+	}
+
+	/**
+	 * Return invitation by hash
+	 * @param request
+	 * @param response
+	 */
+	readInvitation(request, response) {
+		let hash = request.params.hash;
+
+		if(hash) {
+			this.getInvitation(hash)
+				.verify()
+				.then((email) => {
+					response.status(200).send({
+						data: {
+							email: email
+						},
+						success: true
+					});
+				})
+				.catch((error) => {
+					response.status(500).send({
+						success: false,
+						message: error.message
+					});
+				});
+		} else {
+			response.status(500).send({
+				success: false,
+				message: `no hash was given`
+			});
+		}
 	}
 
     /**
