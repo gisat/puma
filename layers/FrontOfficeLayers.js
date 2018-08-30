@@ -175,11 +175,19 @@ class FrontOfficeLayers {
 		});
 
 		var groupedLayers = Object.keys(groupedByLayerGroup).map(key => {
-			return {
-				name: key,
-                id: groupedByLayerGroup[key][0].layerGroup._id,
-				layers: groupedByLayerGroup[key]
-			}
+			if(key === 'Other' && !groupedByLayerGroup[key][0].layerGroup) {
+                return {
+                    name: key,
+                    id: 0,
+                    layers: groupedByLayerGroup[key]
+                }
+			} else {
+                return {
+                    name: key,
+                    id: groupedByLayerGroup[key][0].layerGroup._id,
+                    layers: groupedByLayerGroup[key]
+                }
+            }
 		});
 
 		return groupedLayers.sort((a, b) => {

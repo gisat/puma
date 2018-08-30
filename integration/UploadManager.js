@@ -172,32 +172,10 @@ class UploadManager {
 	 * @private
 	 */
 	_init() {
-		return this._initPgTable()
-			.then(() => {
-				return this._initFs();
-			})
+		return this._initFs()
 			.catch((error) => {
 				console.log(`UploadManager#init: error`, error);
 			});
-	}
-
-	/**
-	 * Check for metadata table and create or modify it when it's needed
-	 * @private
-	 */
-	_initPgTable() {
-		let query = [
-			`BEGIN;`,
-			`CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."uploads" (uuid UUID PRIMARY KEY DEFAULT gen_random_uuid());`,
-			`ALTER TABLE "${this._pgSchema}"."uploads" ADD COLUMN IF NOT EXISTS path TEXT;`,
-			`ALTER TABLE "${this._pgSchema}"."uploads" ADD COLUMN IF NOT EXISTS name TEXT;`,
-			`ALTER TABLE "${this._pgSchema}"."uploads" ADD COLUMN IF NOT EXISTS owner INT;`,
-			`ALTER TABLE "${this._pgSchema}"."uploads" ADD COLUMN IF NOT EXISTS custom_name TEXT;`,
-			`ALTER TABLE "${this._pgSchema}"."uploads" ADD COLUMN IF NOT EXISTS created TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`,
-			`COMMIT;`
-		];
-
-		return this._pgPool.query(query.join(' '));
 	}
 
 	/**
