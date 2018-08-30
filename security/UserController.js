@@ -49,11 +49,11 @@ class UserController {
 
 		this.users.all().then(users => {
 			let jsonUsers = users.map(user => user.json());
-			response.json({data: jsonUsers});
+			response.json({data: jsonUsers, success: true});
 		}).catch(err => {
 			logger.error('UserController#readAll Error: ', err);
 			response.status(500);
-			response.json({status: "err"});
+			response.json({message: err.message, success: false});
 		});
 	}
 
