@@ -195,13 +195,18 @@ class UserController {
 					id: id,
 					password: password,
 					name: name,
-					email: email
+					email: email,
+					phone: phone
 				},
-				message: 'The user was correctly created.'
+				message: 'The user was correctly created.',
+				success: true
 			});
 		}).catch(err => {
             logger.error(`UserController#create Error: `, err);
-            response.status(500).json({error: err});
+            response.status(500).json({
+				message: err.message,
+				success: false
+            });
 		})
 	}
 
