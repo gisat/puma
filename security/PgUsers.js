@@ -64,7 +64,8 @@ class PgUsers {
 				);
 
 				user.email = row.email;
-				user.username = row.name;
+				user.username = row.email;  // todo backwards compatibility
+				user.name = row.name;
 				user.phone = row.phone;
 				user.permissionsTowards = row.permissionsTowards;
 				user.permissionsUsers = row.permissionsUsers;
