@@ -152,7 +152,8 @@ class UserController {
 				.then((email) => {
 					response.status(200).send({
 						data: {
-							email: email
+							email: email,
+							hash: hash
 						},
 						success: true
 					});
