@@ -340,8 +340,9 @@ class PgUsers {
                 return null;
             }
 
-            pUser.username = user.name;
+            pUser.username = user.email;    // todo backwards compatibility
             pUser.email = user.email;
+            pUser.name  = user.name;
 
             return pUser;
         });
