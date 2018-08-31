@@ -118,8 +118,11 @@ class PgUsers {
             user = pUser;
             return this.pgPool.query(`SELECT * FROM ${this.schema}.panther_users where id = ${id}`);
         }).then(result => {
-            user.username = result.rows[0].name;
+            user.username = result.rows[0].email;
             user.email = result.rows[0].email;
+            user.name = result.rows[0].name;
+            user.phone = result.rows[0].phone;
+
             return user;
         });
     }
