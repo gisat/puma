@@ -14,6 +14,7 @@ class User {
         this._username = '';
         this._email = '';
         this._phone = '';
+        this._name = '';
     }
 
     get username() {
@@ -38,6 +39,14 @@ class User {
 
     set phone(value) {
         this._phone = value;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    set name(value) {
+        this._name = value;
     }
 
     /**
@@ -67,7 +76,8 @@ class User {
             groups: this.groups.map(group => group.json()),
             username: this.username,
             email: this.email,
-            phone: this.phone
+            phone: this.phone,
+            name: this.name
         }
     }
 
