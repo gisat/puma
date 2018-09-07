@@ -81,6 +81,8 @@ class DataViewController extends Controller {
                     }
                 });
 
+            return this.permissions.forTypeCollection(this.type, resultsWithRights);
+        }).then(resultsWithRights => {
             response.json({data: resultsWithRights});
         }).catch(err => {
             logger.error(`DataViewController#readInitialViews Error: `, err);
