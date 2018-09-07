@@ -112,8 +112,12 @@ class Controller {
                 return;
             }
 
-            response.data = result;
-            next();
+            this.permissions.forType(this.type, result.id || result._id).then(permissions => {
+                result.permissions = permissions;
+
+                response.data = result;
+                next();
+            });
         });
     }
 
