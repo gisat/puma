@@ -6,7 +6,7 @@ const config = require(`../config`);
 class ImageMosaicController {
 	constructor(app) {
 		this._imageMosaic = new ImageMosaic(
-			config.dromasLpis.pathTo2SScenes,
+			config.dromasLpis.pathToS2Scenes,
 			config.dromasLpis.pathToImageMosaicDirectory,
 			config.dromasLpis.imageMosaicPgStorage,
 			config.dromasLpis.groupBy,

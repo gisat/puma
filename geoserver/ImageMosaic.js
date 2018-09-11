@@ -36,11 +36,11 @@ class ImageMosaic {
 				let year = source.acquisition.substring(0, 4);
 				let month = source.acquisition.substring(4, 6);
 				let day = source.acquisition.substring(6, 8);
-				// let hour = source.acquisition.substring(9, 11);
-				// let min = source.acquisition.substring(11, 13);
-				// let sec = source.acquisition.substring(13);
-				// dates.push(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
-				dates.push(`${year}-${month}-${day}`);
+				let hour = source.acquisition.substring(9, 11);
+				let min = source.acquisition.substring(11, 13);
+				let sec = source.acquisition.substring(13);
+				dates.push(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
+				// dates.push(`${year}-${month}-${day}`);
 			}
 		});
 
@@ -83,7 +83,7 @@ class ImageMosaic {
 			];
 
 			let timeregex = [
-				`regex=[0-9]{8}`
+				`regex=[0-9]{8}T[0-9]{9}Z`
 			];
 
 			let datastore = [
@@ -163,10 +163,10 @@ class ImageMosaic {
 		let pathParts = path.split(`/`);
 		let filename = pathParts.pop();
 		let code = pathParts.pop();
-		let acquisition = filename.match(/([0-9]{8})/)[0];
+		let acquisition = filename.match(/([0-9]{8}T[0-9]{6})/)[0];
 
 		return {
-			filename: `S2_${code}_${acquisition}`,
+			filename: `S2_${code}_${acquisition}000Z`,
 			acquisition: acquisition
 		}
 	}
