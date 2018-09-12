@@ -29,21 +29,14 @@ class GeometryConversion {
         let points = geojson.coordinates;
         let geometryType = geojson.type;
 
-        // library doesn't work for multipolygons
-        if (geometryType == "MultiPolygon"){
-            geometryType = "Polygon";
-        }
-
-        let convertedPoints = this.convertPoints(points);
-
         if (!toWKT){
             return {
-                coordinates: convertedPoints,
+                coordinates: points,
                 type: geometryType
             };
         }
 
-        return this.constructor.geojsonToWKT(convertedPoints, geometryType);
+        return this.constructor.geojsonToWKT(points, geometryType);
     }
 
     /**

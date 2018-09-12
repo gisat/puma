@@ -30,6 +30,7 @@
     "gdal": "0.9.6",
     "geojson": "0.4.1",
     "geojson-extent": "0.3.2",
+    "geojson2shp": "0.3.2",
     "jsdom": "7.2.2",
     "json2csv": "3.11.4",
     "json2xls": "0.1.2",
