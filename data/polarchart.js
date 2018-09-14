@@ -133,7 +133,7 @@ function getChart(params, callback) {
 				}
 				categories.push({
 					gid: row['gid'],
-					name: row['nakme']
+					name: row['name']
 				});
 			}
 
