@@ -238,7 +238,7 @@ function getChart(params, callback) {
 					let value = ((serieValue - min) / (max - min)) * (maximumPosition - minimumPosition) + minimumPosition;
 					value = Math.round(value * 100) / 100;
 
-					let label = categories[serieIndex] + ": " + serieValue;
+					let label = categories[serieIndex]['name'] + ": " + serieValue;
 					if (attr.units){
 						label += " " + attr.units;
 					}
