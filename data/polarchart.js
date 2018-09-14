@@ -131,7 +131,10 @@ function getChart(params, callback) {
 
 
 				}
-				categories.push(row['name']);
+				categories.push({
+					gid: row['gid'],
+					name: row['nakme']
+				});
 			}
 
 
