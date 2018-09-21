@@ -109,7 +109,7 @@ class DataViewController extends Controller {
         crud.read(this.type, filter, {
             userId: request.session.userId,
             justMine: request.query['justMine']
-        }, function (err, result) {
+        }, (err, result) => {
             if (err || result.length === 0) {
                 logger.error("It wasn't possible to read item: ", request.params.objId, " from collection:", self.type, " by User:", request.session.userId, " Error: ", err);
                 return next(err);
