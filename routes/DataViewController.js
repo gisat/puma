@@ -92,6 +92,41 @@ class DataViewController extends Controller {
         })
     }
 
+    /**
+     * Default implementation of reading of unique rest object. This implementation doesn't verifies anything. If the object doesn't exist, nothing is returned.
+     * @param request {Request} Request created by the Express framework.
+     * @param request.params.id {Number} Number representing the id of the object to read
+     * @param request.session.userId {Number} Id of the user who issued the request.
+     * @param response {Response} Response created by the Express framework.
+     * @param next {Function} Function to be called when we want to send it to the next route.
+     */
+    read(request, response, next) {
+        logger.info('DataViewController#read Read instance of type: ', this.type, ' By User: ', request.session.userId);
+
+        var filter = {_id: parseInt(request.params.id)};
+        var self = this;
+        crud.read(this.type, filter, {
+            userId: request.session.userId,
+            justMine: request.query['justMine']
+        }, function (err, result) {
+            if (err || result.length === 0) {
+                logger.error("It wasn't possible to read item: ", request.params.objId, " from collection:", self.type, " by User:", request.session.userId, " Error: ", err);
+                return next(err);
+            }
+
+            if (!self.hasRights(request.session.user, Permission.READ, request.params.id, result)) {
+                response.status(403);
+                return;
+            }
+
+            this.permissions.forType(this.type, result[0]._id).then(permissions => {
+                result[0].permissions = permissions;
+                response.data = result;
+                next();
+            });
+        });
+    }
+
     hasRights(user, method, id) {
 	    if(method ===  Permission.READ) {
             return user.hasPermission(this.type, method, id);
