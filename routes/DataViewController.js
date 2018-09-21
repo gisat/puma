@@ -4,6 +4,7 @@ const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
 const Permission = require('../security/Permission');
 const logger = require('../common/Logger').applicationWideLogger;
+const crud = require('../rest/crud');
 
 class DataViewController extends Controller {
 	constructor(app, pool, mongoDb) {
