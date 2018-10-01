@@ -7,13 +7,13 @@ const Permission = require('../security/Permission');
 
 class PgScenarios extends PgCollection {
 	constructor(pgPool, pgSchema) {
-		super(pgPool, pgSchema, 'PgScenarios');
+		super(pgPool, pgSchema, null, 'PgScenarios');
 
 		this._pgScenarioScenarioCaseRelations = new PgScenarioScenarioCaseRelations(pgPool, pgSchema);
 		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
 	}
 
-	create(payloadData, user) {
+	create(payloadData, user, extra) {
 		let scenarios = payloadData['scenarios'];
 
 		if (scenarios) {
@@ -22,7 +22,7 @@ class PgScenarios extends PgCollection {
 				if (object.id && !object.data) {
 					promises.push({id: object.id, uuid: object.uuid});
 				} else if (!object.id && object.data) {
-					promises.push(this._createOne(object, payloadData, user));
+					promises.push(this.createOne(object, payloadData, user));
 				}
 			});
 
@@ -275,7 +275,7 @@ class PgScenarios extends PgCollection {
 							);
 						} else if (uuid) {
 							promises.push(
-								this._createOne(update, payloadData, user)
+								this.createOne(update, payloadData, user)
 							);
 						}
 					}
@@ -298,7 +298,7 @@ class PgScenarios extends PgCollection {
 		if (scenarios) {
 			let promises = [];
 			for (let scenario of scenarios) {
-				await this._deleteOne(scenario.id)
+				await this.deleteOne(scenario.id)
 					.then((result) => {
 						if (result.hasOwnProperty('deleted')) {
 							scenario.deleted = result.deleted;

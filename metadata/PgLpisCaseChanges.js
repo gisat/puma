@@ -24,7 +24,7 @@ class PgLpisCaseChanges extends PgCollection {
 				if (object.id) {
 					promises.push({id: object.id});
 				} else {
-					promises.push(this._createOne(object, payloadData, user, extra));
+					promises.push(this.createOne(object, payloadData, user, extra));
 				}
 			});
 
@@ -198,7 +198,7 @@ class PgLpisCaseChanges extends PgCollection {
 		if (lpisCases) {
 			let promises = [];
 			for (let lpisCase of lpisCases) {
-				await this._deleteOne(lpisCase.id)
+				await this.deleteOne(lpisCase.id)
 					.then((result) => {
 						if (result.hasOwnProperty('deleted')) {
 							lpisCase.deleted = result.deleted;

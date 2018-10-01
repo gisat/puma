@@ -37,7 +37,7 @@ class PgLpisCases extends PgCollection {
 				if (object.id) {
 					promises.push({id: object.id});
 				} else {
-					promises.push(this._createOne(object, payloadData, user, extra));
+					promises.push(this.createOne(object, payloadData, user, extra));
 				}
 			});
 
@@ -439,7 +439,7 @@ class PgLpisCases extends PgCollection {
 		return Promise.all(extraPopulations);
 	}
 
-	get(filter, idOnly, user) {
+	get(filter, user, extra) {
 		let payload = {
 			data: null,
 		};
@@ -488,7 +488,7 @@ class PgLpisCases extends PgCollection {
 		let query = [];
 		query.push(`SELECT`);
 
-		if (idOnly) {
+		if (extra.idOnly) {
 			query.push(`"a"."id" AS id,`);
 			query.push(`(array_agg("b"."view_id") FILTER (WHERE "b"."view_id" IS NOT NULL))[1] AS view_id`);
 		} else {
@@ -616,7 +616,7 @@ class PgLpisCases extends PgCollection {
 			let data = object.data;
 
 			promises.push(
-				this._updateOne(object, payloadData, user, extra)
+				this.updateOne(object, payloadData, user, extra)
 			);
 		});
 
@@ -703,7 +703,7 @@ class PgLpisCases extends PgCollection {
 							}
 						})
 				} else if (uuid) {
-					return this._createOne(object, payloadData, user, extra)
+					return this.createOne(object, payloadData, user, extra)
 						.then((result) => {
 							id = result.id;
 							uuid = result.uuid;
@@ -730,7 +730,7 @@ class PgLpisCases extends PgCollection {
 		if (lpisCases) {
 			let promises = [];
 			for (let lpisCase of lpisCases) {
-				await this._deleteOne(lpisCase.id)
+				await this.deleteOne(lpisCase.id)
 					.then((result) => {
 						if (result.hasOwnProperty('deleted')) {
 							lpisCase.deleted = result.deleted;
