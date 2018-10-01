@@ -38,7 +38,7 @@ class PgScenarioCases extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData, user) {
+	createOne(object, payloadData, user) {
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -460,7 +460,7 @@ class PgScenarioCases extends PgCollection {
 		}
 	}
 
-	_deleteOne(scenarioCaseId) {
+	deleteOne(scenarioCaseId) {
 		let status = {
 			deleted: false
 		};

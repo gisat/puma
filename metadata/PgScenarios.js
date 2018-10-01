@@ -36,7 +36,7 @@ class PgScenarios extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData, user) {
+	createOne(object, payloadData, user) {
 		console.log(`#### user.id`, user.id);
 		let uuid = object.uuid;
 		let data = object.data;
@@ -311,7 +311,7 @@ class PgScenarios extends PgCollection {
 		}
 	}
 
-	_deleteOne(scenarioId) {
+	deleteOne(scenarioId) {
 		let status = {
 			deleted: false
 		};
