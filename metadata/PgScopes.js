@@ -4,7 +4,7 @@ class PgScopes extends PgCollection {
 	constructor(pool, schema, mongo) {
 		super(pool, schema, mongo, `PgScopes`);
 
-		this._legacy = false;
+		this._legacy = true;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
