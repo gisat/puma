@@ -24,17 +24,10 @@ class PgAuthentication {
 	authenticate(request) {
 		logger.info('PgAuthentication#authenticate UserId: ', request.session.userId);
 
-		if (request.session.userId) {
-			return this.pgUsers.byId(request.session.userId).then(user => {
-				logger.info('PgAuthentication#authenticate User: ', user.id);
-				request.session.user = user;
-			});
-		} else {
-			return this.pgPermissions.forGroup(Group.guestId()).then((permissions => {
-				logger.info('PgAuthentication#authenticate Guest');
-				request.session.user = new User(0, [], [new Group(Group.guestId(), permissions)]);
-			}));
-		}
+		return this.pgUsers.byId(request.session.userId || User.guestId()).then(user => {
+			logger.info('PgAuthentication#authenticate User: ', user.id);
+			request.session.user = user;
+		});
 	}
 }
 
