@@ -97,6 +97,7 @@ class PgMetadata extends PgCollection {
 					metadataObject.store.get(filter, user, {idOnly: true})
 						.then((results) => {
 							payload.data[metadataType] = results['data'];
+							payload.changes = results['changes'];
 							if (_.isUndefined(payload['limit'])) {
 								payload['limit'] = results['limit'];
 							}

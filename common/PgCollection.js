@@ -2,6 +2,7 @@ const _ = require('lodash');
 const conn = require('../common/conn');
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
+const PgMetadataChanges = require('../metadata/PgMetadataChanges');
 
 /**
  * Generic class that is used throughout the application. It represents a collection of metadata items stored in the
@@ -17,6 +18,7 @@ class PgCollection {
 		this._name = name;
 
 		this._pgPermissions = new PgPermissions(pool, schema);
+		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
 
 		this._limit = 100;
 		this._offset = 0;
@@ -54,11 +56,20 @@ class PgCollection {
 	}
 
 	createOne(object, objects, user, extra) {
-		if (!this._legacy) {
-			return this.postgresCreateOne(object, objects, user, extra);
-		} else {
-			return this.mongoCreateOne(object, objects, user, extra);
-		}
+		return Promise.resolve()
+			.then(() => {
+				if (!this._legacy) {
+					return this.postgresCreateOne(object, objects, user, extra);
+				} else {
+					return this.mongoCreateOne(object, objects, user, extra);
+				}
+			})
+			.then((createdObject) => {
+				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id)
+					.then(() => {
+						return createdObject;
+					})
+			});
 	}
 
 	mongoCreateOne(object, objects, user, extra) {
@@ -71,7 +82,7 @@ class PgCollection {
 			.collection(this._collectionName)
 			.insert(model)
 			.then(() => {
-				return this.setAllPermissionsToResourceForUser(key, user.id);
+				return this.setAllPermissionsToResourceForUser(key, user);
 			})
 			.then(() => {
 				return {
@@ -110,7 +121,7 @@ class PgCollection {
 				}
 			})
 			.then((key) => {
-				return this.setAllPermissionsToResourceForUser(key, user.id)
+				return this.setAllPermissionsToResourceForUser(key, user)
 					.then(() => {
 						return key;
 					})
@@ -150,11 +161,20 @@ class PgCollection {
 	}
 
 	updateOne(object, objects, user, extra) {
-		if (!this._legacy) {
-			return this.postgresUpdateOne(object, objects, user, extra);
-		} else {
-			return this.mongoUpdateOne(object, objects, user, extra);
-		}
+		return Promise.resolve()
+			.then(() => {
+				if (!this._legacy) {
+					return this.postgresUpdateOne(object, objects, user, extra);
+				} else {
+					return this.mongoUpdateOne(object, objects, user, extra);
+				}
+			})
+			.then((updatedObject) => {
+				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id)
+					.then(() => {
+						return updatedObject;
+					})
+			});
 	}
 
 	mongoUpdateOne(object, objects, user, extra) {
@@ -214,10 +234,23 @@ class PgCollection {
 				let options = this.getFilterOptions(filter, availableKeys, isAdmin);
 				if (!this._legacy) {
 					return this.postgresGet(options, filter, user, extra)
+						.then((payload) => {
+							return [payload, availableKeys];
+						})
 				} else {
-					return this.mongoGet(options, filter);
+					return this.mongoGet(options, filter)
+						.then((payload) => {
+							return [payload, availableKeys];
+						})
 				}
-			});
+			})
+			.then(([payload, availableKeys]) => {
+				return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)
+					.then((changes) => {
+						payload.changes = changes;
+						return payload;
+					})
+			})
 	}
 
 	getResourceIdsForUserAndPermissionType(user, permissionType) {
@@ -262,7 +295,7 @@ class PgCollection {
 
 					if(availableKeys.includes(key) || isAdmin) {
 						promises.push(
-							this.deleteOne(key)
+							this.deleteOne(key, user, extra)
 								.then((result) => {
 									if (result.hasOwnProperty('deleted')) {
 										object.success = result.deleted;
@@ -282,12 +315,21 @@ class PgCollection {
 			});
 	}
 
-	deleteOne(key) {
-		if (!this._legacy) {
-			return this.postgresDeleteOne(key)
-		} else {
-			return this.mongoDeleteOne(key);
-		}
+	deleteOne(key, user, extra) {
+		return Promise.resolve()
+			.then(() => {
+				if (!this._legacy) {
+					return this.postgresDeleteOne(key)
+				} else {
+					return this.mongoDeleteOne(key);
+				}
+			})
+			.then((result) => {
+				return this._pgMetadataChanges.createChange('delete', this._tableName, key, user.id)
+					.then(() => {
+						return result;
+					})
+			});
 	}
 
 	mongoDeleteOne(key) {

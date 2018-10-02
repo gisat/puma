@@ -316,12 +316,20 @@ DatabaseSchema.prototype.create = function () {
     	lpis_case_id	INTEGER,
     	place_id	INTEGER
     );
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."metadata_changes" (
+      id SERIAL PRIMARY KEY,
+      resource_type TEXT,
+      resource_key TEXT,
+      action TEXT,
+      changed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+      changed_by INTEGER,
+      change JSON
+    );
     CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
       id   SERIAL PRIMARY KEY,
       name text,
       col  text
-    );
-    
+    );    
     CREATE TABLE IF NOT EXISTS "${this.schema}"."original_filenames" (
         id  SERIAL PRIMARY KEY,
         path text,
