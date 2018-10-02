@@ -26,7 +26,7 @@ class PgScenarioCases extends PgCollection {
 				if (object.id) {
 					promises.push({id: object.id});
 				} else {
-					promises.push(this.createOne(object, payloadData, user));
+					promises.push(this.createOne(object, payloadData, user, extra));
 				}
 			});
 
@@ -38,7 +38,7 @@ class PgScenarioCases extends PgCollection {
 		}
 	}
 
-	createOne(object, payloadData, user) {
+	createOne(object, payloadData, user, extra) {
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -107,7 +107,7 @@ class PgScenarioCases extends PgCollection {
 												if (scenarios) {
 													let scenario = _.find(scenarios, {uuid: scenarioId});
 													if (scenario && !scenario.id) {
-														return this._pgScenarios.create(payloadData)
+														return this._pgScenarios.create(payloadData, user, extra)
 															.then((results) => {
 																if (results.length) {
 																	scenario.id = results[0].id;
@@ -397,7 +397,7 @@ class PgScenarioCases extends PgCollection {
 					})
 					.then(() => {
 						if (id && (scenarioIds || scenarioIds === null)) {
-							return this._pgScenarios.update(payloadData, user)
+							return this._pgScenarios.update(payloadData, user, extra)
 								.then((results) => {
 									if(scenarios && results.data) {
 										payloadData['scenarios'] = results.data;
