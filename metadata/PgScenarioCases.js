@@ -322,7 +322,7 @@ class PgScenarioCases extends PgCollection {
 			});
 	}
 
-	update(payloadData, user) {
+	update(payloadData, user, extra) {
 		let scenario_cases = payloadData['scenario_cases'];
 		let scenarios = payloadData['scenarios'];
 
@@ -372,7 +372,7 @@ class PgScenarioCases extends PgCollection {
 								);
 							}
 						} else if (uuid) {
-							return this.createOne(update, payloadData, user)
+							return this.createOne(update, payloadData, user, extra)
 								.then((result) => {
 									id = result.id;
 									uuid = result.uuid;
