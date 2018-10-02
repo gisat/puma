@@ -65,7 +65,7 @@ class PgCollection {
 				}
 			})
 			.then((createdObject) => {
-				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id)
+				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id, object.data)
 					.then(() => {
 						return createdObject;
 					})
@@ -170,7 +170,7 @@ class PgCollection {
 				}
 			})
 			.then((updatedObject) => {
-				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id)
+				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
 					.then(() => {
 						return updatedObject;
 					})
