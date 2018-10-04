@@ -85,7 +85,7 @@ class MongoDataViews {
                 throw new Error(`Base layer doesn't contain any unit for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`);
             }
 
-            return collection.insert({
+            var dataView = {
                 "_id": id,
                 "name": "",
                 "conf": {
@@ -93,11 +93,7 @@ class MongoDataViews {
                     "years": [
                         period
                     ],
-                    "expanded": {
-                        location: {
-                            analyticalUnitLevel: [analyticalUnits[0].gid]
-                        }
-                    },
+                    "expanded": {},
                     "dataset": scope,
                     "theme": theme,
                     "location": location,
@@ -116,7 +112,10 @@ class MongoDataViews {
                     "selection": [],
                     "cfgs": []
                 }
-            });
+            };
+            dataView.conf.expanded[location] = {};
+            dataView.conf.expanded[location][analyticalUnitLevel] = [analyticalUnits[0].gid];
+            return collection.insert(dataView);
         }).then(() => {
             return id;
         });
