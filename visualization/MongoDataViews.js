@@ -2,6 +2,7 @@ const MongoDataView = require('./MongoDataView');
 const FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 const conn = require(`../common/conn`);
+const logger = require('../common/Logger').applicationWideLogger;
 
 class MongoDataViews {
     constructor(connection) {
@@ -37,7 +38,7 @@ class MongoDataViews {
      * @param analyticalUnits {PgAnalyticalUnits} Service for accessing analytical units.
      * @returns {*}
      */
-    defaultForScope(scope, theme, location, period, analyticalUnits) {
+        defaultForScope(scope, theme, location, period, analyticalUnits) {
         let collection = this._connection.collection(MongoDataView.collectionName());
         let id = conn.getNextId();
         let analyticalUnitLevel = null;
