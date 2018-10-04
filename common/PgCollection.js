@@ -262,7 +262,7 @@ class PgCollection {
 				} else {
 					return this._pool
 						.query(
-							`SELECT resource_id::integer AS key FROM "${this._schema}"."permissions" WHERE user_id = ${user.id} AND resource_type = '${this._tableName}' AND permission = '${permissionType}'`
+							`SELECT resource_id::integer AS key FROM "${this._schema}"."permissions" WHERE user_id = ${user.id} AND (resource_type = '${this._tableName}' OR resource_type = '${this._collectionName}') AND permission = '${permissionType}'`
 						)
 						.then((result) => {
 							return _.map(result.rows, 'key');
@@ -270,7 +270,7 @@ class PgCollection {
 						.then((keysForUser) => {
 							return this._pool
 								.query(
-									`SELECT resource_id::integer AS key FROM "${this._schema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND resource_type = '${this._tableName}' AND permission = '${permissionType}'`
+									`SELECT resource_id::integer AS key FROM "${this._schema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (resource_type = '${this._tableName}' OR resource_type = '${this._collectionName}') AND permission = '${permissionType}'`
 								)
 								.then((result) => {
 									return _.map(result.rows, 'key');
