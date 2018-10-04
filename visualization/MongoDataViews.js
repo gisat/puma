@@ -60,7 +60,8 @@ class MongoDataViews {
                 location: location,
                 year: period,
                 areaTemplate: analyticalUnitLevel,
-                isData: false
+                isData: false,
+                active: true
             }, this._connection).json();
         }).then(layerReferences => {
             logger.info(`MongoDataViews#defaultForScope LayerReferences: ${layerReferences.length}`, layerReferences);
