@@ -42,7 +42,7 @@ class MongoDataViews {
         let id = conn.getNextId();
         let analyticalUnitLevel = null;
 
-        return new FilteredMongoScopes({_id: Number(scope)}, this._mongo).json().then(scopes => {
+        return new FilteredMongoScopes({_id: Number(scope)}, this._connection).json().then(scopes => {
             if(scopes.length === 0) {
                 logger.error('MongoDataViews#defaultForScope Nonexistent scope.');
                 throw new Error('Nonexistent scope');
