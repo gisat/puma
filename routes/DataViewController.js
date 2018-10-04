@@ -1,10 +1,13 @@
 const Controller = require('./Controller');
 const FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
+const FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
+const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
 const Permission = require('../security/Permission');
 const logger = require('../common/Logger').applicationWideLogger;
 const crud = require('../rest/crud');
+const PgAnalyticalUnits = require('../layers/PgAnalyticalUnits');
 
 class DataViewController extends Controller {
 	constructor(app, pool, mongoDb) {
@@ -12,6 +15,7 @@ class DataViewController extends Controller {
 
         this._mongo = mongoDb;
         this._mongoDataViews = new MongoDataViews(mongoDb);
+        this._analyticalUnits = new PgAnalyticalUnits(pool);
 
         app.get('/rest/customview/delete', this.deleteDataview.bind(this));
         app.get('/rest/views', this.readInitialViews.bind(this));
@@ -25,7 +29,7 @@ class DataViewController extends Controller {
         const theme = request.body.theme;
         const period = request.body.period;
 
-        this._mongoDataViews.defaultForScope(scope, theme, place, period).then(id => {
+        return this._mongoDataViews.defaultForScope(scope, theme, place, period, this._analyticalUnits).then(id => {
             return Promise.all([
                 this.permissions.add(request.session.user.id, this.type, id, Permission.READ),
                 this.permissions.add(request.session.user.id, this.type, id, Permission.UPDATE),
