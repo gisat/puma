@@ -43,6 +43,7 @@ class MongoDataViews {
         let analyticalUnitLevel = null;
 
         return new FilteredMongoScopes({_id: Number(scope)}, this._connection).json().then(scopes => {
+            logger.info(`MongoDataViews#defaultForScope Scopes: ${scopes.length}`, scopes);
             if(scopes.length === 0) {
                 logger.error('MongoDataViews#defaultForScope Nonexistent scope.');
                 throw new Error('Nonexistent scope');
@@ -61,6 +62,7 @@ class MongoDataViews {
                 isData: false
             }, this._connection).json();
         }).then(layerReferences => {
+            logger.info(`MongoDataViews#defaultForScope LayerReferences: ${layerReferences.length}`, layerReferences);
             if(layerReferences.length === 0) {
                 logger.error(`MongoDataViews#defaultForScope Nonexistent base layer for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}.`);
                 throw new Error('There is no mapped data layer for the top analytical unit level.');
@@ -72,6 +74,7 @@ class MongoDataViews {
 
             return analyticalUnits.filtered(layerReferences[0]._id, {limit: 1});
         }).then(analyticalUnits => {
+            logger.info(`MongoDataViews#defaultForScope LayerReferences: ${analyticalUnits.length}`, analyticalUnits);
             if(analyticalUnits.length === 0) {
                 logger.error(`MongoDataViews#defaultForScope Base layer doesn't contain any unit for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`);
                 throw new Error(`Base layer doesn't contain any unit for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`);

@@ -1,7 +1,5 @@
 const Controller = require('./Controller');
 const FilteredMongoDataViews = require('../visualization/FilteredMongoDataViews');
-const FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
-const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
 const Permission = require('../security/Permission');
@@ -24,10 +22,11 @@ class DataViewController extends Controller {
 	}
 
     createInitialView(request, response) {
-        const scope = request.body.scope;
+	    const scope = request.body.scope;
         const place = request.body.place;
         const theme = request.body.theme;
         const period = request.body.period;
+        logger.info(`DataViewController#createInitialView Scope: ${scope} Place: ${place} Theme: ${theme} Period: ${period}`);
 
         return this._mongoDataViews.defaultForScope(scope, theme, place, period, this._analyticalUnits).then(id => {
             return Promise.all([
