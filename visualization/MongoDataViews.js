@@ -73,7 +73,10 @@ class MongoDataViews {
                 logger.warn(`MongoDataViews#defaultForScope More than one mapping for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`);
             }
 
-            return analyticalUnits.filtered(layerReferences[0]._id, {limit: 1});
+            return analyticalUnits.filtered(layerReferences[0]._id, {
+                limit: 1,
+                offset: 0
+            });
         }).then(analyticalUnits => {
             logger.info(`MongoDataViews#defaultForScope LayerReferences: ${analyticalUnits.length}`, analyticalUnits);
             if(analyticalUnits.length === 0) {
