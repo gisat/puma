@@ -1,40 +1,39 @@
 require('appoptics-apm');
 
-var express = require('express');
-var conn = require('./common/conn');
-var getCSS = require('./common/get-css');
-var getMngCSS = require('./common/get-mng-css');
-var staticFn = express['static'];
-var session = require('express-session');
-let xmlparser = require('express-xml-bodyparser');
+const express = require('express');
+const conn = require('./common/conn');
+const staticFn = express['static'];
+const session = require('express-session');
+const xmlparser = require('express-xml-bodyparser');
 
-var async = require('async');
-var loc = require('./common/loc');
-var logger = require('./common/Logger').applicationWideLogger;
+const async = require('async');
+const loc = require('./common/loc');
+const logger = require('./common/Logger').applicationWideLogger;
 
-var config = require('./config');
+const config = require('./config');
 
 process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
-var SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
-var PgPool = require('./postgresql/PgPool');
-var DatabaseSchema = require('./postgresql/DatabaseSchema');
-let CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
-let IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
-let PrepareForInternalUser = require('./migration/PrepareForInternalUser');
-let AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
-let MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
-let AddAuditInformation = require('./migration/AddAuditInformation');
-let AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
-let AddPhoneToUser = require('./migration/AddPhoneToUser');
+const SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
+const PgPool = require('./postgresql/PgPool');
+const DatabaseSchema = require('./postgresql/DatabaseSchema');
+const CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
+const IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
+const PrepareForInternalUser = require('./migration/PrepareForInternalUser');
+const AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
+const MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
+const AddAuditInformation = require('./migration/AddAuditInformation');
+const AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
+const AddPhoneToUser = require('./migration/AddPhoneToUser');
+const AddMetadataToLayer = require('./migration/2_10_1_AddMetadataToLayer');
 
-let CompoundAuthentication = require('./security/CompoundAuthentication');
-let PgAuthentication = require('./security/PgAuthentication');
-let SsoAuthentication = require('./security/SsoAuthentication');
+const CompoundAuthentication = require('./security/CompoundAuthentication');
+const PgAuthentication = require('./security/PgAuthentication');
+const SsoAuthentication = require('./security/SsoAuthentication');
 
-var pool = new PgPool({
+const pool = new PgPool({
     user: config.pgDataUser,
     database: config.pgDataDatabase,
     password: config.pgDataPassword,
@@ -42,8 +41,7 @@ var pool = new PgPool({
     port: config.pgDataPort
 });
 
-var app;
-// TODO: Move to the API instead of public.
+let app;
 function initServer(err) {
 	logger.info('server#initServer Initialize the server.');
 
@@ -61,9 +59,6 @@ function initServer(err) {
 		logger.info("Request: "+ req.method + " - " + req.url);
 		next();
 	});
-
-	app.use('/app.css', getCSS);
-	app.use('/app-mng.css', getMngCSS);
 
 	app.use(express.cookieParser());
     app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
@@ -147,6 +142,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddPhoneToUser(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddMetadataToLayer(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
