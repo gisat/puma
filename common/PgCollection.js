@@ -52,6 +52,8 @@ class PgCollection {
 						return results;
 					}
 				})
+		} else {
+			throw new Error('Group is not set!');
 		}
 	}
 
@@ -247,7 +249,7 @@ class PgCollection {
 			.then(([payload, availableKeys]) => {
 				return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)
 					.then((changes) => {
-						payload.changes = changes;
+						payload.change = changes[0].data.changed;
 						return payload;
 					})
 			})
@@ -606,10 +608,12 @@ class PgCollection {
 				payload.data = _.map(rows, (row) => {
 					return {
 						key: row.key,
+						uuid: row.uuid,
 						data: {
 							...row,
+							key: undefined,
 							id: undefined,
-							key: undefined
+							uuid: undefined
 						}
 					}
 				});
@@ -628,7 +632,9 @@ class PgCollection {
 							if (model.key) {
 								let currentModel = _.find(currentModels.data, {key: model.key});
 								if (currentModel) {
-									model.data = currentModel.data;
+									model = {
+										...currentModel
+									};
 								}
 							}
 							return model;

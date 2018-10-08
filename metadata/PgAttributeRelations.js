@@ -2,9 +2,9 @@ const _ = require('lodash');
 
 const PgCollection = require('../common/PgCollection');
 
-class PgSpatialRelations extends PgCollection {
+class PgAttributeRelations extends PgCollection {
 	constructor(pgPool, pgSchema) {
-		super(pgPool, pgSchema, 'PgSpatialRelations');
+		super(pgPool, pgSchema, 'PgAttributeRelations');
 
 		this._legacy = false;
 		this._collectionName = this.constructor.collectionName();
@@ -17,12 +17,12 @@ class PgSpatialRelations extends PgCollection {
 	}
 
 	static groupName() {
-		return 'spatial';
+		return 'attribute';
 	}
 
 	static tableName() {
-		return `spatial_relation`;
+		return `attribute_relation`;
 	}
 }
 
-module.exports = PgSpatialRelations;
+module.exports = PgAttributeRelations;
