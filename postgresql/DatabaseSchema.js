@@ -243,7 +243,8 @@ DatabaseSchema.prototype.create = function () {
       place_id       integer,
       data_source_id integer,
       layer_template_id integer,      
-      scenario_id    integer
+      scenario_id    integer,
+      case_key  TEXT
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.wms (
         id SERIAL PRIMARY KEY,
@@ -262,25 +263,32 @@ DatabaseSchema.prototype.create = function () {
         layer_name TEXT,
         table_name TEXT
     );
-    
-    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_type (
-      id   SERIAL PRIMARY KEY,
-      name text,
-      col text
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."attribute_relation" (
+	  id SERIAL PRIMARY KEY,
+	  uuid UUID DEFAULT gen_random_uuid(),
+	  scope_key TEXT,
+	  place_key TEXT,
+	  period_key TEXT,
+	  scenario_key TEXT,
+	  case_key TEXT,
+	  template_key TEXT,
+	  attribute_set_key TEXt,
+	  attribute_key TEXT,
+	  source_record_key TEXT
     );
-    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_data_source (
-      id       SERIAL PRIMARY KEY,
-      type_id  integer,
-      table_id integer
+	
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."attribute_data_source" (
+	  id SERIAL PRIMARY KEY,
+	  uuid UUID DEFAULT gen_random_uuid(),
+	  type TEXT,
+	  type_record_key TEXT
     );
-    CREATE TABLE IF NOT EXISTS ${this.schema}.attribute_relation (
-      id               SERIAL PRIMARY KEY,
-      scope_id         integer,
-      period_id        integer,
-      place_id         integer,
-      attribute_id     integer,
-      attribute_set_id integer,
-      data_source_id   integer
+
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."attribute_data_source_vector" (
+	  id SERIAL PRIMARY KEY,
+	  uuid UUID DEFAULT gen_random_uuid(),
+	  table_name TEXT,
+	  table_column TEXT
     );
     CREATE TABLE IF NOT EXISTS "${this.schema}"."lpis_case" (
         id  SERIAL PRIMARY KEY,
@@ -350,7 +358,7 @@ DatabaseSchema.prototype.create = function () {
     );
     `;
 
-    var self = this;
+    let self = this;
     return this._pool.query(createSchema).then(function () {
         return self._pool.query(createStyleTable);
     }).then(function () {
