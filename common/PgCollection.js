@@ -249,6 +249,249 @@ class PgCollection {
 			.then(([payload, availableKeys]) => {
 				return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)
 					.then((changes) => {
+						payload.change = changes[0].data.changed;
+						return payload;
+					})
+			})
+	}
+	constructor(pool, schema, mongo, name) {
+		this._pool = pool;
+		this._schema = schema;
+		this._mongo = mongo;
+		this._name = name;
+
+		this._pgPermissions = new PgPermissions(pool, schema);
+		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
+
+		this._limit = 100;
+		this._offset = 0;
+
+		this._legacy = false;
+
+		this._groupName = null;
+		this._collectionName = null;
+		this._tableName = null;
+	}
+
+	create(objects, user, extra) {
+		let group = objects[this._groupName];
+
+		if (group) {
+			let promises = [];
+			group.forEach((object) => {
+				if (object.key && !object.data) {
+					promises.push({key: object.key, uuid: object.uuid});
+				} else if (!object.key && object.data) {
+					promises.push(this.createOne(object, object, user, extra));
+				} else {
+					promises.push({key: object.key, uuid: object.uuid, error: `no data`});
+				}
+			});
+
+			return Promise.all(promises)
+				.then((results) => {
+					if (results && results.length) {
+						objects[this._groupName] = results;
+						return results;
+					}
+				})
+		} else {
+			throw new Error('Group is not set!');
+		}
+	}
+
+	createOne(object, objects, user, extra) {
+		return Promise.resolve()
+			.then(() => {
+				if (!this._legacy) {
+					return this.postgresCreateOne(object, objects, user, extra);
+				} else {
+					return this.mongoCreateOne(object, objects, user, extra);
+				}
+			})
+			.then((createdObject) => {
+				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id, object.data)
+					.then(() => {
+						return createdObject;
+					})
+			});
+	}
+
+	mongoCreateOne(object, objects, user, extra) {
+		let key = Number(conn.getNextId());
+		let model = {
+			_id: key,
+			...object.data
+		};
+		return this._mongo
+			.collection(this._collectionName)
+			.insert(model)
+			.then(() => {
+				return this.setAllPermissionsToResourceForUser(key, user);
+			})
+			.then(() => {
+				return {
+					key: key,
+					uuid: object.uuid,
+					data: {
+						...model,
+						_id: undefined
+					}
+				};
+			})
+	}
+
+	postgresCreateOne(object, objects, user, extra) {
+		let uuid = object.uuid;
+		let data = object.data;
+
+		let keys = Object.keys(data);
+		let columns = _.map(keys, (key) => {
+			return `"${key}"`;
+		});
+		let values = _.map(keys, (key) => {
+			return data[key];
+		});
+
+		return this._pool
+			.query(
+				`INSERT INTO "${this._schema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+					return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
+				}).join(', ')}) RETURNING id AS key;`,
+				values
+			)
+			.then((queryResult) => {
+				if (queryResult.rowCount) {
+					return queryResult.rows[0].key;
+				}
+			})
+			.then((key) => {
+				return this.setAllPermissionsToResourceForUser(key, user)
+					.then(() => {
+						return key;
+					})
+			})
+			.then((key) => {
+				return {
+					key: key,
+					uuid: uuid
+				};
+			});
+	}
+
+	update(objects, user, extra) {
+		let group = objects[this._groupName];
+
+		return this.getResourceIdsForUserAndPermissionType(user, Permission.UPDATE)
+			.then(([availableKeys, isAdmin]) => {
+				let promises = [];
+
+				group.forEach((object) => {
+					if(availableKeys.includes(object.key) || isAdmin) {
+						promises.push(
+							this.updateOne(object, objects, user, extra)
+						);
+					} else {
+						promises.push(
+							Promise.resolve({...object, success: false, message: 'unauthorized'})
+						);
+					}
+				});
+
+				return Promise.all(promises)
+					.then((results) => {
+						objects[this._groupName] = results;
+					});
+			});
+	}
+
+	updateOne(object, objects, user, extra) {
+		return Promise.resolve()
+			.then(() => {
+				if (!this._legacy) {
+					return this.postgresUpdateOne(object, objects, user, extra);
+				} else {
+					return this.mongoUpdateOne(object, objects, user, extra);
+				}
+			})
+			.then((updatedObject) => {
+				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
+					.then(() => {
+						return updatedObject;
+					})
+			});
+	}
+
+	mongoUpdateOne(object, objects, user, extra) {
+		let key = object.key;
+		let data = object.data;
+
+		return this._mongo
+			.collection(this._collectionName)
+			.findOneAndUpdate({_id: Number(key)}, {'$set': data}, {returnOriginal: false})
+			.then((document) => {
+				return {
+					key: document.value._id,
+					data: {
+						...document.value,
+						_id: undefined,
+						created: undefined,
+						createdBy: undefined,
+						changed: undefined,
+						changedBy: undefined
+					},
+					success: true
+				}
+			});
+	}
+
+	postgresUpdateOne(object, objects, user, extra) {
+		let key = object.key;
+		let data = object.data;
+
+		let sets = [];
+		let values = [];
+		Object.keys(data).forEach((property, index) => {
+			sets.push(`"${property}" = $${index + 1}`);
+			values.push(data[property]);
+		});
+
+		let sql = [];
+		sql.push(`UPDATE "${this._schema}"."${this._tableName}"`);
+		sql.push(`SET`);
+		sql.push(sets.join(`, `));
+		sql.push(`WHERE id = ${Number(key)} RETURNING id AS key`);
+
+		return this._pool
+			.query(sql.join(` `), values)
+			.then((result) => {
+				return {
+					key: result.rows[0].key,
+					data: null,
+					success: true
+				}
+			});
+	}
+
+	get(filter, user, extra) {
+		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
+			.then(([availableKeys, isAdmin]) => {
+				let options = this.getFilterOptions(filter, availableKeys, isAdmin);
+				if (!this._legacy) {
+					return this.postgresGet(options, filter, user, extra)
+						.then((payload) => {
+							return [payload, availableKeys];
+						})
+				} else {
+					return this.mongoGet(options, filter)
+						.then((payload) => {
+							return [payload, availableKeys];
+						})
+				}
+			})
+			.then(([payload, availableKeys]) => {
+				return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)
+					.then((changes) => {
 						payload.change = changes[0] && changes[0].data && changes[0].data.changed;
 						return payload;
 					})

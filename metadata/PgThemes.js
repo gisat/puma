@@ -1,8 +1,8 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgScopes extends PgCollection {
+class PgThemes extends PgCollection {
 	constructor(pool, schema, mongo) {
-		super(pool, schema, mongo, `PgScopes`);
+		super(pool, schema, mongo, `PgThemes`);
 
 		this._legacy = true;
 		this._collectionName = this.constructor.collectionName();
@@ -11,16 +11,16 @@ class PgScopes extends PgCollection {
 	}
 
 	static collectionName() {
-		return 'dataset';
+		return 'theme';
 	}
 
 	static groupName() {
-		return 'scopes';
+		return 'themess';
 	}
 
 	static tableName() {
-		return 'scope';
+		return 'theme';
 	}
 }
 
-module.exports = PgScopes;
+module.exports = PgThemes;
