@@ -356,7 +356,7 @@ class PucsMatlabProcessor {
 			computePromises.push(
 				this._prepareEnviroment(processKey)
 					.then(() => {
-						return fse.copy(rasterizedVector, `${this._pathToWorkDirectory}/${processKey}/Input_Scenario/Prague_UA_2012_scenario.tif`);
+						return fse.copy(rasterizedVector, `${this._pathToWorkDirectory}/${processKey}/Input_Scenario/Input_UA_2012_scenario.tif`);
 					})
 					.then(() => {
 						return this._executeMatlabProcessor(`${this._pathToWorkDirectory}/${processKey}`);

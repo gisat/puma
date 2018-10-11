@@ -3,6 +3,7 @@ let uuid = require('uuid');
 let config = require('../config');
 
 let CalculatePragueTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculatePragueTemperatureMapUsingNeuralNetworkModel');
+let CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateOstravaTemperatureMapUsingNeuralNetworkModel');
 let ImportToExistingScope = require(`../wps/processes/ImportToExistingScope`);
 
 let runningProcesses = {};
@@ -11,6 +12,7 @@ class Wps {
 	constructor(pgPool, pgSchema, mongo) {
 		this._processes = {
 			CalculatePragueTemperatureMapUsingNeuralNetworkModel: new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo),
+			CalculateOstravaTemperatureMapUsingNeuralNetworkModel: new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo),
 			ImportToExistingScope: new ImportToExistingScope(runningProcesses)
 		};
 	}
