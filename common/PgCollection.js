@@ -249,7 +249,7 @@ class PgCollection {
 			.then(([payload, availableKeys]) => {
 				return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)
 					.then((changes) => {
-						payload.change = changes[0].data.changed;
+						payload.change = changes && changes[0] && changes[0].data && changes[0].data.changed;
 						return payload;
 					})
 			})
