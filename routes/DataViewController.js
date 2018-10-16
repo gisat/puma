@@ -149,7 +149,7 @@ class DataViewController extends Controller {
                 this.permissions.add(request.session.user.id, this.type, result._id, Permission.UPDATE),
                 this.permissions.add(request.session.user.id, this.type, result._id, Permission.DELETE)
             ]).then(() => {
-                return this.permissions.forType(this.type, result[0]._id);
+                return this.permissions.forType(this.type, result._id);
             }).then(permissions => {
                 result.permissions = permissions;
                 response.data = result;
