@@ -15,8 +15,7 @@ class PgSpatialRelations extends PgCollection {
 			`scope`,
 			`period`,
 			`place`,
-			`scenario`,
-			`case`
+			`scenario`
 		]
 	}
 
@@ -24,6 +23,12 @@ class PgSpatialRelations extends PgCollection {
 		switch (type) {
 			case 'place':
 				return 'place_id';
+			case 'scope':
+				return 'scope_id';
+			case 'period':
+				return 'period_id';
+			case 'scenario':
+				return 'scenario_id';
 			default:
 				return type;
 		}
