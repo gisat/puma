@@ -10,6 +10,23 @@ class PgSpatialRelations extends PgCollection {
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
+
+		this._permissionResourceTypes = [
+			`scope`,
+			`period`,
+			`place`,
+			`scenario`,
+			`case`
+		]
+	}
+
+	getTypeKeyColumnName(type) {
+		switch (type) {
+			case 'place':
+				return 'place_id';
+			default:
+				return type;
+		}
 	}
 
 	static collectionName() {

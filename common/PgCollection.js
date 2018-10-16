@@ -28,6 +28,7 @@ class PgCollection {
 		this._groupName = null;
 		this._collectionName = null;
 		this._tableName = null;
+		this._permissionResourceTypes = null;
 	}
 
 	create(objects, user, extra) {
@@ -247,16 +248,22 @@ class PgCollection {
 				}
 			})
 			.then(([payload, availableKeys]) => {
-				return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)
-					.then((changes) => {
-						payload.change = changes && changes[0] && changes[0].data && changes[0].data.changed;
-						return payload;
-					})
+				// return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)	// todo add support for multiple types in availableKeys
+				// 	.then((changes) => {
+				// 		payload.change = changes && changes[0] && changes[0].data && changes[0].data.changed;
+				// 		return payload;
+				// 	})
+				return payload;
 			})
 	}
 
 	getResourceIdsForUserAndPermissionType(user, permissionType) {
 		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
+		let resourceTypesCondition = _.map(this._permissionResourceTypes, (resourceType) => {
+			return `resource_type = '${resourceType}'`
+		}).join(` OR `);
+
+		let resourceIdsPerType = {};
 		return Promise.resolve()
 			.then(() => {
 				if(isAdmin) {
@@ -264,21 +271,43 @@ class PgCollection {
 				} else {
 					return this._pool
 						.query(
-							`SELECT resource_id::integer AS key FROM "${this._schema}"."permissions" WHERE user_id = ${user.id} AND (resource_type = '${this._tableName}' OR resource_type = '${this._collectionName}') AND permission = '${permissionType}'`
+							`SELECT resource_id::integer AS key, resource_type FROM "${this._schema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 						)
 						.then((result) => {
-							return _.map(result.rows, 'key');
+							_.each(result.rows, (row) => {
+								let resourceType = row.resource_type;
+								if(resourceType === this._collectionName || resourceType === this._tableName) {
+									resourceType = `key`;
+								}
+								if(!resourceIdsPerType.hasOwnProperty(resourceType)) {
+									resourceIdsPerType[resourceType] = [];
+								}
+								if(!resourceIdsPerType[resourceType].includes(row.key)) {
+									resourceIdsPerType[resourceType].push(row.key);
+								}
+							});
 						})
-						.then((keysForUser) => {
+						.then(() => {
 							return this._pool
 								.query(
-									`SELECT resource_id::integer AS key FROM "${this._schema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (resource_type = '${this._tableName}' OR resource_type = '${this._collectionName}') AND permission = '${permissionType}'`
+									`SELECT resource_id::integer AS key, resource_type FROM "${this._schema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 								)
 								.then((result) => {
-									return _.map(result.rows, 'key');
+									_.each(result.rows, (row) => {
+										let resourceType = row.resource_type;
+										if(resourceType === this._collectionName || resourceType === this._tableName) {
+											resourceType = `key`;
+										}
+										if(!resourceIdsPerType.hasOwnProperty(resourceType)) {
+											resourceIdsPerType[resourceType] = [];
+										}
+										if(!resourceIdsPerType[resourceType].includes(row.key)) {
+											resourceIdsPerType[resourceType].push(row.key);
+										}
+									});
 								})
-								.then((keysForGroup) => {
-									return [_.compact([...keysForUser, ...keysForGroup]), false];
+								.then(() => {
+									return [resourceIdsPerType, false];
 								});
 						})
 				}
@@ -389,6 +418,66 @@ class PgCollection {
 			});
 	}
 
+	getFilterOptionsForAny(filter, availableKeys, isAdmin) {
+		let any;
+		if(!isAdmin) {
+			if (filter.hasOwnProperty('any')) {
+				any = {
+					...filter['any']
+				};
+
+				_.each(Object.keys(availableKeys), (property) => {
+					if(filter['any'][this.getTypeKeyColumnName(property)]) {
+						any[this.getTypeKeyColumnName(property)] = _.compact(_.map(filter['any'][this.getTypeKeyColumnName(property)], (key) => {
+							return availableKeys[property].includes(key) && key
+						}));
+					} else {
+						any[this.getTypeKeyColumnName(property)] = availableKeys[property];
+					}
+				});
+
+				if(filter['any'] && filter['any']['key'] && availableKeys['key']) {
+					any['key'] = _.compact(_.map(filter['any']['key'], (key) => {
+						return availableKeys.includes(key) && key
+					}));
+				}
+
+				delete filter['any'];
+			} else {
+				if(Object.keys(availableKeys).length) {
+					any = {};
+					_.each(availableKeys, (keys, type) => {
+						any[this.getTypeKeyColumnName(type)] = keys;
+					});
+				} else {
+					any = {
+						key: [-1]
+					};
+				}
+			}
+		} else {
+			if (filter.hasOwnProperty('any')) {
+				any = filter['any'];
+				delete filter['any'];
+			}
+		}
+
+		_.each(Object.keys(any), (property) => {
+			if(!any[property].length) {
+				any[property] = [-1];
+			}
+		});
+
+		return any;
+	}
+
+	getTypeKeyColumnName(type) {
+		switch (type) {
+			default:
+				return type
+		}
+	}
+
 	getFilterOptions(filter, availableKeys, isAdmin) {
 		filter = {
 			...filter
@@ -413,23 +502,9 @@ class PgCollection {
 			delete filter['like'];
 		}
 
-		if(!isAdmin) {
-			if (filter.hasOwnProperty('any')) {
-				options.any = {
-					...filter['any'],
-					key: filter['any']['key'] ? _.compact(_.map(filter['any']['key'], (key) => {
-						return availableKeys.includes(key) && key
-					})) : availableKeys
-				};
-				delete filter['any'];
-			} else {
-				options.any = {key: availableKeys};
-			}
-		} else {
-			if (filter.hasOwnProperty('any')) {
-				options.any = filter['any'];
-				delete filter['any'];
-			}
+		let any = this.getFilterOptionsForAny(filter, availableKeys, isAdmin);
+		if(any) {
+			options.any = any;
 		}
 
 		if (filter.hasOwnProperty('notIn')) {
