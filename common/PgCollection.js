@@ -463,6 +463,9 @@ class PgCollection {
 		}
 
 		_.each(Object.keys(any), (property) => {
+			if(any[property].length) {
+				any[property] = _.compact(any[property]);
+			}
 			if(!any[property].length) {
 				any[property] = [-1];
 			}
