@@ -127,7 +127,7 @@ class LayerImporter {
         if(path.indexOf(':') === -1) {
             path = 'geonode:' + path;
         }
-        return this._pgLayers.add(path, path, userId).then(layer => {
+        return this._pgLayers.add(path, path, null, null, userId).then(layer => {
             return Promise.all([
                 this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.DELETE),
                 this._pgPermissions.add(userId, PgLayer.type(), layer.id, Permission.READ),
