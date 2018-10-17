@@ -79,6 +79,7 @@ class PgCrud {
 							return pgObject.store.populateData(payload.data, user);
 						})
 						.catch((error) => {
+							console.log(error);
 							payload.data[pgType] = [];
 							payload.errors = payload.errors || {};
 							payload.errors[pgType] = {

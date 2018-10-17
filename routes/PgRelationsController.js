@@ -33,6 +33,7 @@ class PgRelationsController {
 				response.status(200).json(payload)
 			})
 			.catch((error) => {
+				console.log(error);
 				response.status(500).json({
 					message: error.message,
 					success: false
