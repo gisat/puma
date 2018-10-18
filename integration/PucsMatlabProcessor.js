@@ -483,12 +483,12 @@ class PucsMatlabProcessor {
 						let vectorName = inputVector.replace(/\.[^/.]+$/, "");
 						let command = [
 							`gdal_rasterize`,
-							`-init 65536`,
-							`-a_nodata 65536`,
+							`${modelOptions.init}`,
+							`${modelOptions.nodata}`,
 							`-a CODE2012`,
-							`-te ${modelOptions.extent}`,
-							`-tr ${modelOptions.pixelSize}`,
-							`-ts ${modelOptions.rasterResolution}`,
+							`${modelOptions.extent}`,
+							`${modelOptions.pixelSize}`,
+							`${modelOptions.rasterResolution}`,
 							`-l ${vectorName}`,
 							`${pathToInput}/${inputVector}`,
 							`${pathToInput}/${vectorName}.tif`
@@ -559,15 +559,19 @@ class PucsMatlabProcessor {
 		switch(type) {
 			case `prague`:
 				return {
-					rasterResolution: `301 301`,
-					pixelSize: `0.0015 0.0015`,
-					extent: `14.2142000 49.8242000 14.6657000 50.2757000`
+					init: `-init 255`,
+					nodata: ``,
+					rasterResolution: `-ts 301 301`,
+					pixelSize: `-tr 0.0015 0.0015`,
+					extent: `-te 14.2142000 49.8242000 14.6657000 50.2757000`
 				};
 			case `ostrava`:
 				return {
-					rasterResolution: `201 201`,
-					pixelSize: `0.0015 0.0015`,
-					extent: `18.1493000 49.6793000 18.4508000 49.9808000`
+					init: `-init 65536`,
+					nodata: `-a_nodata 65536`,
+					rasterResolution: `-ts 201 201`,
+					pixelSize: `-tr 0.0015 0.0015`,
+					extent: `-te 18.1493000 49.6793000 18.4508000 49.9808000`
 				}
 		}
 	}
