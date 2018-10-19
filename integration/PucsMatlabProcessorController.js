@@ -6,7 +6,7 @@ const config = require('../config');
 const CalculatePragueTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculatePragueTemperatureMapUsingNeuralNetworkModel');
 const CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateOstravaTemperatureMapUsingNeuralNetworkModel');
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
-const PgSpatialRelations = require('../metadata/PgSpatialRelations');
+const PgRelations = require('../metadata/PgRelations');
 
 let processes = {};
 
@@ -17,7 +17,7 @@ class PucsMatlabProcessorController {
 
 		this._mongo = mongo;
 
-		this._pgSpatialRelations = new PgSpatialRelations(pgPool, pgSchema);
+		this._pgRelations = new PgRelations(pgPool, pgSchema);
 		this._calculatePragueTemperatureMapUsingNeuralNetworkModel = new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 		this._calculateOstravaTemperatureMapUsingNeuralNetworkModel = new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 	}
@@ -101,9 +101,10 @@ class PucsMatlabProcessorController {
 
 	prepareMatlabMetadata(input, user) {
 		return Promise.resolve()
-			.then(() => {
+			.then(async () => {
 				let data = input.data;
-				let model = "prague";
+				let scopeId = data.scope_id;
+				let placeId = data.place_id;
 				let type, identifier;
 
 				if (input.data.uploadKey) {
@@ -119,8 +120,18 @@ class PucsMatlabProcessorController {
 
 				processes[input.uuid].progress++;
 
+				let model;
+				if (scopeId && placeId) {
+					let scopeConfiguration = await this.getScopeConfiguration(scopeId);
+					let pucsLandUseScenarios = scopeConfiguration['pucsLandUseScenarios'];
+					if(pucsLandUseScenarios) {
+						let processorByPlaceId = pucsLandUseScenarios['processorByPlaceId'];
+						model = processorByPlaceId[placeId];
+					}
+				}
+
 				if (type && identifier) {
-					let matlabNetworkModelExec = new Promise.reject();
+					let matlabNetworkModelExec;
 					switch (model) {
 						case 'prague':
 							matlabNetworkModelExec = this._calculatePragueTemperatureMapUsingNeuralNetworkModel.execute({
@@ -144,16 +155,22 @@ class PucsMatlabProcessorController {
 							break;
 					}
 
-					matlabNetworkModelExec.then((results) => {
-						processes[input.uuid].progress++;
+					if(matlabNetworkModelExec) {
+						matlabNetworkModelExec.then((results) => {
+							processes[input.uuid].progress++;
 
-						let parsedResults = JSON.parse(results[0].data)[0];
+							let parsedResults = JSON.parse(results[0].data)[0];
 
-						this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, user);
-					}).catch((error) => {
+							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, user);
+						}).catch((error) => {
+							console.log(`#### error`, error);
+							processes[input.uuid].status = 'error';
+							processes[input.uuid].message = error.message;
+						});
+					} else {
 						processes[input.uuid].status = 'error';
-						processes[input.uuid].message = error.message;
-					});
+						processes[input.uuid].message = `unknown model type`;
+					}
 				} else {
 					processes[input.uuid] = _.assign(input, {
 						message: "unknown input type or input identifier",
@@ -235,19 +252,21 @@ class PucsMatlabProcessorController {
 				}
 			})
 			.catch((error) => {
+				console.log(error);
 				processes[input.uuid].status = 'error';
 				processes[input.uuid].message = error.message;
 			});
 	}
 
 	createSpatialRelationsOfMatlabResults(spatialRelations, input, user) {
-		this._pgSpatialRelations.create(spatialRelations)
-			.then((results) => {
+		this._pgRelations.create({spatial: spatialRelations}, user)
+			.then(([results, errors]) => {
 				processes[input.uuid].progress++;
 				processes[input.uuid].status = "done";
-				processes[input.uuid].spatial_relations = results;
+				processes[input.uuid].spatial_relations = results.spatial;
 			})
 			.catch((error) => {
+				console.log(error);
 				processes[input.uuid].status = 'error';
 				processes[input.uuid].message = error.message;
 			});
