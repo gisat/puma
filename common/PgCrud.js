@@ -82,10 +82,7 @@ class PgCrud {
 							console.log(error);
 							payload.data[pgType] = [];
 							payload.errors = payload.errors || {};
-							payload.errors[pgType] = {
-								success: false,
-								message: error.message
-							};
+							payload.errors[pgType] = error.message;
 						})
 				)
 			}
