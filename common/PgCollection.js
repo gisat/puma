@@ -250,7 +250,10 @@ class PgCollection {
 			.then(([payload, availableKeys]) => {
 				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys)
 					.then((changes) => {
-						payload.change = changes && changes[0] && changes[0].data && changes[0].data.changed;
+						payload.change = _.sortBy(_.flatten(_.map(changes, (changesByResourceType) => {
+							return changesByResourceType;
+						})), ['data.changed']).pop();
+						payload.change = payload.change ? payload.change.data.changed : null;
 						return payload;
 					});
 			})
