@@ -20,17 +20,30 @@ class PgMetadataChanges {
 			})
 	}
 
-	getChangesByResourceTypeAndResouceKeys(resourceType, resourceKeys) {
-		return this._pgPool
-			.query(
-				`SELECT * FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}' AND resource_key in ('${resourceKeys.join("', '")}') ORDER BY changed DESC LIMIT 1`
+	getChangesForAvailableResources(resources) {
+		let changes = {};
+		let promises = [];
+
+		_.each(resources, (resourceKeys, resourceType) => {
+			promises.push(
+				this._pgPool
+					.query(
+						`SELECT * FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}' AND resource_key in ('${resourceKeys.join("', '")}') ORDER BY changed DESC LIMIT 1`
+					)
+					.then((result) => {
+						return result.rows;
+					})
+					.then((rows) => {
+						changes[resourceType] = this.getDataCollection(rows);
+					})
 			)
-			.then((result) => {
-				return result.rows;
-			})
-			.then((rows) => {
-				return this.getDataCollection(rows);
-			})
+		});
+
+		return Promise
+			.all(promises)
+			.then(() => {
+				return changes;
+			});
 	};
 
 	getDataCollection(postgresRows) {

@@ -248,12 +248,11 @@ class PgCollection {
 				}
 			})
 			.then(([payload, availableKeys]) => {
-				// return this._pgMetadataChanges.getChangesByResourceTypeAndResouceKeys(this._tableName, availableKeys)	// todo add support for multiple types in availableKeys
-				// 	.then((changes) => {
-				// 		payload.change = changes && changes[0] && changes[0].data && changes[0].data.changed;
-				// 		return payload;
-				// 	})
-				return payload;
+				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys)
+					.then((changes) => {
+						payload.change = changes && changes[0] && changes[0].data && changes[0].data.changed;
+						return payload;
+					});
 			})
 	}
 
@@ -275,15 +274,11 @@ class PgCollection {
 						)
 						.then((result) => {
 							_.each(result.rows, (row) => {
-								let resourceType = row.resource_type;
-								if(resourceType === this._collectionName || resourceType === this._tableName) {
-									resourceType = `key`;
+								if(!resourceIdsPerType.hasOwnProperty(row.resource_type)) {
+									resourceIdsPerType[row.resource_type] = [];
 								}
-								if(!resourceIdsPerType.hasOwnProperty(resourceType)) {
-									resourceIdsPerType[resourceType] = [];
-								}
-								if(!resourceIdsPerType[resourceType].includes(row.key)) {
-									resourceIdsPerType[resourceType].push(row.key);
+								if(!resourceIdsPerType[row.resource_type].includes(row.key)) {
+									resourceIdsPerType[row.resource_type].push(row.key);
 								}
 							});
 						})
@@ -294,15 +289,11 @@ class PgCollection {
 								)
 								.then((result) => {
 									_.each(result.rows, (row) => {
-										let resourceType = row.resource_type;
-										if(resourceType === this._collectionName || resourceType === this._tableName) {
-											resourceType = `key`;
+										if(!resourceIdsPerType.hasOwnProperty(row.resource_type)) {
+											resourceIdsPerType[row.resource_type] = [];
 										}
-										if(!resourceIdsPerType.hasOwnProperty(resourceType)) {
-											resourceIdsPerType[resourceType] = [];
-										}
-										if(!resourceIdsPerType[resourceType].includes(row.key)) {
-											resourceIdsPerType[resourceType].push(row.key);
+										if(!resourceIdsPerType[row.resource_type].includes(row.key)) {
+											resourceIdsPerType[row.resource_type].push(row.key);
 										}
 									});
 								})
@@ -426,13 +417,16 @@ class PgCollection {
 					...filter['any']
 				};
 
-				_.each(Object.keys(availableKeys), (property) => {
-					if(filter['any'][this.getTypeKeyColumnName(property)]) {
-						any[this.getTypeKeyColumnName(property)] = _.compact(_.map(filter['any'][this.getTypeKeyColumnName(property)], (key) => {
-							return availableKeys[property].includes(key) && key
+				_.each(availableKeys, (keys, type) => {
+					if(type === this._tableName || type === this._collectionName) {
+						type = `key`;
+					}
+					if(filter['any'][this.getTypeKeyColumnName(type)]) {
+						any[this.getTypeKeyColumnName(type)] = _.compact(_.map(filter['any'][this.getTypeKeyColumnName(type)], (key) => {
+							return keys.includes(key) && key
 						}));
 					} else {
-						any[this.getTypeKeyColumnName(property)] = availableKeys[property];
+						any[this.getTypeKeyColumnName(type)] = keys;
 					}
 				});
 
@@ -447,6 +441,9 @@ class PgCollection {
 				if(Object.keys(availableKeys).length) {
 					any = {};
 					_.each(availableKeys, (keys, type) => {
+						if(type === this._tableName || type === this._collectionName) {
+							type = `key`;
+						}
 						any[this.getTypeKeyColumnName(type)] = keys;
 					});
 				} else {

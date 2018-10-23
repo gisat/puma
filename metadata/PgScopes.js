@@ -8,6 +8,11 @@ class PgScopes extends PgCollection {
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
+
+		this._permissionResourceTypes = [
+			`scope`,
+			`dataset`
+		];
 	}
 
 	static collectionName() {
