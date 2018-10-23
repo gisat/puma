@@ -415,16 +415,16 @@ class PgCollection {
 	getFilterOptionsForAny(filter, availableKeys, isAdmin) {
 		let any;
 		if(!isAdmin) {
-			if (filter.hasOwnProperty('any')) {
+			if (filter.hasOwnProperty('in')) {
 				any = {
-					...filter['any']
+					...filter['in']
 				};
 
 				_.each(availableKeys, (keys, type) => {
 					if(type === this._tableName || type === this._collectionName) {
 						type = `key`;
 					}
-					if(filter['any'][this.getTypeKeyColumnName(type)]) {
+					if(filter['in'][this.getTypeKeyColumnName(type)]) {
 						any[this.getTypeKeyColumnName(type)] = _.compact(_.map(filter['any'][this.getTypeKeyColumnName(type)], (key) => {
 							return keys.includes(key) && key
 						}));
@@ -433,13 +433,13 @@ class PgCollection {
 					}
 				});
 
-				if(filter['any'] && filter['any']['key'] && availableKeys['key']) {
-					any['key'] = _.compact(_.map(filter['any']['key'], (key) => {
+				if(filter['in'] && filter['in']['key'] && availableKeys['key']) {
+					any['key'] = _.compact(_.map(filter['in']['key'], (key) => {
 						return availableKeys.includes(key) && key
 					}));
 				}
 
-				delete filter['any'];
+				delete filter['in'];
 			} else {
 				if(Object.keys(availableKeys).length) {
 					any = {};
@@ -456,9 +456,9 @@ class PgCollection {
 				}
 			}
 		} else {
-			if (filter.hasOwnProperty('any')) {
-				any = filter['any'];
-				delete filter['any'];
+			if (filter.hasOwnProperty('in')) {
+				any = filter['in'];
+				delete filter['in'];
 			}
 		}
 
