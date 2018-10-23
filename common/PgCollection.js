@@ -540,6 +540,10 @@ class PgCollection {
 			options.keys.forEach((key) => {
 				if (key === 'key') {
 					mongo._id = isNaN(filter[key]) ? String(filter[key]) : Number(filter[key]);
+				} else if(filter[key] === null) {
+					mongo[key] = {
+						'$exists': false
+					};
 				} else {
 					mongo[key] = filter[key];
 				}
