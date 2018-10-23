@@ -8,6 +8,8 @@ const PgScenarioCases = require('./PgScenarioCases');
 const PgLpisCases = require('./PgLpisCases');
 const PgScopes = require('./PgScopes');
 const PgThemes = require('./PgThemes');
+const PgPlaces = require('./PgPlaces');
+const PgDataviewsLegacy = require('./PgDataviewsLegacy');
 
 class PgMetadata extends PgCrud {
 	constructor(pgPool, pgSchema, mongo) {
@@ -18,6 +20,8 @@ class PgMetadata extends PgCrud {
 		this._pgLspiCases = new PgLpisCases(pgPool, pgSchema, mongo);
 		this._pgScopes = new PgScopes(pgPool, pgSchema, mongo);
 		this._pgThemes = new PgThemes(pgPool, pgSchema, mongo);
+		this._pgPlaces = new PgPlaces(pgPool, pgSchema, mongo);
+		this._pgDataviewsLegacy = new PgDataviewsLegacy(pgPool, pgSchema, mongo);
 
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
@@ -41,7 +45,15 @@ class PgMetadata extends PgCrud {
 			},
 			themes: {
 				store: this._pgThemes,
-				type: PgThemes.groupName()
+				type: PgThemes.tableName()
+			},
+			places: {
+				store: this._pgPlaces,
+				type: PgPlaces.tableName()
+			},
+			dataviews: {
+				store: this._pgDataviewsLegacy,
+				type: PgDataviewsLegacy.tableName()
 			}
 		};
 	}
