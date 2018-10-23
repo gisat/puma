@@ -624,7 +624,17 @@ class PgCollection {
 		if (options.keys.length || options.like || options.any || options.notIn) {
 			let where = [];
 			options.keys.forEach((key) => {
-				where.push(`${key === "key" ? '"a"."id"' : `"${key}"`} = ${isNaN(filter[key]) ? `'${String(filter[key])}'` : Number(filter[key])}`);
+				if(key === 'key' || key === 'id') {
+					where.push(`"a"."id" = ${Number(filter[key])}`);
+				} else {
+					if(isNaN(filter[key])) {
+						where.push(`"${key}" = '${String(filter[key])}'`);
+					} else if(!isNaN(filter[key])) {
+						where.push(`"${key}" = ${Number(filter[key])}`);
+					} else if(filter[key] === null) {
+						where.push(`"${key}" IS NULL`);
+					}
+				}
 			});
 
 			if (options.like) {
