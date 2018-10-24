@@ -612,20 +612,24 @@ class PgCollection {
 			})
 			.then((documents) => {
 				payload.data = _.map(documents, (document) => {
-					return {
-						key: document._id,
-						data: {
-							...document,
-							_id: undefined,
-							created: undefined,
-							createdBy: undefined,
-							changed: undefined,
-							changedBy: undefined
-						}
-					}
+					return this.parseMongoDocument(document);
 				});
 				return payload;
 			});
+	}
+
+	parseMongoDocument(document) {
+		return {
+			key: document._id,
+			data: {
+				...document,
+				_id: undefined,
+				created: undefined,
+				createdBy: undefined,
+				changed: undefined,
+				changedBy: undefined
+			}
+		}
 	}
 
 	getSql(options, filter, user, extra) {

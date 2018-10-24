@@ -64,6 +64,20 @@ class PgDataviewsLegacy extends PgCollection {
 		return mongoFilter;
 	}
 
+	parseMongoDocument(document) {
+		return {
+			key: document._id,
+			data: {
+				...document.conf,
+				_id: undefined,
+				created: undefined,
+				createdBy: undefined,
+				changed: undefined,
+				changedBy: undefined
+			}
+		}
+	}
+
 	static collectionName() {
 		return 'dataview';
 	}
