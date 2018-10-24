@@ -29,6 +29,8 @@ class PgCollection {
 		this._collectionName = null;
 		this._tableName = null;
 		this._permissionResourceTypes = null;
+
+		this._publicGroupId = 2;
 	}
 
 	create(objects, user, extra) {
@@ -145,7 +147,7 @@ class PgCollection {
 				let promises = [];
 
 				group.forEach((object) => {
-					if(availableKeys.includes(object.key) || isAdmin) {
+					if (availableKeys.includes(object.key) || isAdmin) {
 						promises.push(
 							this.updateOne(object, objects, user, extra)
 						);
@@ -248,6 +250,30 @@ class PgCollection {
 				}
 			})
 			.then(([payload, availableKeys]) => {
+				let resourceKeys = _.map(payload.data, 'key');
+
+				return this.getPermissionsForResourceKeys(resourceKeys, user)
+					.then((permissions) => {
+						payload = {
+							...payload,
+							data: _.map(payload.data, (data) => {
+								if(permissions.publicKeys.includes(data.key)) {
+									return {
+										...data,
+										public: true
+									}
+								} else {
+									return data;
+								}
+							})
+						};
+
+						payload.permissions = permissions.forResources;
+
+						return [payload, availableKeys];
+					});
+			})
+			.then(([payload, availableKeys]) => {
 				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys)
 					.then((changes) => {
 						payload.change = _.sortBy(_.flatten(_.map(changes, (changesByResourceType) => {
@@ -259,6 +285,81 @@ class PgCollection {
 			})
 	}
 
+	getPermissionsForResourceKeys(resourceKeys, user) {
+		return Promise.all([
+			this.getPermissionsForResourceKeysByUserId(resourceKeys, user.id),
+			this.getPermissionsForResourceKeysByUserGroupIds(resourceKeys, _.map(user.groups, 'id'))
+		]).then(([userPermissions, groupPermissions]) => {
+
+			let byResourceKey = {};
+			_.each([...userPermissions, ...groupPermissions], (userPermission) => {
+				if(userPermission.permission === 'PUT') {
+					byResourceKey[userPermission.resource_id] = byResourceKey[Number(userPermission.resource_id)] || {};
+					byResourceKey[userPermission.resource_id]['update'] = true;
+				}
+				if(userPermission.permission === 'DELETE') {
+					byResourceKey[userPermission.resource_id] = byResourceKey[Number(userPermission.resource_id)] || {};
+					byResourceKey[userPermission.resource_id]['delete'] = true;
+				}
+			});
+
+			let forResources = [];
+			_.each(byResourceKey, (permissions, key) => {
+				forResources.push({
+					resourceKey: Number(key),
+					data: permissions
+				});
+			});
+
+			let publicKeys = _.union(
+				_.map(
+					_.filter(groupPermissions, {
+						group_id: this._publicGroupId,
+						permission: 'GET'
+					}), (groupPermission) => {
+						return Number(groupPermission.resource_id)
+					})
+			);
+
+			return {
+				publicKeys,
+				forResources
+			}
+		})
+	}
+
+	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
+		let query = [
+			`SELECT * FROM "${this._schema}"."group_permissions" AS gp `,
+			`WHERE`,
+			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
+			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
+			`AND group_id IN (${groupIds.join(`, `)})`
+		];
+
+		return this._pool
+			.query(query.join(` `))
+			.then((queryResult) => {
+				return queryResult.rows;
+			});
+	}
+
+	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
+		let query = [
+			`SELECT * FROM "${this._schema}"."permissions" AS p `,
+			`WHERE`,
+			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
+			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
+			`AND user_id = ${userId}`
+		];
+
+		return this._pool
+			.query(query.join(` `))
+			.then((queryResult) => {
+				return queryResult.rows;
+			});
+	}
+
 	getResourceIdsForUserAndPermissionType(user, permissionType) {
 		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
 		let resourceTypesCondition = _.map(this._permissionResourceTypes, (resourceType) => {
@@ -268,7 +369,7 @@ class PgCollection {
 		let resourceIdsPerType = {};
 		return Promise.resolve()
 			.then(() => {
-				if(isAdmin) {
+				if (isAdmin) {
 					return Promise.resolve([[], true]);
 				} else {
 					return this._pool
@@ -277,10 +378,10 @@ class PgCollection {
 						)
 						.then((result) => {
 							_.each(result.rows, (row) => {
-								if(!resourceIdsPerType.hasOwnProperty(row.resource_type)) {
+								if (!resourceIdsPerType.hasOwnProperty(row.resource_type)) {
 									resourceIdsPerType[row.resource_type] = [];
 								}
-								if(!resourceIdsPerType[row.resource_type].includes(row.key)) {
+								if (!resourceIdsPerType[row.resource_type].includes(row.key)) {
 									resourceIdsPerType[row.resource_type].push(row.key);
 								}
 							});
@@ -292,10 +393,10 @@ class PgCollection {
 								)
 								.then((result) => {
 									_.each(result.rows, (row) => {
-										if(!resourceIdsPerType.hasOwnProperty(row.resource_type)) {
+										if (!resourceIdsPerType.hasOwnProperty(row.resource_type)) {
 											resourceIdsPerType[row.resource_type] = [];
 										}
-										if(!resourceIdsPerType[row.resource_type].includes(row.key)) {
+										if (!resourceIdsPerType[row.resource_type].includes(row.key)) {
 											resourceIdsPerType[row.resource_type].push(row.key);
 										}
 									});
@@ -318,7 +419,7 @@ class PgCollection {
 				group.forEach((object) => {
 					let key = object.key;
 
-					if(availableKeys.includes(key) || isAdmin) {
+					if (availableKeys.includes(key) || isAdmin) {
 						promises.push(
 							this.deleteOne(key, user, extra)
 								.then((result) => {
@@ -414,17 +515,17 @@ class PgCollection {
 
 	getFilterOptionsForAny(filter, availableKeys, isAdmin) {
 		let any;
-		if(!isAdmin) {
+		if (!isAdmin) {
 			if (filter.hasOwnProperty('in')) {
 				any = {
 					...filter['in']
 				};
 
 				_.each(availableKeys, (keys, type) => {
-					if(type === this._tableName || type === this._collectionName) {
+					if (type === this._tableName || type === this._collectionName) {
 						type = `key`;
 					}
-					if(filter['in'][this.getTypeKeyColumnName(type)]) {
+					if (filter['in'][this.getTypeKeyColumnName(type)]) {
 						any[this.getTypeKeyColumnName(type)] = _.compact(_.map(filter['any'][this.getTypeKeyColumnName(type)], (key) => {
 							return keys.includes(key) && key
 						}));
@@ -433,7 +534,7 @@ class PgCollection {
 					}
 				});
 
-				if(filter['in'] && filter['in']['key'] && availableKeys['key']) {
+				if (filter['in'] && filter['in']['key'] && availableKeys['key']) {
 					any['key'] = _.compact(_.map(filter['in']['key'], (key) => {
 						return availableKeys.includes(key) && key
 					}));
@@ -441,10 +542,10 @@ class PgCollection {
 
 				delete filter['in'];
 			} else {
-				if(Object.keys(availableKeys).length) {
+				if (Object.keys(availableKeys).length) {
 					any = {};
 					_.each(availableKeys, (keys, type) => {
-						if(type === this._tableName || type === this._collectionName) {
+						if (type === this._tableName || type === this._collectionName) {
 							type = `key`;
 						}
 						any[this.getTypeKeyColumnName(type)] = keys;
@@ -462,12 +563,12 @@ class PgCollection {
 			}
 		}
 
-		if(any) {
+		if (any) {
 			_.each(Object.keys(any), (property) => {
-				if(any[property].length) {
+				if (any[property].length) {
 					any[property] = _.compact(any[property]);
 				}
-				if(!any[property].length) {
+				if (!any[property].length) {
 					any[property] = [-1];
 				}
 			});
@@ -508,7 +609,7 @@ class PgCollection {
 		}
 
 		let any = this.getFilterOptionsForAny(filter, availableKeys, isAdmin);
-		if(any) {
+		if (any) {
 			options.any = any;
 		}
 
@@ -540,7 +641,7 @@ class PgCollection {
 			options.keys.forEach((key) => {
 				if (key === 'key') {
 					mongoFilter._id = isNaN(filter[key]) ? String(filter[key]) : Number(filter[key]);
-				} else if(filter[key] === null) {
+				} else if (filter[key] === null) {
 					mongoFilter[key] = {
 						'$exists': false
 					};
@@ -639,14 +740,14 @@ class PgCollection {
 		if (options.keys.length || options.like || options.any || options.notIn) {
 			let where = [];
 			options.keys.forEach((key) => {
-				if(key === 'key' || key === 'id') {
+				if (key === 'key' || key === 'id') {
 					where.push(`"a"."id" = ${Number(filter[key])}`);
 				} else {
-					if(isNaN(filter[key])) {
+					if (isNaN(filter[key])) {
 						where.push(`"${key}" = '${String(filter[key])}'`);
-					} else if(!isNaN(filter[key])) {
+					} else if (!isNaN(filter[key])) {
 						where.push(`"${key}" = ${Number(filter[key])}`);
-					} else if(filter[key] === null) {
+					} else if (filter[key] === null) {
 						where.push(`"${key}" IS NULL`);
 					}
 				}
