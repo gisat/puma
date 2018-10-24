@@ -5,14 +5,13 @@ const PgCollection = require('../common/PgCollection');
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const SzifCaseCreator = require('../integration/SzifCaseCreator');
-const MongoLocations = require('../metadata/MongoLocations');
 const MongoScope = require('../metadata/MongoScope');
-const PgLpisCasePlaceRelations = require('./PgLpisCasePlaceRelations');
 const PgLpisCaseViewRelations = require('./PgLpisCaseViewRelations');
 const PgLpisCaseChanges = require('./PgLpisCaseChanges');
 const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
 const MongoFilteredCollection = require('../data/MongoFilteredCollection');
+const PgAnalyticalUnits = require('../layers/PgAnalyticalUnits');
 
 class PgLpisCases extends PgCollection {
 	constructor(pgPool, pgSchema, mongo) {
@@ -22,10 +21,10 @@ class PgLpisCases extends PgCollection {
 
 		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
 		this._szifCaseCreator = new SzifCaseCreator(pgPool, mongo);
-		this._pgLpisCasePlaceRelations = new PgLpisCasePlaceRelations(pgPool, pgSchema, mongo);
 		this._pgLpisCaseViewRelations = new PgLpisCaseViewRelations(pgPool, pgSchema, mongo);
-		this._pgLpisCaseChanges = new PgLpisCaseChanges(pgPool, pgSchema)
+		this._pgLpisCaseChanges = new PgLpisCaseChanges(pgPool, pgSchema);
 		this._mongoDataViews = new MongoDataViews(mongo);
+		this._pgAnalyticalUnits = new PgAnalyticalUnits(pgPool);
 	}
 
 	create(payloadData, user, extra) {
@@ -264,64 +263,39 @@ class PgLpisCases extends PgCollection {
 			})
 	}
 
-	_createMongoBasicDataView(scope_id) {
-		return this._getMongoBasicDataViewParametersByScopeId(scope_id)
-			.then(([theme_id, period_id]) => {
-				if (!theme_id || !period_id || !scope_id) {
+	_createMongoBasicDataView(scopeId) {
+		return this._getMongoBasicDataViewParametersByScopeId(scopeId)
+			.then(([themeId, yearId, placeId]) => {
+				if (!themeId || !yearId || !scopeId || !placeId) {
 					throw new Error('missing id');
 				}
-				return this._mongoDataViews.defaultForScope(scope_id, theme_id, null, period_id);
+				return this._mongoDataViews.defaultForScope(scopeId, themeId, placeId, yearId, this._pgAnalyticalUnits);
 			});
 	}
 
-	_getMongoBasicDataViewParametersByScopeId(scope_id) {
+	_getMongoBasicDataViewParametersByScopeId(scopeId) {
+		let parameters = {
+		};
 		return this._mongo
 			.collection(`theme`)
-			.find({dataset: scope_id})
+			.find({dataset: scopeId})
 			.toArray()
 			.then((mongoResults) => {
 				if (mongoResults[0]) {
-					return [
-						mongoResults[0]['_id'],
-						mongoResults[0]['years'][0]
-					];
-				}
-			})
-	}
-
-	_createMongoPlace(keys, data) {
-		return Promise.resolve()
-			.then(() => {
-				let caseMetadata = {
-					caseName: null,
-					scopeId: null,
-					beforeGeometry: null,
-					afterGeometry: null
-				};
-
-				keys.forEach((key) => {
-					switch (key) {
-						case `case_key`:
-							caseMetadata['caseName'] = `lpis_case:${data[key]}`;
-							break;
-						case `geometry_before`:
-							caseMetadata['beforeGeometry'] = data[key];
-							break;
-						case `geometry_after`:
-							caseMetadata['afterGeometry'] = data[key];
-							break;
-					}
-				});
-
-				if (!caseMetadata.caseName || !caseMetadata.beforeGeometry) {
-					throw new Error(`missing case_key of geometry_before`);
+					parameters.themeId = mongoResults[0]['_id'];
+					parameters.yearId = mongoResults[0]['years'][0];
 				}
 
-				return this._szifCaseCreator
-					.prepareMongoLocationMetadata(caseMetadata)
+				return this._mongo
+					.collection(`location`)
+					.find({dataset: scopeId})
+					.toArray()
 			})
-			.then((newMongoLocation) => {
-				return new MongoLocations(this._mongo).add(newMongoLocation);
+			.then((mongoResults) => {
+				if (mongoResults[0]) {
+					parameters.placeId = mongoResults[0]['_id'];
+				}
+				return [parameters.themeId, parameters.yearId, parameters.placeId]
 			})
 	}
 
