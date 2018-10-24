@@ -68,12 +68,7 @@ class PgDataviewsLegacy extends PgCollection {
 		return {
 			key: document._id,
 			data: {
-				...document.conf,
-				_id: undefined,
-				created: undefined,
-				createdBy: undefined,
-				changed: undefined,
-				changedBy: undefined
+				...document.conf
 			}
 		}
 	}
