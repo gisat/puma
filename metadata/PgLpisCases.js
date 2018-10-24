@@ -414,6 +414,10 @@ class PgLpisCases extends PgCollection {
 	}
 
 	get(filter, user, extra) {
+		if(!extra) {
+			extra = {};
+		}
+
 		let payload = {
 			data: null,
 		};
