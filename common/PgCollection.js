@@ -532,26 +532,26 @@ class PgCollection {
 		return options;
 	}
 
-	mongoGet(options, filter) {
-		let payload = {};
-		let mongo = {};
+	getMongoFilter(options, filter) {
+		let mongoFilter = {};
+
 		if (options.keys.length || options.like || options.any || options.notIn) {
 			let where = [];
 			options.keys.forEach((key) => {
 				if (key === 'key') {
-					mongo._id = isNaN(filter[key]) ? String(filter[key]) : Number(filter[key]);
+					mongoFilter._id = isNaN(filter[key]) ? String(filter[key]) : Number(filter[key]);
 				} else if(filter[key] === null) {
-					mongo[key] = {
+					mongoFilter[key] = {
 						'$exists': false
 					};
 				} else {
-					mongo[key] = filter[key];
+					mongoFilter[key] = filter[key];
 				}
 			});
 
 			if (options.like) {
 				Object.keys(options.like).forEach((key) => {
-					mongo[key === 'key' ? '_id' : key] = {
+					mongoFilter[key === 'key' ? '_id' : key] = {
 						'$regex': options.like[key],
 						'$options': 'i'
 					}
@@ -560,7 +560,7 @@ class PgCollection {
 
 			if (options.any) {
 				Object.keys(options.any).forEach((key) => {
-					mongo[key === 'key' ? '_id' : key] = {
+					mongoFilter[key === 'key' ? '_id' : key] = {
 						'$in': options.any[key]
 					}
 				});
@@ -568,18 +568,25 @@ class PgCollection {
 
 			if (options.notIn) {
 				Object.keys(options.notIn).forEach((key) => {
-					mongo[key === 'key' ? '_id' : key] = {
+					mongoFilter[key === 'key' ? '_id' : key] = {
 						'$nin': options.notIn[key]
 					}
 				});
 			}
 		}
 
-		return this._mongo.collection(this._collectionName).find(mongo).count()
+		return mongoFilter;
+	}
+
+	mongoGet(options, filter) {
+		let payload = {};
+		let mongoFilter = this.getMongoFilter(options, filter);
+
+		return this._mongo.collection(this._collectionName).find(mongoFilter).count()
 			.then((total) => {
 				let mongoQuery = this._mongo
 					.collection(this._collectionName)
-					.find(mongo);
+					.find(mongoFilter);
 
 				if (!options.unlimited) {
 					payload.limit = options.limit;
