@@ -34,11 +34,11 @@ class MongoDataViews {
      * @param scope {Number} Id of the scope used for the deep linking.
      * @param theme {Number} Id of the theme used for the deep linking.
      * @param location {Number} Id of the place used for the deep linking.
-     * @param period {Number} Id of the period used for the deep linking.
+     * @param year {Number} Id of the period used for the deep linking.
      * @param analyticalUnits {PgAnalyticalUnits} Service for accessing analytical units.
      * @returns {*}
      */
-        defaultForScope(scope, theme, location, period, analyticalUnits) {
+        defaultForScope(scope, theme, location, year, analyticalUnits) {
         let collection = this._connection.collection(MongoDataView.collectionName());
         let id = conn.getNextId();
         let analyticalUnitLevel = null;
@@ -91,7 +91,7 @@ class MongoDataViews {
                 "conf": {
                     "multipleMaps": false,
                     "years": [
-                        period
+                        year
                     ],
                     "expanded": {},
                     "dataset": scope,
