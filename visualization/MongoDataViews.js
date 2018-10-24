@@ -58,7 +58,7 @@ class MongoDataViews {
             analyticalUnitLevel = scopes[0].featureLayers[0];
             return new FilteredMongoLayerReferences({
                 location: location,
-                year: period,
+                year: year,
                 areaTemplate: analyticalUnitLevel,
                 isData: false,
                 active: true
