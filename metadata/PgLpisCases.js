@@ -336,7 +336,7 @@ class PgLpisCases extends PgCollection {
 		if (payloadData.hasOwnProperty('lpis_cases') && payloadData['lpis_cases'].length) {
 			let listOfIds = _.compact(_.map(payloadData['lpis_cases'], 'id'));
 			if (listOfIds.length) {
-				return this.get({any: {id: listOfIds}, unlimited: true}, false, user)
+				return this.get({any: {id: listOfIds}, unlimited: true}, user)
 					.then((currentResults) => {
 						let extra = currentResults.extra;
 
