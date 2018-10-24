@@ -36,7 +36,7 @@ class PgLpisCaseChanges extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData, user, extra) {
+	createOne(object, payloadData, user, extra) {
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -211,7 +211,7 @@ class PgLpisCaseChanges extends PgCollection {
 		}
 	}
 
-	_deleteOne(lpisCaseId) {
+	deleteOne(lpisCaseId) {
 		let status = {
 			deleted: false
 		};
