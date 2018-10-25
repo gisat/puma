@@ -745,10 +745,10 @@ class PgCollection {
 				} else {
 					if (isNaN(filter[key])) {
 						where.push(`"${key}" = '${String(filter[key])}'`);
-					} else if (!isNaN(filter[key])) {
-						where.push(`"${key}" = ${Number(filter[key])}`);
 					} else if (filter[key] === null) {
 						where.push(`"${key}" IS NULL`);
+					} else if (!isNaN(filter[key])) {
+						where.push(`"${key}" = ${Number(filter[key])}`);
 					}
 				}
 			});
