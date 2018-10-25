@@ -513,11 +513,11 @@ class PgCollection {
 			});
 	}
 
-	getFilterOptionsForAny(filter, availableKeys, isAdmin) {
-		let any;
+	getFilterOptionsForIn(filter, availableKeys, isAdmin) {
+		let includes;
 		if (!isAdmin) {
 			if (filter.hasOwnProperty('in')) {
-				any = {
+				includes = {
 					...filter['in']
 				};
 
@@ -526,16 +526,16 @@ class PgCollection {
 						type = `key`;
 					}
 					if (filter['in'][this.getTypeKeyColumnName(type)]) {
-						any[this.getTypeKeyColumnName(type)] = _.compact(_.map(filter['any'][this.getTypeKeyColumnName(type)], (key) => {
+						includes[this.getTypeKeyColumnName(type)] = _.compact(_.map(filter['in'][this.getTypeKeyColumnName(type)], (key) => {
 							return keys.includes(key) && key
 						}));
 					} else {
-						any[this.getTypeKeyColumnName(type)] = keys;
+						includes[this.getTypeKeyColumnName(type)] = keys;
 					}
 				});
 
 				if (filter['in'] && filter['in']['key'] && availableKeys['key']) {
-					any['key'] = _.compact(_.map(filter['in']['key'], (key) => {
+					includes['key'] = _.compact(_.map(filter['in']['key'], (key) => {
 						return availableKeys.includes(key) && key
 					}));
 				}
@@ -543,38 +543,38 @@ class PgCollection {
 				delete filter['in'];
 			} else {
 				if (Object.keys(availableKeys).length) {
-					any = {};
+					includes = {};
 					_.each(availableKeys, (keys, type) => {
 						if (type === this._tableName || type === this._collectionName) {
 							type = `key`;
 						}
-						any[this.getTypeKeyColumnName(type)] = keys;
+						includes[this.getTypeKeyColumnName(type)] = keys;
 					});
 				} else {
-					any = {
+					includes = {
 						key: [-1]
 					};
 				}
 			}
 		} else {
 			if (filter.hasOwnProperty('in')) {
-				any = filter['in'];
+				includes = filter['in'];
 				delete filter['in'];
 			}
 		}
 
-		if (any) {
-			_.each(Object.keys(any), (property) => {
-				if (any[property].length) {
-					any[property] = _.compact(any[property]);
+		if (includes) {
+			_.each(Object.keys(includes), (property) => {
+				if (includes[property].length) {
+					includes[property] = _.compact(includes[property]);
 				}
-				if (!any[property].length) {
-					any[property] = [-1];
+				if (!includes[property].length) {
+					includes[property] = [-1];
 				}
 			});
 		}
 
-		return any;
+		return includes;
 	}
 
 	getTypeKeyColumnName(type) {
@@ -608,9 +608,9 @@ class PgCollection {
 			delete filter['like'];
 		}
 
-		let any = this.getFilterOptionsForAny(filter, availableKeys, isAdmin);
-		if (any) {
-			options.any = any;
+		let includes = this.getFilterOptionsForIn(filter, availableKeys, isAdmin);
+		if (includes) {
+			options.in = includes;
 		}
 
 		if (filter.hasOwnProperty('notIn')) {
@@ -636,7 +636,7 @@ class PgCollection {
 	getMongoFilter(options, filter) {
 		let mongoFilter = {};
 
-		if (options.keys.length || options.like || options.any || options.notIn) {
+		if (options.keys.length || options.like || options.in || options.notIn) {
 			let where = [];
 			options.keys.forEach((key) => {
 				if (key === 'key') {
@@ -659,10 +659,10 @@ class PgCollection {
 				});
 			}
 
-			if (options.any) {
-				Object.keys(options.any).forEach((key) => {
+			if (options.in) {
+				Object.keys(options.in).forEach((key) => {
 					mongoFilter[key === 'key' ? '_id' : key] = {
-						'$in': options.any[key]
+						'$in': options.in[key]
 					}
 				});
 			}
@@ -737,7 +737,7 @@ class PgCollection {
 		let sql = [];
 		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : 'id AS key, *'} FROM "${this._schema}"."${this._tableName}" AS a`);
 
-		if (options.keys.length || options.like || options.any || options.notIn) {
+		if (options.keys.length || options.like || options.in || options.notIn) {
 			let where = [];
 			options.keys.forEach((key) => {
 				if (key === 'key' || key === 'id') {
@@ -759,9 +759,9 @@ class PgCollection {
 				});
 			}
 
-			if (options.any) {
-				Object.keys(options.any).forEach((key) => {
-					where.push(`${key === 'key' ? `"a"."id"` : `"${key}"`} IN (${options.any[key].join(', ')})`);
+			if (options.in) {
+				Object.keys(options.in).forEach((key) => {
+					where.push(`${key === 'key' ? `"a"."id"` : `"${key}"`} IN (${options.in[key].join(', ')})`);
 				});
 			}
 
@@ -832,7 +832,7 @@ class PgCollection {
 			return payloadData;
 		} else {
 			if (payloadData.hasOwnProperty(this._groupName) && payloadData[this._groupName].length) {
-				return this.get({any: {key: _.map(payloadData[this._groupName], 'key')}, unlimited: true}, user, {})
+				return this.get({in: {key: _.map(payloadData[this._groupName], 'key')}, unlimited: true}, user, {})
 					.then((currentModels) => {
 						payloadData[this._groupName] = _.map(payloadData[this._groupName], model => {
 							if (model.key) {
