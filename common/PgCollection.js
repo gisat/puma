@@ -257,18 +257,12 @@ class PgCollection {
 						payload = {
 							...payload,
 							data: _.map(payload.data, (data) => {
-								if(permissions.publicKeys.includes(data.key)) {
-									return {
-										...data,
-										public: true
-									}
-								} else {
-									return data;
-								}
+								return {
+									...data,
+									permissions: permissions[data.key]
+								};
 							})
 						};
-
-						payload.permissions = permissions.forResources;
 
 						return [payload, availableKeys];
 					});
@@ -292,39 +286,22 @@ class PgCollection {
 		]).then(([userPermissions, groupPermissions]) => {
 
 			let byResourceKey = {};
-			_.each([...userPermissions, ...groupPermissions], (userPermission) => {
-				if(userPermission.permission === 'PUT') {
-					byResourceKey[userPermission.resource_id] = byResourceKey[Number(userPermission.resource_id)] || {};
-					byResourceKey[userPermission.resource_id]['update'] = true;
+			_.each([...userPermissions, ...groupPermissions], (permissions) => {
+				if (permissions.permission === 'PUT') {
+					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
+					byResourceKey[permissions.resource_id]['update'] = true;
 				}
-				if(userPermission.permission === 'DELETE') {
-					byResourceKey[userPermission.resource_id] = byResourceKey[Number(userPermission.resource_id)] || {};
-					byResourceKey[userPermission.resource_id]['delete'] = true;
+				if (permissions.permission === 'DELETE') {
+					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
+					byResourceKey[permissions.resource_id]['delete'] = true;
+				}
+				if (permissions.permission === 'GET' || permissions.group_id === this._publicGroupId) {
+					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
+					byResourceKey[permissions.resource_id]['public'] = true;
 				}
 			});
 
-			let forResources = [];
-			_.each(byResourceKey, (permissions, key) => {
-				forResources.push({
-					resourceKey: Number(key),
-					...permissions
-				});
-			});
-
-			let publicKeys = _.union(
-				_.map(
-					_.filter(groupPermissions, {
-						group_id: this._publicGroupId,
-						permission: 'GET'
-					}), (groupPermission) => {
-						return Number(groupPermission.resource_id)
-					})
-			);
-
-			return {
-				publicKeys,
-				forResources
-			}
+			return byResourceKey;
 		})
 	}
 

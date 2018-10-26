@@ -48,8 +48,7 @@ class PgCrud {
 	async get(types, filter, user) {
 		let promises = [];
 		let payload = {
-			data: {},
-			permissions: {}
+			data: {}
 		};
 
 		types = types ? types.split(',') : [];
@@ -60,7 +59,6 @@ class PgCrud {
 					pgObject.store.get(filter, user, {idOnly: true})
 						.then((results) => {
 							payload.data[pgType] = results['data'];
-							payload.permissions[pgType] = results['permissions'];
 							payload.changes = {
 								...payload.changes,
 								[pgType]: results['change']
