@@ -307,7 +307,7 @@ class PgCollection {
 			_.each(byResourceKey, (permissions, key) => {
 				forResources.push({
 					resourceKey: Number(key),
-					data: permissions
+					...permissions
 				});
 			});
 
