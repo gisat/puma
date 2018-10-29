@@ -45,7 +45,7 @@ class PgCrud {
 		return [data, errors];
 	}
 
-	async get(types, filter, user) {
+	async get(types, request, user) {
 		let promises = [];
 		let payload = {
 			data: {}
@@ -56,7 +56,7 @@ class PgCrud {
 		_.forEach(this._pgTypes, (pgObject, pgType) => {
 			if (types.includes(pgType)) {
 				promises.push(
-					pgObject.store.get(filter, user, {idOnly: true})
+					pgObject.store.get(request, user, {idOnly: true})
 						.then((results) => {
 							payload.data[pgType] = results['data'];
 							payload.changes = {

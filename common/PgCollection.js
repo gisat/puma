@@ -233,17 +233,16 @@ class PgCollection {
 			});
 	}
 
-	get(filter, user, extra) {
+	get(request, user, extra) {
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
 			.then(([availableKeys, isAdmin]) => {
-				let options = this.getFilterOptions(filter, availableKeys, isAdmin);
 				if (!this._legacy) {
-					return this.postgresGet(options, filter, user, extra)
+					return this.postgresGet(request, user, extra, availableKeys, isAdmin)
 						.then((payload) => {
 							return [payload, availableKeys];
 						})
 				} else {
-					return this.mongoGet(options, filter)
+					return this.mongoGet(request, availableKeys, isAdmin)
 						.then((payload) => {
 							return [payload, availableKeys];
 						})
@@ -561,104 +560,126 @@ class PgCollection {
 		}
 	}
 
-	getFilterOptions(filter, availableKeys, isAdmin) {
-		filter = {
-			...filter
+	getFilterOptions(request, availableKeys, isAdmin) {
+		request = {
+			...request
 		};
 
 		let options = {};
 
 		options.limit = this._limit;
-		if (filter.hasOwnProperty('limit')) {
-			options.limit = Number(filter['limit'] ? filter['limit'] : options.limit);
-			delete filter['limit'];
+		if (request.hasOwnProperty('limit')) {
+			options.limit = Number(request['limit'] ? request['limit'] : options.limit);
+			delete request['limit'];
 		}
 
 		options.offset = this._offset;
-		if (filter.hasOwnProperty('offset')) {
-			options.offset = Number(filter['offset'] ? filter['offset'] : options.offset);
-			delete filter['offset'];
+		if (request.hasOwnProperty('offset')) {
+			options.offset = Number(request['offset'] ? request['offset'] : options.offset);
+			delete request['offset'];
 		}
 
-		if (filter.hasOwnProperty('like')) {
-			options.like = filter['like'];
-			delete filter['like'];
+		if (request.hasOwnProperty('filter')) {
+			options.filter = request['filter'];
 		}
 
-		let includes = this.getFilterOptionsForIn(filter, availableKeys, isAdmin);
+		let includes = this.getFilterOptionsForIn(request, availableKeys, isAdmin);
 		if (includes) {
 			options.in = includes;
 		}
 
-		if (filter.hasOwnProperty('notIn')) {
-			options.notIn = filter['notIn'];
-			delete filter['notIn'];
+		if (request.hasOwnProperty('notIn')) {
+			options.notIn = request['notIn'];
+			delete request['notIn'];
 		}
 
-		if (filter.hasOwnProperty('unlimited')) {
-			options.unlimited = filter.unlimited;
-			delete filter['unlimited'];
+		if (request.hasOwnProperty('unlimited')) {
+			options.unlimited = request.unlimited;
+			delete request['unlimited'];
 		}
 
-		if (filter.hasOwnProperty('sort')) {
-			options.sort = filter.sort;
-			delete filter['sort'];
+		if (request.hasOwnProperty('sort')) {
+			options.sort = request.sort;
+			delete request['sort'];
 		}
 
-		options.keys = filter ? Object.keys(filter) : [];
+		options.keys = request ? Object.keys(request) : [];
 
 		return options;
 	}
 
-	getMongoFilter(options, filter) {
+	getMongoFilter(request, availableKeys, isAdmin) {
 		let mongoFilter = {};
 
-		if (options.keys.length || options.like || options.in || options.notIn) {
-			let where = [];
-			options.keys.forEach((key) => {
-				if (key === 'key') {
-					mongoFilter._id = isNaN(filter[key]) ? String(filter[key]) : Number(filter[key]);
-				} else if (filter[key] === null) {
-					mongoFilter[key] = {
-						'$exists': false
-					};
-				} else {
-					mongoFilter[key] = filter[key];
+		if(request.filter) {
+
+			if(!isAdmin) {
+				let keys = [];
+				if(availableKeys.hasOwnProperty(this._tableName)) {
+					keys.push(availableKeys[this._tableName]);
 				}
-			});
+				if(availableKeys.hasOwnProperty(this._collectionName)) {
+					keys.push(availableKeys[this._collectionName]);
+				}
+				keys = _.union(_.compact(_.flatten(keys)));
 
-			if (options.like) {
-				Object.keys(options.like).forEach((key) => {
-					mongoFilter[key === 'key' ? '_id' : key] = {
-						'$regex': options.like[key],
-						'$options': 'i'
+				if(request.filter.hasOwnProperty('key')) {
+					if(_.isObject(request.filter.key)) {
+						if(request.filter.key.hasOwnProperty('in')) {
+							request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
+								return keys.includes(key) && key;
+							}));
+						} else {
+							request.filter.key.in = keys;
+						}
+					} else {
+						if(!keys.includes(request.filter.key)) {
+							request.filter.key = -1;
+						}
 					}
-				});
+				} else {
+					request.filter.key = {
+						in: keys
+					}
+				}
 			}
 
-			if (options.in) {
-				Object.keys(options.in).forEach((key) => {
-					mongoFilter[key === 'key' ? '_id' : key] = {
-						'$in': options.in[key]
-					}
-				});
-			}
+			_.map(request.filter, (data, column) => {
+				column = column === 'key' ? '_id': column;
+				if(_.isObject(data)) {
+					let type = Object.keys(data)[0];
+					let value = data[type];
 
-			if (options.notIn) {
-				Object.keys(options.notIn).forEach((key) => {
-					mongoFilter[key === 'key' ? '_id' : key] = {
-						'$nin': options.notIn[key]
+					switch (type) {
+						case 'like':
+							mongoFilter[column] = {
+								'$regex': value,
+								'$options': 'i'
+							};
+							break;
+						case 'in':
+							mongoFilter[column] = {
+								'$in': value
+							};
+							break;
+						case 'notin':
+							mongoFilter[column] = {
+								'$nin': value
+							};
+							break;
 					}
-				});
-			}
+				} else {
+					mongoFilter[column] = data;
+				}
+			})
 		}
 
 		return mongoFilter;
 	}
 
-	mongoGet(options, filter) {
+	mongoGet(request, availableKeys, isAdmin) {
 		let payload = {};
-		let mongoFilter = this.getMongoFilter(options, filter);
+		let mongoFilter = this.getMongoFilter(request, availableKeys, isAdmin);
 
 		return this._mongo.collection(this._collectionName).find(mongoFilter).count()
 			.then((total) => {
@@ -666,21 +687,22 @@ class PgCollection {
 					.collection(this._collectionName)
 					.find(mongoFilter);
 
-				if (!options.unlimited) {
-					payload.limit = options.limit;
-					payload.offset = options.offset;
+				if (!request.unlimited) {
+					payload.limit = _.isNumber(request.limit) && request.limit || this._limit;
+					payload.offset = _.isNumber(request.offset) && request.offset || this._offset;
 					payload.total = Number(total);
 
 					mongoQuery = mongoQuery
-						.skip(options.offset)
-						.limit(options.limit);
+						.skip(payload.offset)
+						.limit(payload.limit);
 
 				}
 
-				if (options.sort) {
+				if (request.order) {
 					let orderby = {};
-					Object.keys(options.sort).forEach((key) => {
-						orderby[key === 'key' ? '_id' : key] = options.sort[key] && options.sort[key].toLowerCase() === "descending" ? -1 : 1;
+
+					_.map(request.order, ([key, order]) => {
+						orderby[key === 'key' ? '_id' : key] = order && order.toLowerCase() === "descending" ? -1 : 1;
 					});
 
 					mongoQuery = mongoQuery.sort(orderby);
@@ -710,54 +732,82 @@ class PgCollection {
 		}
 	}
 
-	getSql(options, filter, user, extra) {
+	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
 		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : 'id AS key, *'} FROM "${this._schema}"."${this._tableName}" AS a`);
 
-		if (options.keys.length || options.like || options.in || options.notIn) {
-			let where = [];
-			options.keys.forEach((key) => {
-				if (key === 'key' || key === 'id') {
-					where.push(`"a"."id" = ${Number(filter[key])}`);
+		if(request.filter) {
+
+			if(!isAdmin) {
+				let keys = [];
+				if(availableKeys.hasOwnProperty(this._tableName)) {
+					keys.push(availableKeys[this._tableName]);
+				}
+				if(availableKeys.hasOwnProperty(this._collectionName)) {
+					keys.push(availableKeys[this._collectionName]);
+				}
+				keys = _.union(_.compact(_.flatten(keys)));
+
+				if(request.filter.hasOwnProperty('key')) {
+					if(_.isObject(request.filter.key)) {
+						if(request.filter.key.hasOwnProperty('in')) {
+							request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
+								return keys.includes(key) && key;
+							}));
+						} else {
+							request.filter.key.in = keys;
+						}
+					} else {
+						if(!keys.includes(request.filter.key)) {
+							request.filter.key = -1;
+						}
+					}
 				} else {
-					if (isNaN(filter[key])) {
-						where.push(`"${key}" = '${String(filter[key])}'`);
-					} else if (filter[key] === null) {
-						where.push(`"${key}" IS NULL`);
-					} else if (!isNaN(filter[key])) {
-						where.push(`"${key}" = ${Number(filter[key])}`);
+					request.filter.key = {
+						in: keys
 					}
 				}
+			}
+
+			let where = [];
+			_.map(request.filter, (data, column) => {
+				column = column === 'key' ? 'id': column;
+				if(_.isObject(data)) {
+					let type = Object.keys(data)[0];
+					let value = data[type];
+
+					switch (type) {
+						case 'like':
+							where.push(
+								`"${column}" ILIKE '%${value}%'`
+							);
+							break;
+						case 'in':
+							where.push(
+								`"${column}" IN (${value})`
+							);
+							break;
+						case 'notin':
+							where.push(
+								`"${column}" NOT IN (${value})`
+							);
+							break;
+					}
+				} else {
+					where.push(
+						`"${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
+					);
+				}
 			});
-
-			if (options.like) {
-				Object.keys(options.like).forEach((key) => {
-					where.push(`"${key}" ILIKE '%${options.like[key]}%'`);
-				});
-			}
-
-			if (options.in) {
-				Object.keys(options.in).forEach((key) => {
-					where.push(`${key === 'key' ? `"a"."id"` : `"${key}"`} IN (${options.in[key].join(', ')})`);
-				});
-			}
-
-			if (options.notIn) {
-				Object.keys(options.notIn).forEach((key) => {
-					where.push(`${key === 'key' ? `"a"."id"` : `"${key}"`} NOT IN (${options.notIn[key].join(', ')})`);
-				});
-			}
 
 			sql.push(`WHERE ${where.join(' AND ')}`);
 		}
 
-		sql.push(`GROUP BY "a"."id"`);
-
-		if (options.sort) {
+		if (request.order) {
 			sql.push(`ORDER BY`);
 
-			Object.keys(options.sort).forEach((key) => {
-				let direction = options.sort[key] && options.sort[key].toLowerCase() === "descending" ? "DESC" : "ASC";
+			_.map(request.order, ([key, order]) => {
+				let direction = order && order.toLowerCase() === "descending" ? "DESC" : "ASC";
 				sql.push(`${key === 'key' ? `"a"."id"` : `"${key}"`} ${direction}`);
 			});
 		} else {
@@ -767,19 +817,19 @@ class PgCollection {
 		return sql.join(' ');
 	}
 
-	postgresGet(options, filter, user, extra) {
+	postgresGet(request, user, extra, availableKeys, isAdmin) {
 		let payload = {};
 
-		let sql = this.getSql(options, filter, user, extra);
+		let sql = this.getSql(request, user, extra, availableKeys, isAdmin);
 
 		return this._pool.query(`SELECT count(*) AS total FROM (${sql}) AS results;`)
 			.then((pagingResult) => {
-				if (!options.unlimited) {
-					payload.limit = options.limit;
-					payload.offset = options.offset;
+				if (!request.unlimited) {
+					payload.limit = _.isNumber(request.limit) && request.limit || this._limit;
+					payload.offset = _.isNumber(request.offset) && request.offset || this._offset;
 					payload.total = Number(pagingResult.rows[0].total);
 
-					return this._pool.query(`SELECT * FROM (${sql}) AS results LIMIT ${options.limit} OFFSET ${options.offset};`);
+					return this._pool.query(`SELECT * FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`);
 				} else {
 					return this._pool.query(`SELECT * FROM (${sql}) AS results;`);
 				}
