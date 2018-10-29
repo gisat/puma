@@ -15,7 +15,7 @@ class PgThemes extends PgCollection {
 	}
 
 	static groupName() {
-		return 'themess';
+		return 'themes';
 	}
 
 	static tableName() {
