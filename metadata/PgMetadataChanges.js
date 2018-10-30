@@ -20,15 +20,21 @@ class PgMetadataChanges {
 			})
 	}
 
-	getChangesForAvailableResources(resources) {
+	getChangesForAvailableResources(resources, isAdmin) {
 		let changes = {};
 		let promises = [];
 
 		_.each(resources, (resourceKeys, resourceType) => {
+			let availableResources = ``;
+
+			if(!isAdmin) {
+				availableResources = ` AND resource_key in ('${resourceKeys.join("', '")}')`
+			}
+
 			promises.push(
 				this._pgPool
 					.query(
-						`SELECT * FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}' AND resource_key in ('${resourceKeys.join("', '")}') ORDER BY changed DESC LIMIT 1`
+						`SELECT * FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}'${availableResources} ORDER BY changed DESC LIMIT 1`
 					)
 					.then((result) => {
 						return result.rows;

@@ -241,16 +241,16 @@ class PgCollection {
 				if (!this._legacy) {
 					return this.postgresGet(request, user, extra, availableKeys, isAdmin)
 						.then((payload) => {
-							return [payload, availableKeys];
+							return [payload, availableKeys, isAdmin];
 						})
 				} else {
 					return this.mongoGet(request, availableKeys, isAdmin)
 						.then((payload) => {
-							return [payload, availableKeys];
+							return [payload, availableKeys, isAdmin];
 						})
 				}
 			})
-			.then(([payload, availableKeys]) => {
+			.then(([payload, availableKeys, isAdmin]) => {
 				let resourceKeys = _.map(payload.data, 'key');
 
 				return this.getPermissionsForResourceKeys(resourceKeys, user)
@@ -265,11 +265,11 @@ class PgCollection {
 							})
 						};
 
-						return [payload, availableKeys];
+						return [payload, availableKeys, isAdmin];
 					});
 			})
-			.then(([payload, availableKeys]) => {
-				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys)
+			.then(([payload, availableKeys, isAdmin]) => {
+				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys, isAdmin)
 					.then((changes) => {
 						payload.change = _.sortBy(_.flatten(_.map(changes, (changesByResourceType) => {
 							return changesByResourceType;
