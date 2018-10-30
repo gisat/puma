@@ -611,68 +611,69 @@ class PgCollection {
 	getMongoFilter(request, availableKeys, isAdmin) {
 		let mongoFilter = {};
 
-		if(request.filter) {
+		if(!isAdmin) {
+			let keys = [];
+			if(availableKeys.hasOwnProperty(this._tableName)) {
+				keys.push(availableKeys[this._tableName]);
+			}
+			if(availableKeys.hasOwnProperty(this._collectionName)) {
+				keys.push(availableKeys[this._collectionName]);
+			}
+			keys = _.union(_.compact(_.flatten(keys)));
 
-			if(!isAdmin) {
-				let keys = [];
-				if(availableKeys.hasOwnProperty(this._tableName)) {
-					keys.push(availableKeys[this._tableName]);
-				}
-				if(availableKeys.hasOwnProperty(this._collectionName)) {
-					keys.push(availableKeys[this._collectionName]);
-				}
-				keys = _.union(_.compact(_.flatten(keys)));
-
-				if(request.filter.hasOwnProperty('key')) {
-					if(_.isObject(request.filter.key)) {
-						if(request.filter.key.hasOwnProperty('in')) {
-							request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
-								return keys.includes(key) && key;
-							}));
-						} else {
-							request.filter.key.in = keys;
-						}
+			if(request.filter && request.filter.hasOwnProperty('key')) {
+				if(_.isObject(request.filter.key)) {
+					if(request.filter.key.hasOwnProperty('in')) {
+						request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
+							return keys.includes(key) && key;
+						}));
 					} else {
-						if(!keys.includes(request.filter.key)) {
-							request.filter.key = -1;
-						}
+						request.filter.key.in = keys;
 					}
 				} else {
-					request.filter.key = {
-						in: keys
+					if(!keys.includes(request.filter.key)) {
+						request.filter.key = -1;
 					}
+				}
+			} else {
+				if(!request.filter) {
+					request.filter = {};
+				}
+
+				request.filter.key = {
+					in: keys
 				}
 			}
-
-			_.map(request.filter, (data, column) => {
-				column = column === 'key' ? '_id': column;
-				if(_.isObject(data)) {
-					let type = Object.keys(data)[0];
-					let value = data[type];
-
-					switch (type) {
-						case 'like':
-							mongoFilter[column] = {
-								'$regex': value,
-								'$options': 'i'
-							};
-							break;
-						case 'in':
-							mongoFilter[column] = {
-								'$in': value
-							};
-							break;
-						case 'notin':
-							mongoFilter[column] = {
-								'$nin': value
-							};
-							break;
-					}
-				} else {
-					mongoFilter[column] = data;
-				}
-			})
 		}
+
+		_.map(request.filter, (data, column) => {
+			column = column === 'key' ? '_id': column;
+			if(_.isObject(data)) {
+				let type = Object.keys(data)[0];
+				let value = data[type];
+
+				switch (type) {
+					case 'like':
+						mongoFilter[column] = {
+							'$regex': value,
+							'$options': 'i'
+						};
+						break;
+					case 'in':
+						mongoFilter[column] = {
+							'$in': value
+						};
+						break;
+					case 'notin':
+						mongoFilter[column] = {
+							'$nin': value
+						};
+						break;
+				}
+			} else {
+				mongoFilter[column] = data;
+			}
+		});
 
 		return mongoFilter;
 	}
