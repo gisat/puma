@@ -31,6 +31,8 @@ class PgCollection {
 		this._permissionResourceTypes = null;
 
 		this._publicGroupId = 2;
+
+		this._legacyDataPath = "";
 	}
 
 	create(objects, user, extra) {
@@ -647,7 +649,7 @@ class PgCollection {
 		}
 
 		_.map(request.filter, (data, column) => {
-			column = column === 'key' ? '_id': column;
+			column = column === 'key' ? '_id': `${this._legacyDataPath}${column}`;
 			if(_.isObject(data)) {
 				let type = Object.keys(data)[0];
 				let value = data[type];
