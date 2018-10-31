@@ -253,7 +253,7 @@ class PgCollection {
 			.then(([payload, availableKeys, isAdmin]) => {
 				let resourceKeys = _.map(payload.data, 'key');
 
-				return this.getPermissionsForResourceKeys(resourceKeys, user)
+				return this.getPermissionsForResourceKeys(resourceKeys, user, isAdmin)
 					.then((permissions) => {
 						payload = {
 							...payload,
@@ -269,6 +269,12 @@ class PgCollection {
 					});
 			})
 			.then(([payload, availableKeys, isAdmin]) => {
+				if(!availableKeys) {	// todo if user is admin, there are no availableKeys, but next method which return changes need object with some keys atleast, i have to rewrite this to something meaningful
+					availableKeys = {
+						[this._tableName]: [],
+						[this._collectionName]: []
+					}
+				}
 				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys, isAdmin)
 					.then((changes) => {
 						payload.change = _.sortBy(_.flatten(_.map(changes, (changesByResourceType) => {
@@ -280,25 +286,26 @@ class PgCollection {
 			})
 	}
 
-	getPermissionsForResourceKeys(resourceKeys, user) {
+	getPermissionsForResourceKeys(resourceKeys, user, isAdmin) {
 		return Promise.all([
 			this.getPermissionsForResourceKeysByUserId(resourceKeys, user.id),
 			this.getPermissionsForResourceKeysByUserGroupIds(resourceKeys, _.map(user.groups, 'id'))
 		]).then(([userPermissions, groupPermissions]) => {
 
 			let byResourceKey = {};
-			_.each([...userPermissions, ...groupPermissions], (permissions) => {
-				if (permissions.permission === 'PUT') {
-					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
-					byResourceKey[permissions.resource_id]['update'] = true;
+			_.each(resourceKeys, (resourceKey) => {
+				let permissions = [...userPermissions, ...groupPermissions];
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
+					byResourceKey[resourceKey] = byResourceKey[resourceKey] || {};
+					byResourceKey[resourceKey]['update'] = true;
 				}
-				if (permissions.permission === 'DELETE') {
-					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
-					byResourceKey[permissions.resource_id]['delete'] = true;
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
+					byResourceKey[resourceKey] = byResourceKey[resourceKey] || {};
+					byResourceKey[resourceKey]['delete'] = true;
 				}
-				if (permissions.permission === 'GET' && permissions.group_id === this._publicGroupId) {
-					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
-					byResourceKey[permissions.resource_id]['public'] = true;
+				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
+					byResourceKey[resourceKey] = byResourceKey[resourceKey] || {};
+					byResourceKey[resourceKey]['public'] = true;
 				}
 			});
 
@@ -348,7 +355,7 @@ class PgCollection {
 		return Promise.resolve()
 			.then(() => {
 				if (isAdmin) {
-					return Promise.resolve([[], true]);
+					return Promise.resolve([null, true]);
 				} else {
 					return this._pool
 						.query(
