@@ -295,16 +295,18 @@ class PgCollection {
 			let byResourceKey = {};
 			_.each(resourceKeys, (resourceKey) => {
 				let permissions = [...userPermissions, ...groupPermissions];
+
+				if(!byResourceKey.hasOwnProperty(resourceKey)) {
+					byResourceKey[resourceKey] = {};
+				}
+
 				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
-					byResourceKey[resourceKey] = byResourceKey[resourceKey] || {};
 					byResourceKey[resourceKey]['update'] = true;
 				}
 				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
-					byResourceKey[resourceKey] = byResourceKey[resourceKey] || {};
 					byResourceKey[resourceKey]['delete'] = true;
 				}
 				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
-					byResourceKey[resourceKey] = byResourceKey[resourceKey] || {};
 					byResourceKey[resourceKey]['public'] = true;
 				}
 			});
