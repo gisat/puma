@@ -296,7 +296,7 @@ class PgCollection {
 					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
 					byResourceKey[permissions.resource_id]['delete'] = true;
 				}
-				if (permissions.permission === 'GET' || permissions.group_id === this._publicGroupId) {
+				if (permissions.permission === 'GET' && permissions.group_id === this._publicGroupId) {
 					byResourceKey[permissions.resource_id] = byResourceKey[Number(permissions.resource_id)] || {};
 					byResourceKey[permissions.resource_id]['public'] = true;
 				}
