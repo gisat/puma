@@ -6,7 +6,12 @@ var conn = require('../common/conn');
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
+const PgCollection = require(`../common/PgCollection`);
+const PgPlaces = require(`../metadata/PgPlaces`);
+const _2 = require('lodash');
+
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
+const Permission = require('../security/Permission');
 
 function getLocationConf(params, req, res, callback) {
 	async.auto({
@@ -25,8 +30,23 @@ function getLocationConf(params, req, res, callback) {
 				asyncCallback(null, datasetMap);
 			});
 		},
-		datasetMap: function(asyncCallback) {
-			crud.read('location', {active: {$ne:false}}, function(err, results) {
+		datasetMap: async function(asyncCallback) {
+			let pgPlaces = new PgPlaces(conn.getPgDataDb(), config.postgreSqlSchema, conn.getMongoDb());
+			let [validResources, isAdmin] = await pgPlaces.getResourceIdsForUserAndPermissionType(req.session.user, Permission.READ);
+
+			let crudFilter = {
+				active: {$ne:false}
+			};
+
+			if(!isAdmin) {
+				let validKeys = _2.compact(_2.flatten(_2.map(Object.keys(validResources), (resourceType) => {
+					return validResources[resourceType];
+				})));
+
+				crudFilter._id = {'$in': validKeys};
+			}
+
+			crud.read('location', crudFilter, function(err, results) {
 				if (err){
 					logger.error("theme#getLocationConf datasetMap. Error: ", err);
 					return callback(err);
@@ -215,12 +235,28 @@ async function getThemeYearConf(params, req, res, callback) {
 			});
 		},
 
-		locations: function(asyncCallback) {
+		locations: async function(asyncCallback) {
 			// var locations = locations ? JSON.parse(params['locations']) : null;
 			// if (locations) {
 			// 	return asyncCallback(null,locations);
 			// }
-			crud.read('location', {dataset: parseInt(params['dataset'])}, function(err, resls) {
+
+			let pgPlaces = new PgPlaces(conn.getPgDataDb(), config.postgreSqlSchema, conn.getMongoDb());
+			let [validResources, isAdmin] = await pgPlaces.getResourceIdsForUserAndPermissionType(req.session.user, Permission.READ);
+
+			let crudFilter = {
+				dataset: parseInt(params['dataset'])
+			};
+
+			if(!isAdmin) {
+				let validKeys = _2.compact(_2.flatten(_2.map(Object.keys(validResources), (resourceType) => {
+					return validResources[resourceType];
+				})));
+
+				crudFilter._id = {'$in': validKeys};
+			}
+
+			crud.read('location', crudFilter, function(err, resls) {
 				if (err){
 					logger.error("theme#getThemeYearConf locations Read Location. Error: ", err);
 					return callback(err);
@@ -352,7 +388,7 @@ async function getThemeYearConf(params, req, res, callback) {
 
 		// Basically at this moment you have all the layerrefs loaded and all locations. From this moment on you should
 		// work basically with all the data in the PostgreSQL database.
-		sql: ['layerRefs', 'locations', function(asyncCallback, results) {
+		sql: ['layerRefs', 'locations', async function(asyncCallback, results) {
 			if (!params['refreshAreas'] || params['refreshAreas']=='false') {
 				return asyncCallback(null, {});
 			}
