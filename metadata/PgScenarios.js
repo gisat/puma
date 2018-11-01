@@ -7,13 +7,13 @@ const Permission = require('../security/Permission');
 
 class PgScenarios extends PgCollection {
 	constructor(pgPool, pgSchema) {
-		super(pgPool, pgSchema, 'PgScenarios');
+		super(pgPool, pgSchema, null, 'PgScenarios');
 
 		this._pgScenarioScenarioCaseRelations = new PgScenarioScenarioCaseRelations(pgPool, pgSchema);
 		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
 	}
 
-	create(payloadData, user) {
+	create(payloadData, user, extra) {
 		let scenarios = payloadData['scenarios'];
 
 		if (scenarios) {
@@ -22,7 +22,7 @@ class PgScenarios extends PgCollection {
 				if (object.id && !object.data) {
 					promises.push({id: object.id, uuid: object.uuid});
 				} else if (!object.id && object.data) {
-					promises.push(this._createOne(object, payloadData, user));
+					promises.push(this.createOne(object, payloadData, user));
 				}
 			});
 
@@ -36,8 +36,7 @@ class PgScenarios extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData, user) {
-		console.log(`#### user.id`, user.id);
+	createOne(object, payloadData, user, extra) {
 		let uuid = object.uuid;
 		let data = object.data;
 
@@ -95,7 +94,7 @@ class PgScenarios extends PgCollection {
 												if (scenario_cases) {
 													let scenario_case = _.find(scenario_cases, {uuid: scenarioCaseId});
 													if (scenario_case && !scenario_case.id) {
-														return this._pgScenarioCases.create(payloadData)
+														return this._pgScenarioCases.create(payloadData, user, extra)
 															.then((results) => {
 																if (results.length) {
 																	scenario_case.id = results[0].id;
@@ -245,7 +244,7 @@ class PgScenarios extends PgCollection {
 			});
 	}
 
-	update(payloadData, user) {
+	update(payloadData, user, extra) {
 		let scenarios = payloadData['scenarios'];
 		let scenario_cases = payloadData['scenario_cases'];
 
@@ -275,7 +274,7 @@ class PgScenarios extends PgCollection {
 							);
 						} else if (uuid) {
 							promises.push(
-								this._createOne(update, payloadData, user)
+								this.createOne(update, payloadData, user, extra)
 							);
 						}
 					}
@@ -298,7 +297,7 @@ class PgScenarios extends PgCollection {
 		if (scenarios) {
 			let promises = [];
 			for (let scenario of scenarios) {
-				await this._deleteOne(scenario.id)
+				await this.deleteOne(scenario.id)
 					.then((result) => {
 						if (result.hasOwnProperty('deleted')) {
 							scenario.deleted = result.deleted;
@@ -311,7 +310,7 @@ class PgScenarios extends PgCollection {
 		}
 	}
 
-	_deleteOne(scenarioId) {
+	deleteOne(scenarioId) {
 		let status = {
 			deleted: false
 		};

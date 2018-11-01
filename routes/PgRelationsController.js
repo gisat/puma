@@ -1,24 +1,20 @@
-const PgSpatialRelations = require('../metadata/PgSpatialRelations');
+const PgRelations = require('../metadata/PgRelations');
 
-class PgScenariosController {
+class PgRelationsController {
 	constructor(app, pgPool, pgSchema) {
-		this._pgSpatialRelations = new PgSpatialRelations(pgPool, pgSchema);
+		this._pgRelations = new PgRelations(pgPool, pgSchema);
 
-		app.post(`/rest/metadata/spatial_relations`, this.create.bind(this));
-
-		app.get(`/rest/metadata/spatial_relations`, this.get.bind(this));
-		app.post(`/rest/metadata/spatial_relations/filtered`, this.get.bind(this));
-
-		app.delete(`/rest/metadata/spatial_relations/:id`, this.delete.bind(this));
-
-		app.put(`/rest/metadata/spatial_relations`, this.update.bind(this))
+		app.post(`/rest/relations`, this.create.bind(this));
+		app.post(`/rest/relations/filtered/:type`, this.get.bind(this));
+		app.put(`/rest/relations`, this.update.bind(this))
 	}
 
 	create(request, response) {
-		this._pgSpatialRelations.create(request.body)
-			.then((scenario) => {
+		this._pgRelations.create(request.body.data, request.session.user)
+			.then(([data, errors]) => {
 				response.status(200).json({
-					data: scenario,
+					data: data,
+					errors: errors,
 					success: true
 				})
 			})
@@ -31,12 +27,13 @@ class PgScenariosController {
 	}
 
 	get(request, response) {
-		this._pgSpatialRelations.get(_.assign({}, request.query, request.body))
+		this._pgRelations.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
 			})
 			.catch((error) => {
+				console.log(error);
 				response.status(500).json({
 					message: error.message,
 					success: false
@@ -45,7 +42,7 @@ class PgScenariosController {
 	}
 
 	delete(request, response) {
-		this._pgSpatialRelations.delete(request.params.id || request.body.id)
+		this._pgRelations.delete(request.params.id || request.body.id, request.session.user)
 			.then(() => {
 				response.status(200).json({
 					success: true
@@ -60,7 +57,7 @@ class PgScenariosController {
 	}
 
 	update(request, response) {
-		this._pgSpatialRelations.update(request.body)
+		this._pgRelations.update(request.body, request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);
@@ -74,4 +71,4 @@ class PgScenariosController {
 	}
 }
 
-module.exports = PgScenariosController;
+module.exports = PgRelationsController;

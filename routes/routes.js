@@ -49,7 +49,7 @@ let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
 
 const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
-const PgSpatialRelationsController = require('./PgSpatialRelationsController');
+const PgRelationsController = require('./PgRelationsController');
 const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
 const PgMetadataController = require('./PgMetadataController');
 
@@ -136,7 +136,7 @@ module.exports = function(app) {
 	new ImageMosaicController(app);
 	new SzifCaseCreatorController(app, pool, mongo);
 
-	new PgSpatialRelationsController(app, pool, config.postgreSqlSchema);
+	new PgRelationsController(app, pool, config.postgreSqlSchema);
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
 	new PgMetadataController(app, pool, config.postgreSqlSchema, mongo);
 

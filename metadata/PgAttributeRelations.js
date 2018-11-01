@@ -1,31 +1,28 @@
+const _ = require('lodash');
+
 const PgCollection = require('../common/PgCollection');
 
-class PgScopes extends PgCollection {
-	constructor(pool, schema, mongo) {
-		super(pool, schema, mongo, `PgScopes`);
+class PgAttributeRelations extends PgCollection {
+	constructor(pgPool, pgSchema) {
+		super(pgPool, pgSchema, 'PgAttributeRelations');
 
-		this._legacy = true;
+		this._legacy = false;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
-
-		this._permissionResourceTypes = [
-			`scope`,
-			`dataset`
-		];
 	}
 
 	static collectionName() {
-		return 'dataset';
+		return null;
 	}
 
 	static groupName() {
-		return 'scopes';
+		return 'attribute';
 	}
 
 	static tableName() {
-		return 'scope';
+		return `attribute_relation`;
 	}
 }
 
-module.exports = PgScopes;
+module.exports = PgAttributeRelations;

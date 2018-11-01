@@ -24,9 +24,10 @@ class PgMetadataController {
 				files: request.files,
 				configuration: this._isJson(request.body.configuration) ? JSON.parse(request.body.configuration) : request.body.configuration
 			}
-		).then((metadata) => {
+		).then(([metadata, errors]) => {
 			response.status(200).json({
 				data: metadata,
+				errors: errors,
 				success: true
 			})
 		}).catch((error) => {

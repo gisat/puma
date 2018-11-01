@@ -6,7 +6,11 @@ var json2csv = require('json2csv');
 var json2xls = require('json2xls');
 var _ = require('underscore');
 var GeoJSON = require('geojson');
+const { convert: json2shape } = require('geojson2shp');
 var Shapefile = require('shp-write');
+const fs = require('fs');
+const fse = require('fs-extra');
+const config = require('../config');
 
 var Info = require('../attributes/Info');
 var Attributes = require('../attributes/Attributes');
@@ -76,7 +80,7 @@ class ExportController {
         let attributesObj = new Attributes(options.areaTemplate, options.periods, options.places, options.attributes);
 
         var self = this;
-        this._info.statistics(attributesObj, options.attributesMap, options.gids).then(json => {
+        this._info.statistics(attributesObj, options.attributesMap, options.gids).then(async json => {
             json.forEach(value => {
                 value.geom = this._webMercator2wgs84.convertWKTGeometry(value.geom, false);
                 value.attributes.forEach(attr => {
@@ -89,13 +93,13 @@ class ExportController {
             });
 
             let geoJson = this.constructor.getGeoJSON(json, this._wgs84, "geom");
-            let zip = Shapefile.zip(geoJson, {folder: 'selected_units',
-                types: {
-                    point: 'mypoints',
-                    polygon: 'mypolygons',
-                    line: 'mylines'
-                }});
-            self.prepareShapefileExport(response, zip);
+			let path = (`${config.exportDirectory}${new UUID().toString()}`);
+
+			await json2shape(geoJson, fs.createWriteStream(`${path}.zip`), {layer: `selected_units`});
+
+            self.prepareShapefileExport(response, fs.readFileSync(`${path}.zip`));
+
+            fse.remove(`${path}.zip`);
         }).catch(err => {
             throw new Error(
                 logger.error(`AttributeController#info Error: `, err)

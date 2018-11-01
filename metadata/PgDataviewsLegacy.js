@@ -1,31 +1,41 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgScopes extends PgCollection {
+class PgDataviewsLegacy extends PgCollection {
 	constructor(pool, schema, mongo) {
-		super(pool, schema, mongo, `PgScopes`);
+		super(pool, schema, mongo, `PgDataviewsLegacy`);
 
 		this._legacy = true;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._legacyDataPath = "conf.";
+
 		this._permissionResourceTypes = [
-			`scope`,
-			`dataset`
-		];
+		    `dataview`
+		]
+	}
+
+	parseMongoDocument(document) {
+		return {
+			key: document._id,
+			data: {
+				...document.conf
+			}
+		}
 	}
 
 	static collectionName() {
-		return 'dataset';
+		return 'dataview';
 	}
 
 	static groupName() {
-		return 'scopes';
+		return 'dataviews';
 	}
 
 	static tableName() {
-		return 'scope';
+		return 'dataview';
 	}
 }
 
-module.exports = PgScopes;
+module.exports = PgDataviewsLegacy;

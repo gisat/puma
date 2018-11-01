@@ -8,7 +8,7 @@ const WpsBaseProcess = require('../WpsBaseProcess');
 const PucsMatlabProcessor = require('../../integration/PucsMatlabProcessor');
 const DataLayerDuplicator = require('../../layers/DataLayerDuplicator');
 
-class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProcess {
+class CalculateOstravaTemperatureMapUsingNeuralNetworkModel extends WpsBaseProcess {
 	constructor(pgPool, pantherTemporaryStoragePath, pantherDataStoragePath, pgSchema, mongo) {
 		super();
 
@@ -20,9 +20,9 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 		this._mongo = mongo;
 
 		this._describe = {
-			identifier: `CalculatePragueTemperatureMapUsingNeuralNetworkModel`,
-			title: `CalculatePragueTemperatureMapUsingNeuralNetworkModel`,
-			abstract: `Calculate temperature map for Prague using neural network model by VITO`,
+			identifier: `CalculateOstravaTemperatureMapUsingNeuralNetworkModel`,
+			title: `CalculateOstravaTemperatureMapUsingNeuralNetworkModel`,
+			abstract: `Calculate temperature map for Ostrava using neural network model by VITO`,
 			inputs: {
 				inputFile: {
 					identifier: `inputFile`,
@@ -43,7 +43,7 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 			}
 		};
 
-		this._pucsMatlabProcessor = new PucsMatlabProcessor(`prague`, `/home/mbabic/matlab_ua_prague`, `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
+		this._pucsMatlabProcessor = new PucsMatlabProcessor(`ostrava`, `/home/mbabic/matlab_ua_ostrava`, `/usr/local/MATLAB/MATLAB_Runtime/v901`, pgPool, pgSchema, mongo);
 		this._dataLayerDuplicator = new DataLayerDuplicator();
 	}
 
@@ -224,6 +224,6 @@ class CalculatePragueTemperatureMapUsingNeuralNetworkModel extends WpsBaseProces
 	}
 }
 
-CalculatePragueTemperatureMapUsingNeuralNetworkModel.prototype.name = 'CalculatePragueTemperatureMapUsingNeuralNetworkModel';
+CalculateOstravaTemperatureMapUsingNeuralNetworkModel.prototype.name = 'CalculateOstravaTemperatureMapUsingNeuralNetworkModel';
 
-module.exports = CalculatePragueTemperatureMapUsingNeuralNetworkModel;
+module.exports = CalculateOstravaTemperatureMapUsingNeuralNetworkModel;

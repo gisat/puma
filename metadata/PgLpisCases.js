@@ -5,14 +5,13 @@ const PgCollection = require('../common/PgCollection');
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const SzifCaseCreator = require('../integration/SzifCaseCreator');
-const MongoLocations = require('../metadata/MongoLocations');
 const MongoScope = require('../metadata/MongoScope');
-const PgLpisCasePlaceRelations = require('./PgLpisCasePlaceRelations');
 const PgLpisCaseViewRelations = require('./PgLpisCaseViewRelations');
 const PgLpisCaseChanges = require('./PgLpisCaseChanges');
 const MongoDataView = require('../visualization/MongoDataView');
 const MongoDataViews = require('../visualization/MongoDataViews');
 const MongoFilteredCollection = require('../data/MongoFilteredCollection');
+const PgAnalyticalUnits = require('../layers/PgAnalyticalUnits');
 
 class PgLpisCases extends PgCollection {
 	constructor(pgPool, pgSchema, mongo) {
@@ -22,10 +21,10 @@ class PgLpisCases extends PgCollection {
 
 		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
 		this._szifCaseCreator = new SzifCaseCreator(pgPool, mongo);
-		this._pgLpisCasePlaceRelations = new PgLpisCasePlaceRelations(pgPool, pgSchema, mongo);
 		this._pgLpisCaseViewRelations = new PgLpisCaseViewRelations(pgPool, pgSchema, mongo);
-		this._pgLpisCaseChanges = new PgLpisCaseChanges(pgPool, pgSchema)
+		this._pgLpisCaseChanges = new PgLpisCaseChanges(pgPool, pgSchema);
 		this._mongoDataViews = new MongoDataViews(mongo);
+		this._pgAnalyticalUnits = new PgAnalyticalUnits(pgPool);
 	}
 
 	create(payloadData, user, extra) {
@@ -37,7 +36,7 @@ class PgLpisCases extends PgCollection {
 				if (object.id) {
 					promises.push({id: object.id});
 				} else {
-					promises.push(this._createOne(object, payloadData, user, extra));
+					promises.push(this.createOne(object, payloadData, user, extra));
 				}
 			});
 
@@ -49,7 +48,7 @@ class PgLpisCases extends PgCollection {
 		}
 	}
 
-	_createOne(object, payloadData, user, extra) {
+	createOne(object, payloadData, user, extra) {
 		let uuid = object.uuid;
 		let data = object.data;
 		let status = object.status;
@@ -264,64 +263,39 @@ class PgLpisCases extends PgCollection {
 			})
 	}
 
-	_createMongoBasicDataView(scope_id) {
-		return this._getMongoBasicDataViewParametersByScopeId(scope_id)
-			.then(([theme_id, period_id]) => {
-				if (!theme_id || !period_id || !scope_id) {
+	_createMongoBasicDataView(scopeId) {
+		return this._getMongoBasicDataViewParametersByScopeId(scopeId)
+			.then(([themeId, yearId, placeId]) => {
+				if (!themeId || !yearId || !scopeId || !placeId) {
 					throw new Error('missing id');
 				}
-				return this._mongoDataViews.defaultForScope(scope_id, theme_id, null, period_id);
+				return this._mongoDataViews.defaultForScope(scopeId, themeId, placeId, yearId, this._pgAnalyticalUnits);
 			});
 	}
 
-	_getMongoBasicDataViewParametersByScopeId(scope_id) {
+	_getMongoBasicDataViewParametersByScopeId(scopeId) {
+		let parameters = {
+		};
 		return this._mongo
 			.collection(`theme`)
-			.find({dataset: scope_id})
+			.find({dataset: scopeId})
 			.toArray()
 			.then((mongoResults) => {
 				if (mongoResults[0]) {
-					return [
-						mongoResults[0]['_id'],
-						mongoResults[0]['years'][0]
-					];
-				}
-			})
-	}
-
-	_createMongoPlace(keys, data) {
-		return Promise.resolve()
-			.then(() => {
-				let caseMetadata = {
-					caseName: null,
-					scopeId: null,
-					beforeGeometry: null,
-					afterGeometry: null
-				};
-
-				keys.forEach((key) => {
-					switch (key) {
-						case `case_key`:
-							caseMetadata['caseName'] = `lpis_case:${data[key]}`;
-							break;
-						case `geometry_before`:
-							caseMetadata['beforeGeometry'] = data[key];
-							break;
-						case `geometry_after`:
-							caseMetadata['afterGeometry'] = data[key];
-							break;
-					}
-				});
-
-				if (!caseMetadata.caseName || !caseMetadata.beforeGeometry) {
-					throw new Error(`missing case_key of geometry_before`);
+					parameters.themeId = mongoResults[0]['_id'];
+					parameters.yearId = mongoResults[0]['years'][0];
 				}
 
-				return this._szifCaseCreator
-					.prepareMongoLocationMetadata(caseMetadata)
+				return this._mongo
+					.collection(`location`)
+					.find({dataset: scopeId})
+					.toArray()
 			})
-			.then((newMongoLocation) => {
-				return new MongoLocations(this._mongo).add(newMongoLocation);
+			.then((mongoResults) => {
+				if (mongoResults[0]) {
+					parameters.placeId = mongoResults[0]['_id'];
+				}
+				return [parameters.themeId, parameters.yearId, parameters.placeId]
 			})
 	}
 
@@ -362,7 +336,7 @@ class PgLpisCases extends PgCollection {
 		if (payloadData.hasOwnProperty('lpis_cases') && payloadData['lpis_cases'].length) {
 			let listOfIds = _.compact(_.map(payloadData['lpis_cases'], 'id'));
 			if (listOfIds.length) {
-				return this.get({any: {id: listOfIds}, unlimited: true}, false, user)
+				return this.get({any: {id: listOfIds}, unlimited: true}, user)
 					.then((currentResults) => {
 						let extra = currentResults.extra;
 
@@ -439,7 +413,11 @@ class PgLpisCases extends PgCollection {
 		return Promise.all(extraPopulations);
 	}
 
-	get(filter, idOnly, user) {
+	get(filter, user, extra) {
+		if(!extra) {
+			extra = {};
+		}
+
 		let payload = {
 			data: null,
 		};
@@ -488,7 +466,7 @@ class PgLpisCases extends PgCollection {
 		let query = [];
 		query.push(`SELECT`);
 
-		if (idOnly) {
+		if (extra.idOnly) {
 			query.push(`"a"."id" AS id,`);
 			query.push(`(array_agg("b"."view_id") FILTER (WHERE "b"."view_id" IS NOT NULL))[1] AS view_id`);
 		} else {
@@ -616,7 +594,7 @@ class PgLpisCases extends PgCollection {
 			let data = object.data;
 
 			promises.push(
-				this._updateOne(object, payloadData, user, extra)
+				this.updateOne(object, payloadData, user, extra)
 			);
 		});
 
@@ -626,7 +604,7 @@ class PgLpisCases extends PgCollection {
 			});
 	}
 
-	_updateOne(object, payloadData, user, extra) {
+	updateOne(object, payloadData, user, extra) {
 		let id = object.id;
 		let uuid = object.uuid;
 		let data = object.data;
@@ -703,7 +681,7 @@ class PgLpisCases extends PgCollection {
 							}
 						})
 				} else if (uuid) {
-					return this._createOne(object, payloadData, user, extra)
+					return this.createOne(object, payloadData, user, extra)
 						.then((result) => {
 							id = result.id;
 							uuid = result.uuid;
@@ -730,7 +708,7 @@ class PgLpisCases extends PgCollection {
 		if (lpisCases) {
 			let promises = [];
 			for (let lpisCase of lpisCases) {
-				await this._deleteOne(lpisCase.id)
+				await this.deleteOne(lpisCase.id)
 					.then((result) => {
 						if (result.hasOwnProperty('deleted')) {
 							lpisCase.deleted = result.deleted;
@@ -743,7 +721,7 @@ class PgLpisCases extends PgCollection {
 		}
 	}
 
-	_deleteOne(lpisCaseId) {
+	deleteOne(lpisCaseId) {
 		let status = {
 			deleted: false
 		};

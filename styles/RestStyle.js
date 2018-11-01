@@ -18,7 +18,7 @@ var RestStyle = function (id, jsonObject, currentUserId) {
 	this._id = id;
 	this._definition = jsonObject.definition;
 	this._name = jsonObject.name;
-	this._symbologyName = jsonObject.symbologyName;
+	this._symbologyName = jsonObject.symbologyName || jsonObject.symbology_name;
 	this._source = jsonObject.source;
 
 	this._created = jsonObject.created || new Date();

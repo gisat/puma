@@ -4,8 +4,9 @@ const _ = require('lodash');
 const config = require('../config');
 
 const CalculatePragueTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculatePragueTemperatureMapUsingNeuralNetworkModel');
+const CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateOstravaTemperatureMapUsingNeuralNetworkModel');
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
-const PgSpatialRelations = require('../metadata/PgSpatialRelations');
+const PgRelations = require('../metadata/PgRelations');
 
 let processes = {};
 
@@ -16,8 +17,9 @@ class PucsMatlabProcessorController {
 
 		this._mongo = mongo;
 
-		this._pgSpatialRelations = new PgSpatialRelations(pgPool, pgSchema);
+		this._pgRelations = new PgRelations(pgPool, pgSchema);
 		this._calculatePragueTemperatureMapUsingNeuralNetworkModel = new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
+		this._calculateOstravaTemperatureMapUsingNeuralNetworkModel = new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 	}
 
 	publishMatlabResults(request, response) {
@@ -99,8 +101,10 @@ class PucsMatlabProcessorController {
 
 	prepareMatlabMetadata(input, user) {
 		return Promise.resolve()
-			.then(() => {
+			.then(async () => {
 				let data = input.data;
+				let scopeId = data.scope_id;
+				let placeId = data.place_id;
 				let type, identifier;
 
 				if (input.data.uploadKey) {
@@ -116,24 +120,57 @@ class PucsMatlabProcessorController {
 
 				processes[input.uuid].progress++;
 
+				let model;
+				if (scopeId && placeId) {
+					let scopeConfiguration = await this.getScopeConfiguration(scopeId);
+					let pucsLandUseScenarios = scopeConfiguration['pucsLandUseScenarios'];
+					if(pucsLandUseScenarios) {
+						let processorByPlaceId = pucsLandUseScenarios['processorByPlaceId'];
+						model = processorByPlaceId[placeId];
+					}
+				}
+
 				if (type && identifier) {
-					this._calculatePragueTemperatureMapUsingNeuralNetworkModel.execute({
-						dataInputs:
-							[{
-								identifier: 'inputFile',
-								data: `${type}:${identifier}`
-							}],
-						owner: user
-					}).then((results) => {
-						processes[input.uuid].progress++;
+					let matlabNetworkModelExec;
+					switch (model) {
+						case 'prague':
+							matlabNetworkModelExec = this._calculatePragueTemperatureMapUsingNeuralNetworkModel.execute({
+								dataInputs:
+									[{
+										identifier: 'inputFile',
+										data: `${type}:${identifier}`
+									}],
+								owner: user
+							});
+							break;
+						case 'ostrava':
+							matlabNetworkModelExec = this._calculateOstravaTemperatureMapUsingNeuralNetworkModel.execute({
+								dataInputs:
+									[{
+										identifier: 'inputFile',
+										data: `${type}:${identifier}`
+									}],
+								owner: user
+							});
+							break;
+					}
 
-						let parsedResults = JSON.parse(results[0].data)[0];
+					if(matlabNetworkModelExec) {
+						matlabNetworkModelExec.then((results) => {
+							processes[input.uuid].progress++;
 
-						this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, user);
-					}).catch((error) => {
+							let parsedResults = JSON.parse(results[0].data)[0];
+
+							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, user);
+						}).catch((error) => {
+							console.log(`#### error`, error);
+							processes[input.uuid].status = 'error';
+							processes[input.uuid].message = error.message;
+						});
+					} else {
 						processes[input.uuid].status = 'error';
-						processes[input.uuid].message = error.message;
-					});
+						processes[input.uuid].message = `unknown model type`;
+					}
 				} else {
 					processes[input.uuid] = _.assign(input, {
 						message: "unknown input type or input identifier",
@@ -215,19 +252,21 @@ class PucsMatlabProcessorController {
 				}
 			})
 			.catch((error) => {
+				console.log(error);
 				processes[input.uuid].status = 'error';
 				processes[input.uuid].message = error.message;
 			});
 	}
 
 	createSpatialRelationsOfMatlabResults(spatialRelations, input, user) {
-		this._pgSpatialRelations.create(spatialRelations)
-			.then((results) => {
+		this._pgRelations.create({spatial: spatialRelations}, user)
+			.then(([results, errors]) => {
 				processes[input.uuid].progress++;
 				processes[input.uuid].status = "done";
-				processes[input.uuid].spatial_relations = results;
+				processes[input.uuid].spatial_relations = results.spatial;
 			})
 			.catch((error) => {
+				console.log(error);
 				processes[input.uuid].status = 'error';
 				processes[input.uuid].message = error.message;
 			});
@@ -240,12 +279,24 @@ class PucsMatlabProcessorController {
 			});
 	}
 
-	executeMatlabProcessor(request, response) {
+	async executeMatlabProcessor(request, response) {
 		if (request.body.data) {
 			let uploadKey = request.body.data.uploadKey;
 			let remotePath = request.body.data.remotePath;
 			let localLayer = request.body.data.localLayer;
 			let processKey = hash(uploadKey || remotePath || localLayer);
+			let placeId = request.body.data.placeId;
+			let scopeId = request.body.data.scopeId;
+
+			let processorPlace;
+			if (scopeId && placeId) {
+				let scopeConfiguration = await this.getScopeConfiguration(scopeId);
+				let pucsLandUseScenarios = scopeConfiguration['pucsLandUseScenarios'];
+				if(pucsLandUseScenarios) {
+					let processorByPlaceId = pucsLandUseScenarios['processorByPlaceId'];
+					processorPlace = processorByPlaceId[placeId];
+				}
+			}
 
 			if (uploadKey || remotePath || localLayer) {
 				if (!processes[processKey]) {
@@ -265,14 +316,33 @@ class PucsMatlabProcessorController {
 						identifier = localLayer;
 					}
 
-					this._calculatePragueTemperatureMapUsingNeuralNetworkModel.execute({
-						dataInputs:
-							[{
-								identifier: 'inputFile',
-								data: `${type}:${identifier}`
-							}],
-						owner: request.session.user
-					}).then((result) => {
+					let matlabProcess;
+					switch (processorPlace) {
+						case 'prague':
+							matlabProcess = this._calculatePragueTemperatureMapUsingNeuralNetworkModel.execute({
+								dataInputs:
+									[{
+										identifier: 'inputFile',
+										data: `${type}:${identifier}`
+									}],
+								owner: request.session.user
+							});
+							break;
+						case 'ostrava':
+							matlabProcess = this._calculateOstravaTemperatureMapUsingNeuralNetworkModel.execute({
+								dataInputs:
+									[{
+										identifier: 'inputFile',
+										data: `${type}:${identifier}`
+									}],
+								owner: request.session.user
+							});
+							break;
+						default:
+							matlabProcess = Promise.reject(new Error('Unable to find processor for this place'));
+					}
+
+					matlabProcess.then((result) => {
 						processes[processKey] = {
 							status: "done",
 							result: result[0].data

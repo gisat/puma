@@ -11,11 +11,12 @@ const PgLayers = require('../layers/PgLayers');
 const PgSpatialDataSources = require('../metadata/PgSpatialDataSources');
 
 class PucsMatlabProcessor {
-	constructor(pathToMatlabWorkDirectory, pathToMatlabRuntime, pgPool, pgSchema, mongo) {
+	constructor(modelType, pathToMatlabWorkDirectory, pathToMatlabRuntime, pgPool, pgSchema, mongo) {
 		this._pathToWorkDirectory = pathToMatlabWorkDirectory;
 		this._pathToMatlabRuntime = pathToMatlabRuntime;
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
+		this._modelType = modelType;
 
 		this._pgLayers = new PgLayers(pgPool, mongo, pgSchema);
 		this._pgSpatialDataSources = new PgSpatialDataSources(pgPool, pgSchema);
@@ -110,17 +111,17 @@ class PucsMatlabProcessor {
 		metadata.forEach((processMetadata) => {
 			processMetadata.inputVectors.forEach((inputVector) => {
 				promises.push(
-					this._pgLayers.add(inputVector.originalName, inputVector.geoserverLayer, owner.id)
+					this._pgLayers.add(inputVector.originalName, inputVector.geoserverLayer, null, null, owner.id)
 				)
 			});
 			processMetadata.inputRasters.forEach((inputRaster) => {
 				promises.push(
-					this._pgLayers.add(inputRaster.originalName, inputRaster.geoserverLayer, owner.id)
+					this._pgLayers.add(inputRaster.originalName, inputRaster.geoserverLayer, null, null, owner.id)
 				)
 			});
 			processMetadata.outputRasters.forEach((outputRaster) => {
 				promises.push(
-					this._pgLayers.add(outputRaster.originalName, outputRaster.geoserverLayer, owner.id)
+					this._pgLayers.add(outputRaster.originalName, outputRaster.geoserverLayer, null, null, owner.id)
 				)
 			});
 		});
@@ -356,7 +357,7 @@ class PucsMatlabProcessor {
 			computePromises.push(
 				this._prepareEnviroment(processKey)
 					.then(() => {
-						return fse.copy(rasterizedVector, `${this._pathToWorkDirectory}/${processKey}/Input_Scenario/Prague_UA_2012_scenario.tif`);
+						return fse.copy(rasterizedVector, `${this._pathToWorkDirectory}/${processKey}/Input_Scenario/Input_UA_2012_scenario.tif`);
 					})
 					.then(() => {
 						return this._executeMatlabProcessor(`${this._pathToWorkDirectory}/${processKey}`);
@@ -473,6 +474,7 @@ class PucsMatlabProcessor {
 	}
 
 	_rasterizeVectors(pathToInput, inputVectors) {
+		let modelOptions = this._getModeOptionsByType(this._modelType);
 		return new Promise((resolve, reject) => {
 			let rasterizePromises = [];
 			inputVectors.forEach((inputVector) => {
@@ -481,9 +483,12 @@ class PucsMatlabProcessor {
 						let vectorName = inputVector.replace(/\.[^/.]+$/, "");
 						let command = [
 							`gdal_rasterize`,
-							`-init 255`,
+							`${modelOptions.init}`,
+							`${modelOptions.nodata}`,
 							`-a CODE2012`,
-							`-ts 301 301`,
+							`${modelOptions.extent}`,
+							`${modelOptions.pixelSize}`,
+							`${modelOptions.rasterResolution}`,
 							`-l ${vectorName}`,
 							`${pathToInput}/${inputVector}`,
 							`${pathToInput}/${vectorName}.tif`
@@ -548,6 +553,27 @@ class PucsMatlabProcessor {
 
 	_getUniqueName() {
 		return `pucs_${uuid().replace(/-/g, '')}`;
+	}
+
+	_getModeOptionsByType(type) {
+		switch(type) {
+			case `prague`:
+				return {
+					init: `-init 255`,
+					nodata: ``,
+					rasterResolution: `-ts 301 301`,
+					pixelSize: `-tr 0.0015 0.0015`,
+					extent: `-te 14.2142000 49.8242000 14.6657000 50.2757000`
+				};
+			case `ostrava`:
+				return {
+					init: `-init 65536`,
+					nodata: `-a_nodata 65536`,
+					rasterResolution: `-ts 201 201`,
+					pixelSize: `-tr 0.0015 0.0015`,
+					extent: `-te 18.1493000 49.6793000 18.4508000 49.9808000`
+				}
+		}
 	}
 }
 

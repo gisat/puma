@@ -76,9 +76,17 @@ class PgPermissions {
      */
 	addSql(userId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, resource_id, permission) VALUES (${userId}, '${resourceType}', '${resourceId}', '${permission}');`;
+			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, resource_id, permission) 
+						SELECT ${userId}, '${resourceType}', '${resourceId}', '${permission}' WHERE NOT EXISTS (
+							SELECT 1 FROM ${this.schema}.permissions WHERE 
+								user_id = ${userId} AND resource_type = '${resourceType}' AND resource_id = '${resourceId}' AND permission = '${permission}'  
+						);`;
 		} else {
-			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, permission) VALUES (${userId}, '${resourceType}', '${permission}');`;
+			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, permission) 
+						SELECT ${userId}, '${resourceType}', '${permission}' WHERE NOT EXISTS (
+							SELECT 1 FROM ${this.schema}.permissions WHERE 
+								user_id = ${userId} AND resource_type = '${resourceType}' AND resource_id IS NULL AND permission = '${permission}'  
+						);`;
 		}
 	}
 
@@ -102,9 +110,17 @@ class PgPermissions {
      */
 	addGroupSql(groupId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, resource_id, permission) VALUES (${groupId}, '${resourceType}', '${resourceId}', '${permission}');`;
+			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, resource_id, permission) 
+						SELECT ${groupId}, '${resourceType}', '${resourceId}', '${permission}' WHERE NOT EXISTS (
+							SELECT 1 FROM ${this.schema}.group_permissions WHERE 
+								group_id = ${groupId} AND resource_type = '${resourceType}' AND resource_id = '${resourceId}' AND permission = '${permission}'  
+						);`;
 		} else {
-			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, permission) VALUES (${groupId}, '${resourceType}', '${permission}');`;
+			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, permission) 
+						SELECT ${groupId}, '${resourceType}', '${permission}' WHERE NOT EXISTS (
+							SELECT 1 FROM ${this.schema}.group_permissions WHERE 
+								group_id = ${groupId} AND resource_type = '${resourceType}' AND resource_id IS NULL AND permission = '${permission}'  
+						);`;
 		}
 	}
 
