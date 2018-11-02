@@ -292,22 +292,45 @@ class PgCollection {
 			this.getPermissionsForResourceKeysByUserGroupIds(resourceKeys, _.map(user.groups, 'id'))
 		]).then(([userPermissions, groupPermissions]) => {
 
-			let byResourceKey = {};
+			let byResourceKey = {
+			};
+
 			_.each(resourceKeys, (resourceKey) => {
 				let permissions = [...userPermissions, ...groupPermissions];
 
 				if(!byResourceKey.hasOwnProperty(resourceKey)) {
-					byResourceKey[resourceKey] = {};
+					byResourceKey[resourceKey] = {
+						guest: {
+							get: false,
+							update: false,
+							delete: false
+						},
+						activeUser: {
+							get: false,
+							update: false,
+							delete: false
+						}
+					};
 				}
 
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
-					byResourceKey[resourceKey]['update'] = true;
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.READ})) {
+					byResourceKey[resourceKey].activeUser.get = true;
 				}
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
-					byResourceKey[resourceKey]['delete'] = true;
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+					byResourceKey[resourceKey].activeUser.update = true;
 				}
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+					byResourceKey[resourceKey].activeUser.delete = true;
+				}
+
 				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
-					byResourceKey[resourceKey]['public'] = true;
+					byResourceKey[resourceKey].guest.get = true;
+				}
+				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE, group_id: this._publicGroupId})) {
+					byResourceKey[resourceKey].guest.update = true;
+				}
+				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.DELETE, group_id: this._publicGroupId})) {
+					byResourceKey[resourceKey].guest.delete = true;
 				}
 			});
 
