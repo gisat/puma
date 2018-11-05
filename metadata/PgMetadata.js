@@ -67,7 +67,7 @@ class PgMetadata extends PgCrud {
 				store: this._pgPeriods,
 				type: PgPeriods.tableName()
 			},
-			attribtesets: {
+			attributesets: {
 				store: this._pgAttributeSets,
 				type: PgAttributeSets.tableName()
 			},
