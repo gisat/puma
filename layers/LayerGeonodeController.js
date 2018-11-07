@@ -67,7 +67,7 @@ class LayerGeonodeController {
 		}
 
 		let created;
-		this.pgLayers.add(request.body.name, request.body.path, request.body.metadata, request.body.description, request.session.user.id).then(pCreated => {
+		this.pgLayers.add(request.body.name, request.body.path, request.body.metadata, request.body.description, request.session.user.id, request.body.source_url).then(pCreated => {
 			created = pCreated;
 			return Promise.all([
 				this.permissions.add(request.session.userId, 'layer', created.id, Permission.READ),
@@ -96,7 +96,7 @@ class LayerGeonodeController {
 			return;
 		}
 
-		this.pgLayers.update(request.body.id, request.body.name, request.body.path, request.body.metadata, request.body.description).then(pUpdated => {
+		this.pgLayers.update(request.body.id, request.body.name, request.body.path, request.body.metadata, request.body.description, request.session.user.id, request.body.source_url).then(pUpdated => {
 			response.json({data: pUpdated, status: "Ok"});
 		}).catch(error => {
 			logger.error('LayerGeonodeController#update Error: ', error);
