@@ -7,6 +7,7 @@ class PgAttributeRelations extends PgCollection {
 		super(pgPool, pgSchema, 'PgAttributeRelations');
 
 		this._legacy = false;
+		this._checkPermissions = true;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();

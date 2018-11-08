@@ -783,6 +783,10 @@ class PgCollection {
 			}
 			keys = _.union(_.compact(_.flatten(keys)));
 
+			if(!keys.length) {
+				keys.push(-1);
+			}
+
 			if(request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
 				if (_.isObject(request.filter.key)) {
 					if (request.filter.key.hasOwnProperty('in') && this._checkPermissions) {
@@ -790,7 +794,7 @@ class PgCollection {
 							return keys.includes(key) && key;
 						}));
 					} else if(this._checkPermissions) {
-						request.filter.key.in = keys;
+						request.filter.key.in = keys.length;
 					}
 				} else {
 					if (this._checkPermissions && !keys.includes(request.filter.key)) {
@@ -839,7 +843,9 @@ class PgCollection {
 			}
 		});
 
-		sql.push(`WHERE ${where.join(' AND ')}`);
+		if(where.length) {
+			sql.push(`WHERE ${where.join(' AND ')}`);
+		}
 
 		if (request.order) {
 			sql.push(`ORDER BY`);
