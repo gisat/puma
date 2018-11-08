@@ -5,6 +5,7 @@ class PgAttributeSets extends PgCollection {
 		super(pool, schema, mongo, `PgAttributeSets`);
 
 		this._legacy = true;
+		this._checkPermissions = false;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
