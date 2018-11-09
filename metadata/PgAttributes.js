@@ -1,8 +1,8 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgDataviewsLegacy extends PgCollection {
+class PgAttributes extends PgCollection {
 	constructor(pool, schema, mongo) {
-		super(pool, schema, mongo, `PgDataviewsLegacy`);
+		super(pool, schema, mongo, `PgAttributes`);
 
 		this._legacy = true;
 		this._checkPermissions = false;
@@ -10,33 +10,22 @@ class PgDataviewsLegacy extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
-		this._legacyDataPath = "conf.";
-
 		this._permissionResourceTypes = [
-		    `dataview`
+			`attribute`
 		]
 	}
 
-	parseMongoDocument(document) {
-		return {
-			key: document._id,
-			data: {
-				...document.conf
-			}
-		}
-	}
-
 	static collectionName() {
-		return 'dataview';
+		return 'attribute';
 	}
 
 	static groupName() {
-		return 'dataviews';
+		return 'attributes';
 	}
 
 	static tableName() {
-		return 'dataview';
+		return 'attribute';
 	}
 }
 
-module.exports = PgDataviewsLegacy;
+module.exports = PgAttributes;

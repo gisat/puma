@@ -25,6 +25,8 @@ class PgCollection {
 
 		this._legacy = false;
 
+		this._checkPermissions = true;
+
 		this._groupName = null;
 		this._collectionName = null;
 		this._tableName = null;
@@ -292,22 +294,45 @@ class PgCollection {
 			this.getPermissionsForResourceKeysByUserGroupIds(resourceKeys, _.map(user.groups, 'id'))
 		]).then(([userPermissions, groupPermissions]) => {
 
-			let byResourceKey = {};
+			let byResourceKey = {
+			};
+
 			_.each(resourceKeys, (resourceKey) => {
 				let permissions = [...userPermissions, ...groupPermissions];
 
 				if(!byResourceKey.hasOwnProperty(resourceKey)) {
-					byResourceKey[resourceKey] = {};
+					byResourceKey[resourceKey] = {
+						guest: {
+							get: false,
+							update: false,
+							delete: false
+						},
+						activeUser: {
+							get: false,
+							update: false,
+							delete: false
+						}
+					};
 				}
 
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
-					byResourceKey[resourceKey]['update'] = true;
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.READ})) {
+					byResourceKey[resourceKey].activeUser.get = true;
 				}
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE})) {
-					byResourceKey[resourceKey]['delete'] = true;
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+					byResourceKey[resourceKey].activeUser.update = true;
 				}
-				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
-					byResourceKey[resourceKey]['public'] = true;
+				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+					byResourceKey[resourceKey].activeUser.delete = true;
+				}
+
+				if(!this._checkPermissions || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
+					byResourceKey[resourceKey].guest.get = true;
+				}
+				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE, group_id: this._publicGroupId})) {
+					byResourceKey[resourceKey].guest.update = true;
+				}
+				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.DELETE, group_id: this._publicGroupId})) {
+					byResourceKey[resourceKey].guest.delete = true;
 				}
 			});
 
@@ -632,9 +657,9 @@ class PgCollection {
 			}
 			keys = _.union(_.compact(_.flatten(keys)));
 
-			if(request.filter && request.filter.hasOwnProperty('key')) {
-				if(_.isObject(request.filter.key)) {
-					if(request.filter.key.hasOwnProperty('in')) {
+			if (request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
+				if (_.isObject(request.filter.key)) {
+					if (request.filter.key.hasOwnProperty('in')) {
 						request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
 							return keys.includes(key) && key;
 						}));
@@ -642,12 +667,12 @@ class PgCollection {
 						request.filter.key.in = keys;
 					}
 				} else {
-					if(!keys.includes(request.filter.key)) {
+					if (this._checkPermissions && !keys.includes(request.filter.key)) {
 						request.filter.key = -1;
 					}
 				}
-			} else {
-				if(!request.filter) {
+			} else if (this._checkPermissions) {
+				if (!request.filter) {
 					request.filter = {};
 				}
 
@@ -748,70 +773,77 @@ class PgCollection {
 		let sql = [];
 		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : 'id AS key, *'} FROM "${this._schema}"."${this._tableName}" AS a`);
 
-		if(request.filter) {
+		if(!isAdmin) {
+			let keys = [];
+			if(availableKeys.hasOwnProperty(this._tableName)) {
+				keys.push(availableKeys[this._tableName]);
+			}
+			if(availableKeys.hasOwnProperty(this._collectionName)) {
+				keys.push(availableKeys[this._collectionName]);
+			}
+			keys = _.union(_.compact(_.flatten(keys)));
 
-			if(!isAdmin) {
-				let keys = [];
-				if(availableKeys.hasOwnProperty(this._tableName)) {
-					keys.push(availableKeys[this._tableName]);
-				}
-				if(availableKeys.hasOwnProperty(this._collectionName)) {
-					keys.push(availableKeys[this._collectionName]);
-				}
-				keys = _.union(_.compact(_.flatten(keys)));
-
-				if(request.filter.hasOwnProperty('key')) {
-					if(_.isObject(request.filter.key)) {
-						if(request.filter.key.hasOwnProperty('in')) {
-							request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
-								return keys.includes(key) && key;
-							}));
-						} else {
-							request.filter.key.in = keys;
-						}
-					} else {
-						if(!keys.includes(request.filter.key)) {
-							request.filter.key = -1;
-						}
-					}
-				} else {
-					request.filter.key = {
-						in: keys
-					}
-				}
+			if(!keys.length) {
+				keys.push(-1);
 			}
 
-			let where = [];
-			_.map(request.filter, (data, column) => {
-				column = column === 'key' ? 'id': column;
-				if(_.isObject(data)) {
-					let type = Object.keys(data)[0];
-					let value = data[type];
-
-					switch (type) {
-						case 'like':
-							where.push(
-								`"${column}" ILIKE '%${value}%'`
-							);
-							break;
-						case 'in':
-							where.push(
-								`"${column}" IN (${value})`
-							);
-							break;
-						case 'notin':
-							where.push(
-								`"${column}" NOT IN (${value})`
-							);
-							break;
+			if(request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
+				if (_.isObject(request.filter.key)) {
+					if (request.filter.key.hasOwnProperty('in') && this._checkPermissions) {
+						request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
+							return keys.includes(key) && key;
+						}));
+					} else if(this._checkPermissions) {
+						request.filter.key.in = keys.length;
 					}
 				} else {
-					where.push(
-						`"${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
-					);
+					if (this._checkPermissions && !keys.includes(request.filter.key)) {
+						request.filter.key = -1;
+					}
 				}
-			});
+			} else if(this._checkPermissions) {
+				if(!request.filter) {
+					request.filter = {};
+				}
 
+				request.filter.key = {
+					in: keys
+				}
+			}
+		}
+
+		let where = [];
+		_.map(request.filter, (data, column) => {
+			column = column === 'key' ? 'id': column;
+			if(_.isObject(data)) {
+				let type = Object.keys(data)[0];
+				let value = data[type];
+
+				switch (type) {
+					case 'like':
+						where.push(
+							`"${column}" ILIKE '%${value}%'`
+						);
+						break;
+					case 'in':
+						where.push(
+							`"${column}" IN (${value})`
+						);
+						break;
+					case 'notin':
+						where.push(
+							`"${column}" NOT IN (${value})`
+						);
+						break;
+				}
+			} else {
+				where.push(
+					`"${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
+				);
+			}
+		});
+
+		if(where.length) {
 			sql.push(`WHERE ${where.join(' AND ')}`);
 		}
 

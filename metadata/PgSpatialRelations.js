@@ -7,6 +7,7 @@ class PgSpatialRelations extends PgCollection {
 		super(pgPool, pgSchema, 'PgSpatialRelations');
 
 		this._legacy = false;
+		this._checkPermissions = false;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
