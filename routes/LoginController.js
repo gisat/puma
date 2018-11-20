@@ -3,6 +3,8 @@ let logger = require('../common/Logger').applicationWideLogger;
 
 let PgUsers = require('../security/PgUsers');
 
+const GeoserverSecurityManager = require(`../geoserver/GeoserverSecurityManager`);
+
 /**
  * Controller for handling the login and logout of the user from the system. Internally this implementation uses Geonode
  * to log the user in.
@@ -18,6 +20,8 @@ class LoginController {
         app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
 
         this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
+
+        this._geoserverSecurityManager = new GeoserverSecurityManager();
     }
 
     logged(request, response) {
@@ -39,6 +43,11 @@ class LoginController {
             request.session.regenerate(resolve);
         }).then(() => {
             return this.pgUsers.verify(username, password);
+        }).then((user) => {
+            return this._geoserverSecurityManager.ensureGeoserverUser(username, password)
+                .then(() => {
+					return user;
+                });
         }).then((user) => {
             if(!user) {
                 response.status(401).end();
