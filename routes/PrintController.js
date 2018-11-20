@@ -5,9 +5,9 @@ const fs = require('fs');
 class PrintController {
 	constructor(app) {
         app.post('/print/snapshot/:id', this.snapshot.bind(this));
+        app.delete('/print/snapshot/:id', this.delete.bind(this))
 
 		app.get('/print/download/:id', this.download.bind(this));
-        app.get('/print/display/:id', this.download.bind(this));
 	}
 
 	snapshot(request, response) {
@@ -22,18 +22,25 @@ class PrintController {
 		});
 	}
 
-	display(request, response) {
-        logger.info(`PrintController#display Id: ${request.params.id}`);
+	delete(request, response) {
+        logger.info(`PrintController#delete Id: ${request.params.id}`);
         let id = request.params.id;
-        let image = new GeneratedImage(id, request.body.url);
-        image.path().then(path => {
-            response.set('Content-Type','image/png');
-            response.set('Cache-Control','max-age=60000000');
-
-            const src = fs.createReadStream(path);
-            src.pipe(response);
+        let image = new GeneratedImage(id);
+        image.path().then(path=>{
+        	fs.unlink(path, (err) => {
+        		if(err) {
+        			logger.error(`PrintController#delete Id: ${id} Error: `, err);
+        			response.json({
+						"success": "error",
+						"message": err
+					})
+				}
+                response.json({
+                    "success": "ok"
+                });
+			});
         });
-    }
+	}
 
 	download(request, response) {
         logger.info(`PrintController#download Id: ${request.params.id}`);
