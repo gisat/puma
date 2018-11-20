@@ -9,11 +9,15 @@ let FilteredPgStyles = require('../styles/FilteredPgStyles');
 let MongoFilteredCollection = require('../data/MongoFilteredCollection');
 let PgStyles = require('../styles/PgStyles');
 
+const PgLayers = require('../layers/PgLayers');
+
 class FrontOfficeLayers {
 	constructor(mongo, postgreSql, schema) {
 		this.mongo = mongo;
 		this.postgreSql = postgreSql;
 		this.schema = schema;
+
+		this._pgLayers = new PgLayers(postgreSql, mongo, schema);
 	}
 
 	/**
@@ -26,20 +30,37 @@ class FrontOfficeLayers {
 	vectorRasterLayers(scope, year, place, theme) {
 		return this.getLayersWithMetadata(scope, year, place).then((layers) => {
 			layers.references = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].layerType != 'au');
-			if (theme){
-				return new MongoFilteredCollection({_id: Number(theme)}, this.mongo, "theme").json().then(themes => {
-					let theme = themes[0];
-					let references = [];
-					theme.topics.map(topic => {
-							let ref = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].topic === topic);
-							references = references.concat(ref);
-					});
-                    return this.groupLayersByNamePath(references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
-				})
-			} else {
-                return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
-			}
+
+			return this.getAdditionalMetadataForLayers(layers.references)
+				.then(() => {
+					if (theme){
+						return new MongoFilteredCollection({_id: Number(theme)}, this.mongo, "theme").json().then(themes => {
+							let theme = themes[0];
+							let references = [];
+							theme.topics.map(topic => {
+								let ref = layers.references.filter(reference => layers.layerTemplates[reference.areaTemplate].topic === topic);
+								references = references.concat(ref);
+							});
+							return this.groupLayersByNamePath(references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
+						})
+					} else {
+						return this.groupLayersByNamePath(layers.references, layers.layerGroups, layers.layerTemplates, layers.styles, year);
+					}
+				});
 		});
+	}
+
+	getAdditionalMetadataForLayers(layers) {
+		return this._pgLayers.all()
+			.then((pgDataLayers) => {
+				let promises = [];
+				_.each(layers, (layer) => {
+					let pgDataLayer = _.find(pgDataLayers, {path: layer.layer});
+					layer.metadata = pgDataLayer.metadata;
+					layer.source_url = pgDataLayer.source_url;
+				});
+				return Promise.all(promises);
+			});
 	}
 
 	/**
@@ -155,6 +176,8 @@ class FrontOfficeLayers {
 				layerTemplateId: layerTemplate._id,
 				layerGroup: layerGroup,
 				path: reference.layer,
+				metadata: reference.metadata,
+				source_url: reference.source_url,
 				styles: layerStyles,
                 period: periodId
 			}
