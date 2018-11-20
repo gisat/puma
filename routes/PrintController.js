@@ -12,10 +12,9 @@ class PrintController {
 		logger.info(`PrintController#snapshot Id: ${request.params.id}`);
 		let id = request.params.id;
 		let image = new GeneratedImage(id, request.body.url);
-		image.generate().then(function(image){
-			response.set('Content-Type','image/png');
-			response.set('Cache-Control','max-age=60000000');
+		image.generate().then(function(){
 			response.json({
+				"id": id,
 				"success": "ok"
 			});
 		});
