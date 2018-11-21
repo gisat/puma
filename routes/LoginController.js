@@ -44,7 +44,7 @@ class LoginController {
         }).then(() => {
             return this.pgUsers.verify(username, password);
         }).then((user) => {
-            return this._geoserverSecurityManager.ensureGeoserverUser(username, password)
+            return this._geoserverSecurityManager.ensureSecurityRulesForUser(user, password)
                 .then(() => {
 					return user;
                 });

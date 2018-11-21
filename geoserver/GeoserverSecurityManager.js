@@ -10,16 +10,126 @@ class GeoserverSecurityManager {
 		this._geoserverPassword = "geoserver";
 	}
 
-	ensureGeoserverUser(username, password) {
-		return this.getUser(username)
-			.then((user) => {
-				if(!user) {
-					return this.createUser({userName: username, password: password, enabled: true});
-				}
+	// todo
+	// geoserver ma v tehle oblasti docela slusny diry, spousta veci nefunguje, spousta funguje jinak nez je v dokumentaci, na nektere veci ani dokumentace neni
+	//
+	// uzivatelska a jina jmena maji problemy se specialnimi znaky, takze uzivatelske jmeno ve tvaru emailu bylo problem a muselo byt upraveno (nezadouci znaky jsou nahrazeny podtrzitkem)
+	//
+	// skupiny nejdou pouzit protoze geoserver nema rest api na prirazovani roli ke skupinam, takze aktualne skupiny supluji role s prefixem group_ (melo by to pro nase potreby stacit)
+	// mozna i rest api ma, ale v dokumentaci uvedene neni a nepovedlo se mi cesty ani odhadnout
+	//
+	// aby bylo mozne pres rest vytvaret nove uzivatel je nutne mit nastavenou systemovou promenou GEOSERVER_XSTREAM_WHITELIST=org.geoserver.rest.security.xml.JaxbUser
+	// a je potreba v payloadu posilanem na server nastavit property z "user" na "org.geoserver.rest.security.xml.JaxbUser"
+	//
+	// nektere endpointy zvladaji json, nektere ne i kdyz podle dokumentac by meli, vetsinou jsem to vyresil prevodem xml2js a obracene a zatim to funguje, ale je treba s tim pocitat
+
+	ensureSecurityRulesForUser(pantherUser, password) {
+		return this.ensureUser(pantherUser._email, password)
+			.then(() => {
+				return this.ensureSecurityRolesForUser(pantherUser);
+			})
+			.then(() => {
+				// return this.ensureUserGroupsForUser(pantherUser);
+			})
+			.then(() => {
+				// return this.ensureUserRelationToUserGroups(pantherUser);
+			})
+			.then(() => {
+				return this.ensureUserRelationToRoles(pantherUser);
+			})
+			.then(() => {
+				// return this.ensureUserGroupsRelationToRoles(pantherUser);
 			})
 			.catch((error) => {
 				console.log(`Failed to ensure geoserver user account. Error:`, error);
 			});
+	}
+
+	ensureUserGroupsRelationToRoles(pantherUser) {
+		let userName = pantherUser._email;
+		return this.getGroupsForUser(userName)
+			.then(async (groups) => {
+				for(let group of groups) {
+					let groupRoleName = `group_${group}`;
+					await this.getRolesForGroup(group)
+						.then((groupRoles) => {
+
+						})
+				}
+			});
+	}
+
+	ensureUserRelationToRoles(pantherUser) {
+		let userName = this.replaceNonAlphaNumericCharacters(pantherUser._email);
+
+		return this.getRolesForUser(userName)
+			.then(async (roles) => {
+				let roleName = `user_${userName}`;
+
+				if(!roles.includes(roleName)) {
+					await this.addRoleToUser(roleName, userName);
+				}
+
+				for(let group of pantherUser.groups) {
+					let groupRoleName = `group_${group.name}`;
+
+					if(!roles.includes(groupRoleName)) {
+						await this.addRoleToUser(groupRoleName, userName);
+					}
+				}
+			});
+	}
+
+	ensureUserRelationToUserGroups(pantherUser) {
+		return this.getGroupsForUser(pantherUser._email)
+			.then(async (userGroups) => {
+				let difference = _.difference(_.map(pantherUser.groups, 'name'), userGroups);
+				for(let userGroup of difference) {
+					await this.addUserToGroup(pantherUser._email, userGroup);
+				}
+			});
+	}
+
+	ensureUserGroup(groupName) {
+		return this.getUserGroups()
+			.then((groups) => {
+				if(!groups.includes(groupName)) {
+					return this.createUserGroup(groupName);
+				}
+			})
+	}
+
+	async ensureUserGroupsForUser(pantherUser) {
+		for(let group of pantherUser.groups) {
+			await this.ensureUserGroup(group.name);
+		}
+	}
+
+	async ensureSecurityRolesForUser(pantherUser) {
+		await this.ensureRole(`user_${pantherUser._email}`);
+
+		for(let group of pantherUser.groups) {
+			await this.ensureRole(`group_${group.name}`)
+		}
+	}
+
+	ensureUser(username, password) {
+		return this.getUser(username)
+			.then((user) => {
+				if(!user) {
+					return this.createUser({userName: this.replaceNonAlphaNumericCharacters(username), password: password, enabled: true});
+				}
+			})
+	}
+
+	ensureRole(roleName) {
+		roleName = this.replaceNonAlphaNumericCharacters(roleName);
+		return this.getRoles()
+			.then((roles) => {
+				if(!roles.includes(roleName)) {
+					return this.createRole(roleName);
+				}
+			})
 	}
 
 	disableAdvertisedForAllLayers() {
@@ -110,6 +220,10 @@ class GeoserverSecurityManager {
 				return this.xml2json(response.body);
 			})
 			.then((rawUsers) => {
+				if(_.isObject(rawUsers.users.user) && !_.isArray(rawUsers.users.user)) {
+					rawUsers.users.user = [rawUsers.users.user];
+				}
+
 				return _.map(rawUsers.users.user, (user) => {
 					return {
 						username: user.userName._text,
@@ -122,7 +236,7 @@ class GeoserverSecurityManager {
 	getUser(userName) {
 		return this.getUsers()
 			.then((users) => {
-				return _.find(users, {username: userName});
+				return _.find(users, {username: this.replaceNonAlphaNumericCharacters(userName)});
 			})
 	}
 
@@ -156,7 +270,6 @@ class GeoserverSecurityManager {
 			.auth(this._geoserverUser, this._geoserverPassword)
 			.set('Content-type', 'application/xml')
 			.then((response) => {
-				return this.xml2json(response.body);
 			})
 	}
 
@@ -170,13 +283,34 @@ class GeoserverSecurityManager {
 			})
 	}
 
+	getUserGroups() {
+		return superagent
+			.get(`${this.getBaseGeoserverRestApiPath()}/security/usergroup/groups`)
+			.auth(this._geoserverUser, this._geoserverPassword)
+			.set('Content-type', 'application/xml')
+			.then((response) => {
+				return this.xml2json(response.body);
+			})
+			.then((rawUserGroups) => {
+				if(_.isObject(rawUserGroups.groups.group) && !_.isArray(rawUserGroups.groups.group)) {
+					rawUserGroups.groups.group = [rawUserGroups.groups.group];
+				}
+
+				return _.map(rawUserGroups.groups.group, (group) => {
+					return group._text;
+				})
+			})
+	}
+
 	createRole(roleName) {
 		return superagent
 			.post(`${this.getBaseGeoserverRestApiPath()}/security/roles/role/${roleName}`)
 			.auth(this._geoserverUser, this._geoserverPassword)
 			.set('Content-type', 'application/xml')
 			.then((response) => {
-				return this.xml2json(response.body);
+				if(response.body && Object.keys(response.body).length) {
+					return this.xml2json(response.body);
+				}
 			})
 	}
 
@@ -197,6 +331,15 @@ class GeoserverSecurityManager {
 			.set('Content-type', 'application/xml')
 			.then((response) => {
 				return this.xml2json(response.body);
+			})
+			.then((rawUserGroups) => {
+				if(_.isObject(rawUserGroups.groups.group) && !_.isArray(rawUserGroups.groups.group)) {
+					rawUserGroups.groups.group = [rawUserGroups.groups.group];
+				}
+
+				return _.map(rawUserGroups.groups.group, (group) => {
+					return group._text;
+				})
 			})
 	}
 
@@ -228,6 +371,49 @@ class GeoserverSecurityManager {
 			.then((response) => {
 				return this.xml2json(response.body);
 			})
+			.then((rawRoles) => {
+				if(_.isObject(rawRoles.roles.role) && !_.isArray(rawRoles.roles.role)) {
+					rawRoles.roles.role = [rawRoles.roles.role];
+				}
+
+				return _.map(rawRoles.roles.role, (role) => {
+					return role._text;
+				})
+			})
+	}
+
+	getRolesForGroup(groupName) {
+		return superagent
+			.get(`${this.getBaseGeoserverRestApiPath()}/security/roles/user/${userName}`)
+			.auth(this._geoserverUser, this._geoserverPassword)
+			.set('Content-type', 'application/xml')
+			.then((response) => {
+				return this.xml2json(response.body);
+			})
+			.then((rawRoles) => {
+				if(!_.isArray(rawRoles.roles) && _.isObject(rawRoles.roles) && !Object.keys(rawRoles.roles).length) {
+					return [];
+				} else {
+					return _.map(rawRoles.roles, (role) => {
+						return role._text;
+					});
+				}
+			})
+	}
+
+	getRoles() {
+		return superagent
+			.get(`${this.getBaseGeoserverRestApiPath()}/security/roles`)
+			.auth(this._geoserverUser, this._geoserverPassword)
+			.set('Content-type', 'application/xml')
+			.then((response) => {
+				return this.xml2json(response.body);
+			})
+			.then((rawRoles) => {
+				return _.map(rawRoles.roles.role, (role) => {
+					return role._text;
+				})
+			});
 	}
 
 	addRoleToUser(roleName, userName) {
@@ -282,6 +468,10 @@ class GeoserverSecurityManager {
 			...json
 		};
 		return xml2js.js2xml(json, {compact: true, ignoreComment: true, spaces: 4, declarationKey: '_declaration'});
+	}
+
+	replaceNonAlphaNumericCharacters(input) {
+		return input.replace(/\W+/g, `_`);
 	}
 }
 
