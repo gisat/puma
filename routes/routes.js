@@ -23,7 +23,6 @@ var ThemeController = require('./ThemeController');
 var TopicController = require('./TopicController');
 var VisualizationController = require('./VisualizationController');
 var YearController = require('./YearController');
-var PrintController = require('./PrintController');
 var IntegrationController = require('../integration/GufIntegrationController');
 let PermissionController = require('../security/UserController');
 let GroupController = require('../security/GroupController');
@@ -119,7 +118,6 @@ module.exports = function(app) {
 	new IntegrationController(app, pool, mongo,'public',viewsSchema,config.postgreSqlSchema);
 	new VersionController(app, '/opt/frontoffice/version.txt', '/opt/backoffice/version.txt', '/opt/backend/version.txt');
 
-	new PrintController(app);
 	new LodController(app, pool);
 	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
 	new GroupController(app, pool);
