@@ -110,7 +110,7 @@ module.exports = function(app) {
 	new LayerGroupController(app, pool);
 	new LayerRefController(app, pool, mongo);
 	new LocationController(app, pool);
-	new LoginController(app, pool);
+	new LoginController(app, pool, mongo);
 	new PerformedAnalysisController(app, pool);
 	new ThemeController(app, pool);
 	new TopicController(app, pool);

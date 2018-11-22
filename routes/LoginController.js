@@ -10,7 +10,7 @@ const GeoserverSecurityManager = require(`../geoserver/GeoserverSecurityManager`
  * to log the user in.
  */
 class LoginController {
-    constructor(app, pgPool, commonSchema) {
+    constructor(app, pgPool, mongo, commonSchema) {
         if (!app) {
             throw new Error(logger.error("LoginController#constructor The controller must receive valid app."));
         }
@@ -21,7 +21,7 @@ class LoginController {
 
         this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
 
-        this._geoserverSecurityManager = new GeoserverSecurityManager();
+        this._geoserverSecurityManager = new GeoserverSecurityManager(mongo);
     }
 
     logged(request, response) {
@@ -44,10 +44,16 @@ class LoginController {
         }).then(() => {
             return this.pgUsers.verify(username, password);
         }).then((user) => {
-            return this._geoserverSecurityManager.ensureSecurityRulesForUser(user, password)
-                .then(() => {
-					return user;
-                });
+            if(user) {
+				return this._geoserverSecurityManager
+					.ensureSecurityRulesForUser(user, password)
+					.then(() => {
+						return this._geoserverSecurityManager.setDataRulesForUser(user);
+					})
+					.then(() => {
+						return user;
+					});
+            }
         }).then((user) => {
             if(!user) {
                 response.status(401).end();

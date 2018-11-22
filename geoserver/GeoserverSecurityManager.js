@@ -2,12 +2,14 @@ const xml2js = require(`xml-js`);
 const superagent = require(`superagent`);
 
 class GeoserverSecurityManager {
-	constructor() {
+	constructor(mongo) {
 		this._geoserverProtocol = "http";
 		this._geoserverHost = "localhost";
 		this._geoserverPath = "geoserver";
 		this._geoserverUser = "admin";
 		this._geoserverPassword = "geoserver";
+
+		this._mongo = mongo;
 	}
 
 	// todo
@@ -22,6 +24,62 @@ class GeoserverSecurityManager {
 	// a je potreba v payloadu posilanem na server nastavit property z "user" na "org.geoserver.rest.security.xml.JaxbUser"
 	//
 	// nektere endpointy zvladaji json, nektere ne i kdyz podle dokumentac by meli, vetsinou jsem to vyresil prevodem xml2js a obracene a zatim to funguje, ale je treba s tim pocitat
+
+	setDataRulesForUser(pantherUser) {
+		let userPermissions = _.filter(pantherUser.permissions, {permission: "GET"});
+		let groupPermissions = _.filter(_.compact(_.flatten(_.map(pantherUser.groups, (group) => {
+			return group.permissions;
+		}))), {permission: "GET"});
+
+		let overalPermissions = _.concat(userPermissions, groupPermissions);
+
+		let placeIds = _.uniq(_.compact(_.map(overalPermissions, (permission) => {
+			return permission.resourceType === "location" && permission.resourceId && Number(permission.resourceId);
+		})));
+
+
+		return this.getDataLayersFromLayerRefsByFilter({location: {'$in': placeIds}})
+			.then((dataLayers) => {
+				return this.getDataRules()
+					.then((dataRules) => {
+						return [dataLayers, dataRules];
+					})
+			})
+			.then(async ([dataLayers, dataRules]) => {
+				for(let dataLayerIdentificator of dataLayers) {
+					let workspace = dataLayerIdentificator.split(`:`)[0];
+					let layerName = dataLayerIdentificator.split(`:`)[1];
+
+					let rule = `${workspace}.${layerName}.r`;
+					let dataRuleExists = dataRules.hasOwnProperty(rule);
+
+					if(!dataRuleExists) {
+						await this.setReadRuleToLayerForUser(dataLayerIdentificator, this.replaceNonAlphaNumericCharacters(pantherUser._email));
+					} else {
+						let roles = dataRules[rule].split(`,`);
+						if(!roles.includes(`user_${this.replaceNonAlphaNumericCharacters(pantherUser._email)}`)) {
+							roles.push(`user_${this.replaceNonAlphaNumericCharacters(pantherUser._email)}`);
+							await this.updateExistingRule(rule, roles.join(`,`))
+						}
+					}
+				}
+			})
+			.catch((error) => {
+				console.log(`Failed to data layers rules for user ${pantherUser._email}. Error:`, error);
+			});
+	}
+
+	getDataLayersFromLayerRefsByFilter(filter) {
+		return this._mongo
+			.collection(`layerref`)
+			.find(filter)
+			.toArray()
+			.then((mongoResults) => {
+				return _.uniq(_.compact(_.map(mongoResults, (result) => {
+					return result.layer;
+				})))
+			});
+	}
 
 	ensureSecurityRulesForUser(pantherUser, password) {
 		return this.ensureUser(pantherUser._email, password)
@@ -446,6 +504,29 @@ class GeoserverSecurityManager {
 			.send({[`${workspace}.${layerName}.r`]: `user_${userName}`})
 			.then((response) => {
 				return true;
+			})
+	}
+
+	updateExistingRule(rule, roles) {
+		return superagent
+			.put(`${this.getBaseGeoserverRestApiPath()}/security/acl/layers`)
+			.auth(this._geoserverUser, this._geoserverPassword)
+			.set('Content-type', 'application/json')
+			.set('Accept', 'application/json')
+			.send({[rule]: roles})
+			.then((response) => {
+				return true;
+			})
+	}
+
+	getDataRules() {
+		return superagent
+			.get(`${this.getBaseGeoserverRestApiPath()}/security/acl/layers`)
+			.auth(this._geoserverUser, this._geoserverPassword)
+			.set('Content-type', 'application/json')
+			.set('Accept', 'application/json')
+			.then((response) => {
+				return response.body;
 			})
 	}
 
