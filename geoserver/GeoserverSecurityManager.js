@@ -26,17 +26,19 @@ class GeoserverSecurityManager {
 	// nektere endpointy zvladaji json, nektere ne i kdyz podle dokumentac by meli, vetsinou jsem to vyresil prevodem xml2js a obracene a zatim to funguje, ale je treba s tim pocitat
 
 	setDataRulesForUser(pantherUser) {
+		let geoserverUserName = this.replaceNonAlphaNumericCharacters(pantherUser._email);
 		let userPermissions = _.filter(pantherUser.permissions, {permission: "GET"});
 		let groupPermissions = _.filter(_.compact(_.flatten(_.map(pantherUser.groups, (group) => {
 			return group.permissions;
 		}))), {permission: "GET"});
+
+		let isUserAdmin = !!(_.find(pantherUser.groups, {name: `admin`}));
 
 		let overalPermissions = _.concat(userPermissions, groupPermissions);
 
 		let placeIds = _.uniq(_.compact(_.map(overalPermissions, (permission) => {
 			return permission.resourceType === "location" && permission.resourceId && Number(permission.resourceId);
 		})));
-
 
 		return this.getDataLayersFromLayerRefsByFilter({location: {'$in': placeIds}})
 			.then((dataLayers) => {
@@ -54,12 +56,25 @@ class GeoserverSecurityManager {
 					let dataRuleExists = dataRules.hasOwnProperty(rule);
 
 					if(!dataRuleExists) {
-						await this.setReadRuleToLayerForUser(dataLayerIdentificator, this.replaceNonAlphaNumericCharacters(pantherUser._email));
+						await this.setReadRuleToLayerForUser(dataLayerIdentificator, geoserverUserName);
 					} else {
 						let roles = dataRules[rule].split(`,`);
-						if(!roles.includes(`user_${this.replaceNonAlphaNumericCharacters(pantherUser._email)}`)) {
-							roles.push(`user_${this.replaceNonAlphaNumericCharacters(pantherUser._email)}`);
-							await this.updateExistingRule(rule, roles.join(`,`))
+						if(!roles.includes(`user_${geoserverUserName}`)) {
+							await this.updateExistingRule(rule, [...roles, `user_${geoserverUserName}`].join(`,`));
+						}
+					}
+				}
+				return [dataLayers, dataRules];
+			})
+			.then(([dataLayers, dataRules]) => {
+				if(isUserAdmin) {
+					let adminReadRule = "*.*.r";
+
+					if(dataRules.hasOwnProperty(adminReadRule)) {
+						let adminReadRuleRoles = dataRules[adminReadRule].split(`,`);
+
+						if(!adminReadRuleRoles.includes(`user_${geoserverUserName}`)) {
+							return this.updateExistingRule(adminReadRule, [...adminReadRuleRoles, `user_${geoserverUserName}`].join(`,`));
 						}
 					}
 				}
