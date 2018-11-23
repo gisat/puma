@@ -15,6 +15,8 @@ let PgPermissions = require('./PgPermissions');
 let PgWmsLayers = require('../layers/wms/PgWmsLayers');
 let Permission = require('./Permission');
 
+const GeoserverSecurityManager = require(`../geoserver/GeoserverSecurityManager`);
+
 /**
  * This controller handles sharing as used inside of the FrontOffice. The user or group must get all relevant rights
  * towards related metadata concepts: scope, place, topic, wms layers
@@ -35,6 +37,8 @@ class SharingController {
         this.pgPool = pgPool;
         this.schema = commonSchema || config.postgreSqlSchema;
         this.mongo = mongo;
+
+        this._geoserverSecurityManager = new GeoserverSecurityManager(this.mongo, this.pgPool, this.schema);
     }
 
     shareToUser(request, response) {
@@ -50,8 +54,10 @@ class SharingController {
                 this.permissions.addCollection(userId, MongoTopic.collectionName(), metadata.topics, Permission.READ),
 
                 this.permissions.addCollection(userId, PgWmsLayers.tableName(), _.pluck(metadata.wmsLayers, 'id'), Permission.READ)
-            ]);
+            ])
         }).then(() => {
+			return this._geoserverSecurityManager.setDataRulesForUserByUserId(userId);
+		}).then(() => {
             response.json({
                 status: 'ok'
             })
@@ -77,6 +83,8 @@ class SharingController {
                 this.permissions.addGroupCollection(groupId, PgWmsLayers.tableName(), _.pluck(metadata.wmsLayers, 'id'), Permission.READ)
             ]);
         }).then(() => {
+			return this._geoserverSecurityManager.setDataRulesForGroupByGroupId(groupId);
+		}).then(() => {
             response.json({
                 status: 'ok'
             })

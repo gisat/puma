@@ -1,8 +1,11 @@
 const xml2js = require(`xml-js`);
 const superagent = require(`superagent`);
 
+const PgUsers = require(`../security/PgUsers`);
+const PgGroups = require(`../security/PgGroups`);
+
 class GeoserverSecurityManager {
-	constructor(mongo) {
+	constructor(mongo, pgPool, pgSchema) {
 		this._geoserverProtocol = "http";
 		this._geoserverHost = "localhost";
 		this._geoserverPath = "geoserver";
@@ -10,6 +13,11 @@ class GeoserverSecurityManager {
 		this._geoserverPassword = "geoserver";
 
 		this._mongo = mongo;
+		this._pgPool = pgPool;
+		this._pgSchema = pgSchema;
+
+		this._pgUsers = new PgUsers(this._pgPool, this._pgSchema);
+		this._pgGroups = new PgGroups(this._pgPool, this._pgSchema);
 	}
 
 	// todo
@@ -24,6 +32,73 @@ class GeoserverSecurityManager {
 	// a je potreba v payloadu posilanem na server nastavit property z "user" na "org.geoserver.rest.security.xml.JaxbUser"
 	//
 	// nektere endpointy zvladaji json, nektere ne i kdyz podle dokumentac by meli, vetsinou jsem to vyresil prevodem xml2js a obracene a zatim to funguje, ale je treba s tim pocitat
+
+	setDataRulesForGroupByGroupId(groupId) {
+		return this._pgGroups
+			.byId(groupId)
+			.then((pantherGroup) => {
+				return this.setDataRulesForGroup(pantherGroup);
+			});
+	}
+
+	setDataRulesForGroup(pantherGroup) {
+		let groupName = pantherGroup.name;
+
+		let groupRole = `group_${groupName}`;
+
+		return this.ensureRole(groupRole)
+			.then(() => {
+				let placeIds = _.uniq(_.compact(_.map(
+					_.filter(
+						pantherGroup.permissions,
+						{resourceType: `location`, permission: `GET`}
+					),
+					(permission) => {
+						return Number(permission.resourceId);
+					}
+				)));
+
+				return this.getDataLayersFromLayerRefsByFilter({location: {'$in': placeIds}});
+			})
+			.then((dataLayers) => {
+				return this.getDataRules()
+					.then((dataRules) => {
+						return [dataLayers, dataRules];
+					})
+			})
+			.then(async ([dataLayers, dataRules]) => {
+				for(let dataLayerIdentificator of dataLayers) {
+					let workspace = dataLayerIdentificator.split(`:`)[0];
+					let layerName = dataLayerIdentificator.split(`:`)[1];
+
+					let rule = `${workspace}.${layerName}.r`;
+					let dataRuleExists = dataRules.hasOwnProperty(rule);
+
+					let groupRole = `group_${groupName}`;
+
+					if(groupName === `guest`) {
+						groupRole = `ROLE_ANONYMOUS`;
+					}
+
+					if(!dataRuleExists) {
+						await this.setReadRuleToLayerForRole(dataLayerIdentificator, groupRole);
+					} else {
+						let roles = dataRules[rule].split(`,`);
+						if(!roles.includes(groupRole)) {
+							await this.updateExistingRule(rule, [...roles, groupRole].join(`,`));
+						}
+					}
+				}
+			});
+	}
+
+	setDataRulesForUserByUserId(userId) {
+		return this._pgUsers
+			.byId(userId)
+			.then((pantherUser) => {
+				return this.setDataRulesForUser(pantherUser);
+			})
+	}
 
 	setDataRulesForUser(pantherUser) {
 		let geoserverUserName = this.replaceNonAlphaNumericCharacters(pantherUser._email);
@@ -56,7 +131,7 @@ class GeoserverSecurityManager {
 					let dataRuleExists = dataRules.hasOwnProperty(rule);
 
 					if(!dataRuleExists) {
-						await this.setReadRuleToLayerForUser(dataLayerIdentificator, geoserverUserName);
+						await this.setReadRuleToLayerForRole(dataLayerIdentificator, `user_${geoserverUserName}`);
 					} else {
 						let roles = dataRules[rule].split(`,`);
 						if(!roles.includes(`user_${geoserverUserName}`)) {
@@ -509,14 +584,14 @@ class GeoserverSecurityManager {
 			})
 	}
 
-	setReadRuleToLayerForUser(layerName, userName) {
+	setReadRuleToLayerForRole(layerName, role) {
 		let workspace = layerName.split(`:`)[0];
 		layerName = layerName.split(`:`)[1];
 		return superagent
 			.post(`${this.getBaseGeoserverRestApiPath()}/security/acl/layers`)
 			.auth(this._geoserverUser, this._geoserverPassword)
 			.set('Content-type', 'application/json')
-			.send({[`${workspace}.${layerName}.r`]: `user_${userName}`})
+			.send({[`${workspace}.${layerName}.r`]: role})
 			.then((response) => {
 				return true;
 			})
