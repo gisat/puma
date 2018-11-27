@@ -165,9 +165,14 @@ class GeoserverSecurityManager {
 			.find(filter)
 			.toArray()
 			.then((mongoResults) => {
-				return _.uniq(_.compact(_.map(mongoResults, (result) => {
-					return result.layer;
-				})))
+				let dataLayers = [];
+				_.each(mongoResults, (result) => {
+					dataLayers.push(result.layer);
+					if(!result.isData) {
+						dataLayers.push(`panther:layer_${result._id}`);
+					}
+				});
+				return _.uniq(_.compact(dataLayers));
 			});
 	}
 
