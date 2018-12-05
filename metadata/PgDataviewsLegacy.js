@@ -5,7 +5,7 @@ class PgDataviewsLegacy extends PgCollection {
 		super(pool, schema, mongo, `PgDataviewsLegacy`);
 
 		this._legacy = true;
-		this._checkPermissions = false;
+		this._checkPermissions = true;
 		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
