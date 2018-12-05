@@ -293,7 +293,7 @@ class PgCollection {
 			this.getPermissionsForResourceKeysByUserId(resourceKeys, user.id),
 			this.getPermissionsForResourceKeysByUserGroupIds(resourceKeys, _.map(user.groups, 'id'))
 		]).then(([userPermissions, groupPermissions]) => {
-
+			let overallPermissions = [...userPermissions, ...groupPermissions];
 			let byResourceKey = {
 			};
 
@@ -315,23 +315,23 @@ class PgCollection {
 					};
 				}
 
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.READ})) {
+				if (isAdmin || _.find(overallPermissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.READ})) {
 					byResourceKey[resourceKey].activeUser.get = true;
 				}
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+				if (isAdmin || _.find(overallPermissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
 					byResourceKey[resourceKey].activeUser.update = true;
 				}
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+				if (isAdmin || _.find(overallPermissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
 					byResourceKey[resourceKey].activeUser.delete = true;
 				}
 
-				if(!this._checkPermissions || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
+				if(!this._checkPermissions || _.find(overallPermissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
 					byResourceKey[resourceKey].guest.get = true;
 				}
-				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE, group_id: this._publicGroupId})) {
+				if(_.find(overallPermissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE, group_id: this._publicGroupId})) {
 					byResourceKey[resourceKey].guest.update = true;
 				}
-				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.DELETE, group_id: this._publicGroupId})) {
+				if(_.find(overallPermissions, {resource_id: `${resourceKey}`, permission: Permission.DELETE, group_id: this._publicGroupId})) {
 					byResourceKey[resourceKey].guest.delete = true;
 				}
 			});
