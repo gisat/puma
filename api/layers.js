@@ -254,6 +254,7 @@ function getLayerDetails(params, req, res, callback) {
 
     return superagent
         .get(`${config.geoServerUrl}${workspace}/wfs`)
+		.auth(config.geoserverUsername, config.geoserverPassword)
         .query({
             "service": `wfs`,
             "request": `DescribeFeatureType`,
