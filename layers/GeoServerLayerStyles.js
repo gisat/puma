@@ -36,8 +36,8 @@ class GeoServerLayerStyles {
 					name: style
 				}
 			})
-			.then(this.updateGwcCache.bind(this, layerName))
 			.then(this.seedLayerInGwcCache.bind(this, layerName, style))
+			.then(this.updateGwcCache.bind(this, layerName))
 			.catch(err => {
 				logger.error(`GeoServerLayerStyles#update Error: ${err}`);
 			})
