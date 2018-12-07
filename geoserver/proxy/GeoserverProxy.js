@@ -14,8 +14,6 @@ class GeoserverProxy {
 
 		this._username = `admin`;
 		this._password = `geoserver`;
-
-		this._dataLayerPermissionCache = {};
 	}
 
 	async proxy(request, response) {
@@ -37,29 +35,37 @@ class GeoserverProxy {
 
 		let allowedLayers = [];
 		if(requestedLayers.length) {
-			if(!this._dataLayerPermissionCache[user.id] || this._dataLayerPermissionCache[user.id].update < (Date.now() - (1000 * 60))) {
-				console.log(`#### Checking data layer permissions for user with id ${user.id}`);
-				let allowedPlaceIds = _.uniq(_.map(_.filter(_.flatten([...user.permissions, ..._.map(user.groups, (group) => { return group.permissions})]), {resourceType: `location`, permission: `GET`}), (permission) => { return Number(permission.resourceId)}));
-				await this._mongo
-					.collection(`layerref`)
-					.find({location: {$in: allowedPlaceIds}})
-					.toArray()
-					.then((layerrefs) => {
-						_.each(layerrefs, (layerref) => {
-							allowedLayers.push(layerref.layer);
-							if(layerref.isData === false) {
-								allowedLayers.push(`panther:layer_${layerref._id}`);
-							}
-						});
-						allowedLayers = _.uniq(allowedLayers);
-						this._dataLayerPermissionCache[user.id] = {
-							update: Date.now(),
-							allowedLayers
+			console.log(`#### Checking data layer permissions for user with id ${user.id}`);
+			let allowedPlaceIds = _.uniq(_.map(_.filter(_.flatten([...user.permissions, ..._.map(user.groups, (group) => { return group.permissions})]), {resourceType: `location`, permission: `GET`}), (permission) => { return Number(permission.resourceId)}));
+			await this._mongo
+				.collection(`layerref`)
+				.find({location: {$in: allowedPlaceIds}})
+				.toArray()
+				.then((layerrefs) => {
+					_.each(layerrefs, (layerref) => {
+						allowedLayers.push(layerref.layer);
+						if(layerref.isData === false) {
+							allowedLayers.push(`panther:layer_${layerref._id}`);
 						}
 					});
-			} else {
-				allowedLayers = this._dataLayerPermissionCache[user.id].allowedLayers;
-			}
+					allowedLayers = _.uniq(allowedLayers);
+				})
+				.then(() => {
+					return this._mongo
+						.collection(`layerref`)
+						.find({layer: {$nin: requestedLayers}})
+						.toArray()
+						.then((layerrefs) => {
+							return _.map(layerrefs, `layer`);
+						})
+				})
+				.then((otherLayers) => {
+					_.each(_.difference(requestedLayers, allowedLayers), (denyedLayer) => {
+						if(!otherLayers.includes(denyedLayer)) {
+							allowedLayers.push(denyedLayer);
+						}
+					})
+				});
 		}
 
 		let geoserverRequest;
