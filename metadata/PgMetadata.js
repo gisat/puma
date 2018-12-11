@@ -14,6 +14,7 @@ const PgAttributeSets = require('./PgAttributeSets');
 const PgAttributes = require('./PgAttributes');
 const PgTopics = require('./PgTopics');
 const PgDataviewsLegacy = require('./PgDataviewsLegacy');
+const PgLpisCheckCases = require('./PgLpisCheckCases');
 
 class PgMetadata extends PgCrud {
 	constructor(pgPool, pgSchema, mongo) {
@@ -30,6 +31,7 @@ class PgMetadata extends PgCrud {
 		this._pgAttributes = new PgAttributes(pgPool, pgSchema, mongo);
 		this._pgTopics = new PgTopics(pgPool, pgSchema, mongo);
 		this._pgDataviewsLegacy = new PgDataviewsLegacy(pgPool, pgSchema, mongo);
+		this._pgLpisCheckCases = new PgLpisCheckCases(pgPool, pgSchema);
 
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
@@ -78,6 +80,10 @@ class PgMetadata extends PgCrud {
 			topics: {
 				store: this._pgTopics,
 				type: PgAttributes.tableName()
+			},
+			lpischeck_cases: {
+				store: this._pgLpisCheckCases,
+				type: PgLpisCheckCases.tableName()
 			}
 		};
 	}

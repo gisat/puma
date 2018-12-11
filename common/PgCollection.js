@@ -35,6 +35,8 @@ class PgCollection {
 		this._publicGroupId = 2;
 
 		this._legacyDataPath = "";
+
+		this._customSqlColumns = ``;
 	}
 
 	create(objects, user, extra) {
@@ -771,7 +773,7 @@ class PgCollection {
 
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
-		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : 'id AS key, *'} FROM "${this._schema}"."${this._tableName}" AS a`);
+		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : `id AS key, *${this._customSqlColumns}`} FROM "${this._schema}"."${this._tableName}" AS a`);
 
 		if(!isAdmin) {
 			let keys = [];
@@ -883,6 +885,10 @@ class PgCollection {
 			})
 			.then((rows) => {
 				payload.data = _.map(rows, (row) => {
+					if(row.geometry && _.isString(row.geometry)) {
+						row.geometry = JSON.parse(row.geometry);
+					}
+
 					return {
 						key: row.key,
 						uuid: row.uuid,
