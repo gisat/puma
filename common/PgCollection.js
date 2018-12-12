@@ -3,6 +3,7 @@ const conn = require('../common/conn');
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const PgMetadataChanges = require('../metadata/PgMetadataChanges');
+const PgMetadataRelations = require('../metadata/PgMetadataRelations');
 
 /**
  * Generic class that is used throughout the application. It represents a collection of metadata items stored in the
@@ -19,6 +20,7 @@ class PgCollection {
 
 		this._pgPermissions = new PgPermissions(pool, schema);
 		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
+		this._pgMetadataRelations = new PgMetadataRelations(pool, schema);
 
 		this._limit = 100;
 		this._offset = 0;
