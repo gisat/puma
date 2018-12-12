@@ -34,6 +34,8 @@ class PgLpisCheckCases extends PgCollection {
 		ALTER TABLE "${this._schema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS poznamka TEXT;
 		ALTER TABLE "${this._schema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS typ TEXT;
 		ALTER TABLE "${this._schema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS geometry GEOMETRY;
+		ALTER TABLE "${this._schema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS visited BOOLEAN;
+		ALTER TABLE "${this._schema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS confirmed BOOLEAN;
 		COMMIT;
 		`;
 	}
