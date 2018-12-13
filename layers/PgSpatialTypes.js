@@ -25,7 +25,7 @@ class PgSpatialTypes extends PgCollection {
             );
         }
 
-        return this._pool.query(`INSERT INTO ${this._schema}.${PgSpatialTypes.tableName()} (id) VALUES (${id});`);
+        return this._pgPool.query(`INSERT INTO ${this._pgSchema}.${PgSpatialTypes.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -58,11 +58,11 @@ class PgSpatialTypes extends PgCollection {
         }
 
         if(changes.length > 0) {
-            sql += `UPDATE ${this._schema}.${PgSpatialTypes.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
+            sql += `UPDATE ${this._pgSchema}.${PgSpatialTypes.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
         }
 
         logger.info(`PgAttributes#update SQL: ${sql}`);
-        return this._pool.query(sql);
+        return this._pgPool.query(sql);
     }
 
     /**
@@ -75,7 +75,7 @@ class PgSpatialTypes extends PgCollection {
             );
         }
 
-        return this._pool.query(`DELETE FROM ${this._schema}.${PgSpatialTypes.tableName()} WHERE id = ${id} CASCADE`);
+        return this._pgPool.query(`DELETE FROM ${this._pgSchema}.${PgSpatialTypes.tableName()} WHERE id = ${id} CASCADE`);
     }
 
     static tableName() {

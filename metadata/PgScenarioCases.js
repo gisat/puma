@@ -70,8 +70,8 @@ class PgScenarioCases extends PgCollection {
 			return data[key];
 		});
 
-		return this._pool.query(
-			`INSERT INTO "${this._schema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+		return this._pgPool.query(
+			`INSERT INTO "${this._pgSchema}"."${PgScenarioCases.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 				return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
 			}).join(', ')}) RETURNING id;`,
 			values
@@ -231,18 +231,18 @@ class PgScenarioCases extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._schema}"."${PgScenarioCases.tableName()}" AS cases`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgScopeScenarioCaseRelations.tableName()}" AS scope_relations`);
+		pagingQuery.push(`FROM "${this._pgSchema}"."${PgScenarioCases.tableName()}" AS cases`);
+		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgScopeScenarioCaseRelations.tableName()}" AS scope_relations`);
 		pagingQuery.push(`ON "scope_relations"."scenario_case_id" = "cases"."id"`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
+		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
 		pagingQuery.push(`ON "place_relations"."scenario_case_id" = "cases"."id"`);
 
 		let query = [];
 		query.push(`SELECT cases.id, cases.name, cases.description, ST_AsGeoJSON(cases.geometry) AS geometry, ARRAY_AGG(DISTINCT scope_relations.scope_id) AS scope_ids, ARRAY_AGG(DISTINCT place_relations.place_id) AS place_ids`);
-		query.push(`FROM "${this._schema}"."${PgScenarioCases.tableName()}" AS cases`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgScopeScenarioCaseRelations.tableName()}" AS scope_relations`);
+		query.push(`FROM "${this._pgSchema}"."${PgScenarioCases.tableName()}" AS cases`);
+		query.push(`LEFT JOIN "${this._pgSchema}"."${PgScopeScenarioCaseRelations.tableName()}" AS scope_relations`);
 		query.push(`ON "scope_relations"."scenario_case_id" = "cases"."id"`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
+		query.push(`LEFT JOIN "${this._pgSchema}"."${PgPlaceScenarioCaseRelations.tableName()}" AS place_relations`);
 		query.push(`ON "place_relations"."scenario_case_id" = "cases"."id"`);
 
 		if (keys.length || like || any) {
@@ -280,12 +280,12 @@ class PgScenarioCases extends PgCollection {
 		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		return this._pool.query(pagingQuery.join(' '))
+		return this._pgPool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
 				if (payload.hasOwnProperty('total')) {
 					payload.total = Number(pagingResult.rows[0].total);
 				}
-				return this._pool.query(query.join(' '))
+				return this._pgPool.query(query.join(' '))
 			})
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -366,8 +366,8 @@ class PgScenarioCases extends PgCollection {
 							});
 
 							if (sets.length && sets.length === values.length) {
-								return this._pool.query(
-									`UPDATE "${this._schema}"."${PgScenarioCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id};`,
+								return this._pgPool.query(
+									`UPDATE "${this._pgSchema}"."${PgScenarioCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id};`,
 									values
 								);
 							}
@@ -464,8 +464,8 @@ class PgScenarioCases extends PgCollection {
 		let status = {
 			deleted: false
 		};
-		return this._pool.query(
-			`DELETE FROM "${this._schema}"."${PgScenarioCases.tableName()}" WHERE id = ${scenarioCaseId}`
+		return this._pgPool.query(
+			`DELETE FROM "${this._pgSchema}"."${PgScenarioCases.tableName()}" WHERE id = ${scenarioCaseId}`
 		).then((result) => {
 			if(result.rowCount) {
 				status.deleted = true;

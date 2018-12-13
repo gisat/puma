@@ -27,7 +27,7 @@ class PgAttributeSets extends PgCollection {
             );
         }
 
-        return this._pool.query(`INSERT INTO ${this._schema}.${PgAttributeSets.tableName()} (id) VALUES (${id});`);
+        return this._pgPool.query(`INSERT INTO ${this._pgSchema}.${PgAttributeSets.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -53,24 +53,24 @@ class PgAttributeSets extends PgCollection {
             changes.push(` topic = ${attributeSet.topic} `);
         }
         if(attributeSet.featureLayers !== null) {
-            sql += ` DELETE FROM ${this._schema}.${PgAttributeSets.analyticalUnits()} WHERE attribute_set_id = ${id}; `;
+            sql += ` DELETE FROM ${this._pgSchema}.${PgAttributeSets.analyticalUnits()} WHERE attribute_set_id = ${id}; `;
             sql += attributeSet.featureLayers.map(analyticalUnitLevel =>
-                ` INSERT INTO ${this._schema}.${PgAttributeSets.analyticalUnits()} (scope_id, analytical_unit_id) VALUES (${id}, ${analyticalUnitLevel}); `
+                ` INSERT INTO ${this._pgSchema}.${PgAttributeSets.analyticalUnits()} (scope_id, analytical_unit_id) VALUES (${id}, ${analyticalUnitLevel}); `
             );
         }
         if(attributeSet.attributes !== null) {
-            sql += ` DELETE FROM ${this._schema}.${PgAttributeSets.attributes()} WHERE attribute_set_id = ${id}; `;
+            sql += ` DELETE FROM ${this._pgSchema}.${PgAttributeSets.attributes()} WHERE attribute_set_id = ${id}; `;
             sql += attributeSet.attributes.map(attribute =>
-                ` INSERT INTO ${this._schema}.${PgAttributeSets.attributes()} (scope_id, period_id) VALUES (${id}, ${attribute}); `
+                ` INSERT INTO ${this._pgSchema}.${PgAttributeSets.attributes()} (scope_id, period_id) VALUES (${id}, ${attribute}); `
             );
         }
 
         if(changes.length > 0) {
-            sql += `UPDATE ${this._schema}.${PgAttributeSets.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
+            sql += `UPDATE ${this._pgSchema}.${PgAttributeSets.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
         }
 
         logger.info(`PgAttributeSets#update SQL: ${sql}`);
-        return this._pool.query(sql);
+        return this._pgPool.query(sql);
     }
 
     /**
@@ -112,7 +112,7 @@ class PgAttributeSets extends PgCollection {
             );
         }
 
-        return this._pool.query(`DELETE FROM ${this._schema}.${PgAttributeSets.tableName()} WHERE id = ${id} CASCADE`);
+        return this._pgPool.query(`DELETE FROM ${this._pgSchema}.${PgAttributeSets.tableName()} WHERE id = ${id} CASCADE`);
     }
 
     static tableName() {

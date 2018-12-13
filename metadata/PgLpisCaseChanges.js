@@ -54,8 +54,8 @@ class PgLpisCaseChanges extends PgCollection {
 			return data[key];
 		});
 
-		return this._pool.query(
-			`INSERT INTO "${this._schema}"."${PgLpisCaseChanges.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+		return this._pgPool.query(
+			`INSERT INTO "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 				return `$${index + 1}`;
 			}).join(', ')}) RETURNING id;`,
 			values
@@ -127,11 +127,11 @@ class PgLpisCaseChanges extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._schema}"."${PgLpisCaseChanges.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT *`);
-		query.push(`FROM "${this._schema}"."${PgLpisCaseChanges.tableName()}" AS a`);
+		query.push(`FROM "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -168,12 +168,12 @@ class PgLpisCaseChanges extends PgCollection {
 		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		return this._pool.query(pagingQuery.join(' '))
+		return this._pgPool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
 				if (payload.hasOwnProperty('total')) {
 					payload.total = Number(pagingResult.rows[0].total);
 				}
-				return this._pool.query(query.join(' '))
+				return this._pgPool.query(query.join(' '))
 			})
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -215,8 +215,8 @@ class PgLpisCaseChanges extends PgCollection {
 		let status = {
 			deleted: false
 		};
-		return this._pool.query(
-			`DELETE FROM "${this._schema}"."${PgLpisCaseChanges.tableName()}" WHERE id = ${lpisCaseId}`
+		return this._pgPool.query(
+			`DELETE FROM "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" WHERE id = ${lpisCaseId}`
 		).then((result) => {
 			if (result.rowCount) {
 				status.deleted = true;

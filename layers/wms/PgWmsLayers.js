@@ -22,7 +22,7 @@ class PgWmsLayers extends PgCollection {
 	 * It returns all stored WMS layer with their details.
 	 */
 	all() {
-		return this._pool.query(this.readSql()).then(result => {
+		return this._pgPool.query(this.readSql()).then(result => {
 			return this._transformRows(result.rows);
 		});
 	}
@@ -60,7 +60,7 @@ class PgWmsLayers extends PgCollection {
 		});
 		let sql = `${this.readSql()} ${restrictionsSql}`;
 		logger.info(`PgWmsLayer#filtered SQL: ${sql}`);
-		return this._pool.query(sql).then(result => {
+		return this._pgPool.query(sql).then(result => {
 			return this._transformRows(result.rows);
 		});
 	}
@@ -69,7 +69,7 @@ class PgWmsLayers extends PgCollection {
 	 * It returns detail of the layer represent by id. If there is no such layer null is returned.
 	 */
 	byId(id) {
-		return this._pool.query(`${this.readSql()} WHERE id = ${id}`).then(result => {
+		return this._pgPool.query(`${this.readSql()} WHERE id = ${id}`).then(result => {
 			return this._transformRows(result.rows);
 		}).then(rows => {
 			return rows[0];
@@ -77,7 +77,7 @@ class PgWmsLayers extends PgCollection {
 	}
 
 	readSql() {
-		return `SELECT * FROM ${this._schema}.${PgWmsLayers.tableName()} as layer LEFT JOIN ${this._schema}.wms_layer_has_places ON layer.id = wms_layer_has_places.wms_layer_id LEFT JOIN ${this._schema}.wms_layer_has_periods ON layer.id = wms_layer_has_periods.wms_layer_id`;
+		return `SELECT * FROM ${this._pgSchema}.${PgWmsLayers.tableName()} as layer LEFT JOIN ${this._pgSchema}.wms_layer_has_places ON layer.id = wms_layer_has_places.wms_layer_id LEFT JOIN ${this._pgSchema}.wms_layer_has_periods ON layer.id = wms_layer_has_periods.wms_layer_id`;
 	}
 
 	/**
@@ -141,9 +141,9 @@ class PgWmsLayers extends PgCollection {
 		let id;
 
 		let sql = `
-			INSERT INTO ${this._schema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} ${getDates} custom) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} ${getDatesValues} '${layer.custom}') RETURNING id;`;
+			INSERT INTO ${this._pgSchema}.${PgWmsLayers.tableName()} (name, layer, url, ${scope} ${getDates} custom) VALUES ('${layer.name}','${layer.layer}','${layer.url}',${scopeValue} ${getDatesValues} '${layer.custom}') RETURNING id;`;
 		logger.info(`PgWmsLayers#add SQL: ${sql}`);
-		return this._pool.query(sql).then(result => {
+		return this._pgPool.query(sql).then(result => {
 			id = result.rows[0].id;
 			return this.insertDependencies(id, layer.places, layer.periods);
 		}).then(() => {
@@ -152,21 +152,21 @@ class PgWmsLayers extends PgCollection {
 	}
 
 	insertDependencies(id, places, periods) {
-		return this._pool.query(this.insertDependenciesSql(id, places, periods));
+		return this._pgPool.query(this.insertDependenciesSql(id, places, periods));
 	}
 
 	insertDependenciesSql(id, places, periods) {
         let periodSql = '';
         if(periods && periods.length) {
             periods.forEach(period => {
-                periodSql += `INSERT INTO ${this._schema}.wms_layer_has_periods (period_id, wms_layer_id) VALUES (${period}, ${id});`;
+                periodSql += `INSERT INTO ${this._pgSchema}.wms_layer_has_periods (period_id, wms_layer_id) VALUES (${period}, ${id});`;
             });
         }
 
         let placeSql = '';
         if(places && places.length) {
             places.forEach(place => {
-                placeSql += `INSERT INTO ${this._schema}.wms_layer_has_places (place_id, wms_layer_id) VALUES (${place}, ${id});`;
+                placeSql += `INSERT INTO ${this._pgSchema}.wms_layer_has_places (place_id, wms_layer_id) VALUES (${place}, ${id});`;
             });
         }
 
@@ -218,7 +218,7 @@ class PgWmsLayers extends PgCollection {
 		changes.push(` changed = '${time}' `);
 		changes.push(` changed_by = '${userId}' `);
 
-		sql += `UPDATE ${this._schema}.${PgWmsLayers.tableName()} SET ${changes.join(',')} WHERE id = ${layer.id};`;
+		sql += `UPDATE ${this._pgSchema}.${PgWmsLayers.tableName()} SET ${changes.join(',')} WHERE id = ${layer.id};`;
 
         sql += this.deleteDependenciesSql(layer.id);
 		sql += this.insertDependenciesSql(layer.id, layer.places, layer.periods);
@@ -226,18 +226,18 @@ class PgWmsLayers extends PgCollection {
         sql += `COMMIT;`;
 
         logger.info('PgWmsLayer#update Layer: ', layer, ' SQL: ', sql);
-		return this._pool.query(sql).then(() => {
+		return this._pgPool.query(sql).then(() => {
 			return this.byId(layer.id);
 		}).catch(err => {
             logger.error(`PgPeriods#update ERROR: `, err);
-            return this._pool.query(`ROLLBACK`);
+            return this._pgPool.query(`ROLLBACK`);
         });
 	}
 
 	deleteDependenciesSql(id) {
 		return `
-			DELETE FROM ${this._schema}.wms_layer_has_places WHERE wms_layer_id = ${id};
-			DELETE FROM ${this._schema}.wms_layer_has_periods WHERE wms_layer_id = ${id};
+			DELETE FROM ${this._pgSchema}.wms_layer_has_places WHERE wms_layer_id = ${id};
+			DELETE FROM ${this._pgSchema}.wms_layer_has_periods WHERE wms_layer_id = ${id};
 		`;
 	}
 
@@ -250,9 +250,9 @@ class PgWmsLayers extends PgCollection {
 			throw new Error(`PgWmsLayer#delete Incorrect arguments Id: ${id}`);
 		}
 
-		return this._pool.query(`
+		return this._pgPool.query(`
 				${this.deleteDependenciesSql(id)}
-				DELETE from ${this._schema}.${PgWmsLayers.tableName()} WHERE id = ${id};
+				DELETE from ${this._pgSchema}.${PgWmsLayers.tableName()} WHERE id = ${id};
 		`);
 	}
 

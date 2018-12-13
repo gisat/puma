@@ -31,11 +31,11 @@ class PgSpatialDataSources extends PgRelation {
         this.validateDataSource(dataSource, 'create');
 
         return this.getDataSourceInfo(dataSource.typeId).then(attributeType => {
-            let sql = dataSource.relationIds.map(relationId => `INSERT INTO ${this._schema}.${PgSpatialDataSources.tableName()} (type_id, ${attributeType}) 
+            let sql = dataSource.relationIds.map(relationId => `INSERT INTO ${this._pgSchema}.${PgSpatialDataSources.tableName()} (type_id, ${attributeType}) 
                 VALUES (${dataSource.typeId}, ${relationId});`).join(' ');
 
             logger.info(`${this._name}#create Sql: `, sql);
-            return this._pool.query(sql);
+            return this._pgPool.query(sql);
         })
     }
 
@@ -49,7 +49,7 @@ class PgSpatialDataSources extends PgRelation {
     delete(dataSource) {
         this.validateDataSource(dataSource, 'delete');
 
-        return this._pool.query(`DELETE FROM ${this._schema}.${PgSpatialDataSources.tableName()} WHERE 
+        return this._pgPool.query(`DELETE FROM ${this._pgSchema}.${PgSpatialDataSources.tableName()} WHERE 
             type_id = ${dataSource.typeId} AND relation_id IN (${dataSource.relations.join(',')});`);
     }
 
@@ -84,7 +84,7 @@ class PgSpatialDataSources extends PgRelation {
      * @returns {Promise|String} Name of the column to store the resources in.
      */
     getDataSourceInfo(typeId) {
-        return this._pool.query(`SELECT * from ${this._schema}.${PgSpatialTypes.tableName()} WHERE id = ${typeId};`).then(result => {
+        return this._pgPool.query(`SELECT * from ${this._pgSchema}.${PgSpatialTypes.tableName()} WHERE id = ${typeId};`).then(result => {
             if(result.rows.length !== 1) {
                 throw new Error(
                     logger.error(`${this._name}#getDataSourceInfo. Incorrect attribute types for type id. Amount: `, result.rows.length)

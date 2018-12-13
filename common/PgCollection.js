@@ -13,8 +13,8 @@ const PgMetadataRelations = require('../metadata/PgMetadataRelations');
  */
 class PgCollection {
 	constructor(pool, schema, mongo, name) {
-		this._pool = pool;
-		this._schema = schema;
+		this._pgPool = pool;
+		this._pgSchema = schema;
 		this._mongo = mongo;
 		this._name = name;
 
@@ -121,9 +121,9 @@ class PgCollection {
 			return data[key];
 		});
 
-		return this._pool
+		return this._pgPool
 			.query(
-				`INSERT INTO "${this._schema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+				`INSERT INTO "${this._pgSchema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 					return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
 				}).join(', ')}) RETURNING id AS key;`,
 				values
@@ -225,12 +225,12 @@ class PgCollection {
 		});
 
 		let sql = [];
-		sql.push(`UPDATE "${this._schema}"."${this._tableName}"`);
+		sql.push(`UPDATE "${this._pgSchema}"."${this._tableName}"`);
 		sql.push(`SET`);
 		sql.push(sets.join(`, `));
 		sql.push(`WHERE id = ${Number(key)} RETURNING id AS key`);
 
-		return this._pool
+		return this._pgPool
 			.query(sql.join(` `), values)
 			.then((result) => {
 				return {
@@ -346,14 +346,14 @@ class PgCollection {
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
 		let query = [
-			`SELECT * FROM "${this._schema}"."group_permissions" AS gp `,
+			`SELECT * FROM "${this._pgSchema}"."group_permissions" AS gp `,
 			`WHERE`,
 			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
 			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND group_id IN (${groupIds.join(`, `)})`
 		];
 
-		return this._pool
+		return this._pgPool
 			.query(query.join(` `))
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -362,14 +362,14 @@ class PgCollection {
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
 		let query = [
-			`SELECT * FROM "${this._schema}"."permissions" AS p `,
+			`SELECT * FROM "${this._pgSchema}"."permissions" AS p `,
 			`WHERE`,
 			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
 			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND user_id = ${userId}`
 		];
 
-		return this._pool
+		return this._pgPool
 			.query(query.join(` `))
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -388,9 +388,9 @@ class PgCollection {
 				if (isAdmin) {
 					return Promise.resolve([null, true]);
 				} else {
-					return this._pool
+					return this._pgPool
 						.query(
-							`SELECT resource_id::integer AS key, resource_type FROM "${this._schema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
+							`SELECT resource_id::integer AS key, resource_type FROM "${this._pgSchema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 						)
 						.then((result) => {
 							_.each(result.rows, (row) => {
@@ -403,9 +403,9 @@ class PgCollection {
 							});
 						})
 						.then(() => {
-							return this._pool
+							return this._pgPool
 								.query(
-									`SELECT resource_id::integer AS key, resource_type FROM "${this._schema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
+									`SELECT resource_id::integer AS key, resource_type FROM "${this._pgSchema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 								)
 								.then((result) => {
 									_.each(result.rows, (row) => {
@@ -497,8 +497,8 @@ class PgCollection {
 	}
 
 	postgresDeleteOne(key) {
-		return this._pool
-			.query(`DELETE FROM "${this._schema}"."${this._tableName}" WHERE id = ${key}`)
+		return this._pgPool
+			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE id = ${key}`)
 			.then((result) => {
 				if (result.rowCount) {
 					return this.removeAllPermissionsByResourceKey(key)
@@ -518,13 +518,13 @@ class PgCollection {
 	}
 
 	removeAllPermissionsByResourceKey(resourceKey) {
-		return this._pool
+		return this._pgPool
 			.query(
-				`DELETE FROM "${this._schema}"."permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
+				`DELETE FROM "${this._pgSchema}"."permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
 			).then(() => {
-				return this._pool
+				return this._pgPool
 					.query(
-						`DELETE FROM "${this._schema}"."group_permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
+						`DELETE FROM "${this._pgSchema}"."group_permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
 					)
 			});
 	}
@@ -775,7 +775,7 @@ class PgCollection {
 
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
-		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : `id AS key, *${this._customSqlColumns}`} FROM "${this._schema}"."${this._tableName}" AS a`);
+		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : `id AS key, *${this._customSqlColumns}`} FROM "${this._pgSchema}"."${this._tableName}" AS a`);
 
 		if(!isAdmin) {
 			let keys = [];
@@ -870,16 +870,16 @@ class PgCollection {
 
 		let sql = this.getSql(request, user, extra, availableKeys, isAdmin);
 
-		return this._pool.query(`SELECT count(*) AS total FROM (${sql}) AS results;`)
+		return this._pgPool.query(`SELECT count(*) AS total FROM (${sql}) AS results;`)
 			.then((pagingResult) => {
 				if (!request.unlimited) {
 					payload.limit = _.isNumber(request.limit) && request.limit || this._limit;
 					payload.offset = _.isNumber(request.offset) && request.offset || this._offset;
 					payload.total = Number(pagingResult.rows[0].total);
 
-					return this._pool.query(`SELECT * FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`);
+					return this._pgPool.query(`SELECT * FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`);
 				} else {
-					return this._pool.query(`SELECT * FROM (${sql}) AS results;`);
+					return this._pgPool.query(`SELECT * FROM (${sql}) AS results;`);
 				}
 			})
 			.then((queryResult) => {

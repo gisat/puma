@@ -16,7 +16,7 @@ class PgAnalyticalUnitTemplates extends PgCollection {
      */
     create(id, userId){
         return super.create(id, userId).then(()=>{
-            return this._pool.query(`INSERT INTO ${this._schema}.${PgAnalyticalUnitTemplates.tableName()} (id) VALUES (${id})`);
+            return this._pgPool.query(`INSERT INTO ${this._pgSchema}.${PgAnalyticalUnitTemplates.tableName()} (id) VALUES (${id})`);
         });
     }
 
@@ -37,15 +37,15 @@ class PgAnalyticalUnitTemplates extends PgCollection {
                     changes.push(` name = '${analyticalUnitTemplate.name}' `);
                 }
 
-                sql += `UPDATE ${this._schema}.${PgAnalyticalUnitTemplates.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
+                sql += `UPDATE ${this._pgSchema}.${PgAnalyticalUnitTemplates.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
                 sql += `COMMIT; `;
 
                 logger.info(`PgPeriods#update SQL: ${sql}`);
-                return this._pool.query(sql)
+                return this._pgPool.query(sql)
             }
         }).catch(err => {
             logger.error(`PgPeriods#update ERROR: `, err);
-            return this._pool.query(`ROLLBACK`);
+            return this._pgPool.query(`ROLLBACK`);
         });
     }
 
@@ -54,7 +54,7 @@ class PgAnalyticalUnitTemplates extends PgCollection {
      */
     delete(id, userId) {
         return super.delete(id, userId).then(() => {
-            return this._pool.query(`DELETE FROM ${this._schema}.${PgAnalyticalUnitTemplates.tableName()} WHERE id = ${id} CASCADE;`);
+            return this._pgPool.query(`DELETE FROM ${this._pgSchema}.${PgAnalyticalUnitTemplates.tableName()} WHERE id = ${id} CASCADE;`);
         });
     }
 

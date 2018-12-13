@@ -56,9 +56,9 @@ class PgScenarios extends PgCollection {
 			return data[key];
 		});
 
-		return this._pool
+		return this._pgPool
 			.query(
-				`INSERT INTO "${this._schema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+				`INSERT INTO "${this._pgSchema}"."${PgScenarios.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 					return `$${index + 1}`
 				}).join(', ')}) RETURNING id;`,
 				values
@@ -176,13 +176,13 @@ class PgScenarios extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS a`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS b ON "a"."id" = "b"."scenario_id"`);
+		pagingQuery.push(`FROM "${this._pgSchema}"."${PgScenarios.tableName()}" AS a`);
+		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS b ON "a"."id" = "b"."scenario_id"`);
 
 		let query = [];
 		query.push(`SELECT a.*, array_agg(b.scenario_case_id) AS scenario_case_ids`);
-		query.push(`FROM "${this._schema}"."${PgScenarios.tableName()}" AS a`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS b ON "a"."id" = "b"."scenario_id"`);
+		query.push(`FROM "${this._pgSchema}"."${PgScenarios.tableName()}" AS a`);
+		query.push(`LEFT JOIN "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS b ON "a"."id" = "b"."scenario_id"`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -219,12 +219,12 @@ class PgScenarios extends PgCollection {
 		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		return this._pool.query(pagingQuery.join(' '))
+		return this._pgPool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
 				if (payload.hasOwnProperty('total')) {
 					payload.total = Number(pagingResult.rows[0].total);
 				}
-				return this._pool.query(query.join(' '))
+				return this._pgPool.query(query.join(' '))
 			})
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -265,7 +265,7 @@ class PgScenarios extends PgCollection {
 
 						if (id) {
 							promises.push(
-								this._pool.query(`UPDATE "${this._schema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+								this._pgPool.query(`UPDATE "${this._pgSchema}"."${PgScenarios.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
 									.then((result) => {
 										return {
 											id: id
@@ -314,8 +314,8 @@ class PgScenarios extends PgCollection {
 		let status = {
 			deleted: false
 		};
-		return this._pool.query(
-			`DELETE FROM "${this._schema}"."${PgScenarios.tableName()}" WHERE id = ${scenarioId}`
+		return this._pgPool.query(
+			`DELETE FROM "${this._pgSchema}"."${PgScenarios.tableName()}" WHERE id = ${scenarioId}`
 		).then((result) => {
 			if (result.rowCount) {
 				status.deleted = true;
