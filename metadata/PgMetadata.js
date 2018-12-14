@@ -31,7 +31,7 @@ class PgMetadata extends PgCrud {
 		this._pgAttributes = new PgAttributes(pgPool, pgSchema, mongo);
 		this._pgTopics = new PgTopics(pgPool, pgSchema, mongo);
 		this._pgDataviewsLegacy = new PgDataviewsLegacy(pgPool, pgSchema, mongo);
-		this._pgLpisCheckCases = new PgLpisCheckCases(pgPool, pgSchema);
+		this._pgLpisCheckCases = new PgLpisCheckCases(pgPool, pgSchema, mongo, [PgPlaces.tableName(), PgDataviewsLegacy.tableName()]);
 
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
