@@ -22,7 +22,7 @@ class PgMetadata extends PgCrud {
 
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 		this._pgScenarioCases = new PgScenarioCases(pgPool, pgSchema);
-		this._pgLspiCases = new PgLpisCases(pgPool, pgSchema, mongo);
+		this._pgLpisCases = new PgLpisCases(pgPool, pgSchema, mongo);
 		this._pgScopes = new PgScopes(pgPool, pgSchema, mongo);
 		this._pgThemes = new PgThemes(pgPool, pgSchema, mongo);
 		this._pgPlaces = new PgPlaces(pgPool, pgSchema, mongo);
@@ -46,7 +46,7 @@ class PgMetadata extends PgCrud {
 				type: PgScenarioCases.tableName()
 			},
 			lpis_cases: {
-				store: this._pgLspiCases,
+				store: this._pgLpisCases,
 				type: PgLpisCases.tableName()
 			},
 			scopes: {
