@@ -1,4 +1,5 @@
 const PgLpisCheckCases = require(`../metadata/PgLpisCheckCases`);
+const PgMetadataRelations = require(`../metadata/PgMetadataRelations`);
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -391,8 +392,6 @@ DatabaseSchema.prototype.create = function () {
         return self._pool.query(createMetadataStructure);
     }).then(function () {
 		return self._pool.query(createUploadManagerTables);
-	}).then(() => {
-	    return self._pool.query(new PgLpisCheckCases(this._pool, this.schema).tableSql());
 	}).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });
