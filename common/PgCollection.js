@@ -268,6 +268,12 @@ class PgCollection {
 			values.push(data[property]);
 		});
 
+		if(!sets.length) {
+			return {
+				key: object.key
+			}
+		}
+
 		let sql = [];
 		sql.push(`UPDATE "${this._pgSchema}"."${this._tableName}"`);
 		sql.push(`SET`);
@@ -1004,22 +1010,35 @@ class PgCollection {
 							return model;
 						});
 
-						let baseKeys = _.map(payloadData[this._groupName], `key`);
-						return this._pgMetadataRelations
-							.getRelationsForBaseKeys(baseKeys)
-							.then((relations) => {
-								if(relations) {
+						if (this._pgMetadataRelations) {
+							let baseKeys = _.map(payloadData[this._groupName], `key`);
+							let possibleRelationColumnNames = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+							let defaultModelRelations = {};
+							_.each(possibleRelationColumnNames, (possibleRelationColumnName) => {
+								defaultModelRelations[possibleRelationColumnName] = null;
+							});
+							return this._pgMetadataRelations
+								.getRelationsForBaseKeys(baseKeys)
+								.then((relations) => {
+									let modelRelations = {
+										...defaultModelRelations
+									};
+
 									_.each(payloadData[this._groupName], (model) => {
-										let modelRelations = relations[model.key];
-										if(modelRelations) {
-											model.data = {
-												...model.data,
-												...modelRelations
+										if(relations && relations.hasOwnProperty(model.key)) {
+											modelRelations = {
+												...modelRelations,
+												...relations[model.key]
 											}
 										}
+
+										model.data = {
+											...model.data,
+											...modelRelations
+										}
 									})
-								}
-							})
+								})
+						}
 					});
 			}
 		}
