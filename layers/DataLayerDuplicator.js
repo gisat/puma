@@ -287,7 +287,7 @@ class DataLayerDuplicator {
 
 	getGeoserverShapeLayerDownloadUrlByLayerName(layerName) {
 		return Promise.resolve(
-			`${this._geoserverPath}/wfs?request=GetFeature&service=WFS&version=1.0.0&typeName=${layerName}&outputFormat=SHAPE-ZIP`
+			`http://${config.localHost}/backend/geoserver/wfs?request=GetFeature&service=WFS&version=1.0.0&typeName=${layerName}&outputFormat=SHAPE-ZIP`
 		);
 	}
 

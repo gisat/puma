@@ -57,6 +57,8 @@ const UploadManagerController = require('./UploadManagerController');
 
 const PucsMatlabProcessorController = require('../integration/PucsMatlabProcessorController');
 
+const GeoserverProxyController = require(`../geoserver/proxy/GeoserverProxyController`);
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -144,6 +146,8 @@ module.exports = function(app) {
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 
 	new PucsMatlabProcessorController(app, pool, config.postgreSqlSchema, mongo);
+
+	new GeoserverProxyController(app, pool, config.postgreSqlSchema, mongo);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
