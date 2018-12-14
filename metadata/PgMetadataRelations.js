@@ -16,7 +16,16 @@ class PgMetadataRelations {
 
 		sql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
 		sql.push(`(${this._getBaseMetadataTypeColumnName()}, ${Object.keys(relations).join(`, `)})`);
-		sql.push(`values ('${baseKey}', '${Object.values(relations).join(`', '`)}');`);
+		sql.push(`VALUES ('${baseKey}', '${Object.values(relations).join(`', '`)}')`);
+		sql.push(`ON CONFLICT (${this._getBaseMetadataTypeColumnName()}) DO UPDATE SET`);
+
+		let updates = [];
+		_.each(relations, (value, property) => {
+			updates.push(`${property} = ${value === null ? `NULL` : `'${value}'`}`);
+		});
+
+		sql.push(updates.join(`, `));
+		sql.push(`;`);
 
 		return this._pgPool
 			.query(sql.join(` `))
@@ -26,25 +35,7 @@ class PgMetadataRelations {
 	}
 
 	updateRelations(baseKey, relations) {
-		let sql = [];
-
-		let set = [];
-
-		_.each(relations, (value, property) => {
-			if(value === null) {
-				set.push(`${property} = NULL`);
-			} else {
-				set.push(`${property} = '${value}'`);
-			}
-		});
-
-		sql.push(`UPDATE "${this._pgSchema}"."${this._getTableName()}" SET ${set.join(`, `)} WHERE ${this._getBaseMetadataTypeColumnName()} = '${baseKey}'`);
-
-		return this._pgPool
-			.query(sql.join(` `))
-			.catch((error) => {
-				console.log(error);
-			})
+		return this.addRelations(baseKey, relations);
 	}
 
 	deleteRelations(baseKey) {
@@ -104,7 +95,7 @@ class PgMetadataRelations {
 
 		sql.push(`BEGIN;`);
 		sql.push(`CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._getTableName()}" (id SERIAL PRIMARY KEY, uuid UUID DEFAULT gen_random_uuid());`);
-		sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS ${this._baseMetadataType}_key TEXT;`);
+		sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS ${this._baseMetadataType}_key TEXT UNIQUE;`);
 
 		_.each(this._relatedToMetadataTypes, (metadataType) => {
 			sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS ${metadataType}_key TEXT;`);
