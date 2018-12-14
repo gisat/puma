@@ -20,7 +20,7 @@ class PgCollection {
 
 		this._pgPermissions = new PgPermissions(pool, schema);
 		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
-		this._pgMetadataRelations = new PgMetadataRelations(pool, schema);
+		this._pgMetadataRelations = null;
 
 		this._limit = 100;
 		this._offset = 0;
@@ -69,8 +69,25 @@ class PgCollection {
 	}
 
 	createOne(object, objects, user, extra) {
+		let relations;
 		return Promise.resolve()
 			.then(() => {
+				if(this._pgMetadataRelations) {
+					let data = object.data;
+					let keys = Object.keys(data);
+
+					let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+					_.each(keys, (key) => {
+						if(possibleRelationProperties.includes(key)) {
+							relations = {
+								...relations,
+								[key]: data[key]
+							};
+							delete data[key];
+						}
+					});
+				}
+
 				if (!this._legacy) {
 					return this.postgresCreateOne(object, objects, user, extra);
 				} else {
@@ -79,6 +96,11 @@ class PgCollection {
 			})
 			.then((createdObject) => {
 				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id, object.data)
+					.then(() => {
+						if(relations) {
+							return this._pgMetadataRelations.addRelations(createdObject.key, relations);
+						}
+					})
 					.then(() => {
 						return createdObject;
 					})
@@ -174,8 +196,25 @@ class PgCollection {
 	}
 
 	updateOne(object, objects, user, extra) {
+		let relations;
 		return Promise.resolve()
 			.then(() => {
+				if(this._pgMetadataRelations) {
+					let data = object.data;
+					let keys = Object.keys(data);
+
+					let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+					_.each(keys, (key) => {
+						if(possibleRelationProperties.includes(key)) {
+							relations = {
+								...relations,
+								[key]: data[key]
+							};
+							delete data[key];
+						}
+					});
+				}
+
 				if (!this._legacy) {
 					return this.postgresUpdateOne(object, objects, user, extra);
 				} else {
@@ -185,9 +224,14 @@ class PgCollection {
 			.then((updatedObject) => {
 				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
 					.then(() => {
+						if(relations) {
+							return this._pgMetadataRelations.updateRelations(updatedObject.key, relations);
+						}
+					})
+					.then(() => {
 						return updatedObject;
 					})
-			});
+			})
 	}
 
 	mongoUpdateOne(object, objects, user, extra) {
@@ -468,6 +512,11 @@ class PgCollection {
 			})
 			.then((result) => {
 				return this._pgMetadataChanges.createChange('delete', this._tableName, key, user.id)
+					.then(() => {
+						if(this._pgMetadataRelations) {
+							return this._pgMetadataRelations.deleteRelations(key);
+						}
+					})
 					.then(() => {
 						return result;
 					})
@@ -886,6 +935,10 @@ class PgCollection {
 				return queryResult.rows;
 			})
 			.then((rows) => {
+				if(extra.idOnly) {
+					let possibleRelations = this._pgMetadataRelations ? this._pgMetadataRelations.getMetadataTypeKeyColumnNames() : [];
+					let requestedKeys = _.map(rows, `key`);
+				}
 				payload.data = _.map(rows, (row) => {
 					if(row.geometry && _.isString(row.geometry)) {
 						row.geometry = JSON.parse(row.geometry);
@@ -911,7 +964,7 @@ class PgCollection {
 			return payloadData;
 		} else {
 			if (payloadData.hasOwnProperty(this._groupName) && payloadData[this._groupName].length) {
-				return this.get({in: {key: _.map(payloadData[this._groupName], 'key')}, unlimited: true}, user, {})
+				return this.get({filter: {key: {in: _.map(payloadData[this._groupName], 'key')}}, unlimited: true}, user, {})
 					.then((currentModels) => {
 						payloadData[this._groupName] = _.map(payloadData[this._groupName], model => {
 							if (model.key) {
@@ -924,6 +977,23 @@ class PgCollection {
 							}
 							return model;
 						});
+
+						let baseKeys = _.map(payloadData[this._groupName], `key`);
+						return this._pgMetadataRelations
+							.getRelationsForBaseKeys(baseKeys)
+							.then((relations) => {
+								if(relations) {
+									_.each(payloadData[this._groupName], (model) => {
+										let modelRelations = relations[model.key];
+										if(modelRelations) {
+											model.data = {
+												...model.data,
+												...modelRelations
+											}
+										}
+									})
+								}
+							})
 					});
 			}
 		}
@@ -938,6 +1008,21 @@ class PgCollection {
 		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.DELETE));
 
 		return Promise.all(promises);
+	}
+
+	_initPgTable() {
+		let sql = this._getTableSql();
+		if(sql) {
+			return this._pgPool
+				.query(sql)
+				.catch((error) => {
+					console.log(error);
+				});
+		}
+	}
+
+	_getTableSql() {
+		return null;
 	}
 }
 
