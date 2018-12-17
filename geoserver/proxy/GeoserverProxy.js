@@ -99,7 +99,11 @@ class GeoserverProxy {
 			geoserverRequest
 				.then((geoserverResponse) => {
 					_.each(geoserverResponse.headers, (value, property) => {
-						if(property.toLowerCase() === `content-type` || property.toLowerCase() === `accept`) {
+						if (property.toLowerCase() === `content-type`
+							|| property.toLowerCase() === `accept`
+							|| property.toLowerCase() === `content-disposition`
+							|| property.toLowerCase() === `transfer-encoding`
+						) {
 							response.setHeader(property, value);
 						}
 					});
