@@ -15,6 +15,8 @@ const PgAttributes = require('./PgAttributes');
 const PgTopics = require('./PgTopics');
 const PgDataviewsLegacy = require('./PgDataviewsLegacy');
 const PgLpisCheckCases = require('./PgLpisCheckCases');
+const PgLayerGroups = require('./PgLayerGroups');
+const PgLayerTemplates = require('./PgLayerTemplates');
 
 class PgMetadata extends PgCrud {
 	constructor(pgPool, pgSchema, mongo) {
@@ -32,6 +34,8 @@ class PgMetadata extends PgCrud {
 		this._pgTopics = new PgTopics(pgPool, pgSchema, mongo);
 		this._pgDataviewsLegacy = new PgDataviewsLegacy(pgPool, pgSchema, mongo);
 		this._pgLpisCheckCases = new PgLpisCheckCases(pgPool, pgSchema, mongo, [PgPlaces.tableName(), PgDataviewsLegacy.tableName()]);
+		this._pgLayerGroups = new PgLayerGroups(pgPool, pgSchema, mongo);
+		this._pgLayerTemplates = new PgLayerTemplates(pgPool, pgSchema, mongo);
 
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
@@ -49,41 +53,49 @@ class PgMetadata extends PgCrud {
 				store: this._pgLpisCases,
 				type: PgLpisCases.tableName()
 			},
-			scopes: {
+			[PgScopes.groupName()]: {
 				store: this._pgScopes,
 				type: PgScopes.tableName()
 			},
-			themes: {
+			[PgThemes.groupName()]: {
 				store: this._pgThemes,
 				type: PgThemes.tableName()
 			},
-			places: {
+			[PgPlaces.groupName()]: {
 				store: this._pgPlaces,
 				type: PgPlaces.tableName()
 			},
-			dataviews: {
+			[PgDataviewsLegacy.groupName()]: {
 				store: this._pgDataviewsLegacy,
 				type: PgDataviewsLegacy.tableName()
 			},
-			periods: {
+			[PgPeriods.groupName()]: {
 				store: this._pgPeriods,
 				type: PgPeriods.tableName()
 			},
-			attributesets: {
+			[PgAttributeSets.groupName()]: {
 				store: this._pgAttributeSets,
 				type: PgAttributeSets.tableName()
 			},
-			attributes: {
+			[PgAttributes.groupName()]: {
 				store: this._pgAttributes,
 				type: PgAttributes.tableName()
 			},
-			topics: {
+			[PgAttributes.groupName()]: {
 				store: this._pgTopics,
 				type: PgAttributes.tableName()
 			},
-			lpischeck_cases: {
+			[PgLpisCheckCases.groupName()]: {
 				store: this._pgLpisCheckCases,
 				type: PgLpisCheckCases.tableName()
+			},
+			[PgLayerGroups.groupName()]: {
+				store: this._pgLayerGroups,
+				type: PgLayerGroups.tableName()
+			},
+			[PgLayerTemplates.groupName()]: {
+				store: this._pgLayerTemplates,
+				type: PgLayerTemplates.tableName()
 			}
 		};
 	}
