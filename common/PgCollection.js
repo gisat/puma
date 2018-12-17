@@ -293,6 +293,42 @@ class PgCollection {
 
 	get(request, user, extra) {
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
+			.then(async ([availableKeys, isAdmin]) => {
+				if(this._pgMetadataRelations) {
+					let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+					let requestedRelations = {};
+					_.each(possibleRelationColumns, (possibleRelationColumn) => {
+						if(request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
+							requestedRelations[possibleRelationColumn] = request.filter[possibleRelationColumn];
+							delete request.filter[possibleRelationColumn];
+						}
+					});
+
+					if(Object.keys(requestedRelations).length) {
+						await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
+							.then((baseKeys) => {
+								if(request.filter.hasOwnProperty(`key`)) {
+									if(!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
+										request.filter.key = -1;
+									} else if(_.isObject(request.filter.key))  {
+										if(request.filter.key.hasOwnProperty(`in`)) {
+											request.filter.key.in = _.intersectionWith(request.filter.key.in, baseKeys, (first, second) => {
+												return String(first) === String(second);
+											})
+										} else {
+											request.filter.key.in = baseKeys;
+										}
+									}
+								} else {
+									request.filter.key = {
+										in: baseKeys
+									}
+								}
+							});
+					}
+				}
+				return [availableKeys, isAdmin];
+			})
 			.then(([availableKeys, isAdmin]) => {
 				if (!this._legacy) {
 					return this.postgresGet(request, user, extra, availableKeys, isAdmin)
@@ -1020,11 +1056,11 @@ class PgCollection {
 							return this._pgMetadataRelations
 								.getRelationsForBaseKeys(baseKeys)
 								.then((relations) => {
-									let modelRelations = {
-										...defaultModelRelations
-									};
-
 									_.each(payloadData[this._groupName], (model) => {
+										let modelRelations = {
+											...defaultModelRelations
+										};
+
 										if(relations && relations.hasOwnProperty(model.key)) {
 											modelRelations = {
 												...modelRelations,
