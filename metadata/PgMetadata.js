@@ -81,9 +81,9 @@ class PgMetadata extends PgCrud {
 				store: this._pgAttributes,
 				type: PgAttributes.tableName()
 			},
-			[PgAttributes.groupName()]: {
+			[PgTopics.groupName()]: {
 				store: this._pgTopics,
-				type: PgAttributes.tableName()
+				type: PgTopics.tableName()
 			},
 			[PgLpisCheckCases.groupName()]: {
 				store: this._pgLpisCheckCases,
