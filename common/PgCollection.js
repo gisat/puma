@@ -454,10 +454,11 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
+		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
 			`SELECT * FROM "${this._pgSchema}"."group_permissions" AS gp `,
 			`WHERE`,
-			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
+			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
 			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND group_id IN (${groupIds.join(`, `)})`
 		];
@@ -470,10 +471,11 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
+		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
 			`SELECT * FROM "${this._pgSchema}"."permissions" AS p `,
 			`WHERE`,
-			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
+			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
 			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND user_id = ${userId}`
 		];
@@ -887,18 +889,37 @@ class PgCollection {
 		}
 	}
 
+	parsePostgresRow(row) {
+		return {
+			key: row.key,
+			uuid: row.uuid,
+			data: {
+				...row,
+				key: undefined,
+				id: undefined,
+				uuid: undefined
+			}
+		}
+	}
+
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
 		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : `id AS key, *${this._customSqlColumns}`} FROM "${this._pgSchema}"."${this._tableName}" AS a`);
 
 		if (!isAdmin) {
 			let keys = [];
+			// TODO rewrite - first two conditions are propably not needed
 			if (availableKeys.hasOwnProperty(this._tableName)) {
 				keys.push(availableKeys[this._tableName]);
 			}
 			if (availableKeys.hasOwnProperty(this._collectionName)) {
 				keys.push(availableKeys[this._collectionName]);
 			}
+			_.each(this._permissionResourceTypes, (permissionResourceType) => {
+				if(availableKeys.hasOwnProperty(permissionResourceType)) {
+					keys.push(availableKeys[permissionResourceType]);
+				}
+			});
 			keys = _.union(_.compact(_.flatten(keys)));
 
 			if (!keys.length) {
@@ -1009,16 +1030,7 @@ class PgCollection {
 						row.geometry = JSON.parse(row.geometry);
 					}
 
-					return {
-						key: row.key,
-						uuid: row.uuid,
-						data: {
-							...row,
-							key: undefined,
-							id: undefined,
-							uuid: undefined
-						}
-					}
+					return this.parsePostgresRow(row);
 				});
 				return payload;
 			});
