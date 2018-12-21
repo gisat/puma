@@ -1,14 +1,20 @@
 const PgUser = require('../metadata/PgUser');
+const PgUserCurrent = require('../metadata/PgUserCurrent');
 
 class PgUserController {
 	constructor(app, pgPool, pgSchema, mongo) {
+		this._pgPool = pgPool;
+		this._pgSchema = pgSchema;
+
 		this._pgUser = new PgUser(pgPool, pgSchema, mongo);
+
+		app.get(`/rest/user/current`, this.getCurrent.bind(this));
 
 		app.post(`/rest/user`, this.create.bind(this));
 
-		app.get(`/rest/user`, this.get.bind(this));
-		app.get(`/rest/user/:type`, this.get.bind(this));
-		app.post(`/rest/user/filtered`, this.get.bind(this));
+		// app.get(`/rest/user`, this.get.bind(this));
+		// app.get(`/rest/user/:type`, this.get.bind(this));
+		// app.post(`/rest/user/filtered`, this.get.bind(this));
 		app.post(`/rest/user/filtered/:type`, this.get.bind(this));
 
 		app.delete(`/rest/user`, this.delete.bind(this));
@@ -98,6 +104,16 @@ class PgUserController {
 			});
 		});
 	}
+
+	getCurrent(request, response) {
+		new PgUserCurrent(this._pgPool, this._pgSchema, request.session.user.id)
+			.getCurrent()
+			.then((currentUser) => {
+				response.status(200).json({
+					data: currentUser
+				})
+			});
+	};
 
 	_isJson(str) {
 		try {
