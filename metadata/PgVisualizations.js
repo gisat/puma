@@ -10,8 +10,6 @@ class PgVisualizations extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
-		this._legacyDataPath = "cfg.";
-
 		this._permissionResourceTypes = [
 		    `visualization`
 		]
@@ -21,7 +19,12 @@ class PgVisualizations extends PgCollection {
 		return {
 			key: document._id,
 			data: {
-				...document.cfg
+				...document,
+				_id: undefined,
+				changed: undefined,
+				changedBy: undefined,
+				created: undefined,
+				createdBy: undefined
 			}
 		}
 	}
