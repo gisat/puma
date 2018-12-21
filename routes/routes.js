@@ -122,8 +122,6 @@ module.exports = function(app) {
 	new VersionController(app, '/opt/frontoffice/version.txt', '/opt/backoffice/version.txt', '/opt/backend/version.txt');
 
 	new LodController(app, pool);
-	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
-	new GroupController(app, pool);
 	new SharingController(app, pool, config.postgreSqlSchema, mongo);
 	new PgAnalysisController(app, pool, mongo, config.postgreSqlSchema);
 	new AreaController(app, pool, mongo);
@@ -144,6 +142,9 @@ module.exports = function(app) {
 	new PgUserController(app, pool, config.postgreSqlSchema, mongo);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
+
+	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
+	new GroupController(app, pool);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 

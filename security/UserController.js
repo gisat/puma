@@ -22,10 +22,10 @@ class UserController {
         app.post('/rest/invitation/user', this.invite.bind(this));
 
 		app.get('/rest/user', this.readAll.bind(this));
-		app.get('/rest/user/simple', this.readAllSimple.bind(this));
-		app.post('/rest/user', this.create.bind(this));
-		app.put('/rest/user', this.update.bind(this));
-		app.delete('/rest/user', this.delete.bind(this));
+		// app.get('/rest/user/simple', this.readAllSimple.bind(this));
+		// app.post('/rest/user', this.create.bind(this));
+		// app.put('/rest/user', this.update.bind(this));
+		// app.delete('/rest/user', this.delete.bind(this));
 
         app.get('/rest/user/:id', this.byId.bind(this));
 
