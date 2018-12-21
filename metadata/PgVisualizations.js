@@ -24,7 +24,9 @@ class PgVisualizations extends PgCollection {
 				changed: undefined,
 				changedBy: undefined,
 				created: undefined,
-				createdBy: undefined
+				createdBy: undefined,
+				options: undefined,
+				permissions: undefined
 			}
 		}
 	}
