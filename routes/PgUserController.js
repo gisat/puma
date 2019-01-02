@@ -109,9 +109,7 @@ class PgUserController {
 		new PgUserCurrent(this._pgPool, this._pgSchema, request.session.user.id)
 			.getCurrent()
 			.then((currentUser) => {
-				response.status(200).json({
-					data: currentUser
-				})
+				response.status(200).json(currentUser)
 			});
 	};
 

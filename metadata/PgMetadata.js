@@ -105,6 +105,16 @@ class PgMetadata extends PgCrud {
 			}
 		};
 	}
+
+	getGroupsByType() {
+		let groupByType = {};
+
+		_.each(this._pgTypes, (value, property) => {
+			groupByType[value.type] = property;
+		});
+
+		return groupByType;
+	}
 }
 
 module.exports = PgMetadata;
