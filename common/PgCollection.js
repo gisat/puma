@@ -3,6 +3,7 @@ const conn = require('../common/conn');
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const PgMetadataChanges = require('../metadata/PgMetadataChanges');
+const PgMetadataRelations = require('../metadata/PgMetadataRelations');
 
 /**
  * Generic class that is used throughout the application. It represents a collection of metadata items stored in the
@@ -12,13 +13,14 @@ const PgMetadataChanges = require('../metadata/PgMetadataChanges');
  */
 class PgCollection {
 	constructor(pool, schema, mongo, name) {
-		this._pool = pool;
-		this._schema = schema;
+		this._pgPool = pool;
+		this._pgSchema = schema;
 		this._mongo = mongo;
 		this._name = name;
 
 		this._pgPermissions = new PgPermissions(pool, schema);
 		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
+		this._pgMetadataRelations = null;
 
 		this._limit = 100;
 		this._offset = 0;
@@ -35,6 +37,8 @@ class PgCollection {
 		this._publicGroupId = 2;
 
 		this._legacyDataPath = "";
+
+		this._customSqlColumns = ``;
 	}
 
 	create(objects, user, extra) {
@@ -65,8 +69,25 @@ class PgCollection {
 	}
 
 	createOne(object, objects, user, extra) {
+		let relations;
 		return Promise.resolve()
 			.then(() => {
+				if (this._pgMetadataRelations) {
+					let data = object.data;
+					let keys = Object.keys(data);
+
+					let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+					_.each(keys, (key) => {
+						if (possibleRelationProperties.includes(key)) {
+							relations = {
+								...relations,
+								[key]: data[key]
+							};
+							delete data[key];
+						}
+					});
+				}
+
 				if (!this._legacy) {
 					return this.postgresCreateOne(object, objects, user, extra);
 				} else {
@@ -75,6 +96,11 @@ class PgCollection {
 			})
 			.then((createdObject) => {
 				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id, object.data)
+					.then(() => {
+						if (relations) {
+							return this._pgMetadataRelations.addRelations(createdObject.key, relations);
+						}
+					})
 					.then(() => {
 						return createdObject;
 					})
@@ -117,9 +143,9 @@ class PgCollection {
 			return data[key];
 		});
 
-		return this._pool
+		return this._pgPool
 			.query(
-				`INSERT INTO "${this._schema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+				`INSERT INTO "${this._pgSchema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 					return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
 				}).join(', ')}) RETURNING id AS key;`,
 				values
@@ -151,7 +177,7 @@ class PgCollection {
 				let promises = [];
 
 				group.forEach((object) => {
-					if (availableKeys.includes(object.key) || isAdmin) {
+					if (isAdmin || availableKeys[this._tableName].includes(object.key)) {
 						promises.push(
 							this.updateOne(object, objects, user, extra)
 						);
@@ -170,8 +196,25 @@ class PgCollection {
 	}
 
 	updateOne(object, objects, user, extra) {
+		let relations;
 		return Promise.resolve()
 			.then(() => {
+				if (this._pgMetadataRelations) {
+					let data = object.data;
+					let keys = Object.keys(data);
+
+					let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+					_.each(keys, (key) => {
+						if (possibleRelationProperties.includes(key)) {
+							relations = {
+								...relations,
+								[key]: data[key]
+							};
+							delete data[key];
+						}
+					});
+				}
+
 				if (!this._legacy) {
 					return this.postgresUpdateOne(object, objects, user, extra);
 				} else {
@@ -181,9 +224,14 @@ class PgCollection {
 			.then((updatedObject) => {
 				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
 					.then(() => {
+						if (relations) {
+							return this._pgMetadataRelations.updateRelations(updatedObject.key, relations);
+						}
+					})
+					.then(() => {
 						return updatedObject;
 					})
-			});
+			})
 	}
 
 	mongoUpdateOne(object, objects, user, extra) {
@@ -220,13 +268,19 @@ class PgCollection {
 			values.push(data[property]);
 		});
 
+		if(!sets.length) {
+			return {
+				key: object.key
+			}
+		}
+
 		let sql = [];
-		sql.push(`UPDATE "${this._schema}"."${this._tableName}"`);
+		sql.push(`UPDATE "${this._pgSchema}"."${this._tableName}"`);
 		sql.push(`SET`);
 		sql.push(sets.join(`, `));
 		sql.push(`WHERE id = ${Number(key)} RETURNING id AS key`);
 
-		return this._pool
+		return this._pgPool
 			.query(sql.join(` `), values)
 			.then((result) => {
 				return {
@@ -239,6 +293,42 @@ class PgCollection {
 
 	get(request, user, extra) {
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
+			.then(async ([availableKeys, isAdmin]) => {
+				if(this._pgMetadataRelations) {
+					let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+					let requestedRelations = {};
+					_.each(possibleRelationColumns, (possibleRelationColumn) => {
+						if(request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
+							requestedRelations[possibleRelationColumn] = request.filter[possibleRelationColumn];
+							delete request.filter[possibleRelationColumn];
+						}
+					});
+
+					if(Object.keys(requestedRelations).length) {
+						await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
+							.then((baseKeys) => {
+								if(request.filter.hasOwnProperty(`key`)) {
+									if(!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
+										request.filter.key = -1;
+									} else if(_.isObject(request.filter.key))  {
+										if(request.filter.key.hasOwnProperty(`in`)) {
+											request.filter.key.in = _.intersectionWith(request.filter.key.in, baseKeys, (first, second) => {
+												return String(first) === String(second);
+											})
+										} else {
+											request.filter.key.in = baseKeys;
+										}
+									}
+								} else {
+									request.filter.key = {
+										in: baseKeys
+									}
+								}
+							});
+					}
+				}
+				return [availableKeys, isAdmin];
+			})
 			.then(([availableKeys, isAdmin]) => {
 				if (!this._legacy) {
 					return this.postgresGet(request, user, extra, availableKeys, isAdmin)
@@ -271,7 +361,7 @@ class PgCollection {
 					});
 			})
 			.then(([payload, availableKeys, isAdmin]) => {
-				if(!availableKeys) {	// todo if user is admin, there are no availableKeys, but next method which return changes need object with some keys atleast, i have to rewrite this to something meaningful
+				if (!availableKeys) {	// todo if user is admin, there are no availableKeys, but next method which return changes need object with some keys atleast, i have to rewrite this to something meaningful
 					availableKeys = {
 						[this._tableName]: [],
 						[this._collectionName]: []
@@ -294,13 +384,12 @@ class PgCollection {
 			this.getPermissionsForResourceKeysByUserGroupIds(resourceKeys, _.map(user.groups, 'id'))
 		]).then(([userPermissions, groupPermissions]) => {
 
-			let byResourceKey = {
-			};
+			let byResourceKey = {};
 
 			_.each(resourceKeys, (resourceKey) => {
 				let permissions = [...userPermissions, ...groupPermissions];
 
-				if(!byResourceKey.hasOwnProperty(resourceKey)) {
+				if (!byResourceKey.hasOwnProperty(resourceKey)) {
 					byResourceKey[resourceKey] = {
 						guest: {
 							get: false,
@@ -315,23 +404,47 @@ class PgCollection {
 					};
 				}
 
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.READ})) {
+				if (isAdmin || _.find(permissions, {
+					resource_id: `${resourceKey}`,
+					user_id: user.id,
+					permission: Permission.READ
+				})) {
 					byResourceKey[resourceKey].activeUser.get = true;
 				}
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+				if (isAdmin || _.find(permissions, {
+					resource_id: `${resourceKey}`,
+					user_id: user.id,
+					permission: Permission.UPDATE
+				})) {
 					byResourceKey[resourceKey].activeUser.update = true;
 				}
-				if (isAdmin || _.find(permissions, {resource_id: `${resourceKey}`, user_id: user.id, permission: Permission.UPDATE})) {
+				if (isAdmin || _.find(permissions, {
+					resource_id: `${resourceKey}`,
+					user_id: user.id,
+					permission: Permission.UPDATE
+				})) {
 					byResourceKey[resourceKey].activeUser.delete = true;
 				}
 
-				if(!this._checkPermissions || _.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.READ, group_id: this._publicGroupId})) {
+				if (!this._checkPermissions || _.find(permissions, {
+					resource_id: `${resourceKey}`,
+					permission: Permission.READ,
+					group_id: this._publicGroupId
+				})) {
 					byResourceKey[resourceKey].guest.get = true;
 				}
-				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.UPDATE, group_id: this._publicGroupId})) {
+				if (_.find(permissions, {
+					resource_id: `${resourceKey}`,
+					permission: Permission.UPDATE,
+					group_id: this._publicGroupId
+				})) {
 					byResourceKey[resourceKey].guest.update = true;
 				}
-				if(_.find(permissions, {resource_id: `${resourceKey}`, permission: Permission.DELETE, group_id: this._publicGroupId})) {
+				if (_.find(permissions, {
+					resource_id: `${resourceKey}`,
+					permission: Permission.DELETE,
+					group_id: this._publicGroupId
+				})) {
 					byResourceKey[resourceKey].guest.delete = true;
 				}
 			});
@@ -341,15 +454,16 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
+		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
-			`SELECT * FROM "${this._schema}"."group_permissions" AS gp `,
+			`SELECT * FROM "${this._pgSchema}"."group_permissions" AS gp `,
 			`WHERE`,
-			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
+			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
 			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND group_id IN (${groupIds.join(`, `)})`
 		];
 
-		return this._pool
+		return this._pgPool
 			.query(query.join(` `))
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -357,15 +471,16 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
+		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
-			`SELECT * FROM "${this._schema}"."permissions" AS p `,
+			`SELECT * FROM "${this._pgSchema}"."permissions" AS p `,
 			`WHERE`,
-			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName]).join(`', '`)}')`,
+			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
 			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND user_id = ${userId}`
 		];
 
-		return this._pool
+		return this._pgPool
 			.query(query.join(` `))
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -384,9 +499,9 @@ class PgCollection {
 				if (isAdmin) {
 					return Promise.resolve([null, true]);
 				} else {
-					return this._pool
+					return this._pgPool
 						.query(
-							`SELECT resource_id::integer AS key, resource_type FROM "${this._schema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
+							`SELECT resource_id::integer AS key, resource_type FROM "${this._pgSchema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 						)
 						.then((result) => {
 							_.each(result.rows, (row) => {
@@ -399,9 +514,9 @@ class PgCollection {
 							});
 						})
 						.then(() => {
-							return this._pool
+							return this._pgPool
 								.query(
-									`SELECT resource_id::integer AS key, resource_type FROM "${this._schema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
+									`SELECT resource_id::integer AS key, resource_type FROM "${this._pgSchema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 								)
 								.then((result) => {
 									_.each(result.rows, (row) => {
@@ -431,7 +546,7 @@ class PgCollection {
 				group.forEach((object) => {
 					let key = object.key;
 
-					if (availableKeys.includes(key) || isAdmin) {
+					if (isAdmin || availableKeys[this._tableName].includes(key)) {
 						promises.push(
 							this.deleteOne(key, user, extra)
 								.then((result) => {
@@ -465,6 +580,11 @@ class PgCollection {
 			.then((result) => {
 				return this._pgMetadataChanges.createChange('delete', this._tableName, key, user.id)
 					.then(() => {
+						if (this._pgMetadataRelations) {
+							return this._pgMetadataRelations.deleteRelations(key);
+						}
+					})
+					.then(() => {
 						return result;
 					})
 			});
@@ -493,8 +613,8 @@ class PgCollection {
 	}
 
 	postgresDeleteOne(key) {
-		return this._pool
-			.query(`DELETE FROM "${this._schema}"."${this._tableName}" WHERE id = ${key}`)
+		return this._pgPool
+			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE id = ${key}`)
 			.then((result) => {
 				if (result.rowCount) {
 					return this.removeAllPermissionsByResourceKey(key)
@@ -514,13 +634,13 @@ class PgCollection {
 	}
 
 	removeAllPermissionsByResourceKey(resourceKey) {
-		return this._pool
+		return this._pgPool
 			.query(
-				`DELETE FROM "${this._schema}"."permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
+				`DELETE FROM "${this._pgSchema}"."permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
 			).then(() => {
-				return this._pool
+				return this._pgPool
 					.query(
-						`DELETE FROM "${this._schema}"."group_permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
+						`DELETE FROM "${this._pgSchema}"."group_permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
 					)
 			});
 	}
@@ -647,12 +767,12 @@ class PgCollection {
 	getMongoFilter(request, availableKeys, isAdmin) {
 		let mongoFilter = {};
 
-		if(!isAdmin) {
+		if (!isAdmin) {
 			let keys = [];
-			if(availableKeys.hasOwnProperty(this._tableName)) {
+			if (availableKeys.hasOwnProperty(this._tableName)) {
 				keys.push(availableKeys[this._tableName]);
 			}
-			if(availableKeys.hasOwnProperty(this._collectionName)) {
+			if (availableKeys.hasOwnProperty(this._collectionName)) {
 				keys.push(availableKeys[this._collectionName]);
 			}
 			keys = _.union(_.compact(_.flatten(keys)));
@@ -683,8 +803,8 @@ class PgCollection {
 		}
 
 		_.map(request.filter, (data, column) => {
-			column = column === 'key' ? '_id': `${this._legacyDataPath}${column}`;
-			if(_.isObject(data)) {
+			column = column === 'key' ? '_id' : `${this._legacyDataPath}${column}`;
+			if (_.isObject(data)) {
 				let type = Object.keys(data)[0];
 				let value = data[type];
 
@@ -769,31 +889,50 @@ class PgCollection {
 		}
 	}
 
+	parsePostgresRow(row) {
+		return {
+			key: row.key,
+			uuid: row.uuid,
+			data: {
+				...row,
+				key: undefined,
+				id: undefined,
+				uuid: undefined
+			}
+		}
+	}
+
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
-		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : 'id AS key, *'} FROM "${this._schema}"."${this._tableName}" AS a`);
+		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : `id AS key, *${this._customSqlColumns}`} FROM "${this._pgSchema}"."${this._tableName}" AS a`);
 
-		if(!isAdmin) {
+		if (!isAdmin) {
 			let keys = [];
-			if(availableKeys.hasOwnProperty(this._tableName)) {
+			// TODO rewrite - first two conditions are propably not needed
+			if (availableKeys.hasOwnProperty(this._tableName)) {
 				keys.push(availableKeys[this._tableName]);
 			}
-			if(availableKeys.hasOwnProperty(this._collectionName)) {
+			if (availableKeys.hasOwnProperty(this._collectionName)) {
 				keys.push(availableKeys[this._collectionName]);
 			}
+			_.each(this._permissionResourceTypes, (permissionResourceType) => {
+				if(availableKeys.hasOwnProperty(permissionResourceType)) {
+					keys.push(availableKeys[permissionResourceType]);
+				}
+			});
 			keys = _.union(_.compact(_.flatten(keys)));
 
-			if(!keys.length) {
+			if (!keys.length) {
 				keys.push(-1);
 			}
 
-			if(request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
+			if (request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
 				if (_.isObject(request.filter.key)) {
 					if (request.filter.key.hasOwnProperty('in') && this._checkPermissions) {
 						request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
 							return keys.includes(key) && key;
 						}));
-					} else if(this._checkPermissions) {
+					} else if (this._checkPermissions) {
 						request.filter.key.in = keys.length;
 					}
 				} else {
@@ -801,8 +940,8 @@ class PgCollection {
 						request.filter.key = -1;
 					}
 				}
-			} else if(this._checkPermissions) {
-				if(!request.filter) {
+			} else if (this._checkPermissions) {
+				if (!request.filter) {
 					request.filter = {};
 				}
 
@@ -814,8 +953,8 @@ class PgCollection {
 
 		let where = [];
 		_.map(request.filter, (data, column) => {
-			column = column === 'key' ? 'id': column;
-			if(_.isObject(data)) {
+			column = column === 'key' ? 'id' : column;
+			if (_.isObject(data)) {
 				let type = Object.keys(data)[0];
 				let value = data[type];
 
@@ -843,7 +982,7 @@ class PgCollection {
 			}
 		});
 
-		if(where.length) {
+		if (where.length) {
 			sql.push(`WHERE ${where.join(' AND ')}`);
 		}
 
@@ -866,33 +1005,32 @@ class PgCollection {
 
 		let sql = this.getSql(request, user, extra, availableKeys, isAdmin);
 
-		return this._pool.query(`SELECT count(*) AS total FROM (${sql}) AS results;`)
+		return this._pgPool.query(`SELECT count(*) AS total FROM (${sql}) AS results;`)
 			.then((pagingResult) => {
 				if (!request.unlimited) {
 					payload.limit = _.isNumber(request.limit) && request.limit || this._limit;
 					payload.offset = _.isNumber(request.offset) && request.offset || this._offset;
 					payload.total = Number(pagingResult.rows[0].total);
 
-					return this._pool.query(`SELECT * FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`);
+					return this._pgPool.query(`SELECT * FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`);
 				} else {
-					return this._pool.query(`SELECT * FROM (${sql}) AS results;`);
+					return this._pgPool.query(`SELECT * FROM (${sql}) AS results;`);
 				}
 			})
 			.then((queryResult) => {
 				return queryResult.rows;
 			})
 			.then((rows) => {
+				if (extra.idOnly) {
+					let possibleRelations = this._pgMetadataRelations ? this._pgMetadataRelations.getMetadataTypeKeyColumnNames() : [];
+					let requestedKeys = _.map(rows, `key`);
+				}
 				payload.data = _.map(rows, (row) => {
-					return {
-						key: row.key,
-						uuid: row.uuid,
-						data: {
-							...row,
-							key: undefined,
-							id: undefined,
-							uuid: undefined
-						}
+					if (row.geometry && _.isString(row.geometry)) {
+						row.geometry = JSON.parse(row.geometry);
 					}
+
+					return this.parsePostgresRow(row);
 				});
 				return payload;
 			});
@@ -903,7 +1041,10 @@ class PgCollection {
 			return payloadData;
 		} else {
 			if (payloadData.hasOwnProperty(this._groupName) && payloadData[this._groupName].length) {
-				return this.get({in: {key: _.map(payloadData[this._groupName], 'key')}, unlimited: true}, user, {})
+				return this.get({
+					filter: {key: {in: _.map(payloadData[this._groupName], 'key')}},
+					unlimited: true
+				}, user, {})
 					.then((currentModels) => {
 						payloadData[this._groupName] = _.map(payloadData[this._groupName], model => {
 							if (model.key) {
@@ -916,6 +1057,36 @@ class PgCollection {
 							}
 							return model;
 						});
+
+						if (this._pgMetadataRelations) {
+							let baseKeys = _.map(payloadData[this._groupName], `key`);
+							let possibleRelationColumnNames = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+							let defaultModelRelations = {};
+							_.each(possibleRelationColumnNames, (possibleRelationColumnName) => {
+								defaultModelRelations[possibleRelationColumnName] = null;
+							});
+							return this._pgMetadataRelations
+								.getRelationsForBaseKeys(baseKeys)
+								.then((relations) => {
+									_.each(payloadData[this._groupName], (model) => {
+										let modelRelations = {
+											...defaultModelRelations
+										};
+
+										if(relations && relations.hasOwnProperty(model.key)) {
+											modelRelations = {
+												...modelRelations,
+												...relations[model.key]
+											}
+										}
+
+										model.data = {
+											...model.data,
+											...modelRelations
+										}
+									})
+								})
+						}
 					});
 			}
 		}
@@ -930,6 +1101,21 @@ class PgCollection {
 		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.DELETE));
 
 		return Promise.all(promises);
+	}
+
+	_initPgTable() {
+		let sql = this._getTableSql();
+		if (sql) {
+			return this._pgPool
+				.query(sql)
+				.catch((error) => {
+					console.log(error);
+				});
+		}
+	}
+
+	_getTableSql() {
+		return null;
 	}
 }
 

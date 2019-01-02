@@ -28,7 +28,7 @@ class PgSpatialDataSourceGeotiff extends PgCollection {
 			});
 
 			promises.push(
-				this._pool.query(`INSERT INTO "${this._schema}"."${PgSpatialDataSourceGeotiff.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
+				this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
 					.then((queryResult) => {
 						if (queryResult.rowCount) {
 							return queryResult.rows[0].id;
@@ -92,11 +92,11 @@ class PgSpatialDataSourceGeotiff extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._schema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT *`);
-		query.push(`FROM "${this._schema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS a`);
+		query.push(`FROM "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -132,12 +132,12 @@ class PgSpatialDataSourceGeotiff extends PgCollection {
 		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		return this._pool.query(pagingQuery.join(' '))
+		return this._pgPool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
 				if (payload.hasOwnProperty('total')) {
 					payload.total = Number(pagingResult.rows[0].total);
 				}
-				return this._pool.query(query.join(' '))
+				return this._pgPool.query(query.join(' '))
 			})
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -171,7 +171,7 @@ class PgSpatialDataSourceGeotiff extends PgCollection {
 				});
 
 				promises.push(
-					this._pool.query(`UPDATE "${this._schema}"."${PgSpatialDataSourceGeotiff.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+					this._pgPool.query(`UPDATE "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
 						.then((result) => {
 							if (result.rowCount) {
 								return this.get({id: id, unlimited: true});
@@ -204,7 +204,7 @@ class PgSpatialDataSourceGeotiff extends PgCollection {
 		return new Promise((resolve, reject) => {
 			id = Number(id);
 			if (!_.isNaN(id)) {
-				this._pool.query(`DELETE FROM "${this._schema}"."${PgSpatialDataSourceGeotiff.tableName()}" WHERE id = ${Number(id)};`)
+				this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" WHERE id = ${Number(id)};`)
 					.then((result) => {
 						if (result.rowCount) {
 							resolve();

@@ -52,10 +52,13 @@ const PgRelationsController = require('./PgRelationsController');
 const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
 const PgMetadataController = require('./PgMetadataController');
 const PgPermissionController = require('./PgPermissionController');
+const PgUserController = require('./PgUserController');
 
 const UploadManagerController = require('./UploadManagerController');
 
 const PucsMatlabProcessorController = require('../integration/PucsMatlabProcessorController');
+
+const GeoserverProxyController = require(`../geoserver/proxy/GeoserverProxyController`);
 
 var api = {
 	layers: require('../api/layers'),
@@ -119,8 +122,6 @@ module.exports = function(app) {
 	new VersionController(app, '/opt/frontoffice/version.txt', '/opt/backoffice/version.txt', '/opt/backend/version.txt');
 
 	new LodController(app, pool);
-	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
-	new GroupController(app, pool);
 	new SharingController(app, pool, config.postgreSqlSchema, mongo);
 	new PgAnalysisController(app, pool, mongo, config.postgreSqlSchema);
 	new AreaController(app, pool, mongo);
@@ -138,12 +139,18 @@ module.exports = function(app) {
 	new PgRelationsController(app, pool, config.postgreSqlSchema);
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
 	new PgMetadataController(app, pool, config.postgreSqlSchema, mongo);
+	new PgUserController(app, pool, config.postgreSqlSchema, mongo);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
+
+	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
+	new GroupController(app, pool);
 
 	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
 
 	new PucsMatlabProcessorController(app, pool, config.postgreSqlSchema, mongo);
+
+	new GeoserverProxyController(app, pool, config.postgreSqlSchema, mongo);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);

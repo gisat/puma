@@ -26,7 +26,7 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 			});
 
 			promises.push(
-				this._pool.query(`INSERT INTO "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
+				this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgPlaceScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
 			);
 		});
 
@@ -42,7 +42,7 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 			return _.isNumber(filter[key]) ? filter[key] : `'${filter[key]}'`;
 		});
 
-		return this._pool.query(`SELECT * FROM "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}";`)
+		return this._pgPool.query(`SELECT * FROM "${this._pgSchema}"."${PgPlaceScenarioCaseRelations.tableName()}";`)
 			.then((queryResult) => {
 				return queryResult.rows;
 			});
@@ -59,7 +59,7 @@ class PgPlaceScenarioCaseRelations extends PgCollection {
 
 			if(scenario_case_id && (place_ids || place_ids === null)) {
 				promises.push(
-					this._pool.query(`DELETE FROM "${this._schema}"."${PgPlaceScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
+					this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgPlaceScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
 						.then(() => {
 							if(place_ids) {
 								return this.create(_.map(place_ids, (place_id) => {

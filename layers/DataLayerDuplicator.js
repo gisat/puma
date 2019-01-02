@@ -45,7 +45,7 @@ class DataLayerDuplicator {
 			})
 			.then((renamed) => {
 				process.progress = 20;
-				if (renamed.contentType === 'application/zip') {
+				if (renamed.contentType.toLowerCase().includes('application/zip')) {
 					return this.unzipPackage(renamed);
 				}
 			})
@@ -287,7 +287,7 @@ class DataLayerDuplicator {
 
 	getGeoserverShapeLayerDownloadUrlByLayerName(layerName) {
 		return Promise.resolve(
-			`${this._geoserverPath}/wfs?request=GetFeature&service=WFS&version=1.0.0&typeName=${layerName}&outputFormat=SHAPE-ZIP`
+			`http://${config.localHost}/backend/geoserver/wfs?request=GetFeature&service=WFS&version=1.0.0&typeName=${layerName}&outputFormat=SHAPE-ZIP`
 		);
 	}
 
@@ -304,6 +304,7 @@ class DataLayerDuplicator {
 			.then(() => {
 				switch (contentType) {
 					case 'application/zip':
+					case 'application/zip; charset=utf-8':
 						return '.zip';
 					default:
 						throw new Error('Unknown content type.');

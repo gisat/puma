@@ -31,7 +31,7 @@ class PgAttributeRelations extends PgRelation {
     create(relation) {
         this.validateRelation(relation);
 
-        return this._pool.query(`INSERT INTO ${this._schema}.${PgAttributeRelations.tableName()} 
+        return this._pgPool.query(`INSERT INTO ${this._pgSchema}.${PgAttributeRelations.tableName()} 
             (scope_id, period_id, place_id, attribute_id, attribute_set_id, data_source_id) VALUES 
             (${relation.scopeId}, ${relation.periodId}, ${relation.placeId}, ${relation.attributeId}, 
             ${relation.attributeSetId}, ${relation.dataSourceId});`);
@@ -94,7 +94,7 @@ class PgAttributeRelations extends PgRelation {
     delete(relation) {
         this.validateRelation(relation);
 
-        return this._pool.query(`DELETE FROM ${this._schema}.${PgAttributeRelations.tableName()} WHERE 
+        return this._pgPool.query(`DELETE FROM ${this._pgSchema}.${PgAttributeRelations.tableName()} WHERE 
             scope_id = ${relation.scopeId} AND 
             period_id = ${relation.periodId} AND
             place_id = ${relation.placeId} AND

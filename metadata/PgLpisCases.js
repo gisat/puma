@@ -88,8 +88,8 @@ class PgLpisCases extends PgCollection {
 				});
 			})
 			.then(() => {
-				return this._pool.query(
-					`INSERT INTO "${this._schema}"."${PgLpisCases.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+				return this._pgPool.query(
+					`INSERT INTO "${this._pgSchema}"."${PgLpisCases.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 						if (keys[index].toLowerCase().includes(`geometry`)) {
 							return `ST_GeomFromGeoJSON($${index + 1})`;
 						} else {
@@ -458,10 +458,10 @@ class PgLpisCases extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
-		pagingQuery.push(`LEFT JOIN "${this._schema}"."group_permissions" AS gp ON gp.resource_id = a.id::text`);
+		pagingQuery.push(`FROM "${this._pgSchema}"."${PgLpisCases.tableName()}" AS a`);
+		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
+		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."permissions" AS p ON p.resource_id = a.id::text`);
+		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."group_permissions" AS gp ON gp.resource_id = a.id::text`);
 
 		let query = [];
 		query.push(`SELECT`);
@@ -487,10 +487,10 @@ class PgLpisCases extends PgCollection {
 			query.push(`ST_AsGeoJSON("a"."geometry_after") AS geometry_after`);
 		}
 
-		query.push(`FROM "${this._schema}"."${PgLpisCases.tableName()}" AS a`);
-		query.push(`LEFT JOIN "${this._schema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
-		query.push(`LEFT JOIN "${this._schema}"."permissions" AS p ON p.resource_id = a.id::text`);
-		query.push(`LEFT JOIN "${this._schema}"."group_permissions" AS gp ON gp.resource_id = a.id::text`);
+		query.push(`FROM "${this._pgSchema}"."${PgLpisCases.tableName()}" AS a`);
+		query.push(`LEFT JOIN "${this._pgSchema}"."${PgLpisCaseViewRelations.tableName()}" AS b ON b.lpis_case_id = a.id`);
+		query.push(`LEFT JOIN "${this._pgSchema}"."permissions" AS p ON p.resource_id = a.id::text`);
+		query.push(`LEFT JOIN "${this._pgSchema}"."group_permissions" AS gp ON gp.resource_id = a.id::text`);
 
 		let where = [];
 
@@ -542,12 +542,12 @@ class PgLpisCases extends PgCollection {
 		query.push(`;`);
 		pagingQuery.push(`;`);
 
-		return this._pool.query(pagingQuery.join(' '))
+		return this._pgPool.query(pagingQuery.join(' '))
 			.then((pagingResult) => {
 				if (payload.hasOwnProperty('total')) {
 					payload.total = Number(pagingResult.rows[0].total);
 				}
-				return this._pool.query(query.join(' '))
+				return this._pgPool.query(query.join(' '))
 			})
 			.then((queryResult) => {
 				return queryResult.rows;
@@ -635,9 +635,9 @@ class PgLpisCases extends PgCollection {
 						.resolve()
 						.then(() => {
 							if (sets.length && sets.length === values.length) {
-								return this._pool
+								return this._pgPool
 									.query(
-										`UPDATE "${this._schema}"."${PgLpisCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id};`,
+										`UPDATE "${this._pgSchema}"."${PgLpisCases.tableName()}" SET ${sets.join(', ')} WHERE id = ${id};`,
 										values
 									)
 									.then((results) => {
@@ -725,8 +725,8 @@ class PgLpisCases extends PgCollection {
 		let status = {
 			deleted: false
 		};
-		return this._pool.query(
-			`DELETE FROM "${this._schema}"."${PgLpisCases.tableName()}" WHERE id = ${lpisCaseId}`
+		return this._pgPool.query(
+			`DELETE FROM "${this._pgSchema}"."${PgLpisCases.tableName()}" WHERE id = ${lpisCaseId}`
 		).then((result) => {
 			if (result.rowCount) {
 				status.deleted = true;

@@ -25,7 +25,7 @@ class PgPostgisTable extends PgCollection {
             );
         }
 
-        return this._pool.query(`INSERT INTO ${this._schema}.${PgPostgisTable.tableName()} (id) VALUES (${id});`);
+        return this._pgPool.query(`INSERT INTO ${this._pgSchema}.${PgPostgisTable.tableName()} (id) VALUES (${id});`);
     }
 
     /**
@@ -58,12 +58,12 @@ class PgPostgisTable extends PgCollection {
         }
 
         if(changes.length > 0) {
-            sql += `UPDATE ${this._schema}.${PgPostgisTable.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
+            sql += `UPDATE ${this._pgSchema}.${PgPostgisTable.tableName()} SET ${changes.join(',')} WHERE id = ${id}; `;
         }
         sql += ``;
 
         logger.info(`PgAttributes#update SQL: ${sql}`);
-        return this._pool.query(sql);
+        return this._pgPool.query(sql);
     }
 
     /**
@@ -76,7 +76,7 @@ class PgPostgisTable extends PgCollection {
             );
         }
 
-        return this._pool.query(`DELETE FROM ${this._schema}.${PgPostgisTable.tableName()} WHERE id = ${id} CASCADE;`);
+        return this._pgPool.query(`DELETE FROM ${this._pgSchema}.${PgPostgisTable.tableName()} WHERE id = ${id} CASCADE;`);
     }
 
     static tableName() {

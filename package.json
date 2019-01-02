@@ -56,7 +56,7 @@
     "request": "2.83.0",
     "shp-write": "0.3.2",
     "shpjs": "3.4.2",
-    "superagent": "3.8.3",
+    "superagent": "4.0.0",
     "underscore": "1.8.3",
     "unzip": "0.1.11",
     "uuid": "3.2.1",
@@ -76,6 +76,8 @@
     "supertest": "3.0.0"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha --recursive --reporter spec"
+    "test": "./node_modules/.bin/mocha --recursive --reporter spec",
+    "install": "npm install",
+    "start": "node server.js"
   }
 }
