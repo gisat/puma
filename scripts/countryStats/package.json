@@ -1,0 +1,14 @@
+{
+  "name": "country-stats",
+  "description": "Country Stats",
+  "version": "2.1.0",
+  "private": true,
+  "dependencies": {
+    "pg": "7.7.1",
+    "rimraf": "^2.6.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "./node_modules/.bin/mocha --recursive --reporter spec"
+  }
+}
