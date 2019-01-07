@@ -13,9 +13,9 @@ const MongoDataViews = require('../visualization/MongoDataViews');
 const MongoFilteredCollection = require('../data/MongoFilteredCollection');
 const PgAnalyticalUnits = require('../layers/PgAnalyticalUnits');
 
-class PgLpisCases extends PgCollection {
+class PgLpisCases {
 	constructor(pgPool, pgSchema, mongo) {
-		super(pgPool, pgSchema, mongo, 'PgLpisCases');
+		// super(pgPool, pgSchema, mongo, 'PgLpisCases');
 
 		this._mongo = mongo;
 
@@ -66,13 +66,9 @@ class PgLpisCases extends PgCollection {
 			})
 			.then(() => {
 				if(extra && extra.configuration && extra.configuration.scope_id) {
-					return new MongoFilteredCollection({_id: extra.configuration.scope_id}, this._mongo, MongoScope.collectionName())
-						.json()
-						.then((mongoResults) => {
-							mongoScope = {
-								...mongoResults[0],
-								key: mongoResults[0]._id
-							};
+					return this._getMongoScopeById(extra.configuration.scope_id)
+						.then((pMongoScope) => {
+							mongoScope = pMongoScope;
 						});
 				}
 			})
@@ -263,6 +259,17 @@ class PgLpisCases extends PgCollection {
 			})
 	}
 
+	_getMongoScopeById(scopeId) {
+		return new MongoFilteredCollection({_id: scopeId}, this._mongo, MongoScope.collectionName())
+			.json()
+			.then((mongoResults) => {
+				return {
+					...mongoResults[0],
+					key: mongoResults[0]._id
+				};
+			});
+	}
+
 	_createMongoBasicDataView(scopeId) {
 		return this._getMongoBasicDataViewParametersByScopeId(scopeId)
 			.then(([themeId, yearId, placeId]) => {
@@ -284,6 +291,7 @@ class PgLpisCases extends PgCollection {
 				if (mongoResults[0]) {
 					parameters.themeId = mongoResults[0]['_id'];
 					parameters.yearId = mongoResults[0]['years'][0];
+					parameters.yearIds = mongoResults[0]['years'];
 				}
 
 				return this._mongo
@@ -295,7 +303,7 @@ class PgLpisCases extends PgCollection {
 				if (mongoResults[0]) {
 					parameters.placeId = mongoResults[0]['_id'];
 				}
-				return [parameters.themeId, parameters.yearId, parameters.placeId]
+				return [parameters.themeId, parameters.yearId, parameters.placeId, parameters.yearIds]
 			})
 	}
 
