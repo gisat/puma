@@ -17,6 +17,8 @@ class PgLpisCases {
 	constructor(pgPool, pgSchema, mongo) {
 		// super(pgPool, pgSchema, mongo, 'PgLpisCases');
 
+		this._pgPool = pgPool;
+		this._pgSchema = pgSchema;
 		this._mongo = mongo;
 
 		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
