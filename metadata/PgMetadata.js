@@ -18,6 +18,7 @@ const PgLpisCheckCases = require('./PgLpisCheckCases');
 const PgLayerGroups = require('./PgLayerGroups');
 const PgLayerTemplates = require('./PgLayerTemplates');
 const PgVisualizations = require('./PgVisualizations');
+const PgWmsLayersLegacy = require('./PgWmsLayersLegacy');
 
 class PgMetadata extends PgCrud {
 	constructor(pgPool, pgSchema, mongo) {
@@ -38,6 +39,7 @@ class PgMetadata extends PgCrud {
 		this._pgLayerGroups = new PgLayerGroups(pgPool, pgSchema, mongo);
 		this._pgLayerTemplates = new PgLayerTemplates(pgPool, pgSchema, mongo);
 		this._pgVisualizations = new PgVisualizations(pgPool, pgSchema, mongo);
+		this._pgWmsLayersLegacy = new PgWmsLayersLegacy(pgPool, pgSchema, mongo);
 
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
@@ -104,6 +106,10 @@ class PgMetadata extends PgCrud {
 			[PgVisualizations.groupName()]: {
 				store: this._pgVisualizations,
 				type: PgVisualizations.tableName()
+			},
+			[PgWmsLayersLegacy.groupName()]: {
+				store: this._pgWmsLayersLegacy,
+				type: PgWmsLayersLegacy.tableName()
 			}
 		};
 	}
