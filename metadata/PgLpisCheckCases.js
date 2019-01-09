@@ -37,7 +37,7 @@ class PgLpisCheckCases extends PgCollection {
 			this._tableName
 		];
 
-		this._customSqlColumns = `, ST_AsGeoJSON(geometry, 15, 4) AS geometry`;
+		this._customSqlColumns = `, ST_AsGeoJSON(ST_Transform(geometry, 4326), 15, 4) AS geometry`;
 
 		this._initPgTable();
 	}
