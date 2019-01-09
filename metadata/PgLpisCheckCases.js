@@ -66,7 +66,7 @@ class PgLpisCheckCases extends PgCollection {
 						layerPeriods.push({[dataviewData.s2GetDatesLayerTemplateId]: `${date}`});
 					});
 
-					let caseDataview = this.getCaseDataview(dataviewData.yearIds, dataviewData.scopeId, dataviewData.themeId, centroid[1], centroid[0], 2000, layerPeriods);
+					let caseDataview = this.getCaseDataview(dataviewData.placeId, dataviewData.yearIds, dataviewData.scopeId, dataviewData.themeId, centroid.coordinates[1], centroid.coordinates[0], 2000, layerPeriods);
 
 					return dataviewStore.create({[dataviewStore.getGroupName()]: [{data: caseDataview}]}, user, extra);
 				}
@@ -149,21 +149,21 @@ class PgLpisCheckCases extends PgCollection {
 		return `id AS key, ST_AsGeoJSON(ST_Envelope(ST_Transform(geometry, 4326))) AS geometry, ST_AsGeoJSON(ST_Centroid(ST_Transform(geometry, 4326))) AS centroid`;
 	}
 
-	getCaseDataview(year_ids, scope_id, theme_id, latidute, longitude, range, layerPeriods) {
+	getCaseDataview(placeId, yearIds, scopeId, themeId, latidute, longitude, range, layerPeriods) {
 		let baseDataview =
 			{
 				"name": "",
 				"conf": {
 					"multipleMaps": false,
-					"years": `${year_ids}`,
-					"dataset": scope_id,
-					"theme": theme_id,
-					"location": null,
+					"years": yearIds,
+					"dataset": scopeId,
+					"theme": themeId,
+					"location": placeId,
 					"is3D": true,
 					"name": "Initial",
 					"description": "",
 					"language": "en",
-					"locations": [],
+					"locations": [placeId],
 					"selMap": {},
 					"choroplethCfg": [],
 					"pagingUseSelected": false,
@@ -182,7 +182,7 @@ class PgLpisCheckCases extends PgCollection {
 					},
 					"mapsMetadata": [],
 					"mapDefaults": {
-						"period": year_ids[0],
+						"period": yearIds[0],
 						"activeBackgroundLayerKey": "cartoDb",
 						"navigator": {
 							"lookAtLocation": {
