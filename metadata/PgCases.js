@@ -1,6 +1,6 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgAttributeSets extends PgCollection {
+class PgCases extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
@@ -10,7 +10,7 @@ class PgAttributeSets extends PgCollection {
 		this._tableName = this.constructor.tableName();
 
 		this._permissionResourceTypes = [
-			`attributeSet`
+			`case`
 		];
 	}
 
@@ -28,12 +28,12 @@ class PgAttributeSets extends PgCollection {
 	}
 
 	static groupName() {
-		return 'attributeSets';
+		return 'cases';
 	}
 
 	static tableName() {
-		return 'attributeSet';
+		return 'case';
 	}
 }
 
-module.exports = PgAttributeSets;
+module.exports = PgCases;

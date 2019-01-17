@@ -28,7 +28,7 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 			});
 
 			promises.push(
-				this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
+				this._pgPool.query(`INSERT INTO "${this._pgMetadataSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
 					.then((queryResult) => {
 						if (queryResult.rowCount) {
 							return queryResult.rows[0].id;
@@ -92,11 +92,11 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgMetadataSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT "a".*`);
-		query.push(`FROM "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS a`);
+		query.push(`FROM "${this._pgMetadataSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -168,7 +168,7 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 
 			if(scenario_case_id && (scenario_ids || scenario_ids === null)) {
 				promises.push(
-					this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
+					this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE "scenario_case_id" = ${scenario_case_id};`)
 						.then(() => {
 							if(scenario_ids && scenario_ids.length) {
 								return this.create(_.map(scenario_ids, (scenario_id) => {
@@ -198,12 +198,12 @@ class PgScenarioScenarioCaseRelations extends PgCollection {
 		let promises = [];
 		if(scenarioCaseId) {
 			promises.push(
-				this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_case_id = ${scenarioCaseId}`)
+				this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_case_id = ${scenarioCaseId}`)
 			);
 		}
 		if(scenarioId) {
 			promises.push(
-				this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_id = ${scenarioId}`)
+				this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgScenarioScenarioCaseRelations.tableName()}" WHERE scenario_id = ${scenarioId}`)
 			);
 		}
 		return Promise.all(promises);

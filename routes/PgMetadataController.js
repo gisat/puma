@@ -1,8 +1,8 @@
 const PgMetadata = require('../metadata/PgMetadata');
 
 class PgMetadataController {
-	constructor(app, pgPool, pgSchema, mongo) {
-		this._pgMetadata = new PgMetadata(pgPool, pgSchema, mongo);
+	constructor(app, pgPool, pgSchema) {
+		this._pgMetadata = new PgMetadata(pgPool, pgSchema);
 
 		app.post(`/rest/metadata`, this.create.bind(this));
 

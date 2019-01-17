@@ -1,5 +1,9 @@
 const _ = require('lodash');
+
+const config = require(`../config`);
+
 const conn = require('../common/conn');
+
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const PgMetadataChanges = require('../metadata/PgMetadataChanges');
@@ -12,14 +16,15 @@ const PgMetadataRelations = require('../metadata/PgMetadataRelations');
  * be represented by this interface.
  */
 class PgCollection {
-	constructor(pool, schema, mongo, name) {
-		this._pgPool = pool;
-		this._pgSchema = schema;
-		this._mongo = mongo;
-		this._name = name;
+	constructor(pgPool, pgSchema) {
+		this._pgPool = pgPool;
+		this._pgSchema = pgSchema;
 
-		this._pgPermissions = new PgPermissions(pool, schema);
-		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
+		this._pgPermissionsSchema = config.pgSchema.permissions;
+		this._pgDataSchema = config.pgSchema.data;
+
+		this._pgPermissions = new PgPermissions(this._pgPool, this._pgPermissionsSchema);
+		this._pgMetadataChanges = new PgMetadataChanges(this._pgPool, this._pgDataSchema);
 
 		this._relatedMetadataStores = [];
 		this._pgMetadataRelations = null;
@@ -50,11 +55,11 @@ class PgCollection {
 			let promises = [];
 			group.forEach((object) => {
 				if (object.key && !object.data) {
-					promises.push({key: object.key, uuid: object.uuid});
-				} else if (!object.key && object.data) {
+					promises.push({key: object.key});
+				} else if (object.key && object.data) {
 					promises.push(this.createOne(object, objects, user, extra));
 				} else {
-					promises.push({key: object.key, uuid: object.uuid, error: `no data`});
+					promises.push({key: object.key, error: `no data`});
 				}
 			});
 
@@ -131,7 +136,6 @@ class PgCollection {
 	}
 
 	postgresCreateOne(object, objects, user, extra) {
-		let uuid = object.uuid;
 		let data = object.data;
 
 		let keys = Object.keys(data);
@@ -141,6 +145,9 @@ class PgCollection {
 		let values = _.map(keys, (key) => {
 			return data[key];
 		});
+
+		columns.push(`key`);
+		values.push(object.key);
 
 		return this._pgPool
 			.query(
@@ -162,14 +169,13 @@ class PgCollection {
 			})
 			.then((created) => {
 				return {
-					uuid: uuid,
 					...created
 				};
 			});
 	}
 
 	getReturningSql() {
-		return `id AS key`;
+		return `key`;
 	}
 
 	parseRelations(object, objects, user, extra) {
@@ -303,7 +309,7 @@ class PgCollection {
 		sql.push(`UPDATE "${this._pgSchema}"."${this._tableName}"`);
 		sql.push(`SET`);
 		sql.push(sets.join(`, `));
-		sql.push(`WHERE id = ${Number(key)} RETURNING id AS key`);
+		sql.push(`WHERE key = '${key}' RETURNING key`);
 
 		return this._pgPool
 			.query(sql.join(` `), values)
@@ -480,10 +486,14 @@ class PgCollection {
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
 		// TODO this._tableName and this._collectionName are propably unnecessary
+		if(!resourceKeys || !resourceKeys.length) {
+			return Promise.resolve([]);
+		}
+
 		let query = [
-			`SELECT * FROM "${this._pgSchema}"."group_permissions" AS gp `,
+			`SELECT * FROM "${this._pgPermissionsSchema}"."group_permissions" AS gp `,
 			`WHERE`,
-			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
+			`gp.resource_type IN ('${_.compact(_.uniq([this._tableName, this._collectionName, ...this._permissionResourceTypes])).join(`', '`)}')`,
 			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND group_id IN (${groupIds.join(`, `)})`
 		];
@@ -497,10 +507,14 @@ class PgCollection {
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
 		// TODO this._tableName and this._collectionName are propably unnecessary
+		if(!resourceKeys || !resourceKeys.length) {
+			return Promise.resolve([]);
+		}
+
 		let query = [
-			`SELECT * FROM "${this._pgSchema}"."permissions" AS p `,
+			`SELECT * FROM "${this._pgPermissionsSchema}"."permissions" AS p `,
 			`WHERE`,
-			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
+			`p.resource_type IN ('${_.compact(_.uniq([this._tableName, this._collectionName, ...this._permissionResourceTypes])).join(`', '`)}')`,
 			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND user_id = ${userId}`
 		];
@@ -526,7 +540,7 @@ class PgCollection {
 				} else {
 					return this._pgPool
 						.query(
-							`SELECT resource_id::integer AS key, resource_type FROM "${this._pgSchema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
+							`SELECT resource_id AS key, resource_type FROM "${this._pgPermissionsSchema}"."permissions" WHERE user_id = ${user.id} AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 						)
 						.then((result) => {
 							_.each(result.rows, (row) => {
@@ -541,7 +555,7 @@ class PgCollection {
 						.then(() => {
 							return this._pgPool
 								.query(
-									`SELECT resource_id::integer AS key, resource_type FROM "${this._pgSchema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
+									`SELECT resource_id AS key, resource_type FROM "${this._pgPermissionsSchema}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND (${resourceTypesCondition}) AND permission = '${permissionType}'`
 								)
 								.then((result) => {
 									_.each(result.rows, (row) => {
@@ -639,7 +653,7 @@ class PgCollection {
 
 	postgresDeleteOne(key) {
 		return this._pgPool
-			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE id = ${key}`)
+			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE key = '${key}'`)
 			.then((result) => {
 				if (result.rowCount) {
 					return this.removeAllPermissionsByResourceKey(key)
@@ -661,11 +675,11 @@ class PgCollection {
 	removeAllPermissionsByResourceKey(resourceKey) {
 		return this._pgPool
 			.query(
-				`DELETE FROM "${this._pgSchema}"."permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
+				`DELETE FROM "${this._pgPermissionsSchema}"."permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
 			).then(() => {
 				return this._pgPool
 					.query(
-						`DELETE FROM "${this._pgSchema}"."group_permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
+						`DELETE FROM "${this._pgPermissionsSchema}"."group_permissions" WHERE resource_id = '${resourceKey}' AND resource_type = '${this._tableName}'`
 					)
 			});
 	}
@@ -929,7 +943,7 @@ class PgCollection {
 
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
-		sql.push(`SELECT ${extra.idOnly ? 'id AS key' : `id AS key, *${this._customSqlColumns}`} FROM "${this._pgSchema}"."${this._tableName}" AS a`);
+		sql.push(`SELECT ${extra.idOnly ? 'key' : `*${this._customSqlColumns}`} FROM "${this._pgSchema}"."${this._tableName}" AS a`);
 
 		if (!isAdmin) {
 			let keys = [];
@@ -978,10 +992,11 @@ class PgCollection {
 
 		let where = [];
 		_.map(request.filter, (data, column) => {
-			column = column === 'key' ? 'id' : column;
 			if (_.isObject(data)) {
 				let type = Object.keys(data)[0];
 				let value = data[type];
+
+				let isString = false;
 
 				switch (type) {
 					case 'like':
@@ -990,14 +1005,38 @@ class PgCollection {
 						);
 						break;
 					case 'in':
-						where.push(
-							`"${column}" IN (${value})`
-						);
+						_.each(value, (value) => {
+							if(_.isString(value)) {
+								isString = true;
+							}
+						});
+
+						if(isString) {
+							where.push(
+								`"${column}" IN ('${value.join(`', '`)}')`
+							);
+						} else {
+							where.push(
+								`"${column}" IN (${value.join(', ')})`
+							);
+						}
 						break;
 					case 'notin':
-						where.push(
-							`"${column}" NOT IN (${value})`
-						);
+						_.each(value, (value) => {
+							if(_.isString(value)) {
+								isString = true;
+							}
+						});
+
+						if(isString) {
+							where.push(
+								`"${column}" NOT IN ('${value.join(`', '`)}')`
+							);
+						} else {
+							where.push(
+								`"${column}" NOT IN (${value.join(', ')})`
+							);
+						}
 						break;
 				}
 			} else {
@@ -1016,10 +1055,10 @@ class PgCollection {
 
 			_.map(request.order, ([key, order]) => {
 				let direction = order && order.toLowerCase() === "descending" ? "DESC" : "ASC";
-				sql.push(`${key === 'key' ? `"a"."id"` : `"${key}"`} ${direction}`);
+				sql.push(`"${key}" ${direction}`);
 			});
 		} else {
-			sql.push(`ORDER BY "a"."id"`);
+			sql.push(`ORDER BY "a"."key"`);
 		}
 
 		return sql.join(' ');
@@ -1131,22 +1170,11 @@ class PgCollection {
 	setRelatedStores(stores) {
 		this._relatedMetadataStores = _.concat(this._relatedMetadataStores, stores);
 		if(this._relatedMetadataStores.length) {
-			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, this._pgSchema, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => { return metadataStore.getTableName()}));
+			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => { return metadataStore.getTableName()}));
 		}
 	}
 
-	_initPgTable() {
-		let sql = this._getTableSql();
-		if (sql) {
-			return this._pgPool
-				.query(sql)
-				.catch((error) => {
-					console.log(error);
-				});
-		}
-	}
-
-	_getTableSql() {
+	getTableSql() {
 		return null;
 	}
 

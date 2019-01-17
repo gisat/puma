@@ -6,9 +6,9 @@ let Promise = require('promise');
  * @constructor
  */
 class PgPermissions {
-	constructor(pgPool, schema) {
-		this.pgPool = pgPool;
-		this.schema = schema;
+	constructor(pgPool, pgSchema) {
+		this._pgPool = pgPool;
+		this._pgSchema = pgSchema;
 	}
 
 	/**
@@ -18,7 +18,7 @@ class PgPermissions {
 	 * @return {Promise} Promise of permissions for user.
 	 */
 	forUser(userId) {
-		return this.pgPool.pool().query(this.forUserSql(userId))
+		return this._pgPool.query(this.forUserSql(userId))
 			.then(this.transformFromRowsToPermissions);
 	}
 
@@ -36,16 +36,16 @@ class PgPermissions {
 
 	// Private
 	forUserSql(userId) {
-		return `SELECT * FROM ${this.schema}.permissions WHERE user_id = ${userId} AND resource_type <> 'layerref'`;
+		return `SELECT * FROM ${this._pgSchema}.permissions WHERE user_id = ${userId} AND resource_type <> 'layerref'`;
 	}
 
 	forGroup(groupId) {
-		return this.pgPool.pool().query(this.forGroupSql(groupId))
+		return this._pgPool.query(this.forGroupSql(groupId))
 			.then(this.transformFromRowsToPermissions);
 	}
 
 	forGroupSql(groupId) {
-		return `SELECT * from ${this.schema}.group_permissions WHERE group_id = ${groupId}`;
+		return `SELECT * from ${this._pgSchema}.group_permissions WHERE group_id = ${groupId}`;
 	}
 
     /**
@@ -57,14 +57,14 @@ class PgPermissions {
 	 */
 	add(userId, resourceType, resourceId, permission) {
 		let sql = this.addSql(userId, resourceType, resourceId, permission);
-		return this.pgPool.pool().query(sql);
+		return this._pgPool.query(sql);
 	}
 
     addCollection(groupId, resourceType, resourceIds, permission) {
         let sql = resourceIds.map(resourceId => {
             return this.addSql(groupId, resourceType, resourceId, permission);
         }).join(' ');
-        return this.pgPool.query(sql);
+        return this._pgPool.query(sql);
     }
 
     /**
@@ -76,29 +76,29 @@ class PgPermissions {
      */
 	addSql(userId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, resource_id, permission) 
+			return `INSERT INTO ${this._pgSchema}.permissions (user_id, resource_type, resource_id, permission) 
 						SELECT ${userId}, '${resourceType}', '${resourceId}', '${permission}' WHERE NOT EXISTS (
-							SELECT 1 FROM ${this.schema}.permissions WHERE 
+							SELECT 1 FROM ${this._pgSchema}.permissions WHERE 
 								user_id = ${userId} AND resource_type = '${resourceType}' AND resource_id = '${resourceId}' AND permission = '${permission}'  
 						);`;
 		} else {
-			return `INSERT INTO ${this.schema}.permissions (user_id, resource_type, permission) 
+			return `INSERT INTO ${this._pgSchema}.permissions (user_id, resource_type, permission) 
 						SELECT ${userId}, '${resourceType}', '${permission}' WHERE NOT EXISTS (
-							SELECT 1 FROM ${this.schema}.permissions WHERE 
+							SELECT 1 FROM ${this._pgSchema}.permissions WHERE 
 								user_id = ${userId} AND resource_type = '${resourceType}' AND resource_id IS NULL AND permission = '${permission}'  
 						);`;
 		}
 	}
 
 	addGroup(groupId, resourceType, resourceId, permission) {
-		return this.pgPool.query(this.addGroupSql(groupId, resourceType, resourceId, permission));
+		return this._pgPool.query(this.addGroupSql(groupId, resourceType, resourceId, permission));
 	}
 
     addGroupCollection(groupId, resourceType, resourceIds, permission) {
         let sql = resourceIds.map(resourceId => {
             return this.addGroupSql(groupId, resourceType, resourceId, permission);
         }).join(' ');
-        return this.pgPool.query(sql);
+        return this._pgPool.query(sql);
     }
 
     /**
@@ -110,15 +110,15 @@ class PgPermissions {
      */
 	addGroupSql(groupId, resourceType, resourceId, permission) {
 		if(resourceId) {
-			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, resource_id, permission) 
+			return `INSERT INTO ${this._pgSchema}.group_permissions (group_id, resource_type, resource_id, permission) 
 						SELECT ${groupId}, '${resourceType}', '${resourceId}', '${permission}' WHERE NOT EXISTS (
-							SELECT 1 FROM ${this.schema}.group_permissions WHERE 
+							SELECT 1 FROM ${this._pgSchema}.group_permissions WHERE 
 								group_id = ${groupId} AND resource_type = '${resourceType}' AND resource_id = '${resourceId}' AND permission = '${permission}'  
 						);`;
 		} else {
-			return `INSERT INTO ${this.schema}.group_permissions (group_id, resource_type, permission) 
+			return `INSERT INTO ${this._pgSchema}.group_permissions (group_id, resource_type, permission) 
 						SELECT ${groupId}, '${resourceType}', '${permission}' WHERE NOT EXISTS (
-							SELECT 1 FROM ${this.schema}.group_permissions WHERE 
+							SELECT 1 FROM ${this._pgSchema}.group_permissions WHERE 
 								group_id = ${groupId} AND resource_type = '${resourceType}' AND resource_id IS NULL AND permission = '${permission}'  
 						);`;
 		}
@@ -132,15 +132,15 @@ class PgPermissions {
 	 * @param permission {String} One of these GET, POST, PUT, DELETE, ADMINISTER
 	 */
 	remove(userId, resourceType, resourceId, permission) {
-		return this.pgPool.pool().query(this.removeSql(userId, resourceType, resourceId, permission));
+		return this._pgPool.query(this.removeSql(userId, resourceType, resourceId, permission));
 	}
 
 	removeGroup(groupId, resourceType, resourceId, permission) {
-		return this.pgPool.pool().query(this.removeGroupSql(groupId, resourceType, resourceId, permission));
+		return this._pgPool.query(this.removeGroupSql(groupId, resourceType, resourceId, permission));
 	}
 
 	removeAllForResource(resourceType, resourceId) {
-		return this.pgPool.query(this.removeAllForResourceSql(resourceType, resourceId));
+		return this._pgPool.query(this.removeAllForResourceSql(resourceType, resourceId));
 	}
 
 	// Private
@@ -149,7 +149,7 @@ class PgPermissions {
 		if (resourceId) {
 			andResourceId = ` AND resource_id = '${resourceId}' `;
 		}
-		return `DELETE FROM ${this.schema}.permissions WHERE user_id = ${userId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
+		return `DELETE FROM ${this._pgSchema}.permissions WHERE user_id = ${userId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
 	}
 
 	removeGroupSql(groupId, resourceType, resourceId, permission) {
@@ -157,24 +157,24 @@ class PgPermissions {
 		if (resourceId) {
 			andResourceId = ` AND resource_id = '${resourceId}' `;
 		}
-		return `DELETE FROM ${this.schema}.group_permissions WHERE group_id = ${groupId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
+		return `DELETE FROM ${this._pgSchema}.group_permissions WHERE group_id = ${groupId} AND resource_type = '${resourceType}' ${andResourceId} AND permission = '${permission}'`;
 	}
 
 	removeAllForResourceSql(resourceType, resourceId) {
-		return `DELETE FROM "${this.schema}"."permissions" AS p WHERE "p"."resource_type" = '${resourceType}' AND "p"."resource_id" = '${resourceId}';`;
+		return `DELETE FROM "${this._pgSchema}"."permissions" AS p WHERE "p"."resource_type" = '${resourceType}' AND "p"."resource_id" = '${resourceId}';`;
 	}
 
 	forType(type, resourceId) {
 		let groupPermissions = [];
 		let userPermissions = [];
-		return this.pgPool.pool().query(this.forTypeUserCollectionSql(type, [{id: resourceId}]))
+		return this._pgPool.query(this.forTypeUserCollectionSql(type, [{id: resourceId}]))
 			.then(this.transformFromRowsToPermissions)
 			.then((transformedPermissions => {
 				userPermissions = transformedPermissions;
 				return userPermissions;
 			}))
 			.then(() => {
-				return this.pgPool.pool().query(this.forTypeGroupCollectionSql(type, [{id: resourceId}]))
+				return this._pgPool.query(this.forTypeGroupCollectionSql(type, [{id: resourceId}]))
 			})
 			.then(this.transformFromRowsToPermissions)
 			.then((transformedPermissions => {
@@ -206,11 +206,11 @@ class PgPermissions {
 		}
 
 		let groupPermissions;
-		return this.pgPool.query(this.forTypeGroupCollectionSql(type, resources))
+		return this._pgPool.query(this.forTypeGroupCollectionSql(type, resources))
 			.then(this.transformFromRowsToPermissions)
 			.then(pGroupPermissions => {
 				groupPermissions = pGroupPermissions;
-				return this.pgPool.query(this.forTypeUserCollectionSql(type, resources));
+				return this._pgPool.query(this.forTypeUserCollectionSql(type, resources));
 			})
 			.then(this.transformFromRowsToPermissions)
 			.then(userPermissions => {
@@ -237,7 +237,7 @@ class PgPermissions {
 	 */
 	forTypeGroupCollectionSql(type, resources) {
 		let ids = resources.map(layer => layer.id || layer._id);
-		return `SELECT * FROM ${this.schema}.group_permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
+		return `SELECT * FROM ${this._pgSchema}.group_permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
 	}
 
 	/**
@@ -250,7 +250,7 @@ class PgPermissions {
 	 */
 	forTypeUserCollectionSql(type, resources) {
 		let ids = resources.map(layer => layer.id || layer._id);
-		return `SELECT * FROM ${this.schema}.permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
+		return `SELECT * FROM ${this._pgSchema}.permissions WHERE resource_type = '${type}' AND resource_id IN ('${ids.join(`','`)}')`;
 	}
 }
 

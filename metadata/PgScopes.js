@@ -1,22 +1,31 @@
 const PgCollection = require('../common/PgCollection');
 
 class PgScopes extends PgCollection {
-	constructor(pool, schema, mongo) {
-		super(pool, schema, mongo, `PgScopes`);
+	constructor(pgPool, pgSchema) {
+		super(pgPool, pgSchema);
 
-		this._legacy = true;
-		this._collectionName = this.constructor.collectionName();
+		this._checkPermissions = false;
+
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
 		this._permissionResourceTypes = [
-			`scope`,
-			`dataset`
+			`scope`
 		];
 	}
 
-	static collectionName() {
-		return 'dataset';
+	getTableSql() {
+		return `
+		BEGIN;
+		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
+			"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
+		);
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameDisplay" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "description" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "configuration" JSONB;
+		COMMIT;
+		`;
 	}
 
 	static groupName() {

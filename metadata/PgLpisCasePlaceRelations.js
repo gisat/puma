@@ -26,7 +26,7 @@ class PgLpisCasePlaceRelations extends PgCollection {
 			});
 
 			promises.push(
-				this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgLpisCasePlaceRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
+				this._pgPool.query(`INSERT INTO "${this._pgMetadataSchema}"."${PgLpisCasePlaceRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
 			);
 		});
 
@@ -72,11 +72,11 @@ class PgLpisCasePlaceRelations extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._pgSchema}"."${PgLpisCasePlaceRelations.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgMetadataSchema}"."${PgLpisCasePlaceRelations.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT "a".*`);
-		query.push(`FROM "${this._pgSchema}"."${PgLpisCasePlaceRelations.tableName()}" AS a`);
+		query.push(`FROM "${this._pgMetadataSchema}"."${PgLpisCasePlaceRelations.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -148,7 +148,7 @@ class PgLpisCasePlaceRelations extends PgCollection {
 
 			if(lpis_case_id && (place_id || place_id === null)) {
 				promises.push(
-					this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgLpisCasePlaceRelations.tableName()}" WHERE "lpis_case_id" = ${lpis_case_id};`)
+					this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgLpisCasePlaceRelations.tableName()}" WHERE "lpis_case_id" = ${lpis_case_id};`)
 						.then(() => {
 							if(place_id) {
 								return this.create({

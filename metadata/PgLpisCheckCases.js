@@ -38,8 +38,6 @@ class PgLpisCheckCases extends PgCollection {
 		];
 
 		this._customSqlColumns = `, ST_AsGeoJSON(ST_Transform(geometry, 4326), 15, 4) AS geometry`;
-
-		this._initPgTable();
 	}
 
 	createRelated(object, createdObject, objects, user, extra) {
@@ -130,8 +128,7 @@ class PgLpisCheckCases extends PgCollection {
 		return `
 		BEGIN;
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
-			id SERIAL PRIMARY KEY,
-			uuid UUID DEFAULT gen_random_uuid()
+			key UUID DEFAULT gen_random_uuid()
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS stav TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS nkod_dpb TEXT;
@@ -146,7 +143,7 @@ class PgLpisCheckCases extends PgCollection {
 	}
 
 	getReturningSql() {
-		return `id AS key, ST_AsGeoJSON(ST_Envelope(ST_Transform(geometry, 4326))) AS geometry, ST_AsGeoJSON(ST_Centroid(ST_Transform(geometry, 4326))) AS centroid`;
+		return `ST_AsGeoJSON(ST_Envelope(ST_Transform(geometry, 4326))) AS geometry, ST_AsGeoJSON(ST_Centroid(ST_Transform(geometry, 4326))) AS centroid`;
 	}
 
 	getCaseDataview(placeId, yearIds, scopeId, themeId, latidute, longitude, range, layerPeriods) {

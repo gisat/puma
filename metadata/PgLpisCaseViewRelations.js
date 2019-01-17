@@ -26,7 +26,7 @@ class PgLpisCaseViewRelations extends PgCollection {
 			});
 
 			promises.push(
-				this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgLpisCaseViewRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
+				this._pgPool.query(`INSERT INTO "${this._pgMetadataSchema}"."${PgLpisCaseViewRelations.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')});`)
 			);
 		});
 
@@ -72,11 +72,11 @@ class PgLpisCaseViewRelations extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._pgSchema}"."${PgLpisCaseViewRelations.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgMetadataSchema}"."${PgLpisCaseViewRelations.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT "a".*`);
-		query.push(`FROM "${this._pgSchema}"."${PgLpisCaseViewRelations.tableName()}" AS a`);
+		query.push(`FROM "${this._pgMetadataSchema}"."${PgLpisCaseViewRelations.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -148,7 +148,7 @@ class PgLpisCaseViewRelations extends PgCollection {
 
 			if(lpis_case_id && (view_id || view_id === null)) {
 				promises.push(
-					this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgLpisCaseViewRelations.tableName()}" WHERE "lpis_case_id" = ${lpis_case_id};`)
+					this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgLpisCaseViewRelations.tableName()}" WHERE "lpis_case_id" = ${lpis_case_id};`)
 						.then(() => {
 							if(view_id) {
 								return this.create({

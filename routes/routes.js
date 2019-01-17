@@ -136,10 +136,11 @@ module.exports = function(app) {
 	new ImageMosaicController(app);
 	new SzifCaseCreatorController(app, pool, mongo);
 
-	new PgRelationsController(app, pool, config.postgreSqlSchema);
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
-	new PgMetadataController(app, pool, config.postgreSqlSchema, mongo);
 	new PgUserController(app, pool, config.postgreSqlSchema, mongo);
+
+	new PgMetadataController(app, pool.pool(), config.pgSchema.metadata);
+	new PgRelationsController(app, pool.pool(), config.pgSchema.relations);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
 

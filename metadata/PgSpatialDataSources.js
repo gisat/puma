@@ -59,7 +59,7 @@ class PgSpatialDataSources extends PgCollection {
 								return rows[0].id;
 							})
 							.then((layer_id) => {
-								return this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgSpatialDataSources.tableName()}" (type_id, layer_id) VALUES (${type_id}, ${layer_id}) RETURNING id;`)
+								return this._pgPool.query(`INSERT INTO "${this._pgMetadataSchema}"."${PgSpatialDataSources.tableName()}" (type_id, layer_id) VALUES (${type_id}, ${layer_id}) RETURNING id;`)
 									.then((queryResult) => {
 										if (queryResult.rowCount) {
 											return queryResult.rows[0].id;
@@ -126,10 +126,10 @@ class PgSpatialDataSources extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._pgSchema}"."${PgSpatialDataSources.tableName()}" AS a`);
-		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgSpatialTypes.tableName()}" AS b ON "b"."id" = "a"."type_id"`);
-		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgSpatialDataSourceShapefile.tableName()}" AS c ON "b"."name" = '${PgSpatialDataSourceShapefile.type()}' AND "c"."id" = "a"."layer_id"`);
-		pagingQuery.push(`LEFT JOIN "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS d ON "b"."name" = '${PgSpatialDataSourceGeotiff.type()}' AND "d"."id" = "a"."layer_id"`);
+		pagingQuery.push(`FROM "${this._pgMetadataSchema}"."${PgSpatialDataSources.tableName()}" AS a`);
+		pagingQuery.push(`LEFT JOIN "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" AS b ON "b"."id" = "a"."type_id"`);
+		pagingQuery.push(`LEFT JOIN "${this._pgMetadataSchema}"."${PgSpatialDataSourceShapefile.tableName()}" AS c ON "b"."name" = '${PgSpatialDataSourceShapefile.type()}' AND "c"."id" = "a"."layer_id"`);
+		pagingQuery.push(`LEFT JOIN "${this._pgMetadataSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS d ON "b"."name" = '${PgSpatialDataSourceGeotiff.type()}' AND "d"."id" = "a"."layer_id"`);
 
 		let query = [];
 		query.push(`SELECT`);
@@ -138,10 +138,10 @@ class PgSpatialDataSources extends PgCollection {
 		query.push(`"c"."table_name" AS shapefile_table_name,`);
 		query.push(`"d"."layer_name" AS geotiff_layer_name,`);
 		query.push(`"d"."table_name" AS geotiff_table_name`);
-		query.push(`FROM "${this._pgSchema}"."${PgSpatialDataSources.tableName()}" AS a`);
-		query.push(`LEFT JOIN "${this._pgSchema}"."${PgSpatialTypes.tableName()}" AS b ON "b"."id" = "a"."type_id"`);
-		query.push(`LEFT JOIN "${this._pgSchema}"."${PgSpatialDataSourceShapefile.tableName()}" AS c ON "b"."name" = '${PgSpatialDataSourceShapefile.type()}' AND "c"."id" = "a"."layer_id"`);
-		query.push(`LEFT JOIN "${this._pgSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS d ON "b"."name" = '${PgSpatialDataSourceGeotiff.type()}' AND "d"."id" = "a"."layer_id"`);
+		query.push(`FROM "${this._pgMetadataSchema}"."${PgSpatialDataSources.tableName()}" AS a`);
+		query.push(`LEFT JOIN "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" AS b ON "b"."id" = "a"."type_id"`);
+		query.push(`LEFT JOIN "${this._pgMetadataSchema}"."${PgSpatialDataSourceShapefile.tableName()}" AS c ON "b"."name" = '${PgSpatialDataSourceShapefile.type()}' AND "c"."id" = "a"."layer_id"`);
+		query.push(`LEFT JOIN "${this._pgMetadataSchema}"."${PgSpatialDataSourceGeotiff.tableName()}" AS d ON "b"."name" = '${PgSpatialDataSourceGeotiff.type()}' AND "d"."id" = "a"."layer_id"`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -266,7 +266,7 @@ class PgSpatialDataSources extends PgCollection {
 				});
 
 				promises.push(
-					this._pgPool.query(`UPDATE "${this._pgSchema}"."${PgSpatialDataSources.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+					this._pgPool.query(`UPDATE "${this._pgMetadataSchema}"."${PgSpatialDataSources.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
 						.then((result) => {
 							if (result.rowCount) {
 								return this.get({id: id, unlimited: true});
@@ -299,7 +299,7 @@ class PgSpatialDataSources extends PgCollection {
 		return new Promise((resolve, reject) => {
 			id = Number(id);
 			if (!_.isNaN(id)) {
-				this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgSpatialDataSources.tableName()}" WHERE id = ${Number(id)};`)
+				this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgSpatialDataSources.tableName()}" WHERE id = ${Number(id)};`)
 					.then((result) => {
 						if (result.rowCount) {
 							resolve();

@@ -1,6 +1,6 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgSpatialRelations extends PgCollection {
+class PgAreaRelations extends PgCollection {
 	constructor(pgPool, pgSchema) {
 		super(pgPool, pgSchema);
 
@@ -23,13 +23,16 @@ class PgSpatialRelations extends PgCollection {
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
       		"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
       	);
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "scopeKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "periodKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "placeKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "areaTreeKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "areaTreeLevelKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "fidColumn" TEXT;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "parentFidColumn" TEXT;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "dataSourceKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "layerTemplateKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "scenarioKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "scopeKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "placeKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "periodKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "caseKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "scenarioKey" UUID;
       	COMMIT;
 		`
 	}
@@ -50,12 +53,12 @@ class PgSpatialRelations extends PgCollection {
 	}
 
 	static groupName() {
-		return 'spatial';
+		return 'area';
 	}
 
 	static tableName() {
-		return `spatialRelation`;
+		return `areaRelation`;
 	}
 }
 
-module.exports = PgSpatialRelations;
+module.exports = PgAreaRelations;

@@ -55,7 +55,7 @@ class PgLpisCaseChanges extends PgCollection {
 		});
 
 		return this._pgPool.query(
-			`INSERT INTO "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
+			`INSERT INTO "${this._pgMetadataSchema}"."${PgLpisCaseChanges.tableName()}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 				return `$${index + 1}`;
 			}).join(', ')}) RETURNING id;`,
 			values
@@ -127,11 +127,11 @@ class PgLpisCaseChanges extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgMetadataSchema}"."${PgLpisCaseChanges.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT *`);
-		query.push(`FROM "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" AS a`);
+		query.push(`FROM "${this._pgMetadataSchema}"."${PgLpisCaseChanges.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -216,7 +216,7 @@ class PgLpisCaseChanges extends PgCollection {
 			deleted: false
 		};
 		return this._pgPool.query(
-			`DELETE FROM "${this._pgSchema}"."${PgLpisCaseChanges.tableName()}" WHERE id = ${lpisCaseId}`
+			`DELETE FROM "${this._pgMetadataSchema}"."${PgLpisCaseChanges.tableName()}" WHERE id = ${lpisCaseId}`
 		).then((result) => {
 			if (result.rowCount) {
 				status.deleted = true;

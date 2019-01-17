@@ -16,9 +16,10 @@ process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
+const PgDatabase = require(`./postgresql/PgDatabase`);
+
 const SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
 const PgPool = require('./postgresql/PgPool');
-const DatabaseSchema = require('./postgresql/DatabaseSchema');
 const CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
 const IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
 const PrepareForInternalUser = require('./migration/PrepareForInternalUser');
@@ -35,14 +36,15 @@ const PgAuthentication = require('./security/PgAuthentication');
 const SsoAuthentication = require('./security/SsoAuthentication');
 
 const pool = new PgPool({
-    user: config.pgDataUser,
-    database: config.pgDataDatabase,
-    password: config.pgDataPassword,
-    host: config.pgDataHost,
-    port: config.pgDataPort
+	user: config.pgDataUser,
+	database: config.pgDataDatabase,
+	password: config.pgDataPassword,
+	host: config.pgDataHost,
+	port: config.pgDataPort
 });
 
 let app;
+
 function initServer(err) {
 	logger.info('server#initServer Initialize the server.');
 
@@ -51,18 +53,18 @@ function initServer(err) {
 		return;
 	}
 	// Order is important
-    
-    // Limit size of uploaded files
-    app.use(express.limit('2048mb'));
+
+	// Limit size of uploaded files
+	app.use(express.limit('2048mb'));
 
 	// Log the requests to see when the error occurs.
-	app.use(function(req, res, next) {
-		logger.info("Request: "+ req.method + " - " + req.url);
+	app.use(function (req, res, next) {
+		logger.info("Request: " + req.method + " - " + req.url);
 		next();
 	});
 
 	app.use(express.cookieParser());
-    app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
+	app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
 	app.use(session({
 		name: "panthersid",
@@ -76,9 +78,9 @@ function initServer(err) {
 		next();
 	});
 	app.use(loc.langParser);
-    
+
 	// Allow CORS on the node level.
-    app.use(function(req, res, next) {
+	app.use(function (req, res, next) {
 		// TODO: Fix security issues.
 		var url = req.headers.origin || 'http://localhost:63342';
 		res.header("Access-Control-Allow-Origin", url);
@@ -86,19 +88,19 @@ function initServer(err) {
 		res.header("Access-Control-Allow-Credentials", true);
 		res.header("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS, DELETE");
 		next();
-    });
-    // End of allow CORS.
+	});
+	// End of allow CORS.
 
 	// Make sure that every request knows the current information about user.
 	app.use((request, response, next) => {
 		let authenticators = [new PgAuthentication(pool, config.postgreSqlSchema)];
-		if(config.toggles.useEoSso) {
+		if (config.toggles.useEoSso) {
 			authenticators.unshift(new SsoAuthentication(pool, config.postgreSqlSchema));
 		}
 
 		new CompoundAuthentication(authenticators).authenticate(request, response, next).then(() => {
 			logger.info('server#authentication User: ', request.session.user.id);
-			if(!request.session.user && config.toggles.loggedOnly) {
+			if (!request.session.user && config.toggles.loggedOnly) {
 				logger.info('server#authentication User not logged in');
 				response.redirect(config.notAuthenticatedUrl);
 			} else {
@@ -106,7 +108,7 @@ function initServer(err) {
 			}
 		}).catch(err => {
 			logger.error(`server#authentication Error: `, err);
-			if(config.toggles.loggedOnly) {
+			if (config.toggles.loggedOnly) {
 				response.redirect(config.notAuthenticatedUrl);
 			}
 		})
@@ -118,47 +120,60 @@ function initServer(err) {
 	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
 
 	logger.info('Going to listen on port ' + config.localPort + '...');
-    let server = app.listen(config.localPort);
-    server.setTimeout(600000);
+	let server = app.listen(config.localPort);
+	server.setTimeout(600000);
 	logger.info('Listening on port ' + config.localPort);
 }
 
 
-new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
-	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
-}).then(()=>{
-	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
-}).then(()=>{
-	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new PrepareForInternalUser(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddCustomInfoToWms(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddAuditInformation(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddPhoneToUser(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddMetadataToLayer(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
-}).then(function(){
-	logger.info('Finished Migrations.');
+new PgDatabase(pool.pool())
+	.ensure()
+	.then(() => {
+		return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new PrepareForInternalUser(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new AddCustomInfoToWms(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new AddAuditInformation(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new AddPhoneToUser(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new AddMetadataToLayer(config.postgreSqlSchema).run();
+	})
+	.then(() => {
+		return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
+	})
+	.then(function () {
+		logger.info('Finished Migrations.');
 
-	app = express();
-	async.series([
-			function(callback) {
-				conn.init(app,callback);
-			},
-			function(callback) {
-				loc.init(callback);
-			}],
-		initServer
-	);
-}).catch((err) => {
+		app = express();
+		async.series([
+				function (callback) {
+					conn.init(app, callback);
+				},
+				function (callback) {
+					loc.init(callback);
+				}],
+			initServer
+		);
+	}).catch((err) => {
 	logger.error('Error with Migration. Error: ', err);
 });

@@ -28,7 +28,7 @@ class PgSpatialTypes extends PgCollection {
 			});
 
 			promises.push(
-				this._pgPool.query(`INSERT INTO "${this._pgSchema}"."${PgSpatialTypes.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
+				this._pgPool.query(`INSERT INTO "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" (${columns.join(', ')}) VALUES (${values.join(', ')}) RETURNING id;`)
 					.then((queryResult) => {
 						if (queryResult.rowCount) {
 							return queryResult.rows[0].id;
@@ -92,11 +92,11 @@ class PgSpatialTypes extends PgCollection {
 
 		let pagingQuery = [];
 		pagingQuery.push(`SELECT COUNT(*) AS total`);
-		pagingQuery.push(`FROM "${this._pgSchema}"."${PgSpatialTypes.tableName()}" AS a`);
+		pagingQuery.push(`FROM "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" AS a`);
 
 		let query = [];
 		query.push(`SELECT *`);
-		query.push(`FROM "${this._pgSchema}"."${PgSpatialTypes.tableName()}" AS a`);
+		query.push(`FROM "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" AS a`);
 
 		if (keys.length || like || any) {
 			let where = [];
@@ -171,7 +171,7 @@ class PgSpatialTypes extends PgCollection {
 				});
 
 				promises.push(
-					this._pgPool.query(`UPDATE "${this._pgSchema}"."${PgSpatialTypes.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
+					this._pgPool.query(`UPDATE "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" SET ${sets.join(', ')} WHERE id = ${id}`)
 						.then((result) => {
 							if (result.rowCount) {
 								return this.get({id: id, unlimited: true});
@@ -204,7 +204,7 @@ class PgSpatialTypes extends PgCollection {
 		return new Promise((resolve, reject) => {
 			id = Number(id);
 			if (!_.isNaN(id)) {
-				this._pgPool.query(`DELETE FROM "${this._pgSchema}"."${PgSpatialTypes.tableName()}" WHERE id = ${Number(id)};`)
+				this._pgPool.query(`DELETE FROM "${this._pgMetadataSchema}"."${PgSpatialTypes.tableName()}" WHERE id = ${Number(id)};`)
 					.then((result) => {
 						if (result.rowCount) {
 							resolve();

@@ -1,5 +1,5 @@
 const PgScenarioCases = require('../metadata/PgScenarioCases');
-const PgScenarios = require('../metadata/PgScenarios');
+const PgScenarios = require('../metadata/PgScenariosLegacy');
 
 class PgScenarioCasesController {
 	constructor(app, pgPool, pgSchema) {

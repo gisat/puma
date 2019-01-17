@@ -3,7 +3,7 @@ const _ = require('lodash');
 const Permission = require('../security/Permission');
 
 class PgCrud {
-	constructor(pgPool, pgSchema, mongo) {
+	constructor() {
 		this._pgTypes = {
 		};
 	}
@@ -13,9 +13,9 @@ class PgCrud {
 
 		for (let type of Object.keys(data)) {
 			if (this._pgTypes.hasOwnProperty(type)) {
-				if (!user.hasPermission(this._pgTypes[type].type, Permission.CREATE, null)) {
-					throw new Error('Forbidden');
-				}
+				// if (!user.hasPermission(this._pgTypes[type].type, Permission.CREATE, null)) {
+				// 	throw new Error('Forbidden');
+				// }
 			}
 		}
 

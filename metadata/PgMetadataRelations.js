@@ -15,13 +15,13 @@ class PgMetadataRelations {
 		let sql = [];
 
 		sql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
-		sql.push(`(${this._getBaseMetadataTypeColumnName()}, ${Object.keys(relations).join(`, `)})`);
+		sql.push(`("${this._getBaseMetadataTypeColumnName()}", "${Object.keys(relations).join(`", "`)}")`);
 		sql.push(`VALUES ('${baseKey}', '${Object.values(relations).join(`', '`)}')`);
-		sql.push(`ON CONFLICT (${this._getBaseMetadataTypeColumnName()}) DO UPDATE SET`);
+		sql.push(`ON CONFLICT ("${this._getBaseMetadataTypeColumnName()}") DO UPDATE SET`);
 
 		let updates = [];
 		_.each(relations, (value, property) => {
-			updates.push(`${property} = ${value === null ? `NULL` : `'${value}'`}`);
+			updates.push(`"${property}" = ${value === null ? `NULL` : `'${value}'`}`);
 		});
 
 		sql.push(updates.join(`, `));
@@ -45,7 +45,7 @@ class PgMetadataRelations {
 
 	getRelationsForBaseKeys(baseKeys) {
 		return this._pgPool
-			.query(`SELECT ${this._getBaseMetadataTypeColumnName()}, ${this.getMetadataTypeKeyColumnNames().join(`, `)} FROM "${this._pgSchema}"."${this._getTableName()}" WHERE ${this._getBaseMetadataTypeColumnName()} IN ('${baseKeys.join(`', '`)}')`)
+			.query(`SELECT "${this._getBaseMetadataTypeColumnName()}", "${this.getMetadataTypeKeyColumnNames().join(`", "`)}" FROM "${this._pgSchema}"."${this._getTableName()}" WHERE "${this._getBaseMetadataTypeColumnName()}" IN ('${baseKeys.join(`', '`)}')`)
 			.then((result) => {
 				let relations;
 
@@ -80,7 +80,7 @@ class PgMetadataRelations {
 
 	getMetadataTypeKeyColumnNames() {
 		return _.map(this._relatedToMetadataTypes, (metadataType) => {
-			return `${metadataType}_key`;
+			return `${metadataType}Key`;
 		});
 	}
 
@@ -93,22 +93,25 @@ class PgMetadataRelations {
 	}
 
 	_getBaseMetadataTypeColumnName() {
-		return `${this._baseMetadataType}_key`;
+		return `${this._baseMetadataType}Key`;
 	}
 
 	_getTableName() {
-		return `${this._baseMetadataType}_relation`;
+		return `${this._baseMetadataType}Relation`;
 	}
 
 	_getTableSql() {
 		let sql = [];
 
 		sql.push(`BEGIN;`);
-		sql.push(`CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._getTableName()}" (id SERIAL PRIMARY KEY, uuid UUID DEFAULT gen_random_uuid());`);
-		sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS ${this._baseMetadataType}_key TEXT UNIQUE;`);
+		sql.push(`CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._getTableName()}" (`);
+		sql.push(`"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()`);
+		sql.push(`);`);
+
+		sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS "${this._baseMetadataType}Key" UUID UNIQUE;`);
 
 		_.each(this._relatedToMetadataTypes, (metadataType) => {
-			sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS ${metadataType}_key TEXT;`);
+			sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS "${metadataType}Key" UUID;`);
 		});
 
 		sql.push(`COMMIT;`);

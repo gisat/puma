@@ -7,10 +7,8 @@ const PgScenarioScenarioCaseRelations = require('./PgScenarioScenarioCaseRelatio
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 
-class PgScenarioCases extends PgCollection {
+class PgScenarioCases {
 	constructor(pgPool, pgSchema) {
-		super(pgPool, pgSchema, null, 'PgScenarioCases');
-
 		this._pgScopeScenarioCaseRelations = new PgScopeScenarioCaseRelations(pgPool, pgSchema);
 		this._pgPlaceScenarioCaseRelations = new PgPlaceScenarioCaseRelations(pgPool, pgSchema);
 		this._pgScenarioScenarioCaseRelations = new PgScenarioScenarioCaseRelations(pgPool, pgSchema);
