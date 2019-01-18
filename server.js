@@ -128,41 +128,41 @@ function initServer(err) {
 
 new PgDatabase(pool.pool())
 	.ensure()
-	.then(() => {
-		return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new PrepareForInternalUser(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new AddCustomInfoToWms(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new AddAuditInformation(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new AddPhoneToUser(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new AddMetadataToLayer(config.postgreSqlSchema).run();
-	})
-	.then(() => {
-		return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
-	})
+	// .then(() => {
+	// 	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new PrepareForInternalUser(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new AddCustomInfoToWms(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new AddAuditInformation(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new AddPhoneToUser(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new AddMetadataToLayer(config.postgreSqlSchema).run();
+	// })
+	// .then(() => {
+	// 	return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
+	// })
 	.then(function () {
-		logger.info('Finished Migrations.');
+		// logger.info('Finished Migrations.');
 
 		app = express();
 		async.series([
