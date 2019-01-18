@@ -73,7 +73,6 @@ class PgDatabase {
 	ensureMetadataTables() {
 		return Promise.all(_.map(this._metadataStores, (store) => {
 			let tableSql = new store(this._pgPool, config.pgSchema.metadata).getTableSql();
-			console.log(tableSql);
 			if (tableSql) {
 				return this._pgPool.query(tableSql);
 			}
@@ -83,7 +82,6 @@ class PgDatabase {
 	ensureRelationsTables() {
 		return Promise.all(_.map(this._relationsStores, (store) => {
 			let tableSql = new store(this._pgPool, config.pgSchema.relations).getTableSql();
-			console.log(tableSql);
 			if (tableSql) {
 				return this._pgPool.query(tableSql);
 			}
