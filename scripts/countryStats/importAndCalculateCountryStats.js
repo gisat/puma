@@ -1,8 +1,8 @@
 // Figure out which tiffs belongs to which countries.
 const fs = require('fs');
 const rimraf = require('rimraf');
-const { Pool } = require('pg');
-const { exec } = require('child_process');
+const {Pool} = require('pg');
+const {exec, fork} = require('child_process');
 
 const pool = new Pool({
     user: 'postgres',
@@ -12,20 +12,37 @@ const pool = new Pool({
     port: 5432,
 });
 
-processAll();
+if (process.argv[2] === 'master') {
+    const amountOfCores = process.argv[3];
+    const amountOfRecords = process.argv[4];
+    const recordsPerCore = Math.ceil(amountOfRecords/amountOfCores);
+
+    for (let i = 0; i < amountOfCores; i++) {
+        fork('../countryStats/importAndCalculateCountryStats.js', [
+            recordsPerCore,
+            i * recordsPerCore
+        ])
+    }
+} else {
+    console.log('Start: ' + new Date());
+    processAll().then(() => {
+        console.log('End: ' + new Date());
+    });
+}
 
 // Country by country process is necessary.
 async function processAll() {
-    console.log('Start: ' + new Date());
-    return pool.query(`SELECT id_adm, name_english as name, st_astext(st_envelope(geom)) as bbox 
-                  FROM urban_gadm_3 WHERE urban_2015 IS NOT NULL ORDER BY id_adm LIMIT ${process.argv[2]} OFFSET ${process.argv[3]}`)
-        .then(async function(result) {
+    return pool.query(`
+                SELECT id_adm, name_english as name, st_astext(st_envelope(geom)) as bbox 
+                  FROM urban_gadm_3 
+                      LIMIT ${process.argv[2]} 
+                      OFFSET ${process.argv[3]}`)
+        .then(async function (result) {
             let rows = result.rows;
 
-            for(let i = 0; i < rows.length; i++) {
+            for (let i = 0; i < rows.length; i++) {
                 await handleRow(rows[i]);
             }
-            console.log('End: ' + new Date());
         });
 }
 
@@ -46,24 +63,26 @@ async function handleRow(row) {
     let files = gatherFileNames(coordinates);
 
     let pixelInformation;
-    return copyAllFilesForCountry(files, name).then(() => {
-        console.log('CopyingFinished');
-        return integrateCountry(name);
+    return copyAllFilesForCountry(files, idAdm).then(() => {
+        return integrateCountry(idAdm);
     }).then(() => {
-        console.log('IntegrationFinished');
-        return getPixelValuesForCountry(`raster_${name}`,idAdm);
+        return getPixelValuesForCountry(`raster_${idAdm}`, idAdm);
     }).then(result => {
-        console.log('Pixel values retrieved');
         pixelInformation = result;
         return getTotalArea(idAdm);
     }).then(totalArea => {
-        console.log('Total area calculated');
-        if(pixelInformation) {
+        if (pixelInformation) {
             const urban = (pixelInformation.urban / (pixelInformation.urban + pixelInformation.nonUrban)) * totalArea;
             const nonUrban = (pixelInformation.nonUrban / (pixelInformation.urban + pixelInformation.nonUrban)) * totalArea;
             const sqlToWrite = `
               update urban_gadm_3 set urban_2015 = ${urban} where id_adm = '${idAdm}';
               update urban_gadm_3 set non_urban_2015 = ${nonUrban} where id_adm = '${idAdm}';
+            `;
+            fs.writeFileSync('../result.sql', sqlToWrite, {flag: 'a'});
+        } else {
+            const sqlToWrite = `
+              update urban_gadm_3 set urban_2015 = 0 where id_adm = '${idAdm}';
+              update urban_gadm_3 set non_urban_2015 = 0 where id_adm = '${idAdm}';
             `;
             fs.writeFileSync('../result.sql', sqlToWrite, {flag: 'a'});
         }
@@ -75,12 +94,16 @@ async function handleRow(row) {
                 });
             });
         });
+    }).then(() => {
+        return pool.query(`DROP TABLE raster_${idAdm};`).catch(err => {
+            console.log('dropTable: ', err);
+        })
     });
 }
 
 function getPixelValuesForCountry(rasterTable, idAdm) {
     const pixelCountsSql = `SELECT (pvc).VALUE as pixel_value, SUM((pvc).COUNT) AS tot_pix
-             FROM "${rasterTable}" as raster 
+             FROM ${rasterTable} as raster 
               INNER JOIN urban_gadm_3
                 ON ST_Intersects(raster.rast, geom), 
                 ST_ValueCount(ST_Clip(raster.rast,geom),1, false) AS pvc
@@ -98,7 +121,7 @@ function getPixelValuesForCountry(rasterTable, idAdm) {
     });
 }
 
-function getTotalArea(idAdm){
+function getTotalArea(idAdm) {
     const totalAreaSql = `SELECT St_Area(geom::geography) as totalArea from urban_gadm_3 where id_adm = '${idAdm}'`;
 
     return pool.query(totalAreaSql).then(result => {
@@ -115,31 +138,31 @@ function gatherFileNames(coordinates) {
         westCoord = Math.floor(coordinates[0].split(' ')[0]);
 
     let files = [];
-    for(let south = southCoord; south < northCoord; south++) {
-        for(let west = westCoord; west < eastCoord; west++) {
+    for (let south = southCoord; south < northCoord; south++) {
+        for (let west = westCoord; west < eastCoord; west++) {
             let fileToCopy = 'WSF2015_pr2018';
             let north = south + 1;
             let east = west + 1;
 
-            if(west >= 0) {
+            if (west >= 0) {
                 fileToCopy += `_e${('000' + west).substr(-3)}`;
             } else {
                 fileToCopy += `_w${('000' + Math.abs(west)).substr(-3)}`;
             }
 
-            if(north >= 0) {
+            if (north >= 0) {
                 fileToCopy += `_n${('00' + north).substr(-2)}`;
             } else {
                 fileToCopy += `_s${('00' + Math.abs(north)).substr(-2)}`;
             }
 
-            if(east >= 0) {
+            if (east >= 0) {
                 fileToCopy += `_e${('000' + east).substr(-3)}`;
             } else {
                 fileToCopy += `_w${('000' + Math.abs(east)).substr(-3)}`;
             }
 
-            if(south >= 0) {
+            if (south >= 0) {
                 fileToCopy += `_n${('00' + south).substr(-2)}`;
             } else {
                 fileToCopy += `_s${('00' + Math.abs(south)).substr(-2)}`;
@@ -162,7 +185,7 @@ function copyAllFilesForCountry(files, name) {
 
         copyPromises.push(new Promise((resolve) => {
             fs.copyFile(file, name + '/' + file, (err) => {
-                if(err) {
+                if (err) {
                     console.log('ErrorCopying: ', err);
                 }
                 resolve();
@@ -173,22 +196,22 @@ function copyAllFilesForCountry(files, name) {
     return Promise.all(copyPromises);
 }
 
-function integrateCountry(name){
+function integrateCountry(name) {
     return new Promise((resolve, reject) => {
         exec(`raster2pgsql -c -t 200x200 ${name}/*.tif raster_${name} > raster_${name}.sql`,
             {maxBuffer: 1024 * 500}, error => {
-                if(error) {
+                if (error) {
                     console.log('RasterLoad: ', error);
                 }
 
                 exec(`psql -U postgres -f raster_${name}.sql`,
                     {maxBuffer: 1024 * 1024}, error => {
-                    if(error) {
-                        console.log('RasterLoadDb: ', error);
-                    }
+                        if (error) {
+                            console.log('RasterLoadDb: ', error);
+                        }
 
-                    resolve();
-                });
+                        resolve();
+                    });
             });
     })
 }
