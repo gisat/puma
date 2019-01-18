@@ -56,7 +56,7 @@ class PgCollection {
 			group.forEach((object) => {
 				if (object.key && !object.data) {
 					promises.push({key: object.key});
-				} else if (object.key && object.data) {
+				} else if (object.data) {
 					promises.push(this.createOne(object, objects, user, extra));
 				} else {
 					promises.push({key: object.key, error: `no data`});
@@ -146,8 +146,10 @@ class PgCollection {
 			return data[key];
 		});
 
-		columns.push(`key`);
-		values.push(object.key);
+		if(object.key) {
+			columns.push(`key`);
+			values.push(object.key);
+		}
 
 		return this._pgPool
 			.query(
@@ -220,7 +222,12 @@ class PgCollection {
 				let promises = [];
 
 				group.forEach((object) => {
-					if (isAdmin || availableKeys[this._tableName].includes(object.key)) {
+					if(!object.key) {
+						// todo check permission first?
+						promises.push(
+							this.createOne(object, objects, user, extra)
+						);
+					} else if (isAdmin || availableKeys[this._tableName].includes(object.key)) {
 						promises.push(
 							this.updateOne(object, objects, user, extra)
 						);
