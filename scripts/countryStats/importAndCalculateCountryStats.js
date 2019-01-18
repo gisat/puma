@@ -17,8 +17,8 @@ processAll();
 // Country by country process is necessary.
 async function processAll() {
     console.log('Start: ' + new Date());
-    return pool.query(`SELECT id_adm, name_engli as name, st_astext(st_envelope(geom)) as bbox 
-                  FROM urban_gadm_3 ORDER BY id_adm LIMIT ${process.argv[2]} OFFSET ${process.argv[3]}`)
+    return pool.query(`SELECT id_adm, name_english as name, st_astext(st_envelope(geom)) as bbox 
+                  FROM urban_gadm_3 WHERE urban_2015 IS NOT NULL ORDER BY id_adm LIMIT ${process.argv[2]} OFFSET ${process.argv[3]}`)
         .then(async function(result) {
             let rows = result.rows;
 
@@ -33,6 +33,7 @@ async function handleRow(row) {
     const name = row.name
         .replace(/ /g, '')
         .replace(/\./g, '_')
+        .replace(/-/g, '_')
         .replace(/\(/g, '_')
         .replace(/\)/g, '_')
         .toLowerCase();
@@ -79,10 +80,10 @@ async function handleRow(row) {
 
 function getPixelValuesForCountry(rasterTable, idAdm) {
     const pixelCountsSql = `SELECT (pvc).VALUE as pixel_value, SUM((pvc).COUNT) AS tot_pix
-             FROM ${rasterTable} 
+             FROM "${rasterTable}" as raster 
               INNER JOIN urban_gadm_3
-                ON ST_Intersects(${rasterTable}.rast, geom), 
-                ST_ValueCount(ST_Clip(${rasterTable}.rast,geom),1, false) AS pvc
+                ON ST_Intersects(raster.rast, geom), 
+                ST_ValueCount(ST_Clip(raster.rast,geom),1, false) AS pvc
               GROUP BY (pvc).VALUE, id_adm
               HAVING id_adm = '${idAdm}'
              ORDER BY (pvc).VALUE `;
