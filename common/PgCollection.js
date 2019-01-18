@@ -1047,9 +1047,15 @@ class PgCollection {
 						break;
 				}
 			} else {
-				where.push(
-					`"${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
-				);
+				if(data === null) {
+					where.push(
+						`"${column}" IS NULL`
+					)
+				} else {
+					where.push(
+						`"${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
+					)
+				}
 			}
 		});
 
