@@ -46,10 +46,10 @@ class PgDatabase {
 	ensure() {
 		return this.ensureSchemas()
 			.then(() => {
-				return this.ensureMetadataTables();
+				return this.ensureTables(this._metadataStores, config.pgSchema.metadata);
 			})
 			.then(() => {
-				return this.ensureRelationsTables();
+				return this.ensureTables(this._relationsStores, config.pgSchema.relations);
 			});
 	}
 
@@ -70,18 +70,9 @@ class PgDatabase {
 		return this._pgPool.query(schemasSql.join(` `));
 	}
 
-	ensureMetadataTables() {
-		return Promise.all(_.map(this._metadataStores, (store) => {
-			let tableSql = new store(this._pgPool, config.pgSchema.metadata).getTableSql();
-			if (tableSql) {
-				return this._pgPool.query(tableSql);
-			}
-		}));
-	}
-
-	ensureRelationsTables() {
-		return Promise.all(_.map(this._relationsStores, (store) => {
-			let tableSql = new store(this._pgPool, config.pgSchema.relations).getTableSql();
+	ensureTables(stores, schema) {
+		return Promise.all(_.map(stores, (store) => {
+			let tableSql = new store(this._pgPool, schema).getTableSql();
 			if (tableSql) {
 				return this._pgPool.query(tableSql);
 			}
