@@ -36,7 +36,7 @@ class LayerWmsController {
         let currentUser = request.session.user;
         let layers;
         // Load actually accessible from the GeoNode
-        return this._pgLayers.filtered(null, [request.query.place], request.query.periods).then(pgLayers => {
+        return this._pgLayers.filtered(request.query.scope, [request.query.place], request.query.periods).then(pgLayers => {
             layers = pgLayers.filter(layer => currentUser.hasPermission(this.type, Permission.READ, layer.id));
 
             return layers;

@@ -44,8 +44,6 @@ class SharingController {
             return Promise.all([
                 this.permissions.add(userId, MongoScope.collectionName(), metadata.scope, Permission.READ),
                 this.permissions.add(userId, MongoDataView.collectionName(), dataViewId, Permission.READ),
-                this.permissions.add(userId, MongoDataView.collectionName(), dataViewId, Permission.UPDATE),
-                this.permissions.add(userId, MongoDataView.collectionName(), dataViewId, Permission.DELETE),
                 this.permissions.addCollection(userId, MongoLocation.collectionName(), metadata.places, Permission.READ),
                 this.permissions.addCollection(userId, MongoTopic.collectionName(), metadata.topics, Permission.READ),
 

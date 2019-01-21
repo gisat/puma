@@ -20,6 +20,8 @@ class PgCollection {
 
 		this._pgPermissions = new PgPermissions(pool, schema);
 		this._pgMetadataChanges = new PgMetadataChanges(pool, schema);
+
+		this._relatedMetadataStores = [];
 		this._pgMetadataRelations = null;
 
 		this._limit = 100;
@@ -50,7 +52,7 @@ class PgCollection {
 				if (object.key && !object.data) {
 					promises.push({key: object.key, uuid: object.uuid});
 				} else if (!object.key && object.data) {
-					promises.push(this.createOne(object, object, user, extra));
+					promises.push(this.createOne(object, objects, user, extra));
 				} else {
 					promises.push({key: object.key, uuid: object.uuid, error: `no data`});
 				}
@@ -72,22 +74,9 @@ class PgCollection {
 		let relations;
 		return Promise.resolve()
 			.then(() => {
-				if (this._pgMetadataRelations) {
-					let data = object.data;
-					let keys = Object.keys(data);
-
-					let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
-					_.each(keys, (key) => {
-						if (possibleRelationProperties.includes(key)) {
-							relations = {
-								...relations,
-								[key]: data[key]
-							};
-							delete data[key];
-						}
-					});
-				}
-
+				relations = this.parseRelations(object, objects, user, extra);
+			})
+			.then(() => {
 				if (!this._legacy) {
 					return this.postgresCreateOne(object, objects, user, extra);
 				} else {
@@ -95,16 +84,26 @@ class PgCollection {
 				}
 			})
 			.then((createdObject) => {
+				return this.createRelated(object, createdObject, objects, user, extra)
+					.then(() => {
+						return createdObject;
+					})
+			})
+			.then((createdObject) => {
+				return this.updateRelations(createdObject.key, relations, object, objects, user, extra)
+					.then(() => {
+						return createdObject;
+					});
+			})
+			.then((createdObject) => {
 				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id, object.data)
 					.then(() => {
-						if (relations) {
-							return this._pgMetadataRelations.addRelations(createdObject.key, relations);
-						}
+						return this.updateRelations(createdObject.key, relations, object, objects, user, extra);
 					})
 					.then(() => {
 						return createdObject;
 					})
-			});
+			})
 	}
 
 	mongoCreateOne(object, objects, user, extra) {
@@ -147,26 +146,64 @@ class PgCollection {
 			.query(
 				`INSERT INTO "${this._pgSchema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
 					return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
-				}).join(', ')}) RETURNING id AS key;`,
+				}).join(', ')}) RETURNING ${this.getReturningSql()};`,
 				values
 			)
 			.then((queryResult) => {
 				if (queryResult.rowCount) {
-					return queryResult.rows[0].key;
+					return queryResult.rows[0];
 				}
 			})
-			.then((key) => {
-				return this.setAllPermissionsToResourceForUser(key, user)
+			.then((created) => {
+				return this.setAllPermissionsToResourceForUser(created.key, user)
 					.then(() => {
-						return key;
+						return created;
 					})
 			})
-			.then((key) => {
+			.then((created) => {
 				return {
-					key: key,
-					uuid: uuid
+					uuid: uuid,
+					...created
 				};
 			});
+	}
+
+	getReturningSql() {
+		return `id AS key`;
+	}
+
+	parseRelations(object, objects, user, extra) {
+		let relations;
+
+		if (this._pgMetadataRelations) {
+			let data = object.data;
+			let keys = Object.keys(data);
+
+			let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+			_.each(keys, (key) => {
+				if (possibleRelationProperties.includes(key)) {
+					relations = {
+						...relations,
+						[key]: data[key]
+					};
+					delete data[key];
+				}
+			});
+		}
+
+		return relations;
+	}
+
+	updateRelations(baseKey, relations, object, objects, user, extra) {
+		if (relations) {
+			return this._pgMetadataRelations.updateRelations(baseKey, relations);
+		} else {
+			return Promise.resolve();
+		}
+	}
+
+	createRelated(object, createdObject, objects, user, extra) {
+		return Promise.resolve();
 	}
 
 	update(objects, user, extra) {
@@ -199,22 +236,9 @@ class PgCollection {
 		let relations;
 		return Promise.resolve()
 			.then(() => {
-				if (this._pgMetadataRelations) {
-					let data = object.data;
-					let keys = Object.keys(data);
-
-					let possibleRelationProperties = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
-					_.each(keys, (key) => {
-						if (possibleRelationProperties.includes(key)) {
-							relations = {
-								...relations,
-								[key]: data[key]
-							};
-							delete data[key];
-						}
-					});
-				}
-
+				relations = this.parseRelations(object, objects, user, extra);
+			})
+			.then(() => {
 				if (!this._legacy) {
 					return this.postgresUpdateOne(object, objects, user, extra);
 				} else {
@@ -222,12 +246,13 @@ class PgCollection {
 				}
 			})
 			.then((updatedObject) => {
-				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
+				return this.updateRelations(updatedObject.key, relations, object, objects, user, extra)
 					.then(() => {
-						if (relations) {
-							return this._pgMetadataRelations.updateRelations(updatedObject.key, relations);
-						}
-					})
+						return updatedObject;
+					});
+			})
+			.then((updatedObject) => {
+				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
 					.then(() => {
 						return updatedObject;
 					})
@@ -1103,6 +1128,13 @@ class PgCollection {
 		return Promise.all(promises);
 	}
 
+	setRelatedStores(stores) {
+		this._relatedMetadataStores = _.concat(this._relatedMetadataStores, stores);
+		if(this._relatedMetadataStores.length) {
+			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, this._pgSchema, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => { return metadataStore.getTableName()}));
+		}
+	}
+
 	_initPgTable() {
 		let sql = this._getTableSql();
 		if (sql) {
@@ -1116,6 +1148,18 @@ class PgCollection {
 
 	_getTableSql() {
 		return null;
+	}
+
+	getTableName() {
+		return this._tableName;
+	}
+
+	getCollectionName() {
+		return this._collectionName
+	}
+
+	getGroupName() {
+		return this._groupName;
 	}
 }
 
