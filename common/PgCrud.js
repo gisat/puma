@@ -1,7 +1,5 @@
 const _ = require('lodash');
 
-const Permission = require('../security/Permission');
-
 class PgCrud {
 	constructor() {
 		this._pgTypes = {
@@ -10,14 +8,6 @@ class PgCrud {
 
 	async create(data, user, extra) {
 		let errors;
-
-		for (let type of Object.keys(data)) {
-			if (this._pgTypes.hasOwnProperty(type)) {
-				// if (!user.hasPermission(this._pgTypes[type].type, Permission.CREATE, null)) {
-				// 	throw new Error('Forbidden');
-				// }
-			}
-		}
 
 		for (let type of Object.keys(data)) {
 			if (this._pgTypes.hasOwnProperty(type)) {
@@ -121,6 +111,16 @@ class PgCrud {
 		}
 
 		return data;
+	}
+
+	getGroupsByType() {
+		let groupByType = {};
+
+		_.each(this._pgTypes, (value, property) => {
+			groupByType[value.type] = property;
+		});
+
+		return groupByType;
 	}
 }
 

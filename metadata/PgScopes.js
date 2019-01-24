@@ -4,8 +4,6 @@ class PgScopes extends PgCollection {
 	constructor(pgPool, pgSchema) {
 		super(pgPool, pgSchema);
 
-		this._checkPermissions = false;
-
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 

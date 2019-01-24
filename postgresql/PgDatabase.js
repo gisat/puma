@@ -18,6 +18,11 @@ const PgSpatialRelations = require(`../metadata/PgSpatialRelations`);
 const PgAttributeRelations = require(`../metadata/PgAttributeRelations`);
 const PgAreaRelations = require(`../metadata/PgAreaRelations`);
 
+const PgRasters = require(`../dataSources/PgRasters`);
+const PgVectors = require(`../dataSources/PgVectors`);
+const PgWmtses = require(`../dataSources/PgWmtses`);
+const PgWmses = require(`../dataSources/PgWmses`);
+
 class PgDatabase {
 	constructor(pgPool) {
 		this._pgPool = pgPool;
@@ -40,7 +45,14 @@ class PgDatabase {
 			PgSpatialRelations,
 			PgAttributeRelations,
 			PgAreaRelations
-		]
+		];
+
+		this._dataSourcesStores = [
+			PgRasters,
+			PgVectors,
+			PgWmses,
+			PgWmtses
+		];
 	}
 
 	ensure() {
@@ -50,6 +62,9 @@ class PgDatabase {
 			})
 			.then(() => {
 				return this.ensureTables(this._relationsStores, config.pgSchema.relations);
+			})
+			.then(() => {
+				return this.ensureTables(this._dataSourcesStores, config.pgSchema.dataSources);
 			});
 	}
 

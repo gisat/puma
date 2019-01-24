@@ -60,6 +60,8 @@ const PucsMatlabProcessorController = require('../integration/PucsMatlabProcesso
 
 const GeoserverProxyController = require(`../geoserver/proxy/GeoserverProxyController`);
 
+const PgDataSourcesController = require(`../dataSources/PgDataSourcesController`);
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -141,6 +143,7 @@ module.exports = function(app) {
 
 	new PgMetadataController(app, pool.pool(), config.pgSchema.metadata);
 	new PgRelationsController(app, pool.pool(), config.pgSchema.relations);
+	new PgDataSourcesController(app, pool.pool(), config.pgSchema.dataSources);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
 

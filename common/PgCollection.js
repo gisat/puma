@@ -20,7 +20,7 @@ class PgCollection {
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
 
-		this._pgPermissionsSchema = config.pgSchema.permissions;
+		this._pgPermissionsSchema = config.pgSchema.data;
 		this._pgDataSchema = config.pgSchema.data;
 
 		this._pgPermissions = new PgPermissions(this._pgPool, this._pgPermissionsSchema);
@@ -51,15 +51,35 @@ class PgCollection {
 	create(objects, user, extra) {
 		let group = objects[this._groupName];
 
+		let canCreate = true;
+
+		if(this._checkPermissions) {
+			if(this._permissionResourceTypes) {
+				if(this._permissionResourceTypes.length) {
+					_.each(this._permissionResourceTypes, (resourceType) => {
+						if(!user.hasPermission(resourceType, Permission.CREATE, null)) {
+							canCreate = false;
+						}
+					});
+				} else {
+					canCreate = false;
+				}
+			}
+		}
+
 		if (group) {
 			let promises = [];
 			group.forEach((object) => {
-				if (object.key && !object.data) {
-					promises.push({key: object.key});
-				} else if (object.data) {
-					promises.push(this.createOne(object, objects, user, extra));
+				if(canCreate) {
+					if (object.key && !object.data) {
+						promises.push({key: object.key});
+					} else if (object.data) {
+						promises.push(this.createOne(object, objects, user, extra));
+					} else {
+						promises.push({key: object.key, error: `no data`});
+					}
 				} else {
-					promises.push({key: object.key, error: `no data`});
+					promises.push({key: object.key, data: object.data, error: `has no permission to create this type`});
 				}
 			});
 
@@ -938,7 +958,6 @@ class PgCollection {
 	parsePostgresRow(row) {
 		return {
 			key: row.key,
-			uuid: row.uuid,
 			data: {
 				...row,
 				key: undefined,
@@ -1118,10 +1137,16 @@ class PgCollection {
 			return payloadData;
 		} else {
 			if (payloadData.hasOwnProperty(this._groupName) && payloadData[this._groupName].length) {
-				return this.get({
-					filter: {key: {in: _.map(payloadData[this._groupName], 'key')}},
-					unlimited: true
-				}, user, {})
+				let payloadDataFiltered = _.filter(payloadData[this._groupName], 'key');
+				return Promise.resolve()
+					.then(() => {
+						if(payloadDataFiltered.length) {
+							return this.get({
+								filter: {key: {in: _.map(payloadDataFiltered, 'key')}},
+								unlimited: true
+							}, user, {});
+						}
+					})
 					.then((currentModels) => {
 						payloadData[this._groupName] = _.map(payloadData[this._groupName], model => {
 							if (model.key) {
