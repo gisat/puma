@@ -28,7 +28,7 @@ class PgDataSources extends PgCrud {
 				type: PgWms.tableName()
 			},
 			[PgWmts.groupName()]: {
-				store: this._pgWmtse,
+				store: this._pgWmts,
 				type: PgWmts.tableName()
 			}
 		};
