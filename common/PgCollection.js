@@ -184,6 +184,7 @@ class PgCollection {
 				}
 			})
 			.then((created) => {
+				// todo change permissions when user is guest
 				return this.setAllPermissionsToResourceForUser(created.key, user)
 					.then(() => {
 						return created;

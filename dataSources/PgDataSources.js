@@ -1,35 +1,35 @@
 const PgCrud = require(`../common/PgCrud`);
 
-const PgRasters = require(`./PgRasters`);
-const PgVectors = require(`./PgVectors`);
-const PgWmses = require(`./PgWmses`);
-const PgWmtses = require(`./PgWmtses`);
+const PgRaster = require(`./PgRaster`);
+const PgVector = require(`./PgVector`);
+const PgWms = require(`./PgWms`);
+const PgWmts = require(`./PgWmts`);
 
 class PgDataSources extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
-		this._pgRasters = new PgRasters(pgPool, pgSchema);
-		this._pgVectors = new PgVectors(pgPool, pgSchema);
-		this._pgWmses = new PgWmses(pgPool, pgSchema);
-		this._pgWmtses = new PgWmtses(pgPool, pgSchema);
+		this._pgRaster = new PgRaster(pgPool, pgSchema);
+		this._pgVector = new PgVector(pgPool, pgSchema);
+		this._pgWms = new PgWms(pgPool, pgSchema);
+		this._pgWmts = new PgWmts(pgPool, pgSchema);
 
 		this._pgTypes = {
-			[PgRasters.groupName()]: {
-				store: this._pgRasters,
-				type: PgRasters.tableName()
+			[PgRaster.groupName()]: {
+				store: this._pgRaster,
+				type: PgRaster.tableName()
 			},
-			[PgVectors.groupName()]: {
-				store: this._pgVectors,
-				type: PgVectors.tableName()
+			[PgVector.groupName()]: {
+				store: this._pgVector,
+				type: PgVector.tableName()
 			},
-			[PgWmses.groupName()]: {
-				store: this._pgWmses,
-				type: PgWmses.tableName()
+			[PgWms.groupName()]: {
+				store: this._pgWms,
+				type: PgWms.tableName()
 			},
-			[PgWmtses.groupName()]: {
-				store: this._pgWmtses,
-				type: PgWmtses.tableName()
+			[PgWmts.groupName()]: {
+				store: this._pgWmtse,
+				type: PgWmts.tableName()
 			}
 		};
 	}

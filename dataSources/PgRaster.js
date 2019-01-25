@@ -1,6 +1,6 @@
 const PgCollection = require(`../common/PgCollection`);
 
-class PgVectors extends PgCollection {
+class PgRaster extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
@@ -31,12 +31,12 @@ class PgVectors extends PgCollection {
 	}
 
 	static groupName() {
-		return 'vectors';
+		return 'raster';
 	}
 
 	static tableName() {
-		return 'vector';
+		return 'raster';
 	}
 }
 
-module.exports = PgVectors;
+module.exports = PgRaster;

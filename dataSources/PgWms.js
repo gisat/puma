@@ -1,6 +1,6 @@
 const PgCollection = require(`../common/PgCollection`);
 
-class PgWmtses extends PgCollection {
+class PgWms extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
@@ -23,19 +23,22 @@ class PgWmtses extends PgCollection {
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attribution" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "urls" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "url" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "layers" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "styles" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "configuration" JSONB;
 		
 		COMMIT;
 		`;
 	}
 
 	static groupName() {
-		return 'wmtses';
+		return 'wms';
 	}
 
 	static tableName() {
-		return 'wmts';
+		return 'wms';
 	}
 }
 
-module.exports = PgWmtses;
+module.exports = PgWms;

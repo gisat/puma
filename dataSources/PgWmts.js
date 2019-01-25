@@ -1,6 +1,6 @@
 const PgCollection = require(`../common/PgCollection`);
 
-class PgRasters extends PgCollection {
+class PgWmts extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
@@ -23,20 +23,19 @@ class PgRasters extends PgCollection {
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attribution" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "layerName" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "tableName" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "urls" TEXT[];
 		
 		COMMIT;
 		`;
 	}
 
 	static groupName() {
-		return 'rasters';
+		return 'wmts';
 	}
 
 	static tableName() {
-		return 'raster';
+		return 'wmts';
 	}
 }
 
-module.exports = PgRasters;
+module.exports = PgWmts;
