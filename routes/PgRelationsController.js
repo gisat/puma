@@ -57,7 +57,7 @@ class PgRelationsController {
 	}
 
 	update(request, response) {
-		this._pgRelations.update(request.body, request.session.user)
+		this._pgRelations.update(request.body.data, request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);
