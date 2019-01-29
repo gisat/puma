@@ -1,6 +1,6 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgAreaTree extends PgCollection {
+class PgScopes extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
@@ -9,8 +9,10 @@ class PgAreaTree extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `areaTreeLevel`;
+
 		this._permissionResourceTypes = [
-			`areaTree`
+			this._basePermissionResourceType
 		];
 	}
 
@@ -23,17 +25,18 @@ class PgAreaTree extends PgCollection {
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameDisplay" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "description" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "level" INTEGER;
 		COMMIT;
 		`;
 	}
 
 	static groupName() {
-		return 'areaTrees';
+		return 'areaTreeLevels';
 	}
 
 	static tableName() {
-		return 'areaTree';
+		return 'areaTreeLevel';
 	}
 }
 
-module.exports = PgAreaTree;
+module.exports = PgScopes;

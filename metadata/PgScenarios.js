@@ -9,8 +9,10 @@ class PgScenarios extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `scenario`;
+
 		this._permissionResourceTypes = [
-			`scenario`
+			this._basePermissionResourceType
 		];
 	}
 

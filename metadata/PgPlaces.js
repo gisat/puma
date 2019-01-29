@@ -9,8 +9,10 @@ class PgPlaces extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `place`;
+
 		this._permissionResourceTypes = [
-		    `place`
+			this._basePermissionResourceType
 		];
 	}
 

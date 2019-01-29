@@ -7,8 +7,10 @@ class PgScopes extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `scope`;
+
 		this._permissionResourceTypes = [
-			`scope`
+			this._basePermissionResourceType
 		];
 	}
 

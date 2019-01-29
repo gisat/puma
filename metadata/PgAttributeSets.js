@@ -9,8 +9,10 @@ class PgAttributeSets extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `attributeSet`;
+
 		this._permissionResourceTypes = [
-			`attributeSet`
+			this._basePermissionResourceType
 		];
 	}
 

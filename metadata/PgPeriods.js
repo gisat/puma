@@ -10,8 +10,10 @@ class PgPeriods extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `period`;
+
 		this._permissionResourceTypes = [
-			`period`
+			this._basePermissionResourceType
 		];
 	}
 

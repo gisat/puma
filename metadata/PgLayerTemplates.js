@@ -9,8 +9,10 @@ class PgLayerTemplates extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `layerTemplate`;
+
 		this._permissionResourceTypes = [
-			`layerTemplate`
+			this._basePermissionResourceType
 		];
 	}
 

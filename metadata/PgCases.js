@@ -9,8 +9,10 @@ class PgCases extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `case`;
+
 		this._permissionResourceTypes = [
-			`case`
+			this._basePermissionResourceType
 		];
 	}
 

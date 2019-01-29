@@ -9,8 +9,10 @@ class PgViews extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._basePermissionResourceType = `view`;
+
 		this._permissionResourceTypes = [
-			`view`
+			this._basePermissionResourceType
 		];
 	}
 
