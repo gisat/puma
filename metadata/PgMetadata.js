@@ -11,8 +11,8 @@ const PgPeriods = require('./PgPeriods');
 const PgAttributeSets = require('./PgAttributeSets');
 const PgAttributes = require('./PgAttributes');
 const PgLayerTemplates = require('./PgLayerTemplates');
-const PgAreaTree = require('./PgAreaTree');
-const PgAreaTreeLevel = require('./PgAreaTreeLevel');
+const PgAreaTrees = require('./PgAreaTrees');
+const PgAreaTreeLevels = require('./PgAreaTreeLevels');
 const PgViews = require('./PgViews');
 
 const PgScenariosLegacy = require('./PgScenariosLegacy');
@@ -43,14 +43,15 @@ class PgMetadata extends PgCrud {
 		this._pgLayerTemplates = new PgLayerTemplates(pgPool, pgSchema);
 		this._pgScenarios = new PgScenarios(pgPool, pgSchema);
 		this._pgCases = new PgCases(pgPool, pgSchema);
-		this._pgAreaTree = new PgAreaTree(pgPool, pgSchema);
-		this._pgAreaTreeLevel = new PgAreaTreeLevel(pgPool, pgSchema);
+		this._pgAreaTrees = new PgAreaTrees(pgPool, pgSchema);
+		this._pgAreaTreeLevels = new PgAreaTreeLevels(pgPool, pgSchema);
 		this._pgViews = new PgViews(pgPool, pgSchema);
 
 		this._PgDataSource = null;
 
-		this._pgAreaTree.setRelatedStores([this._pgScopes]);
-		this._pgAreaTreeLevel.setRelatedStores([this._pgAreaTree]);
+		this._pgAreaTrees.setRelatedStores([this._pgScopes]);
+		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees]);
+		this._pgLayerTemplates.setRelatedStores([this._pgScopes]);
 
 		// this._pgLayerGroups = new PgLayerGroups(pgPool, pgSchema);
 
@@ -92,13 +93,13 @@ class PgMetadata extends PgCrud {
 				store: this._pgLayerTemplates,
 				type: PgLayerTemplates.tableName()
 			},
-			[PgAreaTree.groupName()]: {
-				store: this._pgAreaTree,
-				type: PgAreaTree.tableName()
+			[PgAreaTrees.groupName()]: {
+				store: this._pgAreaTrees,
+				type: PgAreaTrees.tableName()
 			},
-			[PgAreaTreeLevel.groupName()]: {
-				store: this._pgAreaTreeLevel,
-				type: PgAreaTreeLevel.tableName()
+			[PgAreaTreeLevels.groupName()]: {
+				store: this._pgAreaTreeLevels,
+				type: PgAreaTreeLevels.tableName()
 			},
 			[PgViews.groupName()]: {
 				store: this._pgViews,

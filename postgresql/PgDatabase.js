@@ -10,8 +10,8 @@ const PgPeriods = require('../metadata/PgPeriods');
 const PgAttributeSets = require('../metadata/PgAttributeSets');
 const PgAttributes = require('../metadata/PgAttributes');
 const PgLayerTemplates = require('../metadata/PgLayerTemplates');
-const PgAreaTree = require('../metadata/PgAreaTree');
-const PgAreaTreeLevel = require('../metadata/PgAreaTreeLevel');
+const PgAreaTrees = require('../metadata/PgAreaTrees');
+const PgAreaTreeLevels = require('../metadata/PgAreaTreeLevels');
 const PgViews = require('../metadata/PgViews');
 
 const PgSpatialRelations = require(`../metadata/PgSpatialRelations`);
@@ -36,8 +36,8 @@ class PgDatabase {
 			PgAttributeSets,
 			PgAttributes,
 			PgLayerTemplates,
-			PgAreaTree,
-			PgAreaTreeLevel,
+			PgAreaTrees,
+			PgAreaTreeLevels,
 			PgViews
 		];
 
