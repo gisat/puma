@@ -165,32 +165,63 @@ class PgCollection {
 		let data = object.data;
 
 		let keys = Object.keys(data);
-		let columns = _.map(keys, (key) => {
-			return `"${key}"`;
-		});
-		let values = _.map(keys, (key) => {
-			return data[key];
-		});
 
-		if (object.key) {
-			columns.push(`key`);
-			values.push(object.key);
-		}
+		let columns, values;
 
-		return this._pgPool
-			.query(
-				`INSERT INTO "${this._pgSchema}"."${this._tableName}" (${columns.join(', ')}) VALUES (${_.map(values, (value, index) => {
-					return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
-				}).join(', ')}) RETURNING ${this.getReturningSql()};`,
-				values
-			)
+		return Promise.resolve()
+			.then(() => {
+				if (this._dataSources && keys.includes(`type`) && this._relatedColumns) {
+					let dataSource = this._dataSources[data['type']];
+					let dataSourceRelevantColumns = dataSource.getRelevantColumns();
+
+					keys = _.difference(keys, dataSourceRelevantColumns);
+
+					let dataSourceRelevantColumnValues = _.map(dataSourceRelevantColumns, (dataSourceRelevantColumn) => {
+						return data[dataSourceRelevantColumn];
+					});
+
+					return this._pgPool
+						.query(
+							`INSERT INTO "${this._pgSchema}"."${dataSource.getTableName()}" AS "${dataSource.getTableName()}" ("${dataSourceRelevantColumns.join('", "')}") VALUES (${_.map(dataSourceRelevantColumnValues, (value, index) => {
+								return `$${index + 1}`
+							})})  RETURNING "${dataSource.getTableName()}"."key"`,
+							dataSourceRelevantColumnValues
+						)
+						.then((queryResult) => {
+							return queryResult.rows[0] && queryResult.rows[0].key;
+						})
+						.then((createdDataSourceKey) => {
+							keys.push(this._relatedColumns.baseColumn);
+							data[this._relatedColumns.baseColumn] = createdDataSourceKey;
+						})
+				}
+			})
+			.then(() => {
+				columns = keys;
+				values = _.map(keys, (key) => {
+					return data[key];
+				});
+
+				if (object.key) {
+					columns.push(`key`);
+					values.push(object.key);
+				}
+			})
+			.then(() => {
+				return this._pgPool
+					.query(
+						`INSERT INTO "${this._pgSchema}"."${this._tableName}" ("${columns.join('", "')}") VALUES (${_.map(values, (value, index) => {
+							return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
+						}).join(', ')}) RETURNING ${this.getReturningSql()};`,
+						values
+					)
+			})
 			.then((queryResult) => {
 				if (queryResult.rowCount) {
 					return queryResult.rows[0];
 				}
 			})
 			.then((created) => {
-				// todo change permissions when user is guest
 				return this.setAllPermissionsToResourceForUser(created.key, user)
 					.then(() => {
 						return created;
@@ -977,7 +1008,7 @@ class PgCollection {
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
 
-		if(extra.idOnly) {
+		if (extra.idOnly) {
 			sql.push(
 				`SELECT "${this._tableName}"."key"`
 			);
@@ -986,7 +1017,7 @@ class PgCollection {
 				`"${this._tableName}".*`
 			];
 
-			if(this._relevantColumns) {
+			if (this._relevantColumns) {
 				columns = [];
 				_.each(this._relevantColumns, (relevantColumn) => {
 					columns.push(
@@ -995,7 +1026,7 @@ class PgCollection {
 				});
 			}
 
-			if(this._dataSources) {
+			if (this._dataSources) {
 				_.each(this._dataSources, (dataSource) => {
 					_.each(dataSource.getRelevantColumns(), (relevantColumn) => {
 						columns.push(
@@ -1016,19 +1047,11 @@ class PgCollection {
 			`FROM "${this._pgSchema}"."${this._tableName}" AS "${this._tableName}"`
 		);
 
-		if(this._dataSources && this._relatedColumns) {
+		if (this._dataSources && this._relatedColumns) {
 			_.each(this._dataSources, (dataSource) => {
-				if(dataSource.getTableName()) {
-					let joinConditions = [];
-
-					_.each(this._relatedColumns, (value, property) => {
-						joinConditions.push(
-							`"${dataSource.getTableName()}"."${value}" = "${this._tableName}"."${property}"`
-						)
-					});
-
+				if (dataSource.getTableName()) {
 					sql.push(
-						`LEFT JOIN "${this._pgSchema}"."${dataSource.getTableName()}" AS "${dataSource.getTableName()}" ON ${joinConditions.join(` AND `)}`
+						`LEFT JOIN "${this._pgSchema}"."${dataSource.getTableName()}" AS "${dataSource.getTableName()}" ON "${dataSource.getTableName()}"."${this._relatedColumns.relatedColumn}" = "${this._tableName}"."${this._relatedColumns.baseColumn}"`
 					)
 				}
 			});
@@ -1076,9 +1099,9 @@ class PgCollection {
 		_.map(request.filter, (data, column) => {
 			let tableNamePrefix = this._tableName;
 
-			if(this._dataSources) {
+			if (this._dataSources) {
 				_.each(this._dataSources, (dataSource) => {
-					if(dataSource.getRelevantColumns().includes(column)) {
+					if (dataSource.getRelevantColumns().includes(column)) {
 						tableNamePrefix = dataSource.getTableName();
 					}
 				});
@@ -1159,8 +1182,6 @@ class PgCollection {
 			sql.push(`ORDER BY "${this._tableName}"."key"`);
 		}
 
-		console.log(sql.join(` `));
-
 		return sql.join(' ');
 	}
 
@@ -1182,12 +1203,12 @@ class PgCollection {
 				}
 			})
 			.then((queryResult) => {
-				if(this._dataSources) {
+				if (this._dataSources) {
 					return _.map(queryResult.rows, (row) => {
 						let filteredRow = {};
 
 						_.each(row, (value, property) => {
-							if(!property.startsWith(`#`) || property.startsWith(`#${row.type}#`)) {
+							if (!property.startsWith(`#`) || property.startsWith(`#${row.type}#`)) {
 								property = property.replace(`#${row.type}#`, ``);
 								filteredRow[property] = value;
 							}

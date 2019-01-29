@@ -42,7 +42,8 @@ class PgCommonDataSource extends PgCollection {
 		];
 
 		this._relatedColumns = {
-			sourceKey: `key`
+			baseColumn: `sourceKey`,
+			relatedColumn: `key`
 		};
 	}
 
