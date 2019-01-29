@@ -1,16 +1,11 @@
-const PgCollection = require(`../common/PgCollection`);
+const PgBaseDataSource = require(`./PgBaseDataSource`)
 
-class PgWmts extends PgCollection {
-	constructor(pool, schema) {
-		super(pool, schema);
+class PgWmts extends PgBaseDataSource {
+	constructor(pgSchema) {
+		super(`wmts`, `wmts`, pgSchema);
 
-		this._checkPermissions = false;
-
-		this._groupName = this.constructor.groupName();
-		this._tableName = this.constructor.tableName();
-
-		this._permissionResourceTypes = [
-			`dataSource`
+		this._relevantColumns = [
+			`urls`
 		];
 	}
 
@@ -21,20 +16,10 @@ class PgWmts extends PgCollection {
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
 			"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
 		);
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attribution" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "urls" TEXT[];
 		
 		COMMIT;
 		`;
-	}
-
-	static groupName() {
-		return 'wmts';
-	}
-
-	static tableName() {
-		return 'wmts';
 	}
 }
 

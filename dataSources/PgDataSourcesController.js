@@ -57,7 +57,7 @@ class PgDataSourcesController {
 	}
 
 	update(request, response) {
-		this._pgDataSources.update(request.body, request.session.user)
+		this._pgDataSources.update(request.body.data, request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);

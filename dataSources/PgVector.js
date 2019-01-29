@@ -1,16 +1,12 @@
-const PgCollection = require(`../common/PgCollection`);
+const PgBaseDataSource = require(`./PgBaseDataSource`)
 
-class PgVector extends PgCollection {
-	constructor(pool, schema) {
-		super(pool, schema);
+class PgVector extends PgBaseDataSource {
+	constructor(pgSchema) {
+		super(`vector`, `vector`, pgSchema);
 
-		this._checkPermissions = false;
-
-		this._groupName = this.constructor.groupName();
-		this._tableName = this.constructor.tableName();
-
-		this._permissionResourceTypes = [
-			`dataSource`
+		this._relevantColumns = [
+			`layerName`,
+			`tableName`
 		];
 	}
 
@@ -21,21 +17,11 @@ class PgVector extends PgCollection {
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
 			"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
 		);
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attribution" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "layerName" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "tableName" TEXT;
 		
 		COMMIT;
 		`;
-	}
-
-	static groupName() {
-		return 'vector';
-	}
-
-	static tableName() {
-		return 'vector';
 	}
 }
 

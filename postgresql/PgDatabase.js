@@ -18,10 +18,7 @@ const PgSpatialRelations = require(`../metadata/PgSpatialRelations`);
 const PgAttributeRelations = require(`../metadata/PgAttributeRelations`);
 const PgAreaRelations = require(`../metadata/PgAreaRelations`);
 
-const PgRaster = require(`../dataSources/PgRaster`);
-const PgVector = require(`../dataSources/PgVector`);
-const PgWmtse = require(`../dataSources/PgWmts`);
-const PgWmse = require(`../dataSources/PgWms`);
+const PgCommonDataSource = require(`../dataSources/PgCommonDataSource`);
 
 class PgDatabase {
 	constructor(pgPool) {
@@ -48,10 +45,7 @@ class PgDatabase {
 		];
 
 		this._dataSourcesStores = [
-			PgRaster,
-			PgVector,
-			PgWmse,
-			PgWmtse
+			PgCommonDataSource
 		];
 	}
 

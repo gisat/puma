@@ -46,6 +46,10 @@ class PgCollection {
 		this._legacyDataPath = "";
 
 		this._customSqlColumns = ``;
+
+		this._dataSources = null;
+		this._relevantColumns = null;
+		this._relatedColumns = null;
 	}
 
 	create(objects, user, extra) {
@@ -53,11 +57,11 @@ class PgCollection {
 
 		let canCreate = true;
 
-		if(this._checkPermissions) {
-			if(this._permissionResourceTypes) {
-				if(this._permissionResourceTypes.length) {
+		if (this._checkPermissions) {
+			if (this._permissionResourceTypes) {
+				if (this._permissionResourceTypes.length) {
 					_.each(this._permissionResourceTypes, (resourceType) => {
-						if(!user.hasPermission(resourceType, Permission.CREATE, null)) {
+						if (!user.hasPermission(resourceType, Permission.CREATE, null)) {
 							canCreate = false;
 						}
 					});
@@ -70,7 +74,7 @@ class PgCollection {
 		if (group) {
 			let promises = [];
 			group.forEach((object) => {
-				if(canCreate) {
+				if (canCreate) {
 					if (object.key && !object.data) {
 						promises.push({key: object.key});
 					} else if (object.data) {
@@ -166,7 +170,7 @@ class PgCollection {
 			return data[key];
 		});
 
-		if(object.key) {
+		if (object.key) {
 			columns.push(`key`);
 			values.push(object.key);
 		}
@@ -243,12 +247,12 @@ class PgCollection {
 				let promises = [];
 
 				group.forEach((object) => {
-					if(!object.key) {
+					if (!object.key) {
 						// todo check permission first?
 						promises.push(
 							this.createOne(object, objects, user, extra)
 						);
-					} else if (isAdmin || availableKeys[this._tableName].includes(object.key)) {
+					} else if (isAdmin || (availableKeys[this._basePermissionResourceType] && availableKeys[this._basePermissionResourceType].includes(object.key))) {
 						promises.push(
 							this.updateOne(object, objects, user, extra)
 						);
@@ -327,7 +331,7 @@ class PgCollection {
 			values.push(data[property]);
 		});
 
-		if(!sets.length) {
+		if (!sets.length) {
 			return {
 				key: object.key
 			}
@@ -353,24 +357,24 @@ class PgCollection {
 	get(request, user, extra) {
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
 			.then(async ([availableKeys, isAdmin]) => {
-				if(this._pgMetadataRelations) {
+				if (this._pgMetadataRelations) {
 					let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
 					let requestedRelations = {};
 					_.each(possibleRelationColumns, (possibleRelationColumn) => {
-						if(request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
+						if (request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
 							requestedRelations[possibleRelationColumn] = request.filter[possibleRelationColumn];
 							delete request.filter[possibleRelationColumn];
 						}
 					});
 
-					if(Object.keys(requestedRelations).length) {
+					if (Object.keys(requestedRelations).length) {
 						await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
 							.then((baseKeys) => {
-								if(request.filter.hasOwnProperty(`key`)) {
-									if(!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
+								if (request.filter.hasOwnProperty(`key`)) {
+									if (!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
 										request.filter.key = -1;
-									} else if(_.isObject(request.filter.key))  {
-										if(request.filter.key.hasOwnProperty(`in`)) {
+									} else if (_.isObject(request.filter.key)) {
+										if (request.filter.key.hasOwnProperty(`in`)) {
 											request.filter.key.in = _.intersectionWith(request.filter.key.in, baseKeys, (first, second) => {
 												return String(first) === String(second);
 											})
@@ -514,7 +518,7 @@ class PgCollection {
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
 		// TODO this._tableName and this._collectionName are propably unnecessary
-		if(!resourceKeys || !resourceKeys.length) {
+		if (!resourceKeys || !resourceKeys.length) {
 			return Promise.resolve([]);
 		}
 
@@ -535,7 +539,7 @@ class PgCollection {
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
 		// TODO this._tableName and this._collectionName are propably unnecessary
-		if(!resourceKeys || !resourceKeys.length) {
+		if (!resourceKeys || !resourceKeys.length) {
 			return Promise.resolve([]);
 		}
 
@@ -970,26 +974,75 @@ class PgCollection {
 
 	getSql(request, user, extra, availableKeys, isAdmin) {
 		let sql = [];
-		sql.push(`SELECT ${extra.idOnly ? 'key' : `*${this._customSqlColumns}`} FROM "${this._pgSchema}"."${this._tableName}" AS a`);
+
+		if(extra.idOnly) {
+			sql.push(
+				`SELECT "${this._tableName}"."key"`
+			);
+		} else {
+			let columns = [
+				`"${this._tableName}".*`
+			];
+
+			if(this._relevantColumns) {
+				columns = [];
+				_.each(this._relevantColumns, (relevantColumn) => {
+					columns.push(
+						`"${this._tableName}"."${relevantColumn}" AS "${relevantColumn}"`
+					);
+				});
+			}
+
+			if(this._dataSources) {
+				_.each(this._dataSources, (dataSource) => {
+					_.each(dataSource.getRelevantColumns(), (relevantColumn) => {
+						columns.push(
+							`"${dataSource.getTableName()}"."${relevantColumn}" AS "#${dataSource.getType()}#${relevantColumn}"`
+						);
+					});
+				});
+			}
+
+			let columnsString = columns.join(`, `);
+
+			sql.push(
+				`SELECT ${columnsString}${this._customSqlColumns}`
+			)
+		}
+
+		sql.push(
+			`FROM "${this._pgSchema}"."${this._tableName}" AS "${this._tableName}"`
+		);
+
+		if(this._dataSources && this._relatedColumns) {
+			_.each(this._dataSources, (dataSource) => {
+				if(dataSource.getTableName()) {
+					let joinConditions = [];
+
+					_.each(this._relatedColumns, (value, property) => {
+						joinConditions.push(
+							`"${dataSource.getTableName()}"."${value}" = "${this._tableName}"."${property}"`
+						)
+					});
+
+					sql.push(
+						`LEFT JOIN "${this._pgSchema}"."${dataSource.getTableName()}" AS "${dataSource.getTableName()}" ON ${joinConditions.join(` AND `)}`
+					)
+				}
+			});
+		}
 
 		if (!isAdmin) {
 			let keys = [];
-			// TODO rewrite - first two conditions are propably not needed
-			if (availableKeys.hasOwnProperty(this._tableName)) {
-				keys.push(availableKeys[this._tableName]);
-			}
-			if (availableKeys.hasOwnProperty(this._collectionName)) {
-				keys.push(availableKeys[this._collectionName]);
-			}
 			_.each(this._permissionResourceTypes, (permissionResourceType) => {
-				if(availableKeys.hasOwnProperty(permissionResourceType)) {
+				if (availableKeys.hasOwnProperty(permissionResourceType)) {
 					keys.push(availableKeys[permissionResourceType]);
 				}
 			});
 			keys = _.union(_.compact(_.flatten(keys)));
 
 			if (!keys.length) {
-				keys.push(-1);
+				keys.push(`c0724606-f2f3-45bd-964b-2ba69cff26cb`);	// this uuid should never exists in database
 			}
 
 			if (request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
@@ -1019,6 +1072,16 @@ class PgCollection {
 
 		let where = [];
 		_.map(request.filter, (data, column) => {
+			let tableNamePrefix = this._tableName;
+
+			if(this._dataSources) {
+				_.each(this._dataSources, (dataSource) => {
+					if(dataSource.getRelevantColumns().includes(column)) {
+						tableNamePrefix = dataSource.getTableName();
+					}
+				});
+			}
+
 			if (_.isObject(data)) {
 				let type = Object.keys(data)[0];
 				let value = data[type];
@@ -1028,52 +1091,52 @@ class PgCollection {
 				switch (type) {
 					case 'like':
 						where.push(
-							`"${column}" ILIKE '%${value}%'`
+							`"${tableNamePrefix}"."${column}" ILIKE '%${value}%'`
 						);
 						break;
 					case 'in':
 						_.each(value, (value) => {
-							if(_.isString(value)) {
+							if (_.isString(value)) {
 								isString = true;
 							}
 						});
 
-						if(isString) {
+						if (isString) {
 							where.push(
-								`"${column}" IN ('${value.join(`', '`)}')`
+								`"${tableNamePrefix}"."${column}" IN ('${value.join(`', '`)}')`
 							);
 						} else {
 							where.push(
-								`"${column}" IN (${value.join(', ')})`
+								`"${tableNamePrefix}"."${column}" IN (${value.join(', ')})`
 							);
 						}
 						break;
 					case 'notin':
 						_.each(value, (value) => {
-							if(_.isString(value)) {
+							if (_.isString(value)) {
 								isString = true;
 							}
 						});
 
-						if(isString) {
+						if (isString) {
 							where.push(
-								`"${column}" NOT IN ('${value.join(`', '`)}')`
+								`"${tableNamePrefix}"."${column}" NOT IN ('${value.join(`', '`)}')`
 							);
 						} else {
 							where.push(
-								`"${column}" NOT IN (${value.join(', ')})`
+								`"${tableNamePrefix}"."${column}" NOT IN (${value.join(', ')})`
 							);
 						}
 						break;
 				}
 			} else {
-				if(data === null) {
+				if (data === null) {
 					where.push(
-						`"${column}" IS NULL`
+						`"${tableNamePrefix}"."${column}" IS NULL`
 					)
 				} else {
 					where.push(
-						`"${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
+						`"${tableNamePrefix}"."${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
 					)
 				}
 			}
@@ -1091,8 +1154,10 @@ class PgCollection {
 				sql.push(`"${key}" ${direction}`);
 			});
 		} else {
-			sql.push(`ORDER BY "a"."key"`);
+			sql.push(`ORDER BY "${this._tableName}"."key"`);
 		}
+
+		console.log(sql.join(` `));
 
 		return sql.join(' ');
 	}
@@ -1115,7 +1180,22 @@ class PgCollection {
 				}
 			})
 			.then((queryResult) => {
-				return queryResult.rows;
+				if(this._dataSources) {
+					return _.map(queryResult.rows, (row) => {
+						let filteredRow = {};
+
+						_.each(row, (value, property) => {
+							if(!property.startsWith(`#`) || property.startsWith(`#${row.type}#`)) {
+								property = property.replace(`#${row.type}#`, ``);
+								filteredRow[property] = value;
+							}
+						});
+
+						return filteredRow;
+					});
+				} else {
+					return queryResult.rows;
+				}
 			})
 			.then((rows) => {
 				if (extra.idOnly) {
@@ -1134,14 +1214,17 @@ class PgCollection {
 	}
 
 	populateData(payloadData, user) {
+		// todo vymyslet fix kdyz v payloadData je kombinace neprovedenych akci s chybou a provedenych akci pripadne je payloadData plny nepovedenych akci s chybou
 		if (this._legacy) {
 			return payloadData;
 		} else {
 			if (payloadData.hasOwnProperty(this._groupName) && payloadData[this._groupName].length) {
-				let payloadDataFiltered = _.filter(payloadData[this._groupName], 'key');
+				let payloadDataFiltered = _.filter(payloadData[this._groupName], (data) => {
+					return data.key && !data.message;
+				});
 				return Promise.resolve()
 					.then(() => {
-						if(payloadDataFiltered.length) {
+						if (payloadDataFiltered.length) {
 							return this.get({
 								filter: {key: {in: _.map(payloadDataFiltered, 'key')}},
 								unlimited: true
@@ -1176,7 +1259,7 @@ class PgCollection {
 											...defaultModelRelations
 										};
 
-										if(relations && relations.hasOwnProperty(model.key)) {
+										if (relations && relations.hasOwnProperty(model.key)) {
 											modelRelations = {
 												...modelRelations,
 												...relations[model.key]
@@ -1195,21 +1278,29 @@ class PgCollection {
 		}
 	}
 
-	setAllPermissionsToResourceForUser(resource_id, user) {
+	setAllPermissionsToResourceForUser(resourceKey, user) {
 		let promises = [];
 
-		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.CREATE));
-		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.READ));
-		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.UPDATE));
-		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.DELETE));
+		if (this._basePermissionResourceType) {
+			if (user.id) {
+				promises.push(this._pgPermissions.add(user.id, this._basePermissionResourceType, resourceKey, Permission.CREATE));
+				promises.push(this._pgPermissions.add(user.id, this._basePermissionResourceType, resourceKey, Permission.READ));
+				promises.push(this._pgPermissions.add(user.id, this._basePermissionResourceType, resourceKey, Permission.UPDATE));
+				promises.push(this._pgPermissions.add(user.id, this._basePermissionResourceType, resourceKey, Permission.DELETE));
+			} else {
+				promises.push(this._pgPermissions.addGroup(this._publicGroupId, this._basePermissionResourceType, resourceKey, Permission.READ));
+			}
+		}
 
 		return Promise.all(promises);
 	}
 
 	setRelatedStores(stores) {
 		this._relatedMetadataStores = _.concat(this._relatedMetadataStores, stores);
-		if(this._relatedMetadataStores.length) {
-			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => { return metadataStore.getTableName()}));
+		if (this._relatedMetadataStores.length) {
+			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => {
+				return metadataStore.getTableName()
+			}));
 		}
 	}
 
