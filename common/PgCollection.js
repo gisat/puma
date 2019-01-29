@@ -39,6 +39,8 @@ class PgCollection {
 		this._groupName = null;
 		this._collectionName = null;
 		this._tableName = null;
+
+		this._basePermissionResourceType = null;
 		this._permissionResourceTypes = null;
 
 		this._publicGroupId = 2;
