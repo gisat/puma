@@ -357,33 +357,84 @@ class PgCollection {
 		let key = object.key;
 		let data = object.data;
 
-		let sets = [];
-		let values = [];
-		Object.keys(data).forEach((property, index) => {
-			sets.push(`"${property}" = $${index + 1}`);
-			values.push(data[property]);
-		});
-
-		if (!sets.length) {
-			return {
-				key: object.key
-			}
-		}
-
-		let sql = [];
-		sql.push(`UPDATE "${this._pgSchema}"."${this._tableName}"`);
-		sql.push(`SET`);
-		sql.push(sets.join(`, `));
-		sql.push(`WHERE key = '${key}' RETURNING key`);
-
-		return this._pgPool
-			.query(sql.join(` `), values)
-			.then((result) => {
-				return {
-					key: result.rows[0].key,
-					data: null,
-					success: true
+		return Promise.resolve()
+			.then(() => {
+				if(this._dataSources) {
+					return this._pgPool
+						.query(`SELECT "${this._tableName}"."type", "${this._tableName}"."${this._relatedColumns.baseColumn}" FROM "${this._pgSchema}"."${this._tableName}" AS "${this._tableName}" WHERE "${this._tableName}"."key" = '${key}'`)
+						.then((queryResult) => {
+							return queryResult.rows && queryResult.rows[0];
+						})
 				}
+			})
+			.then((dataSourceRecord) => {
+				if(dataSourceRecord) {
+					if(!data.type === dataSourceRecord.type) {
+						return {
+							key: object.key
+						}
+					}
+
+					let dataSource = this._dataSources[dataSourceRecord.type];
+					let dataSourceKey = dataSourceRecord[this._relatedColumns.baseColumn];
+					let relevantColumns = dataSource.getRelevantColumns();
+
+					let dataSourceData = {};
+
+					_.each(relevantColumns, (relevantColumn) => {
+						if(data.hasOwnProperty(relevantColumn)) {
+							dataSourceData[relevantColumn] = data[relevantColumn];
+							delete data[relevantColumn];
+						}
+					});
+
+					let values = [];
+					let sets = [];
+
+					Object.keys(dataSourceData).forEach((property, index) => {
+						sets.push(`"${property}" = $${index + 1}`);
+						values.push(dataSourceData[property]);
+					});
+
+					if(sets.length) {
+						return this._pgPool
+							.query(
+								`UPDATE "${this._pgSchema}"."${dataSource.getTableName()}" SET ${sets.join(', ')} WHERE "key" = '${dataSourceKey}'`,
+								values
+							);
+					}
+				}
+			})
+			.then(() => {
+				let sets = [];
+				let values = [];
+
+				Object.keys(data).forEach((property, index) => {
+					sets.push(`"${property}" = $${index + 1}`);
+					values.push(data[property]);
+				});
+
+				if (!sets.length) {
+					return {
+						key: object.key
+					}
+				}
+
+				let sql = [];
+				sql.push(`UPDATE "${this._pgSchema}"."${this._tableName}"`);
+				sql.push(`SET`);
+				sql.push(sets.join(`, `));
+				sql.push(`WHERE "key" = '${key}' RETURNING "key"`);
+
+				return this._pgPool
+					.query(sql.join(` `), values)
+					.then((result) => {
+						return {
+							key: result.rows[0].key,
+							data: null,
+							success: true
+						}
+					});
 			});
 	}
 
@@ -1237,7 +1288,6 @@ class PgCollection {
 	}
 
 	populateData(payloadData, user) {
-		// todo vymyslet fix kdyz v payloadData je kombinace neprovedenych akci s chybou a provedenych akci pripadne je payloadData plny nepovedenych akci s chybou
 		if (this._legacy) {
 			return payloadData;
 		} else {
@@ -1256,7 +1306,7 @@ class PgCollection {
 					})
 					.then((currentModels) => {
 						payloadData[this._groupName] = _.map(payloadData[this._groupName], model => {
-							if (model.key) {
+							if (model.key && currentModels && currentModels.data) {
 								let currentModel = _.find(currentModels.data, {key: model.key});
 								if (currentModel) {
 									model = {
