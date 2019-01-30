@@ -359,7 +359,7 @@ class PgCollection {
 
 		return Promise.resolve()
 			.then(() => {
-				if(this._dataSources) {
+				if (this._dataSources) {
 					return this._pgPool
 						.query(`SELECT "${this._tableName}"."type", "${this._tableName}"."${this._relatedColumns.baseColumn}" FROM "${this._pgSchema}"."${this._tableName}" AS "${this._tableName}" WHERE "${this._tableName}"."key" = '${key}'`)
 						.then((queryResult) => {
@@ -368,8 +368,8 @@ class PgCollection {
 				}
 			})
 			.then((dataSourceRecord) => {
-				if(dataSourceRecord) {
-					if(!data.type === dataSourceRecord.type) {
+				if (dataSourceRecord) {
+					if (!data.type === dataSourceRecord.type) {
 						return {
 							key: object.key
 						}
@@ -382,7 +382,7 @@ class PgCollection {
 					let dataSourceData = {};
 
 					_.each(relevantColumns, (relevantColumn) => {
-						if(data.hasOwnProperty(relevantColumn)) {
+						if (data.hasOwnProperty(relevantColumn)) {
 							dataSourceData[relevantColumn] = data[relevantColumn];
 							delete data[relevantColumn];
 						}
@@ -396,7 +396,7 @@ class PgCollection {
 						values.push(dataSourceData[property]);
 					});
 
-					if(sets.length) {
+					if (sets.length) {
 						return this._pgPool
 							.query(
 								`UPDATE "${this._pgSchema}"."${dataSource.getTableName()}" SET ${sets.join(', ')} WHERE "key" = '${dataSourceKey}'`,
@@ -769,20 +769,39 @@ class PgCollection {
 
 	postgresDeleteOne(key) {
 		return this._pgPool
-			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE key = '${key}'`)
-			.then((result) => {
-				if (result.rowCount) {
+			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE "key" = '${key}' RETURNING *`)
+			.then((queryResult) => {
+				if (queryResult.rows && queryResult.rows[0]) {
+					if(this._dataSources) {
+						let dataSource = this._dataSources[queryResult.rows[0].type];
+						let dataSourceKey = queryResult.rows[0][this._relatedColumns.baseColumn];
+						if(dataSourceKey && dataSource) {
+							return this._pgPool
+								.query(
+									`DELETE FROM "${this._pgSchema}"."${dataSource.getTableName()}" WHERE "key" = '${dataSourceKey}' RETURNING *`
+								)
+								.then((queryResult) => {
+									return true;
+								})
+						}
+					} else {
+						return true;
+					}
+				}
+			})
+			.then((deleted) => {
+				if(deleted) {
 					return this.removeAllPermissionsByResourceKey(key)
 						.then(() => {
 							return {
-								success: true
+								deleted
 							}
 						});
 				}
 			})
 			.catch((error) => {
 				return {
-					success: false,
+					deleted: false,
 					message: error.message
 				}
 			})
