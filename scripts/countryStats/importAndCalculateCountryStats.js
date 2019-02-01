@@ -55,7 +55,7 @@ async function handleRow(row) {
         .replace(/\)/g, '_')
         .toLowerCase();
     const idAdm = row.id_adm;
-    console.log('Processing Name: ', name);
+    console.log('Processing Name: ', name, ' ID: ', idAdm);
 
     let polygon = row.bbox;
     polygon = polygon.replace('POLYGON((', '').replace('))', '');
@@ -113,8 +113,8 @@ function getPixelValuesForCountry(rasterTable, idAdm) {
 
     return pool.query(pixelCountsSql).then(result => {
         return {
-            urban: Number(result.rows[1].tot_pix),
-            nonUrban: Number(result.rows[0].tot_pix)
+            urban: result.rows && result.rows.length > 1 && Number(result.rows[1].tot_pix) || 0,
+            nonUrban: result.rows && result.rows.length > 1 && Number(result.rows[0].tot_pix) || 0
         }
     }).catch(err => {
         console.log('getPixelValuesForCountry: ', err);
@@ -202,6 +202,7 @@ function integrateCountry(name) {
             {maxBuffer: 1024 * 500}, error => {
                 if (error) {
                     console.log('RasterLoad: ', error);
+                    fs.writeFileSync('../error_load.txt', error, {flag: 'a'});
                 }
 
                 exec(`psql -U postgres -f raster_${name}.sql`,
