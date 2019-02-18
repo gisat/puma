@@ -411,9 +411,11 @@ class PgCollection {
 
 			let byResourceKey = {};
 
-			_.each(resourceKeys, (resourceKey) => {
-				let permissions = [...userPermissions, ...groupPermissions];
+			let permissions = [...userPermissions, ...groupPermissions];
 
+			console.log(permissions);
+
+			_.each(resourceKeys, (resourceKey) => {
 				if (!byResourceKey.hasOwnProperty(resourceKey)) {
 					byResourceKey[resourceKey] = {
 						guest: {
@@ -429,11 +431,21 @@ class PgCollection {
 					};
 				}
 
-				if (isAdmin || _.find(permissions, {
-					resource_id: `${resourceKey}`,
-					user_id: user.id,
-					permission: Permission.READ
-				})) {
+				// todo find better way how to check if group has permissions to itself
+				if (
+					isAdmin
+					|| _.find(permissions, {
+						resource_id: `${resourceKey}`,
+						user_id: user.id,
+						permission: Permission.READ
+					})
+					|| _.find(permissions, (permission) => {
+						return permission.resource_id === `${resourceKey}`
+							&& permission.permission === Permission.READ
+							&& permission.resource_type === `group`
+							&& _.map(user.groups, (group) => { return `${group.id}`}).includes(permission.resource_id)
+					})
+				) {
 					byResourceKey[resourceKey].activeUser.get = true;
 				}
 				if (isAdmin || _.find(permissions, {
@@ -445,8 +457,7 @@ class PgCollection {
 				}
 				if (isAdmin || _.find(permissions, {
 					resource_id: `${resourceKey}`,
-					user_id: user.id,
-					permission: Permission.UPDATE
+					permission: Permission.DELETE
 				})) {
 					byResourceKey[resourceKey].activeUser.delete = true;
 				}
@@ -479,11 +490,10 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
-		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
 			`SELECT * FROM "${this._pgSchema}"."group_permissions" AS gp `,
 			`WHERE`,
-			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
+			`gp.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
 			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND group_id IN (${groupIds.join(`, `)})`
 		];
@@ -496,11 +506,10 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
-		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
 			`SELECT * FROM "${this._pgSchema}"."permissions" AS p `,
 			`WHERE`,
-			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
+			`p.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
 			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND user_id = ${userId}`
 		];
