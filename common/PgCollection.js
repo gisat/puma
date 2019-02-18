@@ -413,8 +413,6 @@ class PgCollection {
 
 			let permissions = [...userPermissions, ...groupPermissions];
 
-			console.log(permissions);
-
 			_.each(resourceKeys, (resourceKey) => {
 				if (!byResourceKey.hasOwnProperty(resourceKey)) {
 					byResourceKey[resourceKey] = {
@@ -431,34 +429,30 @@ class PgCollection {
 					};
 				}
 
-				// todo find better way how to check if group has permissions to itself
 				if (
 					isAdmin
-					|| _.find(permissions, {
-						resource_id: `${resourceKey}`,
-						user_id: user.id,
-						permission: Permission.READ
-					})
 					|| _.find(permissions, (permission) => {
 						return permission.resource_id === `${resourceKey}`
+							&& permission.group_id !== this._publicGroupId
 							&& permission.permission === Permission.READ
-							&& permission.resource_type === `group`
-							&& _.map(user.groups, (group) => { return `${group.id}`}).includes(permission.resource_id)
 					})
 				) {
 					byResourceKey[resourceKey].activeUser.get = true;
 				}
-				if (isAdmin || _.find(permissions, {
-					resource_id: `${resourceKey}`,
-					user_id: user.id,
-					permission: Permission.UPDATE
-				})) {
+				if (isAdmin || _.find(permissions, (permission) => {
+					return permission.resource_id === `${resourceKey}`
+						&& permission.group_id !== this._publicGroupId
+						&& permission.permission === Permission.UPDATE
+				})
+				) {
 					byResourceKey[resourceKey].activeUser.update = true;
 				}
-				if (isAdmin || _.find(permissions, {
-					resource_id: `${resourceKey}`,
-					permission: Permission.DELETE
-				})) {
+				if (isAdmin || _.find(permissions, (permission) => {
+					return permission.resource_id === `${resourceKey}`
+						&& permission.group_id !== this._publicGroupId
+						&& permission.permission === Permission.DELETE
+				})
+				) {
 					byResourceKey[resourceKey].activeUser.delete = true;
 				}
 
