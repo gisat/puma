@@ -66,7 +66,7 @@ class PgLpisCheckCases extends PgCollection {
 						layerPeriods.push({[dataviewData.s2GetDatesLayerTemplateId]: `${date}`});
 					});
 
-					let caseDataview = this.getCaseDataview(dataviewData.placeId, dataviewData.yearIds, dataviewData.scopeId, dataviewData.themeId, centroid.coordinates[1], centroid.coordinates[0], 2000, layerPeriods);
+					let caseDataview = this.getCaseDataview(dataviewData.placeId, dataviewData.yearIds, dataviewData.scopeId, dataviewData.themeId, centroid.coordinates[1], centroid.coordinates[0], 2000, layerPeriods, dataviewData.ortofotoLayerTemplateId);
 
 					return dataviewStore.create({[dataviewStore.getGroupName()]: [{data: caseDataview}]}, user, extra);
 				}
