@@ -65,7 +65,8 @@ class PgDatabase {
 			})
 			.then(() => {
 				return this.ensureTables(this._dataSourcesStores, config.pgSchema.dataSources);
-			}).then(() => {
+			})
+			.then(() => {
 				return this.ensureTables(this._applicationStores, config.pgSchema.application);
 			});
 	}
