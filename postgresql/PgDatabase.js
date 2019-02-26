@@ -20,6 +20,8 @@ const PgAreaRelations = require(`../metadata/PgAreaRelations`);
 
 const PgCommonDataSource = require(`../dataSources/PgCommonDataSource`);
 
+const PgLayerTrees = require(`../application/PgLayerTrees`);
+
 class PgDatabase {
 	constructor(pgPool) {
 		this._pgPool = pgPool;
@@ -47,6 +49,10 @@ class PgDatabase {
 		this._dataSourcesStores = [
 			PgCommonDataSource
 		];
+
+		this._applicationStores = [
+			PgLayerTrees
+		];
 	}
 
 	ensure() {
@@ -59,6 +65,8 @@ class PgDatabase {
 			})
 			.then(() => {
 				return this.ensureTables(this._dataSourcesStores, config.pgSchema.dataSources);
+			}).then(() => {
+				return this.ensureTables(this._applicationStores, config.pgSchema.application);
 			});
 	}
 
