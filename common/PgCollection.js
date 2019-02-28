@@ -293,7 +293,7 @@ class PgCollection {
 			values.push(data[property]);
 		});
 
-		if(!sets.length) {
+		if (!sets.length) {
 			return {
 				key: object.key
 			}
@@ -319,24 +319,24 @@ class PgCollection {
 	get(request, user, extra) {
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
 			.then(async ([availableKeys, isAdmin]) => {
-				if(this._pgMetadataRelations) {
+				if (this._pgMetadataRelations) {
 					let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
 					let requestedRelations = {};
 					_.each(possibleRelationColumns, (possibleRelationColumn) => {
-						if(request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
+						if (request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
 							requestedRelations[possibleRelationColumn] = request.filter[possibleRelationColumn];
 							delete request.filter[possibleRelationColumn];
 						}
 					});
 
-					if(Object.keys(requestedRelations).length) {
+					if (Object.keys(requestedRelations).length) {
 						await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
 							.then((baseKeys) => {
-								if(request.filter.hasOwnProperty(`key`)) {
-									if(!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
+								if (request.filter.hasOwnProperty(`key`)) {
+									if (!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
 										request.filter.key = -1;
-									} else if(_.isObject(request.filter.key))  {
-										if(request.filter.key.hasOwnProperty(`in`)) {
+									} else if (_.isObject(request.filter.key)) {
+										if (request.filter.key.hasOwnProperty(`in`)) {
 											request.filter.key.in = _.intersectionWith(request.filter.key.in, baseKeys, (first, second) => {
 												return String(first) === String(second);
 											})
@@ -411,9 +411,9 @@ class PgCollection {
 
 			let byResourceKey = {};
 
-			_.each(resourceKeys, (resourceKey) => {
-				let permissions = [...userPermissions, ...groupPermissions];
+			let permissions = [...userPermissions, ...groupPermissions];
 
+			_.each(resourceKeys, (resourceKey) => {
 				if (!byResourceKey.hasOwnProperty(resourceKey)) {
 					byResourceKey[resourceKey] = {
 						guest: {
@@ -429,25 +429,30 @@ class PgCollection {
 					};
 				}
 
-				if (isAdmin || _.find(permissions, {
-					resource_id: `${resourceKey}`,
-					user_id: user.id,
-					permission: Permission.READ
-				})) {
+				if (
+					isAdmin
+					|| _.find(permissions, (permission) => {
+						return permission.resource_id === `${resourceKey}`
+							&& permission.group_id !== this._publicGroupId
+							&& permission.permission === Permission.READ
+					})
+				) {
 					byResourceKey[resourceKey].activeUser.get = true;
 				}
-				if (isAdmin || _.find(permissions, {
-					resource_id: `${resourceKey}`,
-					user_id: user.id,
-					permission: Permission.UPDATE
-				})) {
+				if (isAdmin || _.find(permissions, (permission) => {
+					return permission.resource_id === `${resourceKey}`
+						&& permission.group_id !== this._publicGroupId
+						&& permission.permission === Permission.UPDATE
+				})
+				) {
 					byResourceKey[resourceKey].activeUser.update = true;
 				}
-				if (isAdmin || _.find(permissions, {
-					resource_id: `${resourceKey}`,
-					user_id: user.id,
-					permission: Permission.UPDATE
-				})) {
+				if (isAdmin || _.find(permissions, (permission) => {
+					return permission.resource_id === `${resourceKey}`
+						&& permission.group_id !== this._publicGroupId
+						&& permission.permission === Permission.DELETE
+				})
+				) {
 					byResourceKey[resourceKey].activeUser.delete = true;
 				}
 
@@ -479,11 +484,10 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
-		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
 			`SELECT * FROM "${this._pgSchema}"."group_permissions" AS gp `,
 			`WHERE`,
-			`gp.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
+			`gp.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
 			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND group_id IN (${groupIds.join(`, `)})`
 		];
@@ -496,11 +500,10 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
-		// TODO this._tableName and this._collectionName are propably unnecessary
 		let query = [
 			`SELECT * FROM "${this._pgSchema}"."permissions" AS p `,
 			`WHERE`,
-			`p.resource_type IN ('${_.compact([this._tableName, this._collectionName, ...this._permissionResourceTypes]).join(`', '`)}')`,
+			`p.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
 			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
 			`AND user_id = ${userId}`
 		];
@@ -941,7 +944,7 @@ class PgCollection {
 				keys.push(availableKeys[this._collectionName]);
 			}
 			_.each(this._permissionResourceTypes, (permissionResourceType) => {
-				if(availableKeys.hasOwnProperty(permissionResourceType)) {
+				if (availableKeys.hasOwnProperty(permissionResourceType)) {
 					keys.push(availableKeys[permissionResourceType]);
 				}
 			});
@@ -1098,7 +1101,7 @@ class PgCollection {
 											...defaultModelRelations
 										};
 
-										if(relations && relations.hasOwnProperty(model.key)) {
+										if (relations && relations.hasOwnProperty(model.key)) {
 											modelRelations = {
 												...modelRelations,
 												...relations[model.key]
@@ -1130,8 +1133,10 @@ class PgCollection {
 
 	setRelatedStores(stores) {
 		this._relatedMetadataStores = _.concat(this._relatedMetadataStores, stores);
-		if(this._relatedMetadataStores.length) {
-			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, this._pgSchema, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => { return metadataStore.getTableName()}));
+		if (this._relatedMetadataStores.length) {
+			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, this._pgSchema, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => {
+				return metadataStore.getTableName()
+			}));
 		}
 	}
 

@@ -50,7 +50,7 @@ class PgLpisCheckCases extends PgCollection {
 		let scopeId, geometry, centroid, dataviewStore;
 		return Promise.resolve()
 			.then(() => {
-				if(extra && extra.configuration && extra.configuration.scope_id) {
+				if (extra && extra.configuration && extra.configuration.scope_id) {
 					scopeId = extra.configuration.scope_id;
 					geometry = JSON.parse(createdObject.geometry);
 					centroid = JSON.parse(createdObject.centroid);
@@ -58,7 +58,7 @@ class PgLpisCheckCases extends PgCollection {
 				}
 			})
 			.then((dataviewData) => {
-				if(dataviewData) {
+				if (dataviewData) {
 					dataviewStore = this.getDataViewStore();
 
 					let layerPeriods = [];
@@ -66,7 +66,7 @@ class PgLpisCheckCases extends PgCollection {
 						layerPeriods.push({[dataviewData.s2GetDatesLayerTemplateId]: `${date}`});
 					});
 
-					let caseDataview = this.getCaseDataview(dataviewData.placeId, dataviewData.yearIds, dataviewData.scopeId, dataviewData.themeId, centroid.coordinates[1], centroid.coordinates[0], 2000, layerPeriods);
+					let caseDataview = this.getCaseDataview(dataviewData.placeId, dataviewData.yearIds, dataviewData.scopeId, dataviewData.themeId, centroid.coordinates[1], centroid.coordinates[0], 2000, layerPeriods, dataviewData.ortofotoLayerTemplateId);
 
 					return dataviewStore.create({[dataviewStore.getGroupName()]: [{data: caseDataview}]}, user, extra);
 				}
@@ -75,7 +75,7 @@ class PgLpisCheckCases extends PgCollection {
 				return createdDataviews[0] && createdDataviews[0].key;
 			})
 			.then((createdDataviewKey) => {
-				if(createdDataviewKey && this._pgMetadataRelations) {
+				if (createdDataviewKey && this._pgMetadataRelations) {
 					return this._pgMetadataRelations.addRelations(createdObject.key, {[`${dataviewStore.getTableName()}_key`]: createdDataviewKey})
 				}
 			})
@@ -89,6 +89,7 @@ class PgLpisCheckCases extends PgCollection {
 		return this._pgLpisCases._getMongoScopeById(scopeId)
 			.then((mongoScopeDocument) => {
 				dataviewData.s2GetDatesLayerTemplateId = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.s2GetDatesLayerTemplateId;
+				dataviewData.ortofotoLayerTemplateId = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.ortofotoLayerTemplateId;
 				return this._pgLpisCases._getMongoBasicDataViewParametersByScopeId(scopeId)
 			})
 			.then(([themeId, yearId, placeId, yearIds]) => {
@@ -101,18 +102,18 @@ class PgLpisCheckCases extends PgCollection {
 				return this._imageMosaic.getDatesByGeometry(geometry);
 			})
 			.then((datesForGeometry) => {
-				if(datesForGeometry.length <= 6) {
-					for(let i = 0; i < 6; i++) {
+				if (datesForGeometry.length <= 6) {
+					for (let i = 0; i < 6; i++) {
 						dataviewData.dates.push(datesForGeometry[i] || null);
 					}
 				} else {
-					dataviewData.dates.push(datesForGeometry[0]);
+					let chunkSize = Math.ceil(datesForGeometry.length / 5);
+					let chunks = _.chunk(datesForGeometry, chunkSize);
 
-					for(let i = Math.floor((datesForGeometry.length -1) / 4); i < datesForGeometry.length - 1; i += Math.floor((datesForGeometry.length -1) / 4)) {
-						dataviewData.dates.push(datesForGeometry[i]);
-					}
-
-					dataviewData.dates.push(datesForGeometry[datesForGeometry.length - 1]);
+					_.each(chunks, (chunk) => {
+						let index = _.random(0, chunk.length - 1);
+						dataviewData.dates.push(chunk[index]);
+					});
 				}
 			})
 			.then(() => {
@@ -149,7 +150,7 @@ class PgLpisCheckCases extends PgCollection {
 		return `id AS key, ST_AsGeoJSON(ST_Envelope(ST_Transform(geometry, 4326))) AS geometry, ST_AsGeoJSON(ST_Centroid(ST_Transform(geometry, 4326))) AS centroid`;
 	}
 
-	getCaseDataview(placeId, yearIds, scopeId, themeId, latidute, longitude, range, layerPeriods) {
+	getCaseDataview(placeId, yearIds, scopeId, themeId, latidute, longitude, range, layerPeriods, ortofotoTemplateId) {
 		let baseDataview =
 			{
 				"name": "",
@@ -180,7 +181,20 @@ class PgLpisCheckCases extends PgCollection {
 						},
 						"range": range
 					},
-					"mapsMetadata": [],
+					"mapsMetadata": [
+						{
+							"key": "default-map",
+							"name": "Map 1",
+							"wmsLayers": [
+								ortofotoTemplateId
+							],
+							"layerPeriods": null,
+							"placeGeometryChangeReview": {
+								"showGeometryBefore": true,
+								"showGeometryAfter": false
+							}
+						}
+					],
 					"mapDefaults": {
 						"period": yearIds[0],
 						"activeBackgroundLayerKey": "cartoDb",
@@ -198,8 +212,8 @@ class PgLpisCheckCases extends PgCollection {
 
 		_.each(layerPeriods, (layerPeriod, index) => {
 			baseDataview.conf.mapsMetadata.push({
-				"key": index === 0 ? "default-map" : `key_${index}`,
-				"name": `Map ${index + 1}`,
+				"key": `key_${index}`,
+				"name": `Map ${index + 2}`,
 				"wmsLayers": null,
 				"layerPeriods": layerPeriod,
 				"placeGeometryChangeReview": {

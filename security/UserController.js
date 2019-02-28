@@ -48,6 +48,7 @@ class UserController {
 
 		this.users.all().then(users => {
 			let jsonUsers = users.map(user => user.json());
+			jsonUsers = jsonUsers.filter(user => this.hasRights(request.session.user, Permission.READ, user._id));
 			response.json({data: jsonUsers});
 		}).catch(err => {
 			logger.error('UserController#readAll Error: ', err);
