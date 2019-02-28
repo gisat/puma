@@ -44,7 +44,7 @@ class PgMetadata extends PgCrud {
 		this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
 		this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
 
-		this._pgLpisCheckCases.setRelatedStores([this._pgPlaces, this._pgDataviewsLegacy]);
+		this._pgLpisCheckCases.setRelatedStores([this._pgPlaces, this._pgDataviewsLegacy, this._pgScopes]);
 
 		this._pgTypes = {
 			scenarios: {
