@@ -9,6 +9,8 @@ class PgLayerTrees extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._keyType = this.constructor.keyType();
+
 		this._basePermissionResourceType = `layerTree`;
 
 		this._permissionResourceTypes = [
@@ -20,9 +22,8 @@ class PgLayerTrees extends PgCollection {
 		return `
 		BEGIN;
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
-			"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
+			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "appKey" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "structure" jsonb[];
 		COMMIT;
 		`;
@@ -34,6 +35,10 @@ class PgLayerTrees extends PgCollection {
 
 	static tableName() {
 		return 'layerTree';
+	}
+
+	static keyType() {
+		return `UUID`;
 	}
 }
 

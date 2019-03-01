@@ -1,23 +1,23 @@
-const PgApplications = require('../application/PgApplications');
+const PgViewsCrud = require('../view/PgViewsCrud');
 
-class PgApplicationController {
+class PgViewsController {
 	constructor(app, pgPool, pgSchema) {
-		this._pgApplications = new PgApplications(pgPool, pgSchema);
+		this._crud = new PgViewsCrud(pgPool, pgSchema);
 
-		app.post(`/rest/applications`, this.create.bind(this));
+		app.post(`/rest/views`, this.create.bind(this));
 
-		app.get(`/rest/applications`, this.get.bind(this));
-		app.get(`/rest/applications/:type`, this.get.bind(this));
-		app.post(`/rest/applications/filtered`, this.get.bind(this));
-		app.post(`/rest/applications/filtered/:type`, this.get.bind(this));
+		app.get(`/rest/views`, this.get.bind(this));
+		app.get(`/rest/views/:type`, this.get.bind(this));
+		app.post(`/rest/views/filtered`, this.get.bind(this));
+		app.post(`/rest/views/filtered/:type`, this.get.bind(this));
 
-		app.delete(`/rest/applications`, this.delete.bind(this));
+		app.delete(`/rest/views`, this.delete.bind(this));
 
-		app.put(`/rest/applications`, this.update.bind(this))
+		app.put(`/rest/views`, this.update.bind(this))
 	}
 
 	create(request, response) {
-		this._pgApplications.create(
+		this._crud.create(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
 			request.session.user,
 			{
@@ -47,7 +47,7 @@ class PgApplicationController {
 	}
 
 	get(request, response) {
-		this._pgApplications.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
+		this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
@@ -62,7 +62,7 @@ class PgApplicationController {
 	}
 
 	delete(request, response) {
-		this._pgApplications.delete(request.body.data, request.session.user)
+		this._crud.delete(request.body.data, request.session.user)
 			.then((data) => {
 				response.status(200).json({
 					data: data,
@@ -79,7 +79,7 @@ class PgApplicationController {
 	}
 
 	update(request, response) {
-		this._pgApplications.update(
+		this._crud.update(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
 			request.session.user,
 			{
@@ -110,4 +110,4 @@ class PgApplicationController {
 	}
 }
 
-module.exports = PgApplicationController;
+module.exports = PgViewsController;

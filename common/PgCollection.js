@@ -39,6 +39,7 @@ class PgCollection {
 		this._groupName = null;
 		this._collectionName = null;
 		this._tableName = null;
+		this._keyType = null;
 
 		this._basePermissionResourceType = null;
 		this._permissionResourceTypes = null;
@@ -1395,10 +1396,12 @@ class PgCollection {
 	setRelatedStores(stores) {
 		this._relatedMetadataStores = _.concat(this._relatedMetadataStores, stores);
 		if (this._relatedMetadataStores.length) {
-			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this._tableName, _.map(this._relatedMetadataStores, (metadataStore) => {
-				return metadataStore.getTableName()
-			}));
+			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this, this._relatedMetadataStores);
 		}
+	}
+
+	getKeyColumnType() {
+		return this._keyType;
 	}
 
 	getTableSql() {

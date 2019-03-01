@@ -12,7 +12,7 @@ const PgAttributes = require('../metadata/PgAttributes');
 const PgLayerTemplates = require('../metadata/PgLayerTemplates');
 const PgAreaTrees = require('../metadata/PgAreaTrees');
 const PgAreaTreeLevels = require('../metadata/PgAreaTreeLevels');
-const PgViews = require('../metadata/PgViews');
+const PgTags = require('../metadata/PgTags');
 
 const PgSpatialRelations = require(`../metadata/PgSpatialRelations`);
 const PgAttributeRelations = require(`../metadata/PgAttributeRelations`);
@@ -21,6 +21,10 @@ const PgAreaRelations = require(`../metadata/PgAreaRelations`);
 const PgCommonDataSource = require(`../dataSources/PgCommonDataSource`);
 
 const PgLayerTrees = require(`../application/PgLayerTrees`);
+const PgConfigurations = require(`../application/PgConfigurations`);
+const PgApplications = require(`../application/PgApplications`);
+
+const PgViews = require(`../view/PgViews`);
 
 class PgDatabase {
 	constructor(pgPool) {
@@ -37,7 +41,7 @@ class PgDatabase {
 			PgLayerTemplates,
 			PgAreaTrees,
 			PgAreaTreeLevels,
-			PgViews
+			PgTags
 		];
 
 		this._relationsStores = [
@@ -51,7 +55,13 @@ class PgDatabase {
 		];
 
 		this._applicationStores = [
-			PgLayerTrees
+			PgLayerTrees,
+			PgConfigurations,
+			PgApplications
+		];
+
+		this._viewsStores = [
+			PgViews
 		];
 	}
 
@@ -68,6 +78,9 @@ class PgDatabase {
 			})
 			.then(() => {
 				return this.ensureTables(this._applicationStores, config.pgSchema.application);
+			})
+			.then(() => {
+				return this.ensureTables(this._viewsStores, config.pgSchema.views);
 			});
 	}
 

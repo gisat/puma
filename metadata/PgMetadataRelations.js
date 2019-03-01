@@ -1,12 +1,13 @@
 const _ = require(`lodash`);
 
 class PgMetadataRelations {
-	constructor(pgPool, pgSchema, metadataType, relatedToMetadataTypes) {
+	constructor(pgPool, pgSchema, baseStore, relatedStores) {
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
 
-		this._baseMetadataType = metadataType;
-		this._relatedToMetadataTypes = relatedToMetadataTypes;
+		this._baseStore = baseStore;
+		this._baseMetadataType = baseStore.getTableName();
+		this._relatedToStores = relatedStores;
 
 		this._initPgTable();
 	}
@@ -79,8 +80,8 @@ class PgMetadataRelations {
 	}
 
 	getMetadataTypeKeyColumnNames() {
-		return _.map(this._relatedToMetadataTypes, (metadataType) => {
-			return `${metadataType}Key`;
+		return _.map(this._relatedToStores, (metadataStore) => {
+			return `${metadataStore.getTableName()}Key`;
 		});
 	}
 
@@ -93,11 +94,11 @@ class PgMetadataRelations {
 	}
 
 	_getBaseMetadataTypeColumnName() {
-		return `${this._baseMetadataType}Key`;
+		return `${this._baseStore.getTableName()}Key`;
 	}
 
 	_getTableName() {
-		return `${this._baseMetadataType}Relation`;
+		return `${this._baseStore.getTableName()}Relation`;
 	}
 
 	_getTableSql() {
@@ -108,10 +109,10 @@ class PgMetadataRelations {
 		sql.push(`"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()`);
 		sql.push(`);`);
 
-		sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS "${this._baseMetadataType}Key" UUID UNIQUE;`);
+		sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS "${this._getBaseMetadataTypeColumnName()}" ${this._baseStore.getKeyColumnType()} UNIQUE;`);
 
-		_.each(this._relatedToMetadataTypes, (metadataType) => {
-			sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS "${metadataType}Key" UUID;`);
+		_.each(this._relatedToStores, (metadataStore) => {
+			sql.push(`ALTER TABLE "${this._pgSchema}"."${this._getTableName()}" ADD COLUMN IF NOT EXISTS "${metadataStore.getTableName()}Key" ${metadataStore.getKeyColumnType()};`);
 		});
 
 		sql.push(`COMMIT;`);

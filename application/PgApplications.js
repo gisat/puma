@@ -1,25 +1,45 @@
-const _ = require('lodash');
+const PgCollection = require('../common/PgCollection');
 
-const PgCrud = require('../common/PgCrud');
+class PgApplications extends PgCollection {
+	constructor(pool, schema) {
+		super(pool, schema);
 
-const PgScopes = require('../metadata/PgScopes');
-const PgLayerTrees = require('../application/PgLayerTrees');
+		this._checkPermissions = false;
 
-class PgApplications extends PgCrud {
-	constructor(pgPool, pgSchema) {
-		super();
+		this._groupName = this.constructor.groupName();
+		this._tableName = this.constructor.tableName();
 
-		this._pgScopes = new PgScopes(pgPool, pgSchema);
-		this._pgLayerTrees = new PgLayerTrees(pgPool, pgSchema);
+		this._keyType = this.constructor.keyType();
 
-		this._pgLayerTrees.setRelatedStores([this._pgScopes]);
+		this._basePermissionResourceType = `application`;
 
-		this._pgTypes = {
-			[PgLayerTrees.groupName()]: {
-				store: this._pgLayerTrees,
-				type: PgLayerTrees.tableName()
-			}
-		};
+		this._permissionResourceTypes = [
+			this._basePermissionResourceType
+		];
+	}
+
+	getTableSql() {
+		return `
+		BEGIN;
+		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
+			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
+		);
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "name" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "description" TEXT;
+		COMMIT;
+		`;
+	}
+
+	static groupName() {
+		return 'applications';
+	}
+
+	static tableName() {
+		return 'application';
+	}
+
+	static keyType() {
+		return `TEXT`;
 	}
 }
 

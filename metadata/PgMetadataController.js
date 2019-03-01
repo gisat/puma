@@ -1,8 +1,8 @@
-const PgMetadata = require('../metadata/PgMetadata');
+const PgMetadataCrud = require('../metadata/PgMetadataCrud');
 
 class PgMetadataController {
 	constructor(app, pgPool, pgSchema) {
-		this._pgMetadata = new PgMetadata(pgPool, pgSchema);
+		this._crud = new PgMetadataCrud(pgPool, pgSchema);
 
 		app.post(`/rest/metadata`, this.create.bind(this));
 
@@ -17,7 +17,7 @@ class PgMetadataController {
 	}
 
 	create(request, response) {
-		this._pgMetadata.create(
+		this._crud.create(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
 			request.session.user,
 			{
@@ -47,7 +47,7 @@ class PgMetadataController {
 	}
 
 	get(request, response) {
-		this._pgMetadata.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
+		this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload)
@@ -62,7 +62,7 @@ class PgMetadataController {
 	}
 
 	delete(request, response) {
-		this._pgMetadata.delete(request.body.data, request.session.user)
+		this._crud.delete(request.body.data, request.session.user)
 			.then((data) => {
 				response.status(200).json({
 					data: data,
@@ -78,7 +78,7 @@ class PgMetadataController {
 	}
 
 	update(request, response) {
-		this._pgMetadata.update(
+		this._crud.update(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
 			request.session.user,
 			{

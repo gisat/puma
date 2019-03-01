@@ -2,7 +2,7 @@ const PgCrud = require(`../common/PgCrud`);
 
 const PgCommonDataSource = require(`./PgCommonDataSource`);
 
-class PgDataSources extends PgCrud {
+class PgDataSourcesCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
@@ -17,4 +17,4 @@ class PgDataSources extends PgCrud {
 	}
 }
 
-module.exports = PgDataSources;
+module.exports = PgDataSourcesCrud;

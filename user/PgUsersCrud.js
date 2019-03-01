@@ -5,7 +5,7 @@ const PgCrud = require('../common/PgCrud');
 const PgUsers = require(`./PgUsers`);
 const PgGroups = require(`./PgGroups`);
 
-class PgUser extends PgCrud {
+class PgUsersCrud extends PgCrud {
 	constructor(pgPool, pgSchema, mongo) {
 		super(pgPool, pgSchema, mongo);
 
@@ -25,4 +25,4 @@ class PgUser extends PgCrud {
 	}
 }
 
-module.exports = PgUser;
+module.exports = PgUsersCrud;

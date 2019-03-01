@@ -13,7 +13,9 @@ const PgAttributes = require('./PgAttributes');
 const PgLayerTemplates = require('./PgLayerTemplates');
 const PgAreaTrees = require('./PgAreaTrees');
 const PgAreaTreeLevels = require('./PgAreaTreeLevels');
-const PgViews = require('./PgViews');
+const PgTags = require('./PgTags');
+
+const PgApplications = require(`../application/PgApplications`);
 
 const PgScenariosLegacy = require('./PgScenariosLegacy');
 const PgScenarioCases = require('./PgScenarioCases');
@@ -26,7 +28,7 @@ const PgLayerGroups = require('./PgLayerGroups');
 const PgVisualizations = require('./PgVisualizations');
 const PgWmsLayersLegacy = require('./PgWmsLayersLegacy');
 
-class PgMetadata extends PgCrud {
+class PgMetadataCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
@@ -45,13 +47,25 @@ class PgMetadata extends PgCrud {
 		this._pgCases = new PgCases(pgPool, pgSchema);
 		this._pgAreaTrees = new PgAreaTrees(pgPool, pgSchema);
 		this._pgAreaTreeLevels = new PgAreaTreeLevels(pgPool, pgSchema);
-		this._pgViews = new PgViews(pgPool, pgSchema);
+		this._pgTags = new PgTags(pgPool, pgSchema);
+
+		this._pgApplications = new PgApplications(pgPool, pgSchema);
 
 		this._PgDataSource = null;
 
-		this._pgAreaTrees.setRelatedStores([this._pgScopes]);
-		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees]);
-		this._pgLayerTemplates.setRelatedStores([this._pgScopes]);
+		this._pgScopes.setRelatedStores([this._pgApplications]);
+		this._pgPlaces.setRelatedStores([this._pgApplications]);
+		this._pgPeriods.setRelatedStores([this._pgApplications]);
+		this._pgAttributeSets.setRelatedStores([this._pgApplications]);
+		this._pgAttributes.setRelatedStores([this._pgApplications]);
+		this._pgLayerTemplates.setRelatedStores([this._pgApplications]);
+		this._pgScenarios.setRelatedStores([this._pgApplications]);
+		this._pgCases.setRelatedStores([this._pgApplications]);
+		this._pgTags.setRelatedStores([this._pgApplications]);
+
+		this._pgAreaTrees.setRelatedStores([this._pgScopes, this._pgApplications]);
+		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees, this._pgApplications]);
+		this._pgLayerTemplates.setRelatedStores([this._pgScopes, this._pgApplications]);
 
 		// this._pgLayerGroups = new PgLayerGroups(pgPool, pgSchema);
 
@@ -101,9 +115,9 @@ class PgMetadata extends PgCrud {
 				store: this._pgAreaTreeLevels,
 				type: PgAreaTreeLevels.tableName()
 			},
-			[PgViews.groupName()]: {
-				store: this._pgViews,
-				type: PgViews.tableName()
+			[PgTags.groupName()]: {
+				store: this._pgTags,
+				type: PgTags.tableName()
 			},
 			// scenarios: {
 			// 	store: this._pgScenarios,
@@ -149,4 +163,4 @@ class PgMetadata extends PgCrud {
 	}
 }
 
-module.exports = PgMetadata;
+module.exports = PgMetadataCrud;
