@@ -102,12 +102,15 @@ class PgDatabase {
 	}
 
 	ensureTables(stores, schema) {
-		return Promise.all(_.map(stores, (store) => {
-			let tableSql = new store(this._pgPool, schema).getTableSql();
-			if (tableSql) {
-				return this._pgPool.query(tableSql);
-			}
-		}));
+		return Promise.resolve()
+			.then(async () => {
+				for(let store of stores) {
+					let tableSql = new store(this._pgPool, schema).getTableSql();
+					if (tableSql) {
+						await this._pgPool.query(tableSql);
+					}
+				}
+			});
 	}
 }
 
