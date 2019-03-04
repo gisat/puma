@@ -48,11 +48,13 @@ let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
 
 const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
+
 const PgRelationsController = require('./PgRelationsController');
 const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
-const PgMetadataController = require('./PgMetadataController');
+const PgMetadataController = require('../metadata/PgMetadataController');
 const PgPermissionController = require('./PgPermissionController');
-const PgUserController = require('./PgUserController');
+const PgUserController = require('../user/PgUserController');
+const PgApplicationController = require('../application/PgApplicationsController');
 
 const UploadManagerController = require('./UploadManagerController');
 
@@ -61,6 +63,8 @@ const PucsMatlabProcessorController = require('../integration/PucsMatlabProcesso
 const GeoserverProxyController = require(`../geoserver/proxy/GeoserverProxyController`);
 
 const PgDataSourcesController = require(`../dataSources/PgDataSourcesController`);
+
+const PgViewsController = require(`../view/PgViewsController`);
 
 var api = {
 	layers: require('../api/layers'),
@@ -144,6 +148,8 @@ module.exports = function(app) {
 	new PgMetadataController(app, pool.pool(), config.pgSchema.metadata);
 	new PgRelationsController(app, pool.pool(), config.pgSchema.relations);
 	new PgDataSourcesController(app, pool.pool(), config.pgSchema.dataSources);
+	new PgApplicationController(app, pool.pool(), config.pgSchema.application);
+	new PgViewsController(app, pool.pool(), config.pgSchema.views);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
 

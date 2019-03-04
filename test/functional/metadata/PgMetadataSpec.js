@@ -6,7 +6,7 @@ let logger = require('../../../common/Logger').applicationWideLogger;
 
 let IntegrationEnvironment = require('../IntegrationEnvironment');
 
-let PgMetadata = require('../../../metadata/PgMetadata');
+let PgMetadata = require('../../../metadata/PgMetadataCrud');
 
 describe('PgMetadataCRUD', () => {
 	let integrationEnvironment, fixture = {user: null};

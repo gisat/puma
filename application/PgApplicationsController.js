@@ -1,13 +1,19 @@
-const PgDataSourcesCrud = require('./PgDataSourcesCrud');
+const PgApplicationsCrud = require('../application/PgApplicationsCrud');
 
-class PgDataSourcesController {
+class PgApplicationsController {
 	constructor(app, pgPool, pgSchema) {
-		this._crud = new PgDataSourcesCrud(pgPool, pgSchema);
+		this._crud = new PgApplicationsCrud(pgPool, pgSchema);
 
-		app.post(`/rest/dataSources`, this.create.bind(this));
-		app.post(`/rest/dataSources/filtered/:type`, this.get.bind(this));
-		app.put(`/rest/dataSources`, this.update.bind(this));
-		app.delete(`/rest/dataSources`, this.delete.bind(this));
+		app.post(`/rest/applications`, this.create.bind(this));
+
+		app.get(`/rest/applications`, this.get.bind(this));
+		app.get(`/rest/applications/:type`, this.get.bind(this));
+		app.post(`/rest/applications/filtered`, this.get.bind(this));
+		app.post(`/rest/applications/filtered/:type`, this.get.bind(this));
+
+		app.delete(`/rest/applications`, this.delete.bind(this));
+
+		app.put(`/rest/applications`, this.update.bind(this))
 	}
 
 	create(request, response) {
@@ -25,7 +31,7 @@ class PgDataSourcesController {
 				success: true
 			})
 		}).catch((error) => {
-			console.log(`ERROR # PgMetadataController # ERROR`, error);
+			console.log(`ERROR # PgApplicationController # ERROR`, error);
 			if (error.message === 'Forbidden') {
 				response.status(403).json({
 					message: error.message,
@@ -47,6 +53,7 @@ class PgDataSourcesController {
 				response.status(200).json(payload)
 			})
 			.catch((error) => {
+				console.log(`ERROR # PgApplicationController # ERROR`, error);
 				response.status(500).json({
 					message: error.message,
 					success: false
@@ -63,6 +70,7 @@ class PgDataSourcesController {
 				});
 			})
 			.catch((error) => {
+				console.log(`ERROR # PgApplicationController # ERROR`, error);
 				response.status(500).json({
 					message: error.message,
 					success: false
@@ -84,6 +92,7 @@ class PgDataSourcesController {
 				success: true
 			});
 		}).catch((error) => {
+			console.log(`ERROR # PgApplicationController # ERROR`, error);
 			response.status(500).json({
 				message: error.message,
 				success: false
@@ -101,4 +110,4 @@ class PgDataSourcesController {
 	}
 }
 
-module.exports = PgDataSourcesController;
+module.exports = PgApplicationsController;

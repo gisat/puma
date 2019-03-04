@@ -1,6 +1,6 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgCases extends PgCollection {
+class PgTags extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
@@ -11,7 +11,7 @@ class PgCases extends PgCollection {
 
 		this._keyType = this.constructor.keyType();
 
-		this._basePermissionResourceType = `case`;
+		this._basePermissionResourceType = `tag`;
 
 		this._permissionResourceTypes = [
 			this._basePermissionResourceType
@@ -25,18 +25,16 @@ class PgCases extends PgCollection {
 			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameDisplay" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "description" TEXT;
 		COMMIT;
 		`;
 	}
 
 	static groupName() {
-		return 'cases';
+		return 'tags';
 	}
 
 	static tableName() {
-		return 'case';
+		return 'tag';
 	}
 
 	static keyType() {
@@ -44,4 +42,4 @@ class PgCases extends PgCollection {
 	}
 }
 
-module.exports = PgCases;
+module.exports = PgTags;

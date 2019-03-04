@@ -7,6 +7,8 @@ class PgScopes extends PgCollection {
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
+		this._keyType = this.constructor.keyType();
+
 		this._basePermissionResourceType = `scope`;
 
 		this._permissionResourceTypes = [
@@ -18,7 +20,7 @@ class PgScopes extends PgCollection {
 		return `
 		BEGIN;
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
-			"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
+			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameDisplay" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
@@ -34,6 +36,10 @@ class PgScopes extends PgCollection {
 
 	static tableName() {
 		return 'scope';
+	}
+
+	static keyType() {
+		return `UUID`;
 	}
 }
 

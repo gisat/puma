@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const PgMetadata = require(`../metadata/PgMetadata`);
+const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
 
 class PgUserCurrent {
 	constructor(pgPool, pgSchema, userId) {
@@ -8,7 +8,7 @@ class PgUserCurrent {
 		this._pgSchema = pgSchema;
 		this._userId = userId;
 
-		this._pgMetadata = new PgMetadata(pgPool, pgSchema);
+		this._pgMetadataCrud = new PgMetadataCrud(pgPool, pgSchema);
 
 		this._guestGroupId = 2;
 		this._userGroupId = 3;
@@ -74,7 +74,7 @@ class PgUserCurrent {
 		let metadataPermissions = {};
 
 		let isAdmin = !!(_.find(groups, {data: {name: "admin"}}));
-		let metadataGroupsByType = this._pgMetadata.getGroupsByType();
+		let metadataGroupsByType = this._pgMetadataCrud.getGroupsByType();
 
 		if (isAdmin) {
 			_.each(metadataGroupsByType, (value, property) => {
