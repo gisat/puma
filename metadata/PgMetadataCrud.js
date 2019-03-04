@@ -55,7 +55,7 @@ class PgMetadataCrud extends PgCrud {
 
 		this._pgScopes.setRelatedStores([this._pgApplications]);
 		this._pgPlaces.setRelatedStores([this._pgApplications]);
-		this._pgPeriods.setRelatedStores([this._pgApplications]);
+		this._pgPeriods.setRelatedStores([this._pgApplications, this._pgScopes]);
 		this._pgAttributeSets.setRelatedStores([this._pgApplications]);
 		this._pgAttributes.setRelatedStores([this._pgApplications]);
 		this._pgLayerTemplates.setRelatedStores([this._pgApplications]);
