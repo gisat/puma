@@ -707,7 +707,7 @@ class PgCollection {
 				group.forEach((object) => {
 					let key = object.key;
 
-					if (isAdmin || availableKeys[this._tableName].includes(key)) {
+					if (isAdmin || (availableKeys[this._tableName] && availableKeys[this._tableName].includes(key))) {
 						promises.push(
 							this.deleteOne(key, user, extra)
 								.then((result) => {
