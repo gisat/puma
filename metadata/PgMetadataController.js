@@ -70,6 +70,7 @@ class PgMetadataController {
 				});
 			})
 			.catch((error) => {
+				console.log(`PgMetadataController#error`, error);
 				response.status(500).json({
 					message: error.message,
 					success: false
