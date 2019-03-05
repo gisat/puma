@@ -41,7 +41,7 @@ class PgMetadataRelations {
 
 	deleteRelations(baseKey) {
 		return this._pgPool
-			.query(`DELETE FROM "${this._pgSchema}"."${this._getTableName()}" WHERE ${this._getBaseMetadataTypeColumnName()} = '${baseKey}'`);
+			.query(`DELETE FROM "${this._pgSchema}"."${this._getTableName()}" AS "${this._getTableName()}" WHERE "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}" = '${baseKey}'`);
 	}
 
 	getRelationsForBaseKeys(baseKeys) {
