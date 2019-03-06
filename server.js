@@ -1,9 +1,38 @@
 require('appoptics-apm');
 
+const cluster = require('cluster');
 const express = require('express');
+const session = require('express-session');
+
+var ClusterStore = require('strong-cluster-connect-store')(session);
+
+if(cluster.isMaster) {
+    ClusterStore.setup();
+    var cpuCount = require('os').cpus().length;
+    console.log('CpuFull', cpuCount);
+    cpuCount = Math.ceil(cpuCount / 2);
+    console.log('Cpu Count: ', cpuCount);
+
+    // Create a worker for each CPU
+    for (var i = 0; i < cpuCount; i += 1) {
+        cluster.fork();
+    }
+    
+    cluster.on('online', function(worker) {
+        console.log('Worker ' + worker.id + ' is online.');
+    });
+	
+    cluster.on('exit', (worker, code, signal) => {
+      if (code !== 0 && !worker.exitedAfterDisconnect) {
+        console.log(`Worker ${worker.id} crashed. ` +
+                    'Starting a new worker...');
+        cluster.fork();
+      }
+    });
+} else {
+
 const conn = require('./common/conn');
 const staticFn = express['static'];
-const session = require('express-session');
 const xmlparser = require('express-xml-bodyparser');
 
 const async = require('async');
@@ -65,10 +94,8 @@ function initServer(err) {
     app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
 	app.use(session({
-		name: "panthersid",
-		secret: "panther",
-		resave: false,
-		saveUninitialized: true
+		store: new ClusterStore(),
+		secret: "panther"
 	}));
 	app.use(function (request, response, next) {
 		response.locals.ssid = request.cookies.sessionid;
@@ -162,3 +189,5 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
 }).catch((err) => {
 	logger.error('Error with Migration. Error: ', err);
 });
+
+}
