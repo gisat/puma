@@ -160,6 +160,14 @@ class PgCollection {
 						return created;
 					})
 			})
+			.then(async (created) => {
+				if(extra.accessibleByGroups) {
+					for(let groupKey of extra.accessibleByGroups) {
+						await this.setGetPermissionsToResourceForGroupKey(created.key, groupKey);
+					}
+				}
+				return created;
+			})
 			.then((created) => {
 				return {
 					uuid: uuid,
@@ -1129,6 +1137,10 @@ class PgCollection {
 		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.DELETE));
 
 		return Promise.all(promises);
+	}
+
+	setGetPermissionsToResourceForGroupKey(resourceKey, groupKey) {
+		return this._pgPermissions.addGroup(groupKey, this._tableName, resourceKey, Permission.READ);
 	}
 
 	setRelatedStores(stores) {
