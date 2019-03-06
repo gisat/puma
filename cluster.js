@@ -8,6 +8,14 @@ if(cluster.isMaster) {
     for (var i = 0; i < cpuCount; i += 1) {
         cluster.fork();
     }
+    
+    cluster.on('exit', (worker, code, signal) => {
+      if (code !== 0 && !worker.exitedAfterDisconnect) {
+        console.log(`Worker ${worker.id} crashed. ` +
+                    'Starting a new worker...');
+        cluster.fork();
+      }
+    });
 } else {
     require('./server');
 }
