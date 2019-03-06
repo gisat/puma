@@ -9,6 +9,9 @@ var ClusterStore = require('strong-cluster-connect-store')(session);
 if(cluster.isMaster) {
     ClusterStore.setup();
     var cpuCount = require('os').cpus().length;
+    console.log('CpuFull', cpuCount);
+    cpuCount = Math.ceil(cpuCount / 2);
+    console.log('Cpu Count: ', cpuCount);
 
     // Create a worker for each CPU
     for (var i = 0; i < cpuCount; i += 1) {
