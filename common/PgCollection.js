@@ -222,7 +222,7 @@ class PgCollection {
 				let promises = [];
 
 				group.forEach((object) => {
-					if (isAdmin || availableKeys[this._tableName].includes(object.key)) {
+					if (isAdmin || (availableKeys[this._tableName] || availableKeys[this._tableName].includes(object.key))) {
 						promises.push(
 							this.updateOne(object, objects, user, extra)
 						);
