@@ -118,6 +118,13 @@ class PgCollection {
 			.then(() => {
 				return this.setAllPermissionsToResourceForUser(key, user);
 			})
+			.then(async () => {
+				if(extra.accessibleByGroups) {
+					for(let groupKey of extra.accessibleByGroups) {
+						await this.setGetPermissionsToResourceForGroupKey(key, groupKey);
+					}
+				}
+			})
 			.then(() => {
 				return {
 					key: key,
