@@ -61,6 +61,10 @@ class PgLpisCheckCases extends PgCollection {
 				if (dataviewData) {
 					dataviewStore = this.getDataViewStore();
 
+					if(dataviewData.accessibleByGroups) {
+						extra.accessibleByGroups = dataviewData.accessibleByGroups;
+					}
+
 					let layerPeriods = [];
 					_.each(dataviewData.dates, (date) => {
 						layerPeriods.push({[dataviewData.s2GetDatesLayerTemplateId]: `${date}`});
@@ -90,6 +94,8 @@ class PgLpisCheckCases extends PgCollection {
 			.then((mongoScopeDocument) => {
 				dataviewData.s2GetDatesLayerTemplateId = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.s2GetDatesLayerTemplateId;
 				dataviewData.ortofotoLayerTemplateId = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.ortofotoLayerTemplateId;
+				dataviewData.accessibleByGroups = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.accessibleByGroups;
+
 				return this._pgLpisCases._getMongoBasicDataViewParametersByScopeId(scopeId)
 			})
 			.then(([themeId, yearId, placeId, yearIds]) => {
