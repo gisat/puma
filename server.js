@@ -102,7 +102,7 @@ function initServer(err) {
 		response.locals.isAdmin = request.session.groups && request.session.groups.indexOf("admingroup") != -1;
 		next();
 	});
-	app.use(loc.langParser
+	app.use(loc.langParser);
 	app.use(function(request, response, next){
 		if(request.session && !request.session.sldMap) {
 			request.session.sldMap = {};
