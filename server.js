@@ -119,6 +119,10 @@ function initServer(err) {
 		if(request.session && !request.session.chartConfMap) {
 			request.session.chartConfMap = {};
 		}
+		
+		if(request.session && !request.session.confMap) {
+			request.session.confMap = {};
+		}
 	});
     
 	// Allow CORS on the node level.
