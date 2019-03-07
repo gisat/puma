@@ -666,8 +666,7 @@ module.exports = {
 	getSldMap: getSldMap,
 	getSldMapTemp: getSldMapTemp,
 	getSldSync: getSldSync,
-	setSldTemp: setSldTemp,
-	chartConfMap: chartConfMap
+	setSldTemp: setSldTemp
 };
 
 
