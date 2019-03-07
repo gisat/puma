@@ -102,7 +102,24 @@ function initServer(err) {
 		response.locals.isAdmin = request.session.groups && request.session.groups.indexOf("admingroup") != -1;
 		next();
 	});
-	app.use(loc.langParser);
+	app.use(loc.langParser
+	app.use(function(request, response, next){
+		if(request.session && !request.session.sldMap) {
+			request.session.sldMap = {};
+		}
+		
+		if(request.session && !request.session.sldMapTemp) {
+			request.session.sldMapTemp = {};
+		}
+		
+		if(request.session && !request.session.densityMap) {
+			request.session.densityMap = {};
+		}
+		
+		if(request.session && !request.session.chartConfMap) {
+			request.session.chartConfMap = {};
+		}
+	});
     
 	// Allow CORS on the node level.
     app.use(function(req, res, next) {
