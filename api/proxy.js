@@ -3,10 +3,6 @@ var querystring = require('querystring');
 var conn = require('../common/conn');
 var data = require('../data/data');
 var fs = require('fs');
-var sldMap = {};
-var sldMapTemp = {};
-var densityMap = {};
-var chartConfMap = {};
 var async = require('async');
 var crud = require('../rest/crud');
 var layers = require('./layers');
@@ -20,7 +16,11 @@ let promisedFs = require('pn/fs');
 let path = require('path');
 
 function wms(params, req, res, callback) {
-
+	var sldMap = req.session.sldMap;
+	var sldMapTemp = req.session.sldMapTemp;
+	var densityMap = req.session.densityMap;
+	var chartConfMap = req.session.chartConfMap;
+	
 	keysToUpperCase(params);
 	// todo find out why is not possible to use CRS
 	if (params.hasOwnProperty('CRS')){
@@ -264,6 +264,11 @@ function storeTemporarySld(id, sld) {
 }
 
 function saveSld(params, req, res, callback) {
+	var sldMap = req.session.sldMap;
+	var sldMapTemp = req.session.sldMapTemp;
+	var densityMap = req.session.densityMap;
+	var chartConfMap = req.session.chartConfMap;
+	
 	var id = generateId();
 	var oldId = params['oldId'];
 	var sld = params['sldBody'];
@@ -600,6 +605,8 @@ function setJsid(newJsid) {
 
 
 function getSld(params, req, res, callback) {
+	var sldMap = req.session.sldMap;
+	
 	res.data = sldMap[params['id']];
 	return callback(null);
 }
@@ -613,6 +620,8 @@ function getSld(params, req, res, callback) {
  * @returns {*}
  */
 function getSldMap(params, req, res, callback){
+	var sldMap = req.session.sldMap;
+	
 	res.data = sldMap;
 	return callback(null);
 }
