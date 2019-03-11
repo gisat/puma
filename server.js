@@ -94,11 +94,11 @@ function initServer(err) {
 	app.use(xmlparser());
 	app.use(session({
 		store: new pgSession({
-			pool: pool
+			pool: pool,
+			schemaName: 'data'
 		}),
 		secret: "panther",
-		resave: false,
-		schemaName: 'data'
+		resave: false
 	}));
 	app.use(function (request, response, next) {
 		response.locals.ssid = request.cookies.sessionid;
