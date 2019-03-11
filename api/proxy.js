@@ -16,8 +16,6 @@ let promisedFs = require('pn/fs');
 let path = require('path');
 
 function wms(params, req, res, callback) {
-	var sldMap = req.session.sldMap;
-	var sldMapTemp = req.session.sldMapTemp;
 	var densityMap = req.session.densityMap;
 	var chartConfMap = req.session.chartConfMap;
 	
@@ -69,11 +67,11 @@ function wms(params, req, res, callback) {
 		useFirst = false;
 	}
 	if (sldId) {
-		var sld = sldMap[sldId] || sldMapTemp[sldId];
+		var sld = req.session.sldMap[sldId] || req.session.sldMapTemp[sldId];
 
 		// missing SLD - probably node server restart
 		if(typeof sld == 'undefined'){
-			console.log("======= SLD ERROR. sldId: ",sldId,"\n\nsldMap:",sldMap,"\n\nsldMapTemp:",sldMapTemp);
+			console.log("======= SLD ERROR. sldId: ",sldId,"\n\nsldMap:",req.session.sldMap,"\n\nsldMapTemp:",req.session.sldMapTemp);
 		}
         params['SLD_BODY'] = params['REQUEST'] == 'GetMap' ? sld.sld : sld && sld.legendSld || '<?xml version="1.0" encoding="UTF-8"?><sld:StyledLayerDescriptor xmlns="http://www.opengis.net/sld" xmlns:sld="http://www.opengis.net/sld" xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc" version="1.0.0"><sld:NamedLayer><sld:Name>Default Styler</sld:Name><sld:UserStyle><sld:Name>Default Styler</sld:Name><sld:FeatureTypeStyle><sld:Name>name</sld:Name></sld:FeatureTypeStyle></sld:UserStyle></sld:NamedLayer></sld:StyledLayerDescriptor>';
 
@@ -258,14 +256,7 @@ function keysToUpperCase (obj){
 	}
 }
 
-function storeTemporarySld(id, sld) {
-	let pathSld = path.resolve(config.temporarySldFilesPath + id + '.sld');
-	return promisedFs.writeFile(pathSld, sld);
-}
-
 function saveSld(params, req, res, callback) {
-	var sldMap = req.session.sldMap;
-	var sldMapTemp = req.session.sldMapTemp;
 	var densityMap = req.session.densityMap;
 	var chartConfMap = req.session.chartConfMap;
 	
@@ -504,7 +495,7 @@ function saveSld(params, req, res, callback) {
 				logger.info('api/proxy#saveSld Handle Units: ', results.attrConf.attrMap);
 				legendSld = legendSld.replace(new RegExp('#units#','g'), results.attrConf.attrMap.units);
 			}
-			sldMap[id] = {
+			req.session.sldMap[id] = {
 				sld: sld,
 				legendSld: legendSld
 			};
@@ -513,20 +504,7 @@ function saveSld(params, req, res, callback) {
 				chartConfMap[id] = params;
 			}
 
-			if (sldMap[oldId]) {
-				delete sldMap[oldId];
-
-			}
-			if (chartConfMap[oldId]) {
-				delete chartConfMap[oldId];
-			}
-			if (densityMap[oldId]) {
-				delete densityMap[oldId];
-			}
 			logger.info(`api/proxy.js#saveSld#result Id: ${id}`);
-
-			storeTemporarySld(id, sld);
-			storeTemporarySld(id + 'legend', legendSld);
 
 			res.data = id;
 			return callback(null);
@@ -605,47 +583,8 @@ function setJsid(newJsid) {
 
 
 function getSld(params, req, res, callback) {
-	var sldMap = req.session.sldMap;
-	
-	res.data = sldMap[params['id']];
+	res.data = req.session.sldMap[params['id']];
 	return callback(null);
-}
-
-/**
- * Made for testing purposes. Make POST request to /api/proxy/getSldMap to see sldMap
- * @param params
- * @param req
- * @param res
- * @param callback
- * @returns {*}
- */
-function getSldMap(params, req, res, callback){
-	var sldMap = req.session.sldMap;
-	
-	res.data = sldMap;
-	return callback(null);
-}
-
-/**
- * Made for testing purposes. Make POST request to /api/proxy/getSldMapTemp to see sldMapTemp
- * @param params
- * @param req
- * @param res
- * @param callback
- * @returns {*}
- */
-function getSldMapTemp(params, req, res, callback){
-	res.data = sldMapTemp;
-	return callback(null);
-}
-
-function getSldSync(id) {
-	return sldMap[id];
-}
-function setSldTemp(sld) {
-	var id = generateId();
-	sldMapTemp[id] = sld;
-	return id;
 }
 
 
@@ -662,11 +601,7 @@ module.exports = {
 	wms: wms,
 	setJsid: setJsid,
 	saveSld: saveSld,
-	getSld: getSld,
-	getSldMap: getSldMap,
-	getSldMapTemp: getSldMapTemp,
-	getSldSync: getSldSync,
-	setSldTemp: setSldTemp
+	getSld: getSld
 };
 
 

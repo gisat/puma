@@ -98,7 +98,8 @@ function initServer(err) {
 			schemaName: 'data'
 		}),
 		secret: "panther",
-		resave: false
+		resave: false,
+		saveUninitialized: false
 	}));
 	app.use(function (request, response, next) {
 		response.locals.ssid = request.cookies.sessionid;
