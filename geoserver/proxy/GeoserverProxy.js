@@ -25,6 +25,10 @@ class GeoserverProxy {
 		let body = request.body;
 		let rawBody = request.rawBody;
 
+		if(!url.toLowerCase().includes(`tiled=`)) {
+			url += `&tiled=true`;
+		}
+
 		let requestedLayers = [];
 		_.each(query, (value, property) => {
 			if(property.toLowerCase().includes(`layer`)) {
