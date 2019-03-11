@@ -9,7 +9,7 @@ class AddSession extends Migration {
 
     process(mongo, pool) {
         return pool.query(`
-            CREATE TABLE ${this._schema}."session" (
+            CREATE TABLE IF NOT EXISTS ${this._schema}."session" (
                 "sid" varchar NOT NULL COLLATE "default",
                 "sess" json NOT NULL,
             	"expire" timestamp(6) NOT NULL

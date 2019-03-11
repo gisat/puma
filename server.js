@@ -6,7 +6,6 @@ const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 
 if(cluster.isMaster) {
-    ClusterStore.setup();
     var cpuCount = require('os').cpus().length;
     console.log('CpuFull', cpuCount);
     cpuCount = Math.ceil(cpuCount / 2);
