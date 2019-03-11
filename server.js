@@ -3,8 +3,7 @@ require('appoptics-apm');
 const cluster = require('cluster');
 const express = require('express');
 const session = require('express-session');
-
-var ClusterStore = require('strong-cluster-connect-store')(session);
+const pgSession = require('connect-pg-simple')(session);
 
 if(cluster.isMaster) {
     ClusterStore.setup();
@@ -58,6 +57,7 @@ const AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
 const AddPhoneToUser = require('./migration/AddPhoneToUser');
 const AddMetadataToLayer = require('./migration/2_10_1_AddMetadataToLayer');
 const AddSourceUrlToLayer = require('./migration/2_12_AddSourceUrlToLayer');
+const AddSession = require('./migration/2_14_AddSession');
 
 const CompoundAuthentication = require('./security/CompoundAuthentication');
 const PgAuthentication = require('./security/PgAuthentication');
@@ -94,8 +94,12 @@ function initServer(err) {
     app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
 	app.use(session({
-		store: new ClusterStore(),
-		secret: "panther"
+		store: new pgSession({
+			pool: pool
+		}),
+		secret: "panther",
+		resave: false,
+		schemaName: 'data'
 	}));
 	app.use(function (request, response, next) {
 		response.locals.ssid = request.cookies.sessionid;
@@ -196,6 +200,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddMetadataToLayer(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddSession(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
