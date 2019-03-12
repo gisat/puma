@@ -39,7 +39,7 @@ class GeoserverProxy {
 		let allowedLayers = [];
 		if(requestedLayers.length) {
 			let userCache = this._cacheByUser[user.id];
-			if(!userCache || new Date().getTime() - userCache.updated > _cacheExpirationTime) {
+			if(!userCache || new Date().getTime() - userCache.updated > this._cacheExpirationTime) {
 				let allowedPlaceIds = _.uniq(_.map(_.filter(_.flatten([...user.permissions, ..._.map(user.groups, (group) => { return group.permissions})]), {resourceType: `location`, permission: `GET`}), (permission) => { return Number(permission.resourceId)}));
 				await this._mongo
 					.collection(`layerref`)
