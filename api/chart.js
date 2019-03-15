@@ -15,7 +15,6 @@ var async = require('async');
 var fs = require('fs');
 var proxy = require('./proxy');
 var conn = require('../common/conn');
-var confMap = {length: 0};
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 var Promise = require('promise');
@@ -130,7 +129,8 @@ function getChartInternal(params, req, res, callback) {
 
 
 function drawChart(params, req, res, callback) {
-
+	var confMap = request.session.confMap;
+	
 	var gid = params['gid'];
 	var confId = params['confId'];
 
@@ -162,7 +162,7 @@ function drawChart(params, req, res, callback) {
 	}
 	confMap[confId] = false;
 
-	params = proxy.chartConfMap[confId];
+	params = req.session.chartConfMap[confId];
 
 	var type = params['type'];
 	var mod = charts[type];

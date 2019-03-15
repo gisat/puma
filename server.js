@@ -3,11 +3,9 @@ require('appoptics-apm');
 const cluster = require('cluster');
 const express = require('express');
 const session = require('express-session');
-
-var ClusterStore = require('strong-cluster-connect-store')(session);
+const pgSession = require('connect-pg-simple')(session);
 
 if(cluster.isMaster) {
-    ClusterStore.setup();
     var cpuCount = require('os').cpus().length;
     console.log('CpuFull', cpuCount);
     cpuCount = Math.ceil(cpuCount / 2);
@@ -58,6 +56,7 @@ const AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
 const AddPhoneToUser = require('./migration/AddPhoneToUser');
 const AddMetadataToLayer = require('./migration/2_10_1_AddMetadataToLayer');
 const AddSourceUrlToLayer = require('./migration/2_12_AddSourceUrlToLayer');
+const AddSession = require('./migration/2_14_AddSession');
 
 const CompoundAuthentication = require('./security/CompoundAuthentication');
 const PgAuthentication = require('./security/PgAuthentication');
@@ -94,8 +93,13 @@ function initServer(err) {
     app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
 	app.use(session({
-		store: new ClusterStore(),
-		secret: "panther"
+		store: new pgSession({
+			pool: pool,
+			schemaName: 'data'
+		}),
+		secret: "panther",
+		resave: false,
+		saveUninitialized: false
 	}));
 	app.use(function (request, response, next) {
 		response.locals.ssid = request.cookies.sessionid;
@@ -103,6 +107,29 @@ function initServer(err) {
 		next();
 	});
 	app.use(loc.langParser);
+	app.use(function(request, response, next){
+		if(request.session && !request.session.sldMap) {
+			request.session.sldMap = {};
+		}
+		
+		if(request.session && !request.session.sldMapTemp) {
+			request.session.sldMapTemp = {};
+		}
+		
+		if(request.session && !request.session.densityMap) {
+			request.session.densityMap = {};
+		}
+		
+		if(request.session && !request.session.chartConfMap) {
+			request.session.chartConfMap = {};
+		}
+		
+		if(request.session && !request.session.confMap) {
+			request.session.confMap = {};
+		}
+		
+		next();
+	});
     
 	// Allow CORS on the node level.
     app.use(function(req, res, next) {
@@ -173,6 +200,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddMetadataToLayer(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
+}).then(()=>{
+    return new AddSession(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
