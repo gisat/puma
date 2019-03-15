@@ -21,6 +21,10 @@ let path = require('path');
 
 function wms(params, req, res, callback) {
 
+	if(params.hasOwnProperty(`tiled`)) {
+		delete params.tiled;
+	}
+
 	keysToUpperCase(params);
 	// todo find out why is not possible to use CRS
 	if (params.hasOwnProperty('CRS')){
