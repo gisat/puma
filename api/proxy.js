@@ -18,6 +18,10 @@ let path = require('path');
 function wms(params, req, res, callback) {
 	var densityMap = req.session.densityMap;
 	var chartConfMap = req.session.chartConfMap;
+
+	if(params.hasOwnProperty(`tiled`)) {
+		delete params.tiled;
+	}
 	
 	keysToUpperCase(params);
 	// todo find out why is not possible to use CRS
