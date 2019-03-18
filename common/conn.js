@@ -177,7 +177,7 @@ function getIo() {
 function getNextId() {
 	const idMiliseconds = Date.now().toString();
 
-	return Number(cluster.worker.id + idMiliseconds.substr(-11, 7) + Math.round(Math.random() * 9));
+	return Number(cluster.worker.id + idMiliseconds.substr(-10, 7) + Math.round(Math.random() * 9));
 }
 
 function getMongoDb() {
