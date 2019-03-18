@@ -7,6 +7,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 var http = require('http');
 var https = require('https');
 var util = require('util');
+var cluster = require('cluster');
 
 //maybe one day we can switch to request instead of http and https
 //var requestPackage = require('request'); // request was taken by conn.request
@@ -174,10 +175,9 @@ function getIo() {
 }
 
 function getNextId() {
-	var newId = ++objectId;
-	var mongoSettings = getMongoDb().collection('settings');
-	mongoSettings.update({_id: 1}, {_id: 1,objectId: newId}, {upsert: true}, function() {});
-	return newId;
+	const idMiliseconds = Date.now().toString();
+
+	return Number(cluster.worker.id + idMiliseconds.substr(-11, 7) + Math.round(Math.random() * 9));
 }
 
 function getMongoDb() {
