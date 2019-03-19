@@ -167,8 +167,6 @@ class PgCollection {
 
 		let keys = Object.keys(data);
 
-		let columns, values;
-
 		return Promise.resolve()
 			.then(() => {
 				if (this._dataSources && keys.includes(`type`) && this._relatedColumns) {
@@ -198,8 +196,8 @@ class PgCollection {
 				}
 			})
 			.then(() => {
-				columns = keys;
-				values = _.map(keys, (key) => {
+				let columns = keys;
+				let values = _.map(keys, (key) => {
 					return data[key];
 				});
 
@@ -207,8 +205,10 @@ class PgCollection {
 					columns.push(`key`);
 					values.push(object.key);
 				}
+
+				return this.modifyColumnsAndValuesBeforeInsert(columns, values)
 			})
-			.then(() => {
+			.then(([columns, values]) => {
 				return this._pgPool
 					.query(
 						`INSERT INTO "${this._pgSchema}"."${this._tableName}" ("${columns.join('", "')}") VALUES (${_.map(values, (value, index) => {
@@ -233,6 +233,10 @@ class PgCollection {
 					...created
 				};
 			});
+	}
+
+	modifyColumnsAndValuesBeforeInsert(values, columns) {
+		return [values, columns];
 	}
 
 	getReturningSql() {

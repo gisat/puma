@@ -26,6 +26,8 @@ const PgApplications = require(`../application/PgApplications`);
 
 const PgViews = require(`../view/PgViews`);
 
+const PgUsers = require(`../user/PgUsers`);
+
 class PgDatabase {
 	constructor(pgPool) {
 		this._pgPool = pgPool;
@@ -63,6 +65,10 @@ class PgDatabase {
 		this._viewsStores = [
 			PgViews
 		];
+
+		this._usersStores = [
+			PgUsers
+		]
 	}
 
 	ensure() {
@@ -81,6 +87,9 @@ class PgDatabase {
 			})
 			.then(() => {
 				return this.ensureTables(this._viewsStores, config.pgSchema.views);
+			})
+			.then(() => {
+				return this.ensureTables(this._usersStores, config.pgSchema.data);
 			});
 	}
 
