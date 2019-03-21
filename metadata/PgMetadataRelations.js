@@ -71,7 +71,7 @@ class PgMetadataRelations {
 
 	getBaseKeysByRelations(relations) {
 		return this._pgPool
-			.query(`SELECT ${this._getBaseMetadataTypeColumnName()} FROM "${this._pgSchema}"."${this._getTableName()}" WHERE ${_.map(relations, (value, property) => { return `${property} = '${value}'`}).join(` AND `)};`)
+			.query(`SELECT "${this._getBaseMetadataTypeColumnName()}" FROM "${this._pgSchema}"."${this._getTableName()}" WHERE ${_.map(relations, (value, property) => { return `${property} = '${value}'`}).join(` AND `)};`)
 			.then((result) => {
 				return _.map(result.rows, (row) => {
 					return row[this._getBaseMetadataTypeColumnName()];
