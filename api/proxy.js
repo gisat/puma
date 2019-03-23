@@ -343,18 +343,7 @@ function saveSld(params, req, res, callback) {
 					logger.error("api/proxy.js getData. Params: ", dataParams, " Error: ", err);
 					return callback(err);
 				}
-				if (params['altYears']) {
-					dataParams['years'] = params['altYears'];
-					data.getData(dataParams, function(err, dataObj2) {
-						if (err) {
-							return callback(err);
-						}
-						dataObj.altAggregate = dataObj2.aggregate;
-						return asyncCallback(null, dataObj);
-					})
-				} else {
-					return asyncCallback(null, dataObj);
-				}
+				return asyncCallback(null, dataObj);
 			})
 		}],
 		layerRef: function(asyncCallback) {
