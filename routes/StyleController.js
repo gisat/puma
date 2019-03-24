@@ -77,7 +77,9 @@ class StyleController extends Controller {
         // The BackOffice client expects _id instead of id.
         receivedData.id = receivedData._id;
 
-        if(!receivedData || !receivedData.id || (receivedData.source != 'geoserver' && !RestStyle.validateDescriptionUpdate(receivedData.definition))) {
+        if(!receivedData || !receivedData.id ||
+            (receivedData.source == 'definition' && !RestStyle.validateDescriptionUpdate(receivedData.definition))
+        ) {
             response.status(400).json({
                 message:'Request must contain valid data for generating SLD.'
             });
