@@ -20,6 +20,7 @@ var RestStyle = function (id, jsonObject, currentUserId) {
 	this._name = jsonObject.name;
 	this._symbologyName = jsonObject.symbologyName || jsonObject.symbology_name;
 	this._source = jsonObject.source;
+	this._sld = jsonObject.sld;
 
 	this._created = jsonObject.created || new Date();
 	this._createdBy = jsonObject.createdBy || currentUserId;
@@ -104,7 +105,7 @@ RestStyle.validateDescriptionCreation = function (description) {
  * @inheritDoc
  */
 RestStyle.prototype.sld = function () {
-	return Promise.resolve(StyledLayerDescriptor.fromObjectDescription(this._definition).toXml());
+	return Promise.resolve(this._sld || StyledLayerDescriptor.fromObjectDescription(this._definition).toXml());
 };
 
 /**
