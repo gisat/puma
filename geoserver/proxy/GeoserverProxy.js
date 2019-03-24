@@ -1,4 +1,5 @@
 const superagent = require(`superagent`);
+const uuidv4 = require(`uuid/v4`);
 
 const config = require(`../../config`);
 
@@ -15,7 +16,6 @@ class GeoserverProxy {
 		this._username = `admin`;
 		this._password = `geoserver`;
 
-		this._cacheByUser = {};
 		this._cacheExpirationTime = 300 * 1000;
 	}
 
@@ -28,6 +28,16 @@ class GeoserverProxy {
 		let body = request.body;
 		let rawBody = request.rawBody;
 
+		if(!request.session.geoserverProxyCache) {
+			request.session.geoserverProxyCache = {
+				allowedLayers: [],
+				updated: null,
+				uuid: uuidv4()
+			}
+		}
+
+		let geoserverProxyCache = request.session.geoserverProxyCache;
+
 		let requestedLayers = [];
 		_.each(query, (value, property) => {
 			if(property.toLowerCase().includes(`layer`)) {
@@ -38,8 +48,7 @@ class GeoserverProxy {
 
 		let allowedLayers = [];
 		if(requestedLayers.length) {
-			let userCache = this._cacheByUser[user.id];
-			if(!userCache || new Date().getTime() - userCache.updated > this._cacheExpirationTime) {
+			if(!geoserverProxyCache.updated || new Date().getTime() - geoserverProxyCache.updated > this._cacheExpirationTime) {
 				let allowedPlaceIds = _.uniq(_.map(_.filter(_.flatten([...user.permissions, ..._.map(user.groups, (group) => { return group.permissions})]), {resourceType: `location`, permission: `GET`}), (permission) => { return Number(permission.resourceId)}));
 				await this._mongo
 					.collection(`layerref`)
@@ -73,16 +82,16 @@ class GeoserverProxy {
 
 				console.log(`#### Allowed layers for user ${user.id} were updated`);
 
-				this._cacheByUser[user.id] = {
-					updated: new Date().getTime(),
-					allowedLayers
-				}
+				geoserverProxyCache.updated = new Date().getTime();
+				geoserverProxyCache.allowedLayers = allowedLayers;
 			}
+
+			console.log(`#### Geoserver proxy cache:`, geoserverProxyCache.uuid, geoserverProxyCache.allowedLayers.length, geoserverProxyCache.updated);
 		}
 
 		let geoserverRequest;
 
-		if(!requestedLayers.length || !_.difference(requestedLayers, this._cacheByUser[user.id].allowedLayers).length) {
+		if(!requestedLayers.length || !_.difference(requestedLayers, geoserverProxyCache.allowedLayers).length) {
 			let geoserverUrl = `${this._protocol}://${this._host}${url}`;
 			if(method.toLowerCase() === `get`) {
 				geoserverRequest = superagent.get(geoserverUrl)
