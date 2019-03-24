@@ -31,6 +31,7 @@ class GeoserverProxy {
 		if(!request.session.geoserverProxyCache) {
 			request.session.geoserverProxyCache = {
 				allowedLayers: [],
+				otherLayers: [],
 				updated: null,
 				uuid: uuidv4()
 			}
@@ -69,15 +70,10 @@ class GeoserverProxy {
 							.find({layer: {$nin: requestedLayers}})
 							.toArray()
 							.then((layerrefs) => {
-								return _.map(layerrefs, `layer`);
+								geoserverProxyCache.otherLayers = _.map(layerrefs, `layer`);
 							})
 					})
 					.then((otherLayers) => {
-						_.each(_.difference(requestedLayers, allowedLayers), (denyedLayer) => {
-							if(!otherLayers.includes(denyedLayer)) {
-								allowedLayers.push(denyedLayer);
-							}
-						})
 					});
 
 				console.log(`#### Allowed layers for user ${user.id} were updated`);
@@ -88,6 +84,12 @@ class GeoserverProxy {
 
 			console.log(`#### Geoserver proxy cache:`, geoserverProxyCache.uuid, geoserverProxyCache.allowedLayers.length, geoserverProxyCache.updated);
 		}
+
+		_.each(_.difference(requestedLayers, geoserverProxyCache.allowedLayers), (denyedLayer) => {
+			if(!geoserverProxyCache.otherLayers.includes(denyedLayer)) {
+				geoserverProxyCache.allowedLayers.push(denyedLayer);
+			}
+		});
 
 		let geoserverRequest;
 
