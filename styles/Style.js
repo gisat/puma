@@ -44,7 +44,7 @@ Style.prototype.symbologyName = function() {};
 Style.prototype.source = function() {};
 
 Style.prototype.json = function() {
-	return Promise.all([this.id(), this.definition(), this.name(), this.symbologyName(), this.changed(), this.changedBy(), this.created(), this.createdBy(), this.source()]).then(function (results) {
+	return Promise.all([this.id(), this.definition(), this.name(), this.symbologyName(), this.changed(), this.changedBy(), this.created(), this.createdBy(), this.source(), this.sld()]).then(function (results) {
 		return {
 			_id: Number(results[0]),
 			id: Number(results[0]),
@@ -55,7 +55,8 @@ Style.prototype.json = function() {
 			changedBy: results[5],
 			created: results[6],
 			createdBy: results[7],
-			source: results[8]
+			source: results[8],
+			sld: results[9]
 		};
 	});
 };
