@@ -38,7 +38,7 @@ class MongoDataViews {
      * @param analyticalUnits {PgAnalyticalUnits} Service for accessing analytical units.
      * @returns {*}
      */
-        defaultForScope(scope, theme, location, year, analyticalUnits) {
+    defaultForScope(scope, theme, location, year, analyticalUnits) {
         let collection = this._connection.collection(MongoDataView.collectionName());
         let id = conn.getNextId();
         let analyticalUnitLevel = null;
@@ -67,7 +67,7 @@ class MongoDataViews {
             logger.info(`MongoDataViews#defaultForScope LayerReferences: ${layerReferences.length}`, layerReferences);
             if(layerReferences.length === 0) {
                 logger.error(`MongoDataViews#defaultForScope Nonexistent base layer for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}.`);
-                throw new Error('There is no mapped data layer for the top analytical unit level.');
+                throw 'There is no mapped data layer for the top analytical unit level.';
             }
 
             if(layerReferences.length > 1) {
@@ -82,7 +82,7 @@ class MongoDataViews {
             logger.info(`MongoDataViews#defaultForScope LayerReferences: ${analyticalUnits.length}`, analyticalUnits);
             if(analyticalUnits.length === 0) {
                 logger.error(`MongoDataViews#defaultForScope Base layer doesn't contain any unit for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`);
-                throw new Error(`Base layer doesn't contain any unit for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`);
+                throw `Base layer doesn't contain any unit for analyticalUnitLevel: ${analyticalUnitLevel} Location: ${location}, Year: ${year}`;
             }
 
             var dataView = {
