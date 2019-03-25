@@ -37,6 +37,7 @@ class DataViewController extends Controller {
         }).then(() => {
             response.send({"status": "ok"});
         }).catch(err => {
+            console.log(err);
             response.status(500).send({
                 "status": "err",
                 "message": err

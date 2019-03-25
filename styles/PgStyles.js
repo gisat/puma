@@ -62,6 +62,8 @@ PgStyles.prototype.all = function () {
     var self = this;
     return this._pool.query('select * from ' + self._table).then(function (result) {
         return result.rows.map(row => {
+        	row.definition = JSON.parse(row.definition);
+
             return new RestStyle(row.id, row, 1);
         });
     }).catch(function (err) {

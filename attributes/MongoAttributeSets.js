@@ -35,16 +35,6 @@ class MongoAttributeSets {
 
 			return Promise.all(promises);
 		}).then(function(){
-			return attributeSet.chartConfigurations();
-		}).then(function(chartConfigurations){
-			var promises = [];
-
-			chartConfigurations.forEach(function(chartConfiguration){
-				promises.push(self._chartConfigurations.remove(chartConfiguration))
-			});
-
-			return Promise.all(promises);
-		}).then(function(){
 			return attributeSet.analysis();
 		}).then(function(analysis){
 			var promises = [];

@@ -38,7 +38,7 @@ class MongoDataViews {
      * @param analyticalUnits {PgAnalyticalUnits} Service for accessing analytical units.
      * @returns {*}
      */
-        defaultForScope(scope, theme, location, year, analyticalUnits) {
+    defaultForScope(scope, theme, location, year, analyticalUnits) {
         let collection = this._connection.collection(MongoDataView.collectionName());
         let id = conn.getNextId();
         let analyticalUnitLevel = null;
