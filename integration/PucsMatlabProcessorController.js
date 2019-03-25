@@ -8,8 +8,6 @@ const CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/pr
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 const PgRelations = require('../metadata/PgRelations');
 
-let processes = {};
-
 class PucsMatlabProcessorController {
 	constructor(app, pgPool, pgSchema, mongo) {
 		app.post('/rest/pucs/execute_matlab', this.executeMatlabProcessor.bind(this));
@@ -23,8 +21,12 @@ class PucsMatlabProcessorController {
 	}
 
 	publishMatlabResults(request, response) {
+		if(!request.session.pucsMatlabProcesses) {
+			request.session.pucsMatlabProcesses = {};
+		}
+
 		if (request.body.data) {
-			this.processAll(request.body.data, request.session.user)
+			this.processAll(request)
 				.then((results) => {
 					response.status(200).send(
 						{
@@ -50,19 +52,19 @@ class PucsMatlabProcessorController {
 		}
 	}
 
-	processAll(input, user) {
+	processAll(request) {
 		let promises = [];
 
-		input.forEach((data) => {
+		request.body.data.forEach((data) => {
 			promises.push(
-				this.processSingle(data, user)
+				this.processSingle(data, request)
 			)
 		});
 
 		return Promise.all(promises);
 	}
 
-	processSingle(input, user) {
+	processSingle(input, request) {
 		return Promise.resolve()
 			.then(() => {
 				if (!input.uuid) {
@@ -72,34 +74,34 @@ class PucsMatlabProcessorController {
 				} else if (!input.data.scope_id) {
 					return _.assign(input, {message: "missing scope id", status: "error"})
 				} else {
-					return this.ensureProcess(input, user);
+					return this.ensureProcess(input, request);
 				}
 			});
 	}
 
-	ensureProcess(input, user) {
+	ensureProcess(input, request) {
 		return Promise.resolve()
 			.then(() => {
-				if (processes.hasOwnProperty(input.uuid)) {
-					return processes[input.uuid];
+				if (request.session.pucsMatlabProcesses.hasOwnProperty(input.uuid)) {
+					return request.session.pucsMatlabProcesses[input.uuid];
 				} else {
-					return this.startNewProcess(input, user);
+					return this.startNewProcess(input, request);
 				}
 			});
 	}
 
-	startNewProcess(input, user) {
+	startNewProcess(input, request) {
 		return Promise.resolve()
 			.then(() => {
-				processes[input.uuid] = _.assign(input, {status: "running", progress: 0});
+				request.session.pucsMatlabProcesses[input.uuid] = _.assign(input, {status: "running", progress: 0});
 
-				this.prepareMatlabMetadata(input, user);
+				this.prepareMatlabMetadata(input, request);
 
-				return processes[input.uuid];
+				return request.session.pucsMatlabProcesses[input.uuid];
 			});
 	}
 
-	prepareMatlabMetadata(input, user) {
+	prepareMatlabMetadata(input, request) {
 		return Promise.resolve()
 			.then(async () => {
 				let data = input.data;
@@ -118,7 +120,7 @@ class PucsMatlabProcessorController {
 					identifier = input.data.localLayer;
 				}
 
-				processes[input.uuid].progress++;
+				request.session.pucsMatlabProcesses[input.uuid].progress++;
 
 				let model;
 				if (scopeId && placeId) {
@@ -140,7 +142,7 @@ class PucsMatlabProcessorController {
 										identifier: 'inputFile',
 										data: `${type}:${identifier}`
 									}],
-								owner: user
+								owner: request.session.user
 							});
 							break;
 						case 'ostrava':
@@ -150,29 +152,29 @@ class PucsMatlabProcessorController {
 										identifier: 'inputFile',
 										data: `${type}:${identifier}`
 									}],
-								owner: user
+								owner: request.session.user
 							});
 							break;
 					}
 
 					if(matlabNetworkModelExec) {
 						matlabNetworkModelExec.then((results) => {
-							processes[input.uuid].progress++;
+							request.session.pucsMatlabProcesses[input.uuid].progress++;
 
 							let parsedResults = JSON.parse(results[0].data)[0];
 
-							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, user);
+							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, request);
 						}).catch((error) => {
 							console.log(`#### error`, error);
-							processes[input.uuid].status = 'error';
-							processes[input.uuid].message = error.message;
+							request.session.pucsMatlabProcesses[input.uuid].status = 'error';
+							request.session.pucsMatlabProcesses[input.uuid].message = error.message;
 						});
 					} else {
-						processes[input.uuid].status = 'error';
-						processes[input.uuid].message = `unknown model type`;
+						request.session.pucsMatlabProcesses[input.uuid].status = 'error';
+						request.session.pucsMatlabProcesses[input.uuid].message = `unknown model type`;
 					}
 				} else {
-					processes[input.uuid] = _.assign(input, {
+					request.session.pucsMatlabProcesses[input.uuid] = _.assign(input, {
 						message: "unknown input type or input identifier",
 						status: "error"
 					})
@@ -180,10 +182,10 @@ class PucsMatlabProcessorController {
 			});
 	}
 
-	prepareSpatialRelationsOfMatlabResults(results, input, user) {
+	prepareSpatialRelationsOfMatlabResults(results, input, request) {
 		return this.getScopeConfiguration(input.data.scope_id)
 			.then((configuration) => {
-				processes[input.uuid].progress++;
+				request.session.pucsMatlabProcesses[input.uuid].progress++;
 
 				let templates = configuration.pucsLandUseScenarios.templates;
 
@@ -245,30 +247,30 @@ class PucsMatlabProcessorController {
 							}
 						],
 						input,
-						user);
+						request);
 				} else {
-					processes[input.uuid].status = 'error';
-					processes[input.uuid].message = 'missing spatial relations data';
+					request.session.pucsMatlabProcesses[input.uuid].status = 'error';
+					request.session.pucsMatlabProcesses[input.uuid].message = 'missing spatial relations data';
 				}
 			})
 			.catch((error) => {
 				console.log(error);
-				processes[input.uuid].status = 'error';
-				processes[input.uuid].message = error.message;
+				request.session.pucsMatlabProcesses[input.uuid].status = 'error';
+				request.session.pucsMatlabProcesses[input.uuid].message = error.message;
 			});
 	}
 
-	createSpatialRelationsOfMatlabResults(spatialRelations, input, user) {
-		this._pgRelations.create({spatial: spatialRelations}, user)
+	createSpatialRelationsOfMatlabResults(spatialRelations, input, request) {
+		this._pgRelations.create({spatial: spatialRelations}, request.session.user)
 			.then(([results, errors]) => {
-				processes[input.uuid].progress++;
-				processes[input.uuid].status = "done";
-				processes[input.uuid].spatial_relations = results.spatial;
+				request.session.pucsMatlabProcesses[input.uuid].progress++;
+				request.session.pucsMatlabProcesses[input.uuid].status = "done";
+				request.session.pucsMatlabProcesses[input.uuid].spatial_relations = results.spatial;
 			})
 			.catch((error) => {
 				console.log(error);
-				processes[input.uuid].status = 'error';
-				processes[input.uuid].message = error.message;
+				request.session.pucsMatlabProcesses[input.uuid].status = 'error';
+				request.session.pucsMatlabProcesses[input.uuid].message = error.message;
 			});
 	}
 
@@ -280,6 +282,10 @@ class PucsMatlabProcessorController {
 	}
 
 	async executeMatlabProcessor(request, response) {
+		if(!request.session.pucsMatlabProcesses) {
+			request.session.pucsMatlabProcesses = {};
+		}
+
 		if (request.body.data) {
 			let uploadKey = request.body.data.uploadKey;
 			let remotePath = request.body.data.remotePath;
@@ -299,8 +305,8 @@ class PucsMatlabProcessorController {
 			}
 
 			if (uploadKey || remotePath || localLayer) {
-				if (!processes[processKey]) {
-					processes[processKey] = {
+				if (!request.session.pucsMatlabProcesses[processKey]) {
+					request.session.pucsMatlabProcesses[processKey] = {
 						status: "running"
 					};
 
@@ -343,25 +349,25 @@ class PucsMatlabProcessorController {
 					}
 
 					matlabProcess.then((result) => {
-						processes[processKey] = {
+						request.session.pucsMatlabProcesses[processKey] = {
 							status: "done",
 							result: result[0].data
 						};
 					}).catch((error) => {
 						console.log(error);
-						processes[processKey] = {
+						request.session.pucsMatlabProcesses[processKey] = {
 							status: "error",
 							message: error.message
 						}
 					});
 				}
-				if (processes[processKey]['status'] === "error") {
+				if (request.session.pucsMatlabProcesses[processKey]['status'] === "error") {
 					response.status(500).json({
-						message: processes[processKey]['message'],
+						message: request.session.pucsMatlabProcesses[processKey]['message'],
 						success: false
 					});
 				} else {
-					response.status(200).json(processes[processKey]);
+					response.status(200).json(request.session.pucsMatlabProcesses[processKey]);
 				}
 			} else {
 				response.status(500).json({
