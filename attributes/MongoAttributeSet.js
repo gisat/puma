@@ -57,10 +57,6 @@ class MongoAttributeSet {
 		return this._mongoInstance.read();
 	}
 
-	chartConfigurations() {
-		return this._chartConfiguration.read();
-	}
-
 	dataViews() {
 		return this._dataViews.read();
 	}
