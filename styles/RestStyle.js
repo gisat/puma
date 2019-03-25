@@ -22,6 +22,10 @@ var RestStyle = function (id, jsonObject, currentUserId) {
 	this._source = jsonObject.source;
 	this._sld = jsonObject.sld;
 
+	if(this._source == "sld") {
+		this._symbologyName = this._id;
+	}
+
 	this._created = jsonObject.created || new Date();
 	this._createdBy = jsonObject.createdBy || currentUserId;
 	this._changed = jsonObject.changed || new Date();
