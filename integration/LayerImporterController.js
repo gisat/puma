@@ -8,8 +8,6 @@ let LayerImporter = require('./LayerImporter');
 const UploadManager = require(`../integration/UploadManager`);
 const DataLayerDuplicator = require('../layers/DataLayerDuplicator')
 
-let duplicateProcesses = {};
-
 class LayerImporterController {
 	constructor(app, mongo, pgPool, schema, pantherDataStoragePath) {
 		app.get('/rest/layerImporter/status/:id', this.getLayerImportStatus.bind(this));
@@ -36,18 +34,22 @@ class LayerImporterController {
 					let uuid = duplicate.uuid;
 					let data = duplicate.data;
 
+					if(!request.session.layerDuplicateProcesses) {
+						request.session.layerDuplicateProcesses = {};
+					}
+
 					if(uuid) {
-						if (!duplicateProcesses.hasOwnProperty(uuid)) {
-							duplicateProcesses[uuid] = {
+						if (!request.session.layerDuplicateProcesses.hasOwnProperty(uuid)) {
+							request.session.layerDuplicateProcesses[uuid] = {
 								data: data,
 								status: "running",
 								progress: 0
 							};
 
-							new DataLayerDuplicator().duplicateLayer(duplicateProcesses[uuid]);
+							new DataLayerDuplicator().duplicateLayer(request.session.layerDuplicateProcesses[uuid]);
 						}
 
-						return _.assign(duplicateProcesses[uuid], {uuid: uuid});
+						return _.assign(request.session.layerDuplicateProcesses[uuid], {uuid: uuid});
 					} else {
 						return {
 							data: data,

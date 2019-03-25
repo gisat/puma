@@ -21,6 +21,10 @@ class PucsMatlabProcessorController {
 	}
 
 	publishMatlabResults(request, response) {
+		if(!request.session.pucsMatlabProcesses) {
+			request.session.pucsMatlabProcesses = {};
+		}
+
 		if (request.body.data) {
 			this.processAll(request)
 				.then((results) => {
@@ -278,6 +282,10 @@ class PucsMatlabProcessorController {
 	}
 
 	async executeMatlabProcessor(request, response) {
+		if(!request.session.pucsMatlabProcesses) {
+			request.session.pucsMatlabProcesses = {};
+		}
+
 		if (request.body.data) {
 			let uploadKey = request.body.data.uploadKey;
 			let remotePath = request.body.data.remotePath;
