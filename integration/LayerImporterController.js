@@ -46,7 +46,7 @@ class LayerImporterController {
 								progress: 0
 							};
 
-							new DataLayerDuplicator().duplicateLayer(request.session.layerDuplicateProcesses[uuid]);
+							new DataLayerDuplicator().duplicateLayer(uuid, request);
 						}
 
 						return _.assign(request.session.layerDuplicateProcesses[uuid], {uuid: uuid});

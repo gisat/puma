@@ -20,13 +20,13 @@ class DataLayerDuplicator {
 		this._processes = processes || {};
 	}
 
-	duplicateLayer(process) {
-		let layerName = process.data.layerName;
-		let remotePath = process.data.remotePath;
+	duplicateLayer(uuid, request) {
+		let layerName = request.session.layerDuplicateProcesses[uuid].data.layerName;
+		let remotePath = request.session.layerDuplicateProcesses[uuid].data.remotePath;
 
 		this.ensureFolder(this._temporaryStoragePath)
 			.then(() => {
-				process.progress = 5;
+				request.session.layerDuplicateProcesses[uuid].progress = 5;
 				if(layerName) {
 					return this.getGeoserverShapeLayerDownloadUrlByLayerName(layerName)
 				} else if(remotePath) {
@@ -36,50 +36,50 @@ class DataLayerDuplicator {
 				}
 			})
 			.then((url) => {
-				process.progress = 10;
+				request.session.layerDuplicateProcesses[uuid].progress = 10;
 				return this.downloadFileFromRemote(url)
 			})
 			.then((download) => {
-				process.progress = 15;
+				request.session.layerDuplicateProcesses[uuid].progress = 15;
 				return this.renameDownloadByContentType(download);
 			})
 			.then((renamed) => {
-				process.progress = 20;
+				request.session.layerDuplicateProcesses[uuid].progress = 20;
 				if (renamed.contentType.toLowerCase().includes('application/zip')) {
 					return this.unzipPackage(renamed);
 				}
 			})
 			.then((directory) => {
-				process.progress = 25;
+				request.session.layerDuplicateProcesses[uuid].progress = 25;
 				return this.removeFile(directory.input)
 					.then(() => {
 						return directory;
 					})
 			})
 			.then((directory) => {
-				process.progress = 30;
+				request.session.layerDuplicateProcesses[uuid].progress = 30;
 				return this.renameFilesInDirectory(directory.path)
 					.then(() => {
 						return directory;
 					})
 			})
 			.then((directory) => {
-				process.progress = 35;
+				request.session.layerDuplicateProcesses[uuid].progress = 35;
 				return this.getImportMetadata(directory)
 			})
 			.then((metadata) => {
-				process.progress = 50;
+				request.session.layerDuplicateProcesses[uuid].progress = 50;
 				return this.importToGeoserver(metadata)
 			})
 			.then((resultLayerName) => {
-				process.progress = 100;
-				process.data.duplicatedLayerName = `${this._geoserverWorkspace}:${resultLayerName}`;
-				process.status = "done";
+				request.session.layerDuplicateProcesses[uuid].progress = 100;
+				request.session.layerDuplicateProcesses[uuid].data.duplicatedLayerName = `${this._geoserverWorkspace}:${resultLayerName}`;
+				request.session.layerDuplicateProcesses[uuid].status = "done";
 			})
 			.catch((error) => {
 				console.log(`DataLayerDuplicator#duplicateLayer#error:`, error);
-				process.status = "error";
-				process.message = error.message;
+				request.session.layerDuplicateProcesses[uuid].status = "error";
+				request.session.layerDuplicateProcesses[uuid].message = error.message;
 			});
 	}
 
