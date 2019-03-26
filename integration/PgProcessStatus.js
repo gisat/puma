@@ -7,19 +7,19 @@ class PgProcessStatus {
 		this.initTable();
 	}
 
-	updateProcess(uuid, data) {
+	updateProcess(key, data) {
 		return this._pgPool
 			.query(`
-				INSERT INTO "${this._pgSchema}"."${this._pgTableName}" (uuid, data) VALUES ($1, $2)
-				ON CONFLICT (uuid)
+				INSERT INTO "${this._pgSchema}"."${this._pgTableName}" (kex, data) VALUES ($1, $2)
+				ON CONFLICT (key)
 				DO UPDATE SET data = $2;
-			`, [uuid, data]);
+			`, [key, data]);
 	}
 
-	getProcess(uuid) {
+	getProcess(key) {
 		return this._pgPool
 			.query(`
-				SELECT * FROM "${this._pgSchema}"."${this._pgTableName}" WHERE uuid = '${uuid}'
+				SELECT * FROM "${this._pgSchema}"."${this._pgTableName}" WHERE key = '${key}'
 			`)
 			.then((pgResult) => {
 				if(pgResult.rows.length) {
@@ -32,7 +32,7 @@ class PgProcessStatus {
 		return this._pgPool
 			.query(`
 				CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._pgTableName}" (
-					uuid uuid primary key default gen_random_uuid(),
+					key text primary key default gen_random_uuid(),
 					data jsonb
 				);
 			`)

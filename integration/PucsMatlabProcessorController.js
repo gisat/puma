@@ -8,6 +8,8 @@ const CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/pr
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 const PgRelations = require('../metadata/PgRelations');
 
+const PgProcessStatus = require(`../integration/PgProcessStatus`);
+
 class PucsMatlabProcessorController {
 	constructor(app, pgPool, pgSchema, mongo) {
 		app.post('/rest/pucs/execute_matlab', this.executeMatlabProcessor.bind(this));
@@ -15,18 +17,16 @@ class PucsMatlabProcessorController {
 
 		this._mongo = mongo;
 
+		this._pgProcessStatus = new PgProcessStatus(pgPool, pgSchema);
+
 		this._pgRelations = new PgRelations(pgPool, pgSchema);
 		this._calculatePragueTemperatureMapUsingNeuralNetworkModel = new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 		this._calculateOstravaTemperatureMapUsingNeuralNetworkModel = new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 	}
 
 	publishMatlabResults(request, response) {
-		if(!request.session.pucsMatlabProcesses) {
-			request.session.pucsMatlabProcesses = {};
-		}
-
 		if (request.body.data) {
-			this.processAll(request)
+			this.processAll(request, this._pgProcessStatus)
 				.then((results) => {
 					response.status(200).send(
 						{
@@ -52,19 +52,19 @@ class PucsMatlabProcessorController {
 		}
 	}
 
-	processAll(request) {
+	processAll(request, pgProcessStatus) {
 		let promises = [];
 
 		request.body.data.forEach((data) => {
 			promises.push(
-				this.processSingle(data, request)
+				this.processSingle(data, request.session.user, pgProcessStatus)
 			)
 		});
 
 		return Promise.all(promises);
 	}
 
-	processSingle(input, request) {
+	processSingle(input, user, pgProcessStatus) {
 		return Promise.resolve()
 			.then(() => {
 				if (!input.uuid) {
@@ -74,36 +74,37 @@ class PucsMatlabProcessorController {
 				} else if (!input.data.scope_id) {
 					return _.assign(input, {message: "missing scope id", status: "error"})
 				} else {
-					return this.ensureProcess(input, request);
+					return this.ensureProcess(input, user, pgProcessStatus);
 				}
 			});
 	}
 
-	ensureProcess(input, request) {
-		return Promise.resolve()
-			.then(() => {
-				if (request.session.pucsMatlabProcesses.hasOwnProperty(input.uuid)) {
-					return request.session.pucsMatlabProcesses[input.uuid];
+	ensureProcess(input, user, pgProcessStatus) {
+		return pgProcessStatus.getProcess(input.uuid)
+			.then((pgProcess) => {
+				if(pgProcess) {
+					return pgProcess.data;
 				} else {
-					return this.startNewProcess(input, request);
+					return this.startNewProcess(input, user, pgProcessStatus);
 				}
 			});
 	}
 
-	startNewProcess(input, request) {
+	startNewProcess(input, user, pgProcessStatus) {
 		return Promise.resolve()
 			.then(() => {
-				request.session.pucsMatlabProcesses[input.uuid] = _.assign(input, {status: "running", progress: 0});
+				return pgProcessStatus.updateProcess(input.uuid, _.assign(input, {status: "running", progress: 0}));
+			})
+			.then(() => {
+				this.prepareMatlabMetadata(input, user, pgProcessStatus);
 
-				this.prepareMatlabMetadata(input, request);
-
-				return request.session.pucsMatlabProcesses[input.uuid];
-			});
+				return pgProcessStatus.getProcess(input.uuid);
+			})
 	}
 
-	prepareMatlabMetadata(input, request) {
-		return Promise.resolve()
-			.then(async () => {
+	prepareMatlabMetadata(input, user, pgProcessStatus) {
+		return pgProcessStatus.getProcess(input.uuid)
+			.then(async (pgProcess) => {
 				let data = input.data;
 				let scopeId = data.scope_id;
 				let placeId = data.place_id;
@@ -120,7 +121,8 @@ class PucsMatlabProcessorController {
 					identifier = input.data.localLayer;
 				}
 
-				request.session.pucsMatlabProcesses[input.uuid].progress++;
+				pgProcess.data.progress++;
+				pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 
 				let model;
 				if (scopeId && placeId) {
@@ -142,7 +144,7 @@ class PucsMatlabProcessorController {
 										identifier: 'inputFile',
 										data: `${type}:${identifier}`
 									}],
-								owner: request.session.user
+								owner: user
 							});
 							break;
 						case 'ostrava':
@@ -152,32 +154,38 @@ class PucsMatlabProcessorController {
 										identifier: 'inputFile',
 										data: `${type}:${identifier}`
 									}],
-								owner: request.session.user
+								owner: user
 							});
 							break;
 					}
 
 					if(matlabNetworkModelExec) {
 						matlabNetworkModelExec.then((results) => {
-							request.session.pucsMatlabProcesses[input.uuid].progress++;
+							pgProcess.data.progress++;
+							pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 
 							let parsedResults = JSON.parse(results[0].data)[0];
 
 							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, request);
 						}).catch((error) => {
 							console.log(`#### error`, error);
-							request.session.pucsMatlabProcesses[input.uuid].status = 'error';
-							request.session.pucsMatlabProcesses[input.uuid].message = error.message;
+
+							pgProcess.data.status = 'error';
+							pgProcess.data.message = error.message;
+
+							pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 						});
 					} else {
-						request.session.pucsMatlabProcesses[input.uuid].status = 'error';
-						request.session.pucsMatlabProcesses[input.uuid].message = `unknown model type`;
+						pgProcess.data.status = 'error';
+						pgProcess.data.message = `unknown model type`;
+
+						pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 					}
 				} else {
-					request.session.pucsMatlabProcesses[input.uuid] = _.assign(input, {
-						message: "unknown input type or input identifier",
-						status: "error"
-					})
+					pgProcess.data.status = 'error';
+					pgProcess.data.message = `unknown input type or input identifier`;
+
+					pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 				}
 			});
 	}
