@@ -10,7 +10,7 @@ class PgProcessStatus {
 	updateProcess(key, data) {
 		return this._pgPool
 			.query(`
-				INSERT INTO "${this._pgSchema}"."${this._pgTableName}" (kex, data) VALUES ($1, $2)
+				INSERT INTO "${this._pgSchema}"."${this._pgTableName}" (key, data) VALUES ($1, $2)
 				ON CONFLICT (key)
 				DO UPDATE SET data = $2;
 			`, [key, data]);
