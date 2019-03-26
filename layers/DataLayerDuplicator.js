@@ -103,8 +103,6 @@ class DataLayerDuplicator {
 			})
 			.catch((error) => {
 				console.log(`DataLayerDuplicator#duplicateLayer#error:`, error);
-				request.session.layerDuplicateProcesses[uuid].status = "error";
-				request.session.layerDuplicateProcesses[uuid].message = error.message;
 
 				processData.message = error.message;
 				processData.status = "error";
