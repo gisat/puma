@@ -27,49 +27,50 @@ class LayerImporterController {
 		this._pgProcessStatus = new PgProcessStatus(pgPool, schema);
 	}
 
-	duplicateLayer(request, response) {
+	async duplicateLayer(request, response) {
 		let duplicates = request.body.data;
 		if (duplicates) {
 			duplicates = _.isArray(duplicates) ? duplicates : [duplicates];
 
-			response.status(200).json({
-				data: _.map(duplicates, (duplicate) => {
-					let uuid = duplicate.uuid;
-					let data = duplicate.data;
+			let data = [];
 
-					if(uuid) {
-						return this._pgProcessStatus
-							.getProcess(uuid)
-							.then((lrprocess) => {
-								if(!lrprocess) {
-									let processData = {
-										uuid: uuid,
-										data: data,
-										status: 'running',
-										progress: 0
-									};
+			for(let duplicate of duplicates) {
+				let uuid = duplicate.uuid;
+				let data = duplicate.data;
 
-									return this._pgProcessStatus
-										.updateProcess(uuid, processData)
-										.then(() => {
-											new DataLayerDuplicator().duplicateLayer(uuid, this._pgProcessStatus);
-											return processData;
-										})
-								} else {
-									return lrprocess;
-								}
-							});
-					} else {
-						return {
-							data: data,
-							status: "error",
-							progress: 0,
-							message: "missing uuid"
-						}
+				if(uuid) {
+					let processData = {
+						uuid: uuid,
+						data: data,
+						status: 'running',
+						progress: 0
+					};
+
+					await this._pgProcessStatus
+						.getProcess(uuid)
+						.then((lrprocess) => {
+							if(!lrprocess) {
+								return this._pgProcessStatus
+									.updateProcess(uuid, processData)
+									.then(() => {
+										new DataLayerDuplicator().duplicateLayer(uuid, this._pgProcessStatus);
+										data.push(processData);
+									})
+							} else {
+								data.push(lrprocess.data)
+							}
+						});
+				} else {
+					return {
+						data: data,
+						status: "error",
+						progress: 0,
+						message: "missing uuid"
 					}
-				}),
-				success: true
-			});
+				}
+			}
+
+			response.status(200).json({data: data, success: true});
 		} else {
 			response
 				.status(500)
