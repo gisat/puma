@@ -43,6 +43,7 @@ class LayerImporterController {
 							.then((lrprocess) => {
 								if(!lrprocess) {
 									let processData = {
+										uuid: uuid,
 										data: data,
 										status: 'running',
 										progress: 0
