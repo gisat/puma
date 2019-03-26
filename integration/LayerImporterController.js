@@ -32,7 +32,7 @@ class LayerImporterController {
 		if (duplicates) {
 			duplicates = _.isArray(duplicates) ? duplicates : [duplicates];
 
-			let data = [];
+			let responseData = [];
 
 			for(let duplicate of duplicates) {
 				let uuid = duplicate.uuid;
@@ -54,23 +54,23 @@ class LayerImporterController {
 									.updateProcess(uuid, processData)
 									.then(() => {
 										new DataLayerDuplicator().duplicateLayer(uuid, this._pgProcessStatus);
-										data.push(processData);
+										responseData.push(processData);
 									})
 							} else {
-								data.push(lrprocess.data)
+								responseData.push(lrprocess.data)
 							}
 						});
 				} else {
-					return {
+					responseData.push({
 						data: data,
 						status: "error",
 						progress: 0,
 						message: "missing uuid"
-					}
+					})
 				}
 			}
 
-			response.status(200).json({data: data, success: true});
+			response.status(200).json({data: responseData, success: true});
 		} else {
 			response
 				.status(500)
