@@ -5,6 +5,8 @@ let logger = require('../common/Logger').applicationWideLogger;
 let LayerImporterTasks = require('./LayerImporterTasks');
 let LayerImporter = require('./LayerImporter');
 
+const PgProcessStatus = require(`../integration/PgProcessStatus`);
+
 const UploadManager = require(`../integration/UploadManager`);
 const DataLayerDuplicator = require('../layers/DataLayerDuplicator')
 
@@ -22,6 +24,7 @@ class LayerImporterController {
 		this._layerImporterTasks = new LayerImporterTasks();
 		this._layerImporter = new LayerImporter(pgPool, mongo, this._layerImporterTasks, schema);
 		this._uploadManager = new UploadManager(pgPool, schema, `${pantherDataStoragePath}/upload_manager/uploads`);
+		this._pgProcessStatus = new PgProcessStatus(pgPool, schema);
 	}
 
 	duplicateLayer(request, response) {
@@ -34,22 +37,20 @@ class LayerImporterController {
 					let uuid = duplicate.uuid;
 					let data = duplicate.data;
 
-					if(!request.session.layerDuplicateProcesses) {
-						request.session.layerDuplicateProcesses = {};
-					}
-
 					if(uuid) {
-						if (!request.session.layerDuplicateProcesses.hasOwnProperty(uuid)) {
-							request.session.layerDuplicateProcesses[uuid] = {
-								data: data,
-								status: "running",
-								progress: 0
-							};
-
-							new DataLayerDuplicator().duplicateLayer(uuid, request);
-						}
-
-						return _.assign(request.session.layerDuplicateProcesses[uuid], {uuid: uuid});
+						return this._pgProcessStatus
+							.getProcess(uuid)
+							.then((lrprocess) => {
+								if(!lrprocess) {
+									return this._pgProcessStatus
+										.updateProcess(uuid, {data: data, status: 'running', progress: 0})
+										.then(() => {
+											new DataLayerDuplicator().duplicateLayer(uuid, this._pgProcessStatus);
+										})
+								} else {
+									return lrprocess;
+								}
+							});
 					} else {
 						return {
 							data: data,
