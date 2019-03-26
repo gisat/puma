@@ -42,10 +42,17 @@ class LayerImporterController {
 							.getProcess(uuid)
 							.then((lrprocess) => {
 								if(!lrprocess) {
+									let processData = {
+										data: data,
+										status: 'running',
+										progress: 0
+									};
+
 									return this._pgProcessStatus
-										.updateProcess(uuid, {data: data, status: 'running', progress: 0})
+										.updateProcess(uuid, processData)
 										.then(() => {
 											new DataLayerDuplicator().duplicateLayer(uuid, this._pgProcessStatus);
+											return processData;
 										})
 								} else {
 									return lrprocess;

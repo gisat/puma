@@ -35,7 +35,10 @@ class PgProcessStatus {
 					uuid uuid primary key default gen_random_uuid(),
 					data jsonb
 				);
-			`);
+			`)
+			.catch((error) => {
+				console.log(error);
+			})
 	}
 }
 
