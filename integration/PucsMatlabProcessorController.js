@@ -82,7 +82,7 @@ class PucsMatlabProcessorController {
 	ensureProcess(input, user, pgProcessStatus) {
 		return pgProcessStatus.getProcess(input.uuid)
 			.then((pgProcess) => {
-				if(pgProcess) {
+				if (pgProcess) {
 					return pgProcess.data;
 				} else {
 					return this.startNewProcess(input, user, pgProcessStatus);
@@ -98,7 +98,9 @@ class PucsMatlabProcessorController {
 			.then(() => {
 				this.prepareMatlabMetadata(input, user, pgProcessStatus);
 
-				return pgProcessStatus.getProcess(input.uuid);
+				return pgProcessStatus.getProcess(input.uuid).then((pgProcess) => {
+					return pgProcess.data;
+				});
 			})
 	}
 
@@ -128,7 +130,7 @@ class PucsMatlabProcessorController {
 				if (scopeId && placeId) {
 					let scopeConfiguration = await this.getScopeConfiguration(scopeId);
 					let pucsLandUseScenarios = scopeConfiguration['pucsLandUseScenarios'];
-					if(pucsLandUseScenarios) {
+					if (pucsLandUseScenarios) {
 						let processorByPlaceId = pucsLandUseScenarios['processorByPlaceId'];
 						model = processorByPlaceId[placeId];
 					}
@@ -159,7 +161,7 @@ class PucsMatlabProcessorController {
 							break;
 					}
 
-					if(matlabNetworkModelExec) {
+					if (matlabNetworkModelExec) {
 						matlabNetworkModelExec.then((results) => {
 							pgProcess.data.progress++;
 							pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
@@ -290,7 +292,7 @@ class PucsMatlabProcessorController {
 	}
 
 	async executeMatlabProcessor(request, response) {
-		if(!request.session.pucsMatlabProcesses) {
+		if (!request.session.pucsMatlabProcesses) {
 			request.session.pucsMatlabProcesses = {};
 		}
 
@@ -306,7 +308,7 @@ class PucsMatlabProcessorController {
 			if (scopeId && placeId) {
 				let scopeConfiguration = await this.getScopeConfiguration(scopeId);
 				let pucsLandUseScenarios = scopeConfiguration['pucsLandUseScenarios'];
-				if(pucsLandUseScenarios) {
+				if (pucsLandUseScenarios) {
 					let processorByPlaceId = pucsLandUseScenarios['processorByPlaceId'];
 					processorPlace = processorByPlaceId[placeId];
 				}
