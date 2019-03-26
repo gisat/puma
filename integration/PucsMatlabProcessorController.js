@@ -168,7 +168,7 @@ class PucsMatlabProcessorController {
 
 							let parsedResults = JSON.parse(results[0].data)[0];
 
-							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, request);
+							this.prepareSpatialRelationsOfMatlabResults(parsedResults, input, user, pgProcessStatus);
 						}).catch((error) => {
 							console.log(`#### error`, error);
 
@@ -192,10 +192,18 @@ class PucsMatlabProcessorController {
 			});
 	}
 
-	prepareSpatialRelationsOfMatlabResults(results, input, request) {
-		return this.getScopeConfiguration(input.data.scope_id)
+	prepareSpatialRelationsOfMatlabResults(results, input, user, pgProcessStatus) {
+		let pgProcess;
+		return pgProcessStatus.getProcess(input.uuid)
+			.then((pPgProcess) => {
+				pgProcess = pPgProcess;
+			})
+			.then(() => {
+				return this.getScopeConfiguration(input.data.scope_id)
+			})
 			.then((configuration) => {
-				request.session.pucsMatlabProcesses[input.uuid].progress++;
+				pgProcess.data.progress++;
+				pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 
 				let templates = configuration.pucsLandUseScenarios.templates;
 
@@ -257,30 +265,49 @@ class PucsMatlabProcessorController {
 							}
 						],
 						input,
-						request);
+						user,
+						pgProcessStatus);
 				} else {
-					request.session.pucsMatlabProcesses[input.uuid].status = 'error';
-					request.session.pucsMatlabProcesses[input.uuid].message = 'missing spatial relations data';
+					pgProcess.data.status = 'error';
+					pgProcess.data.message = 'missing spatial relations data';
+
+					pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 				}
 			})
 			.catch((error) => {
 				console.log(error);
-				request.session.pucsMatlabProcesses[input.uuid].status = 'error';
-				request.session.pucsMatlabProcesses[input.uuid].message = error.message;
+
+				pgProcess.data.status = 'error';
+				pgProcess.data.message = error.message;
+
+				pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 			});
 	}
 
-	createSpatialRelationsOfMatlabResults(spatialRelations, input, request) {
-		this._pgRelations.create({spatial: spatialRelations}, request.session.user)
+	createSpatialRelationsOfMatlabResults(spatialRelations, input, user, pgProcessStatus) {
+		let pgProcess;
+		this._pgProcessStatus.getProcess(input.uuid)
+			.then((pPgProcess) => {
+				pgProcess = pPgProcess;
+			})
+			.then(() => {
+				return this._pgRelations.create({spatial: spatialRelations}, user);
+			})
 			.then(([results, errors]) => {
-				request.session.pucsMatlabProcesses[input.uuid].progress++;
-				request.session.pucsMatlabProcesses[input.uuid].status = "done";
-				request.session.pucsMatlabProcesses[input.uuid].spatial_relations = results.spatial;
+
+				pgProcess.data.progress++;
+				pgProcess.data.status = "done";
+				pgProcess.data.spatial_relations = results.spatial;
+
+				pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 			})
 			.catch((error) => {
 				console.log(error);
-				request.session.pucsMatlabProcesses[input.uuid].status = 'error';
-				request.session.pucsMatlabProcesses[input.uuid].message = error.message;
+
+				pgProcess.data.status = 'error';
+				pgProcess.data.message = error.message;
+
+				pgProcessStatus.updateProcess(input.uuid, pgProcess.data);
 			});
 	}
 
