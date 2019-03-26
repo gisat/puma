@@ -38,3 +38,5 @@ class PgProcessStatus {
 			`);
 	}
 }
+
+module.exports = PgProcessStatus;
