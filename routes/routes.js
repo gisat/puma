@@ -55,6 +55,7 @@ const PgMetadataController = require('../metadata/PgMetadataController');
 const PgPermissionController = require('./PgPermissionController');
 const PgUserController = require('../user/PgUserController');
 const PgApplicationController = require('../application/PgApplicationsController');
+const PgSpecificController = require('../specific/PgSpecificController');
 
 const UploadManagerController = require('./UploadManagerController');
 
@@ -150,6 +151,7 @@ module.exports = function(app) {
 	new PgDataSourcesController(app, pool.pool(), config.pgSchema.dataSources);
 	new PgApplicationController(app, pool.pool(), config.pgSchema.application);
 	new PgViewsController(app, pool.pool(), config.pgSchema.views);
+	new PgSpecificController(app, pool.pool(), config.pgSchema.specific);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
 
