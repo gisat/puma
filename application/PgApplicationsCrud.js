@@ -1,5 +1,7 @@
 const _ = require('lodash');
 
+ const config = require(`../config`);
+
 const PgCrud = require('../common/PgCrud');
 
 const PgScopes = require('../metadata/PgScopes');
@@ -11,7 +13,7 @@ class PgApplicationsCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
-		this._pgScopes = new PgScopes(pgPool, pgSchema);
+		this._pgScopes = new PgScopes(pgPool, config.pgSchema.metadata);
 
 		this._pgLayerTrees = new PgLayerTrees(pgPool, pgSchema);
 		this._pgApplications = new PgApplications(pgPool, pgSchema);

@@ -1,5 +1,7 @@
 const _ = require('lodash');
 
+const config = require(`../config`);
+
 const Permission = require('../security/Permission');
 
 const PgCrud = require('../common/PgCrud');
@@ -49,7 +51,7 @@ class PgMetadataCrud extends PgCrud {
 		this._pgAreaTreeLevels = new PgAreaTreeLevels(pgPool, pgSchema);
 		this._pgTags = new PgTags(pgPool, pgSchema);
 
-		this._pgApplications = new PgApplications(pgPool, pgSchema);
+		this._pgApplications = new PgApplications(pgPool, config.pgSchema.application);
 
 		this._PgDataSource = null;
 
