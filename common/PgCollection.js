@@ -1151,6 +1151,7 @@ class PgCollection {
 			});
 		}
 
+		let dummyUuid = `c0724606-f2f3-45bd-964b-2ba69cff26cb`;		// this uuid should never exists in database
 		if (!isAdmin) {
 			let keys = [];
 			_.each(this._permissionResourceTypes, (permissionResourceType) => {
@@ -1161,7 +1162,7 @@ class PgCollection {
 			keys = _.union(_.compact(_.flatten(keys)));
 
 			if (!keys.length) {
-				keys.push(`c0724606-f2f3-45bd-964b-2ba69cff26cb`);	// this uuid should never exists in database
+				keys.push(dummyUuid);
 			}
 
 			if (request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
@@ -1171,11 +1172,11 @@ class PgCollection {
 							return keys.includes(key) && key;
 						}));
 					} else if (this._checkPermissions) {
-						request.filter.key.in = keys.length;
+						request.filter.key.in = keys;
 					}
 				} else {
 					if (this._checkPermissions && !keys.includes(request.filter.key)) {
-						request.filter.key = -1;
+						request.filter.key = dummyUuid;
 					}
 				}
 			} else if (this._checkPermissions) {
@@ -1187,6 +1188,16 @@ class PgCollection {
 					in: keys
 				}
 			}
+		}
+
+		if (
+			request.hasOwnProperty(`filter`)
+			&& request.filter.hasOwnProperty(`key`)
+			&& _.isObject(request.filter.key)
+			&& request.filter.key.hasOwnProperty(`in`)
+			&& !request.filter.key.in.length
+		) {
+			request.filter.key.in.push(dummyUuid);
 		}
 
 		let where = [];
