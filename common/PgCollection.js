@@ -403,7 +403,7 @@ class PgCollection {
 					let sets = [];
 
 					Object.keys(dataSourceData).forEach((property, index) => {
-						if(property === `geometry` || property === `bbox`) {
+						if (property === `geometry` || property === `bbox`) {
 							sets.push(`"${property}" = ST_GeomFromGeoJSON($${index + 1})`);
 						} else {
 							sets.push(`"${property}" = $${index + 1}`);
@@ -425,7 +425,7 @@ class PgCollection {
 				let values = [];
 
 				Object.keys(data).forEach((property, index) => {
-					if(property === `geometry` || property === `bbox`) {
+					if (property === `geometry` || property === `bbox`) {
 						sets.push(`"${property}" = ST_GeomFromGeoJSON($${index + 1})`);
 					} else {
 						sets.push(`"${property}" = $${index + 1}`);
@@ -796,10 +796,10 @@ class PgCollection {
 			.query(`DELETE FROM "${this._pgSchema}"."${this._tableName}" WHERE "key" = '${key}' RETURNING *`)
 			.then((queryResult) => {
 				if (queryResult.rows && queryResult.rows[0]) {
-					if(this._dataSources) {
+					if (this._dataSources) {
 						let dataSource = this._dataSources[queryResult.rows[0].type];
 						let dataSourceKey = queryResult.rows[0][this._relatedColumns.baseColumn];
-						if(dataSourceKey && dataSource) {
+						if (dataSourceKey && dataSource) {
 							return this._pgPool
 								.query(
 									`DELETE FROM "${this._pgSchema}"."${dataSource.getTableName()}" WHERE "key" = '${dataSourceKey}' RETURNING *`
@@ -814,7 +814,7 @@ class PgCollection {
 				}
 			})
 			.then((deleted) => {
-				if(deleted) {
+				if (deleted) {
 					return this.removeAllPermissionsByResourceKey(key)
 						.then(() => {
 							return {
