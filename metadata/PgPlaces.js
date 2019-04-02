@@ -16,6 +16,8 @@ class PgPlaces extends PgCollection {
 		this._permissionResourceTypes = [
 			this._basePermissionResourceType
 		];
+
+		this._customSqlColumns = `, ST_AsGeoJSON(geometry) AS geometry`;
 	}
 
 	getTableSql() {
