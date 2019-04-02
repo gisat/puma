@@ -282,10 +282,16 @@ class PgCollection {
 
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.UPDATE)
 			.then(([availableKeys, isAdmin]) => {
+				return this.get({data: {filter: {key: {in: _.map(objects, `key`)}}}}, user, extra)
+					.then((existingData) => {
+						return [availableKeys, isAdmin, _.map(existingData.data, `key`)];
+					});
+			})
+			.then(([availableKeys, isAdmin, existingData]) => {
 				let promises = [];
 
 				group.forEach((object) => {
-					if (!object.key) {
+					if (!existingData.includes(object.key)) {
 						// todo check permission first?
 						promises.push(
 							this.createOne(object, objects, user, extra)
@@ -397,7 +403,11 @@ class PgCollection {
 					let sets = [];
 
 					Object.keys(dataSourceData).forEach((property, index) => {
-						sets.push(`"${property}" = $${index + 1}`);
+						if(property === `geometry` || property === `bbox`) {
+							sets.push(`"${property}" = ST_GeomFromGeoJSON($${index + 1})`);
+						} else {
+							sets.push(`"${property}" = $${index + 1}`);
+						}
 						values.push(dataSourceData[property]);
 					});
 
@@ -415,7 +425,11 @@ class PgCollection {
 				let values = [];
 
 				Object.keys(data).forEach((property, index) => {
-					sets.push(`"${property}" = $${index + 1}`);
+					if(property === `geometry` || property === `bbox`) {
+						sets.push(`"${property}" = ST_GeomFromGeoJSON($${index + 1})`);
+					} else {
+						sets.push(`"${property}" = $${index + 1}`);
+					}
 					values.push(data[property]);
 				});
 
@@ -433,9 +447,9 @@ class PgCollection {
 
 				return this._pgPool
 					.query(sql.join(` `), values)
-					.then((result) => {
+					.then((pgResult) => {
 						return {
-							key: result.rows[0].key,
+							key: pgResult.rows[0].key,
 							data: null,
 							success: true
 						}
@@ -1306,14 +1320,14 @@ class PgCollection {
 					let requestedKeys = _.map(rows, `key`);
 				}
 				payload.data = _.map(rows, (row) => {
-					if (row.geometry && _.isString(row.geometry)) {
-						row.geometry = JSON.parse(row.geometry);
-					}
-
+					this.mutatePostgresRowToJsFriendly(row);
 					return this.parsePostgresRow(row);
 				});
 				return payload;
 			});
+	}
+
+	mutatePostgresRowToJsFriendly(row) {
 	}
 
 	populateData(payloadData, user) {

@@ -35,6 +35,16 @@ class PgPlaces extends PgCollection {
 		`;
 	}
 
+	mutatePostgresRowToJsFriendly(row) {
+		if (row.geometry && _.isString(row.geometry)) {
+			row.geometry = JSON.parse(row.geometry);
+		}
+
+		if (row.bbox && _.isString(row.bbox)) {
+			row.bbox = JSON.parse(row.bbox);
+		}
+	}
+
 	static groupName() {
 		return 'places';
 	}
