@@ -57,6 +57,7 @@ class FrontOfficeLayers {
 				_.each(layers, (layer) => {
 					let pgDataLayer = _.find(pgDataLayers, {path: layer.layer});
 					layer.metadata = pgDataLayer.metadata;
+					layer.custom = pgDataLayer.custom;
 					layer.source_url = pgDataLayer.source_url;
 				});
 				return Promise.all(promises);

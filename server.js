@@ -57,6 +57,7 @@ const AddPhoneToUser = require('./migration/AddPhoneToUser');
 const AddMetadataToLayer = require('./migration/2_10_1_AddMetadataToLayer');
 const AddSourceUrlToLayer = require('./migration/2_12_AddSourceUrlToLayer');
 const AddSession = require('./migration/2_14_AddSession');
+const AddIdentifierToGroup = require('./migration/2_14_1_AddIdentifierToGroup');
 
 const CompoundAuthentication = require('./security/CompoundAuthentication');
 const PgAuthentication = require('./security/PgAuthentication');
@@ -202,6 +203,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddSession(config.postgreSqlSchema).run();
+}).then(()=>{
+	return new AddIdentifierToGroup(config.postgreSqlSchema).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

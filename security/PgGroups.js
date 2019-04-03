@@ -31,24 +31,7 @@ class PgGroups {
                 throw new Error(logger.error(`PgGroups#byId There is no group with given id: ${id}`));
             }
 
-            groups = result.rows.map(group => new Group(group.id, null, group.name, group.created, group.created_by, group.changed, group.changed_by));
-            return this._permissions.forGroup(groups[0].id);
-        })).then((permissions => {
-            groups[0].permissions = permissions;
-            return groups[0];
-        }))
-    }
-
-    byName(name) {
-	    let groups;
-        return this.pgPool.pool().query(
-            `SELECT * FROM ${this.schema}.groups WHERE name = '${name}'`
-        ).then((result => {
-            if(result.rows.length == 0) {
-                throw new Error(logger.error(`PgGroups#byId There is no group with given name: ${name}`));
-            }
-
-            groups = result.rows.map(group => new Group(group.id, null, group.name, group.created, group.created_by, group.changed, group.changed_by));
+            groups = result.rows.map(group => new Group(group.id, null, group.name, group.identifier, group.created, group.created_by, group.changed, group.changed_by));
             return this._permissions.forGroup(groups[0].id);
         })).then((permissions => {
             groups[0].permissions = permissions;
@@ -68,6 +51,7 @@ class PgGroups {
                     groups[row.id] = {};
 					groups[row.id]._id = row.id;
 					groups[row.id].name = row.name;
+					groups[row.id].identifier = row.identifier;
 					groups[row.id].users = [];
 					groups[row.id].permissionsTowards = [];
                     groups[row.id].permissionsUsers = [];
@@ -116,7 +100,7 @@ class PgGroups {
     }
 
     jsonSql() {
-        return `SELECT groups.id as id, groups.name, members.user_id, permissions.resource_id, permissions.resource_type, permissions.permission from ${this.schema}.groups
+        return `SELECT groups.id as id, groups.name, groups.identifier, members.user_id, permissions.resource_id, permissions.resource_type, permissions.permission from ${this.schema}.groups
          left join ${this.schema}.group_has_members as members on groups.id = members.group_id
          left join ${this.schema}.group_permissions as permissions on groups.id = permissions.group_id`;
     }
@@ -129,7 +113,7 @@ class PgGroups {
 	}
 
 	jsonSimpleSql() {
-		return `SELECT "groups"."id" AS id, "groups"."name" AS name FROM "${this.schema}"."groups";`;
+		return `SELECT "groups"."id" AS id, "groups"."name" AS name "groups"."identifier" AS identifier FROM "${this.schema}"."groups";`;
 	}
 
 	/**
@@ -139,7 +123,7 @@ class PgGroups {
 	 */
 	forUser(userId) {
         return this.pgPool.pool().query(
-			`SELECT groups.id, groups.name FROM ${this.schema}.groups join ${this.schema}.group_has_members ON groups.id=group_has_members.group_id WHERE group_has_members.user_id = ${userId} GROUP BY groups.id, groups.name`
+			`SELECT groups.id, groups.name, groups.identifier FROM ${this.schema}.groups join ${this.schema}.group_has_members ON groups.id=group_has_members.group_id WHERE group_has_members.user_id = ${userId} GROUP BY groups.id, groups.name`
         ).then(result => {
             return result.rows.map(group => new Group(group.id, null, group.name));
         });
@@ -148,12 +132,13 @@ class PgGroups {
 	/**
      * It creates new group with given name and returns created instance with added id.
 	 * @param name {String} Name of the group. It is possible to supply empty string.
+     * @param identifier {String} Identifier of the group.
 	 * @param userId {Number} Id of the user who created the group.
 	 */
-	add(name, userId) {
+	add(name, identifier, userId) {
 		let time = moment().format('YYYY-MM-DD HH:mm:ss');
 		return this.pgPool.pool().query(
-		    `INSERT INTO ${this.schema}.groups (name, created, created_by, changed, changed_by) VALUES ('${name}', '${time}', ${userId}, '${time}', ${userId}) RETURNING id`
+		    `INSERT INTO ${this.schema}.groups (name, identifier, created, created_by, changed, changed_by) VALUES ('${name}', '${identifier}', '${time}', ${userId}, '${time}', ${userId}) RETURNING id`
         ).then(result => {
             return this.byId(result.rows[0].id);
         });
@@ -176,6 +161,7 @@ class PgGroups {
      * @param group {Object}
         {
 	 		name: "Example",
+	 		identifier: "example",
 
 			members: [1,23,4],
 			permissions: ["location", "dataset"],
@@ -197,10 +183,14 @@ class PgGroups {
      * @param current {Number} Id of the current user
      */
 	update(id, group, current) {
-        let updateName = '', members = '', permissions = '', permissionsUser = '', permissionsGroup = '';
+        let updateName = '', updateIdentifier = '', members = '', permissions = '', permissionsUser = '', permissionsGroup = '';
 
         if(group.name) {
             updateName = `UPDATE ${this.schema}.groups SET name = '${group.name}' WHERE id = ${id};`;
+        }
+
+        if(group.identifier) {
+            updateIdentifier = `UPDATE ${this.schema}.groups SET identifier = '${group.identifier}' WHERE id = ${id}`
         }
 
         if(group.members) {
@@ -264,6 +254,8 @@ class PgGroups {
 	    // I create all the necessary information here. In order to make sure that we call just one SQL query.
 		return this.pgPool.pool().query(`
 		    ${updateName};
+		    
+		    ${updateIdentifier};
             
             ${members};
             

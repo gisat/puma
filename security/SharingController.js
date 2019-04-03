@@ -24,10 +24,6 @@ class SharingController {
         app.post('/rest/share/user', this.shareToUser.bind(this));
         app.post('/rest/share/group', this.shareToGroup.bind(this));
 
-        // UTEP Specific stuff
-        app.post('/rest/communities', this.updateCommunities.bind(this));
-        // End of UTEP Specific stuff
-
         this.permissions = new PgPermissions(pgPool, commonSchema || config.postgreSqlSchema);
         this.groups = new PgGroups(pgPool, commonSchema || config.postgreSqlSchema);
         this.wmsLayers = new PgWmsLayers(pgPool, mongo, commonSchema || config.postgreSqlSchema);
@@ -109,35 +105,6 @@ class SharingController {
                 wmsLayers: wmsLayers
             }
         });
-    }
-
-    /**
-     * It updates to which groups user belongs based on the communities it belongs to in the UTEP portal.
-     * @param request
-     * @param response
-     */
-    updateCommunities(request, response) {
-        let communities = request.body.communities;
-        logger.info(`UserController#updateCommunities Communities: `, communities);
-
-        // Add user to group unless he is there for each community.
-        Promise.all(communities.map(community => {
-            let group;
-            return this.groups.byName(community.identifier).then(pGroup => {
-                // If the group doesn't exist, create it.
-                group = pGroup;
-                return this.groups.isMember(request.session.user.id, group.id);
-            }).then(isMember => {
-                if(!isMember) {
-                    return this.groups.addMember(request.session.user.id, group.id, request.session.user.id);
-                }
-            })
-        })).then(() => {
-            response.json({status: "Ok"});
-        }).catch(err => {
-            logger.error('UserController#updateCommunities Error: ', err);
-            response.status(500).json({status: 'Error'});
-        })
     }
 }
 
