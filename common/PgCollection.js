@@ -53,6 +53,8 @@ class PgCollection {
 		this._dataSources = null;
 		this._relevantColumns = null;
 		this._relatedColumns = null;
+
+		this._allowMultipleRelations = false;
 	}
 
 	create(objects, user, extra) {
@@ -1447,6 +1449,10 @@ class PgCollection {
 
 	getGroupName() {
 		return this._groupName;
+	}
+
+	isAllowMultipleRelations() {
+		return this._allowMultipleRelations;
 	}
 }
 
