@@ -16,6 +16,8 @@ class PgTags extends PgCollection {
 		this._permissionResourceTypes = [
 			this._basePermissionResourceType
 		];
+
+		this._allowMultipleRelations = true;
 	}
 
 	getTableSql() {
