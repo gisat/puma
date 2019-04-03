@@ -178,6 +178,7 @@ class FrontOfficeLayers {
 				layerGroup: layerGroup,
 				path: reference.layer,
 				metadata: reference.metadata,
+				custom: reference.custom,
 				source_url: reference.source_url,
 				styles: layerStyles,
                 period: periodId
