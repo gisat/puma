@@ -19,17 +19,7 @@ class PgMetadataRelations {
 		let insertSql = [];
 		let deleteSql = [];
 
-		let relatedStoresOptions = {};
-		_.each(this._relatedToStores, (relatedStore) => {
-			let allowMultipleRelations = relatedStore.isAllowMultipleRelations();
-			let relatedStoreSqlColumName = `${relatedStore.getTableName()}Key`;
-			let relatedStoreColumName = `${relatedStore.getTableName()}${allowMultipleRelations ? 'Keys' : 'Key'}`;
-
-			relatedStoresOptions[relatedStoreColumName] = {
-				relatedStoreSqlColumName,
-				allowMultipleRelations
-			};
-		});
+		let relatedStoresOptions = this.getRelatedStoresOptions();
 
 		_.each(relations, (value, property) => {
 			let relatedStoreOptions = relatedStoresOptions[property];
@@ -72,6 +62,25 @@ class PgMetadataRelations {
 			.query(`DELETE FROM "${this._pgSchema}"."${this._getTableName()}" AS "${this._getTableName()}" WHERE "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}" = '${baseKey}'`);
 	}
 
+	getRelatedStoresOptions() {
+		let relatedStoresOptions = {};
+
+		_.each(this._relatedToStores, (relatedStore) => {
+			let allowMultipleRelations = relatedStore.isAllowMultipleRelations();
+			let relatedStoreSqlColumName = `${relatedStore.getTableName()}Key`;
+			let relatedStoreColumName = `${relatedStore.getTableName()}${allowMultipleRelations ? 'Keys' : 'Key'}`;
+			let relatedStoreColumnType = relatedStore.getKeyColumnType();
+
+			relatedStoresOptions[relatedStoreColumName] = {
+				relatedStoreSqlColumName,
+				allowMultipleRelations,
+				relatedStoreColumnType
+			};
+		});
+
+		return relatedStoresOptions;
+	}
+
 	getRelationsForBaseKeys(baseKeys) {
 		return this._pgPool
 			.query(`SELECT "${this._getBaseMetadataTypeColumnName()}", ${this.getMetadataTypeKeyColumnNamesSql().join(`, `)} FROM "${this._pgSchema}"."${this._getTableName()}" WHERE "${this._getBaseMetadataTypeColumnName()}" IN ('${baseKeys.join(`', '`)}') GROUP BY "${this._getBaseMetadataTypeColumnName()}"`)
@@ -98,15 +107,134 @@ class PgMetadataRelations {
 	}
 
 	getBaseKeysByRelations(relations) {
+		let relatedStoresOptions = this.getRelatedStoresOptions();
+
+		let querySql = [];
+		let subquerySql = [];
+
+		subquerySql.push(`SELECT "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}" AS "${this._getBaseMetadataTypeColumnName()}"`);
+
+		_.each(this.getRelatedStoresOptions(), (relatedStoreOptions) => {
+			let aggregation = `STRING_AGG("${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}"::TEXT, '')`;
+			if(relatedStoreOptions.allowMultipleRelations) {
+				aggregation = `ARRAY_AGG("${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}"::TEXT)`;
+			}
+			subquerySql.push(`${aggregation} FILTER (WHERE "${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NOT NULL) AS "${relatedStoreOptions.relatedStoreSqlColumName}"`);
+		});
+
+		querySql.push(`SELECT * FROM (`);
+
+		querySql.push(subquerySql.join(', '));
+
+		querySql.push(`FROM "${this._pgSchema}"."${this._getTableName()}" GROUP BY "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}"`)
+
+		querySql.push(`) AS subquery`);
+
+		let whereSql = [];
+
+		let sqlVariableId = 1;
+		let sqlVariableValues = [];
+		_.each(relations, (relationValue, relationProperty) => {
+			let relatedStoreOptions = relatedStoresOptions[relationProperty];
+			if (relatedStoreOptions) {
+				if (!_.isArray(relationValue) && !_.isObject(relationValue)) {
+					if(relationValue !== null) {
+						whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" = $${sqlVariableId++}`);
+						sqlVariableValues.push(relationValue);
+					} else {
+						whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NULL`);
+					}
+				} else if(_.isArray(relationValue) && relatedStoreOptions.allowMultipleRelations) {
+					let variableId = sqlVariableId++;
+
+					whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${variableId}`);
+					whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${variableId}`);
+
+					sqlVariableValues.push(relationValue);
+				} else if(_.isObject(relationValue)) {
+					_.each(relationValue, (value, property) => {
+						switch(property) {
+							case `includes`:
+								if(relatedStoreOptions.allowMultipleRelations) {
+									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${sqlVariableId++}`);
+									if(!_.isArray(value)) {
+										value = [value];
+									}
+									sqlVariableValues.push(value);
+								} else {
+									throw new Error('Unable to use this filter type for this column');
+								}
+								break;
+							case `match`:
+								if(relatedStoreOptions.allowMultipleRelations) {
+									let variableId = sqlVariableId++;
+									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${variableId}`);
+									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${variableId}`);
+									sqlVariableValues.push(value);
+								} else {
+									throw new Error('Unable to use this filter type for this column');
+								}
+								break;
+							case `excludes`:
+								if(relatedStoreOptions.allowMultipleRelations) {
+									whereSql.push(`NOT ("subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${sqlVariableId++})`);
+									if(!_.isArray(value)) {
+										value = [value];
+									}
+									sqlVariableValues.push(value);
+								} else {
+									throw new Error('Unable to use this filter type for this column');
+								}
+								break;
+							case `like`:
+								whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" LIKE '%${value}%'`);
+								break;
+							case `in`:
+								if(relatedStoreOptions.allowMultipleRelations) {
+									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${sqlVariableId++}`);
+									sqlVariableValues.push(value);
+								} else {
+									let nullCheck = '';
+									if(value.includes(null)) {
+										nullCheck = ` OR "subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NULL`;
+									}
+									value = _.compact(value);
+									whereSql.push(`("subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IN ('${value.join("', '")}')${nullCheck})`);
+								}
+								break;
+							case `notin`:
+								if(relatedStoreOptions.allowMultipleRelations) {
+									whereSql.push(`NOT ("subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${sqlVariableId++})`);
+									sqlVariableValues.push(value);
+								} else {
+									let nullCheck = '';
+									if(!value.includes(null)) {
+										nullCheck = `OR "subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NULL`;
+									}
+									value = _.compact(value);
+									whereSql.push(`("subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" NOT IN ('${value.join("', '")}')${nullCheck})`);
+								}
+								break;
+						}
+					});
+				}
+			}
+		});
+
+		if(whereSql.length) {
+			querySql.push(`WHERE ` + whereSql.join(` AND `));
+		}
+
+		console.log(querySql.join(' '));
+		console.log(sqlVariableValues);
+
 		return this._pgPool
-			.query(`SELECT "${this._getBaseMetadataTypeColumnName()}" FROM "${this._pgSchema}"."${this._getTableName()}" WHERE ${_.map(relations, (value, property) => {
-				return `"${property}" = '${value}'`
-			}).join(` AND `)};`)
-			.then((result) => {
-				return _.map(result.rows, (row) => {
+			.query(querySql.join(' '), sqlVariableValues)
+			.then((pgResult) => {
+				return _.map(pgResult.rows, (row) => {
 					return row[this._getBaseMetadataTypeColumnName()];
 				});
-			})
+			});
 	}
 
 	getMetadataTypeKeyColumnNames() {
