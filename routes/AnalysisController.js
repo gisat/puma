@@ -49,10 +49,49 @@ class AnalysisController extends Controller {
 		});
 	}
 
-	async hasRights(user, method, id, object) {
-		// Verify permissions for topics for all attribute sets and
-		// If user has rights towards at least one topic, it works for all attribute sets.
+	/**
+	 * Default implementation of reading all rest objects in this collection. This implementation doesn't verifies anything. If the collection is empty, empty array is returned.
+	 * @param request {Request} Request created by the Express framework.
+	 * @param request.session.userId {Number} Id of the user who issued the request.
+	 * @param response {Response} Response created by the Express framework.
+	 * @param next {Function} Function to be called when we want to send it to the next route.
+	 */
+	readAll(request, response, next) {
+		logger.info('Controller#readAll Read all instances of type: ', this.type, ' By User: ', request.session.userId);
 
+		var self = this;
+		this.getFilterByScope(request.params.scope).then(filter => {
+			crud.read(this.type, filter, {
+				userId: request.session.userId,
+				justMine: request.query['justMine']
+			}, (err, result) => {
+				if (err) {
+					logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
+					return next(err);
+				}
+
+				let resultsWithRights = [];
+				Promise.all(result.map(element => {
+					return Promise.all([this.right(request.session.user, Permission.UPDATE, element._id, element),
+						this.right(request.session.user, Permission.DELETE, element._id, element)]).then(result => {
+						if (result[0] === true || result[1] === true) {
+							resultsWithRights.push(element);
+						}
+					})
+
+				})).then(() => {
+					return this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
+						response.json({data: resultsWithRights});
+					})
+				}).catch(err => {
+					logger.error(`Controller#readAll Instances of type ${self.type} Error: `, err);
+					response.status(500).json({status: 'err'});
+				});
+			});
+		});
+	}
+
+	right(user, method, id, object){
 		let attributeSetsIds = [];
 		if(object.type == 'fidagg') {
 			attributeSetsIds = object.attributeSets || [];
@@ -67,15 +106,20 @@ class AnalysisController extends Controller {
 			}
 		}
 
-		const attributeSets = await new FilteredMongoAttributeSets({_id: {$in: attributeSetsIds}}, this._connection).json();
-		let permissions = true;
-		attributeSets.forEach(attributeSet => {
-			if(!user.hasPermission('topic', method, attributeSet.topic)){
-				permissions = false;
-			}
-		});
+		return new FilteredMongoAttributeSets({_id: {$in: attributeSetsIds}}, this._connection).json().then(attributeSets => {
+			let permissions = true;
+			attributeSets.forEach(attributeSet => {
+				if(!user.hasPermission('topic', method, attributeSet.topic)){
+					permissions = false;
+				}
+			});
 
-		return permissions;
+			return permissions;
+		});
+	}
+
+	hasRights(user, method, id, object) {
+		return true;
 	}
 }
 
