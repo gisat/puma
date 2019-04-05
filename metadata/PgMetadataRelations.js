@@ -225,9 +225,6 @@ class PgMetadataRelations {
 			querySql.push(`WHERE ` + whereSql.join(` AND `));
 		}
 
-		console.log(querySql.join(' '));
-		console.log(sqlVariableValues);
-
 		return this._pgPool
 			.query(querySql.join(' '), sqlVariableValues)
 			.then((pgResult) => {
