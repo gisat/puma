@@ -27,3 +27,5 @@ class EnsureProjections {
 			.query(query.join(` `));
 	}
 }
+
+module.exports = EnsureProjections;
