@@ -74,19 +74,16 @@ class AnalysisController extends Controller {
 					return next(err);
 				}
 
-				console.log('Read Analysis');
 				let resultsWithRights = [];
 				Promise.all(result.map(element => {
 					return Promise.all([this.right(request.session.user, Permission.UPDATE, element._id, element),
 						this.right(request.session.user, Permission.DELETE, element._id, element)]).then(result => {
-							console.log('Rights for element: ', result);
 						if (result[0] === true || result[1] === true) {
 							resultsWithRights.push(element);
 						}
 					})
 
 				})).then(() => {
-					console.log('Permissions finished ', resultsWithRights);
 					return this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
 						response.json({data: resultsWithRights});
 					})
