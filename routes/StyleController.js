@@ -19,9 +19,10 @@ const Permission = require('../security/Permission');
  * @alias StyleController
  */
 class StyleController extends Controller {
-    constructor(app, pgPool, schema) {
+    constructor(app, pgPool, mongo, schema) {
         super(app, 'symbology', pgPool);
 
+        this._connection = mongo;
         this._pgStyles = new PgStyles(pgPool, schema);
         this._mongoStyles = new MongoStyles();
         this._styles = new CompoundStyles({

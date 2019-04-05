@@ -93,7 +93,7 @@ module.exports = function(app) {
 	let mongo = conn.getMongoDb();
 	new DatabaseSchema(pool, config.postgreSqlSchema).create();
 
-	new StyleController(app, pool, config.postgreSqlSchema);
+	new StyleController(app, pool, mongo, config.postgreSqlSchema);
 	new AnalysisController(app, pool);
 	new AnalyticalUnitsController(app, pool, mongo);
 	new AreaTemplateController(app, pool);
