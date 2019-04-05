@@ -1,3 +1,5 @@
+const _ = require(`lodash`);
+
 const PgCollection = require('../common/PgCollection');
 const PgDataViewLegacy = require(`./PgDataviewsLegacy`);
 const PgLpisCases = require(`./PgLpisCases`);
@@ -110,7 +112,7 @@ class PgLpisCheckCases extends PgCollection {
 			})
 			.then((datesForGeometry) => {
 				if(dataviewData.dateBoundaries) {
-					return _.filtered(datesForGeometry, (dateForGeometry) => {
+					return _.filter(datesForGeometry, (dateForGeometry) => {
 						let dateFrom = new Date(dataviewData.dateBoundaries.from);
 						let dateTo = new Date(dataviewData.dateBoundaries.to);
 						let date = new Date(dateForGeometry);
