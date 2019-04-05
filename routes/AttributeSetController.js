@@ -7,7 +7,7 @@ class AttributeSetController extends Controller {
 		super(app, 'attributeset', pool, MongoAttributeSets, MongoAttributeSet);
 	}
 
-    hasRights(user, method, id, object) {
+    async hasRights(user, method, id, object) {
         return user.hasPermission('topic', method, object.topic);
     }
 }

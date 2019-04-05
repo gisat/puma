@@ -44,7 +44,7 @@ class DataSetController extends Controller {
 	 * @param response {Response} Response created by the Express framework.
 	 * @param next {Function} Function to be called when we want to send it to the next route.
 	 */
-	readRestricted(request, response, next) {
+	async readRestricted(request, response, next) {
 		logger.info("Requested restricted collection of type: ", this.type, " By User: ", request.session.userId);
 
 		crud.readRestricted(this.type, {
@@ -56,13 +56,13 @@ class DataSetController extends Controller {
 				next(err);
 			} else {
 				logger.info("Result of loading " + this.type + " " + result);
-				response.data = result.filter(scope => this.hasRights(request.session.user, Permission.READ, scope._id));
+				response.data = result.filter(async scope => await this.hasRights(request.session.user, Permission.READ, scope._id));
 				next();
 			}
 		});
 	}
 
-    hasRights(user, method, id) {
+    async hasRights(user, method, id) {
         return user.hasPermission(this.type, method, id);
     }
 }

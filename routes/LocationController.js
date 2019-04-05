@@ -22,7 +22,7 @@ class LocationController extends Controller {
 		super.create(request, response, next);
     }
 
-    hasRights(user, method, id, object) {
+    async hasRights(user, method, id, object) {
         // How do you get the Scope.
         return user.hasPermission(this.type, method, id) && user.hasPermission('dataset', method, object.dataset);
     }

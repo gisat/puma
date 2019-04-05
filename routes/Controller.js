@@ -124,7 +124,7 @@ class Controller {
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
-    readAll(request, response, next) {
+    async readAll(request, response, next) {
         logger.info('Controller#readAll Read all instances of type: ', this.type, ' By User: ', request.session.userId);
 
         var self = this;
@@ -138,9 +138,10 @@ class Controller {
                     return next(err);
                 }
 
+                // this.hasRights must be async
                 let resultsWithRights = result
-                    .filter(element => this.hasRights(request.session.user, Permission.UPDATE, element._id, element) ||
-                        this.hasRights(request.session.user, Permission.DELETE, element._id, element));
+                    .filter(async element => await this.hasRights(request.session.user, Permission.UPDATE, element._id, element) ||
+                        await this.hasRights(request.session.user, Permission.DELETE, element._id, element));
                 this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
                     response.json({data: resultsWithRights});
                 }).catch(err => {
@@ -160,11 +161,11 @@ class Controller {
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
-    update(request, response, next) {
+    async update(request, response, next) {
         logger.info('Controller#update Update instance of type: ', this.type, ' By User: ', request.session.userId);
         var object = request.body.data;
 
-        if (!this.hasRights(request.session.user, Permission.UPDATE, object._id, object)) {
+        if (!await this.hasRights(request.session.user, Permission.UPDATE, object._id, object)) {
             response.status(403);
             return;
         }
@@ -193,7 +194,7 @@ class Controller {
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
-    delete(request, response, next) {
+    async delete(request, response, next) {
         let id = request.params.id;
         logger.info('Controller#deleteObject Delete instance with id: ', id, ' of type: ', this.type, ' By User: ', request.session.userId);
 
@@ -202,8 +203,8 @@ class Controller {
         }
 
         let entity = new this.entity(id, this._connection);
-        entity.json().then(json => {
-            if (!this.hasRights(request.session.user, Permission.DELETE, id, json)) {
+        entity.json().then(async json => {
+            if (!await this.hasRights(request.session.user, Permission.DELETE, id, json)) {
                 response.status(403);
                 return;
             }
@@ -223,7 +224,7 @@ class Controller {
         this.delete(request, response, next);
     }
 
-    hasRights(user, method, id, object) {
+    async hasRights(user, method, id, object) {
         return true;
     }
 

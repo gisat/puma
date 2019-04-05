@@ -30,12 +30,12 @@ class LayerRefController extends Controller {
 		this.mongo = mongo;
 	}
 
-	readAll(request, response, next) {
+	async readAll(request, response, next) {
         this._filteredReferences = new FilteredMongoLayerReferences({}, this.mongo);
 
         this._filteredReferences.json().then(layerRefs => {
             let resultsWithRights = layerRefs
-                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element))
+                .filter(async element => await this.hasRights(request.session.user, Permission.READ, element._id, element))
                 .map(layerRef => {
                     delete layerRef.created;
                     delete layerRef.createdBy;
@@ -123,7 +123,7 @@ class LayerRefController extends Controller {
 		});
 	}
 
-    hasRights(user, method, id, object) {
+    async hasRights(user, method, id, object) {
         return user.hasPermission('location', method, object.location);
     }
 

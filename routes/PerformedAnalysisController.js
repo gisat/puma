@@ -7,7 +7,7 @@ class PerformedAnalysisController extends Controller {
 		super(app, 'performedanalysis', pool, MongoPerformedAnalysis, MongoPerformedAnalyse);
 	}
 
-    hasRights(user, method, id, object) {
+    async hasRights(user, method, id, object) {
         return user.hasPermission('dataset', method, object.dataset) &&
 			user.hasPermission('location', method, object.location);
     }
