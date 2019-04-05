@@ -1,19 +1,16 @@
-var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
-var conn = require('../common/conn');
 var Controller = require('./Controller');
 var UUID = require('../common/UUID');
 var _ = require('underscore');
 var moment = require('moment');
 let Promise = require('promise');
 
-let FilteredBaseLayers = require('../layers/FilteredBaseLayers');
+const FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var Statistics = require('../attributes/Statistics');
 var Filter = require('../attributes/Filter');
 var Attributes = require('../attributes/Attributes');
 var AttributesForInfo = require('../attributes/AttributesForInfo');
 var Info = require('../attributes/Info');
-let PgSequentialQuery = require('../postgresql/PgSequentialQuery');
 
 var MongoAttributes = require('../attributes/MongoAttributes');
 var MongoAttribute = require('../attributes/MongoAttribute');
@@ -265,6 +262,21 @@ class AttributeController extends Controller {
                 groupedInformation[key][0] ||
                 null;
         })
+    }
+
+    async hasRights(user, method, id, object) {
+        // Verify permissions for topics for all attribute sets and
+        // If user has rights towards at least one topic, it works for all attribute sets.
+        const attributeSets = await new FilteredMongoAttributeSets({attributes: {$in: [id]}}).json();
+
+        let permissions = false;
+        attributeSets.forEach(attributeSet => {
+            if(user.hasPermission('topic', method, attributeSet.topic)){
+                permissions = true;
+            }
+        });
+
+        return permissions;
     }
 }
 

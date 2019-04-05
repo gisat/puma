@@ -1,4 +1,5 @@
 var Controller = require('./Controller');
+const FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var MongoAnalyse = require('../analysis/MongoAnalyse');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
 
@@ -51,7 +52,30 @@ class AnalysisController extends Controller {
 	async hasRights(user, method, id, object) {
 		// Verify permissions for topics for all attribute sets and
 		// If user has rights towards at least one topic, it works for all attribute sets.
-		return true;
+
+		let attributeSetsIds = [];
+		if(object.type == 'fidagg') {
+			attributeSetsIds = object.attributeSets || [];
+		} else if(object.type == 'math') {
+			attributeSetsIds = object.attributeSets || [];
+		} else {
+			if(object.attributeSet){
+				attributeSetsIds.push(object.attributeSet);
+			}
+			if(object.groupAttributeSet){
+				attributeSetsIds.push(object.groupAttributeSet);
+			}
+		}
+
+		const attributeSets = await new FilteredMongoAttributeSets({_id: {$in: attributeSetsIds}}).json();
+		let permissions = true;
+		attributeSets.forEach(attributeSet => {
+			if(!user.hasPermission('topic', method, attributeSet.topic)){
+				permissions = false;
+			}
+		});
+
+		return permissions;
 	}
 }
 
