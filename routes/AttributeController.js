@@ -310,11 +310,9 @@ class AttributeController extends Controller {
 
     right(user, method, id){
         return new FilteredMongoAttributeSets({attributes: {$in: [id]}}, this._connection).json().then(attributeSets => {
-            console.log('Attributes: ', attributeSets);
-
             let permissions = false;
             attributeSets.forEach(attributeSet => {
-                if(!user.hasPermission('topic', method, attributeSet.topic)){
+                if(user.hasPermission('topic', method, attributeSet.topic)){
                     permissions = true;
                 }
             });
