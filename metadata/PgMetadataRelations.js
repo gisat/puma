@@ -13,14 +13,14 @@ class PgMetadataRelations {
 	}
 
 	addRelations(baseKey, relations) {
-		let transactionSql = [
-			`BEGIN;`
-		];
+		let transactionSql = [];
+
 		let insertSql = [];
 		let deleteSql = [];
 
 		let relatedStoresOptions = this.getRelatedStoresOptions();
 
+		transactionSql.push(`BEGIN;`);
 		_.each(relations, (value, property) => {
 			let relatedStoreOptions = relatedStoresOptions[property];
 
@@ -32,12 +32,20 @@ class PgMetadataRelations {
 				_.each(value, (relationKey) => {
 					insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
 					insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
-					insertSql.push(`VALUES ('${baseKey}', '${relationKey}');`);
+					if(relationKey === null) {
+						insertSql.push(`VALUES ('${baseKey}', NULL);`);
+					} else {
+						insertSql.push(`VALUES ('${baseKey}', '${relationKey}');`);
+					}
 				})
 			} else if (relatedStoreOptions) {
 				insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
 				insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
-				insertSql.push(`VALUES ('${baseKey}', '${value}');`);
+				if(value === null) {
+					insertSql.push(`VALUES ('${baseKey}', NULL);`);
+				} else {
+					insertSql.push(`VALUES ('${baseKey}', '${value}');`);
+				}
 			}
 		});
 
@@ -116,7 +124,7 @@ class PgMetadataRelations {
 
 		_.each(this.getRelatedStoresOptions(), (relatedStoreOptions) => {
 			let aggregation = `STRING_AGG("${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}"::TEXT, '')`;
-			if(relatedStoreOptions.allowMultipleRelations) {
+			if (relatedStoreOptions.allowMultipleRelations) {
 				aggregation = `ARRAY_AGG("${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}"::TEXT)`;
 			}
 			subquerySql.push(`${aggregation} FILTER (WHERE "${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NOT NULL) AS "${relatedStoreOptions.relatedStoreSqlColumName}"`);
@@ -138,26 +146,26 @@ class PgMetadataRelations {
 			let relatedStoreOptions = relatedStoresOptions[relationProperty];
 			if (relatedStoreOptions) {
 				if (!_.isArray(relationValue) && !_.isObject(relationValue)) {
-					if(relationValue !== null) {
+					if (relationValue !== null) {
 						whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" = $${sqlVariableId++}`);
 						sqlVariableValues.push(relationValue);
 					} else {
 						whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NULL`);
 					}
-				} else if(_.isArray(relationValue) && relatedStoreOptions.allowMultipleRelations) {
+				} else if (_.isArray(relationValue) && relatedStoreOptions.allowMultipleRelations) {
 					let variableId = sqlVariableId++;
 
 					whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${variableId}`);
 					whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${variableId}`);
 
 					sqlVariableValues.push(relationValue);
-				} else if(_.isObject(relationValue)) {
+				} else if (_.isObject(relationValue)) {
 					_.each(relationValue, (value, property) => {
-						switch(property) {
+						switch (property) {
 							case `includes`:
-								if(relatedStoreOptions.allowMultipleRelations) {
+								if (relatedStoreOptions.allowMultipleRelations) {
 									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${sqlVariableId++}`);
-									if(!_.isArray(value)) {
+									if (!_.isArray(value)) {
 										value = [value];
 									}
 									sqlVariableValues.push(value);
@@ -166,7 +174,7 @@ class PgMetadataRelations {
 								}
 								break;
 							case `match`:
-								if(relatedStoreOptions.allowMultipleRelations) {
+								if (relatedStoreOptions.allowMultipleRelations) {
 									let variableId = sqlVariableId++;
 									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${variableId}`);
 									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${variableId}`);
@@ -176,9 +184,9 @@ class PgMetadataRelations {
 								}
 								break;
 							case `excludes`:
-								if(relatedStoreOptions.allowMultipleRelations) {
+								if (relatedStoreOptions.allowMultipleRelations) {
 									whereSql.push(`NOT ("subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${sqlVariableId++})`);
-									if(!_.isArray(value)) {
+									if (!_.isArray(value)) {
 										value = [value];
 									}
 									sqlVariableValues.push(value);
@@ -190,12 +198,12 @@ class PgMetadataRelations {
 								whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" LIKE '%${value}%'`);
 								break;
 							case `in`:
-								if(relatedStoreOptions.allowMultipleRelations) {
+								if (relatedStoreOptions.allowMultipleRelations) {
 									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${sqlVariableId++}`);
 									sqlVariableValues.push(value);
 								} else {
 									let nullCheck = '';
-									if(value.includes(null)) {
+									if (value.includes(null)) {
 										nullCheck = ` OR "subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NULL`;
 									}
 									value = _.compact(value);
@@ -203,12 +211,12 @@ class PgMetadataRelations {
 								}
 								break;
 							case `notin`:
-								if(relatedStoreOptions.allowMultipleRelations) {
+								if (relatedStoreOptions.allowMultipleRelations) {
 									whereSql.push(`NOT ("subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" <@ $${sqlVariableId++})`);
 									sqlVariableValues.push(value);
 								} else {
 									let nullCheck = '';
-									if(!value.includes(null)) {
+									if (!value.includes(null)) {
 										nullCheck = `OR "subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" IS NULL`;
 									}
 									value = _.compact(value);
@@ -221,7 +229,7 @@ class PgMetadataRelations {
 			}
 		});
 
-		if(whereSql.length) {
+		if (whereSql.length) {
 			querySql.push(`WHERE ` + whereSql.join(` AND `));
 		}
 
