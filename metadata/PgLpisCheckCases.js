@@ -107,18 +107,18 @@ class PgLpisCheckCases extends PgCollection {
 			})
 			.then(() => {
 				return this._imageMosaic.getDatesByGeometry(geometry)
-					.then((datesForGeometry) => {
-						if(dataviewData.dateBoundaries) {
-							return _.filtered(datesForGeometry, (dateForGeometry) => {
-								let dateFrom = new Date(dataviewData.dateBoundaries.from);
-								let dateTo = new Date(dataviewData.dateBoundaries.to);
-								let date = new Date(dateForGeometry);
-								return date.getTime() >= dateFrom.getTime() && date.getTime() <= dateTo.getTime();
-							});
-						} else {
-							return datesForGeometry
-						}
-					})
+			})
+			.then((datesForGeometry) => {
+				if(dataviewData.dateBoundaries) {
+					return _.filtered(datesForGeometry, (dateForGeometry) => {
+						let dateFrom = new Date(dataviewData.dateBoundaries.from);
+						let dateTo = new Date(dataviewData.dateBoundaries.to);
+						let date = new Date(dateForGeometry);
+						return date.getTime() >= dateFrom.getTime() && date.getTime() <= dateTo.getTime();
+					});
+				} else {
+					return datesForGeometry
+				}
 			})
 			.then((datesForGeometry) => {
 				if (datesForGeometry.length <= 6) {
