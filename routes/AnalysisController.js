@@ -7,6 +7,7 @@ var MongoAnalysis = require('../analysis/MongoAnalysis');
 var conn = require('../common/conn');
 var crud = require('../rest/crud');
 var Promise = require('promise');
+let Permission = require('../security/Permission');
 
 /**
  * @augments Controller

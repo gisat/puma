@@ -5,6 +5,7 @@ var UUID = require('../common/UUID');
 var _ = require('underscore');
 var moment = require('moment');
 let Promise = require('promise');
+let Permission = require('../security/Permission');
 
 const FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var Statistics = require('../attributes/Statistics');
