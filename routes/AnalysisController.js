@@ -62,6 +62,7 @@ class AnalysisController extends Controller {
 
 		var self = this;
 		this.getFilterByScope(request.params.scope).then(filter => {
+			console.log('Filtered By Scope');
 			crud.read(this.type, filter, {
 				userId: request.session.userId,
 				justMine: request.query['justMine']
@@ -71,6 +72,7 @@ class AnalysisController extends Controller {
 					return next(err);
 				}
 
+				console.log('Read Analysis');
 				let resultsWithRights = [];
 				Promise.all(result.map(element => {
 					return Promise.all([this.right(request.session.user, Permission.UPDATE, element._id, element),
@@ -109,6 +111,7 @@ class AnalysisController extends Controller {
 			}
 		}
 
+		console.log('Right Analysis')
 		return new FilteredMongoAttributeSets({_id: {$in: attributeSetsIds}}, this._connection).json().then(attributeSets => {
 			let permissions = true;
 			attributeSets.forEach(attributeSet => {
