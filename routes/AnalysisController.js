@@ -1,3 +1,4 @@
+var logger = require('../common/Logger').applicationWideLogger;
 var Controller = require('./Controller');
 const FilteredMongoAttributeSets = require('../attributes/FilteredMongoAttributeSets');
 var MongoAnalyse = require('../analysis/MongoAnalyse');
