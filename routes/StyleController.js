@@ -9,6 +9,7 @@ var GeoserverStyles = require('../styles/GeoserverStyles');
 var MongoStyles = require('../styles/MongoStyles');
 var Id = require('../common/Id');
 const FilteredMongoLayerTemplates = require('../layers/FilteredMongoLayerTemplates');
+const Permission = require('../security/Permission');
 
 /**
  * It represents a StyleController, which when created setup all necessary handlers for handling Styles. It supports creation, update and reading of the styles.
