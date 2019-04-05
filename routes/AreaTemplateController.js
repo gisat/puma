@@ -4,6 +4,7 @@ var conn = require('../common/conn');
 
 const LimitedReadAllController = require('./LimitedReadAllController');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
+const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
 var MongoLayerTemplate = require('../layers/MongoLayerTemplate');
 var MongoLayerTemplates = require('../layers/MongoLayerTemplates');
