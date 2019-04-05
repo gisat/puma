@@ -267,7 +267,7 @@ class AttributeController extends Controller {
     async hasRights(user, method, id, object) {
         // Verify permissions for topics for all attribute sets and
         // If user has rights towards at least one topic, it works for all attribute sets.
-        const attributeSets = await new FilteredMongoAttributeSets({attributes: {$in: [id]}}).json();
+        const attributeSets = await new FilteredMongoAttributeSets({attributes: {$in: [id]}}, this._connection).json();
 
         let permissions = false;
         attributeSets.forEach(attributeSet => {

@@ -67,7 +67,7 @@ class AnalysisController extends Controller {
 			}
 		}
 
-		const attributeSets = await new FilteredMongoAttributeSets({_id: {$in: attributeSetsIds}}).json();
+		const attributeSets = await new FilteredMongoAttributeSets({_id: {$in: attributeSetsIds}}, this._connection).json();
 		let permissions = true;
 		attributeSets.forEach(attributeSet => {
 			if(!user.hasPermission('topic', method, attributeSet.topic)){
