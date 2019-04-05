@@ -95,6 +95,7 @@ class PgLpisCheckCases extends PgCollection {
 				dataviewData.s2GetDatesLayerTemplateId = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.s2GetDatesLayerTemplateId;
 				dataviewData.ortofotoLayerTemplateId = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.ortofotoLayerTemplateId;
 				dataviewData.accessibleByGroups = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.accessibleByGroups;
+				dataviewData.dateBoundaries = mongoScopeDocument.configuration && mongoScopeDocument.configuration.lpisCheckCases && mongoScopeDocument.configuration.lpisCheckCases.dateBoundaries;
 
 				return this._pgLpisCases._getMongoBasicDataViewParametersByScopeId(scopeId)
 			})
@@ -105,7 +106,19 @@ class PgLpisCheckCases extends PgCollection {
 				dataviewData.yearIds = yearIds;
 			})
 			.then(() => {
-				return this._imageMosaic.getDatesByGeometry(geometry);
+				return this._imageMosaic.getDatesByGeometry(geometry)
+					.then((datesForGeometry) => {
+						if(dataviewData.dateBoundaries) {
+							return _.filtered(datesForGeometry, (dateForGeometry) => {
+								let dateFrom = new Date(dataviewData.dateBoundaries.from);
+								let dateTo = new Date(dataviewData.dateBoundaries.to);
+								let date = new Date(dateForGeometry);
+								return date.getTime() >= dateFrom.getTime() && date.getTime() <= dateTo.getTime();
+							});
+						} else {
+							return datesForGeometry
+						}
+					})
 			})
 			.then((datesForGeometry) => {
 				if (datesForGeometry.length <= 6) {
