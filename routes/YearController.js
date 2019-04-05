@@ -28,6 +28,8 @@ class YearController extends LimitedReadAllController {
 					permissions = true;
 				}
 			});
+
+			return permissions;
 		});
 	}
 }
