@@ -22,7 +22,7 @@ class TopicController extends Controller {
 		super.create(request, response, next);
 	}
 
-    async hasRights(user, method, id) {
+    hasRights(user, method, id) {
         return user.hasPermission(this.type, method, id);
     }
 }

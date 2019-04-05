@@ -63,12 +63,12 @@ class DataViewController extends Controller {
 		});
     }
 
-    async readInitialViews(request, response) {
+    readInitialViews(request, response) {
         this._filteredMongoViews = new FilteredMongoDataViews({}, this._mongo);
 
         this._filteredMongoViews.json().then(views => {
             let resultsWithRights = views
-                .filter(async element => await this.hasRights(request.session.user, Permission.READ, element._id, element))
+                .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element))
                 .map(view => {
                     return {
                         _id: view._id,
@@ -163,7 +163,7 @@ class DataViewController extends Controller {
         });
     }
 
-    async hasRights(user, method, id) {
+    hasRights(user, method, id) {
 	    if(method ===  Permission.READ) {
             return user.hasPermission(this.type, method, id);
         } else {

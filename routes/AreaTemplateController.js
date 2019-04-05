@@ -54,7 +54,7 @@ class AreaTemplateController extends Controller {
 		});
 	}
 
-    async hasRights(user, method, id, object) {
+    hasRights(user, method, id, object) {
 		if(object.layerType != 'raster' && object.layerType != 'vector') {
 			return true;
 		} else {

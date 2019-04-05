@@ -53,7 +53,7 @@ class ThemeController extends Controller {
 		});
 	}
 
-    async hasRights(user, method, id, object) {
+    hasRights(user, method, id, object) {
         return user.hasPermission('dataset', method, object.dataset);
     }
 }

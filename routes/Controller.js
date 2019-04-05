@@ -124,7 +124,7 @@ class Controller {
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
-    async readAll(request, response, next) {
+    readAll(request, response, next) {
         logger.info('Controller#readAll Read all instances of type: ', this.type, ' By User: ', request.session.userId);
 
         var self = this;
@@ -132,7 +132,7 @@ class Controller {
             crud.read(this.type, filter, {
                 userId: request.session.userId,
                 justMine: request.query['justMine']
-            }, async (err, result) => {
+            }, (err, result) => {
                 if (err) {
                     logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
                     return next(err);
@@ -161,11 +161,11 @@ class Controller {
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
-    async update(request, response, next) {
+    update(request, response, next) {
         logger.info('Controller#update Update instance of type: ', this.type, ' By User: ', request.session.userId);
         var object = request.body.data;
 
-        if (!await this.hasRights(request.session.user, Permission.UPDATE, object._id, object)) {
+        if (!this.hasRights(request.session.user, Permission.UPDATE, object._id, object)) {
             response.status(403);
             return;
         }
@@ -194,7 +194,7 @@ class Controller {
      * @param response {Response} Response created by the Express framework.
      * @param next {Function} Function to be called when we want to send it to the next route.
      */
-    async delete(request, response, next) {
+    delete(request, response, next) {
         let id = request.params.id;
         logger.info('Controller#deleteObject Delete instance with id: ', id, ' of type: ', this.type, ' By User: ', request.session.userId);
 
@@ -203,8 +203,8 @@ class Controller {
         }
 
         let entity = new this.entity(id, this._connection);
-        entity.json().then(async json => {
-            if (!await this.hasRights(request.session.user, Permission.DELETE, id, json)) {
+        entity.json().then(json => {
+            if (!this.hasRights(request.session.user, Permission.DELETE, id, json)) {
                 response.status(403);
                 return;
             }
@@ -224,7 +224,7 @@ class Controller {
         this.delete(request, response, next);
     }
 
-    async hasRights(user, method, id, object) {
+    hasRights(user, method, id, object) {
         return true;
     }
 
