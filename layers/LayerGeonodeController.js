@@ -43,7 +43,8 @@ class LayerGeonodeController {
         let currentUser = request.session.user;
         // Load actually accessible from the GeoNode
         this.pgLayers.all().then(pgLayers => {
-            return pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.READ, layer.id));
+            return pgLayers.filter(layer => currentUser.hasPermission("layer", Permission.UPDATE, layer.id) ||
+				currentUser.hasPermission("layer", Permission.DELETE, layer.id));
         }).then(layers => {
             response.json({data: layers});
         }).catch(err => {
