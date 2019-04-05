@@ -132,16 +132,20 @@ class Controller {
             crud.read(this.type, filter, {
                 userId: request.session.userId,
                 justMine: request.query['justMine']
-            }, (err, result) => {
+            }, async (err, result) => {
                 if (err) {
                     logger.error("It wasn't possible to read collection:", self.type, " by User: ", request.session.userId, " Error: ", err);
                     return next(err);
                 }
 
-                // this.hasRights must be async
-                let resultsWithRights = result
-                    .filter(async element => await this.hasRights(request.session.user, Permission.UPDATE, element._id, element) ||
-                        await this.hasRights(request.session.user, Permission.DELETE, element._id, element));
+                let resultsWithRights = await result
+                    .filter(async element => {
+                        const updateRight = await this.hasRights(request.session.user, Permission.UPDATE, element._id, element);
+                        const deleteRight = await this.hasRights(request.session.user, Permission.DELETE, element._id, element);
+
+                        return updateRight || deleteRight;
+                    });
+
                 this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
                     response.json({data: resultsWithRights});
                 }).catch(err => {
