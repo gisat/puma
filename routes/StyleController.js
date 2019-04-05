@@ -8,6 +8,7 @@ var PgStyles = require('../styles/PgStyles');
 var GeoserverStyles = require('../styles/GeoserverStyles');
 var MongoStyles = require('../styles/MongoStyles');
 var Id = require('../common/Id');
+const FilteredMongoLayerTemplates = require('../layers/FilteredMongoLayerTemplates');
 
 /**
  * It represents a StyleController, which when created setup all necessary handlers for handling Styles. It supports creation, update and reading of the styles.
@@ -123,9 +124,20 @@ class StyleController extends Controller {
             });
 
             return Promise.all(promises);
-        }).then(function(results){
+        }).then((results) => {
+            // Filter based on the rights.
+            const resultsWithRights = [];
+            Promise.all(results.map(element => {
+                return Promise.all([this.right(request.session.user, Permission.UPDATE, element._id, element),
+                    this.right(request.session.user, Permission.DELETE, element._id, element)]).then(result => {
+                    if (result[0] === true || result[1] === true) {
+                        resultsWithRights.push(element);
+                    }
+                })
+            }));
+
             logger.info('StyleController#readAll. Styles transformed to json.');
-            response.status(200).json({data: results})
+            response.status(200).json({data: resultsWithRights})
         }).catch(function(error){
             logger.error('StyleController#readAll Eror: ', error);
             next({
@@ -133,6 +145,20 @@ class StyleController extends Controller {
             })
         });
 	}
+
+    right(user, method, id){
+        return new FilteredMongoLayerTemplates({layerGroup: {$in: [id]}}, this._connection).json().then(layerTemplates => {
+            let permissions = false;
+
+            layerTemplates.forEach(layerTemplate => {
+                if(user.hasPermission('topic', method, layerTemplate.topic)){
+                    permissions = true;
+                }
+            });
+
+            return permissions;
+        });
+    }
 
     /**
      * @inheritDoc
