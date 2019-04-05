@@ -1,3 +1,4 @@
+var crud = require('../rest/crud');
 var logger = require('../common/Logger').applicationWideLogger;
 var Controller = require('./Controller');
 var UUID = require('../common/UUID');

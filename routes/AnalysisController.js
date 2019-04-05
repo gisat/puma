@@ -5,6 +5,7 @@ var MongoAnalyse = require('../analysis/MongoAnalyse');
 var MongoAnalysis = require('../analysis/MongoAnalysis');
 
 var conn = require('../common/conn');
+var crud = require('../rest/crud');
 var Promise = require('promise');
 
 /**
