@@ -139,7 +139,8 @@ class Controller {
                 }
 
                 let resultsWithRights = result
-                    .filter(element => this.hasRights(request.session.user, Permission.READ, element._id, element));
+                    .filter(element => this.hasRights(request.session.user, Permission.UPDATE, element._id, element) ||
+                        this.hasRights(request.session.user, Permission.DELETE, element._id, element));
                 this.permissions.forTypeCollection(this.type, resultsWithRights).then(() => {
                     response.json({data: resultsWithRights});
                 }).catch(err => {
