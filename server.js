@@ -34,6 +34,8 @@ const CompoundAuthentication = require('./security/CompoundAuthentication');
 const PgAuthentication = require('./security/PgAuthentication');
 const SsoAuthentication = require('./security/SsoAuthentication');
 
+const EnsureProjections = require(`./postgresql/EnsureProjections`);
+
 const pool = new PgPool({
     user: config.pgDataUser,
     database: config.pgDataDatabase,
@@ -146,6 +148,8 @@ new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
     return new AddMetadataToLayer(config.postgreSqlSchema).run();
 }).then(()=>{
     return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
+}).then(()=>{
+	return new EnsureProjections(pool.pool()).run();
 }).then(function(){
 	logger.info('Finished Migrations.');
 
