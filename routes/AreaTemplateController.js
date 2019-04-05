@@ -2,16 +2,15 @@ var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 var conn = require('../common/conn');
 
-var Controller = require('./Controller');
+const LimitedReadAllController = require('./LimitedReadAllController');
 var FilteredMongoLayerReferences = require('../layers/FilteredMongoLayerReferences');
 var GeoServerLayerStyles = require('../layers/GeoServerLayerStyles');
 var MongoLayerTemplate = require('../layers/MongoLayerTemplate');
 var MongoLayerTemplates = require('../layers/MongoLayerTemplates');
 
-var MongoClient = require('mongodb').MongoClient;
 var Promise = require('promise');
 
-class AreaTemplateController extends Controller {
+class AreaTemplateController extends LimitedReadAllController {
 	constructor(app, pool) {
 		super(app, 'areatemplate', pool, MongoLayerTemplates, MongoLayerTemplate);
 	}
@@ -52,6 +51,24 @@ class AreaTemplateController extends Controller {
 				logger.error('AreaTemplateController#update Error: ', error)
 			);
 		});
+	}
+
+	right(user, method, id, object){
+		if(object.layerType != 'raster' && object.layerType != 'vector') {
+			return new FilteredMongoScopes({featureLayers: {$in: [id]}}, this._connection).json().then(scopes => {
+				let permissions = false;
+
+				scopes.forEach(scope => {
+					if (user.hasPermission('dataset', method, scope._id)) {
+						permissions = true;
+					}
+				});
+
+				return permissions;
+			});
+		} else {
+			return user.hasPermission('topic', method, object.topic);
+		}
 	}
 
     hasRights(user, method, id, object) {
