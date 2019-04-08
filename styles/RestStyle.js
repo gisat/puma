@@ -109,6 +109,9 @@ RestStyle.validateDescriptionCreation = function (description) {
  * @inheritDoc
  */
 RestStyle.prototype.sld = function () {
+	if(this._source === 'geoserver') {
+		return Promise.resolve('');
+	}
 	return Promise.resolve(this._sld || StyledLayerDescriptor.fromObjectDescription(this._definition).toXml());
 };
 
