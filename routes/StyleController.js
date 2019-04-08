@@ -150,11 +150,12 @@ class StyleController extends Controller {
 
     right(user, method, id, element){
         // If the user created the style.
+        console.log(user, element);
         if(element.createdBy == user.id) {
             return true;
         }
 
-        return new FilteredMongoLayerTemplates({layerGroup: {$in: [id]}}, this._connection).json().then(layerTemplates => {
+        return new FilteredMongoLayerTemplates({symbologies: {$in: [id]}}, this._connection).json().then(layerTemplates => {
             let permissions = false;
 
             layerTemplates.forEach(layerTemplate => {
