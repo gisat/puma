@@ -116,6 +116,7 @@ class StyleController extends Controller {
      * @inheritDoc
      */
     readAll(request, response, next) {
+        const resultsWithRights = [];
         logger.info('StyleController#readAll Read all symbologies.');
         this._pgStyles.all().then(function(styles){
             logger.info('StyleController#readAll. Read all symbologies.');
@@ -128,8 +129,7 @@ class StyleController extends Controller {
             return Promise.all(promises);
         }).then((results) => {
             // Filter based on the rights.
-            const resultsWithRights = [];
-            Promise.all(results.map(element => {
+            return Promise.all(results.map(element => {
                 return Promise.all([this.right(request.session.user, Permission.UPDATE, element._id, element),
                     this.right(request.session.user, Permission.DELETE, element._id, element)]).then(result => {
                     if (result[0] === true || result[1] === true) {
@@ -137,7 +137,7 @@ class StyleController extends Controller {
                     }
                 })
             }));
-
+        }).then(() => {
             logger.info('StyleController#readAll. Styles transformed to json.');
             response.status(200).json({data: resultsWithRights})
         }).catch(function(error){
@@ -150,7 +150,6 @@ class StyleController extends Controller {
 
     right(user, method, id, element){
         // If the user created the style.
-        console.log(user, element);
         if(element.createdBy == user.id) {
             return true;
         }
