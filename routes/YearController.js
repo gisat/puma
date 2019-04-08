@@ -9,8 +9,11 @@ class YearController extends LimitedReadAllController {
 		super(app, 'year', pool, MongoPeriods, MongoPeriod);
 	}
 
-	right(user, method, id){
+	right(user, method, id, object){
 		let permissions = false;
+		if(object.createdBy == user.id) {
+			return true;
+		}
 
 		return new FilteredMongoThemes({years: {$in: [id]}}, this._connection).json().then(themes => {
 			themes.forEach(theme => {

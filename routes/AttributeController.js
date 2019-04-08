@@ -264,7 +264,11 @@ class AttributeController extends LimitedReadAllController {
         })
     }
 
-    right(user, method, id){
+    right(user, method, id, element){
+        if(element.createdBy == user.id) {
+            return true;
+        }
+
         return new FilteredMongoAttributeSets({attributes: {$in: [id]}}, this._connection).json().then(attributeSets => {
             let permissions = false;
             attributeSets.forEach(attributeSet => {

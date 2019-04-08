@@ -50,6 +50,10 @@ class AnalysisController extends LimitedReadAllController {
 	}
 
 	right(user, method, id, object){
+		if(object.createdBy == user.id) {
+			return true;
+		}
+
 		let attributeSetsIds = [];
 		if(object.type == 'fidagg') {
 			attributeSetsIds = object.attributeSets || [];

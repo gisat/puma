@@ -8,7 +8,11 @@ class LayerGroupController extends LimitedReadAllController {
 		super(app, 'layergroup', pool, MongoLayerGroups, MongoLayerGroup);
 	}
 
-	right(user, method, id){
+	right(user, method, id, object){
+		if(object.createdBy == user.id) {
+			return true;
+		}
+
 		return new FilteredMongoLayerTemplates({layerGroup: {$in: [id]}}, this._connection).json().then(layerTemplates => {
 			let permissions = false;
 
