@@ -18,7 +18,8 @@ const PgSpatialRelations = require(`../metadata/PgSpatialRelations`);
 const PgAttributeRelations = require(`../metadata/PgAttributeRelations`);
 const PgAreaRelations = require(`../metadata/PgAreaRelations`);
 
-const PgCommonDataSource = require(`../dataSources/PgCommonDataSource`);
+const PgCommonSpatialDataSource = require(`../dataSources/PgCommonSpatialDataSource`);
+const PgAttributeDataSource = require(`../dataSources/PgAttributeDataSource`);
 
 const PgLayerTrees = require(`../application/PgLayerTrees`);
 const PgConfigurations = require(`../application/PgConfigurations`);
@@ -55,7 +56,8 @@ class PgDatabase {
 		];
 
 		this._dataSourcesStores = [
-			PgCommonDataSource
+			PgCommonSpatialDataSource,
+			PgAttributeDataSource
 		];
 
 		this._applicationStores = [

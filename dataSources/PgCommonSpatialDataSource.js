@@ -7,7 +7,7 @@ const PgRaster = require(`./PgRaster`);
 const PgWms = require(`./PgWms`);
 const PgWmts = require(`./PgWmts`);
 
-class PgCommonDataSource extends PgCollection {
+class PgCommonSpatialDataSource extends PgCollection {
 	constructor(pgPool, pgSchema) {
 		super(pgPool, pgSchema);
 
@@ -71,7 +71,7 @@ class PgCommonDataSource extends PgCollection {
 	}
 
 	static groupName() {
-		return 'dataSources';
+		return 'spatial';
 	}
 
 	static tableName() {
@@ -79,4 +79,4 @@ class PgCommonDataSource extends PgCollection {
 	}
 }
 
-module.exports = PgCommonDataSource;
+module.exports = PgCommonSpatialDataSource;

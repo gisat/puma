@@ -1,17 +1,23 @@
 const PgCrud = require(`../common/PgCrud`);
 
-const PgCommonDataSource = require(`./PgCommonDataSource`);
+const PgCommonSpatialDataSource = require(`./PgCommonSpatialDataSource`);
+const PgAttributeDataSource = require(`./PgAttributeDataSource`);
 
 class PgDataSourcesCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
-		this._pgCommonDataSource = new PgCommonDataSource(pgPool, pgSchema);
+		this._pgCommonSpatialDataSource = new PgCommonSpatialDataSource(pgPool, pgSchema);
+		this._pgAttributeDataSource = new PgAttributeDataSource(pgPool, pgSchema);
 
 		this._pgTypes = {
-			[PgCommonDataSource.groupName()]: {
-				store: this._pgCommonDataSource,
-				type: PgCommonDataSource.tableName()
+			[PgCommonSpatialDataSource.groupName()]: {
+				store: this._pgCommonSpatialDataSource,
+				type: PgCommonSpatialDataSource.tableName()
+			},
+			[PgAttributeDataSource.groupName()]: {
+				store: this._pgAttributeDataSource,
+				type: PgAttributeDataSource.tableName()
 			}
 		};
 	}
