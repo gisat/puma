@@ -27,7 +27,7 @@ var RestStyle = function (id, jsonObject, currentUserId) {
 	}
 
 	this._created = jsonObject.created || new Date();
-	this._createdBy = jsonObject.createdBy || currentUserId;
+	this._createdBy = jsonObject.createdBy || jsonObject.created_by || currentUserId;
 	this._changed = jsonObject.changed || new Date();
 	this._changedBy = jsonObject.changedBy || currentUserId;
 };
