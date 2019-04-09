@@ -1,11 +1,11 @@
 const _ = require('lodash');
 
 const PgCrud = require('../common/PgCrud');
-const PgSpatialRelations = require('../metadata/PgSpatialRelations');
-const PgAttributeRelations = require('../metadata/PgAttributeRelations');
-const PgAreaRelations = require('../metadata/PgAreaRelations');
+const PgSpatialRelations = require('../relations/PgSpatialRelations');
+const PgAttributeRelations = require('../relations/PgAttributeRelations');
+const PgAreaRelations = require('../relations/PgAreaRelations');
 
-class PgRelations extends PgCrud {
+class PgRelationsCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
@@ -30,4 +30,4 @@ class PgRelations extends PgCrud {
 	}
 }
 
-module.exports = PgRelations;
+module.exports = PgRelationsCrud;

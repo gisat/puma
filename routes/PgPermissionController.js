@@ -1,18 +1,10 @@
+const PgController = require(`../common/PgController`);
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 
-class PgPermissionController {
+class PgPermissionController extends PgController {
 	constructor(app, pgPool, pgSchema) {
-		this._pgPermissions = new PgPermissions(pgPool, pgSchema);
-
-		app.post(`/rest/permission`, this.create.bind(this));
-
-		app.get(`/rest/permission`, this.get.bind(this));
-		app.post(`/rest/permission/filtered`, this.get.bind(this));
-
-		app.delete(`/rest/permission`, this.delete.bind(this));
-
-		app.put(`/rest/permission`, this.update.bind(this))
+		super(app, pgPool, pgSchema, `permissions`);
 	}
 
 	create(request, response) {

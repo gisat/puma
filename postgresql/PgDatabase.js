@@ -14,9 +14,9 @@ const PgAreaTrees = require('../metadata/PgAreaTrees');
 const PgAreaTreeLevels = require('../metadata/PgAreaTreeLevels');
 const PgTags = require('../metadata/PgTags');
 
-const PgSpatialRelations = require(`../metadata/PgSpatialRelations`);
-const PgAttributeRelations = require(`../metadata/PgAttributeRelations`);
-const PgAreaRelations = require(`../metadata/PgAreaRelations`);
+const PgSpatialRelations = require(`../relations/PgSpatialRelations`);
+const PgAttributeRelations = require(`../relations/PgAttributeRelations`);
+const PgAreaRelations = require(`../relations/PgAreaRelations`);
 
 const PgCommonSpatialDataSource = require(`../dataSources/PgCommonSpatialDataSource`);
 const PgAttributeDataSource = require(`../dataSources/PgAttributeDataSource`);

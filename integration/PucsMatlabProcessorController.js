@@ -6,7 +6,7 @@ const config = require('../config');
 const CalculatePragueTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculatePragueTemperatureMapUsingNeuralNetworkModel');
 const CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateOstravaTemperatureMapUsingNeuralNetworkModel');
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
-const PgRelations = require('../metadata/PgRelations');
+const PgRelationsCrud = require('../relations/PgRelationsCrud');
 
 let processes = {};
 
@@ -17,7 +17,7 @@ class PucsMatlabProcessorController {
 
 		this._mongo = mongo;
 
-		this._pgRelations = new PgRelations(pgPool, pgSchema);
+		this._pgRelations = new PgRelationsCrud(pgPool, pgSchema);
 		this._calculatePragueTemperatureMapUsingNeuralNetworkModel = new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 		this._calculateOstravaTemperatureMapUsingNeuralNetworkModel = new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 	}

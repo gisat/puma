@@ -49,7 +49,7 @@ let SzifCaseCreatorController = require(`./SzifCaseCreatorController`);
 const PgScenariosController = require('./PgScenariosController');
 const PgScenarioCasesController = require('./PgScenarioCasesController');
 
-const PgRelationsController = require('./PgRelationsController');
+const PgRelationsController = require('../relations/PgRelationsController');
 const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
 const PgMetadataController = require('../metadata/PgMetadataController');
 const PgPermissionController = require('./PgPermissionController');
