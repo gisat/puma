@@ -1143,6 +1143,10 @@ class PgCollection {
 			`FROM "${this._pgSchema}"."${this._tableName}" AS "${this._tableName}"`
 		);
 
+		sql.push(
+			`LEFT JOIN "data"."metadata_changes" AS mc ON mc."resource_key" = "${this._tableName}"."key"::TEXT AND mc."action" = 'create'`
+		);
+
 		if (this._dataSources && this._relatedColumns) {
 			_.each(this._dataSources, (dataSource) => {
 				if (dataSource.getTableName()) {
@@ -1286,7 +1290,7 @@ class PgCollection {
 				sql.push(`"${key}" ${direction}`);
 			});
 		} else {
-			sql.push(`ORDER BY "${this._tableName}"."key"`);
+			sql.push(`ORDER BY "mc"."changed"`);
 		}
 
 		return sql.join(' ');
