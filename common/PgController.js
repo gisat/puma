@@ -1,6 +1,13 @@
 class PgController {
 	constructor(app, pgPool, pgSchema, group) {
+		this._pgPool = pgPool;
+		this._pgSchema = pgSchema;
+
 		this._crud = null;
+
+		if(group === `user`) {
+			app.get(`/rest/${group}/current`, this.getCurrent.bind(this));
+		}
 
 		app.post(`/rest/${group}`, this.create.bind(this));
 
@@ -11,7 +18,7 @@ class PgController {
 
 		app.delete(`/rest/${group}`, this.delete.bind(this));
 
-		app.put(`/rest/${group}`, this.update.bind(this))
+		app.put(`/rest/${group}`, this.update.bind(this));
 	}
 
 	create(request, response) {
@@ -105,6 +112,10 @@ class PgController {
 			return false;
 		}
 		return true;
+	}
+
+	getCurrent() {
+		throw new Error(`has to be rewriten`);
 	}
 }
 

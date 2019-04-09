@@ -7,8 +7,6 @@ class PgUserController extends PgController {
 		super(app, pgPool, pgSchema, `user`);
 
 		this._crud = new PgUsersCrud(pgPool, pgSchema, mongo);
-
-		app.get(`/rest/user/current`, this.getCurrent.bind(this));
 	}
 
 	getCurrent(request, response) {
