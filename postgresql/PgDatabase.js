@@ -35,72 +35,83 @@ class PgDatabase {
 	constructor(pgPool) {
 		this._pgPool = pgPool;
 
-		this._metadataStores = [
-			PgScenarios,
-			PgCases,
-			PgScopes,
-			PgPlaces,
-			PgPeriods,
-			PgAttributeSets,
-			PgAttributes,
-			PgLayerTemplates,
-			PgAreaTrees,
-			PgAreaTreeLevels,
-			PgTags
-		];
+		this._dataTypes = [
+			{
+				group: `metadata`,
+				schema: config.pgSchema.metadata,
+				stores: [
+					PgScenarios,
+					PgCases,
+					PgScopes,
+					PgPlaces,
+					PgPeriods,
+					PgAttributeSets,
+					PgAttributes,
+					PgLayerTemplates,
+					PgAreaTrees,
+					PgAreaTreeLevels,
+					PgTags
+				]
+			},
+			{
+				group: `relations`,
+				schema: config.pgSchema.relations,
+				stores: [
+					PgSpatialRelations,
+					PgAttributeRelations,
+					PgAreaRelations
+				]
+			},
+			{
+				group: `dataSources`,
+				schema: config.pgSchema.dataSources,
+				stores: [
+					PgCommonSpatialDataSource,
+					PgAttributeDataSource
+				]
+			},
+			{
+				group: `application`,
+				schema: config.pgSchema.application,
+				stores: [
+					PgLayerTrees,
+					PgConfigurations,
+					PgApplications
+				]
+			},
+			{
+				group: `views`,
+				schema: config.pgSchema.views,
+				stores: [
+					PgViews
+				]
+			},
+			{
+				schema: config.pgSchema.data,
+				stores: [
+					PgUsers
+				]
+			},
+			{
+				group: `specific`,
+				schema: config.pgSchema.specific,
+				stores: [
+					PgEsponFuoreIndicators
+				]
+			}
+		]
+	}
 
-		this._relationsStores = [
-			PgSpatialRelations,
-			PgAttributeRelations,
-			PgAreaRelations
-		];
-
-		this._dataSourcesStores = [
-			PgCommonSpatialDataSource,
-			PgAttributeDataSource
-		];
-
-		this._applicationStores = [
-			PgLayerTrees,
-			PgConfigurations,
-			PgApplications
-		];
-
-		this._viewsStores = [
-			PgViews
-		];
-
-		this._usersStores = [
-			PgUsers
-		];
-
-		this._specificStores = [
-			PgEsponFuoreIndicators
-		];
+	getDataTypeStoresGroupedByType() {
+		return this._dataTypes;
 	}
 
 	ensure() {
 		return this.ensureSchemas()
-			.then(() => {
-				return this.ensureTables(this._metadataStores, config.pgSchema.metadata);
-			})
-			.then(() => {
-				return this.ensureTables(this._relationsStores, config.pgSchema.relations);
-			})
-			.then(() => {
-				return this.ensureTables(this._dataSourcesStores, config.pgSchema.dataSources);
-			})
-			.then(() => {
-				return this.ensureTables(this._applicationStores, config.pgSchema.application);
-			})
-			.then(() => {
-				return this.ensureTables(this._viewsStores, config.pgSchema.views);
-			})
-			.then(() => {
-				return this.ensureTables(this._usersStores, config.pgSchema.data);
-			})
-			.then(() => {
-				return this.ensureTables(this._specificStores, config.pgSchema.specific);
+			.then(async () => {
+				for(let dataType of this._dataTypes) {
+					await this.ensureTables(dataType.stores, dataType.schema);
+				}
 			});
 	}
 

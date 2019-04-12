@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
+const PgDatabase = require(`../postgresql/PgDatabase`);
 
 class PgUserCurrent {
 	constructor(pgPool, pgSchema, userId) {
@@ -8,7 +8,7 @@ class PgUserCurrent {
 		this._pgSchema = pgSchema;
 		this._userId = userId;
 
-		this._pgMetadataCrud = new PgMetadataCrud(pgPool, pgSchema);
+		this._pgDatabase = new PgDatabase(pgPool);
 
 		this._guestGroupId = 2;
 		this._userGroupId = 3;
@@ -19,7 +19,7 @@ class PgUserCurrent {
 			.query(`SELECT name, email, phone FROM "${this._pgSchema}"."panther_users" WHERE id = ${Number(this._userId)}`)
 			.then(async (result) => {
 				let groups = await this.getGroups();
-				let metadataPermissions = await this.getMetadataPermissions(groups);
+				let permissions = await this.getPermissions(groups);
 				return {
 					key: this._userId,
 					data: {
@@ -30,8 +30,7 @@ class PgUserCurrent {
 					},
 					groups: groups,
 					permissions: {
-						metadata: metadataPermissions || [],
-						features: []
+						...permissions
 					}
 				}
 			});
@@ -69,43 +68,38 @@ class PgUserCurrent {
 			})
 	}
 
-	async getMetadataPermissions(groups) {
-		let overalPermissions = await this.getOveralMetadataPermissions(groups);
-		let metadataPermissions = {};
+	async getPermissions(groups) {
+		let overalPermissions = await this.getOveralPermissions(groups);
+		let permissions = {};
 
 		let isAdmin = !!(_.find(groups, {data: {name: "admin"}}));
-		let metadataGroupsByType = this._pgMetadataCrud.getGroupsByType();
+		let dataTypesGroupedByType = this._pgDatabase.getDataTypeStoresGroupedByType();
 
-		if (isAdmin) {
-			_.each(metadataGroupsByType, (value, property) => {
-				metadataPermissions[value] = {
-					create: true,
-					update: true,
-					delete: true
-				}
-			});
-		} else {
-			let groupedByResourceType = {};
+		_.each(dataTypesGroupedByType, (dataType) => {
+			if(dataType.group) {
+				permissions[dataType.group] = {};
+				_.each(dataType.stores, (store) => {
+					if(isAdmin) {
+						permissions[dataType.group][store.tableName()] = {
+							create: true,
+							update: true,
+							delete: true
+						};
+					} else {
+						permissions[dataType.group][store.tableName()] = {
+							create: !!(_.find(overalPermissions, {resource_type: store.tableName(), permission: `POST`})),
+							update: !!(_.find(overalPermissions, {resource_type: store.tableName(), permission: `PUT`})),
+							delete: !!(_.find(overalPermissions, {resource_type: store.tableName(), permission: `DELETE`}))
+						};
+					}
+				});
+			}
+		});
 
-			_.each(overalPermissions, (value) => {
-				groupedByResourceType[value.resource_type] = {
-					create: !!(groupedByResourceType[value.resource_type] && groupedByResourceType[value.resource_type].create) || value.permission === 'POST',
-					update: !!(groupedByResourceType[value.resource_type] && groupedByResourceType[value.resource_type].update) || value.permission === 'PUT',
-					delete: !!(groupedByResourceType[value.resource_type] && groupedByResourceType[value.resource_type].delete) || value.permission === 'DELETE'
-				}
-			});
-
-			_.each(groupedByResourceType, (value, property) => {
-				if(metadataGroupsByType.hasOwnProperty(property)) {
-					metadataPermissions[metadataGroupsByType[property]] = value;
-				}
-			});
-		}
-
-		return metadataPermissions;
+		return permissions;
 	}
 
-	async getOveralMetadataPermissions(groups) {
+	async getOveralPermissions(groups) {
 		let overalPermissions = [];
 
 		await this._pgPool
