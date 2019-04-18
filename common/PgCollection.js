@@ -1144,7 +1144,7 @@ class PgCollection {
 		);
 
 		sql.push(
-			`LEFT JOIN "data"."metadata_changes" AS mc ON mc."resource_key" = "${this._tableName}"."key"::TEXT AND mc."action" = 'create'`
+			`LEFT JOIN (SELECT resource_key, max(changed) as changed FROM "data"."metadata_changes" WHERE action = 'create' GROUP BY resource_key) AS mc ON mc."resource_key" = "${this._tableName}"."key"::TEXT`
 		);
 
 		if (this._dataSources && this._relatedColumns) {
