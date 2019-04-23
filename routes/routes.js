@@ -57,6 +57,8 @@ const PgUserController = require('../user/PgUserController');
 const PgApplicationController = require('../application/PgApplicationsController');
 const PgSpecificController = require('../specific/PgSpecificController');
 
+const PgDataController = require(`../data/PgDataController`);
+
 const UploadManagerController = require('./UploadManagerController');
 
 const PucsMatlabProcessorController = require('../integration/PucsMatlabProcessorController');
@@ -154,6 +156,8 @@ module.exports = function(app) {
 	new PgSpecificController(app, pool.pool(), config.pgSchema.specific);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
+
+	new PgDataController(app, pool);
 
 	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
 	new GroupController(app, pool);
