@@ -31,11 +31,11 @@ class PgDataController {
 						spatialDataSources = spatialDataSources.data.spatial;
 
 						for (let spatialDataSource of spatialDataSources) {
-							if(spatialDataSource.data.type === `vector`) {
+							if (spatialDataSource.data.type === `vector`) {
 								await this.getGeometryColumnsForTableName(spatialDataSource.data.tableName)
 									.then(async (geometryColumnNames) => {
 										if (geometryColumnNames.length === 1) {
-											let spatialData = await this.getSpatialVectorData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
+											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
 											payload.data.spatial.push({
 												spatialDataSourceKey: spatialDataSource.key,
 												spatialData
@@ -61,11 +61,63 @@ class PgDataController {
 			.send(payload);
 	}
 
-	getAttributeData(request, response) {
+	async getAttributeData(request, response) {
+		let filter = request.body.filter;
+		let payload = {
+			data: {
+				spatial: []
+			},
+			success: true
+		};
 
+		if (filter && Object.keys(filter).length) {
+			await this._pgDataSourcesCrud.get(`attribute`, {filter: {key: filter.attributeDataSourceKey}}, request.session.user)
+				.then(async (attributeDataSources) => {
+					if (attributeDataSources.errors) {
+						payload.message = attributeDataSources.errors.attribute;
+						payload.success = false;
+					} else {
+						attributeDataSources = attributeDataSources.data.attribute;
+
+						for (let attributeDataSource of attributeDataSources) {
+							let attributeData = await this.getAttributeDataSourceData(attributeDataSource.data.tableName, filter.fidColumnName, attributeDataSource.data.columnName);
+							payload.data.spatial.push({
+								attributeDataSourceKey: attributeDataSource.key,
+								attributeData
+							});
+						}
+					}
+				})
+		} else {
+			payload.message = `missing filter`;
+			payload.success = false;
+		}
+
+		response
+			.status(payload.success ? 200 : 400)
+			.send(payload);
 	};
 
-	getSpatialVectorData(tableName, fidColumn, geometryColumn) {
+	getAttributeDataSourceData(tableName, fidColumn, attributeColumn) {
+		return this._pgPool
+			.query(`SELECT "${fidColumn}", "${attributeColumn}" FROM "${tableName}"`)
+			.then((pgResult) => {
+				return {
+					type: "FeatureCollection",
+					features: _.map(pgResult.rows, (row) => {
+						return {
+							type: "Feature",
+							properties: {
+								[fidColumn]: row[fidColumn],
+								[attributeColumn]: row[attributeColumn]
+							}
+						}
+					})
+				}
+			});
+	}
+
+	getSpatialDataSourceData(tableName, fidColumn, geometryColumn) {
 		return this._pgPool
 			.query(`SELECT "${fidColumn}", ST_AsGeoJson("${geometryColumn}", 14, 4) AS geometry FROM "${tableName}"`)
 			.then((pgResult) => {
