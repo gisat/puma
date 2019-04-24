@@ -36,7 +36,7 @@ class PgDataController {
 								await this.getGeometryColumnsForTableName(spatialDataSource.data.tableName)
 									.then(async (geometryColumnNames) => {
 										if (geometryColumnNames.length === 1) {
-											let spatialData = await this.getAttributeDataSourceStatistics(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
+											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
 											payload.data.spatial.push({
 												spatialDataSourceKey: spatialDataSource.key,
 												spatialData
