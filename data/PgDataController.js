@@ -10,6 +10,7 @@ class PgDataController {
 
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
+		app.post(`/rest/statistic/filtered/attribute`, this.getAttributeDataStatistic.bind(this));
 	}
 
 	async getSpatialData(request, response) {
@@ -35,7 +36,7 @@ class PgDataController {
 								await this.getGeometryColumnsForTableName(spatialDataSource.data.tableName)
 									.then(async (geometryColumnNames) => {
 										if (geometryColumnNames.length === 1) {
-											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
+											let spatialData = await this.getAttributeDataSourceStatistics(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
 											payload.data.spatial.push({
 												spatialDataSourceKey: spatialDataSource.key,
 												spatialData
@@ -48,6 +49,73 @@ class PgDataController {
 										}
 									})
 							}
+						}
+					}
+				})
+		} else {
+			payload.message = `missing filter`;
+			payload.success = false;
+		}
+
+		response
+			.status(payload.success ? 200 : 400)
+			.send(payload);
+	}
+
+	getAttributeDataSourceStatistic(tableName, attributeColumn) {
+		return this._pgPool
+			.query(`SELECT count("${attributeColumn}") , min("${attributeColumn}"), max("${attributeColumn}"), (SELECT pg_typeof("${attributeColumn}") FROM "${tableName}" LIMIT 1) AS type FROM "${tableName}";`)
+			.then((pgResult) => {
+				if (pgResult.rows.length) {
+					let statistic = pgResult.rows[0];
+					switch (statistic.type) {
+						case `character varying`:
+						case `character`:
+						case `text`:
+							statistic.type = `text`;
+							break;
+						case `integer`:
+						case `bigint`:
+						case `bigserial`:
+						case `bit`:
+						case `serial`:
+							statistic.type = `numeric`;
+							break;
+						case `boolean`:
+							statistic.type = `boolean`;
+							break;
+					}
+					return {
+						...statistic
+					}
+				}
+			});
+	}
+
+	async getAttributeDataStatistic(request, response) {
+		let filter = request.body.filter;
+		let payload = {
+			data: {
+				spatial: []
+			},
+			success: true
+		};
+
+		if (filter && Object.keys(filter).length) {
+			await this._pgDataSourcesCrud.get(`attribute`, {filter: {key: filter.attributeDataSourceKey}}, request.session.user)
+				.then(async (attributeDataSources) => {
+					if (attributeDataSources.errors) {
+						payload.message = attributeDataSources.errors.attribute;
+						payload.success = false;
+					} else {
+						attributeDataSources = attributeDataSources.data.attribute;
+
+						for (let attributeDataSource of attributeDataSources) {
+							let attributeStatistic = await this.getAttributeDataSourceStatistic(attributeDataSource.data.tableName, attributeDataSource.data.columnName);
+							payload.data.spatial.push({
+								attributeDataSourceKey: attributeDataSource.key,
+								attributeStatistic
+							});
 						}
 					}
 				})
