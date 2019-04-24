@@ -64,7 +64,17 @@ class PgDataController {
 
 	getAttributeDataSourceStatistic(tableName, attributeColumn) {
 		return this._pgPool
-			.query(`SELECT count("${attributeColumn}") , min("${attributeColumn}"), max("${attributeColumn}"), (SELECT pg_typeof("${attributeColumn}") FROM "${tableName}" LIMIT 1) AS type FROM "${tableName}";`)
+			.query(
+				`
+					SELECT 
+					count("${attributeColumn}") as count, 
+					min("${attributeColumn}") AS min, 
+					max("${attributeColumn}") AS max,
+					(SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY "${attributeColumn}") from "${tableName}") AS median,
+					(SELECT pg_typeof("${attributeColumn}") FROM "${tableName}" LIMIT 1) AS type 
+					FROM "${tableName}";
+	  			`
+			)
 			.then((pgResult) => {
 				if (pgResult.rows.length) {
 					let statistic = pgResult.rows[0];
