@@ -12,6 +12,7 @@ const AddSourceUrlToLayer = require('../migration/2_12_AddSourceUrlToLayer');
 const AddSession = require('../migration/2_14_AddSession');
 const AddIdentifierToGroup = require('../migration/2_14_1_AddIdentifierToGroup');
 
+const config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
 /**
