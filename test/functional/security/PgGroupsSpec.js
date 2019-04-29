@@ -107,6 +107,19 @@ describe('PgGroupsSpec', () => {
         })
     });
 
+    describe('onlyExistingGroups', () => {
+        it('returns only groups existing in the datastore', done => {
+            pgGroups.onlyExistingGroups([{identifier: 'test'}, {identifier: 'notExistingGroup'}]).then(groups => {
+                should(groups.length).equal(1);
+                should(groups[0].identifier).equal('test');
+
+                done();
+            }).catch(err => {
+                done(err);
+            });
+        })
+    });
+
     afterEach(done => {
         integrationEnvironment.tearDown().then(() => {
             done();

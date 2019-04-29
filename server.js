@@ -43,21 +43,8 @@ process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
-const SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
 const PgPool = require('./postgresql/PgPool');
 const DatabaseSchema = require('./postgresql/DatabaseSchema');
-const CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
-const IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
-const PrepareForInternalUser = require('./migration/PrepareForInternalUser');
-const AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
-const MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
-const AddAuditInformation = require('./migration/AddAuditInformation');
-const AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
-const AddPhoneToUser = require('./migration/AddPhoneToUser');
-const AddMetadataToLayer = require('./migration/2_10_1_AddMetadataToLayer');
-const AddSourceUrlToLayer = require('./migration/2_12_AddSourceUrlToLayer');
-const AddSession = require('./migration/2_14_AddSession');
-const AddIdentifierToGroup = require('./migration/2_14_1_AddIdentifierToGroup');
 
 const CompoundAuthentication = require('./security/CompoundAuthentication');
 const PgAuthentication = require('./security/PgAuthentication');
@@ -178,33 +165,9 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
-
-new DatabaseSchema(pool, config.postgreSqlSchema).create().then(function(){
-	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
-}).then(()=>{
-	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
-}).then(()=>{
-	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new PrepareForInternalUser(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddCustomInfoToWms(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddAuditInformation(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddPhoneToUser(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddMetadataToLayer(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
-}).then(()=>{
-    return new AddSession(config.postgreSqlSchema).run();
-}).then(()=>{
-	return new AddIdentifierToGroup(config.postgreSqlSchema).run();
+const schema = new DatabaseSchema(pool, config.postgreSqlSchema);
+schema.create().then(function(){
+	return schema.migrate();
 }).then(function(){
 	logger.info('Finished Migrations.');
 

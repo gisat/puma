@@ -1,9 +1,10 @@
 let Promise = require('promise');
 
-let config = require('../config');
 let logger = require('../common/Logger').applicationWideLogger;
 
+let PgGroups = require('./PgGroups');
 let PgUsers = require('./PgUsers');
+let UtepCommunities = require('../integration/UtepCommunities');
 
 /**
  * This class handles users coming via the EO SSO. It takes their account information and either return the information
@@ -12,6 +13,7 @@ let PgUsers = require('./PgUsers');
 class SsoAuthentication {
     constructor(pgPool, schema) {
         this.pgUsers = new PgUsers(pgPool, schema);
+        this.communities = new UtepCommunities(config.apiKeyPortal, new PgGroups(pgPool, schema));
     }
 
     /**
@@ -32,12 +34,18 @@ class SsoAuthentication {
             return this.pgUsers.byEmail(email).then(user => {
                 if(!user) {
                     return this.pgUsers.add(email, username).then(user => {
+                        if(!request.session.userId) {
+                            this.communities.loadForUser(user.id, email);
+                        }
                         request.session.userId = user.id;
                         request.session.user = {
                             username: username
                         };
                     });
                 } else {
+                    if(!request.session.userId) {
+                        this.communities.loadForUser(user.id, email);
+                    }
                     request.session.userId = user.id;
                     request.session.user = {
                         username: username

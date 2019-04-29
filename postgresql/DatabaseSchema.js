@@ -1,5 +1,16 @@
-const PgLpisCheckCases = require(`../metadata/PgLpisCheckCases`);
-const PgMetadataRelations = require(`../metadata/PgMetadataRelations`);
+const SymbologyToPostgreSqlMigration = require('../migration/SymbologyToPostgreSql');
+const CreateDefaultUserAndGroup = require('../migration/CreateDefaultUserAndGroup');
+const IdOfTheResourceMayBeText = require('../migration/IdOfTheResourceMayBeText');
+const PrepareForInternalUser = require('../migration/PrepareForInternalUser');
+const AddCustomInfoToWms = require('../migration/AddCustomInfoToWms');
+const MigrateAwayFromGeonode = require('../migration/MigrateAwayFromGeonode');
+const AddAuditInformation = require('../migration/AddAuditInformation');
+const AddGetDatesToWmsLayers = require('../migration/AddGetDatesToWmsLayers');
+const AddPhoneToUser = require('../migration/AddPhoneToUser');
+const AddMetadataToLayer = require('../migration/2_10_1_AddMetadataToLayer');
+const AddSourceUrlToLayer = require('../migration/2_12_AddSourceUrlToLayer');
+const AddSession = require('../migration/2_14_AddSession');
+const AddIdentifierToGroup = require('../migration/2_14_1_AddIdentifierToGroup');
 
 var logger = require('../common/Logger').applicationWideLogger;
 
@@ -395,6 +406,38 @@ DatabaseSchema.prototype.create = function () {
 	}).catch(function (err) {
         logger.error('DatabaseSchema#create Errors when creating the schema and associated tables. Error: ', err);
     });
+};
+
+/**
+ * It runs all the migration necessary for the Panther solution.
+ * @returns {*}
+ */
+DatabaseSchema.prototype.migrate = function () {
+    return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run().then(() => {
+        return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new PrepareForInternalUser(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddCustomInfoToWms(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddAuditInformation(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddPhoneToUser(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddMetadataToLayer(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddSession(config.postgreSqlSchema).run();
+    }).then(() => {
+        return new AddIdentifierToGroup(config.postgreSqlSchema).run();
+    })
 };
 
 module.exports = DatabaseSchema;

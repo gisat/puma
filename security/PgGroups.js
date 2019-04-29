@@ -1,5 +1,5 @@
 let moment = require('moment');
-let _ = require('underscore');
+let _ = require('lodash');
 let logger = require('../common/Logger').applicationWideLogger;
 
 let Group = require('./Group');
@@ -190,7 +190,7 @@ class PgGroups {
         }
 
         if(group.identifier) {
-            updateIdentifier = `UPDATE ${this.schema}.groups SET identifier = '${group.identifier}' WHERE id = ${id}`
+            updateIdentifier = `UPDATE ${this.schema}.groups SET identifier = '${group.identifier}' WHERE id = ${id};`
         }
 
         if(group.members) {
@@ -302,16 +302,24 @@ class PgGroups {
             VALUES (${groupId},${userId}, '${time}', ${creatorId}, '${time}', ${creatorId})`;
     }
 
-    isMember(userId, groupId) {
-	    return this.pgPool.query(
-	        `SELECT * FROM ${this.schema}.group_has_members WHERE user_id = ${userId} AND group_id = ${groupId}`
-        ).then(result => {
-            if(result.rows.length > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        });
+    /**
+     * It removes member from given group. If the user or group doesn't exist, nothing happens.
+     * @param userId {Number} Id of the user
+     * @param groupId {Number} Id of the group
+     * @returns {Promise}
+     */
+    removeMember(userId, groupId) {
+	    return this.pgPool.query(`DELETE FROM ${this.schema}.group_has_members WHERE group_id = ${groupId} AND user_id = ${userId}`);
+    }
+
+    /**
+     * It returns list containing groups that exists based on the identifier.
+     * @param communities {Object} Object containing identifier field.
+     */
+	async onlyExistingGroups(communities) {
+        const result = await this.pgPool.query(`SELECT id, identifier FROM ${this.schema}.groups WHERE identifier IN (${communities.map(community => `'${community.identifier}'`).join(',')})`);
+
+        return result.rows;
     }
 }
 

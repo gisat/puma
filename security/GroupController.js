@@ -91,7 +91,7 @@ class GroupController {
 			return;
 		}
 
-        this.groups.add(request.body.name, request.session.user.id).then(result => {
+        this.groups.add(request.body.name, request.body.identifier, request.session.user.id).then(result => {
         	return Promise.all([
 				this.permissions.add(request.session.user.id, 'group', result.id, Permission.READ),
 				this.permissions.add(request.session.user.id, 'group', result.id, Permission.UPDATE),
