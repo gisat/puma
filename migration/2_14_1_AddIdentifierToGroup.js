@@ -11,6 +11,8 @@ class AddIdentifierToGroup extends Migration {
         return pool.query(`
             ALTER TABLE ${this._schema}.groups ADD COLUMN identifier TEXT;
             ALTER TABLE ${this._schema}.layers ADD COLUMN custom text;
+            
+            UPDATE ${this._schema}.groups SET identifier = name;
         `);
     }
 }
