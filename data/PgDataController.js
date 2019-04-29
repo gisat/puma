@@ -1,3 +1,6 @@
+const fse = require(`fs-extra`);
+const zipper = require(`zip-local`);
+
 const config = require(`../config`);
 
 const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
@@ -11,6 +14,131 @@ class PgDataController {
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
 		app.post(`/rest/statistic/filtered/attribute`, this.getAttributeDataStatistic.bind(this));
+
+		app.post(`/rest/data/import/fuore`, this.importFuoreData.bind(this));
+	}
+
+	async importFuoreData(request, response) {
+		let requestFileObject = request.files && request.files.file;
+		if (requestFileObject) {
+			let unzippedFs = zipper.sync.unzip(requestFileObject.path).memory();
+			let analyticalUnits, attributes;
+			let done = true;
+			if (unzippedFs.contents().includes('analytical_units.json')) {
+				analyticalUnits = JSON.parse(unzippedFs.read('analytical_units.json', 'text'));
+				_.each(analyticalUnits, (analyticalUnit) => {
+					if (!unzippedFs.contents().includes(analyticalUnit.name)) {
+						done = false;
+						response.status(400).send({message: `missing analytical unit`, success: false});
+						return false;
+					}
+				});
+			} else {
+				done = false;
+				response.status(400).send({message: "missing mandatory files", success: false});
+			}
+
+			if (unzippedFs.contents().includes('attribute.json')) {
+				attributes = JSON.parse(unzippedFs.read('attribute.json', 'text'));
+				_.each(attributes, (attribute) => {
+					if (!unzippedFs.contents().includes(`${attribute.table_name}.json`)) {
+						done = false;
+						response.status(400).send({message: `missing attribute data`, success: false});
+						return false;
+					}
+				});
+			} else {
+				done = false;
+				response.status(400).send({message: "missing mandatory files", success: false});
+			}
+
+			if (done) {
+				for (let attribute of attributes) {
+					let attributeTableName = `fuore-attr-${attribute.table_name}-${attribute.code}`;
+					let attributeAu = _.find(analyticalUnits, {id: attribute.analytical_unit_id});
+					let attributeAuTableName = `fuore-au-${attributeAu.table_name}`;
+					let attributeAuParentTableName = attributeAu.parent_table ? `fuore-au-${attributeAu.parent_table}` : null;
+					let attributeAuData = JSON.parse(unzippedFs.read(attributeAu.name, 'text'));
+					let attributeData = JSON.parse(unzippedFs.read(`${attribute.table_name}.json`, 'text'));
+
+					// console.log(attributeTableName);
+					// console.log(attributeAuTableName);
+					// console.log(attributeAuParentTableName);
+					// console.log(attributeAuData);
+					// console.log(attributeData);
+
+					let attributeAuFeatures = attributeAuData.features;
+					let attributeAuFeatureProperties = {};
+					let attributeAuFeatureValues = [];
+
+					_.each(attributeAuFeatures, (feature) => {
+						let featureValues = {};
+						_.each(feature.properties, (value, property) => {
+							featureValues[property] = value;
+							if(!attributeAuFeatureProperties.hasOwnProperty(property)) {
+								let type = null;
+								if (_.isString(value)) {
+									type = `text`;
+								} else if(_.isNumber(value)) {
+									type = `numeric`
+								}
+								attributeAuFeatureProperties[property] = type;
+							}
+						});
+						featureValues['geometry'] = JSON.stringify({...feature.geometry, crs: attributeAuData.crs});
+						attributeAuFeatureValues.push(featureValues);
+					});
+
+					let auTableSql = [];
+					auTableSql.push(`CREATE TABLE "${attributeAuTableName}" (`);
+
+					let valueInsertsSql = [];
+					let columnDefinitionSql = [];
+					columnDefinitionSql.push(`"id" numeric primary key`);
+					if(attributeAuFeatureProperties.hasOwnProperty('id')) {
+						delete attributeAuFeatureProperties.id;
+					}
+
+					_.each(attributeAuFeatureProperties, (value, property) => {
+						columnDefinitionSql.push(`"${property}" ${value}`);
+					});
+
+					columnDefinitionSql.push(`"geometry" geometry`);
+
+					auTableSql.push(columnDefinitionSql.join(`, `));
+
+					auTableSql.push(`);`);
+
+					await this._pgPool.query(`DROP TABLE IF EXISTS "${attributeAuTableName}"`);
+
+					await this._pgPool.query(auTableSql.join(` `));
+
+					await this._pgPool.query(_.map(attributeAuFeatureValues, (featureValues) => {
+						return `INSERT INTO "${attributeAuTableName}" (${_.map(featureValues, (value, property) => {
+							return `"${property}"`
+						}).join(', ')}) VALUES (${_.map(featureValues, (value, property) => {
+							return _.isString(value) ? property === 'geometry' ? `ST_GeomFromGeoJSON('${value}')` : `'${value.replace(`'`, `''`)}'` : value
+						}).join(`, `)});`
+					}).join(` `));
+				}
+
+				response.status(200).send({imported: true, success: true});
+			}
+
+		} else {
+			response.status(400).send({message: "missing file", success: false});
+		}
+
+		this.cleanupRequestFiles(request);
+	};
+
+	cleanupRequestFiles(request) {
+		_.each(request.files, (fileObject) => {
+			console.log(`### CLEANUP ###`);
+			console.log(`@@@ FILE ${fileObject.path}`);
+			fse.removeSync(fileObject.path);
+			console.log(`@@@@ REMOVED`);
+		});
 	}
 
 	async getSpatialData(request, response) {
