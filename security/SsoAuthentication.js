@@ -36,7 +36,7 @@ class SsoAuthentication {
                 if(!user) {
                     return this.pgUsers.add(email, username).then(user => {
                         if(!request.session.userId) {
-                            this.loadCommunities(user.id, email);
+                            this.loadCommunities(user.id, username);
                         }
                         request.session.userId = user.id;
                         request.session.user = {
@@ -45,7 +45,7 @@ class SsoAuthentication {
                     });
                 } else {
                     if(!request.session.userId) {
-                        this.loadCommunities(user.id, email);
+                        this.loadCommunities(user.id, username);
                     }
                     request.session.userId = user.id;
                     request.session.user = {
