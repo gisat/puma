@@ -59,7 +59,7 @@ class PgDataController {
 					let attributeAuTableName = `fuore-au-${attributeAu.table_name}`;
 					let attributeAuParentTableName = attributeAu.parent_table ? `fuore-au-${attributeAu.parent_table}` : null;
 					let attributeAuData = JSON.parse(unzippedFs.read(attributeAu.name, 'text'));
-					let attributeData = JSON.parse(unzippedFs.read(`${attribute.table_name}.json`, 'text'));
+					let attributeContentData = JSON.parse(unzippedFs.read(`${attribute.table_name}.json`, 'text'));
 
 					// console.log(attributeTableName);
 					// console.log(attributeAuTableName);
@@ -75,11 +75,11 @@ class PgDataController {
 						let featureValues = {};
 						_.each(feature.properties, (value, property) => {
 							featureValues[property] = value;
-							if(!attributeAuFeatureProperties.hasOwnProperty(property)) {
+							if (!attributeAuFeatureProperties.hasOwnProperty(property)) {
 								let type = null;
 								if (_.isString(value)) {
 									type = `text`;
-								} else if(_.isNumber(value)) {
+								} else if (_.isNumber(value)) {
 									type = `numeric`
 								}
 								attributeAuFeatureProperties[property] = type;
@@ -94,9 +94,12 @@ class PgDataController {
 
 					let valueInsertsSql = [];
 					let columnDefinitionSql = [];
-					columnDefinitionSql.push(`"id" numeric primary key`);
-					if(attributeAuFeatureProperties.hasOwnProperty('id')) {
+
+					if (attributeAuFeatureProperties.hasOwnProperty('id')) {
+						columnDefinitionSql.push(`"id" numeric primary key`);
 						delete attributeAuFeatureProperties.id;
+					} else {
+						columnDefinitionSql.push(`"id" serial primary key`);
 					}
 
 					_.each(attributeAuFeatureProperties, (value, property) => {
@@ -119,6 +122,62 @@ class PgDataController {
 						}).join(', ')}) VALUES (${_.map(featureValues, (value, property) => {
 							return _.isString(value) ? property === 'geometry' ? `ST_GeomFromGeoJSON('${value}')` : `'${value.replace(`'`, `''`)}'` : value
 						}).join(`, `)});`
+					}).join(` `));
+
+					let attributeTableSql = [];
+					let attributeFeatureProperties = {};
+					let attributeTableColumnsSql = [];
+					let attributeTableDataSql = [];
+					let attributeTableValues = [];
+
+					for (let attributeData of attributeContentData) {
+						let attributeValues = {};
+						_.each(attributeData, (value, property) => {
+							if(!attributeFeatureProperties.hasOwnProperty(property)) {
+								let type = null;
+								if (_.isString(value)) {
+									type = `text`;
+								} else if (_.isNumber(value)) {
+									type = `numeric`
+								}
+								attributeFeatureProperties[property] = type;
+							}
+							attributeValues[property] = value;
+						});
+						attributeTableValues.push(attributeValues);
+					}
+
+					let attributeTableColumnDefinitionSql = [];
+
+					if (attributeFeatureProperties.hasOwnProperty('id')) {
+						attributeTableColumnDefinitionSql.push(`"id" numeric primary key`);
+						delete attributeFeatureProperties.id;
+					} else {
+						attributeTableColumnDefinitionSql.push(`"id" serial primary key`);
+					}
+
+					_.each(attributeFeatureProperties, (value, property) => {
+						attributeTableColumnDefinitionSql.push(`"${property}" ${value}`)
+					});
+
+					attributeTableSql.push(`CREATE TABLE "${attributeTableName}" (`);
+
+					attributeTableSql.push(attributeTableColumnDefinitionSql.join(`, `));
+
+					attributeTableSql.push(`);`);
+
+					await this._pgPool.query(`DROP TABLE IF EXISTS "${attributeTableName}"`);
+
+					await this._pgPool.query(attributeTableSql.join(` `));
+
+					let attributeTableValuesSql = [];
+
+					await this._pgPool.query(_.map(attributeTableValues, (attributeTableValueSet) => {
+						return `INSERT INTO "${attributeTableName}" (${_.map(attributeTableValueSet, (value, property) => {
+							return `"${property}"`
+						}).join(', ')}) VALUES (${_.map(attributeTableValueSet, (value, property) => {
+							return _.isString(value) ? `'${value}'` : value
+						}).join(', ')});`
 					}).join(` `));
 				}
 
