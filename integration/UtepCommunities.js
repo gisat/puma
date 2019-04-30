@@ -63,6 +63,9 @@ class UtepCommunities {
         });
 
         const removeMembers = removeUserFromGroups.map(group => {
+            if(group.id === 1) {
+                return Promise.resolve(true);
+            }
             return this.pgGroups.removeMember(id, group.id);
         });
 
