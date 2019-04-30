@@ -1206,16 +1206,21 @@ class PgCollection {
 			request.filter.key.in.push(dummyUuid);
 		}
 
+		// todo whole where generation logic should be revised in near future
 		let where = [];
 		_.map(request.filter, (data, column) => {
-			let tableNamePrefix = this._tableName;
+			let tableNamePrefixs = [];
 
 			if (this._dataSources) {
 				_.each(this._dataSources, (dataSource) => {
 					if (dataSource.getRelevantColumns().includes(column)) {
-						tableNamePrefix = dataSource.getTableName();
+						tableNamePrefixs.push(dataSource.getTableName());
 					}
 				});
+			}
+
+			if(!tableNamePrefixs.length) {
+				tableNamePrefixs.push(this._tableName);
 			}
 
 			if (_.isObject(data)) {
@@ -1227,7 +1232,9 @@ class PgCollection {
 				switch (type) {
 					case 'like':
 						where.push(
-							`"${tableNamePrefix}"."${column}" ILIKE '%${value}%'`
+							_.map(tableNamePrefixs, (tableNamePrefix) => {
+								return `"${tableNamePrefix}"."${column}" ILIKE '%${value}%'`
+							}).join(' OR ')
 						);
 						break;
 					case 'in':
@@ -1239,12 +1246,16 @@ class PgCollection {
 
 						if (isString) {
 							where.push(
-								`"${tableNamePrefix}"."${column}" IN ('${value.join(`', '`)}')`
-							);
+								_.map(tableNamePrefixs, (tableNamePrefix) => {
+									return `"${tableNamePrefix}"."${column}" IN ('${value.join(`', '`)}')`
+								}).join(' OR ')
+							)
 						} else {
 							where.push(
-								`"${tableNamePrefix}"."${column}" IN (${value.join(', ')})`
-							);
+								_.map(tableNamePrefixs, (tableNamePrefix) => {
+									return `"${tableNamePrefix}"."${column}" IN (${value.join(', ')})`
+								}).join(' OR ')
+							)
 						}
 						break;
 					case 'notin':
@@ -1256,11 +1267,15 @@ class PgCollection {
 
 						if (isString) {
 							where.push(
-								`"${tableNamePrefix}"."${column}" NOT IN ('${value.join(`', '`)}')`
+								_.map(tableNamePrefixs, (tableNamePrefix) => {
+									return `"${tableNamePrefix}"."${column}" NOT IN ('${value.join(`', '`)}')`
+								}).join(' AND ')
 							);
 						} else {
 							where.push(
-								`"${tableNamePrefix}"."${column}" NOT IN (${value.join(', ')})`
+								_.map(tableNamePrefixs, (tableNamePrefix) => {
+									return `"${tableNamePrefix}"."${column}" NOT IN (${value.join(', ')})`
+								}).join(' AND ')
 							);
 						}
 						break;
@@ -1268,12 +1283,16 @@ class PgCollection {
 			} else {
 				if (data === null) {
 					where.push(
-						`"${tableNamePrefix}"."${column}" IS NULL`
-					)
+						_.map(tableNamePrefixs, (tableNamePrefix) => {
+							return `"${tableNamePrefix}"."${column}" IS NULL`
+						}).join(' OR ')
+					);
 				} else {
 					where.push(
-						`"${tableNamePrefix}"."${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
-					)
+						_.map(tableNamePrefixs, (tableNamePrefix) => {
+							return `"${tableNamePrefix}"."${column}" = ${_.isNumber(data) ? data : `'${data}'`}`
+						}).join(' OR ')
+					);
 				}
 			}
 		});

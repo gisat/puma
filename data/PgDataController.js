@@ -4,12 +4,18 @@ const zipper = require(`zip-local`);
 const config = require(`../config`);
 
 const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
+const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
+const PgSpecificCrud = require(`../specific/PgSpecificCrud`);
+
+const esponFuoreApplicationKey = `esponFuore`;
 
 class PgDataController {
 	constructor(app, pgPool) {
 		this._pgPool = pgPool;
 
 		this._pgDataSourcesCrud = new PgDataSourcesCrud(pgPool, config.pgSchema.dataSources);
+		this._pgMetadataCrud = new PgMetadataCrud(pgPool, config.pgSchema.metadata);
+		this._pgSpecificCrud = new PgSpecificCrud(pgPool, config.pgSchema.specific);
 
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
@@ -61,15 +67,14 @@ class PgDataController {
 					let attributeAuData = JSON.parse(unzippedFs.read(attributeAu.name, 'text'));
 					let attributeContentData = JSON.parse(unzippedFs.read(`${attribute.table_name}.json`, 'text'));
 
-					// console.log(attributeTableName);
-					// console.log(attributeAuTableName);
-					// console.log(attributeAuParentTableName);
-					// console.log(attributeAuData);
-					// console.log(attributeData);
-
 					let attributeAuFeatures = attributeAuData.features;
 					let attributeAuFeatureProperties = {};
 					let attributeAuFeatureValues = [];
+
+					let scopeName = attributeAu.type_of_region;
+					let attributeIndicatorName = attribute.name;
+					let years = _.range(Number(attribute.years.split(`-`)[0]), Number(attribute.years.split(`-`)[1]) + 1);
+					let attributeType = `absolute`;
 
 					_.each(attributeAuFeatures, (feature) => {
 						let featureValues = {};
@@ -133,7 +138,7 @@ class PgDataController {
 					for (let attributeData of attributeContentData) {
 						let attributeValues = {};
 						_.each(attributeData, (value, property) => {
-							if(!attributeFeatureProperties.hasOwnProperty(property)) {
+							if (!attributeFeatureProperties.hasOwnProperty(property)) {
 								let type = null;
 								if (_.isString(value)) {
 									type = `text`;
@@ -179,6 +184,155 @@ class PgDataController {
 							return _.isString(value) ? `'${value}'` : value
 						}).join(', ')});`
 					}).join(` `));
+
+					let scopeDataTypeObject = null;
+					await this._pgMetadataCrud.get(`scopes`, {
+						filter: {
+							nameDisplay: scopeName,
+							applicationKey: esponFuoreApplicationKey
+						}
+					}, request.session.user)
+						.then((dataTypeResults) => {
+							if (dataTypeResults.data.scopes.length) {
+								scopeDataTypeObject = dataTypeResults.data.scopes[0];
+							}
+						});
+
+					if (!scopeDataTypeObject) {
+						await this._pgMetadataCrud.create({
+							scopes: [{
+								data: {
+									nameDisplay: scopeName,
+									applicationKey: esponFuoreApplicationKey
+								}
+							}]
+						}, request.session.user)
+							.then(([data, errors]) => {
+								if (data.scopes.length) {
+									scopeDataTypeObject = data.scopes[0];
+								}
+							})
+					}
+
+
+					let attributeDataTypeObject = null;
+					await this._pgMetadataCrud.get(`attributes`, {
+						filter: {
+							nameDisplay: attributeIndicatorName,
+							applicationKey: esponFuoreApplicationKey
+						}
+					}, request.session.user)
+						.then((dataTypeResults) => {
+							if (dataTypeResults.data.attributes.length) {
+								attributeDataTypeObject = dataTypeResults.data.attributes[0];
+							}
+						});
+
+					if (!attributeDataTypeObject) {
+						await this._pgMetadataCrud.create({
+							attributes: [{
+								data: {
+									nameDisplay: attributeIndicatorName,
+									applicationKey: esponFuoreApplicationKey
+								}
+							}]
+						}, request.session.user)
+							.then(([data, errors]) => {
+								if (data.attributes.length) {
+									attributeDataTypeObject = data.attributes[0];
+								}
+							})
+					}
+
+					let periodDataTypeObjects = [];
+					await this._pgMetadataCrud.get(`periods`, {
+						filter: {
+							nameDisplay: {
+								in: _.map(years, _.toString),
+								applicationKey: esponFuoreApplicationKey
+							}
+						}
+					}, request.session.user)
+						.then((dataTypeResults) => {
+							periodDataTypeObjects = dataTypeResults.data.periods;
+						});
+
+					if (periodDataTypeObjects.length !== years.length) {
+						let existingPeriods = _.map(periodDataTypeObjects, (periodDataTypeObject) => {
+							return Number(periodDataTypeObject.data.nameDisplay)
+						});
+						let difference = _.difference(years, existingPeriods);
+
+						await this._pgMetadataCrud.create({
+							periods: _.map(difference, (year) => {
+								return {
+									data: {
+										nameDisplay: String(year),
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							})
+						}, request.session.user)
+							.then((dataTypeResults) => {
+								periodDataTypeObjects = dataTypeResults.data.periods;
+							});
+					}
+
+					let esponFuoreIndicatorDataTypeObject = null;
+					await this._pgSpecificCrud.get(`esponFuoreIndicators`, {filter: {nameDisplay: attributeIndicatorName}}, request.session.user)
+						.then((dataTypeResults) => {
+							if (dataTypeResults.data.esponFuoreIndicators.length) {
+								esponFuoreIndicatorDataTypeObject = dataTypeResults.data.esponFuoreIndicators[0];
+							}
+						});
+
+					if (!esponFuoreIndicatorDataTypeObject) {
+						await this._pgSpecificCrud.create({
+							esponFuoreIndicators: [{
+								data: {
+									nameDisplay: attributeIndicatorName,
+									type: attributeType,
+									attributeKey: attributeDataTypeObject.key
+								}
+							}]
+						}, request.session.user)
+							.then(([data, errors]) => {
+								if (data.esponFuoreIndicators.length) {
+									attributeDataTypeObject = data.esponFuoreIndicators[0];
+								}
+							})
+					}
+
+					let spatialDataSourceObject = null;
+					await this._pgDataSourcesCrud.get(`spatial`, {
+						filter: {
+							tableName: attributeAuTableName,
+							type: `vector`
+						}
+
+					}, request.session.user)
+						.then((dataTypeResults) => {
+							spatialDataSourceObject = dataTypeResults.data.spatial[0];
+						});
+
+
+					if (!spatialDataSourceObject) {
+						await this._pgDataSourcesCrud.create({
+							spatial: [{
+								data: {
+									tableName: attributeAuTableName,
+									type: `vector`
+								}
+							}]
+						}, request.session.user)
+							.then(([data, errors]) => {
+								if (data.spatial.length) {
+									spatialDataSourceObject = data.spatial[0];
+								}
+							})
+					}
+
+					console.log(spatialDataSourceObject);
 				}
 
 				response.status(200).send({imported: true, success: true});
