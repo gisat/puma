@@ -55,7 +55,8 @@ class UtepCommunities {
             this.pgGroups.add(community.Name, community.identifier, 0);
         });
 
-        const addMemberTo = this.pgGroups.onlyExistingGroups(addUserToGroups);
+        const addMemberTo = await this.pgGroups.onlyExistingGroups(addUserToGroups);
+        logger.info(`UtepCommunities#laodForUser AddMemberTo: `, addMemberTo.map(community => community.identifier));
         const addMembers = addMemberTo.map(group => {
             // I don't actually have the id of the group here.
             return this.pgGroups.addMember(id, group.id, 0);
