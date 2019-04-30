@@ -60,7 +60,7 @@ class SsoAuthentication {
 
     loadCommunities(id, email){
         try {
-            this.communities.loadForUser(user.id, email);
+            this.communities.loadForUser(id, email);
         } catch (error) {
             logger.error(`SsoAuthentication#loadCommunities Error: `, error);
         }
