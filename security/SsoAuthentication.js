@@ -36,7 +36,7 @@ class SsoAuthentication {
                 if(!user) {
                     return this.pgUsers.add(email, username).then(user => {
                         if(!request.session.userId) {
-                            this.communities.loadForUser(user.id, email);
+                            this.loadCommunities(user.id, email);
                         }
                         request.session.userId = user.id;
                         request.session.user = {
@@ -45,7 +45,7 @@ class SsoAuthentication {
                     });
                 } else {
                     if(!request.session.userId) {
-                        this.communities.loadForUser(user.id, email);
+                        this.loadCommunities(user.id, email);
                     }
                     request.session.userId = user.id;
                     request.session.user = {
@@ -55,6 +55,14 @@ class SsoAuthentication {
             });
         } else {
             return Promise.resolve(null);
+        }
+    }
+
+    loadCommunities(id, email){
+        try {
+            this.communities.loadForUser(user.id, email);
+        } catch (error) {
+            logger.error(`SsoAuthentication#loadCommunities Error: `, error);
         }
     }
 }

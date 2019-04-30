@@ -1,8 +1,10 @@
 const _ = require('lodash');
+const logger = require('../common/Logger').applicationWideLogger;
 const superagent = require('superagent');
 
 class UtepCommunities {
     constructor(apiKey, pgGroups) {
+        logger.info(`UtepCommunities#constructor ApiKey: ${apiKey}`);
         this.apiKey = apiKey;
 
         this.pgGroups = pgGroups;
@@ -16,6 +18,7 @@ class UtepCommunities {
      * @returns {Promise<void>}
      */
     async loadForUser(id, email) {
+        logger.info(`UtepCommunities#loadForUser Id: ${id} Email: ${email}`);
         // Load internal groups for the user. id, name, identifier
         const internalGroupsOfUser = await this.pgGroups.forUser(id);
 
@@ -33,6 +36,7 @@ class UtepCommunities {
 
             return community;
         });
+        logger.info(`UtepCommunities#loadForUser Communities: `, communities.map(community => community.identifier));
 
         // Identifiers of the groups.
         const addUserToGroups = _.differenceBy(communities, internalGroupsOfUser, 'identifier');
@@ -40,6 +44,11 @@ class UtepCommunities {
 
         const existingGroups = this.pgGroups.onlyExistingGroups(addUserToGroups);
         const groupsToCreate = _.differenceBy(communities, existingGroups, 'identifier');
+        logger.info(`UtepCommunities#loadForUser 
+            AddTo: `, addUserToGroups.map(community => community.identifier), ` 
+            RemoveFrom: `, removeUserFromGroups.map(community => community.identifier), ` 
+            Create: `, groupsToCreate.map(community => community.identifier));
+
         // Create nonexistent groups
         groupsToCreate.map(community => {
             // Crated by internal system process
