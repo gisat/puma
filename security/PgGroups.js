@@ -318,7 +318,7 @@ class PgGroups {
      */
 	async onlyExistingGroups(communities) {
 	    if(!communities || communities.length === 0) {
-	        return Promise.resolve(true);
+	        return Promise.resolve([]);
         }
         const result = await this.pgPool.query(`SELECT id, identifier FROM ${this.schema}.groups WHERE identifier IN (${communities.map(community => `'${community.identifier}'`).join(',')})`);
 
