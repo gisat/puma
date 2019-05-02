@@ -21,7 +21,7 @@ class UtepCommunities {
         logger.info(`UtepCommunities#loadForUser Id: ${id} Email: ${email}`);
         // Load internal groups for the user. id, name, identifier
         const internalGroupsOfUser = await this.pgGroups.forUser(id);
-        logger.info(`UtepCommunities#loadForUser Communities: `, internalGroupsOfUser.map(group => group.identifier));
+        logger.info(`UtepCommunities#loadForUser Groups: `, internalGroupsOfUser.map(group => group.identifier));
 
         // Load communities for the user.
         const communitiesOfUser = await superagent.post('https://urban-tep.eu/t2api/private/visat/community')
