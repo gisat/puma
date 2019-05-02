@@ -125,7 +125,7 @@ class PgGroups {
         return this.pgPool.pool().query(
 			`SELECT groups.id, groups.name, groups.identifier FROM ${this.schema}.groups join ${this.schema}.group_has_members ON groups.id=group_has_members.group_id WHERE group_has_members.user_id = ${userId} GROUP BY groups.id, groups.name`
         ).then(result => {
-            return result.rows.map(group => new Group(group.id, null, group.name));
+            return result.rows.map(group => new Group(group.id, null, group.name, group.identifier));
         });
     }
 

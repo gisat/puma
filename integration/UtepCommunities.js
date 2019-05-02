@@ -21,6 +21,7 @@ class UtepCommunities {
         logger.info(`UtepCommunities#loadForUser Id: ${id} Email: ${email}`);
         // Load internal groups for the user. id, name, identifier
         const internalGroupsOfUser = await this.pgGroups.forUser(id);
+        logger.info(`UtepCommunities#loadForUser Communities: `, internalGroupsOfUser.map(group => group.identifier));
 
         // Load communities for the user.
         const communitiesOfUser = await superagent.post('https://urban-tep.eu/t2api/private/visat/community')
@@ -63,7 +64,7 @@ class UtepCommunities {
         });
 
         const removeMembers = removeUserFromGroups.map(group => {
-            if(group.id === 1) {
+            if(group.id == 1) {
                 return Promise.resolve(true);
             }
             return this.pgGroups.removeMember(id, group.id);
