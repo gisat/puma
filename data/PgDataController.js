@@ -6,8 +6,11 @@ const config = require(`../config`);
 const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
 const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
 const PgSpecificCrud = require(`../specific/PgSpecificCrud`);
+const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 
 const esponFuoreApplicationKey = `esponFuore`;
+const attributeAuFidColum = `FUA_CODE`;
+const attributeFidColum = `fua_code`;
 
 class PgDataController {
 	constructor(app, pgPool) {
@@ -16,6 +19,7 @@ class PgDataController {
 		this._pgDataSourcesCrud = new PgDataSourcesCrud(pgPool, config.pgSchema.dataSources);
 		this._pgMetadataCrud = new PgMetadataCrud(pgPool, config.pgSchema.metadata);
 		this._pgSpecificCrud = new PgSpecificCrud(pgPool, config.pgSchema.specific);
+		this._pgRelationsCrud = new PgRelationsCrud(pgPool, config.pgSchema.relations);
 
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
@@ -351,18 +355,78 @@ class PgDataController {
 						let attributeDataSourceObjectsToCreate = [];
 						for (let periodDataTypeObject of periodDataTypeObjects) {
 							let columnName = periodDataTypeObject.data.nameDisplay;
-							let attributeDataSourceObject = _.find(attributeDataSourceObjects, {date: {tableName: attributeTableName, columnName}});
-							if(!attributeDataSourceObject) {
-								attributeDataSourceObjectsToCreate.push({data: {tableName: attributeTableName, columnName}});
+							let attributeDataSourceObject = _.find(attributeDataSourceObjects, {
+								date: {
+									tableName: attributeTableName,
+									columnName
+								}
+							});
+							if (!attributeDataSourceObject) {
+								attributeDataSourceObjectsToCreate.push({
+									data: {
+										tableName: attributeTableName,
+										columnName
+									}
+								});
 							}
 						}
 
-						if(attributeDataSourceObjectsToCreate.length) {
+						if (attributeDataSourceObjectsToCreate.length) {
 							await this._pgDataSourcesCrud.create({attribute: attributeDataSourceObjectsToCreate}, request.session.user)
 								.then(([data, errors]) => {
 									attributeDataSourceObjects = _.concat(attributeDataSourceObjects, data.attribute);
 								})
 						}
+					}
+
+					let layerTemplateDataTypeObject = null;
+					await this._pgMetadataCrud.get(`layerTemplates`, {
+						filter: {
+							nameDisplay: attributeAuTableName,
+							applicationKey: esponFuoreApplicationKey
+						}
+					}, request.session.user)
+						.then((dataTypeResult) => {
+							layerTemplateDataTypeObject = dataTypeResult.data.layerTemplates[0];
+						});
+
+					if (!layerTemplateDataTypeObject) {
+						await this._pgMetadataCrud.create({
+							layerTemplates: [{
+								data: {
+									nameDisplay: attributeAuTableName,
+									applicationKey: esponFuoreApplicationKey
+								}
+							}]
+						}, request.session.user)
+							.then(([data, errors]) => {
+								layerTemplateDataTypeObject = data.layerTemplates[0];
+							})
+					}
+
+					let spatialRelationObject = null;
+					await this._pgRelationsCrud.get(`spatial`, {
+						filter: {
+							scopeKey: scopeDataTypeObject.key,
+							spatialDataSourceKey: spatialDataSourceObject.key,
+							layerTemplateKey: layerTemplateDataTypeObject.key
+						}
+					}, request.session.user)
+						.then((relationsResult) => {
+							spatialRelationObject = relationsResult.data.spatial[0];
+						});
+
+					if (!spatialRelationObject) {
+						await this._pgRelationsCrud.create({
+							spatial: [{
+								data: {
+									scopeKey: scopeDataTypeObject.key,
+									spatialDataSourceKey: spatialDataSourceObject.key,
+									layerTemplateKey: layerTemplateDataTypeObject.key,
+									fidColumnName: attributeAuFidColum
+								}
+							}]
+						}, request.session.user);
 					}
 				}
 
