@@ -324,6 +324,7 @@ class PgGroups {
 	    const communitiesSql = `SELECT id, identifier FROM ${this.schema}.groups WHERE identifier IN (${communities.map(community => `'${community.identifier}'`).join(',')})`
 	    logger.info(`PgGroups#onlyExistingGroups SQL: `, communitiesSql);
         const result = await this.pgPool.query(communitiesSql);
+        logger.info(`PgGroups#onlyExistingGroups Result: `, result);
 
         return result.rows;
     }
