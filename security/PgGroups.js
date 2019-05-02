@@ -320,7 +320,10 @@ class PgGroups {
 	    if(!communities || communities.length === 0) {
 	        return Promise.resolve([]);
         }
-        const result = await this.pgPool.query(`SELECT id, identifier FROM ${this.schema}.groups WHERE identifier IN (${communities.map(community => `'${community.identifier}'`).join(',')})`);
+
+	    const communitiesSql = `SELECT id, identifier FROM ${this.schema}.groups WHERE identifier IN (${communities.map(community => `'${community.identifier}'`).join(',')})`
+	    logger.info(`PgGroups#onlyExistingGroups SQL: `, communitiesSql);
+        const result = await this.pgPool.query(communitiesSql);
 
         return result.rows;
     }
