@@ -43,7 +43,7 @@ class UtepCommunities {
         const addUserToGroups = _.differenceBy(communities, internalGroupsOfUser, 'identifier');
         const removeUserFromGroups = _.differenceBy(internalGroupsOfUser, communities, 'identifier');
 
-        const existingGroups = this.pgGroups.onlyExistingGroups(communities);
+        const existingGroups = await this.pgGroups.onlyExistingGroups(communities);
         const groupsToCreate = _.differenceBy(communities, existingGroups, 'identifier');
         logger.info(`UtepCommunities#loadForUser 
             AddTo: `, addUserToGroups.map(community => community.identifier), ` 
