@@ -274,7 +274,7 @@ class PgDataController {
 							})
 						}, request.session.user)
 							.then((dataTypeResults) => {
-								periodDataTypeObjects = dataTypeResults.data.periods;
+								periodDataTypeObjects = _.concat(periodDataTypeObjects, dataTypeResults.data.periods);
 							});
 					}
 
@@ -332,7 +332,38 @@ class PgDataController {
 							})
 					}
 
-					console.log(spatialDataSourceObject);
+					let attributeDataSourceObjects = [];
+					await this._pgDataSourcesCrud.get(`attribute`, {
+						filter: {
+							tableName: attributeTableName,
+							columnName: {
+								in: _.map(periodDataTypeObjects, (periodDataTypeObject) => {
+									return periodDataTypeObject.data.nameDisplay
+								})
+							}
+						}
+					}, request.session.user)
+						.then((dataTypeResults) => {
+							attributeDataSourceObjects = dataTypeResults.data.attribute;
+						});
+
+					if (attributeDataSourceObjects.length !== periodDataTypeObjects.length) {
+						let attributeDataSourceObjectsToCreate = [];
+						for (let periodDataTypeObject of periodDataTypeObjects) {
+							let columnName = periodDataTypeObject.data.nameDisplay;
+							let attributeDataSourceObject = _.find(attributeDataSourceObjects, {date: {tableName: attributeTableName, columnName}});
+							if(!attributeDataSourceObject) {
+								attributeDataSourceObjectsToCreate.push({data: {tableName: attributeTableName, columnName}});
+							}
+						}
+
+						if(attributeDataSourceObjectsToCreate.length) {
+							await this._pgDataSourcesCrud.create({attribute: attributeDataSourceObjectsToCreate}, request.session.user)
+								.then(([data, errors]) => {
+									attributeDataSourceObjects = _.concat(attributeDataSourceObjects, data.attribute);
+								})
+						}
+					}
 				}
 
 				response.status(200).send({imported: true, success: true});
