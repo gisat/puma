@@ -132,9 +132,6 @@ class PgCollection {
 			.then((createdObject) => {
 				return this._pgMetadataChanges.createChange('create', this._tableName, createdObject.key, user.id, object.data)
 					.then(() => {
-						return this.updateRelations(createdObject.key, relations, object, objects, user, extra);
-					})
-					.then(() => {
 						return createdObject;
 					})
 			})
