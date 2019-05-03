@@ -542,7 +542,7 @@ class PgDataController {
 		let filter = request.body.filter;
 		let payload = {
 			data: {
-				spatial: []
+				attribute: []
 			},
 			success: true
 		};
@@ -558,7 +558,7 @@ class PgDataController {
 
 						for (let attributeDataSource of attributeDataSources) {
 							let attributeStatistic = await this.getAttributeDataSourceStatistic(attributeDataSource.data.tableName, attributeDataSource.data.columnName);
-							payload.data.spatial.push({
+							payload.data.attribute.push({
 								attributeDataSourceKey: attributeDataSource.key,
 								attributeStatistic
 							});
