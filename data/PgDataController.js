@@ -279,7 +279,6 @@ class PgDataController {
 							})
 						}, request.session.user)
 							.then(([data, errors]) => {
-								console.log(data, errors);
 								periodDataTypeObjects = _.concat(periodDataTypeObjects, data.periods);
 							});
 					}
