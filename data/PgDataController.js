@@ -284,6 +284,30 @@ class PgDataController {
 							});
 					}
 
+					let tagDataTypeObject = null;
+					await this._pgMetadataCrud.get(`tags`, {filter: {nameDisplay: "Indicators"}}, request.session.user)
+						.then((dataTypeResults) => {
+							if (dataTypeResults.data.tags.length) {
+								tagDataTypeObject = dataTypeResults.data.tags[0];
+							}
+						});
+
+					if (!tagDataTypeObject) {
+						await this._pgMetadataCrud.create({
+							tags: [{
+								data: {
+									nameDisplay: "Indicators",
+									applicationKey: esponFuoreApplicationKey
+								}
+							}]
+						}, request.session.user)
+							.then(([data, errors]) => {
+								if (data.tags.length) {
+									attributeDataTypeObject = data.tags[0];
+								}
+							})
+					}
+
 					let esponFuoreIndicatorDataTypeObject = null;
 					await this._pgSpecificCrud.get(`esponFuoreIndicators`, {filter: {nameDisplay: attributeIndicatorName}}, request.session.user)
 						.then((dataTypeResults) => {
@@ -298,7 +322,9 @@ class PgDataController {
 								data: {
 									nameDisplay: attributeIndicatorName,
 									type: attributeType,
-									attributeKey: attributeDataTypeObject.key
+									attributeKey: attributeDataTypeObject.key,
+									scopeKey: scopeDataTypeObject.key,
+									tagKeys: [tagDataTypeObject.key]
 								}
 							}]
 						}, request.session.user)
