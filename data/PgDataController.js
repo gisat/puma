@@ -297,7 +297,8 @@ class PgDataController {
 							tags: [{
 								data: {
 									nameDisplay: "Indicators",
-									applicationKey: esponFuoreApplicationKey
+									applicationKey: esponFuoreApplicationKey,
+									scopeKey: scopeDataTypeObject.key
 								}
 							}]
 						}, request.session.user)
