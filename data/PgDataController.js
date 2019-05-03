@@ -304,7 +304,7 @@ class PgDataController {
 						}, request.session.user)
 							.then(([data, errors]) => {
 								if (data.tags.length) {
-									attributeDataTypeObject = data.tags[0];
+									tagDataTypeObject = data.tags[0];
 								}
 							})
 					}
