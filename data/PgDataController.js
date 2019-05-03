@@ -428,6 +428,52 @@ class PgDataController {
 							}]
 						}, request.session.user);
 					}
+
+					let attributeRelationObjects = [];
+					await this._pgRelationsCrud.get(`attribute`, {
+						filter: {
+							scopeKey: scopeDataTypeObject.key,
+							attributeDataSourceKey: {
+								in: _.map(attributeDataSourceObjects, 'key')
+							},
+							layerTemplateKey: layerTemplateDataTypeObject.key,
+							periodKey: {
+								in: _.map(periodDataTypeObjects, 'key')
+							},
+							attributeKey: attributeDataTypeObject.key
+						}
+					}, request.session.user)
+						.then((relationsResult) => {
+							attributeRelationObjects = relationsResult.data.attribute;
+						});
+
+					if (attributeRelationObjects.length !== attributeDataSourceObjects.length) {
+						let attributeRelationToCreateObjects = [];
+						_.each(attributeDataSourceObjects, (attributeDataSourceObject) => {
+							let attributeRelationObject = _.find(attributeRelationObjects, (attributeRelationObject) => {
+								return attributeRelationObject.data.attributeDataSourceKey === attributeDataSourceObject.key
+							});
+							if (!attributeRelationObject) {
+								attributeRelationToCreateObjects.push({
+									data: {
+										scopeKey: scopeDataTypeObject.key,
+										attributeDataSourceKey: attributeDataSourceObject.key,
+										layerTemplateKey: layerTemplateDataTypeObject.key,
+										periodKey: _.find(periodDataTypeObjects, (periodDataTypeObject) => {
+											return periodDataTypeObject.data.nameDisplay === attributeDataSourceObject.data.columnName;
+										}).key,
+										attributeKey: attributeDataTypeObject.key
+									}
+								})
+							}
+						});
+
+						if (attributeRelationToCreateObjects.length) {
+							await this._pgRelationsCrud.create({
+								attribute: attributeRelationToCreateObjects,
+							}, request.session.user);
+						}
+					}
 				}
 
 				response.status(200).send({imported: true, success: true});
