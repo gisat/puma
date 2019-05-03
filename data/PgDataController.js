@@ -272,6 +272,7 @@ class PgDataController {
 								return {
 									data: {
 										nameDisplay: String(year),
+										period: String(year),
 										applicationKey: esponFuoreApplicationKey
 									}
 								}
