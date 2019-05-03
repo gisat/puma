@@ -14,8 +14,8 @@ const PgAreaTrees = require('../metadata/PgAreaTrees');
 const PgAreaTreeLevels = require('../metadata/PgAreaTreeLevels');
 const PgTags = require('../metadata/PgTags');
 
-const PgSpatialRelations = require(`../relations/PgSpatialRelations`);
-const PgAttributeRelations = require(`../relations/PgAttributeRelations`);
+const PgSpatialDataSourceRelations = require(`../relations/PgSpatialDataSourceRelations`);
+const PgAttributeDataSourceRelations = require(`../relations/PgAttributeDataSourceRelations`);
 const PgAreaRelations = require(`../relations/PgAreaRelations`);
 
 const PgCommonSpatialDataSource = require(`../dataSources/PgCommonSpatialDataSource`);
@@ -57,8 +57,8 @@ class PgDatabase {
 				group: `relations`,
 				schema: config.pgSchema.relations,
 				stores: [
-					PgSpatialRelations,
-					PgAttributeRelations,
+					PgSpatialDataSourceRelations,
+					PgAttributeDataSourceRelations,
 					PgAreaRelations
 				]
 			},

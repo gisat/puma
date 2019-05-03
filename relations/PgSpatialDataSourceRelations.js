@@ -1,6 +1,6 @@
 const PgCollection = require('../common/PgCollection');
 
-class PgAttributeRelations extends PgCollection {
+class PgSpatialDataSourceRelations extends PgCollection {
 	constructor(pgPool, pgSchema) {
 		super(pgPool, pgSchema);
 
@@ -26,13 +26,10 @@ class PgAttributeRelations extends PgCollection {
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "scopeKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "periodKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "placeKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attributeDataSourceKey" UUID;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "spatialDataSourceKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "layerTemplateKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "scenarioKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "caseKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attributeSetKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attributeKey" UUID;
-      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "areaTreeLevelKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "fidColumnName" TEXT;
       	COMMIT;
 		`
@@ -54,12 +51,12 @@ class PgAttributeRelations extends PgCollection {
 	}
 
 	static groupName() {
-		return 'attribute';
+		return 'spatial';
 	}
 
 	static tableName() {
-		return `attributeRelation`;
+		return `spatialDataSourceRelation`;
 	}
 }
 
-module.exports = PgAttributeRelations;
+module.exports = PgSpatialDataSourceRelations;

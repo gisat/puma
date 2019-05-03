@@ -1,26 +1,26 @@
 const _ = require('lodash');
 
 const PgCrud = require('../common/PgCrud');
-const PgSpatialRelations = require('../relations/PgSpatialRelations');
-const PgAttributeRelations = require('../relations/PgAttributeRelations');
+const PgSpatialDataSourceRelations = require('../relations/PgSpatialDataSourceRelations');
+const PgAttributeDataSourceRelations = require('../relations/PgAttributeDataSourceRelations');
 const PgAreaRelations = require('../relations/PgAreaRelations');
 
 class PgRelationsCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
 
-		this._pgSpatialRelations = new PgSpatialRelations(pgPool, pgSchema);
-		this._pgAttributeRelations = new PgAttributeRelations(pgPool, pgSchema);
+		this._pgSpatialDataSourceRelations = new PgSpatialDataSourceRelations(pgPool, pgSchema);
+		this._pgAttributeDataSourceRelations = new PgAttributeDataSourceRelations(pgPool, pgSchema);
 		this._pgAreaRelations = new PgAreaRelations(pgPool, pgSchema);
 
 		this._pgTypes = {
-			[PgSpatialRelations.groupName()]: {
-				store: this._pgSpatialRelations,
-				type: PgSpatialRelations.tableName()
+			[PgSpatialDataSourceRelations.groupName()]: {
+				store: this._pgSpatialDataSourceRelations,
+				type: PgSpatialDataSourceRelations.tableName()
 			},
-			[PgAttributeRelations.groupName()]: {
-				store: this._pgAttributeRelations,
-				type: PgAttributeRelations.tableName()
+			[PgAttributeDataSourceRelations.groupName()]: {
+				store: this._pgAttributeDataSourceRelations,
+				type: PgAttributeDataSourceRelations.tableName()
 			},
 			[PgAreaRelations.groupName()]: {
 				store: this._pgAreaRelations,
