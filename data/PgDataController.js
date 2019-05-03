@@ -462,7 +462,8 @@ class PgDataController {
 										periodKey: _.find(periodDataTypeObjects, (periodDataTypeObject) => {
 											return periodDataTypeObject.data.nameDisplay === attributeDataSourceObject.data.columnName;
 										}).key,
-										attributeKey: attributeDataTypeObject.key
+										attributeKey: attributeDataTypeObject.key,
+										fidColumnName: attributeFidColum
 									}
 								})
 							}
