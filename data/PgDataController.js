@@ -78,7 +78,7 @@ class PgDataController {
 					let scopeName = attributeAu.type_of_region;
 					let attributeIndicatorName = attribute.name;
 					let years = _.range(Number(attribute.years.split(`-`)[0]), Number(attribute.years.split(`-`)[1]) + 1);
-					let attributeType = `absolute`;
+					let attributeType = attribute.absolute ? `absolute`: `relative`;
 
 					_.each(attributeAuFeatures, (feature) => {
 						let featureValues = {};
@@ -185,7 +185,7 @@ class PgDataController {
 						return `INSERT INTO "${attributeTableName}" (${_.map(attributeTableValueSet, (value, property) => {
 							return `"${property}"`
 						}).join(', ')}) VALUES (${_.map(attributeTableValueSet, (value, property) => {
-							return _.isString(value) ? `'${value}'` : value
+							return _.isString(value) ? `'${value.replace("'", "''")}'` : value
 						}).join(', ')});`
 					}).join(` `));
 
@@ -444,18 +444,18 @@ class PgDataController {
 							spatialRelationObject = relationsResult.data.spatial[0];
 						});
 
-					if (!spatialRelationObject) {
-						await this._pgRelationsCrud.create({
-							spatial: [{
-								data: {
-									scopeKey: scopeDataTypeObject.key,
-									spatialDataSourceKey: spatialDataSourceObject.key,
-									layerTemplateKey: layerTemplateDataTypeObject.key,
-									fidColumnName: attributeAuFidColum
-								}
-							}]
-						}, request.session.user);
-					}
+					await this._pgRelationsCrud.delete({spatial: [spatialRelationObject]}, request.session.user);
+
+					await this._pgRelationsCrud.create({
+						spatial: [{
+							data: {
+								scopeKey: scopeDataTypeObject.key,
+								spatialDataSourceKey: spatialDataSourceObject.key,
+								layerTemplateKey: layerTemplateDataTypeObject.key,
+								fidColumnName: attributeAuFidColum
+							}
+						}]
+					}, request.session.user);
 
 					let attributeRelationObjects = [];
 					await this._pgRelationsCrud.get(`attribute`, {
@@ -475,33 +475,33 @@ class PgDataController {
 							attributeRelationObjects = relationsResult.data.attribute;
 						});
 
-					if (attributeRelationObjects.length !== attributeDataSourceObjects.length) {
-						let attributeRelationToCreateObjects = [];
-						_.each(attributeDataSourceObjects, (attributeDataSourceObject) => {
-							let attributeRelationObject = _.find(attributeRelationObjects, (attributeRelationObject) => {
-								return attributeRelationObject.data.attributeDataSourceKey === attributeDataSourceObject.key
-							});
-							if (!attributeRelationObject) {
-								attributeRelationToCreateObjects.push({
-									data: {
-										scopeKey: scopeDataTypeObject.key,
-										attributeDataSourceKey: attributeDataSourceObject.key,
-										layerTemplateKey: layerTemplateDataTypeObject.key,
-										periodKey: _.find(periodDataTypeObjects, (periodDataTypeObject) => {
-											return periodDataTypeObject.data.nameDisplay === attributeDataSourceObject.data.columnName;
-										}).key,
-										attributeKey: attributeDataTypeObject.key,
-										fidColumnName: attributeFidColum
-									}
-								})
-							}
-						});
+					await this._pgRelationsCrud.delete({attribute: [attributeRelationObjects]}, request.session.user);
 
-						if (attributeRelationToCreateObjects.length) {
-							await this._pgRelationsCrud.create({
-								attribute: attributeRelationToCreateObjects,
-							}, request.session.user);
+					let attributeRelationToCreateObjects = [];
+					_.each(attributeDataSourceObjects, (attributeDataSourceObject) => {
+						let attributeRelationObject = _.find(attributeRelationObjects, (attributeRelationObject) => {
+							return attributeRelationObject.data.attributeDataSourceKey === attributeDataSourceObject.key
+						});
+						if (!attributeRelationObject) {
+							attributeRelationToCreateObjects.push({
+								data: {
+									scopeKey: scopeDataTypeObject.key,
+									attributeDataSourceKey: attributeDataSourceObject.key,
+									layerTemplateKey: layerTemplateDataTypeObject.key,
+									periodKey: _.find(periodDataTypeObjects, (periodDataTypeObject) => {
+										return periodDataTypeObject.data.nameDisplay === attributeDataSourceObject.data.columnName;
+									}).key,
+									attributeKey: attributeDataTypeObject.key,
+									fidColumnName: attributeFidColum
+								}
+							})
 						}
+					});
+
+					if (attributeRelationToCreateObjects.length) {
+						await this._pgRelationsCrud.create({
+							attribute: attributeRelationToCreateObjects,
+						}, request.session.user);
 					}
 				}
 
