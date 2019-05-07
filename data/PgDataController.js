@@ -330,7 +330,7 @@ class PgDataController {
 						}, request.session.user)
 							.then(([data, errors]) => {
 								if (data.esponFuoreIndicators.length) {
-									attributeDataTypeObject = data.esponFuoreIndicators[0];
+									esponFuoreIndicatorDataTypeObject = data.esponFuoreIndicators[0];
 								}
 							})
 					}
