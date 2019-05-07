@@ -1,3 +1,4 @@
+const pgTypes = require(`pg`).types;
 const fse = require(`fs-extra`);
 const zipper = require(`zip-local`);
 
@@ -20,6 +21,11 @@ class PgDataController {
 		this._pgMetadataCrud = new PgMetadataCrud(pgPool, config.pgSchema.metadata);
 		this._pgSpecificCrud = new PgSpecificCrud(pgPool, config.pgSchema.specific);
 		this._pgRelationsCrud = new PgRelationsCrud(pgPool, config.pgSchema.relations);
+
+		// Pg returns numeric type as string, this is a hack to return is as number
+		pgTypes.setTypeParser(1700, (value) => {
+			return Number(value);
+		});
 
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
