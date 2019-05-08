@@ -55,6 +55,10 @@ class AreaTemplateController extends LimitedReadAllController {
 	}
 
 	right(user, method, id, object){
+		if(object.createdBy == user.id) {
+			return true;
+		}
+
 		if(object.layerType != 'raster' && object.layerType != 'vector') {
 			return new FilteredMongoScopes({featureLayers: {$in: [id]}}, this._connection).json().then(scopes => {
 				let permissions = false;

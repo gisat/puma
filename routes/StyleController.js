@@ -150,7 +150,6 @@ class StyleController extends Controller {
 
     right(user, method, id, element){
         // If the user created the style.
-        console.log('CreatedBy: ', element.createdBy, ' Id: ', user.id);
         if(element.createdBy == user.id) {
             return true;
         }
