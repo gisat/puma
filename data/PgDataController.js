@@ -77,6 +77,7 @@ class PgDataController {
 					let attributeAuParentTableName = attributeAu.parent_table ? `fuore-au-${attributeAu.parent_table}` : null;
 					let attributeAuData = JSON.parse(unzippedFs.read(attributeAu.name, 'text'));
 					let attributeContentData = JSON.parse(unzippedFs.read(`${attribute.table_name}.json`, 'text'));
+					let attributeUnitDescription = attribute.unit;
 
 					let attributeAuFeatures = attributeAuData.features;
 					let attributeAuFeatureProperties = {};
@@ -244,7 +245,8 @@ class PgDataController {
 							attributes: [{
 								data: {
 									nameDisplay: attributeIndicatorName,
-									applicationKey: esponFuoreApplicationKey
+									applicationKey: esponFuoreApplicationKey,
+									description: attributeUnitDescription
 								}
 							}]
 						}, request.session.user)
