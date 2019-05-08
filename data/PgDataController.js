@@ -12,6 +12,7 @@ const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 const esponFuoreApplicationKey = `esponFuore`;
 const attributeAuFidColum = `FUA_CODE`;
 const attributeFidColum = `fua_code`;
+const baseViewKey = `27aeef7e-186f-4b2b-983d-8f1f0fad36f3`;
 
 class PgDataController {
 	constructor(app, pgPool) {
@@ -330,7 +331,8 @@ class PgDataController {
 									type: attributeType,
 									attributeKey: attributeDataTypeObject.key,
 									scopeKey: scopeDataTypeObject.key,
-									tagKeys: [tagDataTypeObject.key]
+									tagKeys: [tagDataTypeObject.key],
+									viewKey: baseViewKey
 								}
 							}]
 						}, request.session.user)
