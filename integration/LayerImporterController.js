@@ -21,7 +21,7 @@ class LayerImporterController {
 
 		this._mongo = mongo;
 		this._pgPool = pgPool;
-		this._layerImporterTasks = new LayerImporterTasks();
+		this._layerImporterTasks = new LayerImporterTasks(pgPool, schema);
 		this._layerImporter = new LayerImporter(pgPool, mongo, this._layerImporterTasks, schema);
 		this._uploadManager = new UploadManager(pgPool, schema, `${pantherDataStoragePath}/upload_manager/uploads`);
 		this._pgProcessStatus = new PgProcessStatus(pgPool, schema);
@@ -89,7 +89,9 @@ class LayerImporterController {
 	 * @param response
 	 */
 	getLayerImportStatus(request, response) {
-		response.send(this._layerImporterTasks.getImporterTask(request.session, request.params['id']));
+		this._layerImporterTasks.getImporterTask(request.params['id']).then(task => {
+			response.send(task);
+		});
 	}
 
 	/**
@@ -100,10 +102,13 @@ class LayerImporterController {
 	importLayer(request, response) {
 		logger.info('LayerImporterController#importLayer');
 
-		this.getImportInputs(request).then(inputs => {
-			const task = this._layerImporterTasks.createNewImportTask(request.session);
+		let inputs;
+		this.getImportInputs(request).then(pInputs => {
+			inputs = pInputs;
+			return this._layerImporterTasks.createNewImportTask();
+		}).then(task => {
 			this._layerImporter.importLayer(task, inputs);
-			response.send(this._layerImporter.getCurrentImporterTask());
+			response.send(task);
 		}).catch(error => {
 			response.send({
 				message: error.message,
@@ -120,10 +125,13 @@ class LayerImporterController {
 	importNoStatisticsLayer(request, response) {
 		logger.info('LayerImporterController#importNoStatisticsLayer');
 
-		this.getImportInputs(request).then(inputs => {
-			const task = this._layerImporterTasks.createNewImportTask(request.session);
+		let inputs;
+		this.getImportInputs(request).then(pInputs => {
+			inputs = pInputs;
+			return this._layerImporterTasks.createNewImportTask();
+		}).then(task => {
 			this._layerImporter.importLayerWithoutStatistics(task, inputs);
-			response.send(this._layerImporter.getCurrentImporterTask());
+			response.send(task);
 		}).catch(error => {
 			response.send({
 				message: error.message,
@@ -141,10 +149,13 @@ class LayerImporterController {
 	importLayerWithoutMapping(request, response) {
 		logger.info('LayerImporterController#importLayerWithoutMapping Body: ', request.body);
 
-		this.getImportInputs(request).then(inputs => {
-			const task = this._layerImporterTasks.createNewImportTask(request.session);
+		let inputs;
+		this.getImportInputs(request).then(pInputs => {
+			inputs = pInputs;
+			return this._layerImporterTasks.createNewImportTask();
+		}).then(task => {
 			this._layerImporter.importLayerWithoutMapping(task, inputs);
-			response.send(this._layerImporter.getCurrentImporterTask());
+			response.send(task);
 		}).catch(error => {
 			response.send({
 				message: error.message,

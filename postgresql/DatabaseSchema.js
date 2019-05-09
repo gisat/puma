@@ -359,6 +359,10 @@ DatabaseSchema.prototype.create = function () {
         system_filename text,
         original_filename text,
         UNIQUE(path, system_filename, original_filename) 
+    );    
+    CREATE TABLE IF NOT EXISTS "${this.schema}"."importer_tasks" (
+        id  SERIAL PRIMARY KEY,
+        task JSON 
     );
     `;
 

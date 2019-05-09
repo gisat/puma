@@ -1,67 +1,46 @@
-let conn = require('../common/conn');
-
 class LayerImporterTasks {
-    constructor() {
-        this._importerTasks = [];
+    constructor(pool, schema) {
+        this._pool = pool;
+        this._schema = schema;
     }
     
     /**
      * Create new import task object
-     * @param session
      * @returns {{started: Date, status: string, step: number}}
      */
-    createNewImportTask(session) {
-        let taskId = conn.getNextId();
+    createNewImportTask() {
+        const task = {
+            started: new Date(),
+            status: 'importing',
+            progress: 0
+        };
 
-        if(!session._importerTasks) {
-            session._importerTasks = {};
-        }
-        
-        session._importerTasks[taskId] = new ImporterTask(session, taskId, new Date(), "importing", 0);
-        
-        return session._importerTasks[taskId];
+        return this._pool.query(`INSERT INTO ${this._schema}.importer_tasks (task) VALUES ('${JSON.stringify(task)}') RETURNING ID`).then(result => {
+            task.id = result.rows[0].id;
+
+            return task;
+        });
+    }
+
+    /**
+     * Update the information about the task to be returned to the user.
+     * @param task
+     * @param id
+     * @returns {*}
+     */
+    updateTask(task, id) {
+        return this._pool.query(`UPDATE ${this._schema}.importer_tasks SET task = '${task.stringify()}' WHERE id = ${id};`);
     }
     
     /**
      * Return importer task for given id
-     * @param session
      * @param id
      * @returns importer task object
      */
-    getImporterTask(session, id) {
-        return session._importerTasks[id];
-    }
-}
-
-class ImporterTask {
-    constructor(session, id, started, status, progress) {
-        this.started = started;
-
-        this._session = session;
-        this._id = id;
-
-        this._progress = progress;
-        this._status = status;
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    get status() {
-        return this._session[this._id]._status;
-    }
-
-    set status(status) {
-        this._session[this._id]._status = status;
-    }
-
-    get progress() {
-        return this._session[this._id]._progress;
-    }
-
-    set progress(progress) {
-        this._session[this._id]._progress = progress;
+    getImporterTask(id) {
+        return this._pool.query(`SELECT task FROM ${this._schema}.importer_tasks WHERE id = ${id};`).then(result => {
+            return JSON.parse(result.rows[0].task);
+        });
     }
 }
 
