@@ -39,7 +39,7 @@ class LayerImporterTasks {
      */
     getImporterTask(id) {
         return this._pool.query(`SELECT task FROM ${this._schema}.importer_tasks WHERE id = ${id};`).then(result => {
-            return JSON.parse(result.rows[0].task);
+            return result.rows[0].task;
         });
     }
 }
