@@ -1,3 +1,5 @@
+const logger = require('../common/Logger').applicationWideLogger;
+
 class LayerImporterTasks {
     constructor(pool, schema) {
         this._pool = pool;
@@ -18,6 +20,8 @@ class LayerImporterTasks {
         return this._pool.query(`INSERT INTO ${this._schema}.importer_tasks (task) VALUES ('${JSON.stringify(task)}') RETURNING ID`).then(result => {
             task.id = result.rows[0].id;
 
+            logger.info(`LayerImporterTasks#createNewImportTask Task: `, task);
+
             return task;
         });
     }
@@ -28,6 +32,8 @@ class LayerImporterTasks {
      * @returns {*}
      */
     updateTask(task) {
+        logger.info(`LayerImporterTask#updateTask Task: `, task);
+
         return this._pool.query(`UPDATE ${this._schema}.importer_tasks SET task = '${task.stringify()}' WHERE id = ${task.id};`);
     }
     
