@@ -34,7 +34,7 @@ class LayerImporterTasks {
     updateTask(task) {
         logger.info(`LayerImporterTask#updateTask Task: `, task);
 
-        return this._pool.query(`UPDATE ${this._schema}.importer_tasks SET task = '${task.stringify()}' WHERE id = ${task.id};`);
+        return this._pool.query(`UPDATE ${this._schema}.importer_tasks SET task = '${JSON.stringify(task)}' WHERE id = ${task.id};`);
     }
     
     /**
