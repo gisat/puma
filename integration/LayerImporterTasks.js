@@ -7,29 +7,34 @@ class LayerImporterTasks {
     
     /**
      * Create new import task object
-     * @param taskId id of new task
+     * @param session
      * @returns {{started: Date, status: string, step: number}}
      */
-    createNewImportTask() {
+    createNewImportTask(session) {
         let taskId = conn.getNextId();
+
+        if(!session._importerTasks) {
+            session._importerTasks = {};
+        }
         
-        this._importerTasks[taskId] = {
+        session._importerTasks[taskId] = {
             id: taskId,
             started: new Date(),
             status: "importing",
             progress: 0
         };
         
-        return this._importerTasks[taskId];
+        return session._importerTasks[taskId];
     }
     
     /**
      * Return importer task for given id
+     * @param session
      * @param id
      * @returns importer task object
      */
-    getImporterTask(id) {
-        return this._importerTasks[id];
+    getImporterTask(session, id) {
+        return session._importerTasks[id];
     }
 }
 

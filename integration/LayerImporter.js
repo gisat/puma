@@ -62,10 +62,10 @@ class LayerImporter {
      * Execute import of the layer withou executing the statistical part as well as
      * @param inputs
      */
-    importLayerWithoutMapping(inputs) {
+    importLayerWithoutMapping(importTask, inputs) {
         logger.info('LayerImporter#importLayerWithoutMapping');
 
-        this._currentImportTask = this._importerTasks.createNewImportTask();
+        this._currentImportTask = importTask;
 
         this._currentImportTask.inputs = inputs;
 
@@ -140,8 +140,8 @@ class LayerImporter {
      * Execute import of the layer without executing the statistical part of the scripts.
 	 * @param inputs
 	 */
-	importLayerWithoutStatistics(inputs) {
-		this._currentImportTask = this._importerTasks.createNewImportTask();
+	importLayerWithoutStatistics(importTask, inputs) {
+		this._currentImportTask = importTask;
 
 		this._currentImportTask.inputs = inputs;
 
@@ -211,8 +211,8 @@ class LayerImporter {
      * Execute layer import
      * @param inputs object with user inputs
      */
-    importLayer(inputs) {
-        this._currentImportTask = this._importerTasks.createNewImportTask();
+    importLayer(importTask, inputs) {
+        this._currentImportTask = importTask;
 
         this._currentImportTask.inputs = inputs;
 

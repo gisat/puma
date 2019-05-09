@@ -89,7 +89,7 @@ class LayerImporterController {
 	 * @param response
 	 */
 	getLayerImportStatus(request, response) {
-		response.send(this._layerImporterTasks.getImporterTask(request.params['id']));
+		response.send(this._layerImporterTasks.getImporterTask(request.session, request.params['id']));
 	}
 
 	/**
@@ -101,7 +101,8 @@ class LayerImporterController {
 		logger.info('LayerImporterController#importLayer');
 
 		this.getImportInputs(request).then(inputs => {
-			this._layerImporter.importLayer(inputs);
+			const task = this._layerImporterTasks.createNewImportTask(request.session);
+			this._layerImporter.importLayer(task, inputs);
 			response.send(this._layerImporter.getCurrentImporterTask());
 		}).catch(error => {
 			response.send({
@@ -120,7 +121,8 @@ class LayerImporterController {
 		logger.info('LayerImporterController#importNoStatisticsLayer');
 
 		this.getImportInputs(request).then(inputs => {
-			this._layerImporter.importLayerWithoutStatistics(inputs);
+			const task = this._layerImporterTasks.createNewImportTask(request.session);
+			this._layerImporter.importLayerWithoutStatistics(task, inputs);
 			response.send(this._layerImporter.getCurrentImporterTask());
 		}).catch(error => {
 			response.send({
@@ -140,7 +142,8 @@ class LayerImporterController {
 		logger.info('LayerImporterController#importLayerWithoutMapping Body: ', request.body);
 
 		this.getImportInputs(request).then(inputs => {
-			this._layerImporter.importLayerWithoutMapping(inputs);
+			const task = this._layerImporterTasks.createNewImportTask(request.session);
+			this._layerImporter.importLayerWithoutMapping(task, inputs);
 			response.send(this._layerImporter.getCurrentImporterTask());
 		}).catch(error => {
 			response.send({
