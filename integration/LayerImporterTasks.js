@@ -25,11 +25,10 @@ class LayerImporterTasks {
     /**
      * Update the information about the task to be returned to the user.
      * @param task
-     * @param id
      * @returns {*}
      */
-    updateTask(task, id) {
-        return this._pool.query(`UPDATE ${this._schema}.importer_tasks SET task = '${task.stringify()}' WHERE id = ${id};`);
+    updateTask(task) {
+        return this._pool.query(`UPDATE ${this._schema}.importer_tasks SET task = '${task.stringify()}' WHERE id = ${task.id};`);
     }
     
     /**
