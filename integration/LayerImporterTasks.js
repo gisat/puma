@@ -17,12 +17,7 @@ class LayerImporterTasks {
             session._importerTasks = {};
         }
         
-        session._importerTasks[taskId] = {
-            id: taskId,
-            started: new Date(),
-            status: "importing",
-            progress: 0
-        };
+        session._importerTasks[taskId] = new ImporterTask(session, taskId, new Date(), "importing", 0);
         
         return session._importerTasks[taskId];
     }
@@ -35,6 +30,38 @@ class LayerImporterTasks {
      */
     getImporterTask(session, id) {
         return session._importerTasks[id];
+    }
+}
+
+class ImporterTask {
+    constructor(session, id, started, status, progress) {
+        this.started = started;
+
+        this._session = session;
+        this._id = id;
+
+        this._progress = progress;
+        this._status = status;
+    }
+
+    get id() {
+        return this._id;
+    }
+
+    get status() {
+        return this._session[this._id]._status;
+    }
+
+    set status(status) {
+        this._session[this._id]._status = status;
+    }
+
+    get progress() {
+        return this._session[this._id]._progress;
+    }
+
+    set progress(progress) {
+        this._session[this._id]._progress = progress;
     }
 }
 
