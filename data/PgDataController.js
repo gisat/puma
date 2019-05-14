@@ -587,7 +587,7 @@ class PgDataController {
 	getAttributeDataSourceStatistic(tableName, attributeColumn, percentile) {
 		let percentileSql = ``;
 		if(percentile) {
-			percentileSql = `(SELECT array_agg(a.percentile) AS percentile FROM (SELECT percentile_disc(k) WITHIN GROUP(ORDER BY "${attributeColumn}") AS percentile FROM "${tableName}", UNNEST(ARRAY[${percentile}]) AS k GROUP BY k) AS a) AS percentile,`
+			percentileSql = `(SELECT array_agg(a.percentile) AS percentile FROM (SELECT percentile_cont(k) WITHIN GROUP(ORDER BY "${attributeColumn}") AS percentile FROM "${tableName}", UNNEST(ARRAY[${percentile}]) AS k GROUP BY k) AS a) AS percentile,`
 		}
 
 		return this._pgPool
