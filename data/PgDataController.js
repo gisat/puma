@@ -201,7 +201,7 @@ class PgDataController {
 					let scopeDataTypeObject = null;
 					await this._pgMetadataCrud.get(`scopes`, {
 						filter: {
-							nameDisplay: scopeName,
+							nameInternal: scopeName,
 							applicationKey: esponFuoreApplicationKey
 						}
 					}, request.session.user)
@@ -215,6 +215,7 @@ class PgDataController {
 						await this._pgMetadataCrud.create({
 							scopes: [{
 								data: {
+									nameInternal: scopeName,
 									nameDisplay: scopeName,
 									applicationKey: esponFuoreApplicationKey
 								}
@@ -231,7 +232,7 @@ class PgDataController {
 					let attributeDataTypeObject = null;
 					await this._pgMetadataCrud.get(`attributes`, {
 						filter: {
-							nameDisplay: attributeIndicatorName,
+							nameInternal: attributeIndicatorName,
 							applicationKey: esponFuoreApplicationKey
 						}
 					}, request.session.user)
@@ -245,6 +246,7 @@ class PgDataController {
 						await this._pgMetadataCrud.create({
 							attributes: [{
 								data: {
+									nameInternal: attributeIndicatorName,
 									nameDisplay: attributeIndicatorName,
 									applicationKey: esponFuoreApplicationKey,
 									description: attributeUnitDescription
@@ -261,7 +263,7 @@ class PgDataController {
 					let periodDataTypeObjects = [];
 					await this._pgMetadataCrud.get(`periods`, {
 						filter: {
-							nameDisplay: {
+							nameInternal: {
 								in: _.map(years, _.toString),
 								applicationKey: esponFuoreApplicationKey
 							}
@@ -273,7 +275,7 @@ class PgDataController {
 
 					if (periodDataTypeObjects.length !== years.length) {
 						let existingPeriods = _.map(periodDataTypeObjects, (periodDataTypeObject) => {
-							return Number(periodDataTypeObject.data.nameDisplay)
+							return Number(periodDataTypeObject.data.nameInternal)
 						});
 						let difference = _.difference(years, existingPeriods);
 
@@ -281,6 +283,7 @@ class PgDataController {
 							periods: _.map(difference, (year) => {
 								return {
 									data: {
+										nameInternal: String(year),
 										nameDisplay: String(year),
 										period: String(year),
 										applicationKey: esponFuoreApplicationKey
@@ -294,7 +297,7 @@ class PgDataController {
 					}
 
 					let tagDataTypeObject = null;
-					await this._pgMetadataCrud.get(`tags`, {filter: {nameDisplay: "Indicators"}}, request.session.user)
+					await this._pgMetadataCrud.get(`tags`, {filter: {nameInternal: "Indicators"}}, request.session.user)
 						.then((dataTypeResults) => {
 							if (dataTypeResults.data.tags.length) {
 								tagDataTypeObject = dataTypeResults.data.tags[0];
@@ -305,6 +308,7 @@ class PgDataController {
 						await this._pgMetadataCrud.create({
 							tags: [{
 								data: {
+									nameInternal: "Indicators",
 									nameDisplay: "Indicators",
 									applicationKey: esponFuoreApplicationKey,
 									scopeKey: scopeDataTypeObject.key
@@ -319,7 +323,7 @@ class PgDataController {
 					}
 
 					let esponFuoreIndicatorDataTypeObject = null;
-					await this._pgSpecificCrud.get(`esponFuoreIndicators`, {filter: {nameDisplay: attributeIndicatorName}}, request.session.user)
+					await this._pgSpecificCrud.get(`esponFuoreIndicators`, {filter: {nameInternal: attributeIndicatorName}}, request.session.user)
 						.then((dataTypeResults) => {
 							if (dataTypeResults.data.esponFuoreIndicators.length) {
 								esponFuoreIndicatorDataTypeObject = dataTypeResults.data.esponFuoreIndicators[0];
@@ -330,6 +334,7 @@ class PgDataController {
 						await this._pgSpecificCrud.create({
 							esponFuoreIndicators: [{
 								data: {
+									nameInternal: attributeIndicatorName,
 									nameDisplay: attributeIndicatorName,
 									type: attributeType,
 									attributeKey: attributeDataTypeObject.key,
@@ -381,7 +386,7 @@ class PgDataController {
 							tableName: attributeTableName,
 							columnName: {
 								in: _.map(periodDataTypeObjects, (periodDataTypeObject) => {
-									return periodDataTypeObject.data.nameDisplay
+									return periodDataTypeObject.data.nameInternal
 								})
 							}
 						}
@@ -393,7 +398,7 @@ class PgDataController {
 					if (attributeDataSourceObjects.length !== periodDataTypeObjects.length) {
 						let attributeDataSourceObjectsToCreate = [];
 						for (let periodDataTypeObject of periodDataTypeObjects) {
-							let columnName = periodDataTypeObject.data.nameDisplay;
+							let columnName = periodDataTypeObject.data.nameInternal;
 							let attributeDataSourceObject = _.find(attributeDataSourceObjects, {
 								date: {
 									tableName: attributeTableName,
@@ -421,7 +426,7 @@ class PgDataController {
 					let layerTemplateDataTypeObject = null;
 					await this._pgMetadataCrud.get(`layerTemplates`, {
 						filter: {
-							nameDisplay: attributeAuTableName,
+							nameInternal: attributeAuTableName,
 							applicationKey: esponFuoreApplicationKey
 						}
 					}, request.session.user)
@@ -433,6 +438,7 @@ class PgDataController {
 						await this._pgMetadataCrud.create({
 							layerTemplates: [{
 								data: {
+									nameInternal: attributeAuTableName,
 									nameDisplay: attributeAuTableName,
 									applicationKey: esponFuoreApplicationKey
 								}
@@ -504,7 +510,7 @@ class PgDataController {
 									attributeDataSourceKey: attributeDataSourceObject.key,
 									layerTemplateKey: layerTemplateDataTypeObject.key,
 									periodKey: _.find(periodDataTypeObjects, (periodDataTypeObject) => {
-										return periodDataTypeObject.data.nameDisplay === attributeDataSourceObject.data.columnName;
+										return periodDataTypeObject.data.nameInternal === attributeDataSourceObject.data.columnName;
 									}).key,
 									attributeKey: attributeDataTypeObject.key,
 									fidColumnName: attributeFidColum
