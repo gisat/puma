@@ -9,10 +9,13 @@ const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
 const PgSpecificCrud = require(`../specific/PgSpecificCrud`);
 const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 
+const PgPermission = require(`../security/PgPermissions`);
+
 const esponFuoreApplicationKey = `esponFuore`;
 const attributeAuFidColum = `FUA_CODE`;
 const attributeFidColum = `fua_code`;
 const baseViewKey = `27aeef7e-186f-4b2b-983d-8f1f0fad36f3`;
+const guestGroupKey = `2`;
 
 class PgDataController {
 	constructor(app, pgPool) {
@@ -22,6 +25,8 @@ class PgDataController {
 		this._pgMetadataCrud = new PgMetadataCrud(pgPool, config.pgSchema.metadata);
 		this._pgSpecificCrud = new PgSpecificCrud(pgPool, config.pgSchema.specific);
 		this._pgRelationsCrud = new PgRelationsCrud(pgPool, config.pgSchema.relations);
+
+		this._pgPermission = new PgPermission(pgPool, config.pgSchema.data);
 
 		// Pg returns numeric type as string, this is a hack to return is as number
 		pgTypes.setTypeParser(1700, (value) => {
@@ -228,6 +233,8 @@ class PgDataController {
 							})
 					}
 
+					await this._pgPermission.addGroup(guestGroupKey, `scope`, scopeDataTypeObject.key, `GET`);
+
 
 					let attributeDataTypeObject = null;
 					await this._pgMetadataCrud.get(`attributes`, {
@@ -259,6 +266,8 @@ class PgDataController {
 								}
 							})
 					}
+
+					await this._pgPermission.addGroup(guestGroupKey, `attribute`, attributeDataTypeObject.key, `GET`);
 
 					let periodDataTypeObjects = [];
 					await this._pgMetadataCrud.get(`periods`, {
@@ -296,6 +305,10 @@ class PgDataController {
 							});
 					}
 
+					_.each(periodDataTypeObjects, async (periodDataTypeObject) => {
+						await this._pgPermission.addGroup(guestGroupKey, `period`, periodDataTypeObject.key, `GET`);
+					});
+
 					let tagDataTypeObject = null;
 					await this._pgMetadataCrud.get(`tags`, {filter: {nameInternal: "Indicators"}}, request.session.user)
 						.then((dataTypeResults) => {
@@ -321,6 +334,8 @@ class PgDataController {
 								}
 							})
 					}
+
+					await this._pgPermission.addGroup(guestGroupKey, `tag`, tagDataTypeObject.key, `GET`);
 
 					let esponFuoreIndicatorDataTypeObject = null;
 					await this._pgSpecificCrud.get(`esponFuoreIndicators`, {filter: {nameInternal: attributeIndicatorName}}, request.session.user)
@@ -351,6 +366,8 @@ class PgDataController {
 							})
 					}
 
+					await this._pgPermission.addGroup(guestGroupKey, `esponFuoreIndicator`, esponFuoreIndicatorDataTypeObject.key, `GET`);
+
 					let spatialDataSourceObject = null;
 					await this._pgDataSourcesCrud.get(`spatial`, {
 						filter: {
@@ -379,6 +396,8 @@ class PgDataController {
 								}
 							})
 					}
+
+					await this._pgPermission.addGroup(guestGroupKey, `dataSource`, spatialDataSourceObject.key, `GET`);
 
 					let attributeDataSourceObjects = [];
 					await this._pgDataSourcesCrud.get(`attribute`, {
@@ -423,6 +442,10 @@ class PgDataController {
 						}
 					}
 
+					_.each(attributeDataSourceObjects, async (attributeDataSourceObject) => {
+						await this._pgPermission.addGroup(guestGroupKey, `dataSource`, attributeDataSourceObject.key, `GET`);
+					});
+
 					let layerTemplateDataTypeObject = null;
 					await this._pgMetadataCrud.get(`layerTemplates`, {
 						filter: {
@@ -448,6 +471,8 @@ class PgDataController {
 								layerTemplateDataTypeObject = data.layerTemplates[0];
 							})
 					}
+
+					await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplateDataTypeObject.key, `GET`);
 
 					let spatialRelationObject = null;
 					await this._pgRelationsCrud.get(`spatial`, {
