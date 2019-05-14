@@ -455,7 +455,9 @@ class PgDataController {
 							spatialRelationObject = relationsResult.data.spatial[0];
 						});
 
-					await this._pgRelationsCrud.delete({spatial: [spatialRelationObject]}, request.session.user);
+					if(spatialRelationObject) {
+						await this._pgRelationsCrud.delete({spatial: [spatialRelationObject]}, request.session.user);
+					}
 
 					await this._pgRelationsCrud.create({
 						spatial: [{
@@ -486,7 +488,9 @@ class PgDataController {
 							attributeRelationObjects = relationsResult.data.attribute;
 						});
 
-					await this._pgRelationsCrud.delete({attribute: [attributeRelationObjects]}, request.session.user);
+					if(attributeRelationObjects.length) {
+						await this._pgRelationsCrud.delete({attribute: [attributeRelationObjects]}, request.session.user);
+					}
 
 					let attributeRelationToCreateObjects = [];
 					_.each(attributeDataSourceObjects, (attributeDataSourceObject) => {
