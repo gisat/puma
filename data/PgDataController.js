@@ -194,7 +194,7 @@ class PgDataController {
 						return `INSERT INTO "${attributeTableName}" (${_.map(attributeTableValueSet, (value, property) => {
 							return `"${property}"`
 						}).join(', ')}) VALUES (${_.map(attributeTableValueSet, (value, property) => {
-							return _.isString(value) ? `'${value.replace("'", "''")}'` : value
+							return _.isString(value) ? `'${value.replace("'", "''")}'` : value === null ? `NULL` : value
 						}).join(', ')});`
 					}).join(` `));
 
