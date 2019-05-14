@@ -35,6 +35,7 @@ class PgDataController {
 		app.post(`/rest/data/import/fuore`, this.importFuoreData.bind(this));
 	}
 
+	// todo work in progress - this method has to be split into simple methods
 	async importFuoreData(request, response) {
 		let requestFileObject = request.files && request.files.file;
 		if (requestFileObject) {
@@ -583,7 +584,12 @@ class PgDataController {
 			.send(payload);
 	}
 
-	getAttributeDataSourceStatistic(tableName, attributeColumn) {
+	getAttributeDataSourceStatistic(tableName, attributeColumn, percentile) {
+		let percentileSql = ``;
+		if(percentile) {
+			percentileSql = `(SELECT array_agg(a.percentile) AS percentile FROM (SELECT percentile_disc(k) WITHIN GROUP(ORDER BY "${attributeColumn}") AS percentile FROM "${tableName}", UNNEST(ARRAY[${percentile}]) AS k GROUP BY k) AS a) AS percentile,`
+		}
+
 		return this._pgPool
 			.query(
 				`
@@ -591,7 +597,8 @@ class PgDataController {
 					count("${attributeColumn}") as count, 
 					min("${attributeColumn}") AS min, 
 					max("${attributeColumn}") AS max,
-					(SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY "${attributeColumn}") from "${tableName}") AS median,
+					(SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY "${attributeColumn}") from "${tableName}") AS median,
+					${percentileSql}
 					(SELECT pg_typeof("${attributeColumn}") FROM "${tableName}" LIMIT 1) AS type 
 					FROM "${tableName}";
 	  			`
@@ -642,7 +649,7 @@ class PgDataController {
 						attributeDataSources = attributeDataSources.data.attribute;
 
 						for (let attributeDataSource of attributeDataSources) {
-							let attributeStatistic = await this.getAttributeDataSourceStatistic(attributeDataSource.data.tableName, attributeDataSource.data.columnName);
+							let attributeStatistic = await this.getAttributeDataSourceStatistic(attributeDataSource.data.tableName, attributeDataSource.data.columnName, filter.percentile);
 							payload.data.attribute.push({
 								attributeDataSourceKey: attributeDataSource.key,
 								attributeStatistic
