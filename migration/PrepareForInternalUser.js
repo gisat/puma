@@ -11,9 +11,6 @@ class PrepareForInternalUser extends Migration {
     process(mongo, pool) {
         return bcrypt.hash('admin', 10).then(hash => {
             return pool.query(`
-                ALTER TABLE ${this._schema}.panther_users ADD COLUMN password text;
-                ALTER TABLE ${this._schema}.panther_users ADD COLUMN name text;
-                 
                 INSERT INTO ${this._schema}.panther_users (email, name, password) values ('admin','admin','${hash}');           
             `);
         });

@@ -23,7 +23,7 @@ class CreateDefaultUserAndGroup extends Migration {
 		}).then(() => {
 			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('user')`);
 		}).then(() => {
-			return this.fillDefaultPermissions(mongoDatabase, pool);
+			// return this.fillDefaultPermissions(mongoDatabase, pool);
 		});
 	}
 

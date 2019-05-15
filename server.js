@@ -128,6 +128,12 @@ function initServer(err) {
 
 new PgDatabase(pool.pool())
 	.ensure()
+	.then(() => {
+		return new CreateDefaultUserAndGroup(config.pgSchema.data).run();
+	})
+	.then(() => {
+		return new PrepareForInternalUser(config.pgSchema.data).run();
+	})
 	// .then(() => {
 	// 	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
 	// })
