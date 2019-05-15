@@ -99,7 +99,49 @@ class PgDatabase {
 					PgEsponFuoreIndicators
 				]
 			}
-		]
+		];
+
+		this._legacyTables = [
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.permissions (
+				 id SERIAL PRIMARY KEY,
+				 user_id int NOT NULL,
+				 resource_id TEXT,
+				 resource_type varchar(20),
+				 permission varchar(20)
+			)`,
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.group_permissions (
+				 id SERIAL PRIMARY KEY,
+				 group_id int NOT NULL,
+				 resource_id TEXT,
+				 resource_type varchar(20),
+				 permission varchar(20)
+			)`,
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.groups (
+				id SERIAL PRIMARY KEY,
+				name text,
+				created timestamp,
+				created_by int, 
+				changed timestamp, 
+				changed_by int
+			)`,
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.group_has_members (
+				id SERIAL PRIMARY KEY,
+				group_id int NOT NULL,
+				user_id int NOT NULL,
+				created timestamp,
+				created_by int, 
+				changed timestamp, 
+				changed_by int
+			)`,
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.panther_users (
+				id SERIAL PRIMARY KEY, 
+				email text NOT NULL,
+				created timestamp,
+				created_by int, 
+				changed timestamp, 
+				changed_by int  
+			);`
+		];
 	}
 
 	getDataTypeStoresGroupedByType() {
@@ -111,6 +153,10 @@ class PgDatabase {
 			.then(async () => {
 				for(let dataType of this._dataTypes) {
 					await this.ensureTables(dataType.stores, dataType.schema);
+				}
+
+				for(let legacyTableSql of this._legacyTables) {
+					await this._pgPool.query(legacyTableSql);
 				}
 			});
 	}
