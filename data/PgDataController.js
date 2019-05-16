@@ -572,6 +572,7 @@ class PgDataController {
 
 	async getSpatialData(request, response) {
 		let filter = request.body.filter;
+		let transformation = request.body.transformation;
 		let payload = {
 			data: {
 				spatial: []
@@ -593,7 +594,7 @@ class PgDataController {
 								await this.getGeometryColumnsForTableName(spatialDataSource.data.tableName)
 									.then(async (geometryColumnNames) => {
 										if (geometryColumnNames.length === 1) {
-											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0]);
+											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0], transformation);
 											payload.data.spatial.push({
 												spatialDataSourceKey: spatialDataSource.key,
 												spatialData
@@ -758,9 +759,18 @@ class PgDataController {
 			});
 	}
 
-	getSpatialDataSourceData(tableName, fidColumn, geometryColumn) {
+	getSpatialDataSourceData(tableName, fidColumn, geometryColumn, transformation) {
+		let geometryOperations = `"${geometryColumn}"`;
+
+		if(transformation && transformation.hasOwnProperty(`snapToGrid`)) {
+			if(transformation.snapToGrid.hasOwnProperty(`size`)) {
+				let size = Number(transformation.snapToGrid.size);
+				geometryOperations = `ST_SnapToGrid(${geometryOperations}, ${size})`;
+			}
+		}
+
 		return this._pgPool
-			.query(`SELECT "${fidColumn}", ST_AsGeoJson("${geometryColumn}", 14, 4) AS geometry FROM "${tableName}"`)
+			.query(`SELECT "${fidColumn}", ST_AsGeoJson(${geometryOperations}, 14, 4) AS geometry FROM "${tableName}"`)
 			.then((pgResult) => {
 				return {
 					type: "FeatureCollection",
