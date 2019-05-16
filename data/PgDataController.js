@@ -256,7 +256,8 @@ class PgDataController {
 									nameInternal: attributeIndicatorName,
 									nameDisplay: attributeIndicatorName,
 									applicationKey: esponFuoreApplicationKey,
-									description: attributeUnitDescription
+									description: attributeUnitDescription,
+									valueType: attributeType
 								}
 							}]
 						}, request.session.user)
