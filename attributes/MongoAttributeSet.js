@@ -39,7 +39,7 @@ class MongoAttributeSet {
 	}
 
 	attributes() {
-		return this.load().then(function (jsonInstance) {
+		return this.load().then((jsonInstance) => {
 			return new FilteredMongoAttributes({"_id": {$in: jsonInstance.attributes}}, this._connection)
 				.read();
 		});

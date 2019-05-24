@@ -22,6 +22,12 @@ class MongoTheme {
 		return this._uniqueInstance.read();
 	}
 
+	topics(topicConstructor) {
+		return this._uniqueInstance.read().then(theme => {
+			return theme.topics.map(topicId => new topicConstructor(topicId, this._connection));
+		});
+	}
+
 	dataViews() {
 		return this._dataViews.read();
 	}

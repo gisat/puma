@@ -11,7 +11,6 @@ class MongoTopic {
 
 		this._themes = new FilteredMongoThemes({topics: {$in: [id]}}, connection);
 		this._attributeSets = new FilteredMongoAttributeSets({topic: id}, connection);
-		this._chartConfigurations = new FilteredMongoChartConfiguration({"attrs.topic": id}, connection);
 		this._layerTemplates = new FilteredMongoLayerTemplates({topic: id}, connection);
 
 		this._instance = new MongoUniqueInstance(id, connection, MongoTopic.collectionName());
@@ -27,10 +26,6 @@ class MongoTopic {
 
 	attributeSets() {
 		return this._attributeSets.read();
-	}
-
-	chartConfigurations() {
-		return this._chartConfigurations.read();
 	}
 
 	layerTemplates() {
