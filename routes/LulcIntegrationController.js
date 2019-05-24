@@ -1,7 +1,9 @@
 const fs = require('fs').promises;
 const superagent = require('superagent');
+const conn = require('../common/conn');
 
 const LoadMetadataForIntegration = require('../integration/lulc/LoadMetadataForIntegration');
+const GeoJsonToSql = require('../integration/lulc/GeoJsonToSql');
 const Uuid = require('../common/UUID');
 
 const tables = {
@@ -17,8 +19,9 @@ const tables = {
 };
 
 class LulcIntegrationController {
-    constructor(app, mongo) {
+    constructor(app, mongo, pgPool) {
         this._mongo = mongo;
+        this._pgPool = pgPool;
 
         app.get('/rest/integration/lulc', this.retrieveStateOfIntegration.bind(this));
         app.post('/rest/integration/lulcmeta', this.integrateResults.bind(this));
@@ -26,11 +29,100 @@ class LulcIntegrationController {
     }
 
     retrieveStateOfIntegration(request, response) {
-
+        const uuid = request.query.uuid;
+        // Store somewhere state.
+        this._mongo.collection('lulcintegration').find({uuid: uuid}).toArray().then(results => {
+            response.json(results[0]);
+        });
     }
 
     integrateResults(request, response) {
         console.log('Integrate Results: ', request.body);
+        let id = 500000; //conn.getNextId();
+        const uuid = request.body.uuid;
+
+        if(request.body.error) {
+            this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+                state: 'Error',
+                uuid: uuid
+            });
+
+            response.json({});
+            return;
+        }
+
+        const inputForAnalysis = request.body;
+        const layerRefs = [];
+        inputForAnalysis.themes.forEach(theme => {
+            if(theme.layerUnavailable || !theme.periods){
+                return;
+            }
+
+            inputForAnalysis.analyticalUnitLevels.forEach(auLevel => {
+                theme.periods.forEach(period => {
+                    theme.attributeSets.forEach(attributeSet => {
+                        const attributes = [];
+
+                        attributeSet.attributes.forEach(attribute => {
+                            attributes.push({
+                                column: `as_${attributeSet.id}_attr_${attribute.id}`,
+                                attribute: attribute.id
+                            })
+                        });
+
+                        layerRefs.push({
+                            "_id": ++id,
+                            "layer": 'geonode:' + auLevel.table,
+                            "columnMap": attributes,
+                            isData: true,
+                            attributeSet: attributeSet.id,
+                            location: inputForAnalysis.place,
+                            year: period, // Periods depends on the analysis.
+                            areaTemplate: auLevel.id,
+                            active: true,
+                            dataSourceOrigin: 'geonode'
+                        });
+                    })
+                })
+            })
+        });
+        // Generate and insert layerrefs
+        // Insert LayerRefs into Mongo
+        Promise.all(layerRefs.map(layerRef => {
+            return this._mongo.collection('layerref').insert(layerRef);
+        })).then(() => {
+            return this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+                state: 'LayerRefs Inserted',
+                uuid: uuid
+            });
+        }).then(() => {
+            // Update the SQL
+            let sql = '';
+            inputForAnalysis.analyticalUnitLevels.forEach((auLevel, index) => {
+                sql += new GeoJsonToSql(auLevel.layer, auLevel.table, index + 1).sql();
+            });
+
+            return this._pgPool.query(sql);
+        }).then(() => {
+            console.log('Done');
+            return this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+                state: 'Done',
+                uuid: uuid
+            });
+        }).then(() => {
+            response.json({});
+            // Run the SQL over PostgreSQL database.
+            //TODO: Test the SQL
+        }).catch(err => {
+            console.log(err);
+
+            this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+                state: 'Error: ' + err,
+                uuid: uuid
+            });
+
+            response.json({});
+        })
     }
 
     async integrateData(request, response) {
@@ -48,6 +140,10 @@ class LulcIntegrationController {
             return Promise.all(Object.keys(request.files).map(fileKey => {
                 const pathToFile = request.files[fileKey].path;
                 const fileName = request.files[fileKey].originalFilename;
+                if(!fileName) {
+                    return Promise.resolve(true);
+                }
+
                 return fs.readFile(pathToFile, 'utf8').then(result => {
                     // If fileName matches AL template push to proper AU templates instead.
                     let isAu = false;
@@ -73,16 +169,32 @@ class LulcIntegrationController {
                 auLevel.table = tables[placeId][index];
             });
 
+            return this._mongo.collection('lulcintegration').insert({
+                state: 'running',
+                uuid: uuid
+            })
+        }).then(() => {
             // Process the files and integrate them into the JSON.
             return superagent.post('http://localhost:3568/cityLulc')
                 .send(integrationInput);
+        }).then(() => {
+            return this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+                state: 'remote processing',
+                uuid: uuid
+            })
         }).then(() => {
             response.json({
                 status: 'running',
                 uuid: uuid
             })
         }).catch(err => {
-            console.error(err);
+            console.log('Error: ', err);
+
+            this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+                state: 'Error',
+                uuid: uuid
+            });
+
             response.json({
                 status: 'err',
                 message: err

@@ -39,7 +39,11 @@ if(cluster.isMaster) {
         integrationInput.layers = [];
 
         superagent.post(request.body.url)
-            .send(integrationInput);
+            .send(integrationInput).then(() => {
+                console.log(request.body.uuid + ' Sent back')
+        }).catch(err => {
+                console.log('Error: ', err);
+        });
     });
 
     app.listen(3568);

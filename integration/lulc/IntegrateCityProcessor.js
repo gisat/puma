@@ -22,11 +22,11 @@ class IntegrateCityProcessor {
         analysisRelatedThemes.forEach(theme => {
             const integrationType = theme.integrationType;
             if (integrationType === 'landUseLandCoverVeryHighResolution') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'lulcVhr');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'lulcVhr');
             } else if (integrationType === 'landUseLandCoverChangeFlow') {
-                this.flowChangeAnalysis(theme, layers, analyticalUnitsLevels, 'flowChange');
+                this.flowChangeAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'flowChange');
             } else if (integrationType === 'urbanGreenExtended') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'urbanGreen');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'urbanGreen');
             } else if (integrationType === 'transportationNetwork') {
                 // In this case we need to calculate the length od the areas.
                 // TODO: Calculate the length of the transportation information.
@@ -34,9 +34,9 @@ class IntegrateCityProcessor {
             } else if (integrationType === 'connectivityNode') {
                 this.calculateAmountOfNodes(theme, layers, analyticalUnitsLevels);
             } else if (integrationType === 'informalSettlement') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'informalSettlements');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'informalSettlements');
             } else if (integrationType === 'floods') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'floods');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'floods');
             }
         });
 
@@ -89,7 +89,7 @@ class IntegrateCityProcessor {
 
             const attributeSetLayer = {
                 features: presentLayers[0].content.features.filter(feature => {
-                    return feature.properties[theme.filteringAttribute] == attributeSet.filteringAttributeValue;
+                    return theme.filteringAttribute ? feature.properties[theme.filteringAttribute] == attributeSet.filteringAttributeValue: true;
                 })
             };
 
