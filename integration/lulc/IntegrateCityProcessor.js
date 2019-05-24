@@ -66,7 +66,9 @@ class IntegrateCityProcessor {
         }
 
         const firstPeriod = this.getPeriodByName(presentLayers[0].name.substr(-9, 4)).id;
+        const firstPeriodName = presentLayers[0].name.substr(-9, 4);
         const lastPeriod = this.getPeriodByName(presentLayers[0].name.substr(-4)).id;
+        const lastPeriodName = presentLayers[0].name.substr(-4);
         theme.periods = [firstPeriod, lastPeriod];
 
         // Generate the attributes per year
@@ -75,11 +77,12 @@ class IntegrateCityProcessor {
 
             attributeSet.attributes.forEach(attribute => {
                 const period = attributeSet.type === 'formation' ? lastPeriod: firstPeriod;
+                const periodName = attributeSet.type === 'formation' ? lastPeriodName: firstPeriodName;
 
                 allAttributes.push({
                     id: `as_${attributeSet.id}_attr_${attribute.id}_period_${period}`,
                     code: attribute.code,
-                    columnName: attributeSet.columnName
+                    columnName: attributeSet.columnName + '_' + periodName
                 });
             });
             // Filter the content of the LULC Change Layer to provide a source for Processor.
