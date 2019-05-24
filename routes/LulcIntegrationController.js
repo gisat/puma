@@ -1,4 +1,4 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const superagent = require('superagent');
 const conn = require('../common/conn');
 const config = require('../config');
@@ -145,7 +145,15 @@ class LulcIntegrationController {
                     return Promise.resolve(true);
                 }
 
-                return fs.readFile(pathToFile, 'utf8').then(result => {
+                return new Promise((resolve, reject) => {
+                    fs.readFile(pathToFile, 'utf8', (err, data) => {
+                        if(err) {
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    })
+                }).then(result => {
                     // If fileName matches AL template push to proper AU templates instead.
                     let isAu = false;
                     integrationInput.analyticalUnitLevels.forEach(auLevel => {
