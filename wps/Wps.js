@@ -5,7 +5,6 @@ let config = require('../config');
 let CalculatePragueTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculatePragueTemperatureMapUsingNeuralNetworkModel');
 let CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateOstravaTemperatureMapUsingNeuralNetworkModel');
 let ImportToExistingScope = require(`../wps/processes/ImportToExistingScope`);
-const LandUseLandCoverAnalysis = require(`./processes/LandUseLandCoverAnalysis`);
 
 let runningProcesses = {};
 
@@ -14,8 +13,7 @@ class Wps {
 		this._processes = {
 			CalculatePragueTemperatureMapUsingNeuralNetworkModel: new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo),
 			CalculateOstravaTemperatureMapUsingNeuralNetworkModel: new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, runningProcesses, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo),
-			ImportToExistingScope: new ImportToExistingScope(runningProcesses),
-			landUseLandCoverAnalysis: new LandUseLandCoverAnalysis(runningProcesses),
+			ImportToExistingScope: new ImportToExistingScope(runningProcesses)
 		};
 	}
 
