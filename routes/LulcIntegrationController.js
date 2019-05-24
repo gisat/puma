@@ -150,7 +150,7 @@ class LulcIntegrationController {
                         if(err) {
                             reject(err);
                         } else {
-                            resolve(result);
+                            resolve(data);
                         }
                     })
                 }).then(result => {
