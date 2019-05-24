@@ -10,7 +10,7 @@ const Uuid = require('../common/UUID');
 const tables = {
     '586173924': ['i10_bamako_al1', 'i11_bamako_al2', 'i12_bamako_al3'],
     '486867095': ['i39_dhaka_al1', 'i40_dhaka_al2', 'i41_dhaka_al3'],
-    '456908': ['i13_fallujah_al1', 'i14_fallujah_al2', 'i15_fallujah_al3'],
+    '186174983': ['i13_fallujah_al1', 'i14_fallujah_al2', 'i15_fallujah_al3'],
     '486176350': ['i16_karachi_al1', 'i17_karachi_al2', 'i18_karachi_al3'],
     '386177288': ['i20_lima_al1', 'i21_lima_al2', 'i22_lima_al3'],
     '286177322': ['i36_mandalay_al1', 'i37_mandalay_al2', 'i38_mandalay_al3'],
