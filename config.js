@@ -196,5 +196,20 @@ module.exports = {
 	},
 
 	pantherDataStoragePath: `/home/mbabic/Dokumenty/TempStorage/Panther`,
-	pantherTemporaryStoragePath: `/tmp/panther`
+	pantherTemporaryStoragePath: `/tmp/panther`,
+
+	/**
+	 * Key used for requests to the TEP Urban Portal.
+	 */
+	apiKeyPortal: 'random-key-uuid',
+
+	/**
+	 * URL for the LULC Processor API
+	 */
+	remoteLulcProcessorUrl: 'http://45.33.74.168:3568/cityLulc',
+
+	/**
+	 * URL the remote processor uses to signal it is done.
+	 */
+	lulcUrl: 'https://urban-tep.eu/puma/backend/rest/integration/lulcmeta'
 };

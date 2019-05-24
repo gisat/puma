@@ -1,6 +1,7 @@
 const fs = require('fs').promises;
 const superagent = require('superagent');
 const conn = require('../common/conn');
+const config = require('../config');
 
 const LoadMetadataForIntegration = require('../integration/lulc/LoadMetadataForIntegration');
 const GeoJsonToSql = require('../integration/lulc/GeoJsonToSql');
@@ -38,7 +39,7 @@ class LulcIntegrationController {
 
     integrateResults(request, response) {
         console.log('Integrate Results: ', request.body);
-        let id = 500000; //conn.getNextId();
+        let id = conn.getNextId();
         const uuid = request.body.uuid;
 
         if(request.body.error) {
@@ -134,7 +135,7 @@ class LulcIntegrationController {
         new LoadMetadataForIntegration(this._mongo, scopeId).metadata(placeId).then(pIntegrationInput => {
             integrationInput = pIntegrationInput;
             integrationInput.uuid = uuid;
-            integrationInput.url = 'http://localhost:3345/rest/integration/lulcmeta';
+            integrationInput.url = config.lulcUrl;
 
             integrationInput.layers = [];
             return Promise.all(Object.keys(request.files).map(fileKey => {
@@ -175,7 +176,7 @@ class LulcIntegrationController {
             })
         }).then(() => {
             // Process the files and integrate them into the JSON.
-            return superagent.post('http://localhost:3568/cityLulc')
+            return superagent.post(config.remoteLulcProcessorUrl)
                 .send(integrationInput);
         }).then(() => {
             return this._mongo.collection('lulcintegration').update({uuid: uuid}, {
