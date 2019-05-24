@@ -56,8 +56,9 @@
     "reproject": "1.2.1",
     "request": "2.83.0",
     "shp-write": "0.3.2",
-    "shpjs": "3.4.2",
+    "shpjs": "^3.4.2",
     "superagent": "4.0.0",
+    "turf": "7.0.0-alpha.1",
     "underscore": "1.8.3",
     "unzip": "0.1.11",
     "uuid": "3.2.1",
@@ -71,7 +72,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "karma-phantomjs-launcher": "^1.0.0",
-    "mocha": "^2.4.5",
+    "mocha": "^2.5.3",
     "phantomjs-prebuilt": "^2.1.4",
     "should": "8.4.0",
     "supertest": "3.0.0"
