@@ -12,9 +12,9 @@ class GeoJsonToSql {
         const columns = [];
         propertyKeys.forEach(property => {
             if(property.indexOf('as') === 0 || property.indexOf('total') !== -1) {
-                let columnName = key;
+                let columnName = property;
                 if(key.indexOf('total') !== -1){
-                    columnName = 't' + key;
+                    columnName = 't' + property;
                 }
                 columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${columnName} FLOAT;`);
             }
