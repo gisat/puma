@@ -12,7 +12,11 @@ class GeoJsonToSql {
         const columns = [];
         propertyKeys.forEach(property => {
             if(property.indexOf('as') === 0 || property.indexOf('total') !== -1) {
-                columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${property} FLOAT;`);
+                let columnName = key;
+                if(key.indexOf('total') !== -1){
+                    columnName = 't' + key;
+                }
+                columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${columnName} FLOAT;`);
             }
         });
 
@@ -23,8 +27,12 @@ class GeoJsonToSql {
             const keys = Object.keys(feature.properties);
 
             keys.forEach(key => {
+                let columnName = key;
                 if(key.indexOf('as') === 0 || key.indexOf('total') !== -1) {
-                    rows.push(`UPDATE ${this._tableName} SET ${key} = ${feature.properties[key]} WHERE "AL${this._auIndex}_ID" = ${feature.properties["AL" + this._auIndex + '_ID']};`);
+                    if(key.indexOf('total') !== -1){
+                        columnName = 't' + key;
+                    }
+                    rows.push(`UPDATE ${this._tableName} SET ${columnName} = ${feature.properties[key]} WHERE "AL${this._auIndex}_ID" = ${feature.properties["AL" + this._auIndex + '_ID']};`);
                 }
             });
         });
