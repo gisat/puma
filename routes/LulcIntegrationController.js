@@ -87,15 +87,12 @@ class LulcIntegrationController {
                 })
             })
         });
+
         // Generate and insert layerrefs
         // Insert LayerRefs into Mongo
-        Promise.all(layerRefs.map(layerRef => {
-            return this._mongo.collection('layerref').insert(layerRef);
-        })).then(() => {
-            return this._mongo.collection('lulcintegration').update({uuid: uuid}, {
-                state: 'LayerRefs Inserted',
-                uuid: uuid
-            });
+        this._mongo.collection('lulcintegration').update({uuid: uuid}, {
+            state: 'LayerRefs Inserted',
+            uuid: uuid
         }).then(() => {
             // Update the SQL
             let sql = '';
@@ -105,6 +102,24 @@ class LulcIntegrationController {
 
             return this._pgPool.query(sql);
         }).then(() => {
+            return Promise.all(layerRefs.map(layerRef => {
+                return new Promise((resolve, reject) => {
+                    crud.create('layerref', layerRef, {
+                        userId: 1,
+                        isAdmin: true
+                    }, (err, result) => {
+                        if (err) {
+                            logger.error("It wasn't possible to create object of type: layerref by User: Custom Script " +
+                                "With data: ", layerRef, " Error:", err);
+                            reject(err);
+                        } else {
+                            resolve(result);
+                        }
+                    })
+                })
+            }));
+        }).then(() => {
+
             console.log('Done');
             return this._mongo.collection('lulcintegration').update({uuid: uuid}, {
                 state: 'Done',
