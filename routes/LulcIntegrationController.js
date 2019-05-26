@@ -104,22 +104,23 @@ class LulcIntegrationController {
 
             return this._pgPool.query(sql);
         }).then(() => {
-            return Promise.all(layerRefs.map(layerRef => {
-                return new Promise((resolve, reject) => {
-                    crud.create('layerref', layerRef, {
-                        userId: 1,
-                        isAdmin: true
-                    }, (err, result) => {
-                        if (err) {
-                            logger.error("It wasn't possible to create object of type: layerref by User: Custom Script " +
-                                "With data: ", layerRef, " Error:", err);
-                            reject(err);
-                        } else {
-                            resolve(result);
-                        }
-                    })
-                })
-            }));
+            // return Promise.all(layerRefs.map(layerRef => {
+            //     return new Promise((resolve, reject) => {
+            //         crud.create('layerref', layerRef, {
+            //             userId: 1,
+            //             isAdmin: true
+            //         }, (err, result) => {
+            //             if (err) {
+            //                 logger.error("It wasn't possible to create object of type: layerref by User: Custom Script " +
+            //                     "With data: ", layerRef, " Error:", err);
+            //                 reject(err);
+            //             } else {
+            //                 resolve(result);
+            //             }
+            //         })
+            //     })
+            // }));
+            return null;
         }).then(() => {
 
             console.log('Done');
