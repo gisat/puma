@@ -3,6 +3,7 @@ const superagent = require('superagent');
 const conn = require('../common/conn');
 const config = require('../config');
 const crud = require('../rest/crud');
+const logger = require('../common/Logger').applicationWideLogger;
 
 const LoadMetadataForIntegration = require('../integration/lulc/LoadMetadataForIntegration');
 const GeoJsonToSql = require('../integration/lulc/GeoJsonToSql');
