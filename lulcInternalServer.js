@@ -30,5 +30,5 @@ new Promise((resolve, reject) => {
     //     .attach('lulc', 'C:\\Users\\jakub\\IdeaProjects\\Panther\\puma\\dhaka\\EO4SD_DHAKA_AL1.geojson')
     //     .attach('au', 'C:\\Users\\jakub\\IdeaProjects\\Panther\\puma\\dhaka\\EO4SD_DHAKA_LULCVHR_2017.geojson')
     //     .field('scopeId', 600000000)
-    //     .field('placeId', 456908)
+    //     .field('placeId', 486867095)
 });
