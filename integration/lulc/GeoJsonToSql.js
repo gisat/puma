@@ -32,7 +32,7 @@ class GeoJsonToSql {
                     if(key.indexOf('total') !== -1){
                         columnName = 't' + key;
                     }
-                    rows.push(`UPDATE ${this._tableName} SET ${columnName} = ${feature.properties[key]} WHERE "AL${this._auIndex}_ID" = ${feature.properties["AL" + this._auIndex + '_ID']};`);
+                    rows.push(`UPDATE ${this._tableName} SET ${columnName} = ${feature.properties[key]} WHERE "AL${this._auIndex}_ID" = '${feature.properties["AL" + this._auIndex + '_ID']}';`);
                 }
             });
         });
