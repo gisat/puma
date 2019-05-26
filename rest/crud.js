@@ -58,7 +58,7 @@ function create(collName,obj,params,callback) {
 			});
 		},
 		preCreate: ['checkRefs',function(asyncCallback) {
-			obj['_id'] = conn.getNextId();
+			obj['_id'] = obj['_id'] || conn.getNextId();
 			ensureIds(obj,collName);
 			var date = new Date();
 			obj['created'] = date;
