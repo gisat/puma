@@ -22,11 +22,11 @@ class IntegrateCityProcessor {
         analysisRelatedThemes.forEach(theme => {
             const integrationType = theme.integrationType;
             if (integrationType === 'landUseLandCoverVeryHighResolution') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'lulcVhr');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels,  'lulcVhr'+theme.id);
             } else if (integrationType === 'landUseLandCoverChangeFlow') {
-                this.flowChangeAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'flowChange');
+                this.flowChangeAnalysis(theme, layers, analyticalUnitsLevels, 'flowChange' +theme.id);
             } else if (integrationType === 'urbanGreenExtended') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'urbanGreen');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'urbanGreen'+theme.id);
             } else if (integrationType === 'transportationNetwork') {
                 // In this case we need to calculate the length od the areas.
                 // TODO: Calculate the length of the transportation information.
@@ -34,9 +34,9 @@ class IntegrateCityProcessor {
             } else if (integrationType === 'connectivityNode') {
                 this.calculateAmountOfNodes(theme, layers, analyticalUnitsLevels);
             } else if (integrationType === 'informalSettlement') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'informalSettlements');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'informalSettlements'+theme.id);
             } else if (integrationType === 'floods') {
-                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, theme.id + 'floods');
+                this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'floods'+theme.id);
             }
         });
 
@@ -120,7 +120,7 @@ class IntegrateCityProcessor {
             theme.attributeSets.forEach(attributeSet => {
                 attributeSet.attributes.forEach(attribute => {
                     allAttributes.push({
-                        id: `as_${attributeSet.id}_attr_${attribute.id}`,
+                        id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
                         code: attribute.code,
                         columnName: attributeSet.columnName
                     });
@@ -154,7 +154,7 @@ class IntegrateCityProcessor {
             theme.attributeSets.forEach(attributeSet => {
                 attributeSet.attributes.forEach(attribute => {
                     allAttributes.push({
-                        id: `as_${attributeSet.id}_attr_${attribute.id}`,
+                        id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
                         code: attribute.code,
                         columnName: attributeSet.columnName
                     });
