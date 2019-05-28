@@ -233,6 +233,16 @@ class FuoreImporter {
 			.then(async () => {
 				if (unzippedFs.contents().includes('attributes.json')) {
 					let attributes = JSON.parse(unzippedFs.read('attributes.json', 'text'));
+
+					let attributeIds = [];
+					for (let attributeMetada of attributes) {
+						if (attributeIds.includes(attributeMetada.id)) {
+							throw new Error(`Attributes has non-unique ids`);
+						} else {
+							attributeIds.push(attributeMetada.id);
+						}
+					}
+
 					for (let attributeMetadata of attributes) {
 						if (!attributeMetadata.hasOwnProperty(`name`)) {
 							throw new Error(`missing name property in metadata of attribute ${attributeMetadata.name}`);
@@ -323,6 +333,24 @@ class FuoreImporter {
 			})
 	}
 
+	async createRelations(group, filter, data, user) {
+		return await this._pgRelationsCrud.get(group, {filter}, user)
+			.then((metadataResults) => {
+				if (metadataResults.data[group].length) {
+					return metadataResults.data[group];
+				} else {
+					return this._pgRelationsCrud.create({[group]: [{data: data}]}, user)
+						.then(([data, errors]) => {
+							if (errors) {
+								throw new Error(JSON.stringify(errors));
+							} else {
+								return data[group];
+							}
+						})
+				}
+			})
+	}
+
 	createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user) {
 		return Promise.resolve()
 			.then(async () => {
@@ -336,7 +364,10 @@ class FuoreImporter {
 						},
 						{
 							nameInternal: analyticalUnit.type_of_region,
-							applicationKey: esponFuoreApplicationKey
+							applicationKey: esponFuoreApplicationKey,
+							configuration: {
+								"areaNameAttributeKey": ""
+							}
 						},
 						user
 					).then((scopes) => {
@@ -378,7 +409,7 @@ class FuoreImporter {
 							...attributes[0],
 							linkage: {
 								analyticalUnitId: attribute.analytical_unit_id,
-								analyticalUnitFidColumn: attribute.fid_column,
+								attributeFidColumn: attribute.fid_column,
 								attributeId: attribute.id
 							}
 						})
@@ -521,8 +552,8 @@ class FuoreImporter {
 							...spatialDataSources[0],
 							linkage: {
 								analyticalUnitId: analyticalUnit.id,
-								fidColumn: analyticalUnit.fid_column,
-								nameColumn: analyticalUnit.name_column
+								analyticalUnitFidColumn: analyticalUnit.fid_column,
+								analyticalUnitNameColumn: analyticalUnit.name_column
 							}
 						})
 					});
@@ -542,7 +573,7 @@ class FuoreImporter {
 						throw new Error(`Years for attribute '${attribute.name}' has wrong format`)
 					}
 
-					for(let year = Number(years[0]); year <= Number(years[1]); year++) {
+					for (let year = Number(years[0]); year <= Number(years[1]); year++) {
 						await this.createDataSource(
 							`attribute`,
 							{
@@ -558,15 +589,138 @@ class FuoreImporter {
 							pantherAttributeDataSources.push({
 								...attributeDataSources[0],
 								linkage: {
+									attributeId: attribute.id,
 									analyticalUnitId: attribute.analytical_unit_id,
-									fidColumn: attribute.fid_column,
-									nameColumn: attribute.name_column
+									attributeFidColumn: attribute.fid_column,
+									attributeNameColumn: attribute.name_column
 								}
 							})
 						});
 					}
 				}
 				return pantherAttributeDataSources;
+			});
+	}
+
+	createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
+		return Promise.resolve()
+			.then(async () => {
+				let pantherLayerTemplates = [];
+				for (let analyticalUnit of analyticalUnits) {
+					let analyticalUnitTableName = `fuore-au-${analyticalUnit.table_name}`;
+
+					await this.createMetadata(
+						`layerTemplates`,
+						{
+							nameInternal: analyticalUnitTableName,
+							applicationKey: esponFuoreApplicationKey
+						},
+						{
+							nameInternal: analyticalUnitTableName,
+							nameDisplay: analyticalUnitTableName,
+							applicationKey: esponFuoreApplicationKey
+						},
+						user
+					).then((layerTemplates) => {
+						pantherLayerTemplates.push({
+							...layerTemplates[0],
+							linkage: {
+								analyticalUnitId: analyticalUnit.id,
+								analyticalUnitFidColumn: analyticalUnit.fid_column,
+								analyticalUnitNameColumn: analyticalUnit.name_column
+							}
+						})
+					});
+				}
+				return pantherLayerTemplates;
+			});
+	}
+
+	createPantherSpatialRelations(pantherData, user) {
+		return Promise.resolve()
+			.then(async () => {
+				for (let scope of pantherData.scopes) {
+					let spatialDataSource = _.find(pantherData.spatialDataSources, (spatialDataSource) => {
+						return spatialDataSource.linkage.analyticalUnitId === scope.linkage.analyticalUnitId
+					});
+					let layerTemplate = _.find(pantherData.layerTemplates, (layerTemplate) => {
+						return layerTemplate.linkage.analyticalUnitId === scope.linkage.analyticalUnitId
+					});
+
+					if (!scope || !spatialDataSource || !layerTemplate) {
+						throw new Error(`unable to create spatial relations - internal error`);
+					}
+
+					await this.createRelations(
+						`spatial`,
+						{
+							scopeKey: scope.key,
+							spatialDataSourceKey: spatialDataSource.key,
+							layerTemplateKey: layerTemplate.key,
+							fidColumnName: scope.linkage.analyticalUnitFidColumn
+						},
+						{
+							scopeKey: scope.key,
+							spatialDataSourceKey: spatialDataSource.key,
+							layerTemplateKey: layerTemplate.key,
+							fidColumnName: scope.linkage.analyticalUnitFidColumn
+						},
+						user
+					);
+				}
+			});
+	}
+
+	createPantherAttributeRelations(pantherData, user) {
+		return Promise.resolve()
+			.then(async () => {
+				// console.log(JSON.stringify(pantherData.attributes));
+				for (let attributeDataSource of pantherData.attributeDataSources) {
+					let scope = _.find(pantherData.scopes, (scope) => {
+						return scope.linkage.analyticalUnitId === attributeDataSource.linkage.analyticalUnitId
+					});
+					let layerTemplate = _.find(pantherData.layerTemplates, (layerTemplate) => {
+						return layerTemplate.linkage.analyticalUnitId === attributeDataSource.linkage.analyticalUnitId
+					});
+					let period = _.find(pantherData.periods, (period) => {
+						return period.data.nameInternal === attributeDataSource.data.columnName;
+					});
+					let attribute = _.find(pantherData.attributes, (attribute) => {
+						return attribute.linkage.attributeId === attributeDataSource.linkage.attributeId;
+					});
+
+					if (!scope || !layerTemplate || !period || !attribute) {
+						throw new Error(`unable to create attribute relations - internal error`);
+					}
+
+					await this.createRelations(
+						`attribute`,
+						{
+							scopeKey: scope.key,
+							attributeDataSourceKey: attributeDataSource.key,
+							layerTemplateKey: layerTemplate.key,
+							periodKey: period.key,
+							attributeKey: attribute.key,
+							fidColumnName: attribute.linkage.attributeFidColumn
+						},
+						{
+							scopeKey: scope.key,
+							attributeDataSourceKey: attributeDataSource.key,
+							layerTemplateKey: layerTemplate.key,
+							periodKey: period.key,
+							attributeKey: attribute.key,
+							fidColumnName: attribute.linkage.attributeFidColumn
+						},
+						user
+					)
+				}
+			});
+	}
+
+	setGuestPermissionsForPantherData(pantherData) {
+		return Promise.resolve()
+			.then(() => {
+
 			});
 	}
 
@@ -630,121 +784,29 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				// console.log(`#### analyticalUnits`, JSON.stringify(analyticalUnits));
-				// console.log(`#### attributes`, JSON.stringify(attributes));
-				// console.log(`#### pantherData scopes`, JSON.stringify(pantherData.scopes));
-				// console.log(`#### pantherData attributes`, JSON.stringify(pantherData.attributes));
-				console.log(`#### pantherData spatialDataSources`, JSON.stringify(pantherData.spatialDataSources));
+				return this.createPantherAttributeDataSourceFromFuoreAttributes(attributes, user, pantherData)
+					.then((pantherAttributeDataSources) => {
+						pantherData.attributeDataSources = pantherAttributeDataSources;
+					});
+			})
+			.then(() => {
+				return this.createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
+					.then((pantherLayerTemplates) => {
+						pantherData.layerTemplates = pantherLayerTemplates;
+					});
+			})
+			.then(() => {
+				return this.createPantherSpatialRelations(pantherData, user);
+			})
+			.then(() => {
+				return this.createPantherAttributeRelations(pantherData, user);
+			})
+			.then(() => {
+				return this.setGuestPermissionsForPantherData(pantherData);
 			})
 			.then(() => {
 				return `All data were imported successfully.`;
 			});
-
-		// 	let layerTemplateDataTypeObject = null;
-		// 	await this._pgMetadataCrud.get(`layerTemplates`, {
-		// 		filter: {
-		// 			nameInternal: attributeAuTableName,
-		// 			applicationKey: esponFuoreApplicationKey
-		// 		}
-		// 	}, user)
-		// 		.then((dataTypeResult) => {
-		// 			layerTemplateDataTypeObject = dataTypeResult.data.layerTemplates[0];
-		// 		});
-		//
-		// 	if (!layerTemplateDataTypeObject) {
-		// 		await this._pgMetadataCrud.create({
-		// 			layerTemplates: [{
-		// 				data: {
-		// 					nameInternal: attributeAuTableName,
-		// 					nameDisplay: attributeAuTableName,
-		// 					applicationKey: esponFuoreApplicationKey
-		// 				}
-		// 			}]
-		// 		}, user)
-		// 			.then(([data, errors]) => {
-		// 				layerTemplateDataTypeObject = data.layerTemplates[0];
-		// 			})
-		// 	}
-		//
-		// 	await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplateDataTypeObject.key, `GET`);
-		//
-		// 	let spatialRelationObject = null;
-		// 	await this._pgRelationsCrud.get(`spatial`, {
-		// 		filter: {
-		// 			scopeKey: scopeDataTypeObject.key,
-		// 			spatialDataSourceKey: spatialDataSourceObject.key,
-		// 			layerTemplateKey: layerTemplateDataTypeObject.key
-		// 		}
-		// 	}, user)
-		// 		.then((relationsResult) => {
-		// 			spatialRelationObject = relationsResult.data.spatial[0];
-		// 		});
-		//
-		// 	if (spatialRelationObject) {
-		// 		await this._pgRelationsCrud.delete({spatial: [spatialRelationObject]}, user);
-		// 	}
-		//
-		// 	await this._pgRelationsCrud.create({
-		// 		spatial: [{
-		// 			data: {
-		// 				scopeKey: scopeDataTypeObject.key,
-		// 				spatialDataSourceKey: spatialDataSourceObject.key,
-		// 				layerTemplateKey: layerTemplateDataTypeObject.key,
-		// 				fidColumnName: attributeAuFidColum
-		// 			}
-		// 		}]
-		// 	}, user);
-		//
-		// 	let attributeRelationObjects = [];
-		// 	await this._pgRelationsCrud.get(`attribute`, {
-		// 		filter: {
-		// 			scopeKey: scopeDataTypeObject.key,
-		// 			attributeDataSourceKey: {
-		// 				in: _.map(attributeDataSourceObjects, 'key')
-		// 			},
-		// 			layerTemplateKey: layerTemplateDataTypeObject.key,
-		// 			periodKey: {
-		// 				in: _.map(periodDataTypeObjects, 'key')
-		// 			},
-		// 			attributeKey: attributeDataTypeObject.key
-		// 		}
-		// 	}, user)
-		// 		.then((relationsResult) => {
-		// 			attributeRelationObjects = relationsResult.data.attribute;
-		// 		});
-		//
-		// 	if (attributeRelationObjects.length) {
-		// 		await this._pgRelationsCrud.delete({attribute: [attributeRelationObjects]}, user);
-		// 	}
-		//
-		// 	let attributeRelationToCreateObjects = [];
-		// 	_.each(attributeDataSourceObjects, (attributeDataSourceObject) => {
-		// 		let attributeRelationObject = _.find(attributeRelationObjects, (attributeRelationObject) => {
-		// 			return attributeRelationObject.data.attributeDataSourceKey === attributeDataSourceObject.key
-		// 		});
-		// 		if (!attributeRelationObject) {
-		// 			attributeRelationToCreateObjects.push({
-		// 				data: {
-		// 					scopeKey: scopeDataTypeObject.key,
-		// 					attributeDataSourceKey: attributeDataSourceObject.key,
-		// 					layerTemplateKey: layerTemplateDataTypeObject.key,
-		// 					periodKey: _.find(periodDataTypeObjects, (periodDataTypeObject) => {
-		// 						return periodDataTypeObject.data.nameInternal === attributeDataSourceObject.data.columnName;
-		// 					}).key,
-		// 					attributeKey: attributeDataTypeObject.key,
-		// 					fidColumnName: attributeFidColum
-		// 				}
-		// 			})
-		// 		}
-		// 	});
-		//
-		// 	if (attributeRelationToCreateObjects.length) {
-		// 		await this._pgRelationsCrud.create({
-		// 			attribute: attributeRelationToCreateObjects,
-		// 		}, user);
-		// 	}
-		// }
-		// });
 	}
 }
 
