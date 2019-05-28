@@ -94,6 +94,7 @@ describe('IntegrateLulcProcessor', () => {
                 },
                 {
                     id: 1,
+                    periods: [2014],
                     attributeSets: [
                         {
                             id: 4,

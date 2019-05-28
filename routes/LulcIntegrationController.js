@@ -2,12 +2,16 @@ const fs = require('fs');
 const superagent = require('superagent');
 const conn = require('../common/conn');
 const config = require('../config');
-const crud = require('../rest/crud');
-const logger = require('../common/Logger').applicationWideLogger;
+const _ = require('lodash');
 
 const LoadMetadataForIntegration = require('../integration/lulc/LoadMetadataForIntegration');
 const GeoJsonToSql = require('../integration/lulc/GeoJsonToSql');
 const Uuid = require('../common/UUID');
+
+const PgBaseLayerTables = require('../layers/PgBaseLayerTables');
+const PgLayerViews = require('../layers/PgLayerViews');
+const MongoLayerReference = require('../layers/MongoLayerReference');
+const FilteredBaseLayerReferences = require('../layers/FilteredBaseLayerReferences');
 
 const tables = {
     '586173924': ['i10_bamako_al1', 'i11_bamako_al2', 'i12_bamako_al3'],
@@ -22,9 +26,13 @@ const tables = {
 };
 
 class LulcIntegrationController {
-    constructor(app, mongo, pgPool) {
+    constructor(app, mongo, pgPool, idProvider) {
         this._mongo = mongo;
         this._pgPool = pgPool;
+
+        this._idProvider = idProvider || conn.getNextId();
+        this._baseLayers = new PgBaseLayerTables(pgPool);
+        this._layersViews = new PgLayerViews(pgPool, null, null);
 
         app.get('/rest/integration/lulc', this.retrieveStateOfIntegration.bind(this));
         app.post('/rest/integration/lulcmeta', this.integrateResults.bind(this));
@@ -41,7 +49,7 @@ class LulcIntegrationController {
 
     integrateResults(request, response) {
         console.log('Integrate Results: ', request.body);
-        let id = conn.getNextId();
+        let id = this._idProvider.getNextId();
         const uuid = request.body.uuid;
 
         if(request.body.error) {
@@ -104,23 +112,29 @@ class LulcIntegrationController {
 
             return this._pgPool.query(sql);
         }).then(() => {
-            // return Promise.all(layerRefs.map(layerRef => {
-            //     return new Promise((resolve, reject) => {
-            //         crud.create('layerref', layerRef, {
-            //             userId: 1,
-            //             isAdmin: true
-            //         }, (err, result) => {
-            //             if (err) {
-            //                 logger.error("It wasn't possible to create object of type: layerref by User: Custom Script " +
-            //                     "With data: ", layerRef, " Error:", err);
-            //                 reject(err);
-            //             } else {
-            //                 resolve(result);
-            //             }
-            //         })
-            //     })
-            // }));
-            return null;
+            return this._mongo.collection('layerref').insertMany(layerRefs);
+        }).then(() => {
+            // Insert into Mongo and then
+            // Base LayerRef per Period
+            const createAllViews = [];
+
+            const referencesByPeriod = _.groupBy(layerRefs, 'year');
+            Object.keys(referencesByPeriod).forEach(period => {
+                const referencesByAreaTemplate = _.groupBy(referencesByPeriod[period], 'areaTemplate');
+                Object.keys(referencesByAreaTemplate).forEach(areaTemplate => {
+                    createAllViews.push(new FilteredBaseLayerReferences({
+                        areaTemplate: Number(areaTemplate),
+                        year: Number(period)
+                    }, this._mongo).layerReferences().then(baseLayerReferences => {
+                        const relevantLayerRefs = layerRefs.filter(layerRef => {
+                            return layerRef.areaTemplate == areaTemplate && layerRef.year == period;
+                        });
+                        return this._layersViews.add(new MongoLayerReference(baseLayerReferences[0]._id, this._mongo), relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._mongo)));
+                    }));
+                })
+            });
+
+            return Promise.all(createAllViews);
         }).then(() => {
 
             console.log('Done');
