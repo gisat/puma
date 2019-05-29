@@ -105,6 +105,7 @@ module.exports = {
 	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
 	 */
 	postgreSqlSchema: 'data',
+	postgreSqlSchemaLayers: 'views',
 
 	/*
 	 * Schema containing produced tables and views - base_ and layers_ with the data for usge in Panther.

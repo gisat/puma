@@ -2,7 +2,7 @@ const cluster = require('cluster');
 const express = require('express');
 const superagent = require('superagent');
 
-const IntegrateCityProcessor = require('./integration/lulc/IntegrateCityProcessor');
+const CityAnalysisProcessor = require('./integration/lulc/CityAnalysisProcessor');
 
 if(cluster.isMaster) {
     var cpuCount = require('os').cpus().length;
@@ -35,7 +35,7 @@ if(cluster.isMaster) {
         });
 
         const integrationInput = request.body;
-        new IntegrateCityProcessor(integrationInput).geoJson();
+        new CityAnalysisProcessor(integrationInput).geoJson();
         integrationInput.layers = [];
 
         superagent.post(request.body.url)

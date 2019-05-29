@@ -1,74 +1,95 @@
 const turf = require('turf');
+const _ = require('lodash');
 
 class TransportationNetwork {
-    constructor(attributes, areasVectorLayer, transportationVectorLayer, attributeContainer) {
+    constructor(attributes, areasVectorLayer, transportationVectorLayer) {
         this._attributes = attributes;
         this._areasVectorLayer = areasVectorLayer;
         this._transportationVectorLayer = transportationVectorLayer;
-        this._attributeContainer = attributeContainer;
     }
 
     geoJson() {
         this._areasVectorLayer.features.forEach((analyticalUnit) => {
             // Provide attributes for multiple layers at once.
             const attributesAreas = {
-                total: {
-                    measuredLength: 0,
+                'total': {
+                    area: 0,
                     id: 'total'
                 }
             };
             this._attributes.forEach(attribute => {
-                attributesAreas[attribute.code] = {
-                    measuredLength: 0,
-                    id: attribute.id,
-                };
-            });
-
-            // Preprocess by changing from MultiLineStrings to LineStrings.
-            const lineStrings = this._transportationVectorLayer.features.map(feature => {
-                try {
-                    return turf.lineToPolygon(feature, {properties: feature.properties});
-                } catch(e){
-                    console.log(e, feature);
+                if(_.isArray(attribute.code)) {
+                    attribute.code.forEach(code => {
+                        attributesAreas[code] = {
+                            area: 0,
+                            id: attribute.id
+                        };
+                    });
+                } else {
+                    attributesAreas[attribute.code] = {
+                        area: 0,
+                        id: attribute.id
+                    };
                 }
             });
 
-            // TODO: The results are wrong.
-            // What if the line is fully in polygon
-            lineStrings.forEach(feature => {
-                try {
-                    const lineDistance = turf.lineDistance(turf.intersect(analyticalUnit, feature));
-                    console.log(lineDistance);
+            this._transportationVectorLayer.features.forEach(line => {
+                line.geometry.coordinates.forEach(part => {
+                    let split = turf.lineSplit(turf.lineString(part), analyticalUnit);
+                    // If the split returns empty array then either both parts are outside or inside the polygon
+                    if(split.features.length === 0) {
+                        // If it is inside take the whole length;
+                        if(turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit) && turf.booleanPointInPolygon(turf.point(part[part.length - 1]), analyticalUnit)) {
+                            const lengthOfLine = turf.length(turf.lineString(part));
+                            this._attributes.forEach(attribute => {
+                                const codeOfPolygon = line.properties[attribute.columnName];
+                                if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                                    attributesAreas[codeOfPolygon].area += lengthOfLine;
+                                }
+                            });
+                            attributesAreas['total'].area += lengthOfLine;
+                        }
+                    }
 
-                    // if(intersectingLine.features.length < 1) {
-                    //     return;
-                    // }
-                    // const intersection = turf.lineSlice(intersectingLine[0], intersectingLine[1], feature);
-                    //
-                    // if(intersectingLine.features.length > 0) {
-                    //     this._attributes.forEach(attribute => {
-                    //         const codeOfPolygon = feature.properties[attribute.columnName];
-                    //         if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
-                    //             attributesAreas[codeOfPolygon].measuredLength += turf.length(intersection);
-                    //         }
-                    //         attributesAreas['total'].measuredLength += turf.length(intersection);
-                    //     });
-                    // }
-                } catch(err) {
-                    console.log('Error: ', err , 'AU: ', analyticalUnit, ' Feature: ', feature);
-                }
+                    // This decides whether odd or even parts of the Line String are in the polygon.
+                    let oddPair;
+                    if(turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit)){
+                        oddPair = 0;
+                    } else {
+                        oddPair = 1;
+                    }
+
+                    split.features.forEach((splitPart, i) => {
+                        if((i + oddPair)%2 === 0) {
+                            const lengthOfLine = turf.length(splitPart);
+                            this._attributes.forEach(attribute => {
+                                const codeOfPolygon = line.properties[attribute.columnName];
+                                if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                                    attributesAreas[codeOfPolygon].area += lengthOfLine;
+                                }
+                            });
+                            attributesAreas['total'].area += lengthOfLine;
+                        }
+                    });
+                });
             });
 
-            analyticalUnit.properties[this._attributeContainer] = {};
             this._attributes.forEach(attribute => {
-                analyticalUnit.properties[this._attributeContainer][attribute.id] = attributesAreas[attribute.code].area;
+                if(_.isArray(attribute.code)) {
+                    let areaForCodes  = 0;
+                    attribute.code.forEach(code => {
+                        areaForCodes += attributesAreas[code].area;
+                    });
+                    analyticalUnit.properties[attribute.id] = areaForCodes;
+                } else if(!attribute.code) {
+                    analyticalUnit.properties[attribute.id] = attributesAreas['total'].area;
+                } else {
+                    analyticalUnit.properties[attribute.id] = attributesAreas[attribute.code].area;
+                }
             });
-            console.log(attributesAreas);
         });
 
-        return this._areasVectorLayer.features.map(area => {
-            return area.properties[this._attributeContainer];
-        });
+        return this._areasVectorLayer;
     }
 }
 

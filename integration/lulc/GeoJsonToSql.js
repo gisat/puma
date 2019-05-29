@@ -11,12 +11,8 @@ class GeoJsonToSql {
 
         const columns = [];
         propertyKeys.forEach(property => {
-            if(property.indexOf('as') === 0 || property.indexOf('total') !== -1) {
-                let columnName = property;
-                if(property.indexOf('total') !== -1){
-                    columnName = 't' + property;
-                }
-                columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${columnName} FLOAT;`);
+            if(property.indexOf('as') === 0) {
+                columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${property} FLOAT;`);
             }
         });
 
@@ -27,12 +23,8 @@ class GeoJsonToSql {
             const keys = Object.keys(feature.properties);
 
             keys.forEach(key => {
-                let columnName = key;
-                if(key.indexOf('as') === 0 || key.indexOf('total') !== -1) {
-                    if(key.indexOf('total') !== -1){
-                        columnName = 't' + key;
-                    }
-                    rows.push(`UPDATE ${this._tableName} SET ${columnName} = ${feature.properties[key]} WHERE "AL${this._auIndex}_ID" = '${feature.properties["AL" + this._auIndex + '_ID']}';`);
+                if(key.indexOf('as') === 0) {
+                    rows.push(`UPDATE ${this._tableName} SET ${key} = ${feature.properties[key]} WHERE "AL${this._auIndex}_ID" = '${feature.properties["AL" + this._auIndex + '_ID']}';`);
                 }
             });
         });

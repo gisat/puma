@@ -26,7 +26,7 @@ class PgBaseLayerTables {
         }
 
         var schema = config.viewsSchema;
-        return this._pgPool.pool().query(`DROP TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)} CASCADE`);
+        return this._pgPool.query(`DROP TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)} CASCADE`);
     }
 
     remove(layerReferenceId) {
@@ -37,7 +37,7 @@ class PgBaseLayerTables {
         }
 
         var schema = config.viewsSchema;
-        return this._pgPool.pool().query(`DROP TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)}`);
+        return this._pgPool.query(`DROP TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)}`);
     }
 
     add(layerReferenceId, fidColumn, geometryColumn, sourceTableName) {
@@ -59,7 +59,7 @@ class PgBaseLayerTables {
             FROM ${sourceTableName}
         )`;
 
-        return this._pgPool.pool().query(sql);
+        return this._pgPool.query(sql);
     }
 
     static name(layerReferenceId) {

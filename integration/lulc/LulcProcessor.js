@@ -1,4 +1,5 @@
 const turf = require('turf');
+const _ = require('lodash');
 
 class LulcProcessor {
     /**
@@ -6,13 +7,12 @@ class LulcProcessor {
      * @param attributes Array of the attributes. Index in the field represents Level of the LULC.
      * @param areasVectorLayer GeoJSON representing the areas to calculate the distribution for
      * @param lulcVectorLayer GeoJSON representing the areas representing the mapped LULC.
-     * @param attributeContainer Name under which the results of the analysis will be stored in the resulting geoJson properties.
      */
-    constructor(attributes, areasVectorLayer, lulcVectorLayer, attributeContainer) {
+    constructor(attributes, areasVectorLayer, lulcVectorLayer, auLevel) {
         this._attributes = attributes;
         this._areasVectorLayer = areasVectorLayer;
         this._lulcLayer = lulcVectorLayer;
-        this._attributeContainer = attributeContainer;
+        this._auLevel = auLevel;
     }
 
     attributes() {
@@ -25,10 +25,19 @@ class LulcProcessor {
                 }
             };
             this._attributes.forEach(attribute => {
-                attributesAreas[attribute.code] = {
-                    area: 0,
-                    id: attribute.id
-                };
+                if(_.isArray(attribute.code)) {
+                    attribute.code.forEach(code => {
+                        attributesAreas[code] = {
+                            area: 0,
+                            id: attribute.id
+                        };
+                    });
+                } else {
+                    attributesAreas[attribute.code] = {
+                        area: 0,
+                        id: attribute.id
+                    };
+                }
             });
 
             this._lulcLayer.features.forEach(feature => {
@@ -42,8 +51,8 @@ class LulcProcessor {
                             if(typeof attributesAreas[codeOfPolygon] !== 'undefined') {
                                 attributesAreas[codeOfPolygon].area += turf.area(intersectingPolygon);
                             }
-                            attributesAreas['total'].area += turf.area(intersectingPolygon);
-                        })
+                        });
+                        attributesAreas['total'].area += turf.area(intersectingPolygon);
                     }
                 } catch(err) {
                     console.log('Err: ', err, 'AU: ', analyticalUnit.properties['AL2_ID'], ' Feature: ', feature.properties['ID']);
@@ -51,10 +60,21 @@ class LulcProcessor {
             });
 
             this._attributes.forEach(attribute => {
-                analyticalUnit.properties[attribute.id] = attributesAreas[attribute.code].area;
+                if(_.isArray(attribute.code)) {
+                    let areaForCodes  = 0;
+                    attribute.code.forEach(code => {
+                        areaForCodes += attributesAreas[code].area;
+                    });
+                    analyticalUnit.properties[attribute.id] = (areaForCodes / turf.area(analyticalUnit)) * analyticalUnit.properties[`AL${this._auLevel}_AREA`];
+                } else if(!attribute.code) {
+                    analyticalUnit.properties[attribute.id] = (attributesAreas['total'].area / turf.area(analyticalUnit)) * analyticalUnit.properties[`AL${this._auLevel}_AREA`];
+                    if(analyticalUnit.properties[attribute.id] > analyticalUnit.properties[`AL${this._auLevel}_AREA`]) {
+                        analyticalUnit.properties[attribute.id] = analyticalUnit.properties[`AL${this._auLevel}_AREA`];
+                    }
+                } else {
+                    analyticalUnit.properties[attribute.id] = (attributesAreas[attribute.code].area / turf.area(analyticalUnit)) * analyticalUnit.properties[`AL${this._auLevel}_AREA`];
+                }
             });
-            analyticalUnit.properties[this._attributeContainer + 'total'] = attributesAreas['total'].area;
-            console.log(attributesAreas);
         });
     }
 
