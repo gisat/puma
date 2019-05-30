@@ -141,7 +141,7 @@ module.exports = function(app) {
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
 	new PgMetadataController(app, pool, config.postgreSqlSchema, mongo);
 	new PgUserController(app, pool, config.postgreSqlSchema, mongo);
-	new LulcIntegrationController(app, mongo, pool);
+	new LulcIntegrationController(app, mongo, pool, conn);
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
 
