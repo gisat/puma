@@ -13,6 +13,9 @@ class CityAnalysisProcessor {
         const analyticalUnitsLevels = this._integrationInput.analyticalUnitLevels.map(analyticalUnitLevel => {
             return analyticalUnitLevel.layer;
         });
+        this._integrationInput.analyticalUnitLevels.forEach(au => {
+            au.table = au.table.split(':')[1];
+        });
 
         analysisRelatedThemes.forEach(theme => {
             const integrationType = theme.integrationType;
