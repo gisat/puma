@@ -71,7 +71,7 @@ class LulcIntegrationController {
         const scopeId = Number(request.body.scopeId);
         const placeName = request.body.placeName;
         const placeBbox = request.body.bbox;
-        const databaseTables = request.body.analyticalLevels;
+        const databaseTables = request.body.analyticalLevels && request.body.analyticalLevels.length && request.body.analyticalLevels.filter(au => au) || [];
         const files = request.files;
 
         const uuid = new Uuid().toString();
