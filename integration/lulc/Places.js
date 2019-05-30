@@ -25,9 +25,9 @@ class Places {
      * @param scopeId {Number} Id of the Scope to which the place is added
      * @param name {String} Name of the place to be displayed
      * @param bbox {String} Bounding Box for the place.
-     * @param analyticalLevels {[]} Array of ids of analytical units with associated table names.
+     * @param analyticalLevelTables {[]} Array of ids of analytical units with associated table names.
      */
-    async create(id, scopeId, name, bbox, analyticalLevels) {
+    async create(id, scopeId, name, bbox, analyticalLevelTables) {
         // Create new Place.
         const placeId = id;
         await this._places.add({
@@ -39,14 +39,14 @@ class Places {
         });
 
         const scope = await new MongoScope(scopeId, this._connection).json();
-        const layerReferences = _.flatten(analyticalLevels.map((au,index) => {
+        const layerReferences = _.flatten(analyticalLevelTables.map((au,index) => {
             const referencesPerPeriod = [];
             scope.years.forEach(period => {
                 referencesPerPeriod.push({
                     _id: ++id,
                     isData: false,
                     fidColumn: `AL${index+1}_ID`,
-                    areaTemplate: au.id,
+                    areaTemplate: scope.featureLayers[index],
                     location: placeId,
                     year: period,
                     layer: au.table
