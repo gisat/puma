@@ -49,7 +49,7 @@ class Places {
                     areaTemplate: scope.featureLayers[index],
                     location: placeId,
                     year: period,
-                    layer: au.table
+                    layer: au
                 })
             });
 
