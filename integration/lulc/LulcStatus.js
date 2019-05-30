@@ -19,7 +19,7 @@ class LulcStatus {
     }
 
     async update(status){
-        this._connection.collection(this._collection).update({uuid: uuid}, {
+        this._connection.collection(this._collection).update({uuid: this._uuid}, {
             state: status,
             uuid: this._uuid
         });
@@ -27,7 +27,7 @@ class LulcStatus {
     }
 
     async error(err) {
-        this._connection.collection(this._collection).update({uuid: uuid}, {
+        this._connection.collection(this._collection).update({uuid: this._uuid}, {
             state: 'Error',
             message: err,
             uuid: this._uuid
