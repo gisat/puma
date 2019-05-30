@@ -81,10 +81,13 @@ class LulcIntegrationController {
 
             const placeId = this._idProvider.getNextId();
             await this._places.create(placeId, scopeId, placeName, placeBbox, databaseTables);
+            await status.update('Place Created');
 
             const sourceForIntegration = new MetadataForIntegration(this._mongo, scopeId);
             const integrationInput = await sourceForIntegration.metadata(placeId, uuid, config.lulcUrl);
+            await status.update('Metadata Loaded');
             await sourceForIntegration.layers(integrationInput, files);
+            await status.update('Layers Loaded');
             integrationInput.analyticalUnitLevels.forEach((auLevel, index) => {
                 auLevel.table = databaseTables[index];
             });
@@ -92,7 +95,7 @@ class LulcIntegrationController {
             // Process the files and integrate them into the JSON.
             await superagent.post(config.remoteLulcProcessorUrl)
                 .send(integrationInput);
-            await status.update('remote processing');
+            await status.update('Remote processing');
 
             response.json({
                 status: 'running',
