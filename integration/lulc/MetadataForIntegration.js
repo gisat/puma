@@ -156,7 +156,7 @@ class MetadataForIntegration {
                 return;
             }
 
-            inputForAnalysis.analyticalUnitLevels.forEach(auLevel => {
+            inputForAnalysis.analyticalUnitLevels.forEach((auLevel, auLevelIndex) => {
                 theme.periods.forEach(period => {
                     theme.attributeSets.forEach(attributeSet => {
                         const attributes = [];
@@ -173,6 +173,7 @@ class MetadataForIntegration {
                             "layer": 'geonode:' + auLevel.table,
                             "columnMap": attributes,
                             isData: true,
+                            fidColumn: `AL${auLevelIndex}_ID`,
                             attributeSet: attributeSet.id,
                             location: inputForAnalysis.place,
                             year: period, // Periods depends on the analysis.

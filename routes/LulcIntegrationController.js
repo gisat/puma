@@ -36,7 +36,7 @@ class LulcIntegrationController {
 
         if (request.body.error) {
             await status.error(request.body.error);
-6
+
             response.json({});
             return;
         }

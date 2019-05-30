@@ -63,8 +63,10 @@ describe('Places', () => {
                 }
             ],
             "isData": true,
+            "fidColumn": "AL0_ID",
             "attributeSet": 1,
             "year": 1,
+            "location": 2,
             "areaTemplate": 1,
             "active": true,
             "dataSourceOrigin": "geonode"
@@ -81,9 +83,11 @@ describe('Places', () => {
                     "attribute": 2
                 }
             ],
+            "fidColumn": "AL0_ID",
             "isData": true,
             "attributeSet": 1,
             "year": 2,
+            "location": 2,
             "areaTemplate": 1,
             "active": true,
             "dataSourceOrigin": "geonode"
@@ -99,6 +103,7 @@ describe('Places', () => {
                     "isData": false,
                     "areaTemplate": 1,
                     "year": 1,
+                    "location": 2,
                     "layer": "geonode:i11_dhaka_al1",
                     "fidColumn": "AL0_ID"
                 }, {
@@ -106,6 +111,7 @@ describe('Places', () => {
                     "isData": false,
                     "areaTemplate": 1,
                     "year": 2,
+                    "location": 2,
                     "layer": "geonode:i11_dhaka_al1",
                     "fidColumn": "AL0_ID"
                 }]);
@@ -127,7 +133,7 @@ describe('Places', () => {
                     }
                 }, db);
 
-                await places.addAttributes(layerRefs);
+                await places.addAttributes(layerRefs, 2);
 
                 should(requestedSqls.length).be.exactly(2);
                 should(requestedSqls[0]).be.exactly(`CREATE MATERIALIZED VIEW views.layer_5000 AS SELECT
@@ -141,7 +147,7 @@ describe('Places', () => {
                 baseTable.centroid,
                 baseTable.extent
                 FROM views.base_5000 as baseTable
-                  LEFT JOIN public."i11_dhaka_al1" AS l_i11_dhaka_al1 ON l_i11_dhaka_al1."AL0_ID"::text = baseTable.gid::text LEFT JOIN public."geonode" AS l_geonode ON l_geonode."undefined"::text = baseTable.gid::text;
+                  LEFT JOIN public."i11_dhaka_al1" AS l_i11_dhaka_al1 ON l_i11_dhaka_al1."AL0_ID"::text = baseTable.gid::text LEFT JOIN public."geonode" AS l_geonode ON l_geonode."AL0_ID"::text = baseTable.gid::text;
             `);
                 should(requestedSqls[1]).be.exactly(`CREATE MATERIALIZED VIEW views.layer_5001 AS SELECT
                 l_i11_dhaka_al1."AL0_ID" AS gid,
@@ -154,7 +160,7 @@ describe('Places', () => {
                 baseTable.centroid,
                 baseTable.extent
                 FROM views.base_5001 as baseTable
-                  LEFT JOIN public."i11_dhaka_al1" AS l_i11_dhaka_al1 ON l_i11_dhaka_al1."AL0_ID"::text = baseTable.gid::text LEFT JOIN public."geonode" AS l_geonode ON l_geonode."undefined"::text = baseTable.gid::text;
+                  LEFT JOIN public."i11_dhaka_al1" AS l_i11_dhaka_al1 ON l_i11_dhaka_al1."AL0_ID"::text = baseTable.gid::text LEFT JOIN public."geonode" AS l_geonode ON l_geonode."AL0_ID"::text = baseTable.gid::text;
             `);
 
                 done();
