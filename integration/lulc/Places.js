@@ -64,7 +64,7 @@ class Places {
         }));
     }
 
-    async addAttributes(layerRefs) {
+    async addAttributes(layerRefs, placeId) {
         const createAllViews = [];
 
         const referencesByPeriod = _.groupBy(layerRefs, 'year');
@@ -72,11 +72,13 @@ class Places {
             const referencesByAreaTemplate = _.groupBy(referencesByPeriod[period], 'areaTemplate');
             Object.keys(referencesByAreaTemplate).forEach(areaTemplate => {
                 createAllViews.push(new FilteredBaseLayerReferences({
+                    // location
+                    location: Number(placeId),
                     areaTemplate: Number(areaTemplate),
                     year: Number(period)
                 }, this._connection).layerReferences().then(baseLayerReferences => {
                     const relevantLayerRefs = layerRefs.filter(layerRef => {
-                        return layerRef.areaTemplate == areaTemplate && layerRef.year == period;
+                        return layerRef.areaTemplate == areaTemplate && layerRef.year == period && layerRef.location == placeId;
                     });
                     return this._layersViews.add(new MongoLayerReference(baseLayerReferences[0]._id, this._connection), relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection)));
                 }));

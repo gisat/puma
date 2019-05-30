@@ -36,7 +36,7 @@ class LulcIntegrationController {
 
         if (request.body.error) {
             await status.error(request.body.error);
-
+6
             response.json({});
             return;
         }
@@ -54,7 +54,7 @@ class LulcIntegrationController {
             await this._pgPool.query(sql);
             await this._mongo.collection('layerref').insertMany(layerRefs);
 
-            await this._places.addAttributes(layerRefs);
+            await this._places.addAttributes(layerRefs, inputForAnalysis.place);
             await status.update('Done');
             response.json({});
         } catch (error) {
