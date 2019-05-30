@@ -51,7 +51,7 @@ class PgBaseLayerTables {
 
         // TODO: Find a way in Sql to do the transformation only once.
         var sql = `CREATE TABLE ${schema}.${PgBaseLayerTables.name(layerReferenceId)} AS ( 
-            SELECT ${fidColumn} as gid,
+            SELECT "${fidColumn}" as gid,
             ST_Centroid(ST_Transform(${geometryColumn}, 4326)) AS centroid,
             ST_Area(ST_Transform(${geometryColumn}, 4326)::geography) AS area,
             ST_Length(ST_Transform(${geometryColumn}, 4326)) as length,

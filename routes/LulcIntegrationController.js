@@ -74,9 +74,9 @@ class LulcIntegrationController {
         const databaseTables = request.body.analyticalLevels;
         const files = request.files;
 
+        const uuid = new Uuid().toString();
+        const status = new LulcStatus(this._mongo, uuid);
         try {
-            const uuid = new Uuid().toString();
-            const status = new LulcStatus(this._mongo, uuid);
             await status.create();
 
             const placeId = this._idProvider.getNextId();
