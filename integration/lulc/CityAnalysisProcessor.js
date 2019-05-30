@@ -134,7 +134,7 @@ class CityAnalysisProcessor {
         });
         theme.periods = periods;
 
-        periods.forEach((period, index) => {
+        periods.forEach((period, indexPeriod) => {
             const allAttributes = [];
             // Generate the attributes per year
             theme.attributeSets.forEach(attributeSet => {
@@ -148,7 +148,7 @@ class CityAnalysisProcessor {
             });
 
             analyticalUnitsLevels.forEach((analyticalUnitsLevel, index) => {
-                new LulcProcessor(allAttributes, analyticalUnitsLevel, presentLayers[index].content, index +1).geoJson();
+                new LulcProcessor(allAttributes, analyticalUnitsLevel, presentLayers[indexPeriod].content, index +1).geoJson();
             });
         });
     }
