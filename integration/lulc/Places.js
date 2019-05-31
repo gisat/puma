@@ -49,7 +49,8 @@ class Places {
                     areaTemplate: scope.featureLayers[index],
                     location: placeId,
                     year: period,
-                    layer: au
+                    layer: au,
+                    active: true
                 })
             });
 
