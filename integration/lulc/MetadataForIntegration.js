@@ -174,7 +174,9 @@ class MetadataForIntegration {
                             "layer": 'geonode:' + auLevel.table,
                             "columnMap": attributes,
                             isData: true,
-                            fidColumn: `AL${auLevelIndex}_ID`,
+                            fidColumn: `AL${auLevelIndex+1}_ID`,
+                            nameColumn: `AL${auLevelIndex+1}_ID`,
+                            parentColumn: auLevel !== 0 ? `AL${auLevelIndex}_ID` : null,
                             attributeSet: attributeSet.id,
                             location: inputForAnalysis.place,
                             year: period, // Periods depends on the analysis.

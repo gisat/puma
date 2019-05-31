@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const config = require('../../config');
 
 const FilteredBaseLayerReferences = require('../../layers/FilteredBaseLayerReferences');
 const MongoLayerReference = require('../../layers/MongoLayerReference');
@@ -7,6 +8,8 @@ const MongoPlaces = require('../../metadata/MongoLocations');
 const MongoScope = require('../../metadata/MongoScope');
 const PgBaseLayerTables = require('../../layers/PgBaseLayerTables');
 const PgLayerViews = require('../../layers/PgLayerViews');
+const GeoServerLayers = require('../../layers/GeoServerLayers');
+const RestLayer = require('../../layers/RestLayer');
 
 class Places {
     constructor(pgPool, connection) {
@@ -14,6 +17,7 @@ class Places {
         this._baseLayers = new PgBaseLayerTables(pgPool);
         this._layersViews = new PgLayerViews(pgPool, null, null);
         this._layerReferences = new MongoLayerReferences(connection);
+        this._geoServerLayers = new GeoServerLayers(config.geoServerUrl, config.geoserverUsername, config.geoserverPassword);
 
         this._connection = connection;
     }
@@ -45,6 +49,8 @@ class Places {
                 referencesPerPeriod.push({
                     _id: ++id,
                     isData: false,
+                    parentColumn: index !== 0 ? `AL${index}_ID` : null,
+                    nameColumn: `AL${index+1}_NAME`,
                     fidColumn: `AL${index+1}_ID`,
                     areaTemplate: scope.featureLayers[index],
                     location: placeId,
@@ -90,7 +96,9 @@ class Places {
                     // If the layerRefs contain the same attributes create updated.
                     return this._layersViews.update(
                         baseLayerReferences[0]._id,
-                        relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection)));
+                        relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection))).then(() =>{
+                            return this._geoServerLayers.create(new RestLayer(`layer_${baseLayerReferences[0]._id}`,"panther","views"));
+                    });
                 }));
             })
         });
