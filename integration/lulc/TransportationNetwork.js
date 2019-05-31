@@ -35,42 +35,46 @@ class TransportationNetwork {
 
             this._transportationVectorLayer.features.forEach(line => {
                 line.geometry.coordinates.forEach(part => {
-                    let split = turf.lineSplit(turf.lineString(part), analyticalUnit);
-                    // If the split returns empty array then either both parts are outside or inside the polygon
-                    if(split.features.length === 0) {
-                        // If it is inside take the whole length;
-                        if(turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit) && turf.booleanPointInPolygon(turf.point(part[part.length - 1]), analyticalUnit)) {
-                            const lengthOfLine = turf.length(turf.lineString(part));
-                            this._attributes.forEach(attribute => {
-                                const codeOfPolygon = line.properties[attribute.columnName];
-                                if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
-                                    attributesAreas[codeOfPolygon].area += lengthOfLine;
-                                }
-                            });
-                            attributesAreas['total'].area += lengthOfLine;
+                    try {
+                        let split = turf.lineSplit(turf.lineString(part), analyticalUnit);
+                        // If the split returns empty array then either both parts are outside or inside the polygon
+                        if (split.features.length === 0) {
+                            // If it is inside take the whole length;
+                            if (turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit) && turf.booleanPointInPolygon(turf.point(part[part.length - 1]), analyticalUnit)) {
+                                const lengthOfLine = turf.length(turf.lineString(part));
+                                this._attributes.forEach(attribute => {
+                                    const codeOfPolygon = line.properties[attribute.columnName];
+                                    if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                                        attributesAreas[codeOfPolygon].area += lengthOfLine;
+                                    }
+                                });
+                                attributesAreas['total'].area += lengthOfLine;
+                            }
                         }
-                    }
 
-                    // This decides whether odd or even parts of the Line String are in the polygon.
-                    let oddPair;
-                    if(turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit)){
-                        oddPair = 0;
-                    } else {
-                        oddPair = 1;
-                    }
-
-                    split.features.forEach((splitPart, i) => {
-                        if((i + oddPair)%2 === 0) {
-                            const lengthOfLine = turf.length(splitPart);
-                            this._attributes.forEach(attribute => {
-                                const codeOfPolygon = line.properties[attribute.columnName];
-                                if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
-                                    attributesAreas[codeOfPolygon].area += lengthOfLine;
-                                }
-                            });
-                            attributesAreas['total'].area += lengthOfLine;
+                        // This decides whether odd or even parts of the Line String are in the polygon.
+                        let oddPair;
+                        if (turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit)) {
+                            oddPair = 0;
+                        } else {
+                            oddPair = 1;
                         }
-                    });
+
+                        split.features.forEach((splitPart, i) => {
+                            if ((i + oddPair) % 2 === 0) {
+                                const lengthOfLine = turf.length(splitPart);
+                                this._attributes.forEach(attribute => {
+                                    const codeOfPolygon = line.properties[attribute.columnName];
+                                    if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                                        attributesAreas[codeOfPolygon].area += lengthOfLine;
+                                    }
+                                });
+                                attributesAreas['total'].area += lengthOfLine;
+                            }
+                        });
+                    } catch(err) {
+                        console.log('ERROR ', err, ' ', part);
+                    }
                 });
             });
 
