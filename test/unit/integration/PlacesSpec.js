@@ -13,7 +13,7 @@ describe('Places', () => {
                     dataset: scopeId
                 });
                 await db.collection('layerref').deleteMany({
-                    location: 1
+                    location: 10
                 });
 
                 done();
@@ -29,15 +29,17 @@ describe('Places', () => {
                 const places = new Places({
                     query: sql => {
                         requestedSqls.push(sql);
+
+                        return Promise.resolve();
                     }
                 }, db);
-                await places.create(1, scopeId, 'Dhaka', '12,23,12,45', [
-                    {id: 1, table: 'geonode:i11_dhaka_al1'},
-                    {id: 2, table: 'geonode:i12_dhaka_al2'}
+                await places.create(10, scopeId, 'Dhaka', '12,23,12,45', [
+                    'geonode:i11_dhaka_al1',
+                    'geonode:i12_dhaka_al2'
                 ]);
 
-                should(requestedSqls.length).be.exactly(6);
-                should(requestedSqls[0]).be.exactly('CREATE TABLE views.base_2 AS ( \n            SELECT AL1_ID as gid,\n            ST_Centroid(ST_Transform(the_geom, 4326)) AS centroid,\n            ST_Area(ST_Transform(the_geom, 4326)::geography) AS area,\n            ST_Length(ST_Transform(the_geom, 4326)) as length,\n            Box2D(ST_Transform(the_geom, 4326)) AS extent\n            FROM i11_dhaka_al1\n        )');
+                should(requestedSqls.length).be.exactly(12);
+                should(requestedSqls[0]).be.exactly('CREATE TABLE views.base_11 AS ( \n            SELECT "AL1_ID" as gid,\n            ST_Centroid(ST_Transform(the_geom, 4326)) AS centroid,\n            ST_Area(ST_Transform(the_geom, 4326)::geography) AS area,\n            ST_Length(ST_Transform(the_geom, 4326)) as length,\n            Box2D(ST_Transform(the_geom, 4326)) AS extent\n            FROM i11_dhaka_al1\n        )');
 
                 done();
             } catch (e) {

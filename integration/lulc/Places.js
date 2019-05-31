@@ -60,7 +60,13 @@ class Places {
         await this._connection.collection('layerref').insertMany(layerReferences);
 
         return Promise.all(layerReferences.map(layerReference => {
-            return this._baseLayers.add(layerReference._id, layerReference.fidColumn, 'the_geom', layerReference.layer.split(':')[1]);
+            const addBaseLayers = this._baseLayers.add(layerReference._id, layerReference.fidColumn, 'the_geom', layerReference.layer.split(':')[1]);
+            return addBaseLayers.then(() => {
+                return this._layersViews.add(
+                    new MongoLayerReference(layerReference._id, this._connection),
+                    []
+                );
+            });
         }));
     }
 
@@ -81,8 +87,8 @@ class Places {
                         return layerRef.areaTemplate == areaTemplate && layerRef.year == period && layerRef.location == placeId;
                     });
                     // If the layerRefs contain the same attributes create updated.
-                    return this._layersViews.add(
-                        new MongoLayerReference(baseLayerReferences[0]._id, this._connection),
+                    return this._layersViews.update(
+                        baseLayerReferences[0]._id,
                         relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection)));
                 }));
             })
