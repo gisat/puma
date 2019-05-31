@@ -80,7 +80,10 @@ class Places {
                     const relevantLayerRefs = layerRefs.filter(layerRef => {
                         return layerRef.areaTemplate == areaTemplate && layerRef.year == period && layerRef.location == placeId;
                     });
-                    return this._layersViews.add(new MongoLayerReference(baseLayerReferences[0]._id, this._connection), relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection)));
+                    // If the layerRefs contain the same attributes create updated.
+                    return this._layersViews.add(
+                        new MongoLayerReference(baseLayerReferences[0]._id, this._connection),
+                        relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection)));
                 }));
             })
         });

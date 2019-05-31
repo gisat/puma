@@ -105,8 +105,6 @@ function initGeoserver() {
 function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
 	pgDataDB = new pg.Client(pgDataConnString);
 	pgDataDB.connect();
-	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
-	pgGeonodeDB.connect();
 
 	// keeping connection alive
 	setInterval(function() {
@@ -125,23 +123,6 @@ function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, c
 			}
 		},2000);
 	},Math.round(1000*60*60*5.9));
-
-	setInterval(function() {
-		if (reconnectCommand) {
-			clearInterval(reconnectCommand);
-		}
-		var reconnectCommand = setInterval(function() {
-			if(!pgGeonodeDB.activeQuery){
-				clearInterval(reconnectCommand);
-				pgGeonodeDB.end();
-				pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
-				pgGeonodeDB.connect();
-				logger.info('conn#initDatabases Geonode DB reconnected');
-			}else{
-				logger.info('conn#initiDatabases Geonode DB waiting for reconnect');
-			}
-		},2000);
-	},Math.round(1000*60*60*5.42));
 
 	MongoClient.connect(mongoConnString, function(err, dbs) {
 		if (err){

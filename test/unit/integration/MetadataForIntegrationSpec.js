@@ -15,7 +15,7 @@ describe('MetadataForIntegration', () => {
                 should(result.place).be.exactly('Argentina');
                 should(result.url).be.exactly('http://test');
                 should(result.uuid).be.exactly('uuid');
-                should(result.themes.length).be.exactly(34);
+                should(result.themes.length).be.exactly(22);
 
                 const theme = result.themes.filter(theme => theme.id == '620001300')[0];
                 should(theme.layerTemplates.length).be.exactly(1);

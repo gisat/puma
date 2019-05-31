@@ -20,6 +20,7 @@ class MetadataForIntegration {
         const themesForScope = await this._scope.themes();
         let topics = await this.loadTopics(themesForScope);
         topics = _.flatten(topics);
+        topics = _.uniqBy(topics, '_id');
         const scope = {
             themes: [],
             place: place
