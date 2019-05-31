@@ -1,5 +1,6 @@
 const zipper = require(`zip-local`);
 const uuidv4 = require(`uuid/v4`);
+const _ = require(`lodash`);
 
 const config = require(`../config`);
 
@@ -8,6 +9,7 @@ const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
 const PgSpecificCrud = require(`../specific/PgSpecificCrud`);
 const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 const PgViewsCrud = require(`../view/PgViewsCrud`);
+const PgApplicationsCrud = require(`../application/PgApplicationsCrud`);
 
 const PgPermission = require(`../security/PgPermissions`);
 
@@ -19,7 +21,12 @@ const baseViewState = {
 			"c4edaf02-f88a-47c8-a29e-3f53d3d544e2": {
 				"key": "c4edaf02-f88a-47c8-a29e-3f53d3d544e2",
 				"data": {
-					"layers": [],
+					"layers": [
+						{
+							"key": "afb2cee7-778d-4156-9df5-4e9b14d8e0fe",
+							"layerTemplate": "layerTemplateKey"
+						}
+					],
 					"metadataModifiers": {
 						"period": "periodKey"
 					}
@@ -58,7 +65,8 @@ const baseViewState = {
 			"esponFuoreCharts": {
 				"key": "esponFuoreCharts",
 				"charts": [
-					"columnChart1"
+					"columnChart1",
+					"progressChart"
 				]
 			}
 		},
@@ -66,30 +74,48 @@ const baseViewState = {
 			"columnChart1": {
 				"key": "columnChart1",
 				"data": {
-					"layerTemplate": null
+					"layerTemplate": "layerTemplateKey"
+				}
+			},
+			"progressChart": {
+				"key": "progressChart",
+				"data": {
+					"title": "Progress",
+					"periods": [
+						"periodKeyEvery5Years"
+					],
+					"layerTemplate": "layerTemplateKey"
 				}
 			}
 		}
-	},
-	"scopes": {
-		"activeKey": "scopeKey"
 	},
 	"periods": {
 		"activeKeys": [
 			"periodKey"
 		]
-	},
-	"attributes": {
-		"activeKey": "attributeKey"
-	},
-	"components": {
-		"esponFuore_IndicatorSelect": {
-			"activeCategory": "tagKey",
-			"activeIndicator": "esponFuoreIndicatorKey",
-			"indicatorSelectOpen": false
-		}
 	}
 };
+
+const baseLayerTreeStructure = [
+	{
+		"layers": [
+			{
+				"key": "QQQQQy",
+				"icon": "",
+				"type": "folder",
+				"items": [
+					{
+						"key": "layerTemplateKey",
+						"type": "layerTemplate",
+						"visible": true
+					}
+				],
+				"title": "aaa",
+				"expanded": true
+			}
+		]
+	}
+];
 
 class FuoreImporter {
 	constructor(pgPool) {
@@ -100,6 +126,7 @@ class FuoreImporter {
 		this._pgSpecificCrud = new PgSpecificCrud(pgPool, config.pgSchema.specific);
 		this._pgRelationsCrud = new PgRelationsCrud(pgPool, config.pgSchema.relations);
 		this._pgViewsCrud = new PgViewsCrud(pgPool, config.pgSchema.views);
+		this._pgApplicationsCrud = new PgApplicationsCrud(pgPool, config.pgSchema.application);
 
 		this._pgPermission = new PgPermission(pgPool, config.pgSchema.data);
 	}
@@ -260,12 +287,20 @@ class FuoreImporter {
 
 		for (let attributeDataObject of attributeData) {
 			_.each(attributeDataObject, (value, property) => {
-				if (!tableColumns.hasOwnProperty(property)) {
+				if (!tableColumns.hasOwnProperty(property) || !tableColumns[property]) {
 					if (_.isString(value)) {
 						tableColumns[property] = `text`;
 					} else if (_.isNumber(value)) {
 						tableColumns[property] = `numeric`;
+					} else {
+						tableColumns[property] = null;
 					}
+				}
+			});
+
+			_.each(tableColumns, (value, property) => {
+				if(!value) {
+					tableColumns[property] = `numeric`;
 				}
 			});
 		}
@@ -273,6 +308,9 @@ class FuoreImporter {
 		let sql = [];
 
 		sql.push(`BEGIN;`);
+
+		sql.push(`DROP TABLE IF EXISTS "public"."${attributeDataTableName}";`);
+
 		sql.push(`CREATE TABLE IF NOT EXISTS "public"."${attributeDataTableName}" (`);
 
 		sql.push(`auto_fid serial primary key,`);
@@ -292,10 +330,14 @@ class FuoreImporter {
 
 			_.each(tableColumns, (type, columnName) => {
 				columnNames.push(columnName);
-				if (type === `text`) {
-					values.push(`'${attributeDataObject[columnName].replace(`'`, `''`)}'`);
+				if(attributeDataObject[columnName] === null) {
+					values.push(`NULL`);
 				} else {
-					values.push(attributeDataObject[columnName]);
+					if (type === `text`) {
+						values.push(`'${attributeDataObject[columnName].replace(`'`, `''`)}'`);
+					} else {
+						values.push(attributeDataObject[columnName]);
+					}
 				}
 			});
 
@@ -437,6 +479,24 @@ class FuoreImporter {
 			})
 	}
 
+	async createApplication(group, filter, data, user) {
+		return await this._pgApplicationsCrud.get(group, {filter}, user)
+			.then((metadataResults) => {
+				if (metadataResults.data[group].length) {
+					return metadataResults.data[group];
+				} else {
+					return this._pgApplicationsCrud.create({[group]: [{data: data}]}, user)
+						.then(([data, errors]) => {
+							if (errors) {
+								throw new Error(JSON.stringify(errors));
+							} else {
+								return data[group];
+							}
+						})
+				}
+			})
+	}
+
 	async createRelations(group, filter, data, user) {
 		return await this._pgRelationsCrud.get(group, {filter}, user)
 			.then((metadataResults) => {
@@ -468,6 +528,7 @@ class FuoreImporter {
 						},
 						{
 							nameInternal: analyticalUnit.type_of_region,
+							nameDisplay: analyticalUnit.type_of_region,
 							applicationKey: esponFuoreApplicationKey,
 							configuration: {
 								areaNameAttributeKey
@@ -495,6 +556,52 @@ class FuoreImporter {
 				let pantherViews = [];
 				for (let analyticalUnit of analyticalUnits) {
 					let state = _.cloneDeep(baseViewState);
+
+					let layerTemplate = _.find(pantherData.layerTemplates, (pantherLayerTemplate) => {
+						return pantherLayerTemplate.linkage.analyticalUnitId === analyticalUnit.id;
+					});
+
+					let attributes = _.filter(pantherData.attributes, (pantherAttribute) => {
+						return pantherAttribute.linkage.analyticalUnitId === analyticalUnit.id;
+					});
+
+					if (!layerTemplate || !attributes.length) {
+						throw new Error(`unable to create internal data structure - #ERR01`);
+					}
+
+					let commonYearValues = _.intersection(..._.map(attributes, (attribute) => {
+						return attribute.linkage.years;
+					}));
+
+					let availableYearValues = _.uniq(_.flatten(_.map(attributes, (attribute) => {
+						return attribute.linkage.years;
+					})));
+
+					let intervalYearValues = [
+						_.nth(availableYearValues, 0),
+						_.nth(availableYearValues, (availableYearValues.length / 2) - 1),
+						_.nth(availableYearValues, availableYearValues.length - 1)
+					];
+
+					let activeYearValue = commonYearValues.length ? _.last(commonYearValues) : _.last(availableYearValues);
+
+					let activeYearPeriodKey = _.find(pantherData.periods, (pantherPeriod) => {
+						return pantherPeriod.data.nameInternal === String(activeYearValue);
+					}).key;
+
+					let intervalYearPeriodKeys = _.map(intervalYearValues, (intervalYearValue) => {
+						return _.find(pantherData.periods, (pantherPeriod) => {
+							return pantherPeriod.data.nameInternal === String(intervalYearValue);
+						}).key;
+					});
+
+					state.maps.maps["c4edaf02-f88a-47c8-a29e-3f53d3d544e2"].data.layers[0].layerTemplate = layerTemplate.key;
+					state.maps.maps["c4edaf02-f88a-47c8-a29e-3f53d3d544e2"].data.metadataModifiers.period = activeYearPeriodKey;
+					state.charts.charts.columnChart1.data.layerTemplate = layerTemplate.key;
+					state.charts.charts.progressChart.data.periods = intervalYearPeriodKeys;
+					state.charts.charts.progressChart.data.layerTemplate = layerTemplate.key;
+					state.periods.activeKeys = [activeYearPeriodKey];
+
 					await this.createView(
 						`views`,
 						{
@@ -518,6 +625,54 @@ class FuoreImporter {
 					})
 				}
 				return pantherViews;
+			});
+	}
+
+	createPantherLayerTreesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
+		return Promise.resolve()
+			.then(async () => {
+				let pantherLayerTrees = [];
+				for (let analyticalUnit of analyticalUnits) {
+					let structure = _.cloneDeep(baseLayerTreeStructure);
+
+					let layerTemplate = _.find(pantherData.layerTemplates, (pantherLayerTemplate) => {
+						return pantherLayerTemplate.linkage.analyticalUnitId === analyticalUnit.id;
+					});
+
+					let scope = _.find(pantherData.scopes, (pantherScope) => {
+						return pantherScope.linkage.analyticalUnitId === analyticalUnit.id;
+					});
+
+					if (!layerTemplate || !scope) {
+						throw new Error(`unable to create internal data structure - #ERR02`);
+					}
+
+					structure[0].layers[0].items[0].key = layerTemplate.key;
+
+					await this.createApplication(
+						`layerTrees`,
+						{
+							nameInternal: `fuore-base-${analyticalUnit.type_of_region}`,
+							applicationKey: esponFuoreApplicationKey,
+							scopeKey: scope.key
+						},
+						{
+							nameInternal: `fuore-base-${analyticalUnit.type_of_region}`,
+							structure,
+							applicationKey: esponFuoreApplicationKey,
+							scopeKey: scope.key,
+						},
+						user
+					).then((layerTrees) => {
+						pantherLayerTrees.push({
+							...layerTrees[0],
+							linkage: {
+								analyticalUnitId: analyticalUnit.id
+							}
+						})
+					})
+				}
+				return pantherLayerTrees;
 			});
 	}
 
@@ -561,12 +716,18 @@ class FuoreImporter {
 						},
 						user
 					).then((attributes) => {
+						let years = [];
+						for (let year = Number(attribute.years.split(`-`)[0]); year <= Number(attribute.years.split(`-`)[1]); year++) {
+							years.push(year);
+						}
+
 						pantherAttributes.push({
 							...attributes[0],
 							linkage: {
 								analyticalUnitId: attribute.analytical_unit_id,
 								attributeFidColumn: attribute.fid_column,
-								attributeId: attribute.id
+								attributeId: attribute.id,
+								years
 							}
 						})
 					});
@@ -604,7 +765,7 @@ class FuoreImporter {
 								user
 							).then((periods) => {
 								pantherPeriods.push({
-									...periods[0],
+									...periods[0]
 								})
 							});
 						}
@@ -623,7 +784,7 @@ class FuoreImporter {
 						return pantherScope.linkage.analyticalUnitId === attribute.analytical_unit_id;
 					});
 
-					if(!scope) {
+					if (!scope) {
 						throw new Error(`unable to create metadata relation - internal error`);
 					}
 
@@ -631,7 +792,8 @@ class FuoreImporter {
 						`tags`,
 						{
 							nameInternal: attribute.category,
-							applicationKey: esponFuoreApplicationKey
+							applicationKey: esponFuoreApplicationKey,
+							scopeKey: scope.key
 						},
 						{
 							nameInternal: attribute.category,
@@ -643,6 +805,10 @@ class FuoreImporter {
 					).then((tags) => {
 						pantherTags.push({
 							...tags[0],
+							linkage: {
+								analytical_unit_id: attribute.analytical_unit_id,
+								attributeId: attribute.id
+							}
 						})
 					});
 				}
@@ -666,7 +832,7 @@ class FuoreImporter {
 					let pantherScopeKey = pantherScope ? pantherScope.key : null;
 
 					let pantherTag = _.find(pantherData.tags, (pantherTag) => {
-						return pantherTag.data.nameInternal === attribute.category
+						return pantherTag.linkage.attributeId === attribute.id && pantherTag.data.nameInternal === attribute.category;
 					});
 					let pantherTagKey = pantherTag ? pantherTag.key : null;
 
@@ -892,7 +1058,7 @@ class FuoreImporter {
 						return attribute.linkage.attributeId === attributeDataSource.linkage.attributeId;
 					});
 
-					if(!attribute && attributeDataSource.linkage.isAnalyticalUnitName) {
+					if (!attribute && attributeDataSource.linkage.isAnalyticalUnitName) {
 						attribute = {
 							...pantherData.fuoreAuNameAttribute,
 							linkage: {
@@ -933,8 +1099,75 @@ class FuoreImporter {
 	setGuestPermissionsForPantherData(pantherData) {
 		return Promise.resolve()
 			.then(() => {
-
+				_.each(pantherData, async (value, property) => {
+					switch (property) {
+						case `fuoreAuNameAttribute`:
+							await this._pgPermission.addGroup(guestGroupKey, `attribute`, value.key, `GET`);
+							break;
+						case `scopes`:
+							for(let scope of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `scope`, scope.key, `GET`);
+							}
+							break;
+						case `attributes`:
+							for(let attribute of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `attribute`, attribute.key, `GET`);
+							}
+							break;
+						case `periods`:
+							for(let period of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `period`, period.key, `GET`);
+							}
+							break;
+						case `tags`:
+							for(let tag of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `tag`, tag.key, `GET`);
+							}
+							break;
+						case `layerTemplates`:
+							for(let layerTemplate of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplate.key, `GET`);
+							}
+							break;
+						case `views`:
+							for(let view of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `view`, view.key, `GET`);
+							}
+							break;
+						case `esponFuoreIndicators`:
+							for(let esponFuoreIndicator of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `esponFuoreIndicator`, esponFuoreIndicator.key, `GET`);
+							}
+							break;
+						case `layerTrees`:
+							for(let layerTree of value) {
+								await this._pgPermission.addGroup(guestGroupKey, `layerTree`, layerTree.key, `GET`);
+							}
+							break;
+					}
+				})
 			});
+	}
+
+	cleanup() {
+		return this._pgPool
+			.query(`
+			BEGIN;
+			DELETE FROM "metadata"."attribute";
+			DELETE FROM "metadata"."scope";
+			DELETE FROM "metadata"."period";
+			DELETE FROM "metadata"."tag";
+			DELETE FROM "metadata"."layerTemplate";
+			DELETE FROM "views"."view";
+			DELETE FROM "specific"."esponFuoreIndicator";
+			DELETE FROM "dataSources"."dataSource";
+			DELETE FROM "dataSources"."attributeDataSource";
+			DELETE FROM "relations"."attributeDataSourceRelation";
+			DELETE FROM "relations"."spatialDataSourceRelation";
+			DELETE FROM "data"."group_permissions";
+			DELETE FROM "application"."layerTree";
+			COMMIT;
+			`);
 	}
 
 	import(data, user) {
@@ -948,6 +1181,9 @@ class FuoreImporter {
 		let pantherData = {};
 
 		return Promise.resolve()
+			.then(() => {
+				return this.cleanup();
+			})
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
@@ -997,6 +1233,12 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
+				return this.createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
+					.then((pantherLayerTemplates) => {
+						pantherData.layerTemplates = pantherLayerTemplates;
+					});
+			})
+			.then(() => {
 				return this.createPantherViewsFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherViews) => {
 						pantherData.views = pantherViews;
@@ -1027,10 +1269,10 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				return this.createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
-					.then((pantherLayerTemplates) => {
-						pantherData.layerTemplates = pantherLayerTemplates;
-					});
+				return this.createPantherLayerTreesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
+					.then((pantherLayerTrees) => {
+						pantherData.layerTrees = pantherLayerTrees;
+					})
 			})
 			.then(() => {
 				return this.createPantherSpatialRelations(pantherData, user);

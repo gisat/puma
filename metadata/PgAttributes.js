@@ -11,7 +11,7 @@ class PgAttributes extends PgCollection {
 
 		this._keyType = this.constructor.keyType();
 
-		this._basePermissionResourceType = `attributes`;
+		this._basePermissionResourceType = `attribute`;
 
 		this._permissionResourceTypes = [
 			this._basePermissionResourceType

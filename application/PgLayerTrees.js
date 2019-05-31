@@ -24,6 +24,7 @@ class PgLayerTrees extends PgCollection {
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
 			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "nameInternal" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "structure" jsonb[];
 		COMMIT;
 		`;
