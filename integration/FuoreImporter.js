@@ -266,10 +266,6 @@ class FuoreImporter {
 	async ensureAttributeData(attributeMetadata, unzippedFs) {
 		let isTableCreated = await this.isAttributeDataTableExisting(attributeMetadata);
 
-		// todo only for testing purposes
-		console.log(`#### fuore import - skipping attribute table check`);
-		isTableCreated = false;
-
 		if (!unzippedFs.contents().includes(`${attributeMetadata.table_name}.json`) && !isTableCreated) {
 			throw new Error(`missing ${attributeMetadata.table_name}.json`);
 		} else if (unzippedFs.contents().includes(`${attributeMetadata.table_name}.json`) && isTableCreated) {
@@ -299,7 +295,7 @@ class FuoreImporter {
 			});
 
 			_.each(tableColumns, (value, property) => {
-				if(!value) {
+				if (!value) {
 					tableColumns[property] = `numeric`;
 				}
 			});
@@ -330,7 +326,7 @@ class FuoreImporter {
 
 			_.each(tableColumns, (type, columnName) => {
 				columnNames.push(columnName);
-				if(attributeDataObject[columnName] === null) {
+				if (attributeDataObject[columnName] === null) {
 					values.push(`NULL`);
 				} else {
 					if (type === `text`) {
@@ -841,7 +837,7 @@ class FuoreImporter {
 					});
 					let pantherViewKey = pantherView ? pantherView.key : null;
 
-					if(!pantherAttribute || !pantherScope || !pantherTag || pantherView) {
+					if (!pantherAttribute || !pantherScope || !pantherTag || pantherView) {
 						throw new Error(`unable to create internal data structure - #ERR04`);
 					}
 
@@ -1109,69 +1105,48 @@ class FuoreImporter {
 							await this._pgPermission.addGroup(guestGroupKey, `attribute`, value.key, `GET`);
 							break;
 						case `scopes`:
-							for(let scope of value) {
+							for (let scope of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `scope`, scope.key, `GET`);
 							}
 							break;
 						case `attributes`:
-							for(let attribute of value) {
+							for (let attribute of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `attribute`, attribute.key, `GET`);
 							}
 							break;
 						case `periods`:
-							for(let period of value) {
+							for (let period of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `period`, period.key, `GET`);
 							}
 							break;
 						case `tags`:
-							for(let tag of value) {
+							for (let tag of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `tag`, tag.key, `GET`);
 							}
 							break;
 						case `layerTemplates`:
-							for(let layerTemplate of value) {
+							for (let layerTemplate of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplate.key, `GET`);
 							}
 							break;
 						case `views`:
-							for(let view of value) {
+							for (let view of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `view`, view.key, `GET`);
 							}
 							break;
 						case `esponFuoreIndicators`:
-							for(let esponFuoreIndicator of value) {
+							for (let esponFuoreIndicator of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `esponFuoreIndicator`, esponFuoreIndicator.key, `GET`);
 							}
 							break;
 						case `layerTrees`:
-							for(let layerTree of value) {
+							for (let layerTree of value) {
 								await this._pgPermission.addGroup(guestGroupKey, `layerTree`, layerTree.key, `GET`);
 							}
 							break;
 					}
 				})
 			});
-	}
-
-	cleanup() {
-		return this._pgPool
-			.query(`
-			BEGIN;
-			DELETE FROM "metadata"."attribute";
-			DELETE FROM "metadata"."scope";
-			DELETE FROM "metadata"."period";
-			DELETE FROM "metadata"."tag";
-			DELETE FROM "metadata"."layerTemplate";
-			DELETE FROM "views"."view";
-			DELETE FROM "specific"."esponFuoreIndicator";
-			DELETE FROM "dataSources"."dataSource";
-			DELETE FROM "dataSources"."attributeDataSource";
-			DELETE FROM "relations"."attributeDataSourceRelation";
-			DELETE FROM "relations"."spatialDataSourceRelation";
-			DELETE FROM "data"."group_permissions";
-			DELETE FROM "application"."layerTree";
-			COMMIT;
-			`);
 	}
 
 	import(data, user) {
@@ -1185,9 +1160,6 @@ class FuoreImporter {
 		let pantherData = {};
 
 		return Promise.resolve()
-			.then(() => {
-				return this.cleanup();
-			})
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
