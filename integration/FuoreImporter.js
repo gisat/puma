@@ -785,7 +785,7 @@ class FuoreImporter {
 					});
 
 					if (!scope) {
-						throw new Error(`unable to create metadata relation - internal error`);
+						throw new Error(`unable to create internal data structure - #ERR03`);
 					}
 
 					await this.createMetadata(
@@ -840,6 +840,10 @@ class FuoreImporter {
 						return pantherView.linkage.analyticalUnitId === attribute.analytical_unit_id;
 					});
 					let pantherViewKey = pantherView ? pantherView.key : null;
+
+					if(!pantherAttribute || !pantherScope || !pantherTag || pantherView) {
+						throw new Error(`unable to create internal data structure - #ERR04`);
+					}
 
 					await this.createSpecific(
 						`esponFuoreIndicators`,
@@ -1018,7 +1022,7 @@ class FuoreImporter {
 					});
 
 					if (!scope || !spatialDataSource || !layerTemplate) {
-						throw new Error(`unable to create spatial relations - internal error`);
+						throw new Error(`unable to create internal data structure - #ERR05`);
 					}
 
 					await this.createRelations(
@@ -1069,7 +1073,7 @@ class FuoreImporter {
 					}
 
 					if (!scope || !layerTemplate || !period || !attribute) {
-						throw new Error(`unable to create attribute relations - internal error`);
+						throw new Error(`unable to create internal data structure - #ERR06`);
 					}
 
 					await this.createRelations(
