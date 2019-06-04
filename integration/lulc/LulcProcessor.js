@@ -59,6 +59,8 @@ class LulcProcessor {
                 }
             });
 
+            console.log(attributesAreas);
+
             this._attributes.forEach(attribute => {
                 if(_.isArray(attribute.code)) {
                     let areaForCodes  = 0;
