@@ -182,13 +182,30 @@ class FuoreImporter {
 
 		await this._pgPool.query(auTableSql.join(` `));
 
-		await this._pgPool.query(_.map(analyticalUnitFeatureValues, (featureValues) => {
+		let inserts = _.map(analyticalUnitFeatureValues, (featureValues) => {
 			return `INSERT INTO "${analyticalUnitTableName}" (${_.map(featureValues, (value, property) => {
 				return `"${property}"`
 			}).join(', ')}) VALUES (${_.map(featureValues, (value, property) => {
-				return _.isString(value) ? property === 'geometry' ? `ST_GeomFromGeoJSON('${value}')` : `'${value.replace(`'`, `''`)}'` : value
+				let type = analyticalUnitFeatureProperties[property];
+				if (property === `geometry`) {
+					return `ST_GeomFromGeoJSON('${value}')`;
+				} else if (type === `text`) {
+					if (value !== null) {
+						return `'${value.replace(/'/g, `''`)}'`;
+					} else {
+						return `NULL`;
+					}
+				} else if (type === `numeric`) {
+					if (value !== null) {
+						return value;
+					} else {
+						return `NULL`;
+					}
+				}
 			}).join(`, `)});`
-		}).join(` `));
+		}).join(`\n`);
+
+		await this._pgPool.query(inserts);
 	}
 
 	async ensureAnalyticalUnit(analyticalUnitMetadata, unzippedFs) {
@@ -692,19 +709,29 @@ class FuoreImporter {
 			});
 	}
 
-	createPantherAttributesFromFuoreAttributes(attributes, user) {
+	createPantherAttributesFromFuoreAttributes(attributes, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherAttributes = [];
 				for (let attribute of attributes) {
+					let scope = _.find(pantherData.scopes, (pantherScope) => {
+						return pantherScope.linkage.analyticalUnitId === attribute.analytical_unit_id;
+					});
+
+					if (!scope) {
+						throw new Error(`unable to create internal data structure - #ERR07`);
+					}
+
+					let attributeNameInternal = `${attribute.name} - ${scope.data.nameInternal} - ${attribute.id}`;
+
 					await this.createMetadata(
 						`attributes`,
 						{
-							nameInternal: attribute.name,
+							nameInternal: attributeNameInternal,
 							applicationKey: esponFuoreApplicationKey
 						},
 						{
-							nameInternal: attribute.name,
+							nameInternal: attributeNameInternal,
 							nameDisplay: attribute.name,
 							applicationKey: esponFuoreApplicationKey,
 							description: attribute.unit,
@@ -784,15 +811,17 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR03`);
 					}
 
+					let tagNameInternal = `${attribute.category} - ${scope.data.nameInternal}`;
+
 					await this.createMetadata(
 						`tags`,
 						{
-							nameInternal: attribute.category,
+							nameInternal: tagNameInternal,
 							applicationKey: esponFuoreApplicationKey,
 							scopeKey: scope.key
 						},
 						{
-							nameInternal: attribute.category,
+							nameInternal: tagNameInternal,
 							nameDisplay: attribute.category,
 							applicationKey: esponFuoreApplicationKey,
 							scopeKey: scope.key
@@ -817,18 +846,20 @@ class FuoreImporter {
 			.then(async () => {
 				let pantherEsponFuoreIndicators = [];
 				for (let attribute of attributes) {
-					let pantherAttribute = _.find(pantherData.attributes, (pantherAttribute) => {
-						return pantherAttribute.data.nameInternal === attribute.name
-					});
-					let pantherAttributeKey = pantherAttribute ? pantherAttribute.key : null;
-
 					let pantherScope = _.find(pantherData.scopes, (pantherScope) => {
 						return pantherScope.linkage.analyticalUnitId === attribute.analytical_unit_id
 					});
 					let pantherScopeKey = pantherScope ? pantherScope.key : null;
 
+					let pantherAttribute = _.find(pantherData.attributes, (pantherAttribute) => {
+						let attributeNameInternal = `${attribute.name} - ${pantherScope && pantherScope.data.nameInternal} - ${attribute.id}`;
+						return pantherAttribute.data.nameInternal === attributeNameInternal;
+					});
+					let pantherAttributeKey = pantherAttribute ? pantherAttribute.key : null;
+
 					let pantherTag = _.find(pantherData.tags, (pantherTag) => {
-						return pantherTag.linkage.attributeId === attribute.id && pantherTag.data.nameInternal === attribute.category;
+						let tagNameInternal = `${attribute.category} - ${pantherScope && pantherScope.data.nameInternal}`;
+						return pantherTag.linkage.attributeId === attribute.id && pantherTag.data.nameInternal === tagNameInternal;
 					});
 					let pantherTagKey = pantherTag ? pantherTag.key : null;
 
@@ -837,17 +868,19 @@ class FuoreImporter {
 					});
 					let pantherViewKey = pantherView ? pantherView.key : null;
 
-					if (!pantherAttribute || !pantherScope || !pantherTag || pantherView) {
+					if (!pantherAttribute || !pantherScope || !pantherTag || !pantherView) {
 						throw new Error(`unable to create internal data structure - #ERR04`);
 					}
+
+					let indicatorNameInternal = `${attribute.name} - ${pantherScope.data.nameInternal}`;
 
 					await this.createSpecific(
 						`esponFuoreIndicators`,
 						{
-							nameInternal: attribute.name
+							nameInternal: indicatorNameInternal
 						},
 						{
-							nameInternal: attribute.name,
+							nameInternal: indicatorNameInternal,
 							nameDisplay: attribute.name,
 							type: attribute.value_type,
 							attributeKey: pantherAttributeKey,
@@ -1185,13 +1218,7 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key)
-					.then((pantherScopes) => {
-						pantherData.scopes = pantherScopes;
-					})
-			})
-			.then(() => {
-				return this.createPantherAttributesFromFuoreAttributes(attributes, user)
+				return this.createPantherAttributesFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherAttributes) => {
 						pantherData.attributes = pantherAttributes;
 					})

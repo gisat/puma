@@ -238,6 +238,10 @@ class PgDataController {
 	getSpatialDataSourceData(tableName, fidColumn, geometryColumn, transformation) {
 		let geometryOperations = `"${geometryColumn}"`;
 
+		//todo temporary solution for espon fuore only
+		console.log(`#### transform geometry to 4326 - temporary solution for espon fuore`);
+		geometryOperations = `ST_Transform(${geometryOperations}, 4326)`;
+
 		if(transformation && transformation.hasOwnProperty(`snapToGrid`)) {
 			if(transformation.snapToGrid.hasOwnProperty(`size`)) {
 				let size = Number(transformation.snapToGrid.size);
