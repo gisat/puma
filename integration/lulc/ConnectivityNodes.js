@@ -35,10 +35,12 @@ class ConnectivityNodes {
             let nodesInArea = 0;
             this._connectivityNodesLayer.features.forEach(point => {
                 if(turf.booleanPointInPolygon(point, analyticalUnit)){
+                    const usedCodes = [];
                     this._attributes.forEach(attribute => {
                         const codeOfPolygon = point.properties[attribute.columnName];
-                        if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                        if (typeof attributesAreas[codeOfPolygon] !== 'undefined' && usedCodes.indexOf(codeOfPolygon) === -1) {
                             attributesAreas[codeOfPolygon].area += 1;
+                            usedCodes.push(codeOfPolygon);
                         }
                     });
                     attributesAreas['total'].area += 1;

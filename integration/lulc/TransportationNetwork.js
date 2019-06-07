@@ -47,10 +47,12 @@ class TransportationNetwork {
                             // If it is inside take the whole length;
                             if (turf.booleanPointInPolygon(turf.point(part[0]), analyticalUnit) && turf.booleanPointInPolygon(turf.point(part[part.length - 1]), analyticalUnit)) {
                                 const lengthOfLine = turf.length(turf.lineString(part));
+                                const usedCodes = [];
                                 this._attributes.forEach(attribute => {
                                     const codeOfPolygon = line.properties[attribute.columnName];
-                                    if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                                    if (typeof attributesAreas[codeOfPolygon] !== 'undefined' && usedCodes.indexOf(codeOfPolygon) === -1) {
                                         attributesAreas[codeOfPolygon].area += lengthOfLine;
+                                        usedCodes.push(codeOfPolygon);
                                     }
                                 });
                                 attributesAreas['total'].area += lengthOfLine;
@@ -67,10 +69,12 @@ class TransportationNetwork {
                             split.features.forEach((splitPart, i) => {
                                 if ((i + oddPair) % 2 === 0) {
                                     const lengthOfLine = turf.length(splitPart);
+                                    const usedCodes = [];
                                     this._attributes.forEach(attribute => {
                                         const codeOfPolygon = line.properties[attribute.columnName];
-                                        if (typeof attributesAreas[codeOfPolygon] !== 'undefined') {
+                                        if (typeof attributesAreas[codeOfPolygon] !== 'undefined' && usedCodes.indexOf(codeOfPolygon) === -1) {
                                             attributesAreas[codeOfPolygon].area += lengthOfLine;
+                                            usedCodes.push(codeOfPolygon);
                                         }
                                     });
                                     attributesAreas['total'].area += lengthOfLine;

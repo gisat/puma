@@ -39,20 +39,34 @@ class LulcProcessor {
                     };
                 }
             });
+            // The column Name is relevant to the problem.
 
             this._lulcLayer.features.forEach(feature => {
                 try {
                     const intersectingPolygon = turf.intersect(analyticalUnit, feature);
 
                     if(intersectingPolygon) {
+                        const intersectionArea = Number(turf.area(intersectingPolygon).toFixed(3));
+                        const featureArea = Number(turf.area(feature).toFixed(3));
+                        if(intersectionArea > featureArea) {
+                            console.log(`${intersectionArea} ${featureArea}`);
+                            console.log(`
+                            =============================
+                            ERROR: The Area is too large;
+                            ============================
+                            `)
+                        }
+
+                        const usedCodes = [];
                         // Different attributes have different column names
                         this._attributes.forEach(attribute => {
                             const codeOfPolygon = feature.properties[attribute.columnName];
-                            if(typeof attributesAreas[codeOfPolygon] !== 'undefined') {
-                                attributesAreas[codeOfPolygon].area += turf.area(intersectingPolygon);
+                            if(typeof attributesAreas[codeOfPolygon] !== 'undefined' && usedCodes.indexOf(codeOfPolygon) === -1) {
+                                attributesAreas[codeOfPolygon].area += intersectionArea;
+                                usedCodes.push(codeOfPolygon);
                             }
                         });
-                        attributesAreas['total'].area += turf.area(intersectingPolygon);
+                        attributesAreas['total'].area += intersectionArea;
                     }
                 } catch(err) {
                     console.log('Err: ', err, 'AU: ', analyticalUnit.properties['AL2_ID'], ' Feature: ', feature.properties['ID']);
