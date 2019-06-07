@@ -533,14 +533,15 @@ class FuoreImporter {
 			.then(async () => {
 				let pantherScopes = [];
 				for (let analyticalUnit of analyticalUnits) {
+					let scopeNameInternal = `${analyticalUnit.type_of_region} - ${analyticalUnit.id}`;
 					await this.createMetadata(
 						`scopes`,
 						{
-							nameInternal: analyticalUnit.type_of_region,
+							nameInternal: scopeNameInternal,
 							applicationKey: esponFuoreApplicationKey
 						},
 						{
-							nameInternal: analyticalUnit.type_of_region,
+							nameInternal: scopeNameInternal,
 							nameDisplay: analyticalUnit.type_of_region,
 							applicationKey: esponFuoreApplicationKey,
 							configuration: {
@@ -872,7 +873,7 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR04`);
 					}
 
-					let indicatorNameInternal = `${attribute.name} - ${pantherScope.data.nameInternal}`;
+					let indicatorNameInternal = `${attribute.name} - ${pantherScope.data.nameInternal} - ${attribute.id}`;
 
 					await this.createSpecific(
 						`esponFuoreIndicators`,
