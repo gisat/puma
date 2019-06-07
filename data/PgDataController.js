@@ -239,6 +239,7 @@ class PgDataController {
 		let geometryOperations = `"${geometryColumn}"`;
 
 		if(transformation && transformation.hasOwnProperty(`transform`)) {
+			let proj = _.isNumber(transformation.transform) ? transformation.transform : `'${transformation.transform}'`;
 			geometryOperations = `ST_Transform(${geometryOperations}, ${Number(transformation.transform)})`;
 		}
 
