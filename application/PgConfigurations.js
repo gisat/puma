@@ -24,7 +24,7 @@ class PgConfigurations extends PgCollection {
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
 			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "data" jsonb[];
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "data" jsonb;
 		COMMIT;
 		`;
 	}
