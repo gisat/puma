@@ -106,7 +106,7 @@ class PgDataController {
 			.query(
 				`
 					SELECT 
-					count("${attributeColumn}") as count, 
+					count("${attributeColumn}")::numeric as count, 
 					min("${attributeColumn}") AS min, 
 					max("${attributeColumn}") AS max,
 					(SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY "${attributeColumn}") from "${tableName}") AS median,
