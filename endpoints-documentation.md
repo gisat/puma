@@ -34,6 +34,10 @@
 	
 	/backend/rest/specific [POST/PUT/DELETE]
 	/backend/rest/specific/filtered/esponFuoreIndicators [POST]
+		
+	/backend/rest/data/filtered/spatial [POST]
+	/backend/rest/data/filtered/attribute [POST]
+	/backend/rest/statistic/filtered/attribute [POST]
 	
 ###### Possilbe payloads:
 
@@ -363,7 +367,7 @@
     
     /backend/rest/applications/filtered/configurations
     {
-        "data": <JsonObject[]|Null>,
+        "data": <JsonObject|Null>,
         "applicationKey": <String|Null>
     }
     
