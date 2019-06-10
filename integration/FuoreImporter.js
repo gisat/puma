@@ -266,6 +266,10 @@ class FuoreImporter {
 							throw new Error(`missing name_column property in analytical unit metadata`);
 						}
 
+						if (!analyticalUnitMetadata.hasOwnProperty(`country_code_column`)) {
+							throw new Error(`missing country_code_column property in analytical unit metadata`);
+						}
+
 						if (!analyticalUnitMetadata.hasOwnProperty(`id`)) {
 							throw new Error(`missing id property in analytical unit metadata`);
 						}
@@ -528,7 +532,7 @@ class FuoreImporter {
 			})
 	}
 
-	createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, areaNameAttributeKey) {
+	createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, areaNameAttributeKey, countryCodeAttributeKey) {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherScopes = [];
@@ -545,7 +549,8 @@ class FuoreImporter {
 							nameDisplay: analyticalUnit.type_of_region,
 							applicationKey: esponFuoreApplicationKey,
 							configuration: {
-								areaNameAttributeKey
+								areaNameAttributeKey,
+								countryCodeAttributeKey
 							}
 						},
 						user
@@ -702,6 +707,26 @@ class FuoreImporter {
 					{
 						nameInternal: `fuore_au_name`,
 						nameDisplay: `fuore_au_name`,
+						applicationKey: esponFuoreApplicationKey,
+					},
+					user,
+					key
+				)
+			});
+	}
+
+	createPantherCountryCodeAttributeForFuore(key, user) {
+		return Promise.resolve()
+			.then(() => {
+				return this.createMetadata(
+					`attributes`,
+					{
+						nameInternal: `fuore_au_country_code`,
+						applicationKey: esponFuoreApplicationKey
+					},
+					{
+						nameInternal: `fuore_au_country_code`,
+						nameDisplay: `fuore_au_country_code`,
 						applicationKey: esponFuoreApplicationKey,
 					},
 					user,
@@ -966,6 +991,41 @@ class FuoreImporter {
 			});
 	}
 
+	createPantherCountryCodeAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user) {
+		return Promise.resolve()
+			.then(async () => {
+				let pantherAttributeDataSources = [];
+				for (let analyticalUnit of analyticalUnits) {
+					let analyticalUnitTableName = `fuore-au-${analyticalUnit.table_name}`;
+
+					await this.createDataSource(
+						`attribute`,
+						{
+							tableName: analyticalUnitTableName,
+							columnName: analyticalUnit.country_code_column
+						},
+						{
+							tableName: analyticalUnitTableName,
+							columnName: analyticalUnit.country_code_column
+						},
+						user
+					).then((attributeDataSources) => {
+						pantherAttributeDataSources.push({
+							...attributeDataSources[0],
+							linkage: {
+								analyticalUnitId: analyticalUnit.id,
+								attributeFidColumn: analyticalUnit.fid_column,
+								attributeNameColumn: analyticalUnit.name_column,
+								countryCodeColumn: analyticalUnit.country_code_column,
+								isAnalyticalUnitCountryCode: true
+							}
+						})
+					});
+				}
+				return pantherAttributeDataSources;
+			});
+	}
+
 	createPantherAttributeDataSourceFromFuoreAttributes(attributes, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
@@ -1102,6 +1162,16 @@ class FuoreImporter {
 						period = {key: null};
 					}
 
+					if (!attribute && attributeDataSource.linkage.isAnalyticalUnitCountryCode) {
+						attribute = {
+							...pantherData.fuoreAuCountryCodeAttribute,
+							linkage: {
+								attributeFidColumn: attributeDataSource.linkage.attributeFidColumn
+							}
+						};
+						period = {key: null};
+					}
+
 					if (!scope || !layerTemplate || !period || !attribute) {
 						throw new Error(`unable to create internal data structure - #ERR06`);
 					}
@@ -1213,7 +1283,13 @@ class FuoreImporter {
 					});
 			})
 			.then(() => {
-				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key)
+				return this.createPantherCountryCodeAttributeForFuore(uuidv4(), user)
+					.then((pantherAttributes) => {
+						pantherData.fuoreAuCountryCodeAttribute = pantherAttributes[0];
+					});
+			})
+			.then(() => {
+				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key, pantherData.fuoreAuCountryCodeAttribute.key)
 					.then((pantherScopes) => {
 						pantherData.scopes = pantherScopes;
 					})
@@ -1268,6 +1344,12 @@ class FuoreImporter {
 			})
 			.then(() => {
 				return this.createPantherNameAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user)
+					.then((pantherAttributeDataSources) => {
+						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
+					})
+			})
+			.then(() => {
+				return this.createPantherCountryCodeAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user)
 					.then((pantherAttributeDataSources) => {
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
 					})
