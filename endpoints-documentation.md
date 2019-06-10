@@ -391,3 +391,57 @@
         "tagKeys": <String[]|Null>,
         "scopeKey": <String|Null>
     }
+    
+    
+###### Data & statistic endpoints
+    
+    Payload:
+    /backend/rest/data/filtered/spatial [POST]
+        {
+            "filter": {
+                "spatialDataSourceKey": <Uuid-String>,
+                "fidColumnName": <String>
+            }
+        }
+    
+    Response:
+        {
+            "spatialDataSourceKey": <Uuid-String>,
+            "spatialData: <GeoJSON-GeometryWithoutData>
+        }
+    
+    
+    Payload:
+    /backend/rest/data/filtered/attribute [POST]
+        {
+            "filter": {
+                "attributeDataSourceKey": <Uuid-String>,
+                "fidColumnName": <String>
+            }
+        }
+        
+    Response:
+        {
+            "attributeDataSourceKey": <Uuid-String>,
+            "attributeData: <GeoJSON-DataWithoutGeometries>
+        }
+        
+    Payload:
+    /backend/rest/statistic/filtered/attribute
+         {
+            "filter": {
+                "attributeDataSourceKey": <Uuid-String>
+            }
+         }
+         
+    Response:
+        {
+            "attributeDataSourceKey": <Uuid-String>,
+            "attributeStatistic": {
+                "count": <Numeric>,
+                "min": <Numeric>,
+                "max": <Numeric>,
+                "median": <Numeric>,
+                "type": <String>
+            }
+        }
