@@ -40,7 +40,7 @@ class PgDataController {
 			ended: null,
 			state: `running`,
 			error: null,
-			statusUrl: `${request.headers.host}/backend/rest/status/import/fuore/${procesKey}`
+			statusUrl: `/backend/rest/status/import/fuore/${procesKey}`
 		};
 
 		this._fuoreImporter.import(request.files.file, request.session.user, this._fuoreImportStatus[procesKey])
