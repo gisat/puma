@@ -12,6 +12,7 @@ const PgViewsCrud = require(`../view/PgViewsCrud`);
 const PgApplicationsCrud = require(`../application/PgApplicationsCrud`);
 
 const PgPermission = require(`../security/PgPermissions`);
+const Permission = require(`../security/Permission`);
 
 const esponFuoreApplicationKey = `esponFuore`;
 const guestGroupKey = `2`;
@@ -430,7 +431,7 @@ class FuoreImporter {
 						metadataObject.key = key;
 					}
 
-					return this._pgMetadataCrud.create({[group]: [metadataObject]}, user)
+					return this._pgMetadataCrud.create({[group]: [metadataObject]}, user, null, true)
 						.then(([data, errors]) => {
 							if (errors) {
 								throw new Error(errors);
@@ -448,7 +449,7 @@ class FuoreImporter {
 				if (metadataResults.data[group].length) {
 					return metadataResults.data[group];
 				} else {
-					return this._pgSpecificCrud.create({[group]: [{data: data}]}, user)
+					return this._pgSpecificCrud.create({[group]: [{data: data}]}, user, null, true)
 						.then(([data, errors]) => {
 							if (errors) {
 								throw new Error(JSON.stringify(errors));
@@ -466,7 +467,7 @@ class FuoreImporter {
 				if (metadataResults.data[group].length) {
 					return metadataResults.data[group];
 				} else {
-					return this._pgDataSourcesCrud.create({[group]: [{data: data}]}, user)
+					return this._pgDataSourcesCrud.create({[group]: [{data: data}]}, user, null, true)
 						.then(([data, errors]) => {
 							if (errors) {
 								throw new Error(JSON.stringify(errors));
@@ -484,7 +485,7 @@ class FuoreImporter {
 				if (metadataResults.data[group].length) {
 					return metadataResults.data[group];
 				} else {
-					return this._pgViewsCrud.create({[group]: [{data: data}]}, user)
+					return this._pgViewsCrud.create({[group]: [{data: data}]}, user, null, true)
 						.then(([data, errors]) => {
 							if (errors) {
 								throw new Error(JSON.stringify(errors));
@@ -502,7 +503,7 @@ class FuoreImporter {
 				if (metadataResults.data[group].length) {
 					return metadataResults.data[group];
 				} else {
-					return this._pgApplicationsCrud.create({[group]: [{data: data}]}, user)
+					return this._pgApplicationsCrud.create({[group]: [{data: data}]}, user, null, true)
 						.then(([data, errors]) => {
 							if (errors) {
 								throw new Error(JSON.stringify(errors));
@@ -520,7 +521,7 @@ class FuoreImporter {
 				if (metadataResults.data[group].length) {
 					return metadataResults.data[group];
 				} else {
-					return this._pgRelationsCrud.create({[group]: [{data: data}]}, user)
+					return this._pgRelationsCrud.create({[group]: [{data: data}]}, user, null, true)
 						.then(([data, errors]) => {
 							if (errors) {
 								throw new Error(JSON.stringify(errors));
@@ -1206,46 +1207,46 @@ class FuoreImporter {
 				_.each(pantherData, async (value, property) => {
 					switch (property) {
 						case `fuoreAuNameAttribute`:
-							await this._pgPermission.addGroup(guestGroupKey, `attribute`, value.key, `GET`);
+							await this._pgPermission.addGroup(guestGroupKey, `attribute`, value.key, Permission.READ);
 							break;
 						case `scopes`:
 							for (let scope of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `scope`, scope.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `scope`, scope.key, Permission.READ);
 							}
 							break;
 						case `attributes`:
 							for (let attribute of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `attribute`, attribute.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `attribute`, attribute.key, Permission.READ);
 							}
 							break;
 						case `periods`:
 							for (let period of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `period`, period.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `period`, period.key, Permission.READ);
 							}
 							break;
 						case `tags`:
 							for (let tag of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `tag`, tag.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `tag`, tag.key, Permission.READ);
 							}
 							break;
 						case `layerTemplates`:
 							for (let layerTemplate of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplate.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplate.key, Permission.READ);
 							}
 							break;
 						case `views`:
 							for (let view of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `view`, view.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `view`, view.key, Permission.READ);
 							}
 							break;
 						case `esponFuoreIndicators`:
 							for (let esponFuoreIndicator of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `esponFuoreIndicator`, esponFuoreIndicator.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `esponFuoreIndicator`, esponFuoreIndicator.key, Permission.READ);
 							}
 							break;
 						case `layerTrees`:
 							for (let layerTree of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `layerTree`, layerTree.key, `GET`);
+								await this._pgPermission.addGroup(guestGroupKey, `layerTree`, layerTree.key, Permission.READ);
 							}
 							break;
 					}
@@ -1254,16 +1255,19 @@ class FuoreImporter {
 	}
 
 	import(data, user) {
-		if (!data) {
-			throw new Error(`missing zip package`);
-		}
-
-		let unzippedFs = zipper.sync.unzip(data.path).memory();
+		let unzippedFs;
 		let analyticalUnits;
 		let attributes;
 		let pantherData = {};
 
 		return Promise.resolve()
+			.then(() => {
+				if (!data) {
+					throw new Error(`missing zip package`);
+				}
+
+				unzippedFs = zipper.sync.unzip(data.path).memory();
+			})
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {

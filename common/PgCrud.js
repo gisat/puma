@@ -6,12 +6,12 @@ class PgCrud {
 		};
 	}
 
-	async create(data, user, extra) {
+	async create(data, user, extra, overridePermissions) {
 		let errors;
 
 		for (let type of Object.keys(data)) {
 			if (this._pgTypes.hasOwnProperty(type)) {
-				await this._pgTypes[type].store.create(data, user, extra)
+				await this._pgTypes[type].store.create(data, user, extra, overridePermissions)
 					.catch((error) => {
 						data[type] = [];
 						errors = errors || {};

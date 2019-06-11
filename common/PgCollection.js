@@ -57,12 +57,12 @@ class PgCollection {
 		this._allowMultipleRelations = false;
 	}
 
-	create(objects, user, extra) {
+	create(objects, user, extra, overridePermissions) {
 		let group = objects[this._groupName];
 
 		let canCreate = true;
 
-		if (this._checkPermissions) {
+		if (this._checkPermissions && !overridePermissions) {
 			if (this._permissionResourceTypes) {
 				if (this._permissionResourceTypes.length) {
 					_.each(this._permissionResourceTypes, (resourceType) => {
