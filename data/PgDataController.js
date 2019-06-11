@@ -35,8 +35,6 @@ class PgDataController {
 	importFuoreData(request, response) {
 		let procesKey = uuidv4();
 
-		console.log(request);
-
 		this._fuoreImportStatus[procesKey] = {
 			started: new Date().toISOString(),
 			ended: null,
