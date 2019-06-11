@@ -27,7 +27,7 @@ if(cluster.isMaster) {
     //
     const app = express();
     app.use(express.limit('2048mb'));
-    app.use(express.bodyParser({limit: '100mb', parameterLimit: 1000000}));
+    app.use(express.bodyParser({limit: '500mb', parameterLimit: 1000000}));
 
     app.post('/cityLulc', (request, response) => {
         response.json({
