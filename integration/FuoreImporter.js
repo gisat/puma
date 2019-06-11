@@ -1400,11 +1400,11 @@ class FuoreImporter {
 			})
 			.then(() => {
 				status.ended = new Date().toISOString();
-				status.state = done;
+				status.state = `done`;
 			})
 			.catch((error) => {
 				status.ended = new Date().toISOString();
-				status.state = done;
+				status.state = `done`;
 				status.error = error.message;
 			})
 	}
