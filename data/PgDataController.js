@@ -1,5 +1,6 @@
 const pgTypes = require(`pg`).types;
 const fse = require(`fs-extra`);
+const uuidv4 = require(`uuid/v4`);
 
 const config = require(`../config`);
 
@@ -20,25 +21,41 @@ class PgDataController {
 			return Number(value);
 		});
 
+		this._fuoreImportStatus = {};
+
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
 		app.post(`/rest/statistic/filtered/attribute`, this.getAttributeDataStatistic.bind(this));
 
 		app.post(`/rest/data/import/fuore`, this.importFuoreData.bind(this));
+
+		app.get(`/rest/status/import/fuore/:key`, this.importFuoreStatus.bind(this));
 	}
 
-	async importFuoreData(request, response) {
-		await this._fuoreImporter.import(request.files.file, request.session.user)
-			.then((status) => {
-				response.status(200).send({status: status, success: false});
-			})
-			.catch((error) => {
-				console.log(error);
-				response.status(400).send({message: error.message, success: false});
+	importFuoreData(request, response) {
+		let procesKey = uuidv4();
+
+		console.log(request);
+
+		this._fuoreImportStatus[procesKey] = {
+			started: new Date().toISOString(),
+			ended: null,
+			state: `running`,
+			error: null,
+			statusUrl: `${request.headers.host}/backend/rest/status/import/fuore/${procesKey}`
+		};
+
+		this._fuoreImporter.import(request.files.file, request.session.user, this._fuoreImportStatus[procesKey])
+			.then(() => {
+				this.cleanupRequestFiles(request);
 			});
 
-		this.cleanupRequestFiles(request);
+		response.status(200).send({status: this._fuoreImportStatus[procesKey], success: true});
 	};
+
+	importFuoreStatus(request, response) {
+		response.status(200).send(this._fuoreImportStatus[request.params.key]);
+	}
 
 	cleanupRequestFiles(request) {
 		_.each(request.files, (fileObject) => {

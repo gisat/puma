@@ -1254,7 +1254,7 @@ class FuoreImporter {
 			});
 	}
 
-	import(data, user) {
+	import(data, user, status) {
 		let unzippedFs;
 		let analyticalUnits;
 		let attributes;
@@ -1271,111 +1271,142 @@ class FuoreImporter {
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
+						status.progress = `1/19`;
 						analyticalUnits = pAnalyticalUnits;
 					})
 			})
 			.then(() => {
 				return this.ensureAttributesData(unzippedFs)
 					.then((pAttributes) => {
+						status.progress = `2/19`;
 						attributes = pAttributes;
 					})
 			})
 			.then(() => {
 				return this.createPantherNameAttributeForFuore(uuidv4(), user)
 					.then((pantherAttributes) => {
+						status.progress = `3/19`;
 						pantherData.fuoreAuNameAttribute = pantherAttributes[0];
 					});
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeForFuore(uuidv4(), user)
 					.then((pantherAttributes) => {
+						status.progress = `4/19`;
 						pantherData.fuoreAuCountryCodeAttribute = pantherAttributes[0];
 					});
 			})
 			.then(() => {
 				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key, pantherData.fuoreAuCountryCodeAttribute.key)
 					.then((pantherScopes) => {
+						status.progress = `5/19`;
 						pantherData.scopes = pantherScopes;
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributesFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherAttributes) => {
+						status.progress = `6/19`;
 						pantherData.attributes = pantherAttributes;
 					})
 			})
 			.then(() => {
 				return this.createPantherPeriodsFromFuoreAttributes(attributes, user)
 					.then((pantherPeriods) => {
+						status.progress = `7/19`;
 						pantherData.periods = pantherPeriods;
 					})
 			})
 			.then(() => {
 				return this.createPantherTagsFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherTags) => {
+						status.progress = `8/19`;
 						pantherData.tags = pantherTags;
 					})
 			})
 			.then(() => {
 				return this.createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherLayerTemplates) => {
+						status.progress = `9/19`;
 						pantherData.layerTemplates = pantherLayerTemplates;
 					});
 			})
 			.then(() => {
 				return this.createPantherViewsFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherViews) => {
+						status.progress = `10/19`;
 						pantherData.views = pantherViews;
 					})
 			})
 			.then(() => {
 				return this.createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherEsponFuoreIndicators) => {
+						status.progress = `11/19`;
 						pantherData.esponFuoreIndicators = pantherEsponFuoreIndicators;
 					})
 			})
 			.then(() => {
 				return this.createPantherSpatialDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherSpatialDataSources) => {
+						status.progress = `12/19`;
 						pantherData.spatialDataSources = pantherSpatialDataSources;
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributeDataSourceFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherAttributeDataSources) => {
+						status.progress = `13/19`;
 						pantherData.attributeDataSources = pantherAttributeDataSources;
 					});
 			})
 			.then(() => {
 				return this.createPantherNameAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user)
 					.then((pantherAttributeDataSources) => {
+						status.progress = `14/19`;
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
 					})
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user)
 					.then((pantherAttributeDataSources) => {
+						status.progress = `15/19`;
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
 					})
 			})
 			.then(() => {
 				return this.createPantherLayerTreesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherLayerTrees) => {
+						status.progress = `16/19`;
 						pantherData.layerTrees = pantherLayerTrees;
 					})
 			})
 			.then(() => {
-				return this.createPantherSpatialRelations(pantherData, user);
+				return this.createPantherSpatialRelations(pantherData, user)
+					.then(() => {
+						status.progress = `17/19`;
+					})
 			})
 			.then(() => {
-				return this.createPantherAttributeRelations(pantherData, user);
+				return this.createPantherAttributeRelations(pantherData, user)
+					.then(() => {
+						status.progress = `18/19`;
+					})
 			})
 			.then(() => {
-				return this.setGuestPermissionsForPantherData(pantherData);
+				return this.setGuestPermissionsForPantherData(pantherData)
+					.then(() => {
+						status.progress = `19/19`;
+					})
 			})
 			.then(() => {
-				return `All data were imported successfully.`;
-			});
+				status.ended = new Date().toISOString();
+				status.state = done;
+			})
+			.catch((error) => {
+				status.ended = new Date().toISOString();
+				status.state = done;
+				status.error = error.message;
+			})
 	}
 }
 
