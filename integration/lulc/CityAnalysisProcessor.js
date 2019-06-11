@@ -56,16 +56,15 @@ class CityAnalysisProcessor {
 
         const firstPeriod = this.getPeriodByName(presentLayers[0].name.substr(-9, 4)).id;
         const firstPeriodName = presentLayers[0].name.substr(-9, 4);
-        const lastPeriod = this.getPeriodByName(presentLayers[0].name.substr(-4)).id;
         const lastPeriodName = presentLayers[0].name.substr(-4);
-        theme.periods = [firstPeriod, lastPeriod];
+        theme.periods = [firstPeriod];
 
         // Generate the attributes per year
         theme.attributeSets.forEach(attributeSet => {
             const allAttributes = [];
 
             attributeSet.attributes.forEach(attribute => {
-                const period = attributeSet.type === 'formation' ? lastPeriod: firstPeriod;
+                const period = firstPeriod;
                 const periodName = attributeSet.type === 'formation' ? lastPeriodName: firstPeriodName;
 
                 allAttributes.push({
