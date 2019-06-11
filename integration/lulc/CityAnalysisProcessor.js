@@ -56,22 +56,49 @@ class CityAnalysisProcessor {
 
         const firstPeriod = this.getPeriodByName(presentLayers[0].name.substr(-9, 4)).id;
         const firstPeriodName = presentLayers[0].name.substr(-9, 4);
+        const lastPeriod = this.getPeriodByName(presentLayers[0].name.substr(-4)).id;
         const lastPeriodName = presentLayers[0].name.substr(-4);
-        theme.periods = [firstPeriod];
+
+        let isConsumptionFormationTheme = false;
+        theme.attributeSets.forEach(attributeSet => {
+            if(attributeSet.type && (attributeSet.type ==='consumption' || attributeSet.type === 'formation')) {
+                isConsumptionFormationTheme = true;
+            }
+        });
+
+        if(isConsumptionFormationTheme) {
+            theme.periods = [firstPeriod];
+        } else {
+            theme.periods = [firstPeriod, lastPeriod];
+        }
 
         // Generate the attributes per year
         theme.attributeSets.forEach(attributeSet => {
+            // Attribute Sets that aren't either Consumption or Formation, which needs to be linked to both years.
             const allAttributes = [];
 
             attributeSet.attributes.forEach(attribute => {
                 const period = firstPeriod;
                 const periodName = attributeSet.type === 'formation' ? lastPeriodName: firstPeriodName;
 
-                allAttributes.push({
-                    id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
-                    code: attribute.code,
-                    columnName: attributeSet.columnName + '_' + periodName
-                });
+                if(isConsumptionFormationTheme) {
+                    allAttributes.push({
+                        id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
+                        code: attribute.code,
+                        columnName: attributeSet.columnName + '_' + periodName
+                    });
+                } else {
+                    allAttributes.push({
+                        id: `as_${attributeSet.id}_attr_${attribute.id}_p_${firstPeriod}`,
+                        code: attribute.code,
+                        columnName: attributeSet.columnName
+                    });
+                    allAttributes.push({
+                        id: `as_${attributeSet.id}_attr_${attribute.id}_p_${lastPeriod}`,
+                        code: attribute.code,
+                        columnName: attributeSet.columnName
+                    });
+                }
             });
             // Filter the content of the LULC Change Layer to provide a source for Processor.
 
