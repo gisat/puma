@@ -69,7 +69,7 @@ class CityAnalysisProcessor {
                 const periodName = attributeSet.type === 'formation' ? lastPeriodName: firstPeriodName;
 
                 allAttributes.push({
-                    id: `as_${attributeSet.id}_attr_${attribute.id}_period_${period}`,
+                    id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
                     code: attribute.code,
                     columnName: attributeSet.columnName + '_' + periodName
                 });
