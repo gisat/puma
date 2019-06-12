@@ -1332,9 +1332,7 @@ class PgCollection {
 				return this._pgPool.query(selectSql);
 			})
 			.then((queryResult) => {
-				if(queryResult.rows.length) {
-					payload.total = Number(queryResult.rows[0].total);
-				}
+				payload.total = queryResult.rows.length ? Number(queryResult.rows[0].total) : 0;
 
 				if (this._dataSources) {
 					return _.map(queryResult.rows, (row) => {
