@@ -55,19 +55,19 @@ class PgMetadataCrud extends PgCrud {
 
 		this._PgDataSource = null;
 
-		this._pgScopes.setRelatedStores([this._pgApplications]);
-		this._pgPlaces.setRelatedStores([this._pgApplications]);
-		this._pgPeriods.setRelatedStores([this._pgApplications, this._pgScopes]);
-		this._pgAttributeSets.setRelatedStores([this._pgApplications]);
-		this._pgAttributes.setRelatedStores([this._pgApplications]);
-		this._pgLayerTemplates.setRelatedStores([this._pgApplications]);
-		this._pgScenarios.setRelatedStores([this._pgApplications]);
-		this._pgCases.setRelatedStores([this._pgApplications]);
-		this._pgTags.setRelatedStores([this._pgApplications, this._pgScopes]);
+		this._pgScopes.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgPlaces.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgPeriods.setRelatedStores([this._pgApplications, this._pgScopes, this._pgTags]);
+		this._pgAttributeSets.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgAttributes.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgLayerTemplates.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgScenarios.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgCases.setRelatedStores([this._pgApplications, this._pgTags]);
+		this._pgTags.setRelatedStores([this._pgApplications, this._pgScopes, this._pgTags]);
 
-		this._pgAreaTrees.setRelatedStores([this._pgScopes, this._pgApplications]);
-		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees, this._pgApplications]);
-		this._pgLayerTemplates.setRelatedStores([this._pgScopes, this._pgApplications]);
+		this._pgAreaTrees.setRelatedStores([this._pgScopes, this._pgApplications, this._pgTags]);
+		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees, this._pgApplications, this._pgTags]);
+		this._pgLayerTemplates.setRelatedStores([this._pgScopes, this._pgApplications, this._pgTags]);
 
 		// this._pgLayerGroups = new PgLayerGroups(pgPool, pgSchema);
 
