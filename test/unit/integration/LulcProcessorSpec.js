@@ -43,15 +43,15 @@ describe('LulcProcessor', () => {
             }).then(geojson => {
                 lulc = JSON.parse(geojson);
 
-                const geoJsonResult = new LulcProcessor(attributesL1, analyticalUnits, lulc, 'lulc').geoJson();
+                const geoJsonResult = new LulcProcessor(attributesL1, analyticalUnits, lulc, 1).geoJson();
 
                 should(geoJsonResult.features.length).be.exactly(1);
-                should(geoJsonResult.features[0].properties[1]).be.exactly(1432877662.6869395);
-                should(geoJsonResult.features[0].properties[2]).be.exactly(282583398.1447872);
-                should(geoJsonResult.features[0].properties[3]).be.exactly(78266683.84868865);
+                should(geoJsonResult.features[0].properties[1]).be.exactly(238480653.6101068);
+                should(geoJsonResult.features[0].properties[2]).be.exactly(47031700.79625395);
+                should(geoJsonResult.features[0].properties[3]).be.exactly(13026296.947628893);
                 should(geoJsonResult.features[0].properties[4]).be.exactly(0);
-                should(geoJsonResult.features[0].properties[5]).be.exactly(1511144346.535628);
-                should(geoJsonResult.features[0].properties[6]).be.exactly(324790623.7087087);
+                should(geoJsonResult.features[0].properties[5]).be.exactly(251506950.55773565);
+                should(geoJsonResult.features[0].properties[6]).be.exactly(324338702.1254758);
 
                 done();
             }).catch(err => {

@@ -85,7 +85,7 @@ class CityAnalysisProcessor {
                     allAttributes.push({
                         id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
                         code: attribute.code,
-                        columnName: attributeSet.columnName + '_' + periodName
+                        columnName: `${attributeSet.columnName}_${periodName}`
                     });
                 } else {
                     allAttributes.push({

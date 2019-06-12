@@ -19,6 +19,7 @@ describe('IntegrateLulcProcessor', () => {
             analyticalUnitLevels: [{
                 id : 1,
                 layer: null,
+                table: 'geonode:i11_dhaka_al1'
             }],
             themes: [
                 {
@@ -69,7 +70,7 @@ describe('IntegrateLulcProcessor', () => {
                                 {id: 1, code: 10000},
                                 {id: 2, code: 11000}
                             ],
-                            columnName: 'C_L2_2017',
+                            columnName: 'C_L2',
                             filteringAttributeValue: 'LCF21',
                             type: 'formation'
                         },
@@ -80,7 +81,7 @@ describe('IntegrateLulcProcessor', () => {
                                 {id: 1, code: 10000},
                                 {id: 2, code: 11000}
                             ],
-                            columnName: 'C_L2_2006',
+                            columnName: 'C_L2',
                             filteringAttributeValue: 'LCF21',
                             type: 'consumption'
                         }
@@ -90,6 +91,26 @@ describe('IntegrateLulcProcessor', () => {
                     ],
                     integrationType: 'landUseLandCoverChangeFlow'
                 },
+
+                {
+                    id: 8,
+                    filteringAttribute: 'C_LCF2',
+                    attributeSets: [
+                        {
+                            id: 12,
+                            attributes: [
+                                {id: 1}
+                            ],
+                            columnName: 'C_L2',
+                            filteringAttributeValue: 'LCF21'
+                        }
+                    ],
+                    layerTemplates: [
+                        {id: 1, layerNameTemplate: 'EO4SD_\.*_LULC_CHANGEVHR_\.*_\.*'}
+                    ],
+                    integrationType: 'landUseLandCoverChangeFlow'
+                },
+
                 {
                     id: 1,
                     periods: [2014],
@@ -249,16 +270,18 @@ describe('IntegrateLulcProcessor', () => {
             should(result[0].features.length).be.exactly(1);
 
             const properties = result[0].features[0].properties;
-            should(properties['as_1_attr_1_p_600002016']).be.exactly(241.8645108914518);
-            should(properties['as_2_attr_1_period_600002016']).be.exactly(0);
-            should(properties['as_3_attr_1_period_600002006']).be.exactly(0);
-            should(properties['as_4_attr_1_p_600002016']).be.exactly(476961307.35433537);
-            should(properties['as_5_attr_1_p_600002016']).be.exactly(230064229.05555263);
-            should(properties['as_6_attr_1_p_600002016']).be.exactly(156913989.74848488);
-            should(properties['as_7_attr_1_p_600002016']).be.exactly(1597800.0452782854);
-            should(properties['as_8_attr_1_p_600002016']).be.exactly(820746.3050947445);
+            should(properties['as_1_attr_1_p_600002016']).be.exactly(120.9322554457259);
+            should(properties['as_2_attr_2_period_600002006']).be.exactly(47791666.549140655);
+            should(properties['as_3_attr_2_period_600002006']).be.exactly(39980651.96536081);
+            should(properties['as_4_attr_1_p_600002016']).be.exactly(238480653.6101068);
+            should(properties['as_5_attr_1_p_600002016']).be.exactly(115032114.4671548);
+            should(properties['as_6_attr_1_p_600002016']).be.exactly(78456994.84225093);
+            should(properties['as_7_attr_1_p_600002016']).be.exactly(798900.0143297917);
+            should(properties['as_8_attr_1_p_600002016']).be.exactly(410373.1492635418);
             should(properties['as_9_attr_1_p_600002016']).be.exactly(18693);
             should(properties['as_11_attr_1_p_600002014']).be.exactly(710068965.397);
+            should(properties['as_12_attr_1_p_600002006']).be.exactly(47874499.878249936);
+            should(properties['as_12_attr_1_p_600002016']).be.exactly(47874499.878249936);
         }).then(() => {
             done();
         }).catch(err => {
