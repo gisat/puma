@@ -1093,7 +1093,8 @@ class PgCollection {
 				...row,
 				key: undefined,
 				id: undefined,
-				uuid: undefined
+				uuid: undefined,
+				total: undefined
 			}
 		}
 	}
@@ -1315,21 +1316,24 @@ class PgCollection {
 	postgresGet(request, user, extra, availableKeys, isAdmin) {
 		let payload = {};
 
-		let sql = this.getSql(request, user, extra, availableKeys, isAdmin);
+		return Promise.resolve()
+			.then(() => {
+				let selectSql, sql = this.getSql(request, user, extra, availableKeys, isAdmin);
 
-		return this._pgPool.query(`SELECT count(*) AS total FROM (${sql}) AS results;`)
-			.then((pagingResult) => {
 				if (!request.unlimited) {
 					payload.limit = _.isNumber(request.limit) && request.limit || this._limit;
 					payload.offset = _.isNumber(request.offset) && request.offset || this._offset;
-					payload.total = Number(pagingResult.rows[0].total);
 
-					return this._pgPool.query(`SELECT * FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`);
+					selectSql = `SELECT *, count(*) OVER() AS total FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`;
 				} else {
-					return this._pgPool.query(`SELECT * FROM (${sql}) AS results;`);
+					selectSql = `SELECT *, count(*) OVER() AS total FROM (${sql}) AS results;`;
 				}
+
+				return this._pgPool.query(selectSql);
 			})
 			.then((queryResult) => {
+				payload.total = Number(queryResult.rows[0].total);
+
 				if (this._dataSources) {
 					return _.map(queryResult.rows, (row) => {
 						let filteredRow = {};
