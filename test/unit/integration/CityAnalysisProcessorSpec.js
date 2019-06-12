@@ -271,8 +271,8 @@ describe('IntegrateLulcProcessor', () => {
 
             const properties = result[0].features[0].properties;
             should(properties['as_1_attr_1_p_600002016']).be.exactly(120.9322554457259);
-            should(properties['as_2_attr_2_period_600002006']).be.exactly(47791666.549140655);
-            should(properties['as_3_attr_2_period_600002006']).be.exactly(39980651.96536081);
+            should(properties['as_2_attr_2_p_600002006']).be.exactly(47791666.549140655);
+            should(properties['as_3_attr_2_p_600002006']).be.exactly(39980651.96536081);
             should(properties['as_4_attr_1_p_600002016']).be.exactly(238480653.6101068);
             should(properties['as_5_attr_1_p_600002016']).be.exactly(115032114.4671548);
             should(properties['as_6_attr_1_p_600002016']).be.exactly(78456994.84225093);
