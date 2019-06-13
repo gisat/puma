@@ -212,5 +212,13 @@ module.exports = {
 	/**
 	 * URL the remote processor uses to signal it is done.
 	 */
-	lulcUrl: 'https://urban-tep.eu/puma/backend/rest/integration/lulcmeta'
+	lulcUrl: 'https://urban-tep.eu/puma/backend/rest/integration/lulcmeta',
+
+	/**
+	 * AWS related credentials
+	 */
+	aws: {
+		accessKeyId: 'AKIAZEBQQSGAJGV2RWIS',
+		secretAccessKey: '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'
+	}
 };

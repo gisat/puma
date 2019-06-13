@@ -34,5 +34,14 @@ module.exports = {
 	geonodePath     : "/",
 	geonodeHome     : "/",
 	geonodeProtocol : "http",
-	geonodePort     : 80
+	geonodePort     : 80,
+
+	/**
+	 * AWS related credentials
+	 */
+	aws: {
+		name: 'gisat.eo4sd-products',
+		accessKeyId: 'AKIAZEBQQSGAJGV2RWIS',
+		secretAccessKey: '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'
+	}
 };

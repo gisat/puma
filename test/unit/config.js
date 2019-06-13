@@ -28,5 +28,17 @@ module.exports = {
 
 	geonodeHost     : "10.0.75.2",
 	geonodePath     : "",
-	geonodeHome     : "/geonode"
+	geonodeHome     : "/geonode",
+
+	apiKeyPortal: 'd7ba23ba-20a2-4a88-953c-d98215f5b3d5',
+	postgreSqlSchemaLayers: 'views',
+
+	/**
+	 * AWS related credentials
+	 */
+	aws: {
+		name: 'gisat.eo4sd-products',
+		accessKeyId: 'AKIAZEBQQSGAJGV2RWIS',
+		secretAccessKey: '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'
+	}
 };
