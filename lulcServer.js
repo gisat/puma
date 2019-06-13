@@ -41,23 +41,23 @@ if(cluster.isMaster) {
         const promisesToWaitFor = [];
 
         integrationInput.layers.forEach(layer => {
-            promisesToWaitFor.push(bucket.download(layer.content)).then(result => {
+            promisesToWaitFor.push(bucket.download(layer.content).then(result => {
                 const name = layer.content;
 
                 layer.content = JSON.parse(result.Body.toString());
 
                 return bucket.delete(name);
-            });
+            }));
         });
         integrationInput.analyticalUnitLevels.forEach(level => {
-            promisesToWaitFor.push(bucket.download(level.layer)).then(result => {
+            promisesToWaitFor.push(bucket.download(level.layer).then(result => {
                 const name = level.layer;
 
                 level.layer = JSON.parse(result.Body.toString());
                 level.nameInStorage = name;
 
                 return bucket.delete(name);
-            });
+            }));
         });
 
         Promise.all(promisesToWaitFor).then(() => {
