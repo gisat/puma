@@ -95,11 +95,11 @@ class TransportationNetwork {
                     attribute.code.forEach(code => {
                         areaForCodes += attributesAreas[code].area;
                     });
-                    analyticalUnit.properties[attribute.id] = areaForCodes;
+                    analyticalUnit.properties[attribute.id] = areaForCodes * 1000;
                 } else if (!attribute.code) {
-                    analyticalUnit.properties[attribute.id] = attributesAreas['total'].area;
+                    analyticalUnit.properties[attribute.id] = attributesAreas['total'].area * 1000;
                 } else {
-                    analyticalUnit.properties[attribute.id] = attributesAreas[attribute.code].area;
+                    analyticalUnit.properties[attribute.id] = attributesAreas[attribute.code].area * 1000;
                 }
             });
         });

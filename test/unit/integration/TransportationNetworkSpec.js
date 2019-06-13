@@ -33,10 +33,10 @@ describe('TransportationNetwork', () => {
                 const result = await new TransportationNetwork(attributesL1, au, transportationSource).geoJson();
 
                 const properties = result.features[0].properties;
-                should(properties[1]).be.exactly(196.1789359332438);
-                should(properties[2]).be.exactly(8403.631255354247);
-                should(properties[5]).be.exactly(1483.724474668315);
-                should(properties[6]).be.exactly(2768.6264373263098);
+                should(properties[1]).be.exactly(49044.7339833109);
+                should(properties[2]).be.exactly(2100907.8138385587);
+                should(properties[5]).be.exactly(370931.11866707855);
+                should(properties[6]).be.exactly(2768626.4373263097);
 
                 done();
             } catch(error) {
