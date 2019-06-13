@@ -45,18 +45,6 @@ class LulcIntegrationController {
         try {
             const inputForAnalysis = request.body;
 
-            const promisesToWaitFor = [];
-            inputForAnalysis.analyticalUnitLevels.forEach(level => {
-                promisesToWaitFor.push(this._bucket.download(level.layer)).then(result => {
-                    const name = level.layer;
-
-                    level.layer = JSON.parse(result.Body.toString());
-
-                    return this._bucket.delete(name);
-                });
-            });
-            await Promise.all(promisesToWaitFor);
-
             const metadata = new MetadataForIntegration(this._mongo, inputForAnalysis._id);
             const layerRefs = metadata.layerRefs(inputForAnalysis, this._idProvider.getNextId());
             await status.update('LayerRefs Inserted');
