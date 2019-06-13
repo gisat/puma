@@ -10,12 +10,13 @@ const LulcStatus = require('../integration/lulc/LulcStatus');
 const Places = require('../integration/lulc/Places');
 
 class LulcIntegrationController {
-    constructor(app, mongo, pgPool, idProvider) {
+    constructor(app, mongo, pgPool, idProvider, bucket) {
         this._mongo = mongo;
         this._pgPool = pgPool;
 
         this._idProvider = idProvider || conn.getNextId();
         this._places = new Places(pgPool, mongo);
+        this._bucket = bucket;
 
         app.get('/rest/integration/lulc', this.retrieveStateOfIntegration.bind(this));
         app.post('/rest/integration/lulcmeta', this.integrateResults.bind(this));
@@ -43,6 +44,19 @@ class LulcIntegrationController {
 
         try {
             const inputForAnalysis = request.body;
+
+            const promisesToWaitFor = [];
+            inputForAnalysis.analyticalUnitLevels.forEach(level => {
+                promisesToWaitFor.push(this._bucket.download(level.layer)).then(result => {
+                    const name = level.layer;
+
+                    level.layer = JSON.parse(result.Body.toString());
+
+                    return this._bucket.delete(name);
+                });
+            });
+            await Promise.all(promisesToWaitFor);
+
             const metadata = new MetadataForIntegration(this._mongo, inputForAnalysis._id);
             const layerRefs = metadata.layerRefs(inputForAnalysis, this._idProvider.getNextId());
             await status.update('LayerRefs Inserted');
@@ -83,7 +97,7 @@ class LulcIntegrationController {
             await this._places.create(placeId, scopeId, placeName, placeBbox, databaseTables);
             await status.update('Place Created');
 
-            const sourceForIntegration = new MetadataForIntegration(this._mongo, scopeId);
+            const sourceForIntegration = new MetadataForIntegration(this._mongo, scopeId, this._bucket);
             const integrationInput = await sourceForIntegration.metadata(placeId, uuid, config.lulcUrl);
             await status.update('Metadata Loaded');
             await sourceForIntegration.layers(integrationInput, files);
@@ -92,7 +106,6 @@ class LulcIntegrationController {
                 auLevel.table = databaseTables[index];
             });
 
-            // Process the files and integrate them into the JSON.
             await superagent.post(config.remoteLulcProcessorUrl)
                 .send(integrationInput);
             await status.update('Remote processing');

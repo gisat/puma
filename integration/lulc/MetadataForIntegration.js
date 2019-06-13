@@ -10,10 +10,12 @@ class MetadataForIntegration {
      *
      * @param mongo
      * @param scope Id of the scope.
+     * @param bucket {S3Bucket} Bucket for storing the files.
      */
-    constructor(mongo, scope) {
+    constructor(mongo, scope, bucket) {
         this._mongo = mongo;
         this._scope = new MongoScope(scope, this._mongo);
+        this._storage = bucket;
     }
 
     async metadata(place, uuid, lulcUrl) {
@@ -118,6 +120,7 @@ class MetadataForIntegration {
                 return Promise.resolve(true);
             }
 
+            const fileNameInStorage = `${integrationInput.uuid}/${fileName}`;
             return new Promise((resolve, reject) => {
                 fs.readFile(pathToFile, 'utf8', (err, data) => {
                     if(err) {
@@ -127,20 +130,22 @@ class MetadataForIntegration {
                     }
                 })
             }).then(result => {
+                return this._storage.upload(fileNameInStorage, result);
+            }).then(() => {
                 // If fileName matches AL template push to proper AU templates instead.
                 let isAu = false;
                 integrationInput.analyticalUnitLevels.forEach(auLevel => {
                     if(RegExp(auLevel.template).test(fileName)) {
                         isAu = true;
 
-                        auLevel.layer = JSON.parse(result);
+                        auLevel.layer = fileNameInStorage;
                     }
                 });
 
                 if(!isAu) {
                     integrationInput.layers.push({
                         name: fileName.replace('\.geojson', ''),
-                        content: JSON.parse(result)
+                        content: fileNameInStorage
                     })
                 }
             })

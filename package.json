@@ -15,6 +15,7 @@
     "@turf/turf": "5.1.6",
     "appoptics-apm": "6.5.1",
     "async": "1.5.2",
+    "aws-sdk": "^2.474.0",
     "bcrypt": "1.0.3",
     "blueimp-md5": "2.10.0",
     "bower": "1.8.2",

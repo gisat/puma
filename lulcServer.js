@@ -1,8 +1,10 @@
 const cluster = require('cluster');
 const express = require('express');
 const superagent = require('superagent');
+const config = require('./config');
 
 const CityAnalysisProcessor = require('./integration/lulc/CityAnalysisProcessor');
+const S3Bucket = require('./storage/S3Bucket');
 
 if(cluster.isMaster) {
     var cpuCount = require('os').cpus().length;
@@ -35,11 +37,42 @@ if(cluster.isMaster) {
         });
 
         const integrationInput = request.body;
-        new CityAnalysisProcessor(integrationInput).geoJson();
-        integrationInput.layers = [];
+        const bucket = new S3Bucket(config.aws.bucketName, config.aws.accessKeyId, config.aws.secretAccessKey);
+        const promisesToWaitFor = [];
 
-        superagent.post(request.body.url)
-            .send(integrationInput).then(() => {
+        integrationInput.layers.forEach(layer => {
+            promisesToWaitFor.push(bucket.download(layer.content)).then(result => {
+                const name = layer.content;
+
+                layer.content = JSON.parse(result.Body.toString());
+
+                return bucket.delete(name);
+            });
+        });
+        integrationInput.analyticalUnitLevels.forEach(level => {
+            promisesToWaitFor.push(bucket.download(level.layer)).then(result => {
+                const name = level.layer;
+
+                level.layer = JSON.parse(result.Body.toString());
+                level.nameInStorage = name;
+
+                return bucket.delete(name);
+            });
+        });
+
+        Promise.all(promisesToWaitFor).then(() => {
+            new CityAnalysisProcessor(integrationInput).geoJson();
+            integrationInput.layers = [];
+
+            return Promise.all(integrationInput.analyticalUnitLevels.map(level => {
+                return bucket.upload(level.nameInStorage, JSON.stringify(level.layer)).then(() => {
+                    level.layer = level.nameInStorage;
+                });
+            }));
+        }).then(() => {
+            return superagent.post(request.body.url)
+                .send(integrationInput)
+        }).then(() => {
                 console.log(request.body.uuid + ' Sent back')
         }).catch(err => {
                 console.log('Error: ', err);
