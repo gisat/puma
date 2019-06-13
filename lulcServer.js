@@ -37,7 +37,7 @@ if(cluster.isMaster) {
         });
 
         const integrationInput = request.body;
-        const bucket = new S3Bucket(config.aws.bucketName, config.aws.accessKeyId, config.aws.secretAccessKey);
+        const bucket = new S3Bucket(config.aws.name, config.aws.accessKeyId, config.aws.secretAccessKey);
         const promisesToWaitFor = [];
 
         integrationInput.layers.forEach(layer => {
