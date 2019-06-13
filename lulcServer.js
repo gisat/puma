@@ -65,9 +65,7 @@ if(cluster.isMaster) {
             integrationInput.layers = [];
 
             return Promise.all(integrationInput.analyticalUnitLevels.map(level => {
-                return bucket.upload(level.nameInStorage, JSON.stringify(level.layer)).then(() => {
-                    level.layer = level.nameInStorage;
-                });
+                return bucket.upload(level.nameInStorage, JSON.stringify(level.layer));
             }));
         }).then(() => {
             return superagent.post(request.body.url)
