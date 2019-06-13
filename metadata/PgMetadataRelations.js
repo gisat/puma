@@ -237,7 +237,8 @@ class PgMetadataRelations {
 			.query(querySql.join(' '), sqlVariableValues)
 			.then((pgResult) => {
 				return _.map(pgResult.rows, (row) => {
-					return row[this._getBaseMetadataTypeColumnName()];
+					// todo this is just a quick fix, i have to find what couse this (there is an array of duplicate strings instead of just a singe string)
+					return _.isArray(row[this._getBaseMetadataTypeColumnName()]) ? row[this._getBaseMetadataTypeColumnName()][0] : row[this._getBaseMetadataTypeColumnName()];
 				});
 			});
 	}
