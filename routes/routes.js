@@ -54,6 +54,7 @@ const PgMetadataController = require('./PgMetadataController');
 const PgPermissionController = require('./PgPermissionController');
 const PgUserController = require('./PgUserController');
 const LulcIntegrationController = require('./LulcIntegrationController');
+const S3Bucket = require('../storage/S3Bucket');
 
 const UploadManagerController = require('./UploadManagerController');
 
@@ -141,7 +142,7 @@ module.exports = function(app) {
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
 	new PgMetadataController(app, pool, config.postgreSqlSchema, mongo);
 	new PgUserController(app, pool, config.postgreSqlSchema, mongo);
-	new LulcIntegrationController(app, mongo, pool, conn);
+	new LulcIntegrationController(app, mongo, pool, conn, new S3Bucket(config.aws.name, config.aws.accessKeyId, config.aws.secretAccessKey));
 
 	new PgPermissionController(app, pool, config.postgreSqlSchema);
 

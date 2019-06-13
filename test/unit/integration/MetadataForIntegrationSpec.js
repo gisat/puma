@@ -1,7 +1,9 @@
 const should = require('should');
+const config = require('../config');
 
 const connectToMongo = require('../../connectToMongo');
 const MetadataForIntegration = require('../../../integration/lulc/MetadataForIntegration');
+const S3Bucket = require('../../../storage/S3Bucket');
 
 describe('MetadataForIntegration', () => {
     describe('#metadata', () => {
@@ -35,8 +37,8 @@ describe('MetadataForIntegration', () => {
         it('loads provided layers', async done => {
             try {
                 const mongo = await connectToMongo();
-                const integrator = new MetadataForIntegration(mongo, 600000000);
-                const result = await integrator.metadata('Argentina','uuid', 'http://test');
+                const integrator = new MetadataForIntegration(mongo, 600000000, new S3Bucket(config.aws.name, config.aws.accessKeyId, config.aws.secretAccessKey));
+                const result = await integrator.metadata('Argentina','uuid2', 'http://test');
                 await integrator.layers(result, [{
                     path: './test/unit/integration/integrateCity/EO4SD_DHAKA_AL1.geojson',
                     originalFilename: 'EO4SD_DHAKA_AL1.geojson'
@@ -45,9 +47,9 @@ describe('MetadataForIntegration', () => {
                     originalFilename: 'EO4SD_DHAKA_LULCVHR_2017.geojson'
                 }]);
 
-                should(result.analyticalUnitLevels[0].layer.name).be.exactly('EO4SD_DHAKA_AL1');
+                should(result.analyticalUnitLevels[0].layer).be.exactly('uuid2/EO4SD_DHAKA_AL1.geojson');
                 should(result.layers.length).be.exactly(1);
-                should(result.layers[0].content.name).be.exactly('EO4SD_DHAKA_LULCVHR_2017');
+                should(result.layers[0].content).be.exactly('uuid2/EO4SD_DHAKA_LULCVHR_2017.geojson');
 
                 done();
             } catch(e) {

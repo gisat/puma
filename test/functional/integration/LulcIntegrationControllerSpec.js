@@ -1,15 +1,13 @@
 const express = require('express');
 const superagent = require('superagent');
+const config = require('../config');
 
 const connectToMongo = require('../../connectToMongo');
 const LulcIntegrationController = require('../../../routes/LulcIntegrationController');
+const S3Bucket = require('../../../storage/S3Bucket');
 
 describe('LulcIntegrationController', () => {
     describe('#integrateResults', () => {
-        // TODO: Update the UI implementation
-
-        // TODO: Transform Shapefile to GeoJSON
-        // TODO: Adapt the calculated area from WGS84 as a division.
         it('properly creates views', async done => {
             try {
                 const mongodb = await connectToMongo();
@@ -30,7 +28,7 @@ describe('LulcIntegrationController', () => {
                     getNextId: () => {
                         return ++id;
                     }
-                });
+                }, new S3Bucket(config.aws.name, config.aws.accessKeyId, config.aws.secretAccessKey));
 
                 await mongodb.collection('layerref').deleteMany({
                     areaTemplate: 1,
