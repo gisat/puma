@@ -1031,6 +1031,8 @@ class FuoreImporter {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherAttributeDataSources = [];
+				let pantherAttributeDataSourcesToCreate = [];
+
 				for (let attribute of attributes) {
 					let attributeTableName = `fuore-attr-${attribute.table_name}`;
 					let years = attribute.years.split(`-`);
@@ -1039,30 +1041,34 @@ class FuoreImporter {
 					}
 
 					for (let year = Number(years[0]); year <= Number(years[1]); year++) {
-						await this.createDataSource(
-							`attribute`,
-							{
-								tableName: attributeTableName,
-								columnName: String(year)
-							},
-							{
-								tableName: attributeTableName,
-								columnName: String(year)
-							},
-							user
-						).then((attributeDataSources) => {
-							pantherAttributeDataSources.push({
-								...attributeDataSources[0],
-								linkage: {
-									attributeId: attribute.id,
-									analyticalUnitId: attribute.analytical_unit_id,
-									attributeFidColumn: attribute.fid_column,
-									attributeNameColumn: attribute.name_column
+						await this._pgPool.query(`SELECT * FROM "dataSources"."attributeDataSource" WHERE "tableName" = '${attributeTableName}' AND "columnName" = '${String(year)}'`)
+							.then((pgResult) => {
+								if (pgResult.rows[0]) {
+									return pgResult.rows[0];
+								} else {
+									return this._pgPool.query(`INSERT INTO "dataSources"."attributeDataSource" ("tableName", "columnName") VALUES ('${attributeTableName}', '${String(year)}') RETURNING *`)
+										.then((pgResult) => {
+											return pgResult.rows[0];
+										})
 								}
 							})
-						});
+							.then((attributeDataSourceRaw) => {
+								pantherAttributeDataSources.push({
+									key: attributeDataSourceRaw.key,
+									data: {
+										...attributeDataSourceRaw,
+										key: undefined
+									}, linkage: {
+										attributeId: attribute.id,
+										analyticalUnitId: attribute.analytical_unit_id,
+										attributeFidColumn: attribute.fid_column,
+										attributeNameColumn: attribute.name_column
+									}
+								})
+							});
 					}
 				}
+
 				return pantherAttributeDataSources;
 			});
 	}
@@ -1177,27 +1183,40 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR06`);
 					}
 
-					await this.createRelations(
-						`attribute`,
-						{
-							scopeKey: scope.key,
-							attributeDataSourceKey: attributeDataSource.key,
-							layerTemplateKey: layerTemplate.key,
-							periodKey: period.key,
-							attributeKey: attribute.key,
-							fidColumnName: attribute.linkage.attributeFidColumn
-						},
-						{
-							scopeKey: scope.key,
-							attributeDataSourceKey: attributeDataSource.key,
-							layerTemplateKey: layerTemplate.key,
-							periodKey: period.key,
-							attributeKey: attribute.key,
-							fidColumnName: attribute.linkage.attributeFidColumn
-						},
-						user
-					)
+					let periodKeyWhereSql = period.key ? `"periodKey" = '${period.key}'` : `"periodKey" IS NULL`;
+					let periodKeyInsertSql = period.key ? `'${period.key}'` : `NULL`;
+
+					await this._pgPool.query(
+						`SELECT * FROM "relations"."attributeDataSourceRelation" WHERE 
+							"scopeKey" = '${scope.key}' 
+							AND "attributeDataSourceKey" = '${attributeDataSource.key}'
+							AND "layerTemplateKey" = '${layerTemplate.key}'
+							AND ${periodKeyWhereSql}
+							AND "attributeKey" = '${attribute.key}'
+							AND "fidColumnName" = '${attribute.linkage.attributeFidColumn}'`
+					).then((pgResult) => {
+						if (!pgResult.rows[0]) {
+							return this._pgPool.query(
+								`INSERT INTO "relations"."attributeDataSourceRelation" (
+									"scopeKey", 
+									"periodKey", 
+									"attributeDataSourceKey", 
+									"layerTemplateKey", 
+									"attributeKey", 
+									"fidColumnName"
+								) VALUES (
+									'${scope.key}',
+									${periodKeyInsertSql},
+									'${attributeDataSource.key}',
+									'${layerTemplate.key}',
+									'${attribute.key}',
+									'${attribute.linkage.attributeFidColumn}'
+								)`
+							)
+						}
+					})
 				}
+
 			});
 	}
 
@@ -1206,47 +1225,83 @@ class FuoreImporter {
 			.then(() => {
 				_.each(pantherData, async (value, property) => {
 					switch (property) {
-						case `fuoreAuNameAttribute`:
-							await this._pgPermission.addGroup(guestGroupKey, `attribute`, value.key, Permission.READ);
+						case
+						`fuoreAuNameAttribute`
+						:
+							await this._pgPermission.addGroup(guestGroupKey,
+								`attribute`
+								, value.key, Permission.READ);
 							break;
-						case `scopes`:
+						case
+						`scopes`
+						:
 							for (let scope of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `scope`, scope.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`scope`
+									, scope.key, Permission.READ);
 							}
 							break;
-						case `attributes`:
+						case
+						`attributes`
+						:
 							for (let attribute of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `attribute`, attribute.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`attribute`
+									, attribute.key, Permission.READ);
 							}
 							break;
-						case `periods`:
+						case
+						`periods`
+						:
 							for (let period of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `period`, period.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`period`
+									, period.key, Permission.READ);
 							}
 							break;
-						case `tags`:
+						case
+						`tags`
+						:
 							for (let tag of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `tag`, tag.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`tag`
+									, tag.key, Permission.READ);
 							}
 							break;
-						case `layerTemplates`:
+						case
+						`layerTemplates`
+						:
 							for (let layerTemplate of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `layerTemplate`, layerTemplate.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`layerTemplate`
+									, layerTemplate.key, Permission.READ);
 							}
 							break;
-						case `views`:
+						case
+						`views`
+						:
 							for (let view of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `view`, view.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`view`
+									, view.key, Permission.READ);
 							}
 							break;
-						case `esponFuoreIndicators`:
+						case
+						`esponFuoreIndicators`
+						:
 							for (let esponFuoreIndicator of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `esponFuoreIndicator`, esponFuoreIndicator.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`esponFuoreIndicator`
+									, esponFuoreIndicator.key, Permission.READ);
 							}
 							break;
-						case `layerTrees`:
+						case
+						`layerTrees`
+						:
 							for (let layerTree of value) {
-								await this._pgPermission.addGroup(guestGroupKey, `layerTree`, layerTree.key, Permission.READ);
+								await this._pgPermission.addGroup(guestGroupKey,
+									`layerTree`
+									, layerTree.key, Permission.READ);
 							}
 							break;
 					}
@@ -1263,7 +1318,9 @@ class FuoreImporter {
 		return Promise.resolve()
 			.then(() => {
 				if (!data) {
-					throw new Error(`missing zip package`);
+					throw new Error(
+						`missing zip package`
+					);
 				}
 
 				unzippedFs = zipper.sync.unzip(data.path).memory();
@@ -1271,140 +1328,182 @@ class FuoreImporter {
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
-						status.progress = `1/19`;
+						status.progress =
+							`1/19`
+						;
 						analyticalUnits = pAnalyticalUnits;
 					})
 			})
 			.then(() => {
 				return this.ensureAttributesData(unzippedFs)
 					.then((pAttributes) => {
-						status.progress = `2/19`;
+						status.progress =
+							`2/19`
+						;
 						attributes = pAttributes;
 					})
 			})
 			.then(() => {
 				return this.createPantherNameAttributeForFuore(uuidv4(), user)
 					.then((pantherAttributes) => {
-						status.progress = `3/19`;
+						status.progress =
+							`3/19`
+						;
 						pantherData.fuoreAuNameAttribute = pantherAttributes[0];
 					});
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeForFuore(uuidv4(), user)
 					.then((pantherAttributes) => {
-						status.progress = `4/19`;
+						status.progress =
+							`4/19`
+						;
 						pantherData.fuoreAuCountryCodeAttribute = pantherAttributes[0];
 					});
 			})
 			.then(() => {
 				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key, pantherData.fuoreAuCountryCodeAttribute.key)
 					.then((pantherScopes) => {
-						status.progress = `5/19`;
+						status.progress =
+							`5/19`
+						;
 						pantherData.scopes = pantherScopes;
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributesFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherAttributes) => {
-						status.progress = `6/19`;
+						status.progress =
+							`6/19`
+						;
 						pantherData.attributes = pantherAttributes;
 					})
 			})
 			.then(() => {
 				return this.createPantherPeriodsFromFuoreAttributes(attributes, user)
 					.then((pantherPeriods) => {
-						status.progress = `7/19`;
+						status.progress =
+							`7/19`
+						;
 						pantherData.periods = pantherPeriods;
 					})
 			})
 			.then(() => {
 				return this.createPantherTagsFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherTags) => {
-						status.progress = `8/19`;
+						status.progress =
+							`8/19`
+						;
 						pantherData.tags = pantherTags;
 					})
 			})
 			.then(() => {
 				return this.createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherLayerTemplates) => {
-						status.progress = `9/19`;
+						status.progress =
+							`9/19`
+						;
 						pantherData.layerTemplates = pantherLayerTemplates;
 					});
 			})
 			.then(() => {
 				return this.createPantherViewsFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherViews) => {
-						status.progress = `10/19`;
+						status.progress =
+							`10/19`
+						;
 						pantherData.views = pantherViews;
 					})
 			})
 			.then(() => {
 				return this.createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherEsponFuoreIndicators) => {
-						status.progress = `11/19`;
+						status.progress =
+							`11/19`
+						;
 						pantherData.esponFuoreIndicators = pantherEsponFuoreIndicators;
 					})
 			})
 			.then(() => {
 				return this.createPantherSpatialDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherSpatialDataSources) => {
-						status.progress = `12/19`;
+						status.progress =
+							`12/19`
+						;
 						pantherData.spatialDataSources = pantherSpatialDataSources;
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributeDataSourceFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherAttributeDataSources) => {
-						status.progress = `13/19`;
+						status.progress =
+							`13/19`
+						;
 						pantherData.attributeDataSources = pantherAttributeDataSources;
 					});
 			})
 			.then(() => {
 				return this.createPantherNameAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user)
 					.then((pantherAttributeDataSources) => {
-						status.progress = `14/19`;
+						status.progress =
+							`14/19`
+						;
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
 					})
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user)
 					.then((pantherAttributeDataSources) => {
-						status.progress = `15/19`;
+						status.progress =
+							`15/19`
+						;
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
 					})
 			})
 			.then(() => {
 				return this.createPantherLayerTreesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherLayerTrees) => {
-						status.progress = `16/19`;
+						status.progress =
+							`16/19`
+						;
 						pantherData.layerTrees = pantherLayerTrees;
 					})
 			})
 			.then(() => {
 				return this.createPantherSpatialRelations(pantherData, user)
 					.then(() => {
-						status.progress = `17/19`;
+						status.progress =
+							`17/19`
+						;
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributeRelations(pantherData, user)
 					.then(() => {
-						status.progress = `18/19`;
+						status.progress =
+							`18/19`
+						;
 					})
 			})
 			.then(() => {
 				return this.setGuestPermissionsForPantherData(pantherData)
 					.then(() => {
-						status.progress = `19/19`;
+						status.progress =
+							`19/19`
+						;
 					})
 			})
 			.then(() => {
 				status.ended = new Date().toISOString();
-				status.state = `done`;
+				status.state =
+					`done`
+				;
 			})
 			.catch((error) => {
 				status.ended = new Date().toISOString();
-				status.state = `done`;
+				status.state =
+					`done`
+				;
 				status.error = error.message;
 			})
 	}
