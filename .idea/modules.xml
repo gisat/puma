@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/PANTHER.iml" filepath="$PROJECT_DIR$/.idea/PANTHER.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../panther-front-office/panther-front-office.iml" filepath="$PROJECT_DIR$/../panther-front-office/panther-front-office.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../panther-front-office-master/panther-front-office-master.iml" filepath="$PROJECT_DIR$/../panther-front-office-master/panther-front-office-master.iml" />
     </modules>
   </component>
 </project>

@@ -1,1 +1,0 @@
-Implementation of SLD library representation for Node. It doesn't support all use cases but it gradually grows over time.

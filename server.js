@@ -1,14 +1,10 @@
 require('appoptics-apm');
 
 const express = require('express');
-const conn = require('./common/conn');
-const staticFn = express['static'];
 const session = require('express-session');
 const xmlparser = require('express-xml-bodyparser');
 
-const async = require('async');
-const loc = require('./common/loc');
-const logger = require('./common/Logger').applicationWideLogger;
+const logger = require('./src/common/Logger').applicationWideLogger;
 
 const config = require('./config');
 
@@ -16,24 +12,15 @@ process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
-const PgDatabase = require(`./postgresql/PgDatabase`);
+const PgDatabase = require(`./src/postgresql`);
 
-const SymbologyToPostgreSqlMigration = require('./migration/SymbologyToPostgreSql');
-const PgPool = require('./postgresql/PgPool');
-const CreateDefaultUserAndGroup = require('./migration/CreateDefaultUserAndGroup');
-const IdOfTheResourceMayBeText = require('./migration/IdOfTheResourceMayBeText');
-const PrepareForInternalUser = require('./migration/PrepareForInternalUser');
-const AddCustomInfoToWms = require('./migration/AddCustomInfoToWms');
-const MigrateAwayFromGeonode = require('./migration/MigrateAwayFromGeonode');
-const AddAuditInformation = require('./migration/AddAuditInformation');
-const AddGetDatesToWmsLayers = require('./migration/AddGetDatesToWmsLayers');
-const AddPhoneToUser = require('./migration/AddPhoneToUser');
-const AddMetadataToLayer = require('./migration/2_10_1_AddMetadataToLayer');
-const AddSourceUrlToLayer = require('./migration/2_12_AddSourceUrlToLayer');
+const PgPool = require('./src/postgresql/PgPool');
+const CreateDefaultUserAndGroup = require('./src/migration/CreateDefaultUserAndGroup');
+const PrepareForInternalUser = require('./src/migration/PrepareForInternalUser');
 
-const CompoundAuthentication = require('./security/CompoundAuthentication');
-const PgAuthentication = require('./security/PgAuthentication');
-const SsoAuthentication = require('./security/SsoAuthentication');
+const CompoundAuthentication = require('./src/security/CompoundAuthentication');
+const PgAuthentication = require('./src/security/PgAuthentication');
+const SsoAuthentication = require('./src/security/SsoAuthentication');
 
 const pool = new PgPool({
 	user: config.pgDataUser,
@@ -77,7 +64,6 @@ function initServer(err) {
 		response.locals.isAdmin = request.session.groups && request.session.groups.indexOf("admingroup") != -1;
 		next();
 	});
-	app.use(loc.langParser);
 
 	// Allow CORS on the node level.
 	app.use(function (req, res, next) {
@@ -93,9 +79,9 @@ function initServer(err) {
 
 	// Make sure that every request knows the current information about user.
 	app.use((request, response, next) => {
-		let authenticators = [new PgAuthentication(pool, config.postgreSqlSchema)];
+		let authenticators = [new PgAuthentication(pool, config.pgSchema.data)];
 		if (config.toggles.useEoSso) {
-			authenticators.unshift(new SsoAuthentication(pool, config.postgreSqlSchema));
+			authenticators.unshift(new SsoAuthentication(pool, config.pgSchema.data));
 		}
 
 		new CompoundAuthentication(authenticators).authenticate(request, response, next).then(() => {
@@ -114,10 +100,7 @@ function initServer(err) {
 		})
 	});
 
-	require('./routes/routes')(app);
-	require('./routes/finish')(app);
-	app.use('/', staticFn(__dirname + '/public'));
-	app.use('/ipr', staticFn(__dirname + '/public/ipr'));
+	require('./src/routes/routes')(app, pool);
 
 	logger.info('Going to listen on port ' + config.localPort + '...');
 	let server = app.listen(config.localPort);
@@ -134,52 +117,11 @@ new PgDatabase(pool.pool())
 	.then(() => {
 		return new PrepareForInternalUser(config.pgSchema.data).run();
 	})
-	// .then(() => {
-	// 	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new PrepareForInternalUser(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddCustomInfoToWms(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddAuditInformation(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddPhoneToUser(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddMetadataToLayer(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
-	// })
 	.then(function () {
 		// logger.info('Finished Migrations.');
 
 		app = express();
-		async.series([
-				function (callback) {
-					conn.init(app, callback);
-				},
-				function (callback) {
-					loc.init(callback);
-				}],
-			initServer
-		);
+		initServer();
 	}).catch((err) => {
 	logger.error('Error with Migration. Error: ', err);
 });

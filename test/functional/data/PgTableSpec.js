@@ -2,9 +2,9 @@ let config = require('../config');
 let os = require('os');
 let should = require('should');
 
-let DatabaseSchema = require('../../../postgresql/DatabaseSchema');
-let PgPool = require('../../../postgresql/PgPool');
-let PgTable = require('../../../data/PgTable');
+let DatabaseSchema = require('../../../src/postgresql/DatabaseSchema');
+let PgPool = require('../../../src/postgresql/PgPool');
+let PgTable = require('../../../src/data/PgTable');
 
 
 describe('PgTable', () => {
