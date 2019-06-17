@@ -15,7 +15,6 @@
     "@turf/turf": "5.1.6",
     "appoptics-apm": "6.5.1",
     "bcrypt": "3.0.6",
-    "blueimp-md5": "2.10.0",
     "express": "3.21.2",
     "express-session": "1.15.6",
     "express-xml-bodyparser": "0.3.0",
