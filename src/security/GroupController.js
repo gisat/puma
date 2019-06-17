@@ -1,4 +1,4 @@
-let config = require('../config');
+let config = require('../../config');
 let logger = require('../common/Logger').applicationWideLogger;
 let Promise = require('promise');
 

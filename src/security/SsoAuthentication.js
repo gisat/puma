@@ -1,6 +1,6 @@
 let Promise = require('promise');
 
-let config = require('../config');
+let config = require('../../config');
 let logger = require('../common/Logger').applicationWideLogger;
 
 let PgUsers = require('./PgUsers');
