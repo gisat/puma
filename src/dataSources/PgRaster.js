@@ -1,4 +1,4 @@
-const PgBaseDataSource = require(`src/dataSources/PgBaseDataSource`)
+const PgBaseDataSource = require(`../dataSources/PgBaseDataSource`)
 
 class PgRaster extends PgBaseDataSource {
 	constructor(pgSchema) {

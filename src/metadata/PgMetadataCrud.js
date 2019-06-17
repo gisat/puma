@@ -17,7 +17,7 @@ const PgAreaTrees = require('./PgAreaTrees');
 const PgAreaTreeLevels = require('./PgAreaTreeLevels');
 const PgTags = require('./PgTags');
 
-const PgApplications = require(`src/application/PgApplications`);
+const PgApplications = require(`../application/PgApplications`);
 
 const PgScenariosLegacy = require('./PgScenariosLegacy');
 const PgScenarioCases = require('./PgScenarioCases');

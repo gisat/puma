@@ -1,10 +1,10 @@
 const config = require(`../../config`);
 
-const PgCrud = require(`src/common/PgCrud`);
+const PgCrud = require(`../common/PgCrud`);
 
-const PgViews = require(`src/view/PgViews`);
+const PgViews = require(`../view/PgViews`);
 
-const PgApplications = require(`src/application/PgApplications`);
+const PgApplications = require(`../application/PgApplications`);
 
 class PgViewsCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {

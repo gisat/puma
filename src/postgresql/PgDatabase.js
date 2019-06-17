@@ -14,22 +14,22 @@ const PgAreaTrees = require('../metadata/PgAreaTrees');
 const PgAreaTreeLevels = require('../metadata/PgAreaTreeLevels');
 const PgTags = require('../metadata/PgTags');
 
-const PgSpatialDataSourceRelations = require(`src/relations/PgSpatialDataSourceRelations`);
-const PgAttributeDataSourceRelations = require(`src/relations/PgAttributeDataSourceRelations`);
-const PgAreaRelations = require(`src/relations/PgAreaRelations`);
+const PgSpatialDataSourceRelations = require(`../relations/PgSpatialDataSourceRelations`);
+const PgAttributeDataSourceRelations = require(`../relations/PgAttributeDataSourceRelations`);
+const PgAreaRelations = require(`../relations/PgAreaRelations`);
 
-const PgCommonSpatialDataSource = require(`src/dataSources/PgCommonSpatialDataSource`);
-const PgAttributeDataSource = require(`src/dataSources/PgAttributeDataSource`);
+const PgCommonSpatialDataSource = require(`../dataSources/PgCommonSpatialDataSource`);
+const PgAttributeDataSource = require(`../dataSources/PgAttributeDataSource`);
 
-const PgLayerTrees = require(`src/application/PgLayerTrees`);
-const PgConfigurations = require(`src/application/PgConfigurations`);
-const PgApplications = require(`src/application/PgApplications`);
+const PgLayerTrees = require(`../application/PgLayerTrees`);
+const PgConfigurations = require(`../application/PgConfigurations`);
+const PgApplications = require(`../application/PgApplications`);
 
-const PgViews = require(`src/view/PgViews`);
+const PgViews = require(`../view/PgViews`);
 
-const PgUsers = require(`src/user/PgUsers`);
+const PgUsers = require(`../user/PgUsers`);
 
-const PgEsponFuoreIndicators = require(`src/specific/PgEsponFuoreIndicators`);
+const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 
 class PgDatabase {
 	constructor(pgPool) {

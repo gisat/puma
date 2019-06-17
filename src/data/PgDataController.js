@@ -4,9 +4,9 @@ const uuidv4 = require(`uuid/v4`);
 
 const config = require(`../../config`);
 
-const PgDataSourcesCrud = require(`src/dataSources/PgDataSourcesCrud`);
+const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
 
-const FuoreImporter = require(`src/integration/FuoreImporter`);
+const FuoreImporter = require(`../integration/FuoreImporter`);
 
 class PgDataController {
 	constructor(app, pgPool) {

@@ -1,5 +1,5 @@
-const PgLpisCheckCases = require(`src/metadata/PgLpisCheckCases`);
-const PgMetadataRelations = require(`src/metadata/PgMetadataRelations`);
+const PgLpisCheckCases = require(`../metadata/PgLpisCheckCases`);
+const PgMetadataRelations = require(`../metadata/PgMetadataRelations`);
 
 var logger = require('../common/Logger').applicationWideLogger;
 

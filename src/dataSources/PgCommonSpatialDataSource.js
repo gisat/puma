@@ -1,11 +1,11 @@
 const _ = require(`lodash`);
 
-const PgCollection = require(`src/common/PgCollection`);
+const PgCollection = require(`../common/PgCollection`);
 
-const PgVector = require(`src/dataSources/PgVector`);
-const PgRaster = require(`src/dataSources/PgRaster`);
-const PgWms = require(`src/dataSources/PgWms`);
-const PgWmts = require(`src/dataSources/PgWmts`);
+const PgVector = require(`../dataSources/PgVector`);
+const PgRaster = require(`../dataSources/PgRaster`);
+const PgWms = require(`../dataSources/PgWms`);
+const PgWmts = require(`../dataSources/PgWmts`);
 
 class PgCommonSpatialDataSource extends PgCollection {
 	constructor(pgPool, pgSchema) {

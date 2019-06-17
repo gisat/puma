@@ -1,6 +1,6 @@
 const _ = require(`lodash`);
 
-const PgCollection = require(`src/common/PgCollection`);
+const PgCollection = require(`../common/PgCollection`);
 
 class PgAttributeDataSource extends PgCollection {
 	constructor(pgPool, pgSchema) {

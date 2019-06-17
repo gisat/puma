@@ -4,15 +4,15 @@ const _ = require(`lodash`);
 
 const config = require(`../../config`);
 
-const PgDataSourcesCrud = require(`src/dataSources/PgDataSourcesCrud`);
-const PgMetadataCrud = require(`src/metadata/PgMetadataCrud`);
-const PgSpecificCrud = require(`src/specific/PgSpecificCrud`);
-const PgRelationsCrud = require(`src/relations/PgRelationsCrud`);
-const PgViewsCrud = require(`src/view/PgViewsCrud`);
-const PgApplicationsCrud = require(`src/application/PgApplicationsCrud`);
+const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
+const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
+const PgSpecificCrud = require(`../specific/PgSpecificCrud`);
+const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
+const PgViewsCrud = require(`../view/PgViewsCrud`);
+const PgApplicationsCrud = require(`../application/PgApplicationsCrud`);
 
-const PgPermission = require(`src/security/PgPermissions`);
-const Permission = require(`src/security/Permission`);
+const PgPermission = require(`../security/PgPermissions`);
+const Permission = require(`../security/Permission`);
 
 const esponFuoreApplicationKey = `esponFuore`;
 const guestGroupKey = `2`;

@@ -1,14 +1,14 @@
 const config = require(`../../config`);
 
-const PgCrud = require(`src/common/PgCrud`);
+const PgCrud = require(`../common/PgCrud`);
 
-const PgEsponFuoreIndicators = require(`src/specific/PgEsponFuoreIndicators`);
+const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 
-const PgAttributes = require(`src/metadata/PgAttributes`);
+const PgAttributes = require(`../metadata/PgAttributes`);
 
-const PgViews = require(`src/view/PgViews`);
-const PgTags = require(`src/metadata/PgTags`);
-const PgScopes = require(`src/metadata/PgScopes`);
+const PgViews = require(`../view/PgViews`);
+const PgTags = require(`../metadata/PgTags`);
+const PgScopes = require(`../metadata/PgScopes`);
 
 class PgSpecificCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {

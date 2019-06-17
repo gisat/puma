@@ -1,4 +1,4 @@
-const PgController = require(`./src/common`);
+const PgController = require(`./../common`);
 const PgSpecificCrud = require('.//PgSpecificCrud');
 
 class PgSpecificController extends PgController {

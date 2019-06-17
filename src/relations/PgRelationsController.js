@@ -1,4 +1,4 @@
-const PgController = require(`src/common/PgController`);
+const PgController = require(`../common/PgController`);
 const PgRelationsCrud = require('./PgRelationsCrud');
 
 class PgRelationsController extends PgController {

@@ -1,7 +1,7 @@
-const PgCrud = require(`src/common/PgCrud`);
+const PgCrud = require(`../common/PgCrud`);
 
-const PgCommonSpatialDataSource = require(`src/dataSources/PgCommonSpatialDataSource`);
-const PgAttributeDataSource = require(`src/dataSources/PgAttributeDataSource`);
+const PgCommonSpatialDataSource = require(`../dataSources/PgCommonSpatialDataSource`);
+const PgAttributeDataSource = require(`../dataSources/PgAttributeDataSource`);
 
 class PgDataSourcesCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {

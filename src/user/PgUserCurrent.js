@@ -1,6 +1,6 @@
 const _ = require('lodash');
 
-const PgDatabase = require(`src/postgresql/PgDatabase`);
+const PgDatabase = require(`../postgresql/PgDatabase`);
 
 class PgUserCurrent {
 	constructor(pgPool, pgSchema, userId) {

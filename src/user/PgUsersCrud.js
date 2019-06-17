@@ -2,8 +2,8 @@ const _ = require('lodash');
 
 const PgCrud = require('../common/PgCrud');
 
-const PgUsers = require(`src/user/PgUsers`);
-const PgGroups = require(`src/user/PgGroups`);
+const PgUsers = require(`../user/PgUsers`);
+const PgGroups = require(`../user/PgGroups`);
 
 class PgUsersCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
