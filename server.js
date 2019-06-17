@@ -15,7 +15,6 @@ process.on('uncaughtException', function (err) {
 const PgDatabase = require(`./src/postgresql/PgDatabase`);
 
 const PgPool = require('./src/postgresql/PgPool');
-const CreateDefaultUserAndGroup = require('./src/migration/CreateDefaultUserAndGroup');
 const PrepareForInternalUser = require('./src/migration/PrepareForInternalUser');
 
 const CompoundAuthentication = require('./src/security/CompoundAuthentication');
@@ -111,9 +110,6 @@ function initServer(err) {
 
 new PgDatabase(pool.pool())
 	.ensure()
-	.then(() => {
-		return new CreateDefaultUserAndGroup(config.pgSchema.data).run();
-	})
 	.then(() => {
 		return new PrepareForInternalUser(config.pgSchema.data).run();
 	})

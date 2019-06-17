@@ -1,6 +1,5 @@
 const _ = require('lodash');
 
-const PgCollection = require('../common/PgCollection');
 const PgScopeScenarioCaseRelations = require('./PgScopeScenarioCaseRelations');
 const PgPlaceScenarioCaseRelations = require('./PgPlaceScenarioCaseRelations');
 const PgScenarioScenarioCaseRelations = require('./PgScenarioScenarioCaseRelations');

@@ -2,8 +2,6 @@ const _ = require('lodash');
 
 const config = require(`../../config`);
 
-const Permission = require('../security/Permission');
-
 const PgCrud = require('../common/PgCrud');
 const PgScenarios = require('./PgScenarios');
 const PgCases = require('./PgCases');
@@ -19,25 +17,9 @@ const PgTags = require('./PgTags');
 
 const PgApplications = require(`../application/PgApplications`);
 
-const PgScenariosLegacy = require('./PgScenariosLegacy');
-const PgScenarioCases = require('./PgScenarioCases');
-const PgLpisCases = require('./PgLpisCases');
-const PgThemes = require('./PgThemes');
-const PgTopics = require('./PgTopics');
-const PgDataviewsLegacy = require('./PgDataviewsLegacy');
-const PgLpisCheckCases = require('./PgLpisCheckCases');
-const PgLayerGroups = require('./PgLayerGroups');
-const PgVisualizations = require('./PgVisualizations');
-const PgWmsLayersLegacy = require('./PgWmsLayersLegacy');
-
 class PgMetadataCrud extends PgCrud {
 	constructor(pgPool, pgSchema) {
 		super();
-
-		// this._pgScenarios = new PgScenarios(pgPool, pgSchema);
-		// this._pgScenarioCases = new PgScenarioCases(pgPool, pgSchema);
-		// this._pgLpisCases = new PgLpisCases(pgPool, pgSchema);
-		// this._pgLpisCheckCases = new PgLpisCheckCases(pgPool, pgSchema);
 
 		this._pgScopes = new PgScopes(pgPool, pgSchema);
 		this._pgPlaces = new PgPlaces(pgPool, pgSchema);
@@ -68,13 +50,6 @@ class PgMetadataCrud extends PgCrud {
 		this._pgAreaTrees.setRelatedStores([this._pgScopes, this._pgApplications, this._pgTags]);
 		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees, this._pgApplications, this._pgTags]);
 		this._pgLayerTemplates.setRelatedStores([this._pgScopes, this._pgApplications, this._pgTags]);
-
-		// this._pgLayerGroups = new PgLayerGroups(pgPool, pgSchema);
-
-		// this._pgScenarios.setPgScenariosCasesClass(this._pgScenarioCases);
-		// this._pgScenarioCases.setPgScenariosClass(this._pgScenarios);
-
-		// this._pgLpisCheckCases.setRelatedStores([this._pgPlaces, this._pgDataviewsLegacy]);
 
 		this._pgTypes = {
 			[PgScenarios.groupName()]: {
@@ -120,47 +95,7 @@ class PgMetadataCrud extends PgCrud {
 			[PgTags.groupName()]: {
 				store: this._pgTags,
 				type: PgTags.tableName()
-			},
-			// scenarios: {
-			// 	store: this._pgScenarios,
-			// 	type: PgScenarios.tableName()
-			// },
-			// scenario_cases: {
-			// 	store: this._pgScenarioCases,
-			// 	type: PgScenarioCases.tableName()
-			// },
-			// lpis_cases: {
-			// 	store: this._pgLpisCases,
-			// 	type: PgLpisCases.tableName()
-			// },
-			// [PgThemes.groupName()]: {
-			// 	store: this._pgThemes,
-			// 	type: PgThemes.tableName()
-			// },
-			// [PgDataviewsLegacy.groupName()]: {
-			// 	store: this._pgDataviewsLegacy,
-			// 	type: PgDataviewsLegacy.tableName()
-			// },
-			// [PgTopics.groupName()]: {
-			// 	store: this._pgTopics,
-			// 	type: PgTopics.tableName()
-			// },
-			// [PgLpisCheckCases.groupName()]: {
-			// 	store: this._pgLpisCheckCases,
-			// 	type: PgLpisCheckCases.tableName()
-			// },
-			// [PgLayerGroups.groupName()]: {
-			// 	store: this._pgLayerGroups,
-			// 	type: PgLayerGroups.tableName()
-			// },
-			// [PgVisualizations.groupName()]: {
-			// 	store: this._pgVisualizations,
-			// 	type: PgVisualizations.tableName()
-			// },
-			// [PgWmsLayersLegacy.groupName()]: {
-			// 	store: this._pgWmsLayersLegacy,
-			// 	type: PgWmsLayersLegacy.tableName()
-			// }
+			}
 		};
 	}
 }
