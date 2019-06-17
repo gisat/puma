@@ -111,7 +111,7 @@ function initServer(err) {
 new PgDatabase(pool.pool())
 	.ensure()
 	.then(() => {
-		return new PrepareForInternalUser(config.pgSchema.data).run();
+		return new PrepareForInternalUser(pool, config.pgSchema.data).process();
 	})
 	.then(function () {
 		// logger.info('Finished Migrations.');

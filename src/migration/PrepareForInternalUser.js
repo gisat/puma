@@ -1,16 +1,14 @@
-let Migration = require('./Migration');
 let bcrypt = require('bcrypt');
 
-class PrepareForInternalUser extends Migration {
-    constructor(schema) {
-        super('PrepareForInternalUser', schema);
-
+class PrepareForInternalUser {
+    constructor(pool, schema) {
         this._schema = schema;
+        this._pool = pool;
     }
 
-    process(mongo, pool) {
+    process() {
         return bcrypt.hash('admin', 10).then(hash => {
-            return pool.query(`
+            return this._pool.query(`
                 INSERT INTO ${this._schema}.panther_users (email, name, password) values ('admin','admin','${hash}');           
             `);
         });
