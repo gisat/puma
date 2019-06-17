@@ -1,5 +1,5 @@
 let moment = require('moment');
-let _ = require('underscore');
+let _ = require('lodash');
 let logger = require('../common/Logger').applicationWideLogger;
 
 let Group = require('./Group');

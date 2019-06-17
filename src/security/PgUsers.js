@@ -10,7 +10,7 @@ let PgGroups = require('./PgGroups');
 let Permission = require('./Permission');
 let User = require('./User');
 
-let _ = require('underscore');
+let _ = require('lodash');
 
 class PgUsers {
     constructor(pool, schema) {

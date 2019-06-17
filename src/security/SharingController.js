@@ -1,7 +1,7 @@
 let config = require('../config');
 let logger = require('../common/Logger').applicationWideLogger;
 
-let _ = require('underscore');
+let _ = require('lodash');
 let Promise = require('promise');
 
 let FilteredMongoThemes = require('../metadata/FilteredMongoThemes');
