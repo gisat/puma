@@ -12,7 +12,7 @@ process.on('uncaughtException', function (err) {
 	logger.error("Caught exception: ", err);
 });
 
-const PgDatabase = require(`./src/postgresql`);
+const PgDatabase = require(`./src/postgresql/PgDatabase`);
 
 const PgPool = require('./src/postgresql/PgPool');
 const CreateDefaultUserAndGroup = require('./src/migration/CreateDefaultUserAndGroup');
