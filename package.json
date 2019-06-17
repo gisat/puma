@@ -77,7 +77,6 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --recursive --reporter spec",
-    "install": "npm install",
     "start": "node server.js"
   }
 }
