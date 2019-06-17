@@ -1,5 +1,5 @@
-const PgController = require(`./../common`);
-const PgSpecificCrud = require('.//PgSpecificCrud');
+const PgController = require(`../common/PgController`);
+const PgSpecificCrud = require('./PgSpecificCrud');
 
 class PgSpecificController extends PgController {
 	constructor(app, pgPool, pgSchema) {

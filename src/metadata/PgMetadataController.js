@@ -1,4 +1,4 @@
-const PgController = require(`./../common`);
+const PgController = require(`../common/PgController`);
 const PgMetadataCrud = require('./PgMetadataCrud');
 
 class PgMetadataController extends PgController {
