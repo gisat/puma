@@ -1,6 +1,6 @@
 const config = require('../../config');
 
-const DatabaseSchema = require('../postgresql/DatabaseSchema');
+const PgDatabase = require(`../postgresql/PgDatabase`);
 
 const GroupController = require('../security/GroupController');
 const LoginController = require('./LoginController');
@@ -10,25 +10,24 @@ const PgDataController = require(`../data/PgDataController`);
 const PgDataSourcesController = require(`../dataSources/PgDataSourcesController`);
 const PgMetadataController = require('../metadata/PgMetadataController');
 const PgRelationsController = require('../relations/PgRelationsController');
-const PgSpatialDataSourcesController = require('./PgSpatialDataSourcesController');
 const PgSpecificController = require('../specific/PgSpecificController');
 const PgUserController = require('../user/PgUserController');
 const PgViewsController = require(`../view/PgViewsController`);
 
-module.exports = function(app, pool) {
-	new DatabaseSchema(pool, config.pgSchema.data).create();
+module.exports = function(app, pgPool) {
+	new PgDatabase(pgPool).ensure();
 
-	new LoginController(app, pool);
-	new PermissionController(app, pool, config.pgSchema.data);
-	new GroupController(app, pool);
+	new LoginController(app, pgPool);
+	new GroupController(app, pgPool);
 
-	new PgSpatialDataSourcesController(app, pool, config.pgSchema.data);
-	new PgUserController(app, pool, config.pgSchema.data);
-	new PgMetadataController(app, pool.pool(), config.pgSchema.metadata);
-	new PgRelationsController(app, pool.pool(), config.pgSchema.relations);
-	new PgDataSourcesController(app, pool.pool(), config.pgSchema.dataSources);
-	new PgApplicationController(app, pool.pool(), config.pgSchema.application);
-	new PgViewsController(app, pool.pool(), config.pgSchema.views);
-	new PgSpecificController(app, pool.pool(), config.pgSchema.specific);
-	new PgDataController(app, pool);
+	new PgUserController(app, pgPool, config.pgSchema.data);
+	new PgMetadataController(app, pgPool.pool(), config.pgSchema.metadata);
+	new PgRelationsController(app, pgPool.pool(), config.pgSchema.relations);
+	new PgDataSourcesController(app, pgPool.pool(), config.pgSchema.dataSources);
+	new PgApplicationController(app, pgPool.pool(), config.pgSchema.application);
+	new PgViewsController(app, pgPool.pool(), config.pgSchema.views);
+	new PgSpecificController(app, pgPool.pool(), config.pgSchema.specific);
+	new PgDataController(app, pgPool);
+
+	new PermissionController(app, pgPool, config.pgSchema.data);
 };
