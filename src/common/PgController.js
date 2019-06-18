@@ -1,3 +1,5 @@
+const _ = require(`lodash`);
+
 class PgController {
 	constructor(app, pgPool, pgSchema, group) {
 		this._pgPool = pgPool;

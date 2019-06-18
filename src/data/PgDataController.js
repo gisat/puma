@@ -1,6 +1,7 @@
 const pgTypes = require(`pg`).types;
 const fse = require(`fs-extra`);
 const uuidv4 = require(`uuid/v4`);
+const _ = require(`lodash`);
 
 const config = require(`../../config`);
 
