@@ -68,6 +68,8 @@ if(cluster.isMaster) {
                 return bucket.upload(level.nameInStorage, JSON.stringify(level.layer));
             }));
         }).then(() => {
+            return bucket.upload('integrationInput.json', JSON.stringify(integrationInput));
+        }).then(() => {
             return superagent.post(request.body.url)
                 .send(integrationInput)
         }).then(() => {
