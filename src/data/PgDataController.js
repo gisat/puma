@@ -155,7 +155,10 @@ class PgDataController {
 						...statistic
 					}
 				}
-			});
+			})
+			.catch((error) => {
+				return {};
+			})
 	}
 
 	async getAttributeDataStatistic(request, response) {
