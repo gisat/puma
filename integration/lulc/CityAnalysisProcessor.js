@@ -117,7 +117,7 @@ class CityAnalysisProcessor {
     transportationNetwork(theme, layers, analyticalUnitsLevels) {
         // There may be multiple layers. We need to find out the proper periods based on this information.
         const presentLayers = this.filterPresentLayers(theme.layerTemplates, layers);
-        if (presentLayers.length !== theme.layerTemplates.length) {
+        if (presentLayers.length < theme.layerTemplates.length) {
             theme.layerUnavailable = true;
             console.error(`Transportation Network Analysis Doesn't have relevant data.`);
             return;
@@ -151,7 +151,7 @@ class CityAnalysisProcessor {
     landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, attributeContainer) {
         // There may be multiple layers. We need to find out the proper periods based on this information.
         const presentLayers = this.filterPresentLayers(theme.layerTemplates, layers);
-        if (presentLayers.length !== theme.layerTemplates.length) {
+        if (presentLayers.length < theme.layerTemplates.length) {
             theme.layerUnavailable = true;
             console.error(`Land Use Land Cover Analysis Doesn't have relevant data. ${attributeContainer}`);
             return;
@@ -185,7 +185,7 @@ class CityAnalysisProcessor {
     calculateAmountOfNodes(theme, layers, analyticalUnitsLevels) {
         // There may be multiple layers. We need to find out the proper periods based on this information.
         const presentLayers = this.filterPresentLayers(theme.layerTemplates, layers);
-        if (presentLayers.length !== theme.layerTemplates.length) {
+        if (presentLayers.length < theme.layerTemplates.length) {
             theme.layerUnavailable = true;
             console.error(`Land Use Land Cover Analysis Doesn't have relevant data.`);
             return;
