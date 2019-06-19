@@ -45,8 +45,6 @@ if(cluster.isMaster) {
                 const name = layer.content;
 
                 layer.content = JSON.parse(result.Body.toString());
-
-                return bucket.delete(name);
             }));
         });
         integrationInput.analyticalUnitLevels.forEach(level => {
