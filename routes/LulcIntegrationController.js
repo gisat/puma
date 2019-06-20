@@ -53,6 +53,8 @@ class LulcIntegrationController {
                 return new GeoJsonToSql(auLevel.layer, auLevel.table, index + 1).sql();
             }).join(' ');
 
+            await this._bucket.upload(uuid + '/result.sql', sql);
+
             await this._pgPool.query(sql);
             await this._mongo.collection('layerref').insertMany(layerRefs);
 
