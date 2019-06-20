@@ -10,57 +10,61 @@ class ConnectivityNodes {
 
     geoJson() {
         this._analyticalUnitsLayer.features.forEach(analyticalUnit => {
-            const attributesAreas = {
-                'total': {
-                    area: 0,
-                    id: 'total'
-                }
-            };
-            this._attributes.forEach(attribute => {
-                if(_.isArray(attribute.code)) {
-                    attribute.code.forEach(code => {
-                        attributesAreas[code] = {
+            try {
+                const attributesAreas = {
+                    'total': {
+                        area: 0,
+                        id: 'total'
+                    }
+                };
+                this._attributes.forEach(attribute => {
+                    if (_.isArray(attribute.code)) {
+                        attribute.code.forEach(code => {
+                            attributesAreas[code] = {
+                                area: 0,
+                                id: attribute.id
+                            };
+                        });
+                    } else {
+                        attributesAreas[attribute.code] = {
                             area: 0,
                             id: attribute.id
                         };
-                    });
-                } else {
-                    attributesAreas[attribute.code] = {
-                        area: 0,
-                        id: attribute.id
-                    };
-                }
-            });
+                    }
+                });
 
-            let nodesInArea = 0;
-            this._connectivityNodesLayer.features.forEach(point => {
-                if(turf.booleanPointInPolygon(point, analyticalUnit)){
-                    const usedCodes = [];
-                    this._attributes.forEach(attribute => {
-                        const codeOfPolygon = point.properties[attribute.columnName];
-                        if (typeof attributesAreas[codeOfPolygon] !== 'undefined' && usedCodes.indexOf(codeOfPolygon) === -1) {
-                            attributesAreas[codeOfPolygon].area += 1;
-                            usedCodes.push(codeOfPolygon);
-                        }
-                    });
-                    attributesAreas['total'].area += 1;
-                    nodesInArea++;
-                }
-            });
+                let nodesInArea = 0;
+                this._connectivityNodesLayer.features.forEach(point => {
+                    if (turf.booleanPointInPolygon(point, analyticalUnit)) {
+                        const usedCodes = [];
+                        this._attributes.forEach(attribute => {
+                            const codeOfPolygon = point.properties[attribute.columnName];
+                            if (typeof attributesAreas[codeOfPolygon] !== 'undefined' && usedCodes.indexOf(codeOfPolygon) === -1) {
+                                attributesAreas[codeOfPolygon].area += 1;
+                                usedCodes.push(codeOfPolygon);
+                            }
+                        });
+                        attributesAreas['total'].area += 1;
+                        nodesInArea++;
+                    }
+                });
 
-            this._attributes.forEach(attribute => {
-                if(_.isArray(attribute.code)) {
-                    let areaForCodes  = 0;
-                    attribute.code.forEach(code => {
-                        areaForCodes += attributesAreas[code].area;
-                    });
-                    analyticalUnit.properties[attribute.id] = areaForCodes;
-                } else if(!attribute.code) {
-                    analyticalUnit.properties[attribute.id] = attributesAreas['total'].area;
-                } else {
-                    analyticalUnit.properties[attribute.id] = attributesAreas[attribute.code].area;
-                }
-            });
+                this._attributes.forEach(attribute => {
+                    if (_.isArray(attribute.code)) {
+                        let areaForCodes = 0;
+                        attribute.code.forEach(code => {
+                            areaForCodes += attributesAreas[code].area;
+                        });
+                        analyticalUnit.properties[attribute.id] = areaForCodes;
+                    } else if (!attribute.code) {
+                        analyticalUnit.properties[attribute.id] = attributesAreas['total'].area;
+                    } else {
+                        analyticalUnit.properties[attribute.id] = attributesAreas[attribute.code].area;
+                    }
+                });
+            } catch(err) {
+                console.log(err);
+            }
         });
 
         return this._analyticalUnitsLayer;
