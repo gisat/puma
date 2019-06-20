@@ -96,6 +96,7 @@ class LulcIntegrationController {
                 auLevel.table = databaseTables[index];
             });
 
+            await this._bucket.upload(uuid + '/input.json', JSON.stringify(integrationInput));
             await superagent.post(config.remoteLulcProcessorUrl)
                 .send(integrationInput);
             await status.update('Remote processing');
