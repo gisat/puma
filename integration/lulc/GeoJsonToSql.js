@@ -16,7 +16,7 @@ class GeoJsonToSql {
             }
         });
 
-        const alterSql = columns.join(' ');
+        // const alterSql = columns.join(' ');
 
         const rows = [];
         this._geoJson.features.map(feature => {
@@ -29,9 +29,11 @@ class GeoJsonToSql {
             });
         });
 
-        const updateSql = rows.join(' ');
+        // const updateSql = rows.join(' ');
 
-        return alterSql + updateSql;
+        // return alterSql + updateSql;
+
+        return [...columns, ...rows];
     }
 }
 

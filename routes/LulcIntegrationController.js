@@ -1,4 +1,5 @@
 const superagent = require('superagent');
+const fse = require(`fs-extra`);
 const conn = require('../common/conn');
 const config = require('../config');
 
@@ -30,9 +31,10 @@ class LulcIntegrationController {
     }
 
     async integrateResults(request, response) {
-        console.log('Integrate Results: ', request.body);
+        // let integrationInput = fse.readJsonSync(request.files.file.path);
+        let integrationInput = request.body;
 
-        const uuid = request.body.uuid;
+        const uuid = integrationInput.uuid;
         const status = new LulcStatus(this._mongo, uuid);
 
         if (request.body.error) {
@@ -43,20 +45,24 @@ class LulcIntegrationController {
         }
 
         try {
-            const inputForAnalysis = request.body;
+            const metadata = new MetadataForIntegration(this._mongo, integrationInput._id);
+            const layerRefs = metadata.layerRefs(integrationInput, this._idProvider.getNextId());
 
-            const metadata = new MetadataForIntegration(this._mongo, inputForAnalysis._id);
-            const layerRefs = metadata.layerRefs(inputForAnalysis, this._idProvider.getNextId());
             await status.update('LayerRefs Inserted');
 
-            const sql = inputForAnalysis.analyticalUnitLevels.map((auLevel, index) => {
+            const sqlQueryList = _.flatten(integrationInput.analyticalUnitLevels.map((auLevel, index) => {
                 return new GeoJsonToSql(auLevel.layer, auLevel.table, index + 1).sql();
-            }).join(' ');
+            }));
 
-            await this._pgPool.query(sql);
+            let done = 0;
+            for(let sqlQuery of sqlQueryList) {
+                await this._pgPool.query(sqlQuery);
+            }
+
             await this._mongo.collection('layerref').insertMany(layerRefs);
 
-            await this._places.addAttributes(layerRefs, inputForAnalysis.place);
+            await this._places.addAttributes(layerRefs, integrationInput.place);
+
             await status.update('Done');
             response.json({});
         } catch (error) {
