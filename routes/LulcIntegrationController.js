@@ -39,7 +39,7 @@ class LulcIntegrationController {
         try {
 			let integrationInput = await this._bucket.download(request.body.uuid + '/integrationInput.json')
 				.then((bucketResponse) => {
-					return bucketResponse.Body.toString();
+					return JSON.parse(bucketResponse.Body.toString());
 				});
 
 			if (request.body.error) {
