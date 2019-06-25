@@ -34,20 +34,13 @@ class LulcIntegrationController {
         // let integrationInput = fse.readJsonSync(request.files.file.path);
         let uuid = request.body.uuid;
 
-        if(!uuid) {
-			await status.error(`unkown or missing uuid`);
-
-			response.json({});
-			return;
-        }
+        const status = new LulcStatus(this._mongo, uuid);
 
         try {
 			let integrationInput = await this._bucket.download(request.body.uuid + '/integrationInput.json')
 				.then((bucketResponse) => {
 					return bucketResponse.Body.toString();
 				});
-
-			const status = new LulcStatus(this._mongo, uuid);
 
 			if (request.body.error) {
 				await status.error(request.body.error);
