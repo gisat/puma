@@ -41,21 +41,21 @@ class LulcIntegrationController {
 			return;
         }
 
-        let integrationInput = await this._bucket.download(request.body.uuid + '/integrationInput.json')
-            .then((bucketResponse) => {
-                return bucketResponse.Body.toString();
-            });
-
-        const status = new LulcStatus(this._mongo, uuid);
-
-        if (request.body.error) {
-            await status.error(request.body.error);
-
-            response.json({});
-            return;
-        }
-
         try {
+			let integrationInput = await this._bucket.download(request.body.uuid + '/integrationInput.json')
+				.then((bucketResponse) => {
+					return bucketResponse.Body.toString();
+				});
+
+			const status = new LulcStatus(this._mongo, uuid);
+
+			if (request.body.error) {
+				await status.error(request.body.error);
+
+				response.json({});
+				return;
+			}
+
             const metadata = new MetadataForIntegration(this._mongo, integrationInput._id);
             const layerRefs = metadata.layerRefs(integrationInput, this._idProvider.getNextId());
 
