@@ -69,7 +69,7 @@ if(cluster.isMaster) {
             return bucket.upload(request.body.uuid + '/integrationInput.json', JSON.stringify(integrationInput));
         }).then(() => {
             return superagent.post(request.body.url)
-                .send(integrationInput)
+                .send({uuid: request.body.uuid});
         }).then(() => {
                 console.log(request.body.uuid + ' Sent back')
         }).catch(err => {
