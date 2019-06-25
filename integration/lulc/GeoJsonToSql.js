@@ -12,7 +12,7 @@ class GeoJsonToSql {
         const columns = [];
         propertyKeys.forEach(property => {
             if(property.indexOf('as') === 0) {
-                columns.push(`ALTER TABLE "${this._tableName}" DROP COLUMN IF EXISTS ${property}; ALTER TABLE ${this._tableName} ADD COLUMN ${property} INTEGER;`);
+                columns.push(`ALTER TABLE "${this._tableName}" DROP COLUMN IF EXISTS ${property} CASCADE; ALTER TABLE ${this._tableName} ADD COLUMN ${property} INTEGER;`);
             }
         });
 
