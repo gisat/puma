@@ -1,4 +1,5 @@
 const superagent = require('superagent');
+const fse = require(`fs-extra`);
 const conn = require('../common/conn');
 const config = require('../config');
 
@@ -30,35 +31,42 @@ class LulcIntegrationController {
     }
 
     async integrateResults(request, response) {
-        console.log('Integrate Results: ', request.body);
+        // let integrationInput = fse.readJsonSync(request.files.file.path);
+        let uuid = request.body.uuid;
 
-        const uuid = request.body.uuid;
         const status = new LulcStatus(this._mongo, uuid);
 
-        if (request.body.error) {
-            await status.error(request.body.error);
-
-            response.json({});
-            return;
-        }
-
         try {
-            const inputForAnalysis = request.body;
+			let integrationInput = await this._bucket.download(request.body.uuid + '/integrationInput.json')
+				.then((bucketResponse) => {
+					return JSON.parse(bucketResponse.Body.toString());
+				});
 
-            const metadata = new MetadataForIntegration(this._mongo, inputForAnalysis._id);
-            const layerRefs = metadata.layerRefs(inputForAnalysis, this._idProvider.getNextId());
+			if (request.body.error) {
+				await status.error(request.body.error);
+
+				response.json({});
+				return;
+			}
+
+            const metadata = new MetadataForIntegration(this._mongo, integrationInput._id);
+            const layerRefs = metadata.layerRefs(integrationInput, this._idProvider.getNextId());
+
             await status.update('LayerRefs Inserted');
 
-            const sql = inputForAnalysis.analyticalUnitLevels.map((auLevel, index) => {
+            const sqlQueryList = _.flatten(integrationInput.analyticalUnitLevels.map((auLevel, index) => {
                 return new GeoJsonToSql(auLevel.layer, auLevel.table, index + 1).sql();
-            }).join(' ');
+            }));
 
-            await this._bucket.upload(uuid + '/result.sql', sql);
+            let done = 0;
+            for(let sqlQuery of sqlQueryList) {
+                await this._pgPool.query(sqlQuery);
+            }
 
-            await this._pgPool.query(sql);
             await this._mongo.collection('layerref').insertMany(layerRefs);
 
-            await this._places.addAttributes(layerRefs, inputForAnalysis.place);
+            await this._places.addAttributes(layerRefs, integrationInput.place);
+
             await status.update('Done');
             response.json({});
         } catch (error) {
@@ -96,7 +104,6 @@ class LulcIntegrationController {
                 auLevel.table = databaseTables[index];
             });
 
-            await this._bucket.upload(uuid + '/input.json', JSON.stringify(integrationInput));
             await superagent.post(config.remoteLulcProcessorUrl)
                 .send(integrationInput);
             await status.update('Remote processing');

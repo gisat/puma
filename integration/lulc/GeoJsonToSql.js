@@ -9,14 +9,15 @@ class GeoJsonToSql {
         const properties= this._geoJson.features[0].properties;
         const propertyKeys = Object.keys(properties);
 
-        const columns = [];
+        const columns = [], drops = [];
         propertyKeys.forEach(property => {
             if(property.indexOf('as') === 0) {
-                columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN IF NOT EXISTS ${property} INTEGER;`);
+            	drops.push(`ALTER TABLE "${this._tableName}" DROP COLUMN IF EXISTS ${property} CASCADE;`);
+                columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN ${property} INTEGER;`);
             }
         });
 
-        const alterSql = columns.join(' ');
+        // const alterSql = columns.join(' ');
 
         const rows = [];
         this._geoJson.features.map(feature => {
@@ -29,9 +30,11 @@ class GeoJsonToSql {
             });
         });
 
-        const updateSql = rows.join(' ');
+        // const updateSql = rows.join(' ');
 
-        return alterSql + updateSql;
+        // return alterSql + updateSql;
+
+        return [...drops, ...columns, ...rows];
     }
 }
 
