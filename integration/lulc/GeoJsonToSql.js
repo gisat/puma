@@ -5,19 +5,23 @@ class GeoJsonToSql {
         this._auIndex = auIndex;
     }
 
-    sql() {
+    alters() {
         const properties= this._geoJson.features[0].properties;
         const propertyKeys = Object.keys(properties);
 
-        const columns = [], drops = [];
+        const columns = [];
         propertyKeys.forEach(property => {
             if(property.indexOf('as') === 0) {
-            	drops.push(`ALTER TABLE "${this._tableName}" DROP COLUMN IF EXISTS ${property} CASCADE;`);
                 columns.push(`ALTER TABLE ${this._tableName} ADD COLUMN ${property} INTEGER;`);
             }
         });
 
-        // const alterSql = columns.join(' ');
+        return columns;
+    }
+
+    updates() {
+        const properties= this._geoJson.features[0].properties;
+        const propertyKeys = Object.keys(properties);
 
         const rows = [];
         this._geoJson.features.map(feature => {
@@ -30,11 +34,7 @@ class GeoJsonToSql {
             });
         });
 
-        // const updateSql = rows.join(' ');
-
-        // return alterSql + updateSql;
-
-        return [...drops, ...columns, ...rows];
+        return rows;
     }
 }
 
