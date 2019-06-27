@@ -97,7 +97,10 @@ class Places {
                     return this._layersViews.update(
                         baseLayerReferences[0]._id,
                         relevantLayerRefs.map(layerRef => new MongoLayerReference(layerRef._id, this._connection))).then(() =>{
-                            return this._geoServerLayers.create(new RestLayer(`layer_${baseLayerReferences[0]._id}`,"panther","views"));
+                            return this._geoServerLayers.create(new RestLayer(`layer_${baseLayerReferences[0]._id}`,"panther","views"))
+                                .catch((error) => {
+                                    console.log(`#### Places#addAttributes#create geoserver layer - error`, error.message);
+                                })
                     });
                 }));
             })

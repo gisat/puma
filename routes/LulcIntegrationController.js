@@ -60,7 +60,7 @@ class LulcIntegrationController {
 
                 await this._pgPool.query(`ALTER TABLE "${auLevel.table}" RENAME TO "${auLevel.table}_temp";`);
 
-                await this._pgPool.query(`SELECT 'ALTER TABLE "' || "table_name" || '" DROP COLUMN "' || "column_name" || '";' AS drop_column_sql FROM "information_schema"."columns" WHERE "table_name" = '${auLevel.table}_temp' AND "column_name" LIKE 'as_%';`)
+                await this._pgPool.query(`SELECT 'ALTER TABLE "' || "table_name" || '" DROP COLUMN "' || "column_name" || '" CASCADE;' AS drop_column_sql FROM "information_schema"."columns" WHERE "table_name" = '${auLevel.table}_temp' AND "column_name" LIKE 'as_%';`)
                     .then(async (pgResult) => {
                         for (let row of pgResult.rows) {
                             await this._pgPool.query(row.drop_column_sql);
@@ -69,7 +69,7 @@ class LulcIntegrationController {
 
                 await this._pgPool.query(`CREATE TABLE "${auLevel.table}" AS TABLE "${auLevel.table}_temp";`);
 
-                await this._pgPool.query(`DROP TABLE "${auLevel.table}_temp";`);
+                await this._pgPool.query(`DROP TABLE "${auLevel.table}_temp" CASCADE;`);
 
                 for(let sqlQuery of new GeoJsonToSql(auLevel.layer, auLevel.table, index).alters()) {
                     await this._pgPool.query(sqlQuery);
