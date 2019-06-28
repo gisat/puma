@@ -104,7 +104,13 @@ class CityAnalysisProcessor {
 
             const attributeSetLayer = {
                 features: presentLayers[0].content.features.filter(feature => {
-                    return theme.filteringAttribute ? feature.properties[theme.filteringAttribute] == attributeSet.filteringAttributeValue: true;
+                    if(theme.filteringAttribute && _.isArray(attributeSet.filteringAttributeValue)) {
+                        return attributeSet.filteringAttributeValue.indexOf(feature.properties[theme.filteringAttribute]) != -1;
+                    } else if (theme.filteringAttribute) {
+                        return feature.properties[theme.filteringAttribute] == attributeSet.filteringAttributeValue;
+                    } else {
+                        return true;
+                    }
                 })
             };
 
