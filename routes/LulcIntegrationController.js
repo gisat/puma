@@ -54,13 +54,30 @@ class LulcIntegrationController {
 
             await status.update('LayerRefs Inserted');
 
-            const sqlQueryList = _.flatten(integrationInput.analyticalUnitLevels.map((auLevel, index) => {
-                return new GeoJsonToSql(auLevel.layer, auLevel.table, index + 1).sql();
-            }));
+            let index = 0;
+            for(let auLevel of integrationInput.analyticalUnitLevels) {
+                index = index + 1;
 
-            let done = 0;
-            for(let sqlQuery of sqlQueryList) {
-                await this._pgPool.query(sqlQuery);
+                await this._pgPool.query(`ALTER TABLE "${auLevel.table}" RENAME TO "${auLevel.table}_temp";`);
+
+                await this._pgPool.query(`SELECT 'ALTER TABLE "' || "table_name" || '" DROP COLUMN "' || "column_name" || '" CASCADE;' AS drop_column_sql FROM "information_schema"."columns" WHERE "table_name" = '${auLevel.table}_temp' AND "column_name" LIKE 'as_%';`)
+                    .then(async (pgResult) => {
+                        for (let row of pgResult.rows) {
+                            await this._pgPool.query(row.drop_column_sql);
+                        }
+                    });
+
+                await this._pgPool.query(`CREATE TABLE "${auLevel.table}" AS TABLE "${auLevel.table}_temp";`);
+
+                await this._pgPool.query(`DROP TABLE "${auLevel.table}_temp" CASCADE;`);
+
+                for(let sqlQuery of new GeoJsonToSql(auLevel.layer, auLevel.table, index).alters()) {
+                    await this._pgPool.query(sqlQuery);
+                }
+
+                for(let sqlQuery of new GeoJsonToSql(auLevel.layer, auLevel.table, index).updates()) {
+                    await this._pgPool.query(sqlQuery);
+                }
             }
 
             await this._mongo.collection('layerref').insertMany(layerRefs);
