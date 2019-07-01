@@ -17,6 +17,7 @@ class CityAnalysisProcessor {
             au.table = au.table.split(':')[1];
         });
 
+        const mathAnalysis = [];
         analysisRelatedThemes.forEach(theme => {
             const integrationType = theme.integrationType;
             if (integrationType === 'landUseLandCoverVeryHighResolution') {
@@ -33,7 +34,19 @@ class CityAnalysisProcessor {
                 this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'informalSettlements'+theme.id);
             } else if (integrationType === 'floods') {
                 this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'floods'+theme.id);
+            } else if (integrationType === 'math') {
+                mathAnalysis.push(theme);
             }
+        });
+
+        // Math analysis needs to be the last as it uses values from previous computations.
+        // Topic with one attribute set as result
+        // Another topic with two attribute Sets where values of one attributeSet represents the other attribute set.
+        mathAnalysis.forEach(theme => {
+            const topicForMathId = theme.topicForMath;
+            theme.topicForMath = analysisRelatedThemes.filter(theme => theme.id == topicForMathId)[0];
+
+            this.mathAnalysis(theme, analyticalUnitsLevels);
         });
 
         return analyticalUnitsLevels;
@@ -43,6 +56,40 @@ class CityAnalysisProcessor {
         return this._integrationInput.periods.filter(period => {
             return period.periods.indexOf(name) !== -1
         })[0];
+    }
+
+    mathAnalysis(theme, analyticalUnitsLevels){
+        const substractAttributeSet =
+            theme.topicForMath.attributeSets.filter(attributeSet => attributeSet.id == theme.attributeSetsForMath[0])[0];
+        const attributeSetToSubtract =
+            theme.topicForMath.attributeSets.filter(attributeSet => attributeSet.id == theme.attributeSetsForMath[1])[0];
+        const resultAttributeSet = theme.attributeSets[0];
+
+        const periods = theme.topicForMath.periods;
+        const attributesSubstractFrom = this.attributesForTopicAndPeriod(substractAttributeSet, periods);
+        const attributesToSubstract = this.attributesForTopicAndPeriod(attributeSetToSubtract, periods);
+        const resultAttributes = this.attributesForTopicAndPeriod(resultAttributeSet, periods);
+
+        analyticalUnitsLevels.forEach(analyticalUnitLevel => {
+            analyticalUnitLevel.features.forEach(feature => {
+                resultAttributes.forEach((result, index) => {
+                    feature.properties[result] = feature.properties[attributesSubstractFrom[index]] -
+                        feature.properties[attributesToSubstract[index]]
+                })
+            })
+        });
+    }
+
+    attributesForTopicAndPeriod(attributeSet, periods) {
+        const attributes = [];
+
+        attributeSet.attributes.forEach(attribute => {
+            periods.forEach(period => {
+                attributes.push(`as_${attributeSet.id}_attr_${attribute.id}_p_${period}`);
+            });
+        });
+
+        return attributes;
     }
 
     flowChangeAnalysis(theme, layers, analyticalUnitsLevels, attributeContainer) {

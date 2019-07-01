@@ -205,6 +205,23 @@ describe('IntegrateLulcProcessor', () => {
                         {id: 1, layerNameTemplate: 'EO4SD_\.*_INFORMAL_\.*'}
                     ],
                     integrationType: 'informalSettlements'
+                },
+
+                {
+                    id: 9,
+                    attributeSets: [
+                        {
+                            id: 13,
+                            attributes: [
+                                {id: 1, code: 10000},
+                                {id: 2, code: 20000}
+                            ],
+                            columnName: 'C_L1',
+                        }
+                    ],
+                    integrationType: 'math',
+                    topicForMath: 2,
+                    attributeSetsForMath: [7, 8]
                 }
             ],
             layers: [
@@ -282,6 +299,7 @@ describe('IntegrateLulcProcessor', () => {
             should(properties['as_11_attr_1_p_600002014']).be.exactly(710068965.397);
             should(properties['as_12_attr_1_p_600002006']).be.exactly(47874499.878249936);
             should(properties['as_12_attr_1_p_600002016']).be.exactly(47874499.878249936);
+            should(properties['as_13_attr_1_p_600002016']).be.exactly(388526.86506624985);
         }).then(() => {
             done();
         }).catch(err => {
