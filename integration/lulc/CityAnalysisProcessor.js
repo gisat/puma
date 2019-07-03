@@ -1,6 +1,7 @@
 const ConnectivityNodes = require('./ConnectivityNodes');
 const LulcProcessor = require('./LulcProcessor');
 const TransportationNetwork = require('./TransportationNetwork');
+const _ = require('lodash');
 
 class CityAnalysisProcessor {
     constructor(integrationInput) {
