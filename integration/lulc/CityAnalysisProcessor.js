@@ -67,6 +67,7 @@ class CityAnalysisProcessor {
         const resultAttributeSet = theme.attributeSets[0];
 
         const periods = theme.topicForMath.periods;
+        theme.periods = periods;
         const attributesSubstractFrom = this.attributesForTopicAndPeriod(substractAttributeSet, periods);
         const attributesToSubstract = this.attributesForTopicAndPeriod(attributeSetToSubtract, periods);
         const resultAttributes = this.attributesForTopicAndPeriod(resultAttributeSet, periods);
