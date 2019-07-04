@@ -55,7 +55,9 @@ class MetadataForIntegration {
                     id: pTopic._id,
                     layerTemplates: pTopic.layerTemplates,
                     integrationType: pTopic.integrationType,
-                    filteringAttribute: pTopic.filteringAttribute
+                    filteringAttribute: pTopic.filteringAttribute,
+                    topicForMath: pTopic.topicForMath,
+                    attributeSetsForMath: pTopic.attributeSetsForMath
                 };
                 scope.themes.push(themeTopic);
                 if(themeTopic.layerTemplates) {
