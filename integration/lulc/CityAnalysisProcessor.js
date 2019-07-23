@@ -47,7 +47,10 @@ class CityAnalysisProcessor {
             const topicForMathId = theme.topicForMath;
             theme.topicForMath = analysisRelatedThemes.filter(theme => theme.id == topicForMathId)[0];
 
-            this.mathAnalysis(theme, analyticalUnitsLevels);
+            // Only do the math analysis if the previous analysis happened.
+            if(theme.topicForMath.periods) {
+                this.mathAnalysis(theme, analyticalUnitsLevels);
+            }
         });
 
         return analyticalUnitsLevels;
