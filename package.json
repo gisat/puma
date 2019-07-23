@@ -12,11 +12,10 @@
   },
   "homepage": "https://puma.worldbank.org/",
   "dependencies": {
-    "@turf/turf": "5.1.6",
     "appoptics-apm": "6.5.1",
     "async": "1.5.2",
     "aws-sdk": "^2.474.0",
-    "bcrypt": "1.0.3",
+    "bcrypt": "3.0.6",
     "blueimp-md5": "2.10.0",
     "bower": "1.8.2",
     "connect-pg-simple": "5.0.0",
@@ -29,7 +28,7 @@
     "express-session": "1.15.6",
     "express-xml-bodyparser": "0.3.0",
     "fs-extra": "6.0.1",
-    "gdal": "0.9.6",
+    "gdal": "^0.9.8",
     "geojson": "0.4.1",
     "geojson-extent": "0.3.2",
     "geojson2shp": "0.3.2",
@@ -42,7 +41,6 @@
     "mongodb": "2.2.19",
     "newrelic": "1.40.0",
     "node-gyp": "3.6.2",
-    "node-sass": "3.13.1",
     "nodemailer": "4.2.0",
     "object-hash": "1.2.0",
     "onecolor": "2.3.4",
@@ -79,7 +77,6 @@
   },
   "scripts": {
     "test": "./node_modules/.bin/mocha --recursive --reporter spec",
-    "install": "npm install",
     "start": "node server.js"
   }
 }
