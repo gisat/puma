@@ -1,5 +1,6 @@
 const ConnectivityNodes = require('./ConnectivityNodes');
 const LulcProcessor = require('./LulcProcessor');
+const PopulationProcessor = require('./PopulationProcessor');
 const TransportationNetwork = require('./TransportationNetwork');
 const _ = require('lodash');
 
@@ -29,6 +30,8 @@ class CityAnalysisProcessor {
                 this.landUseLandCoverAnalysis(theme, layers, analyticalUnitsLevels, 'urbanGreen'+theme.id);
             } else if (integrationType === 'transportationNetwork') {
                 this.transportationNetwork(theme, layers, analyticalUnitsLevels, 'transportationNetwork');
+            } else if (integrationType === 'population') {
+                this.attributeBasedZonalAnalysis(theme, layers, analyticalUnitsLevels);
             } else if (integrationType === 'connectivityNode') {
                 this.calculateAmountOfNodes(theme, layers, analyticalUnitsLevels);
             } else if (integrationType === 'informalSettlement') {
@@ -82,6 +85,38 @@ class CityAnalysisProcessor {
                         feature.properties[attributesToSubstract[index]]
                 })
             })
+        });
+    }
+
+    attributeBasedZonalAnalysis(theme, layers, analyticalUnitsLevels) {
+        const presentLayers = this.filterPresentLayers(theme.layerTemplates, layers);
+        if (presentLayers.length < theme.layerTemplates.length) {
+            theme.layerUnavailable = true;
+            console.error(`Population Analysis Doesn't have relevant data.`);
+            return;
+        }
+
+        // Attributes are per period.
+        const periods = presentLayers.map(layer => {
+            return this.getPeriodByName(layer.name.substr(-4)).id;
+        });
+        theme.periods = periods;
+
+        periods.forEach((period, indexPeriod) => {
+            const allAttributes = [];
+            // Generate the attributes per year
+            theme.attributeSets.forEach(attributeSet => {
+                attributeSet.attributes.forEach(attribute => {
+                    allAttributes.push({
+                        id: `as_${attributeSet.id}_attr_${attribute.id}_p_${period}`,
+                        columnName: attributeSet.columnName
+                    });
+                });
+            });
+
+            analyticalUnitsLevels.forEach((analyticalUnitsLevel) => {
+                new PopulationProcessor(allAttributes, analyticalUnitsLevel, presentLayers[indexPeriod].content).geoJson();
+            });
         });
     }
 
