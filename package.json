@@ -12,6 +12,7 @@
   },
   "homepage": "https://puma.worldbank.org/",
   "dependencies": {
+    "@turf/turf": "5.1.6",
     "appoptics-apm": "6.5.1",
     "async": "1.5.2",
     "aws-sdk": "^2.474.0",
