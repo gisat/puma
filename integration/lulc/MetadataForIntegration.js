@@ -32,7 +32,8 @@ class MetadataForIntegration {
         scope.periods = scope.periods.map(period => {
             return {
                 id: period._id,
-                periods: period.name != "2016" ? ["2002", "2003", "2004", "2005", "2006", "2007", "2008"]: ["2015", "2016", "2017", "2018"]
+                periods: period.name != "2016" ? ["2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009"]:
+                    ["2013","2014","2015", "2016", "2017", "2018", "2019"]
             }
         });
 
@@ -166,6 +167,55 @@ class MetadataForIntegration {
 
             inputForAnalysis.analyticalUnitLevels.forEach((auLevel, auLevelIndex) => {
                 theme.periods.forEach(period => {
+                    // Push the specific layerref here. From the (auLevelIndex + 1) to current level.
+                    const locationAttributes = [];
+                    const areaAttributes = [];
+                    for(let i = 1; i <= (auLevelIndex + 1); i++) {
+                        locationAttributes.push({
+                            attribute: `as_680001000_attr_6800001${i}0`,
+                            column: `AL${i}_NAMEF`
+                        });
+
+                        areaAttributes.push({
+                            attribute: `as_680002000_attr_6800002${i}0`,
+                            column: `AL${i}_AREA`
+                        });
+                    }
+
+                    // Location
+                    layerRefs.push({
+                        "_id": ++id,
+                        "layer": 'geonode:' + auLevel.table,
+                        "columnMap": locationAttributes,
+                        isData: true,
+                        fidColumn: `AL${auLevelIndex+1}_ID`,
+                        nameColumn: `AL${auLevelIndex+1}_ID`,
+                        parentColumn: auLevel !== 0 ? `AL${auLevelIndex}_ID` : null,
+                        attributeSet: 680001000,
+                        location: inputForAnalysis.place,
+                        year: period, // Periods depends on the analysis.
+                        areaTemplate: auLevel.id,
+                        active: true,
+                        dataSourceOrigin: 'geonode'
+                    });
+
+                    // Area
+                    layerRefs.push({
+                        "_id": ++id,
+                        "layer": 'geonode:' + auLevel.table,
+                        "columnMap": areaAttributes,
+                        isData: true,
+                        fidColumn: `AL${auLevelIndex+1}_ID`,
+                        nameColumn: `AL${auLevelIndex+1}_ID`,
+                        parentColumn: auLevel !== 0 ? `AL${auLevelIndex}_ID` : null,
+                        attributeSet: 680002000,
+                        location: inputForAnalysis.place,
+                        year: period, // Periods depends on the analysis.
+                        areaTemplate: auLevel.id,
+                        active: true,
+                        dataSourceOrigin: 'geonode'
+                    });
+
                     theme.attributeSets.forEach(attributeSet => {
                         const attributes = [];
 

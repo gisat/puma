@@ -89,7 +89,7 @@ describe('MetadataForIntegration', () => {
                 }]
             },1);
 
-            should(references.length).be.exactly(1);
+            should(references.length).be.exactly(3);
             should(references[0].areaTemplate).be.exactly(1);
             should(references[0].attributeSet).be.exactly(1);
             should(references[0].columnMap.length).be.exactly(2);
