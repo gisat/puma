@@ -6,6 +6,8 @@ let Group = require('./Group');
 let Permission = require('./Permission');
 let PgPermissions = require('./PgPermissions');
 
+const User = require(`./User`);
+
 /**
  * This class handles storage, retrieval and other associated operations for groups stored in the PostgreSQL database.
  */
@@ -122,6 +124,11 @@ class PgGroups {
      * @return {Promise|Group[]} Promise of groups associated with given user.
 	 */
 	forUser(userId) {
+		// todo just quick fix
+		if(!userId) {
+			userId = User.guestId();
+		}
+
         return this.pgPool.pool().query(
 			`SELECT groups.id, groups.name, groups.identifier FROM ${this.schema}.groups join ${this.schema}.group_has_members ON groups.id=group_has_members.group_id WHERE group_has_members.user_id = ${userId} GROUP BY groups.id, groups.name`
         ).then(result => {

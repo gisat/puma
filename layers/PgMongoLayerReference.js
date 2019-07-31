@@ -1,6 +1,8 @@
 var config = require('../config');
 var logger = require('../common/Logger').applicationWideLogger;
 
+const _ = require(`lodash`);
+
 class PgMongoLayerReference {
     constructor(layerReference) {
         this._layerReference = layerReference;
@@ -17,9 +19,14 @@ class PgMongoLayerReference {
         }).then(tableName => {
             let tableAlias = this.tableAlias(tableName);
             return columnMap.map(column => {
+                //todo just a quick fix
+                let attributeKey = `as_${attributeSet}_attr_${column.attribute}`;
+                if(_.isString(column.attribute) && column.attribute.startsWith(`as_`)) {
+                    attributeKey = column.attribute;
+                }
                 return {
                     source: column.column,
-                    target: `as_${attributeSet}_attr_${column.attribute}`,
+                    target: attributeKey,
                     tableAlias: tableAlias
                 };
             });

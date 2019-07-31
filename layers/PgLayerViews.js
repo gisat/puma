@@ -133,6 +133,7 @@ class PgLayerViews {
     // TODO: Refactor and find a better solution for this.
     attributes(dataLayerReferences) {
         let promises = [];
+        let usedAliases = [];
 
         dataLayerReferences.forEach(layerReference =>{
             promises.push(new PgMongoLayerReference(layerReference).attributes());
@@ -142,7 +143,12 @@ class PgLayerViews {
 			let attributes = ``;
             results.forEach(result =>{
                 result.forEach(attribute => {
-                    attributes += `${attribute.tableAlias}."${attribute.source}" AS ${attribute.target}, `;
+                	// todo just quickfix
+                	let alias = `${attribute.tableAlias}."${attribute.source}" AS ${attribute.target}`;
+                	if(!usedAliases.includes(alias)) {
+						attributes += `${alias}, `;
+						usedAliases.push(alias);
+					}
                 });
             });
 

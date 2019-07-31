@@ -106,7 +106,10 @@ class Places {
             })
         });
 
-        return Promise.all(createAllViews);
+        return Promise.all(createAllViews)
+            .catch((error) => {
+                console.log(`#### integration.lulc.Places:addAttributes #ERROR#`, error);
+            });
     }
 }
 
