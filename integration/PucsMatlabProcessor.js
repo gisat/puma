@@ -575,7 +575,7 @@ class PucsMatlabProcessor {
 				};
 			case `dhaka`:
 				return {
-					init: `-init 255`,
+					init: `-init 21000`,
 					nodata: ``,
 					rasterResolution: `-ts 355 355`,
 					pixelSize: `-tr 100 100`,
