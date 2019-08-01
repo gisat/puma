@@ -409,18 +409,22 @@ class PucsMatlabProcessorController {
 					}
 
 					matlabProcess.then((result) => {
-						delete request.session.pucsMatlabProcesses[processKey];
-						request.session.pucsMatlabProcesses[processKey] = {
-							status: "done",
-							result: result[0].data
+						request.session.pucsMatlabProcesses = {
+							...request.session.pucsMatlabProcesses,
+							[processKey]: {
+								status: "done",
+								result: result[0].data
+							}
 						};
 					}).catch((error) => {
 						console.log(error);
-						delete request.session.pucsMatlabProcesses[processKey];
-						request.session.pucsMatlabProcesses[processKey] = {
-							status: "error",
-							message: error.message
-						}
+						request.session.pucsMatlabProcesses = {
+							...request.session.pucsMatlabProcesses,
+							[processKey]: {
+								status: "error",
+								message: error.message
+							}
+						};
 					});
 				}
 				if (request.session.pucsMatlabProcesses[processKey]['status'] === "error") {
