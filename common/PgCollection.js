@@ -118,6 +118,13 @@ class PgCollection {
 			.then(() => {
 				return this.setAllPermissionsToResourceForUser(key, user);
 			})
+			.then(async () => {
+				if(extra && extra.accessibleByGroups) {
+					for(let groupKey of extra.accessibleByGroups) {
+						await this.setGetPermissionsToResourceForGroupKey(key, groupKey);
+					}
+				}
+			})
 			.then(() => {
 				return {
 					key: key,
@@ -159,6 +166,14 @@ class PgCollection {
 					.then(() => {
 						return created;
 					})
+			})
+			.then(async (created) => {
+				if(extra && extra.accessibleByGroups) {
+					for(let groupKey of extra.accessibleByGroups) {
+						await this.setGetPermissionsToResourceForGroupKey(created.key, groupKey);
+					}
+				}
+				return created;
 			})
 			.then((created) => {
 				return {
@@ -214,7 +229,7 @@ class PgCollection {
 				let promises = [];
 
 				group.forEach((object) => {
-					if (isAdmin || availableKeys[this._tableName].includes(object.key)) {
+					if (isAdmin || (availableKeys[this._tableName] || availableKeys[this._tableName].includes(object.key))) {
 						promises.push(
 							this.updateOne(object, objects, user, extra)
 						);
@@ -1129,6 +1144,10 @@ class PgCollection {
 		promises.push(this._pgPermissions.add(user.id, this._tableName, resource_id, Permission.DELETE));
 
 		return Promise.all(promises);
+	}
+
+	setGetPermissionsToResourceForGroupKey(resourceKey, groupKey) {
+		return this._pgPermissions.addGroup(groupKey, this._tableName, resourceKey, Permission.READ);
 	}
 
 	setRelatedStores(stores) {

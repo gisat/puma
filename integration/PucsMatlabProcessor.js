@@ -572,7 +572,15 @@ class PucsMatlabProcessor {
 					rasterResolution: `-ts 201 201`,
 					pixelSize: `-tr 0.0015 0.0015`,
 					extent: `-te 18.1493000 49.6793000 18.4508000 49.9808000`
-				}
+				};
+			case `dhaka`:
+				return {
+					init: `-init 21000`,
+					nodata: ``,
+					rasterResolution: `-ts 355 355`,
+					pixelSize: `-tr 100 100`,
+					extent: `-te 218627.000 2615080.000 254127.000 2650580.000`
+				};
 		}
 	}
 }

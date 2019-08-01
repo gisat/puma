@@ -5,6 +5,7 @@ const config = require('../config');
 
 const CalculatePragueTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculatePragueTemperatureMapUsingNeuralNetworkModel');
 const CalculateOstravaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateOstravaTemperatureMapUsingNeuralNetworkModel');
+const CalculateDhakaTemperatureMapUsingNeuralNetworkModel = require('../wps/processes/CalculateDhakaTemperatureMapUsingNeuralNetworkModel');
 const FilteredMongoScopes = require('../metadata/FilteredMongoScopes');
 const PgRelations = require('../metadata/PgRelations');
 
@@ -22,6 +23,7 @@ class PucsMatlabProcessorController {
 		this._pgRelations = new PgRelations(pgPool, pgSchema);
 		this._calculatePragueTemperatureMapUsingNeuralNetworkModel = new CalculatePragueTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 		this._calculateOstravaTemperatureMapUsingNeuralNetworkModel = new CalculateOstravaTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
+		this._calculateDhakaTemperatureMapUsingNeuralNetworkModel = new CalculateDhakaTemperatureMapUsingNeuralNetworkModel(pgPool, config.pantherTemporaryStoragePath, config.pantherDataStoragePath, pgSchema, mongo);
 	}
 
 	publishMatlabResults(request, response) {
@@ -151,6 +153,16 @@ class PucsMatlabProcessorController {
 							break;
 						case 'ostrava':
 							matlabNetworkModelExec = this._calculateOstravaTemperatureMapUsingNeuralNetworkModel.execute({
+								dataInputs:
+									[{
+										identifier: 'inputFile',
+										data: `${type}:${identifier}`
+									}],
+								owner: user
+							});
+							break;
+						case 'dhaka':
+							matlabNetworkModelExec = this._calculateDhakaTemperatureMapUsingNeuralNetworkModel.execute({
 								dataInputs:
 									[{
 										identifier: 'inputFile',
@@ -373,6 +385,16 @@ class PucsMatlabProcessorController {
 							break;
 						case 'ostrava':
 							matlabProcess = this._calculateOstravaTemperatureMapUsingNeuralNetworkModel.execute({
+								dataInputs:
+									[{
+										identifier: 'inputFile',
+										data: `${type}:${identifier}`
+									}],
+								owner: request.session.user
+							});
+							break;
+						case 'dhaka':
+							matlabProcess = this._calculateDhakaTemperatureMapUsingNeuralNetworkModel.execute({
 								dataInputs:
 									[{
 										identifier: 'inputFile',
