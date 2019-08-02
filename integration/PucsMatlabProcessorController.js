@@ -331,10 +331,6 @@ class PucsMatlabProcessorController {
 	}
 
 	async executeMatlabProcessor(request, response) {
-		if (!request.session.pucsMatlabProcesses) {
-			request.session.pucsMatlabProcesses = {};
-		}
-
 		if (request.body.data) {
 			let uploadKey = request.body.data.uploadKey;
 			let remotePath = request.body.data.remotePath;
@@ -354,11 +350,12 @@ class PucsMatlabProcessorController {
 			}
 
 			if (uploadKey || remotePath || localLayer) {
-				if (!request.session.pucsMatlabProcesses[processKey]) {
-					request.session.pucsMatlabProcesses[processKey] = {
+				let processStatus = await this._pgProcessStatus.getProcess(processKey);
+				if (!processStatus) {
+					await this._pgProcessStatus.updateProcess(processKey, {
 						processKey,
 						status: "running"
-					};
+					});
 
 					let type, identifier;
 					if (uploadKey) {
@@ -408,32 +405,29 @@ class PucsMatlabProcessorController {
 							matlabProcess = Promise.reject(new Error('Unable to find processor for this place'));
 					}
 
-					matlabProcess.then((result) => {
-						request.session.pucsMatlabProcesses = {
-							...request.session.pucsMatlabProcesses,
-							[processKey]: {
-								status: "done",
-								result: result[0].data
-							}
-						};
-					}).catch((error) => {
+					matlabProcess.then(async (result) => {
+						await this._pgProcessStatus.updateProcess(processKey, {
+							status: "done",
+							result: result[0].data
+						});
+					}).catch(async (error) => {
 						console.log(error);
-						request.session.pucsMatlabProcesses = {
-							...request.session.pucsMatlabProcesses,
-							[processKey]: {
-								status: "error",
-								message: error.message
-							}
-						};
+						await this._pgProcessStatus.updateProcess(processKey, {
+							status: "error",
+							message: error.message
+						});
 					});
 				}
-				if (request.session.pucsMatlabProcesses[processKey]['status'] === "error") {
+
+				processStatus = await this._pgProcessStatus.getProcess(processKey);
+
+				if (processStatus.data.status === "error") {
 					response.status(500).json({
-						message: request.session.pucsMatlabProcesses[processKey]['message'],
+						message: processStatus.data.message,
 						success: false
 					});
 				} else {
-					response.status(200).json(request.session.pucsMatlabProcesses[processKey]);
+					response.status(200).json(processStatus.data);
 				}
 			} else {
 				response.status(500).json({
