@@ -132,8 +132,18 @@ class FuoreImporter {
 		this._pgPermission = new PgPermission(pgPool, config.pgSchema.data);
 	}
 
+	async recreateAnalyticalUnitTable(analyticalUnitMetadata, unzippedFs) {
+		await this.deleteAnalyticalUnitTable(analyticalUnitMetadata);
+		await this.createAnalyticalUnitTable(analyticalUnitMetadata, unzippedFs);
+	}
+
+	async deleteAnalyticalUnitTable(analyticalUnitMetadata) {
+		let analyticalUnitTableName = `fuore-au-${analyticalUnitMetadata.uuid}`;
+		await this._pgPool.query(`DROP TABLE IF EXISTS "public"."${analyticalUnitTableName}"`);
+	}
+
 	async createAnalyticalUnitTable(analyticalUnitMetadata, unzippedFs) {
-		let analyticalUnitTableName = `fuore-au-${analyticalUnitMetadata.table_name}`;
+		let analyticalUnitTableName = `fuore-au-${analyticalUnitMetadata.uuid}`;
 		let analyticalUnitData = JSON.parse(unzippedFs.read(analyticalUnitMetadata.name, 'text'));
 		let analyticalUnitFeatures = analyticalUnitData.features;
 
@@ -216,14 +226,16 @@ class FuoreImporter {
 			throw new Error(`missing file ${analyticalUnitMetadata.name}`);
 		} else if (unzippedFs.contents().includes(analyticalUnitMetadata.name) && !isTableCreated) {
 			await this.createAnalyticalUnitTable(analyticalUnitMetadata, unzippedFs);
-		} else if (unzippedFs.contents().includes(analyticalUnitMetadata.name) && isTableCreated) {
+		} else if (unzippedFs.contents().includes(analyticalUnitMetadata.name) && isTableCreated && analyticalUnitMetadata.update) {
+			await this.recreateAnalyticalUnitTable(analyticalUnitMetadata, unzippedFs);
+		} else if (unzippedFs.contents().includes(analyticalUnitMetadata.name) && isTableCreated && !analyticalUnitMetadata.update) {
 			throw new Error(`analytical unit table ${analyticalUnitMetadata.name} already exists`);
 		}
 
 	}
 
 	async isAnalyticalUnitsTableExisting(analyticalUnitMetadata) {
-		let analyticalUnitTableName = `fuore-au-${analyticalUnitMetadata.table_name}`;
+		let analyticalUnitTableName = `fuore-au-${analyticalUnitMetadata.uuid}`;
 		return await this._pgPool
 			.query(`SELECT count(*) FROM pg_tables WHERE "schemaname" = 'public' AND "tablename" = '${analyticalUnitTableName}';`)
 			.then((pgResults) => {
@@ -232,7 +244,7 @@ class FuoreImporter {
 	}
 
 	async isAttributeDataTableExisting(attributeMetadata) {
-		let attributeDataTableName = `fuore-attr-${attributeMetadata.table_name}`;
+		let attributeDataTableName = `fuore-attr-${attributeMetadata.uuid}`;
 		return await this._pgPool
 			.query(`SELECT count(*) FROM pg_tables WHERE "schemaname" = 'public' AND "tablename" = '${attributeDataTableName}';`)
 			.then((pgResults) => {
@@ -245,6 +257,29 @@ class FuoreImporter {
 			.then(async () => {
 				if (unzippedFs.contents().includes('analytical_units.json')) {
 					let analyticalUnits = JSON.parse(unzippedFs.read('analytical_units.json', 'text'));
+
+					let analyticalUnitIds = [];
+					let analyticalUnitUuids = [];
+
+					for (let analyticalUnitMetadata of analyticalUnits) {
+						if (!analyticalUnitMetadata.hasOwnProperty(`id`)) {
+							throw new Error(`missing id property in analytical unit metadata`);
+						}
+						if (!analyticalUnitMetadata.hasOwnProperty(`uuid`)) {
+							analyticalUnitMetadata.uuid = uuidv4();
+						}
+
+						if (analyticalUnitIds.includes(analyticalUnitMetadata.id)) {
+							throw new Error(`Analytical units has non-unique ids`);
+						}
+
+						if (analyticalUnitUuids.includes(analyticalUnitMetadata.uuid)) {
+							throw new Error(`Analytical units has non-unique uuids`);
+						}
+
+						analyticalUnitIds.push(analyticalUnitMetadata.id);
+						analyticalUnitUuids.push(analyticalUnitMetadata.uuid);
+					}
 
 					for (let analyticalUnitMetadata of analyticalUnits) {
 						if (!analyticalUnitMetadata.hasOwnProperty(`table_name`)) {
@@ -271,8 +306,8 @@ class FuoreImporter {
 							throw new Error(`missing country_code_column property in analytical unit metadata`);
 						}
 
-						if (!analyticalUnitMetadata.hasOwnProperty(`id`)) {
-							throw new Error(`missing id property in analytical unit metadata`);
+						if (!analyticalUnitMetadata.hasOwnProperty(`description`)) {
+							throw new Error(`missing description property in analytical unit metadata`);
 						}
 
 						await this.ensureAnalyticalUnit(analyticalUnitMetadata, unzippedFs);
@@ -288,17 +323,105 @@ class FuoreImporter {
 	async ensureAttributeData(attributeMetadata, unzippedFs) {
 		let isTableCreated = await this.isAttributeDataTableExisting(attributeMetadata);
 
-		if (!unzippedFs.contents().includes(`${attributeMetadata.table_name}.json`) && !isTableCreated) {
-			throw new Error(`missing ${attributeMetadata.table_name}.json`);
-		} else if (unzippedFs.contents().includes(`${attributeMetadata.table_name}.json`) && isTableCreated) {
-			throw new Error(`table for attribute '${attributeMetadata.name}' already exists`);
-		} else if (unzippedFs.contents().includes(`${attributeMetadata.table_name}.json`) && !isTableCreated) {
+		let attributeDataFileName = `${attributeMetadata.table_name}.json`;
+
+		if (!isTableCreated && unzippedFs.contents().includes(attributeDataFileName)) {
 			await this.createAttributeDataTable(attributeMetadata, unzippedFs);
+		} else if (attributeMetadata.update) {
+			await this.updateAttributeDataTable(attributeMetadata, unzippedFs, attributeDataFileName);
+		} else {
+			throw new Error(`analytical unit table ${attributeDataFileName} already exists`);
+		}
+	}
+
+	async updateAttributeDataTable(attributeMetadata, unzippedFs, attributeDataFileName) {
+		let attributeDataTableName = `fuore-attr-${attributeMetadata.uuid}`;
+		let attributeData;
+		if (unzippedFs.contents().includes(attributeDataFileName)) {
+			attributeData = JSON.parse(unzippedFs.read(attributeDataFileName, 'text'));
+		}
+
+		let attributeMetadataYearsParts = attributeMetadata.years.split(`-`);
+		let attributeMetadataStartYear = attributeMetadataYearsParts[0];
+		let attributeMetadataEndYear = attributeMetadataYearsParts[1] || attributeMetadataYearsParts[0];
+
+		let attributeMetadataYears = _.map(_.range(Number(attributeMetadataStartYear), Number(attributeMetadataEndYear)+1), (yearNumber) => {
+			return String(yearNumber);
+		});
+
+		let existingYearColumns = await this._pgPool
+			.query(`SELECT column_name FROM information_schema.columns WHERE table_name = '${attributeDataTableName}' AND column_name ~ '^[0-9]{4}$';`)
+			.then((queryResult) => {
+				return _.map(queryResult.rows, (row) => {
+					return row.column_name;
+				})
+			});
+
+		let attributeMetadataYearsToUpdate = _.intersection(attributeMetadataYears, existingYearColumns);
+		let attributeMetadataYearsToDelete = _.difference(existingYearColumns, attributeMetadataYears);
+		let attributeMetadataYearsToAdd = _.difference(attributeMetadataYears, existingYearColumns);
+
+		let updateQueries = [];
+
+		if(attributeMetadataYearsToAdd.length && !attributeData) {
+			throw new Error(`Unable to update data for attribute with uuid ${attributeMetadata.uuid}. Missing data file ${attributeDataFileName}`);
+		}
+
+		if(attributeMetadataYearsToDelete.length) {
+			for(let year of attributeMetadataYearsToDelete) {
+				updateQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP COLUMN "${year}"`);
+			}
+		}
+
+		if(attributeMetadataYearsToAdd.length) {
+			let attributeDataFirst = attributeData[0];
+			for(let year of attributeMetadataYearsToAdd) {
+				let columnType;
+				if (_.isString(attributeDataFirst[year])) {
+					columnType = `TEXT`;
+				} else if (_.isNumber(attributeDataFirst[year])) {
+					columnType = `NUMERIC`;
+				}
+
+				if(columnType) {
+					updateQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD COLUMN "${year}" ${columnType}`);
+				} else {
+					throw new Error(`Unable to find data for column ${year} for attribute with uuid ${attributeMetadata.uuid}`);
+				}
+			}
+		}
+
+		let fidColumn = attributeMetadata.fid_column;
+
+		if(attributeData) {
+			updateQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP CONSTRAINT IF EXISTS "${attributeDataTableName}_objectid_key"`);
+			updateQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD CONSTRAINT "${attributeDataTableName}_objectid_key" UNIQUE ("${fidColumn}")`);
+		}
+
+		for(let data of attributeData) {
+			let columns = [], values = [], sets = [];
+
+			_.forEach(data, (value, column) => {
+
+				if(_.isString(value)) {
+					value = `'${value}'`;
+				}
+
+				columns.push(`"${column}"`);
+				values.push(value);
+				sets.push(`"${column}" = ${value}`);
+			});
+
+			updateQueries.push(`INSERT INTO "${attributeDataTableName}" (${columns.join(', ')}) VALUES (${values.join(', ')}) ON CONFLICT ("${fidColumn}") DO UPDATE SET ${sets.join(', ')}`)
+		}
+
+		for(let query of updateQueries) {
+			await this._pgPool.query(query);
 		}
 	}
 
 	async createAttributeDataTable(attributeMetadata, unzippedFs) {
-		let attributeDataTableName = `fuore-attr-${attributeMetadata.table_name}`;
+		let attributeDataTableName = `fuore-attr-${attributeMetadata.uuid}`;
 		let attributeData = JSON.parse(unzippedFs.read(`${attributeMetadata.table_name}.json`, 'text'));
 
 		let tableColumns = {};
@@ -327,15 +450,17 @@ class FuoreImporter {
 
 		sql.push(`BEGIN;`);
 
-		sql.push(`DROP TABLE IF EXISTS "public"."${attributeDataTableName}";`);
-
 		sql.push(`CREATE TABLE IF NOT EXISTS "public"."${attributeDataTableName}" (`);
 
 		sql.push(`auto_fid serial primary key,`);
 
 		let columnDefinitions = [];
 		_.each(tableColumns, (type, column) => {
-			columnDefinitions.push(`"${column}" ${type}`);
+			let unique = ``;
+			if(column === attributeMetadata.fid_column) {
+				unique = ` UNIQUE`
+			}
+			columnDefinitions.push(`"${column}" ${type}${unique}`);
 		});
 
 		sql.push(columnDefinitions.join(`,\n`));
@@ -373,13 +498,27 @@ class FuoreImporter {
 				if (unzippedFs.contents().includes('attributes.json')) {
 					let attributes = JSON.parse(unzippedFs.read('attributes.json', 'text'));
 
-					let attributeIds = [];
-					for (let attributeMetada of attributes) {
-						if (attributeIds.includes(attributeMetada.id)) {
-							throw new Error(`Attributes has non-unique ids`);
-						} else {
-							attributeIds.push(attributeMetada.id);
+					let attributeMetadataIds = [];
+					let attributeMetadataUuids = [];
+
+					for (let attributeMetadata of attributes) {
+						if (!attributeMetadata.hasOwnProperty(`id`)) {
+							throw new Error(`missing id property in metadata of attribute ${attributeMetadata.name}`);
 						}
+						if (!attributeMetadata.hasOwnProperty(`uuid`)) {
+							attributeMetadata.uuid = uuidv4();
+						}
+
+						if (attributeMetadataIds.includes(attributeMetadata.id)) {
+							throw new Error(`Attributes units has non-unique ids`);
+						}
+
+						if (attributeMetadataUuids.includes(attributeMetadata.uuid)) {
+							throw new Error(`Attributes units has non-unique uuids`);
+						}
+
+						attributeMetadataIds.push(attributeMetadata.id);
+						attributeMetadataUuids.push(attributeMetadata.uuid);
 					}
 
 					for (let attributeMetadata of attributes) {
@@ -406,6 +545,15 @@ class FuoreImporter {
 						}
 						if (!attributeMetadata.hasOwnProperty(`category`)) {
 							throw new Error(`missing category property in metadata of attribute ${attributeMetadata.name}`);
+						}
+						if (!attributeMetadata.hasOwnProperty(`sub_category`)) {
+							throw new Error(`missing sub_category property in metadata of attribute ${attributeMetadata.name}`);
+						}
+						if (!attributeMetadata.hasOwnProperty(`color`)) {
+							throw new Error(`missing color property in metadata of attribute ${attributeMetadata.name}`);
+						}
+						if (!attributeMetadata.hasOwnProperty(`description`)) {
+							throw new Error(`missing description property in metadata of attribute ${attributeMetadata.name}`);
 						}
 
 						await this.ensureAttributeData(attributeMetadata, unzippedFs);
@@ -838,20 +986,40 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR03`);
 					}
 
-					let tagNameInternal = `${attribute.category} - ${scope.data.nameInternal}`;
-
+					let subCategoryTagNameInternal = `${attribute.sub_category} - ${scope.data.nameInternal}`;
+					let subCategoryTag;
 					await this.createMetadata(
 						`tags`,
 						{
-							nameInternal: tagNameInternal,
+							nameInternal: subCategoryTagNameInternal,
 							applicationKey: esponFuoreApplicationKey,
 							scopeKey: scope.key
 						},
 						{
-							nameInternal: tagNameInternal,
-							nameDisplay: attribute.category,
+							nameInternal: subCategoryTagNameInternal,
+							nameDisplay: attribute.sub_category,
 							applicationKey: esponFuoreApplicationKey,
 							scopeKey: scope.key
+						},
+						user
+					).then((tags) => {
+						subCategoryTag = tags[0];
+					});
+
+					let categoryTagNameInternal = `${attribute.category} - ${scope.data.nameInternal}`;
+					await this.createMetadata(
+						`tags`,
+						{
+							nameInternal: categoryTagNameInternal,
+							applicationKey: esponFuoreApplicationKey,
+							scopeKey: scope.key
+						},
+						{
+							nameInternal: categoryTagNameInternal,
+							nameDisplay: attribute.category,
+							applicationKey: esponFuoreApplicationKey,
+							scopeKey: scope.key,
+							tagKeys: [subCategoryTag.key]
 						},
 						user
 					).then((tags) => {
@@ -1344,6 +1512,9 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
+				throw new Error(`Stopped due testing purposes!`);
+			})
+			.then(() => {
 				return this.createPantherNameAttributeForFuore(uuidv4(), user)
 					.then((pantherAttributes) => {
 						status.progress =
@@ -1494,10 +1665,14 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
+				status.metadata = {
+					analyticalUnits,
+					attributes
+				};
 				status.ended = new Date().toISOString();
-				status.state =
-					`done`
-				;
+				status.state = `done`;
+
+				console.log(status);
 			})
 			.catch((error) => {
 				status.ended = new Date().toISOString();
@@ -1505,6 +1680,8 @@ class FuoreImporter {
 					`done`
 				;
 				status.error = error.message;
+
+				console.log(error);
 			})
 	}
 }
