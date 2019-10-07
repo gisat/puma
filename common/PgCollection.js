@@ -1073,29 +1073,35 @@ class PgCollection {
 	}
 
 	parseMongoDocument(document) {
+		let data = {
+			...document
+		};
+
+		delete data._id;
+		delete data.created;
+		delete data.createdBy;
+		delete data.changedBy;
+		delete data.changed;
+
 		return {
 			key: document._id,
-			data: {
-				...document,
-				_id: undefined,
-				created: undefined,
-				createdBy: undefined,
-				changed: undefined,
-				changedBy: undefined
-			}
+			data
 		}
 	}
 
 	parsePostgresRow(row) {
+		let data = {
+			...row
+		};
+
+		delete data.key;
+		delete data.id;
+		delete data.uuid;
+		delete data.total;
+
 		return {
 			key: row.key,
-			data: {
-				...row,
-				key: undefined,
-				id: undefined,
-				uuid: undefined,
-				total: undefined
-			}
+			data
 		}
 	}
 
