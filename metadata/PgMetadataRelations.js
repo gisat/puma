@@ -120,9 +120,11 @@ class PgMetadataRelations {
 		let querySql = [];
 		let subquerySql = [];
 
-		subquerySql.push(`SELECT "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}" AS "${this._getBaseMetadataTypeColumnName()}"`);
+		if(!_.find(relatedStoresOptions, {relatedStoreSqlColumName: this._getBaseMetadataTypeColumnName()})) {
+			subquerySql.push(`"${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}" AS "${this._getBaseMetadataTypeColumnName()}"`);
+		}
 
-		_.each(this.getRelatedStoresOptions(), (relatedStoreOptions) => {
+		_.each(relatedStoresOptions, (relatedStoreOptions, key) => {
 			let aggregation = `STRING_AGG("${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}"::TEXT, '')`;
 			if (relatedStoreOptions.allowMultipleRelations) {
 				aggregation = `ARRAY_AGG("${this._getTableName()}"."${relatedStoreOptions.relatedStoreSqlColumName}"::TEXT)`;
@@ -132,9 +134,9 @@ class PgMetadataRelations {
 
 		querySql.push(`SELECT * FROM (`);
 
-		querySql.push(subquerySql.join(', '));
+		querySql.push(`SELECT ${subquerySql.join(', ')}`);
 
-		querySql.push(`FROM "${this._pgSchema}"."${this._getTableName()}" GROUP BY "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}"`)
+		querySql.push(`FROM "${this._pgSchema}"."${this._getTableName()}" GROUP BY "${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}"`);
 
 		querySql.push(`) AS subquery`);
 
