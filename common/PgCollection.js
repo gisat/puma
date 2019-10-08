@@ -573,7 +573,7 @@ class PgCollection {
 					isAdmin
 					|| _.find(permissions, (permission) => {
 						return permission.resource_id === `${resourceKey}`
-							&& permission.group_id !== this._publicGroupId
+							&& permission.group_id !== this._publicGroupId	// todo check if this is useful
 							&& permission.permission === Permission.READ
 					})
 				) {
@@ -581,7 +581,7 @@ class PgCollection {
 				}
 				if (isAdmin || _.find(permissions, (permission) => {
 					return permission.resource_id === `${resourceKey}`
-						&& permission.group_id !== this._publicGroupId
+						&& permission.group_id !== this._publicGroupId	// todo check if this is useful
 						&& permission.permission === Permission.UPDATE
 				})
 				) {
@@ -589,7 +589,7 @@ class PgCollection {
 				}
 				if (isAdmin || _.find(permissions, (permission) => {
 					return permission.resource_id === `${resourceKey}`
-						&& permission.group_id !== this._publicGroupId
+						&& permission.group_id !== this._publicGroupId	// todo check if this is useful
 						&& permission.permission === Permission.DELETE
 				})
 				) {
