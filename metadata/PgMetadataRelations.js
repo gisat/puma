@@ -30,20 +30,16 @@ class PgMetadataRelations {
 
 			if (relatedStoreOptions && relatedStoreOptions.allowMultipleRelations && _.isArray(value)) {
 				_.each(value, (relationKey) => {
-					insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
-					insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
-					if(relationKey === null) {
-						insertSql.push(`VALUES ('${baseKey}', NULL);`);
-					} else {
+					if(relationKey) {
+						insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
+						insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
 						insertSql.push(`VALUES ('${baseKey}', '${relationKey}');`);
 					}
 				})
 			} else if (relatedStoreOptions) {
-				insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
-				insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
-				if(value === null) {
-					insertSql.push(`VALUES ('${baseKey}', NULL);`);
-				} else {
+				if(value) {
+					insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
+					insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
 					insertSql.push(`VALUES ('${baseKey}', '${value}');`);
 				}
 			}
@@ -120,7 +116,7 @@ class PgMetadataRelations {
 		let querySql = [];
 		let subquerySql = [];
 
-		if(!_.find(relatedStoresOptions, {relatedStoreSqlColumName: this._getBaseMetadataTypeColumnName()})) {
+		if (!_.find(relatedStoresOptions, {relatedStoreSqlColumName: this._getBaseMetadataTypeColumnName()})) {
 			subquerySql.push(`"${this._getTableName()}"."${this._getBaseMetadataTypeColumnName()}" AS "${this._getBaseMetadataTypeColumnName()}"`);
 		}
 
@@ -262,19 +258,42 @@ class PgMetadataRelations {
 	}
 
 	_initPgTable() {
-		return this._pgPool
-			.query(this._getTableSql())
+		return this._renameOldColumnNamesIfExists()
+			.then(() => {
+				return this._pgPool
+					.query(this._getTableSql())
+			})
 			.catch((error) => {
 				console.log(error);
 			})
 	}
 
 	_getBaseMetadataTypeColumnName() {
+		return `parent${_.capitalize(this._baseStore.getTableName())}Key`;
+	}
+
+	_getOldBaseMetadataTypeColumnName() {
 		return `${this._baseStore.getTableName()}Key`;
 	}
 
 	_getTableName() {
 		return `${this._baseStore.getTableName()}Relation`;
+	}
+
+	_renameOldColumnNamesIfExists() {
+		return this._pgPool
+			.query(
+				`SELECT 
+					EXISTS (SELECT "column_name" FROM "information_schema"."columns" WHERE "column_name" = '${this._getBaseMetadataTypeColumnName()}' AND "table_name" = '${this._getTableName()}' and "table_schema" = '${this._pgSchema}') AS "newColumnNameExists",
+					EXISTS (SELECT "column_name" FROM "information_schema"."columns" WHERE "column_name" = '${this._getOldBaseMetadataTypeColumnName()}' AND "table_name" = '${this._getTableName()}' and "table_schema" = '${this._pgSchema}') AS "oldColumnNameExists"
+				`
+			)
+			.then((queryResult) => {
+				if (!queryResult.rows[0].newColumnNameExists && queryResult.rows[0].oldColumnNameExists) {
+					return this._pgPool
+						.query(`ALTER TABLE IF EXISTS "${this._pgSchema}"."${this._getTableName()}" RENAME COLUMN "${this._getOldBaseMetadataTypeColumnName()}" TO "${this._getBaseMetadataTypeColumnName()}"`)
+				}
+			})
 	}
 
 	_getTableSql() {
