@@ -733,7 +733,8 @@ class FuoreImporter {
 					{
 						filter: {
 							applicationKey: esponFuoreApplicationKey
-						}
+						},
+						unlimited: true
 					},
 					user
 				).then((getResults) => {
@@ -835,7 +836,8 @@ class FuoreImporter {
 							nameInternal: {
 								like: `fuore-base-au\\_`
 							}
-						}
+						},
+						unlimited: true
 					},
 					user
 				).then((getResult) => {
@@ -889,72 +891,164 @@ class FuoreImporter {
 
 	createPantherNameAttributeForFuore(key, user) {
 		return Promise.resolve()
-			.then(() => {
-				return this.updateMetadata(
+			.then(async () => {
+				let existingPantherNameAttribute = await this._pgMetadataCrud.get(
 					`attributes`,
-					[{
-						key,
-						data: {
-							nameInternal: `fuore_au_name`,
-							nameDisplay: `fuore_au_name`,
-							applicationKey: esponFuoreApplicationKey
+					{
+						filter: {
+							key
 						}
-					}], user
-				)
+					},
+					user
+				).then((getResult) => {
+					return getResult.data.attributes[0];
+				});
+
+				if(existingPantherNameAttribute) {
+					return existingPantherNameAttribute;
+				} else {
+					return this._pgMetadataCrud.create(
+						{
+							attributes: [
+								{
+									key,
+									data: {
+										nameInternal: `fuore_au_name`,
+										nameDisplay: `fuore_au_name`,
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							]
+						},
+						user,
+						{}
+					).then(([data, errors]) => {
+						return data.attributes[0];
+					})
+				}
 			})
 	}
 
 	createPantherCountryCodeAttributeForFuore(key, user) {
 		return Promise.resolve()
-			.then(() => {
-				return this.updateMetadata(
+			.then(async () => {
+				let existingPantherNameAttribute = await this._pgMetadataCrud.get(
 					`attributes`,
-					[{
-						key,
-						data: {
-							nameInternal: `fuore_au_country_code`,
-							nameDisplay: `fuore_au_country_code`,
-							applicationKey: esponFuoreApplicationKey
+					{
+						filter: {
+							key
 						}
-					}], user
-				)
+					},
+					user
+				).then((getResult) => {
+					return getResult.data.attributes[0];
+				});
+
+				if(existingPantherNameAttribute) {
+					return existingPantherNameAttribute;
+				} else {
+					return this._pgMetadataCrud.create(
+						{
+							attributes: [
+								{
+									key,
+									data: {
+										nameInternal: `fuore_au_country_code`,
+										nameDisplay: `fuore_au_country_code`,
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							]
+						},
+						user,
+						{}
+					).then(([data, errors]) => {
+						return data.attributes[0];
+					})
+				}
 			})
 	}
 
 	createPantherCategoryTagForFuore(pantherData, user) {
 		let key = pantherData.fuoreConfiguration.data.data.categoryTagKey;
 		return Promise.resolve()
-			.then(() => {
-				return this.updateMetadata(
+			.then(async () => {
+				let existingPantherTag = await this._pgMetadataCrud.get(
 					`tags`,
-					[{
-						key,
-						data: {
-							nameInternal: `fuore_category`,
-							nameDisplay: `fuore_category`,
-							applicationKey: esponFuoreApplicationKey
+					{
+						filter: {
+							key
 						}
-					}], user
-				)
-			})
+					},
+					user
+				).then((getResult) => {
+					return getResult.data.tags[0];
+				});
+
+				if(existingPantherTag) {
+					return existingPantherTag;
+				} else {
+					return this._pgMetadataCrud.create(
+						{
+							tags: [
+								{
+									key,
+									data: {
+										nameInternal: `fuore_category`,
+										nameDisplay: `fuore_category`,
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							]
+						},
+						user,
+						{}
+					).then(([data, errors]) => {
+						return data.tags[0];
+					})
+				}
+			});
 	}
 
 	createPantherSubCategoryTagForFuore(pantherData, user) {
-		let key = pantherData.fuoreConfiguration.data.data.subCategoryTagKey;
+		let key = pantherData.fuoreConfiguration.data.data.categoryTagKey;
 		return Promise.resolve()
-			.then(() => {
-				return this.updateMetadata(
+			.then(async () => {
+				let existingPantherTag = await this._pgMetadataCrud.get(
 					`tags`,
-					[{
-						key,
-						data: {
-							nameInternal: `fuore_sub_category`,
-							nameDisplay: `fuore_sub_category`,
-							applicationKey: esponFuoreApplicationKey
+					{
+						filter: {
+							key
 						}
-					}], user
-				)
-			})
+					},
+					user
+				).then((getResult) => {
+					return getResult.data.tags[0];
+				});
+
+				if(existingPantherTag) {
+					return existingPantherTag;
+				} else {
+					return this._pgMetadataCrud.create(
+						{
+							tags: [
+								{
+									key,
+									data: {
+										nameInternal: `fuore_sub_category`,
+										nameDisplay: `fuore_sub_category`,
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							]
+						},
+						user,
+						{}
+					).then(([data, errors]) => {
+						return data.tags[0];
+					})
+				}
+			});
 	}
 
 	createPantherAttributesFromFuoreAttributes(attributes, analyticalUnits, user, pantherData) {
@@ -1002,7 +1096,7 @@ class FuoreImporter {
 						filter: {
 							applicationKey: esponFuoreApplicationKey
 						},
-						limit: 1000
+						unlimited: true
 					},
 					user
 				).then((getResults) => {
@@ -1062,7 +1156,7 @@ class FuoreImporter {
 						filter: {
 							applicationKey: esponFuoreApplicationKey
 						},
-						limit: 1000
+						unlimited: true
 					},
 					user
 				).then((getResults) => {
@@ -1144,7 +1238,9 @@ class FuoreImporter {
 			.then(async () => {
 				let pantherEsponFuoreIndicators = await this._pgSpecificCrud.get(
 					`esponFuoreIndicators`,
-					{},
+					{
+						unlimited: true
+					},
 					user
 				).then((getResult) => {
 					return getResult.data.esponFuoreIndicators;
@@ -1218,11 +1314,12 @@ class FuoreImporter {
 				let pantherSpatialDataSources = await this._pgDataSourcesCrud.get(
 					`spatial`,
 					{
-						"filter": {
-							"tableName": {
-								"like": "fuore-au\\_"
+						filter: {
+							tableName: {
+								like: "fuore-au\\_"
 							}
-						}
+						},
+						unlimited: true
 					},
 					user
 				).then((getResult) => {
@@ -1262,7 +1359,7 @@ class FuoreImporter {
 			});
 	}
 
-	createPantherNameAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user) {
+	createPantherNameAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user, nameAttributeKey) {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherAttributeDataSources = await this._pgDataSourcesCrud.get(
@@ -1273,7 +1370,7 @@ class FuoreImporter {
 								like: "fuore-au\\_"
 							}
 						},
-						limit: 9999
+						unlimited: true
 					},
 					user
 				).then((getResult) => {
@@ -1283,6 +1380,7 @@ class FuoreImporter {
 				let pantherAttributeDataSourcesToCreateOrUpdate = [];
 				for (let analyticalUnit of analyticalUnits) {
 					let analyticalUnitTableName = `fuore-au_${analyticalUnit.uuid}`;
+					let nameInternal = `fuore#name#attr_${nameAttributeKey}#au_${analyticalUnit.uuid}`;
 
 					let existingAttributeDataSource = _.find(pantherAttributeDataSources, (pantherAttributeDataSourceObject) => {
 						return pantherAttributeDataSourceObject.data.tableName === analyticalUnitTableName && pantherAttributeDataSourceObject.data.columnName === analyticalUnit.name_column;
@@ -1294,6 +1392,7 @@ class FuoreImporter {
 						{
 							key,
 							data: {
+								nameInternal,
 								tableName: analyticalUnitTableName,
 								columnName: analyticalUnit.name_column
 							}
@@ -1313,7 +1412,7 @@ class FuoreImporter {
 			});
 	}
 
-	createPantherCountryCodeAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user) {
+	createPantherCountryCodeAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user, countryCodeAttributeKey) {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherAttributeDataSources = await this._pgDataSourcesCrud.get(
@@ -1323,7 +1422,8 @@ class FuoreImporter {
 							tableName: {
 								like: "fuore-au\\_"
 							}
-						}
+						},
+						unlimited: true
 					},
 					user
 				).then((getResult) => {
@@ -1333,6 +1433,7 @@ class FuoreImporter {
 				let pantherAttributeDataSourcesToCreateOrUpdate = [];
 				for (let analyticalUnit of analyticalUnits) {
 					let analyticalUnitTableName = `fuore-au_${analyticalUnit.uuid}`;
+					let nameInternal = `fuore#country_code#attr_${countryCodeAttributeKey}#au_${analyticalUnit.uuid}`;
 
 					let existingAttributeDataSource = _.find(pantherAttributeDataSources, (pantherAttributeDataSourceObject) => {
 						return pantherAttributeDataSourceObject.data.tableName === analyticalUnitTableName && pantherAttributeDataSourceObject.data.columnName === analyticalUnit.country_code_column;
@@ -1344,6 +1445,7 @@ class FuoreImporter {
 						{
 							key,
 							data: {
+								nameInternal,
 								tableName: analyticalUnitTableName,
 								columnName: analyticalUnit.country_code_column
 							}
@@ -1363,7 +1465,7 @@ class FuoreImporter {
 			});
 	}
 
-	createPantherAttributeDataSourceFromFuoreAttributes(attributes, user, pantherData) {
+	createPantherAttributeDataSourceFromFuoreAttributes(attributes, analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
 
@@ -1375,7 +1477,7 @@ class FuoreImporter {
 								like: `fuore-attr\\_`
 							}
 						},
-						limit: 9999
+						unlimited: true
 					},
 					user
 				).then((getResult) => {
@@ -1388,19 +1490,26 @@ class FuoreImporter {
 					let yearStart = Number(yearsParts[0]);
 					let yearEnd = Number(yearsParts[1] || yearStart);
 
+					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
+						return analyticalUnit.id === attribute.analytical_unit_id
+					});
+
 					for (let year of _.range(yearStart, yearEnd)) {
 						let tableName = `fuore-attr_${attribute.uuid}`;
+						let nameInternal = `fuore#attribute#attr_${attribute.uuid}#au_${analyticalUnit.uuid}`;
 						let columnName = String(year);
+
 						let existingPantherAttributeDataSource = _.find(pantherAttributeDataSources, (pantherAttributeDataSourceObject) => {
 							return pantherAttributeDataSourceObject.data.tableName === tableName && pantherAttributeDataSourceObject.data.columnName === columnName;
 						});
 
-						let pantherAttributeDataSourceKey = existingPantherAttributeDataSource ? existingPantherAttributeDataSource.key : uuidv4();
+						let key = existingPantherAttributeDataSource ? existingPantherAttributeDataSource.key : uuidv4();
 
 						pantherAttributeDataSourcesToCreateOrUpdate.push(
 							{
-								key: pantherAttributeDataSourceKey,
+								key,
 								data: {
+									nameInternal,
 									tableName,
 									columnName
 								}
@@ -1429,7 +1538,8 @@ class FuoreImporter {
 					{
 						filter: {
 							applicationKey: esponFuoreApplicationKey
-						}
+						},
+						unlimited: true
 					},
 					user
 				).then((getRestult) => {
@@ -1519,7 +1629,7 @@ class FuoreImporter {
 								in: _.map(analyticalUnits, `uuid`)
 							}
 						},
-						limit: 9999
+						unlimited: true
 					},
 					user
 				).then((getResult) => {
@@ -1577,129 +1687,82 @@ class FuoreImporter {
 	createPantherAttributeRelations(attributes, analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
-				let existingAttributeRelations = await this._pgRelationsCrud.get(
+				let existingPantherAttributeRelationObjects = await this._pgRelationsCrud.get(
 					`attribute`,
 					{
 						filter: {
 							scopeKey: {
 								in: _.map(analyticalUnits, `uuid`)
 							}
-						}
+						},
+						unlimited: true
 					},
 					user
 				).then((getRequest) => {
 					return getRequest.data.attribute
 				});
 
+				let pantherAttributeRelationsToCreateOrUpdate = [];
 				for (let pantherAttributeDataSourceObject of pantherData.attributeDataSources) {
-					console.log(`pantherAttributeDataSourceObject ${JSON.stringify(pantherAttributeDataSourceObject)}`);
+					let nameInternalParts = pantherAttributeDataSourceObject.data.nameInternal.split(`#`);
 
-					let attribute = _.find(attributes, (attribute) => {
-						return pantherAttributeDataSourceObject.data.tableName.includes(attribute.uuid);
-					});
-
-					console.log(`attribute ${JSON.stringify(attribute)}`);
+					let attributeKey = nameInternalParts[2].split(`_`)[1];
+					let scopeKey = nameInternalParts[3].split(`_`)[1];
+					let attributeDataSourceKey = pantherAttributeDataSourceObject.key;
 
 					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
-						return pantherAttributeDataSourceObject.data.tableName.includes(analyticalUnit.uuid) || analyticalUnit.id === attribute.analytical_unit_id;
+						return analyticalUnit.uuid === scopeKey;
 					});
-
-					console.log(`analyticalUnit ${JSON.stringify(analyticalUnit)}`);
-
-					let pantherScopeObject = _.find(pantherData.scopes, (pantherScopeObject) => {
-						return pantherScopeObject.key === analyticalUnit.uuid;
-					});
-
-					console.log(`pantherScopeObject ${JSON.stringify(pantherScopeObject)}`);
 
 					let pantherLayerTemplateObject = _.find(pantherData.layerTemplates, (pantherLayerTemplateObject) => {
-						return pantherLayerTemplateObject.data.nameInternal.includes(`au_${analyticalUnit.uuid}`);
+						return pantherLayerTemplateObject.data.nameInternal.includes(scopeKey);
 					});
 
-					console.log(`pantherLayerTemplateObject ${JSON.stringify(pantherLayerTemplateObject)}`);
+					let layerTemplateKey = pantherLayerTemplateObject.key;
+
+					let fidColumnName = analyticalUnit.fid_column;
 
 					let pantherPeriodObject = _.find(pantherData.periods, (pantherPeriodObject) => {
-						return pantherPeriodObject.data.nameInternal.includes(pantherAttributeDataSourceObject.data.columnName);
+						return pantherPeriodObject.data.nameInternal.includes(pantherAttributeDataSourceObject.data.columnName) && nameInternalParts[1] === `attribute`;
 					});
 
-					console.log(`pantherPeriodObject ${JSON.stringify(pantherPeriodObject)}`);
+					let periodKey = pantherPeriodObject ? pantherPeriodObject.key : null;
 
+					let existingPantherAttributeRelationObject = _.find(existingPantherAttributeRelationObjects, (existingPantherAttributeRelationObject) => {
+						return existingPantherAttributeRelationObject.data.attributeKey === attributeKey
+							&& existingPantherAttributeRelationObject.data.scopeKey === scopeKey
+							&& existingPantherAttributeRelationObject.data.attributeDataSourceKey === attributeDataSourceKey
+							&& existingPantherAttributeRelationObject.data.fidColumnName === fidColumnName
+							&& existingPantherAttributeRelationObject.data.layerTemplateKey === layerTemplateKey
+							&& existingPantherAttributeRelationObject.data.periodKey === periodKey
+					});
 
-					console.log(``);
+					let key = existingPantherAttributeRelationObject ? existingPantherAttributeRelationObject.key : uuidv4();
+
+					pantherAttributeRelationsToCreateOrUpdate.push(
+						{
+							key,
+							data: {
+								attributeKey,
+								scopeKey,
+								attributeDataSourceKey,
+								fidColumnName,
+								layerTemplateKey,
+								periodKey
+							}
+						}
+					);
 				}
 
-				// for (let attributeDataSource of pantherData.attributeDataSources) {
-				// 	let scope = _.find(pantherData.scopes, (scope) => {
-				// 		return scope.linkage.analyticalUnitId === attributeDataSource.linkage.analyticalUnitId
-				// 	});
-				// 	let layerTemplate = _.find(pantherData.layerTemplates, (layerTemplate) => {
-				// 		return layerTemplate.linkage.analyticalUnitId === attributeDataSource.linkage.analyticalUnitId
-				// 	});
-				// 	let period = _.find(pantherData.periods, (period) => {
-				// 		return period.data.nameInternal === attributeDataSource.data.columnName;
-				// 	});
-				// 	let attribute = _.find(pantherData.attributes, (attribute) => {
-				// 		return attribute.linkage.attributeId === attributeDataSource.linkage.attributeId;
-				// 	});
-				//
-				// 	if (!attribute && attributeDataSource.linkage.isAnalyticalUnitName) {
-				// 		attribute = {
-				// 			...pantherData.fuoreAuNameAttribute,
-				// 			linkage: {
-				// 				attributeFidColumn: attributeDataSource.linkage.attributeFidColumn
-				// 			}
-				// 		};
-				// 		period = {key: null};
-				// 	}
-				//
-				// 	if (!attribute && attributeDataSource.linkage.isAnalyticalUnitCountryCode) {
-				// 		attribute = {
-				// 			...pantherData.fuoreAuCountryCodeAttribute,
-				// 			linkage: {
-				// 				attributeFidColumn: attributeDataSource.linkage.attributeFidColumn
-				// 			}
-				// 		};
-				// 		period = {key: null};
-				// 	}
-				//
-				// 	if (!scope || !layerTemplate || !period || !attribute) {
-				// 		throw new Error(`unable to create internal data structure - #ERR06`);
-				// 	}
-				//
-				// 	let periodKeyWhereSql = period.key ? `"periodKey" = '${period.key}'` : `"periodKey" IS NULL`;
-				// 	let periodKeyInsertSql = period.key ? `'${period.key}'` : `NULL`;
-				//
-				// 	await this._pgPool.query(
-				// 		`SELECT * FROM "relations"."attributeDataSourceRelation" WHERE
-				// 			"scopeKey" = '${scope.key}'
-				// 			AND "attributeDataSourceKey" = '${attributeDataSource.key}'
-				// 			AND "layerTemplateKey" = '${layerTemplate.key}'
-				// 			AND ${periodKeyWhereSql}
-				// 			AND "attributeKey" = '${attribute.key}'
-				// 			AND "fidColumnName" = '${attribute.linkage.attributeFidColumn}'`
-				// 	).then((pgResult) => {
-				// 		if (!pgResult.rows[0]) {
-				// 			return this._pgPool.query(
-				// 				`INSERT INTO "relations"."attributeDataSourceRelation" (
-				// 					"scopeKey",
-				// 					"periodKey",
-				// 					"attributeDataSourceKey",
-				// 					"layerTemplateKey",
-				// 					"attributeKey",
-				// 					"fidColumnName"
-				// 				) VALUES (
-				// 					'${scope.key}',
-				// 					${periodKeyInsertSql},
-				// 					'${attributeDataSource.key}',
-				// 					'${layerTemplate.key}',
-				// 					'${attribute.key}',
-				// 					'${attribute.linkage.attributeFidColumn}'
-				// 				)`
-				// 			)
-				// 		}
-				// 	})
-				// }
-
+				return this._pgRelationsCrud.update(
+					{
+						attribute: pantherAttributeRelationsToCreateOrUpdate
+					},
+					user,
+					{}
+				).then((updateResult) => {
+					return updateResult.attribute
+				});
 			});
 	}
 
@@ -1865,26 +1928,26 @@ class FuoreImporter {
 			})
 			.then(() => {
 				return this.createPantherNameAttributeForFuore(nameAttributeKey, user)
-					.then((pantherAttributes) => {
-						pantherData.fuoreAuNameAttribute = pantherAttributes[0];
+					.then((pantherAttribute) => {
+						pantherData.fuoreAuNameAttribute = pantherAttribute;
 					});
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeForFuore(countryCodeAttributeKey, user)
-					.then((pantherAttributes) => {
-						pantherData.fuoreAuCountryCodeAttribute = pantherAttributes[0];
+					.then((pantherAttribute) => {
+						pantherData.fuoreAuCountryCodeAttribute = pantherAttribute;
 					});
 			})
 			.then(() => {
 				return this.createPantherCategoryTagForFuore(pantherData, user)
-					.then((pantherTags) => {
-						pantherData.fuoreCategoryTag = pantherTags[0];
+					.then((pantherTag) => {
+						pantherData.fuoreCategoryTag = pantherTag;
 					});
 			})
 			.then(() => {
 				return this.createPantherSubCategoryTagForFuore(pantherData, user)
-					.then((pantherTags) => {
-						pantherData.fuoreSubCategoryTag = pantherTags[0];
+					.then((pantherTag) => {
+						pantherData.fuoreSubCategoryTag = pantherTag;
 					});
 			})
 			.then(() => {
@@ -1936,19 +1999,19 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				return this.createPantherAttributeDataSourceFromFuoreAttributes(attributes, user, pantherData)
+				return this.createPantherAttributeDataSourceFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
 					.then((pantherAttributeDataSources) => {
 						pantherData.attributeDataSources = pantherAttributeDataSources;
 					});
 			})
 			.then(() => {
-				return this.createPantherNameAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user)
+				return this.createPantherNameAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user, nameAttributeKey)
 					.then((pantherAttributeDataSources) => {
-						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
+						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources,);
 					})
 			})
 			.then(() => {
-				return this.createPantherCountryCodeAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user)
+				return this.createPantherCountryCodeAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user, countryCodeAttributeKey)
 					.then((pantherAttributeDataSources) => {
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
 					})
@@ -1966,9 +2029,6 @@ class FuoreImporter {
 				return this.createPantherAttributeRelations(attributes, analyticalUnits, user, pantherData);
 			})
 			.then(() => {
-				throw new Error(`Stopped due testing purposes!`);
-			})
-			.then(() => {
 				return this.setGuestPermissionsForPantherData(pantherData)
 					.then(() => {
 					})
@@ -1980,8 +2040,6 @@ class FuoreImporter {
 				};
 				status.ended = new Date().toISOString();
 				status.state = `done`;
-
-				console.log(status);
 			})
 			.catch((error) => {
 				status.ended = new Date().toISOString();

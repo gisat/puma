@@ -281,7 +281,7 @@ class PgCollection {
 
 		return this.getResourceIdsForUserAndPermissionType(user, Permission.UPDATE)
 			.then(([availableKeys, isAdmin]) => {
-				return this.get({filter: {key: {in: _.map(group, `key`)}}}, user, extra)
+				return this.get({filter: {key: {in: _.map(group, `key`)}}, unlimited: true}, user, extra)
 					.then((existingData) => {
 						return [availableKeys, isAdmin, _.map(existingData.data, `key`)];
 					});
