@@ -1141,9 +1141,10 @@ class FuoreImporter {
 					for (let period of periods) {
 						let nameInternal = `fuore-${String(period)}-do-not-edit`;
 						if (!fuorePeriodsInternalNames.includes(nameInternal)) {
+							fuorePeriodsInternalNames.push(nameInternal);
 							periodsToCreate.push({
 								data: {
-									nameInternal: `fuore-${String(period)}-do-not-edit`,
+									nameInternal,
 									nameDisplay: String(period),
 									period: String(period),
 									applicationKey: esponFuoreApplicationKey
