@@ -504,7 +504,7 @@ class FuoreImporter {
 			_.each(tableColumns, (type, columnName) => {
 				columnNames.push(columnName);
 				// todo remove when data will contains correct no data values
-				if(regexp.test(columnName) && attributeDataObject[columnName]) {
+				if(yearRegExp.test(columnName) && attributeDataObject[columnName] === 0) {
 					values.push(`NULL`);
 				} else if (attributeDataObject[columnName] === null) {
 					values.push(`NULL`);
