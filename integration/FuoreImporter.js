@@ -359,11 +359,11 @@ class FuoreImporter {
 				})
 			});
 
-		let attributeMetadataYearsToUpdate = _.intersection(attributeMetadataYears, existingYearColumns);
+		// let attributeMetadataYearsToUpdate = _.intersection(attributeMetadataYears, existingYearColumns);
 		let attributeMetadataYearsToDelete = _.difference(existingYearColumns, attributeMetadataYears);
 		let attributeMetadataYearsToAdd = _.difference(attributeMetadataYears, existingYearColumns);
 
-		let updateQueries = [];
+		let updateTableQueries = [];
 
 		if (attributeMetadataYearsToAdd.length && !attributeData) {
 			throw new Error(`Unable to update data for attribute with uuid ${attributeMetadata.uuid}. Missing data file ${attributeDataFileName}`);
@@ -371,7 +371,7 @@ class FuoreImporter {
 
 		if (attributeMetadataYearsToDelete.length) {
 			for (let year of attributeMetadataYearsToDelete) {
-				updateQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP COLUMN "${year}"`);
+				updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP COLUMN "${year}"`);
 			}
 		}
 
@@ -386,7 +386,7 @@ class FuoreImporter {
 				}
 
 				if (columnType) {
-					updateQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD COLUMN "${year}" ${columnType}`);
+					updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD COLUMN "${year}" ${columnType}`);
 				} else {
 					throw new Error(`Unable to find data for column ${year} for attribute with uuid ${attributeMetadata.uuid}`);
 				}
@@ -396,54 +396,82 @@ class FuoreImporter {
 		let fidColumn = attributeMetadata.fid_column;
 
 		if (attributeData) {
-			updateQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP CONSTRAINT IF EXISTS "${attributeDataTableName}_objectid_key"`);
-			updateQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD CONSTRAINT "${attributeDataTableName}_objectid_key" UNIQUE ("${fidColumn}")`);
+			updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP CONSTRAINT IF EXISTS "${attributeDataTableName}_objectid_key"`);
+			updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD CONSTRAINT "${attributeDataTableName}_objectid_key" UNIQUE ("${fidColumn}")`);
 		}
 
+		await this._pgPool.query(
+			`BEGIN; ${updateTableQueries.join(`; `)}; COMMIT;`
+		);
+
+		let existingYearColumnsAfterAlter = await this._pgPool
+			.query(`SELECT column_name FROM information_schema.columns WHERE table_name = '${attributeDataTableName}' AND column_name ~ '^[0-9]{4}$';`)
+			.then((queryResult) => {
+				return _.map(queryResult.rows, (row) => {
+					return row.column_name;
+				})
+			});
+
+		let yearRegExp = RegExp('^[0-9]{4}$');
+		let updateDataQueries = [];
 		for (let data of attributeData) {
 			let columns = [], values = [], sets = [];
 
 			_.forEach(data, (value, column) => {
+				if(!yearRegExp.test(column) || existingYearColumnsAfterAlter.includes(column)) {
+					if (_.isString(value)) {
+						value = `'${value}'`;
+					}
 
-				if (_.isString(value)) {
-					value = `'${value}'`;
+					if(value === null) {
+						value = String(value)
+					}
+
+					// todo remove when data will contains correct no data values
+					if(yearRegExp.test(column) && value === 0) {
+						value = String(null);
+					}
+
+					columns.push(`"${column}"`);
+					values.push(value);
+					sets.push(`"${column}" = ${value}`);
 				}
-
-				columns.push(`"${column}"`);
-				values.push(value);
-				sets.push(`"${column}" = ${value}`);
 			});
 
-			updateQueries.push(`INSERT INTO "${attributeDataTableName}" (${columns.join(', ')}) VALUES (${values.join(', ')}) ON CONFLICT ("${fidColumn}") DO UPDATE SET ${sets.join(', ')}`)
+			updateDataQueries.push(`INSERT INTO "${attributeDataTableName}" (${columns.join(', ')}) VALUES (${values.join(', ')}) ON CONFLICT ("${fidColumn}") DO UPDATE SET ${sets.join(', ')}`)
 		}
 
-		for (let query of updateQueries) {
-			await this._pgPool.query(query);
-		}
+		await this._pgPool.query(
+			`BEGIN; ${updateDataQueries.join(`; `)}; COMMIT;`
+		);
 	}
 
 	async createAttributeDataTable(attributeMetadata, unzippedFs) {
 		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}`;
 		let attributeData = JSON.parse(unzippedFs.read(`${attributeMetadata.table_name}.json`, 'text'));
 
-		let tableColumns = {};
+		let attributeMetadataYearsParts = attributeMetadata.years.split(`-`);
+		let attributeMetadataStartYear = attributeMetadataYearsParts[0];
+		let attributeMetadataEndYear = attributeMetadataYearsParts[1] || attributeMetadataYearsParts[0];
 
+		let attributeMetadataYears = _.map(_.range(Number(attributeMetadataStartYear), Number(attributeMetadataEndYear) + 1), (yearNumber) => {
+			return String(yearNumber);
+		});
+
+		let yearRegExp = RegExp('^[0-9]{4}$');
+
+		let tableColumns = {};
 		for (let attributeDataObject of attributeData) {
 			_.each(attributeDataObject, (value, property) => {
 				if (!tableColumns.hasOwnProperty(property) || !tableColumns[property]) {
-					if (_.isString(value)) {
-						tableColumns[property] = `text`;
-					} else if (_.isNumber(value)) {
-						tableColumns[property] = `numeric`;
-					} else {
-						tableColumns[property] = null;
+					if(!yearRegExp.test(property) || attributeMetadataYears.includes(property)) {
+						if(_.isNull(value)) {
+						} else if (_.isNumber(value)) {
+							tableColumns[property] = `NUMERIC`;
+						} else {
+							tableColumns[property] = `TEXT`;
+						}
 					}
-				}
-			});
-
-			_.each(tableColumns, (value, property) => {
-				if (!value) {
-					tableColumns[property] = `numeric`;
 				}
 			});
 		}
@@ -454,7 +482,7 @@ class FuoreImporter {
 
 		sql.push(`CREATE TABLE IF NOT EXISTS "public"."${attributeDataTableName}" (`);
 
-		sql.push(`auto_fid serial primary key,`);
+		sql.push(`auto_fid SERIAL PRIMARY KEY,`);
 
 		let columnDefinitions = [];
 		_.each(tableColumns, (type, column) => {
@@ -475,10 +503,13 @@ class FuoreImporter {
 
 			_.each(tableColumns, (type, columnName) => {
 				columnNames.push(columnName);
-				if (attributeDataObject[columnName] === null) {
+				// todo remove when data will contains correct no data values
+				if(regexp.test(columnName) && attributeDataObject[columnName]) {
+					values.push(`NULL`);
+				} else if (attributeDataObject[columnName] === null) {
 					values.push(`NULL`);
 				} else {
-					if (type === `text`) {
+					if (type === `TEXT`) {
 						values.push(`'${attributeDataObject[columnName].replace(`'`, `''`)}'`);
 					} else {
 						values.push(attributeDataObject[columnName]);
@@ -504,22 +535,14 @@ class FuoreImporter {
 					let attributeMetadataUuids = [];
 
 					for (let attributeMetadata of attributes) {
-						if (!attributeMetadata.hasOwnProperty(`id`)) {
-							throw new Error(`missing id property in metadata of attribute ${attributeMetadata.name}`);
-						}
 						if (!attributeMetadata.hasOwnProperty(`uuid`)) {
 							attributeMetadata.uuid = uuidv4();
-						}
-
-						if (attributeMetadataIds.includes(attributeMetadata.id)) {
-							throw new Error(`Attributes units has non-unique ids`);
 						}
 
 						if (attributeMetadataUuids.includes(attributeMetadata.uuid)) {
 							throw new Error(`Attributes units has non-unique uuids`);
 						}
 
-						attributeMetadataIds.push(attributeMetadata.id);
 						attributeMetadataUuids.push(attributeMetadata.uuid);
 					}
 
@@ -1011,7 +1034,7 @@ class FuoreImporter {
 	}
 
 	createPantherSubCategoryTagForFuore(pantherData, user) {
-		let key = pantherData.fuoreConfiguration.data.data.categoryTagKey;
+		let key = pantherData.fuoreConfiguration.data.data.subCategoryTagKey;
 		return Promise.resolve()
 			.then(async () => {
 				let existingPantherTag = await this._pgMetadataCrud.get(
@@ -1150,7 +1173,7 @@ class FuoreImporter {
 	createPantherTagsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
-				let fuoreTags = await this._pgMetadataCrud.get(
+				let existingPantherTags = await this._pgMetadataCrud.get(
 					`tags`,
 					{
 						filter: {
@@ -1163,7 +1186,7 @@ class FuoreImporter {
 					return getResults.data.tags;
 				});
 
-				let fuoreTagsToCreate = [];
+				let fuoreTagsToCreateOrUpdate = [];
 				for (let attribute of attributes) {
 					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
 						return analyticalUnit.id === attribute.analytical_unit_id;
@@ -1174,62 +1197,61 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR03`);
 					}
 
-					let pantherTagInternalName = `fuore-category-attr_${attribute.uuid}-au_${analyticalUnit.uuid}-do-not-edit`;
-					if (
-						!_.find(fuoreTags, (fuoreTag) => {
-							return fuoreTag.data.nameInternal === pantherTagInternalName && fuoreTag.data.scopeKey === analyticalUnit.uuid
-						})
-						&& !_.find(fuoreTagsToCreate, (fuoreTag) => {
-							return fuoreTag.data.nameInternal === pantherTagInternalName && fuoreTag.data.scopeKey === analyticalUnit.uuid
-						})
-					) {
-						fuoreTagsToCreate.push({
+					let pantherTagInternalName = `fuore-category-${attribute.category}-au_${analyticalUnit.uuid}-do-not-edit`;
+
+					let preparedForUpdateOrCreate = !!(_.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
+						return preparedPantherTag.data.nameInternal === pantherTagInternalName
+					}));
+					let existingPantherTagObject = _.find(existingPantherTags, (pantherTagObject) => {
+						return pantherTagObject.data.nameInternal === pantherTagInternalName;
+					});
+
+					let key = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
+					if(!preparedForUpdateOrCreate) {
+						fuoreTagsToCreateOrUpdate.push({
+							key,
 							data: {
 								nameInternal: pantherTagInternalName,
 								nameDisplay: attribute.category,
 								applicationKey: esponFuoreApplicationKey,
-								scopeKey: analyticalUnit.uuid,
-								tagKeys: [pantherData.fuoreCategoryTag.key]
+								tagKeys: [pantherData.fuoreCategoryTag.key],
+								scopeKey: analyticalUnit.uuid
 							}
-						})
+						});
 					}
 
-					pantherTagInternalName = `fuore-subcategory-attr_${attribute.uuid}-au_${analyticalUnit.uuid}-do-not-edit`;
-					if (
-						!_.find(fuoreTags, (fuoreTag) => {
-							return fuoreTag.data.nameInternal === pantherTagInternalName
-						})
-						&& !_.find(fuoreTagsToCreate, (fuoreTag) => {
-							return fuoreTag.data.nameInternal === pantherTagInternalName
-						})
-					) {
-						fuoreTagsToCreate.push({
+					pantherTagInternalName = `fuore-subcategory-${attribute.sub_category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					preparedForUpdateOrCreate = !!(_.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
+						return preparedPantherTag.data.nameInternal === pantherTagInternalName
+					}));
+					existingPantherTagObject = _.find(existingPantherTags, (pantherTagObject) => {
+						return pantherTagObject.data.nameInternal === pantherTagInternalName;
+					});
+
+					key = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
+					if(!preparedForUpdateOrCreate) {
+						fuoreTagsToCreateOrUpdate.push({
+							key,
 							data: {
 								nameInternal: pantherTagInternalName,
 								nameDisplay: attribute.sub_category,
 								applicationKey: esponFuoreApplicationKey,
-								scopeKey: analyticalUnit.uuid,
-								tagKeys: [pantherData.fuoreSubCategoryTag.key]
+								tagKeys: [pantherData.fuoreSubCategoryTag.key],
+								scopeKey: analyticalUnit.uuid
 							}
 						})
 					}
 				}
 
-				let fuoreTagsCreated = [];
-				if (fuoreTagsToCreate.length) {
-					await this._pgMetadataCrud.create(
-						{
-							tags: fuoreTagsToCreate
-						},
-						user,
-						{}
-					).then((createResult) => {
-						fuoreTagsCreated = createResult.tags;
-					})
-				}
-
-				return _.concat(fuoreTags, fuoreTagsCreated);
-
+				return this._pgMetadataCrud.update(
+					{
+						tags: fuoreTagsToCreateOrUpdate
+					},
+					user,
+					{}
+				).then((updateResult) => {
+					return updateResult.tags;
+				});
 			});
 	}
 
@@ -1252,8 +1274,8 @@ class FuoreImporter {
 						return analyticalUnitObject.id === attribute.analytical_unit_id;
 					});
 
-					let categoryPantherTagInternalName = `fuore-category-attr_${attribute.uuid}-au_${analyticalUnit.uuid}-do-not-edit`;
-					let subCategoryPantherTagInternalName = `fuore-subcategory-attr_${attribute.uuid}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let categoryPantherTagInternalName = `fuore-category-${attribute.category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let subCategoryPantherTagInternalName = `fuore-subcategory-${attribute.sub_category}-au_${analyticalUnit.uuid}-do-not-edit`;
 
 					let pantherTags = _.filter(pantherData.tags, (pantherTagObject) => {
 						return pantherTagObject.data.nameInternal === categoryPantherTagInternalName || pantherTagObject.data.nameInternal === subCategoryPantherTagInternalName;
@@ -1918,119 +1940,163 @@ class FuoreImporter {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
 						analyticalUnits = pAnalyticalUnits;
+						console.log(`FuoreImport # ensureAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.ensureAttributesData(unzippedFs)
 					.then((pAttributes) => {
 						attributes = pAttributes;
+						console.log(`FuoreImport # ensureAttributesData done`);
 					})
+			})
+			.then(() => {
+				let queries = [
+					`BEGIN`,
+					`DELETE FROM metadata.attribute`,
+					`DELETE FROM metadata.tag`,
+					`DELETE FROM metadata.scope`,
+					`DELETE FROM metadata.period`,
+					`DELETE FROM metadata."layerTemplate"`,
+					`DELETE FROM views.view`,
+					`DELETE FROM specific."esponFuoreIndicator"`,
+					`DELETE FROM "dataSources"."dataSource"`,
+					`DELETE FROM "dataSources"."attributeDataSource"`,
+					`DELETE FROM application."layerTree"`,
+					`DELETE FROM relations."attributeDataSourceRelation"`,
+					`DELETE FROM relations."spatialDataSourceRelation"`,
+					`COMMIT`
+				];
+				return this._pgPool.query(queries.join(`; `));
 			})
 			.then(() => {
 				return this.createPantherNameAttributeForFuore(nameAttributeKey, user)
 					.then((pantherAttribute) => {
 						pantherData.fuoreAuNameAttribute = pantherAttribute;
+						console.log(`FuoreImport # createPantherNameAttributeForFuore done`);
 					});
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeForFuore(countryCodeAttributeKey, user)
 					.then((pantherAttribute) => {
 						pantherData.fuoreAuCountryCodeAttribute = pantherAttribute;
+						console.log(`FuoreImport # createPantherCountryCodeAttributeForFuore done`);
 					});
 			})
 			.then(() => {
 				return this.createPantherCategoryTagForFuore(pantherData, user)
 					.then((pantherTag) => {
 						pantherData.fuoreCategoryTag = pantherTag;
+						console.log(`FuoreImport # createPantherCategoryTagForFuore done`);
 					});
 			})
 			.then(() => {
 				return this.createPantherSubCategoryTagForFuore(pantherData, user)
 					.then((pantherTag) => {
 						pantherData.fuoreSubCategoryTag = pantherTag;
+						console.log(`FuoreImport # createPantherSubCategoryTagForFuore done`);
 					});
 			})
 			.then(() => {
 				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key, pantherData.fuoreAuCountryCodeAttribute.key)
 					.then((pantherScopes) => {
 						pantherData.scopes = pantherScopes;
+						console.log(`FuoreImport # createPantherScopesFromFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributesFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
 					.then((pantherAttributes) => {
 						pantherData.attributes = pantherAttributes;
+						console.log(`FuoreImport # createPantherAttributesFromFuoreAttributes done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherPeriodsFromFuoreAttributes(attributes, user, pantherData)
 					.then((pantherPeriods) => {
 						pantherData.periods = pantherPeriods;
+						console.log(`FuoreImport # createPantherPeriodsFromFuoreAttributes done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherTagsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
 					.then((pantherTags) => {
 						pantherData.tags = pantherTags;
+						console.log(`FuoreImport # createPantherTagsFromFuoreAttributes done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherLayerTemplatesForFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherLayerTemplates) => {
 						pantherData.layerTemplates = pantherLayerTemplates;
+						console.log(`FuoreImport # createPantherLayerTemplatesForFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherViewsFromFuoreAnalyticalUnits(attributes, analyticalUnits, user, pantherData)
 					.then((pantherViews) => {
 						pantherData.views = pantherViews;
+						console.log(`FuoreImport # createPantherViewsFromFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
 					.then((pantherEsponFuoreIndicators) => {
 						pantherData.esponFuoreIndicators = pantherEsponFuoreIndicators;
+						console.log(`FuoreImport # createPantherEsponFuoreIndicatorsFromFuoreAttributes done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherSpatialDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherSpatialDataSources) => {
 						pantherData.spatialDataSources = pantherSpatialDataSources;
+						console.log(`FuoreImport # createPantherSpatialDataSourceFromFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherAttributeDataSourceFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
 					.then((pantherAttributeDataSources) => {
 						pantherData.attributeDataSources = pantherAttributeDataSources;
+						console.log(`FuoreImport # createPantherAttributeDataSourceFromFuoreAttributes done`);
 					});
 			})
 			.then(() => {
 				return this.createPantherNameAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user, nameAttributeKey)
 					.then((pantherAttributeDataSources) => {
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources,);
+						console.log(`FuoreImport # createPantherNameAttributeDataSourceForFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherCountryCodeAttributeDataSourceForFuoreAnalyticalUnits(analyticalUnits, user, countryCodeAttributeKey)
 					.then((pantherAttributeDataSources) => {
 						pantherData.attributeDataSources = _.concat(pantherData.attributeDataSources, pantherAttributeDataSources);
+						console.log(`FuoreImport # createPantherCountryCodeAttributeDataSourceForFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
 				return this.createPantherLayerTreesForFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherLayerTrees) => {
 						pantherData.layerTrees = pantherLayerTrees;
+						console.log(`FuoreImport # createPantherLayerTreesForFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
-				return this.createPantherSpatialRelations(analyticalUnits, user, pantherData);
+				return this.createPantherSpatialRelations(analyticalUnits, user, pantherData)
+					.then(() => {
+						console.log(`FuoreImport # createPantherSpatialRelations done`);
+					})
 			})
 			.then(() => {
-				return this.createPantherAttributeRelations(attributes, analyticalUnits, user, pantherData);
+				return this.createPantherAttributeRelations(attributes, analyticalUnits, user, pantherData)
+					.then(() => {
+						console.log(`FuoreImport # createPantherAttributeRelations done`);
+					})
 			})
 			.then(() => {
 				return this.setGuestPermissionsForPantherData(pantherData)
 					.then(() => {
+						console.log(`FuoreImport # setGuestPermissionsForPantherData done`);
 					})
 			})
 			.then(() => {
