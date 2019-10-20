@@ -312,7 +312,7 @@ class FuoreImporter {
 							throw new Error(`missing description property in analytical unit metadata`);
 						}
 
-						await this.ensureAnalyticalUnit(analyticalUnitMetadata, unzippedFs);
+						// await this.ensureAnalyticalUnit(analyticalUnitMetadata, unzippedFs);
 					}
 
 					return analyticalUnits;
@@ -418,17 +418,17 @@ class FuoreImporter {
 			let columns = [], values = [], sets = [];
 
 			_.forEach(data, (value, column) => {
-				if(!yearRegExp.test(column) || existingYearColumnsAfterAlter.includes(column)) {
+				if (!yearRegExp.test(column) || existingYearColumnsAfterAlter.includes(column)) {
 					if (_.isString(value)) {
 						value = `'${value}'`;
 					}
 
-					if(value === null) {
+					if (value === null) {
 						value = String(value)
 					}
 
 					// todo remove when data will contains correct no data values
-					if(yearRegExp.test(column) && value === 0) {
+					if (yearRegExp.test(column) && value === 0) {
 						value = String(null);
 					}
 
@@ -464,8 +464,8 @@ class FuoreImporter {
 		for (let attributeDataObject of attributeData) {
 			_.each(attributeDataObject, (value, property) => {
 				if (!tableColumns.hasOwnProperty(property) || !tableColumns[property]) {
-					if(!yearRegExp.test(property) || attributeMetadataYears.includes(property)) {
-						if(_.isNull(value)) {
+					if (!yearRegExp.test(property) || attributeMetadataYears.includes(property)) {
+						if (_.isNull(value)) {
 						} else if (_.isNumber(value)) {
 							tableColumns[property] = `NUMERIC`;
 						} else {
@@ -504,7 +504,7 @@ class FuoreImporter {
 			_.each(tableColumns, (type, columnName) => {
 				columnNames.push(columnName);
 				// todo remove when data will contains correct no data values
-				if(yearRegExp.test(columnName) && attributeDataObject[columnName] === 0) {
+				if (yearRegExp.test(columnName) && attributeDataObject[columnName] === 0) {
 					values.push(`NULL`);
 				} else if (attributeDataObject[columnName] === null) {
 					values.push(`NULL`);
@@ -581,7 +581,7 @@ class FuoreImporter {
 							throw new Error(`missing description property in metadata of attribute ${attributeMetadata.name}`);
 						}
 
-						await this.ensureAttributeData(attributeMetadata, unzippedFs);
+						// await this.ensureAttributeData(attributeMetadata, unzippedFs);
 					}
 
 					return attributes;
@@ -927,7 +927,7 @@ class FuoreImporter {
 					return getResult.data.attributes[0];
 				});
 
-				if(existingPantherNameAttribute) {
+				if (existingPantherNameAttribute) {
 					return existingPantherNameAttribute;
 				} else {
 					return this._pgMetadataCrud.create(
@@ -967,7 +967,7 @@ class FuoreImporter {
 					return getResult.data.attributes[0];
 				});
 
-				if(existingPantherNameAttribute) {
+				if (existingPantherNameAttribute) {
 					return existingPantherNameAttribute;
 				} else {
 					return this._pgMetadataCrud.create(
@@ -1008,7 +1008,7 @@ class FuoreImporter {
 					return getResult.data.tags[0];
 				});
 
-				if(existingPantherTag) {
+				if (existingPantherTag) {
 					return existingPantherTag;
 				} else {
 					return this._pgMetadataCrud.create(
@@ -1049,7 +1049,7 @@ class FuoreImporter {
 					return getResult.data.tags[0];
 				});
 
-				if(existingPantherTag) {
+				if (existingPantherTag) {
 					return existingPantherTag;
 				} else {
 					return this._pgMetadataCrud.create(
@@ -1208,7 +1208,7 @@ class FuoreImporter {
 					});
 
 					let key = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
-					if(!preparedForUpdateOrCreate) {
+					if (!preparedForUpdateOrCreate) {
 						fuoreTagsToCreateOrUpdate.push({
 							key,
 							data: {
@@ -1230,7 +1230,7 @@ class FuoreImporter {
 					});
 
 					key = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
-					if(!preparedForUpdateOrCreate) {
+					if (!preparedForUpdateOrCreate) {
 						fuoreTagsToCreateOrUpdate.push({
 							key,
 							data: {
@@ -1291,6 +1291,7 @@ class FuoreImporter {
 					});
 
 					if (!analyticalUnit || !pantherTagKeys.length || !pantherView) {
+						console.log(categoryPantherTagInternalName, subCategoryPantherTagInternalName);
 						throw new Error(`unable to create internal data structure - #ERR04`);
 					}
 
@@ -1334,20 +1335,21 @@ class FuoreImporter {
 	createPantherSpatialDataSourceFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
-				let pantherSpatialDataSources = await this._pgDataSourcesCrud.get(
-					`spatial`,
-					{
-						filter: {
-							tableName: {
-								like: "fuore-au\\_"
-							}
-						},
-						unlimited: true
-					},
-					user
-				).then((getResult) => {
-					return getResult.data.spatial;
-				});
+				let pantherSpatialDataSources = [];
+				// let pantherSpatialDataSources = await this._pgDataSourcesCrud.get(
+				// 	`spatial`,
+				// 	{
+				// 		filter: {
+				// 			tableName: {
+				// 				like: "fuore-au\\_"
+				// 			}
+				// 		},
+				// 		unlimited: true
+				// 	},
+				// 	user
+				// ).then((getResult) => {
+				// 	return getResult.data.spatial;
+				// });
 
 				let spatialDataSourcesToCreateOrUpdate = [];
 
@@ -1556,54 +1558,51 @@ class FuoreImporter {
 	createPantherLayerTemplatesForFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
-				let pantherLayerTemplates = await this._pgMetadataCrud.get(
-					`layerTemplates`,
-					{
-						filter: {
-							applicationKey: esponFuoreApplicationKey
+					let pantherLayerTemplates = await this._pgMetadataCrud.get(
+						`layerTemplates`,
+						{
+							filter: {
+								applicationKey: esponFuoreApplicationKey
+							},
+							unlimited: true
 						},
-						unlimited: true
-					},
-					user
-				).then((getRestult) => {
-					return getRestult.data.layerTemplates;
-				});
-
-				let pantherLayerTemplatesToCreate = [];
-				for (let analyticalUnit of analyticalUnits) {
-					let pantherLayerTemplateNameInternal = `fuore-au_${analyticalUnit.uuid}-do-not-edit`;
-					let existingPantherLayerTemplate = _.find(pantherLayerTemplates, (pantherLayerTemplate) => {
-						return pantherLayerTemplate.data.nameInternal === pantherLayerTemplateNameInternal;
+						user
+					).then((getRestult) => {
+						return getRestult.data.layerTemplates;
 					});
 
-					if (!existingPantherLayerTemplate) {
-						pantherLayerTemplatesToCreate.push(
+					let pantherLayerTemplatesToCreateOrUpdate = [];
+					for (let analyticalUnit of analyticalUnits) {
+						let pantherLayerTemplateNameInternal = `fuore-au_${analyticalUnit.uuid}-do-not-edit`;
+						let existingPantherLayerTemplate = _.find(pantherLayerTemplates, (pantherLayerTemplate) => {
+							return pantherLayerTemplate.data.nameInternal === pantherLayerTemplateNameInternal;
+						});
+
+						let key = existingPantherLayerTemplate ? existingPantherLayerTemplate.key : uuidv4();
+						pantherLayerTemplatesToCreateOrUpdate.push(
 							{
+								key,
 								data: {
 									nameDisplay: analyticalUnit.type_of_region,
 									nameInternal: pantherLayerTemplateNameInternal,
-									applicationKey: esponFuoreApplicationKey
+									applicationKey: esponFuoreApplicationKey,
+									scopeKey: analyticalUnit.uuid
 								}
 							}
 						)
 					}
-				}
 
-				let createdPantherLayerTemplates = [];
-				if (pantherLayerTemplatesToCreate.length) {
-					await this._pgMetadataCrud.create(
+					return this._pgMetadataCrud.update(
 						{
-							layerTemplates: pantherLayerTemplatesToCreate
+							layerTemplates: pantherLayerTemplatesToCreateOrUpdate
 						},
 						user,
 						{}
-					).then(([data, errors]) => {
-						createdPantherLayerTemplates = data.layerTemplates
+					).then((updateResult) => {
+						return updateResult.layerTemplates;
 					})
 				}
-
-				return _.concat(pantherLayerTemplates, createdPantherLayerTemplates);
-			})
+			)
 	}
 
 	createPantherLayerTemplatesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
@@ -1777,6 +1776,9 @@ class FuoreImporter {
 					);
 				}
 
+				console.log(`ToCreateOrUpdateCount`, pantherAttributeRelationsToCreateOrUpdate.length)
+				console.log(`EXAMPLE RELATION`, pantherAttributeRelationsToCreateOrUpdate[0]);
+
 				return this._pgRelationsCrud.update(
 					{
 						attribute: pantherAttributeRelationsToCreateOrUpdate
@@ -1913,7 +1915,9 @@ class FuoreImporter {
 		})
 	}
 
-	import(data, user, status) {
+	import(data,
+		   user, status
+	) {
 		let unzippedFs;
 		let analyticalUnits;
 		let attributes;
@@ -1954,18 +1958,18 @@ class FuoreImporter {
 			.then(() => {
 				let queries = [
 					`BEGIN`,
-					`DELETE FROM metadata.attribute`,
-					`DELETE FROM metadata.tag`,
-					`DELETE FROM metadata.scope`,
-					`DELETE FROM metadata.period`,
-					`DELETE FROM metadata."layerTemplate"`,
-					`DELETE FROM views.view`,
-					`DELETE FROM specific."esponFuoreIndicator"`,
-					`DELETE FROM "dataSources"."dataSource"`,
-					`DELETE FROM "dataSources"."attributeDataSource"`,
-					`DELETE FROM application."layerTree"`,
-					`DELETE FROM relations."attributeDataSourceRelation"`,
-					`DELETE FROM relations."spatialDataSourceRelation"`,
+						`DELETE FROM metadata.attribute`,
+						`DELETE FROM metadata.tag`,
+						`DELETE FROM metadata.scope`,
+						`DELETE FROM metadata.period`,
+						`DELETE FROM metadata."layerTemplate"`,
+						`DELETE FROM views.view`,
+						`DELETE FROM specific."esponFuoreIndicator"`,
+						`DELETE FROM "dataSources"."dataSource"`,
+						`DELETE FROM "dataSources"."attributeDataSource"`,
+						`DELETE FROM application."layerTree"`,
+						`DELETE FROM relations."attributeDataSourceRelation"`,
+						`DELETE FROM relations."spatialDataSourceRelation"`,
 					`COMMIT`
 				];
 				return this._pgPool.query(queries.join(`; `));

@@ -25,13 +25,6 @@ class PgCrud {
 			}
 		}
 
-		for (let type of Object.keys(data)) {
-			if (this._pgTypes.hasOwnProperty(type)) {
-				await this._pgTypes[type].store.populateData(data, user);
-			} else {
-				delete data[type];
-			}
-		}
 		return [data, errors];
 	}
 
@@ -46,7 +39,7 @@ class PgCrud {
 		_.forEach(this._pgTypes, (pgObject, pgType) => {
 			if (types.includes(pgType)) {
 				promises.push(
-					pgObject.store.get(request, user, {idOnly: true})
+					pgObject.store.get(request, user, {})
 						.then((results) => {
 							payload.data[pgType] = results['data'];
 							payload.changes = {
@@ -86,14 +79,6 @@ class PgCrud {
 		for (let type of Object.keys(data)) {
 			if (this._pgTypes.hasOwnProperty(type)) {
 				await this._pgTypes[type].store.update(data, user, extra);
-			} else {
-				delete data[type];
-			}
-		}
-
-		for (let type of Object.keys(data)) {
-			if (this._pgTypes.hasOwnProperty(type)) {
-				await this._pgTypes[type].store.populateData(data, user);
 			} else {
 				delete data[type];
 			}

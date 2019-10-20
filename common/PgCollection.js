@@ -93,10 +93,22 @@ class PgCollection {
 			});
 
 			return Promise.all(promises)
-				.then((results) => {
+				.then(async (results) => {
 					if (results && results.length) {
-						objects[this._groupName] = results;
-						return results;
+						objects[this._groupName] = await this.get(
+							{
+								filter: {
+									key: {
+										in: _.map(results, 'key')
+									}
+								},
+								unlimited: true
+							},
+							user,
+							extra
+						).then((getResult) => {
+							return getResult.data;
+						});
 					}
 				})
 		} else {
@@ -277,9 +289,10 @@ class PgCollection {
 	}
 
 	update(objects, user, extra) {
+		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
 		let group = objects[this._groupName];
 
-		return this.getResourceIdsForUserAndPermissionType(user, Permission.UPDATE)
+		return this.getResourceIdsForUserAndPermissionType(user, Permission.UPDATE, isAdmin)
 			.then(([availableKeys, isAdmin]) => {
 				return this.get({filter: {key: {in: _.map(group, `key`)}}, unlimited: true}, user, extra)
 					.then((existingData) => {
@@ -307,8 +320,30 @@ class PgCollection {
 				});
 
 				return Promise.all(promises)
-					.then((results) => {
-						objects[this._groupName] = results;
+					.then(async (results) => {
+						let faultyResults = _.filter(results, (result) => {
+							return !result.success && result.message
+						});
+						let correctResults = _.filter(results, (result) => {
+							return !result.success && !result.message
+						});
+
+						let populatedCorrectResults = correctResults.length ? await this.get(
+							{
+								filter: {
+									key: {
+										in: _.map(correctResults, 'key')
+									}
+								},
+								unlimited: true
+							},
+							user,
+							extra
+						).then((getResult) => {
+							return getResult.data;
+						}) : [];
+
+						objects[this._groupName] = _.concat(populatedCorrectResults, faultyResults);
 					});
 			});
 	}
@@ -457,8 +492,10 @@ class PgCollection {
 	}
 
 	get(request, user, extra) {
-		return this.getResourceIdsForUserAndPermissionType(user, Permission.READ)
-			.then(async ([availableKeys, isAdmin]) => {
+		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
+
+		return Promise.resolve()
+			.then(async () => {
 				if (this._pgMetadataRelations) {
 					let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
 					let requestedRelations = {};
@@ -492,25 +529,17 @@ class PgCollection {
 							});
 					}
 				}
-				return [availableKeys, isAdmin];
 			})
-			.then(([availableKeys, isAdmin]) => {
-				if (!this._legacy) {
-					return this.postgresGet(request, user, extra, availableKeys, isAdmin)
-						.then((payload) => {
-							return [payload, availableKeys, isAdmin];
-						})
-				} else {
-					return this.mongoGet(request, availableKeys, isAdmin)
-						.then((payload) => {
-							return [payload, availableKeys, isAdmin];
-						})
-				}
+			.then(() => {
+				return this.postgresGet(request, user, extra, isAdmin)
+					.then((payload) => {
+						return payload;
+					})
 			})
-			.then(([payload, availableKeys, isAdmin]) => {
+			.then((payload) => {
 				let resourceKeys = _.map(payload.data, 'key');
-
-				return this.getPermissionsForResourceKeys(resourceKeys, user, isAdmin)
+				let start = Date.now();
+				return this.getPermissionsForResourceKeys(resourceKeys, user)
 					.then((permissions) => {
 						payload = {
 							...payload,
@@ -521,25 +550,41 @@ class PgCollection {
 								};
 							})
 						};
-
-						return [payload, availableKeys, isAdmin];
-					});
-			})
-			.then(([payload, availableKeys, isAdmin]) => {
-				if (!availableKeys) {	// todo if user is admin, there are no availableKeys, but next method which return changes need object with some keys atleast, i have to rewrite this to something meaningful
-					availableKeys = {
-						[this._tableName]: [],
-						[this._collectionName]: []
-					}
-				}
-				return this._pgMetadataChanges.getChangesForAvailableResources(availableKeys, isAdmin)
-					.then((changes) => {
-						payload.change = _.sortBy(_.flatten(_.map(changes, (changesByResourceType) => {
-							return changesByResourceType;
-						})), ['data.changed']).pop();
-						payload.change = payload.change ? payload.change.data.changed : null;
 						return payload;
 					});
+			})
+			.then((payload) => {
+				return this.getLatestChangeForUser(user)
+					.then((change) => {
+						payload.change = change;
+						return payload;
+					})
+			})
+	}
+
+	getLatestChangeForUser(user) {
+		let userId = user.id;
+		let groupIds = _.map(user.groups, `id`);
+
+		let query = [
+			`SELECT "changed" FROM "${config.pgSchema.data}"."metadata_changes"`,
+			`WHERE "resource_key" IN (`,
+			`SELECT DISTINCT "resource_id" FROM ${config.pgSchema.data}."permissions"`,
+			`WHERE "resource_type" = '${this._tableName}'`,
+			`AND user_id = ${userId}`,
+			`AND permission = '${Permission.READ}'`,
+			`UNION`,
+			`SELECT DISTINCT "resource_id"`,
+			`FROM "${config.pgSchema.data}"."group_permissions"`,
+			`WHERE "resource_type" = '${this._tableName}'`,
+			`AND "group_id" in (${groupIds.join(`, `)})`,
+			`AND "permission" = '${Permission.READ}')`,
+			`ORDER BY "changed" DESC LIMIT 1`
+		];
+
+		return this._pgPool.query(query.join(` `))
+			.then((queryResult) => {
+				return queryResult.rows[0] && queryResult.rows[0].changed;
 			})
 	}
 
@@ -665,8 +710,7 @@ class PgCollection {
 			});
 	}
 
-	getResourceIdsForUserAndPermissionType(user, permissionType) {
-		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
+	getResourceIdsForUserAndPermissionType(user, permissionType, isAdmin) {
 		let resourceTypesCondition = _.map(this._permissionResourceTypes, (resourceType) => {
 			return `resource_type = '${resourceType}'`
 		}).join(` OR `);
@@ -1098,6 +1142,7 @@ class PgCollection {
 		delete data.id;
 		delete data.uuid;
 		delete data.total;
+		delete data.created;
 
 		return {
 			key: row.key,
@@ -1105,12 +1150,12 @@ class PgCollection {
 		}
 	}
 
-	getSql(request, user, extra, availableKeys, isAdmin) {
+	getSql(request, user, extra, isAdmin, limit, offset) {
 		let sql = [];
 
 		if (extra.idOnly) {
 			sql.push(
-				`SELECT "${this._tableName}"."key"`
+				`SELECT "${this._tableName}"."key", MAX("mc"."changed") AS created, COUNT(*) OVER() AS total`
 			);
 		} else {
 			let columns = [
@@ -1139,7 +1184,7 @@ class PgCollection {
 			let columnsString = columns.join(`, `);
 
 			sql.push(
-				`SELECT ${columnsString}${this._customSqlColumns}`
+				`SELECT ${columnsString}${this._customSqlColumns}, MAX("mc"."changed") AS created, COUNT(*) OVER() AS total`
 			)
 		}
 
@@ -1148,7 +1193,7 @@ class PgCollection {
 		);
 
 		sql.push(
-			`LEFT JOIN (SELECT resource_key, max(changed) as changed FROM "data"."metadata_changes" WHERE action = 'create' GROUP BY resource_key) AS mc ON mc."resource_key" = "${this._tableName}"."key"::TEXT`
+			`LEFT JOIN "${config.pgSchema.data}"."metadata_changes" AS mc ON "mc"."resource_key" = "${this._tableName}"."key"::TEXT`
 		);
 
 		if (this._dataSources && this._relatedColumns) {
@@ -1159,55 +1204,6 @@ class PgCollection {
 					)
 				}
 			});
-		}
-
-		let dummyUuid = `c0724606-f2f3-45bd-964b-2ba69cff26cb`;		// this uuid should never exists in database
-		if (!isAdmin) {
-			let keys = [];
-			_.each(this._permissionResourceTypes, (permissionResourceType) => {
-				if (availableKeys.hasOwnProperty(permissionResourceType)) {
-					keys.push(availableKeys[permissionResourceType]);
-				}
-			});
-			keys = _.union(_.compact(_.flatten(keys)));
-
-			if (!keys.length) {
-				keys.push(dummyUuid);
-			}
-
-			if (request.filter && request.filter.hasOwnProperty('key') && this._checkPermissions) {
-				if (_.isObject(request.filter.key)) {
-					if (request.filter.key.hasOwnProperty('in') && this._checkPermissions) {
-						request.filter.key.in = _.compact(_.map(request.filter.key.in, (key) => {
-							return keys.includes(key) && key;
-						}));
-					} else if (this._checkPermissions) {
-						request.filter.key.in = keys;
-					}
-				} else {
-					if (this._checkPermissions && !keys.includes(request.filter.key)) {
-						request.filter.key = dummyUuid;
-					}
-				}
-			} else if (this._checkPermissions) {
-				if (!request.filter) {
-					request.filter = {};
-				}
-
-				request.filter.key = {
-					in: keys
-				}
-			}
-		}
-
-		if (
-			request.hasOwnProperty(`filter`)
-			&& request.filter.hasOwnProperty(`key`)
-			&& _.isObject(request.filter.key)
-			&& request.filter.key.hasOwnProperty(`in`)
-			&& !request.filter.key.in.length
-		) {
-			request.filter.key.in.push(dummyUuid);
 		}
 
 		// todo whole where generation logic should be revised in near future
@@ -1223,7 +1219,7 @@ class PgCollection {
 				});
 			}
 
-			if(!tableNamePrefixs.length) {
+			if (!tableNamePrefixs.length) {
 				tableNamePrefixs.push(this._tableName);
 			}
 
@@ -1301,8 +1297,24 @@ class PgCollection {
 			}
 		});
 
+		where.push(`"mc"."action" = 'create'`);
+
+		if(this._checkPermissions) {
+			where.push(`"${this._tableName}"."key"::TEXT IN (SELECT resource_id FROM "${config.pgSchema.data}"."permissions" WHERE user_id = ${user.id} AND permission = '${Permission.READ}' AND resource_type = '${this._tableName}' UNION SELECT resource_id FROM "${config.pgSchema.data}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND permission = '${Permission.READ}' AND resource_type = '${this._tableName}')`);
+		}
+
 		if (where.length) {
 			sql.push(`WHERE ${where.join(' AND ')}`);
+		}
+
+		sql.push(`GROUP BY "${this._tableName}"."key"`);
+
+		if (this._dataSources) {
+			_.each(this._dataSources, (dataSource) => {
+				_.each(dataSource.getRelevantColumns(), (relevantColumn) => {
+					sql.push(`, "${dataSource.getTableName()}"."${relevantColumn}"`);
+				});
+			});
 		}
 
 		if (request.order) {
@@ -1313,29 +1325,54 @@ class PgCollection {
 				sql.push(`"${key}" ${direction}`);
 			});
 		} else {
-			sql.push(`ORDER BY "mc"."changed"`);
+			sql.push(`ORDER BY created`);
+		}
+
+		if (limit) {
+			sql.push(`LIMIT ${limit}`);
+		}
+
+		if (offset) {
+			sql.push(`OFFSET ${offset}`);
 		}
 
 		return sql.join(' ');
 	}
 
-	postgresGet(request, user, extra, availableKeys, isAdmin) {
-		let payload = {};
+	getSchemaForTypes(types) {
+		return this._pgPool.query(`SELECT table_schema AS schema, table_name AS type FROM information_schema.tables WHERE table_name in ('${types.join(`', '`)}')`)
+			.then((queryResult) => {
+				return queryResult.rows;
+			})
+	}
 
+	getAvailableResourceKeyByResourceTypesForUser(resourceTypes, user) {
+		let userId = user.id;
+		let userGroupIds = _.map(user.groups, 'id');
+
+		return this.getSchemaForTypes(resourceTypes)
+			.then((schemaTypes) => {
+				console.log(schemaTypes);
+			});
+	}
+
+	postgresGet(request, user, extra, isAdmin) {
+		let payload = {};
 		return Promise.resolve()
 			.then(() => {
-				let selectSql, sql = this.getSql(request, user, extra, availableKeys, isAdmin);
-
+				let limit, offset;
 				if (!request.unlimited) {
 					payload.limit = _.isNumber(request.limit) && request.limit || this._limit;
 					payload.offset = _.isNumber(request.offset) && request.offset || this._offset;
 
-					selectSql = `SELECT *, count(*) OVER() AS total FROM (${sql}) AS results LIMIT ${payload.limit} OFFSET ${payload.offset};`;
-				} else {
-					selectSql = `SELECT *, count(*) OVER() AS total FROM (${sql}) AS results;`;
+					limit = payload.limit;
+					offset = payload.offset;
 				}
-
-				return this._pgPool.query(selectSql);
+				let sql = this.getSql(request, user, extra, isAdmin, limit, offset);
+				return this._pgPool.query(sql)
+					.then((queryResult) => {
+						return queryResult;
+					})
 			})
 			.then((queryResult) => {
 				payload.total = queryResult.rows.length ? Number(queryResult.rows[0].total) : 0;
@@ -1363,14 +1400,10 @@ class PgCollection {
 					let requestedKeys = _.map(rows, `key`);
 				}
 				payload.data = _.map(rows, (row) => {
-					this.mutatePostgresRowToJsFriendly(row);
 					return this.parsePostgresRow(row);
 				});
 				return payload;
 			});
-	}
-
-	mutatePostgresRowToJsFriendly(row) {
 	}
 
 	populateData(payloadData, user) {
@@ -1383,26 +1416,6 @@ class PgCollection {
 				});
 				return Promise.resolve()
 					.then(() => {
-						if (payloadDataFiltered.length) {
-							return this.get({
-								filter: {key: {in: _.map(payloadDataFiltered, 'key')}},
-								unlimited: true
-							}, user, {});
-						}
-					})
-					.then((currentModels) => {
-						payloadData[this._groupName] = _.map(payloadData[this._groupName], model => {
-							if (model.key && currentModels && currentModels.data) {
-								let currentModel = _.find(currentModels.data, {key: model.key});
-								if (currentModel) {
-									model = {
-										...currentModel
-									};
-								}
-							}
-							return model;
-						});
-
 						if (this._pgMetadataRelations) {
 							let baseKeys = _.map(payloadData[this._groupName], `key`);
 							let possibleRelationColumnNames = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();

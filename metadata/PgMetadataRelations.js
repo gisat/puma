@@ -30,14 +30,14 @@ class PgMetadataRelations {
 
 			if (relatedStoreOptions && relatedStoreOptions.allowMultipleRelations && _.isArray(value)) {
 				_.each(value, (relationKey) => {
-					if(relationKey) {
+					if (relationKey) {
 						insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
 						insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
 						insertSql.push(`VALUES ('${baseKey}', '${relationKey}');`);
 					}
 				})
 			} else if (relatedStoreOptions) {
-				if(value) {
+				if (value) {
 					insertSql.push(`INSERT INTO "${this._pgSchema}"."${this._getTableName()}"`);
 					insertSql.push(`("${this._getBaseMetadataTypeColumnName()}", "${relatedStoreOptions.relatedStoreSqlColumName}")`);
 					insertSql.push(`VALUES ('${baseKey}', '${value}');`);
@@ -162,11 +162,20 @@ class PgMetadataRelations {
 						switch (property) {
 							case `includes`:
 								if (relatedStoreOptions.allowMultipleRelations) {
-									whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${sqlVariableId++}`);
-									if (!_.isArray(value)) {
+									if(!_.isArray(value)) {
 										value = [value];
 									}
-									sqlVariableValues.push(value);
+
+									if (value.includes(null)) {
+										value = _.filter(value, (singleValue) => {
+											return !_.isNull(singleValue)
+										});
+									}
+
+									if (value.length) {
+										whereSql.push(`"subquery"."${relatedStoreOptions.relatedStoreSqlColumName}" @> $${sqlVariableId++}`);
+										sqlVariableValues.push(value);
+									}
 								} else {
 									throw new Error('Unable to use this filter type for this column');
 								}

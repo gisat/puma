@@ -31,11 +31,11 @@ class PgMetadataChanges {
 				availableResources = ` AND resource_key in ('${resourceKeys.join("', '")}')`
 			}
 
+			let query = `SELECT changed FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}'${availableResources} ORDER BY changed DESC LIMIT 1`;
+			// console.log(query);
 			promises.push(
 				this._pgPool
-					.query(
-						`SELECT * FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}'${availableResources} ORDER BY changed DESC LIMIT 1`
-					)
+					.query(query)
 					.then((result) => {
 						return result.rows;
 					})
