@@ -312,7 +312,7 @@ class FuoreImporter {
 							throw new Error(`missing description property in analytical unit metadata`);
 						}
 
-						// await this.ensureAnalyticalUnit(analyticalUnitMetadata, unzippedFs);
+						await this.ensureAnalyticalUnit(analyticalUnitMetadata, unzippedFs);
 					}
 
 					return analyticalUnits;
@@ -581,7 +581,7 @@ class FuoreImporter {
 							throw new Error(`missing description property in metadata of attribute ${attributeMetadata.name}`);
 						}
 
-						// await this.ensureAttributeData(attributeMetadata, unzippedFs);
+						await this.ensureAttributeData(attributeMetadata, unzippedFs);
 					}
 
 					return attributes;
@@ -1775,9 +1775,6 @@ class FuoreImporter {
 						}
 					);
 				}
-
-				console.log(`ToCreateOrUpdateCount`, pantherAttributeRelationsToCreateOrUpdate.length)
-				console.log(`EXAMPLE RELATION`, pantherAttributeRelationsToCreateOrUpdate[0]);
 
 				return this._pgRelationsCrud.update(
 					{
