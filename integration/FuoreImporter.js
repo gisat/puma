@@ -1207,10 +1207,10 @@ class FuoreImporter {
 						return pantherTagObject.data.nameInternal === pantherTagInternalName;
 					});
 
-					let key = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
+					let categoryKey = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
 					if (!preparedForUpdateOrCreate) {
 						fuoreTagsToCreateOrUpdate.push({
-							key,
+							key: categoryKey,
 							data: {
 								nameInternal: pantherTagInternalName,
 								nameDisplay: attribute.category,
@@ -1229,15 +1229,15 @@ class FuoreImporter {
 						return pantherTagObject.data.nameInternal === pantherTagInternalName;
 					});
 
-					key = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
+					let subCategoryKey = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
 					if (!preparedForUpdateOrCreate) {
 						fuoreTagsToCreateOrUpdate.push({
-							key,
+							key: subCategoryKey,
 							data: {
 								nameInternal: pantherTagInternalName,
 								nameDisplay: attribute.sub_category,
 								applicationKey: esponFuoreApplicationKey,
-								tagKeys: [pantherData.fuoreSubCategoryTag.key],
+								tagKeys: [pantherData.fuoreSubCategoryTag.key, categoryKey],
 								scopeKey: analyticalUnit.uuid
 							}
 						})
