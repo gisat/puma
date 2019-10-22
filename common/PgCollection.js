@@ -538,7 +538,6 @@ class PgCollection {
 			})
 			.then((payload) => {
 				let resourceKeys = _.map(payload.data, 'key');
-				let start = Date.now();
 				return this.getPermissionsForResourceKeys(resourceKeys, user)
 					.then((permissions) => {
 						payload = {
@@ -558,7 +557,7 @@ class PgCollection {
 					.then((change) => {
 						payload.change = change;
 						return payload;
-					})
+					});
 			})
 	}
 
@@ -1299,7 +1298,7 @@ class PgCollection {
 
 		where.push(`"mc"."action" = 'create'`);
 
-		if(this._checkPermissions) {
+		if (this._checkPermissions) {
 			where.push(`"${this._tableName}"."key"::TEXT IN (SELECT resource_id FROM "${config.pgSchema.data}"."permissions" WHERE user_id = ${user.id} AND permission = '${Permission.READ}' AND resource_type = '${this._tableName}' UNION SELECT resource_id FROM "${config.pgSchema.data}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND permission = '${Permission.READ}' AND resource_type = '${this._tableName}')`);
 		}
 

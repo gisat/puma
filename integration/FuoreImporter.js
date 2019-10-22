@@ -1963,10 +1963,13 @@ class FuoreImporter {
 						`DELETE FROM views.view`,
 						`DELETE FROM specific."esponFuoreIndicator"`,
 						`DELETE FROM "dataSources"."dataSource"`,
+						`DELETE FROM "dataSources"."vector"`,
 						`DELETE FROM "dataSources"."attributeDataSource"`,
 						`DELETE FROM application."layerTree"`,
 						`DELETE FROM relations."attributeDataSourceRelation"`,
 						`DELETE FROM relations."spatialDataSourceRelation"`,
+						`DELETE FROM data.permissions`,
+						`DELETE FROM data.group_permissions`,
 					`COMMIT`
 				];
 				return this._pgPool.query(queries.join(`; `));

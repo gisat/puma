@@ -99,18 +99,18 @@ class PgUsers {
         return new PgGroups(this.pgPool, this.schema).forUser(id).then(pGroups => {
             groups = pGroups;
             return Promise.all(groups.map(group => {
-                return this.permissions.forGroup(group.id).then(permissions => {
-                    group.permissions = permissions;
-                });
+                // return this.permissions.forGroup(group.id).then(permissions => {
+                //     group.permissions = permissions;
+                // });
             }));
         }).then(() => {
-            return this.permissions.forGroup(Group.guestId())
+            // return this.permissions.forGroup(Group.guestId())
         }).then((guestPermissions) => {
             groups.push(new Group(Group.guestId(), guestPermissions, "guest"));
-            return this.permissions.forGroup(Group.userId())
+            // return this.permissions.forGroup(Group.userId())
         }).then((guestPermissions) => {
             groups.push(new Group(Group.userId(), guestPermissions, "user"));
-            return this.permissions.forUser(id);
+            // return this.permissions.forUser(id);
         }).then(permissions => {
             return new User(id, permissions, groups);
         }).then(pUser => {

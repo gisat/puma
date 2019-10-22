@@ -5,7 +5,7 @@ class PgController {
 
 		this._crud = null;
 
-		if(group === `user`) {
+		if (group === `user`) {
 			app.get(`/rest/${group}/current`, this.getCurrent.bind(this));
 		}
 
@@ -52,10 +52,10 @@ class PgController {
 	}
 
 	get(request, response) {
-		this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
+		return this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
 			.then((payload) => {
 				payload.success = true;
-				response.status(200).json(payload)
+				response.status(200).json(payload);
 			})
 			.catch((error) => {
 				console.log(error);
