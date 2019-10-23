@@ -12,7 +12,7 @@ var AttributeSetController = require('./AttributeSetController');
 var DataSetController = require('./DataSetController');
 var DataViewController = require('./DataViewController');
 var CustomFeaturesController = require('./CustomFeaturesController');
-var ExportController = require('./ExportController');
+// var ExportController = require('./ExportController');
 var LayerGroupController = require('./LayerGroupController');
 var LayerRefController = require('./LayerRefController');
 var LocationController = require('./LocationController');
@@ -69,6 +69,8 @@ const PgDataSourcesController = require(`../dataSources/PgDataSourcesController`
 
 const PgViewsController = require(`../view/PgViewsController`);
 
+const ExportController = require(`../export/ExportController`);
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -106,11 +108,11 @@ module.exports = function(app) {
 	new AnalysisController(app, pool);
 	new AnalyticalUnitsController(app, pool, mongo);
 	new AreaTemplateController(app, pool);
-	if(poolRemote) {
-		new ExportController(app, poolRemote, viewsSchema);
-	} else {
-		new ExportController(app, pool, viewsSchema);
-	}
+	// if(poolRemote) {
+	// 	new ExportController(app, poolRemote, viewsSchema);
+	// } else {
+	// 	new ExportController(app, pool, viewsSchema);
+	// }
 	new AttributeController(app, pool, poolRemote, mongo, viewsSchema);
 	new LayerGeonodeController(app, pool);
 	new LayerWmsController(app, pool, mongo);
@@ -167,6 +169,8 @@ module.exports = function(app) {
 	new PucsMatlabProcessorController(app, pool, config.postgreSqlSchema, mongo);
 
 	new GeoserverProxyController(app, pool, config.postgreSqlSchema, mongo);
+
+	new ExportController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
