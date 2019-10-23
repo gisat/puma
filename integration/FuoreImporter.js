@@ -1198,21 +1198,21 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR03`);
 					}
 
-					let pantherTagInternalName = `fuore-category-${attribute.category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let pantherCategoryTagInternalName = `fuore-category-${attribute.category}-au_${analyticalUnit.uuid}-do-not-edit`;
 
-					let preparedForUpdateOrCreate = !!(_.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
-						return preparedPantherTag.data.nameInternal === pantherTagInternalName
-					}));
-					let existingPantherTagObject = _.find(existingPantherTags, (pantherTagObject) => {
-						return pantherTagObject.data.nameInternal === pantherTagInternalName;
+					let preparedCategoryTagForUpdateOrCreate = _.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
+						return preparedPantherTag.data.nameInternal === pantherCategoryTagInternalName;
+					});
+					let existingPantherCategoryTagObject = _.find(existingPantherTags, (pantherTagObject) => {
+						return pantherTagObject.data.nameInternal === pantherCategoryTagInternalName;
 					});
 
-					let categoryKey = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
-					if (!preparedForUpdateOrCreate) {
+					let categoryKey = (preparedCategoryTagForUpdateOrCreate && preparedCategoryTagForUpdateOrCreate.key) || (existingPantherCategoryTagObject && existingPantherCategoryTagObject.key || uuidv4());
+					if (!preparedCategoryTagForUpdateOrCreate) {
 						fuoreTagsToCreateOrUpdate.push({
 							key: categoryKey,
 							data: {
-								nameInternal: pantherTagInternalName,
+								nameInternal: pantherCategoryTagInternalName,
 								nameDisplay: attribute.category,
 								applicationKey: esponFuoreApplicationKey,
 								tagKeys: [pantherData.fuoreCategoryTag.key],
@@ -1221,20 +1221,19 @@ class FuoreImporter {
 						});
 					}
 
-					pantherTagInternalName = `fuore-subcategory-${attribute.sub_category}-au_${analyticalUnit.uuid}-do-not-edit`;
-					preparedForUpdateOrCreate = !!(_.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
-						return preparedPantherTag.data.nameInternal === pantherTagInternalName
+					let pantherSubCategoryTagInternalName = `fuore-subcategory-${attribute.sub_category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let isPreparedSubCategoryTagForUpdateOrCreate = !!(_.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
+						return preparedPantherTag.data.nameInternal === pantherSubCategoryTagInternalName
 					}));
-					existingPantherTagObject = _.find(existingPantherTags, (pantherTagObject) => {
-						return pantherTagObject.data.nameInternal === pantherTagInternalName;
+					let existingPantherSubCategoryTagObject = _.find(existingPantherTags, (pantherTagObject) => {
+						return pantherTagObject.data.nameInternal === pantherSubCategoryTagInternalName;
 					});
 
-					let subCategoryKey = existingPantherTagObject ? existingPantherTagObject.key : uuidv4();
-					if (!preparedForUpdateOrCreate) {
+					if (!isPreparedSubCategoryTagForUpdateOrCreate) {
 						fuoreTagsToCreateOrUpdate.push({
-							key: subCategoryKey,
+							key: existingPantherSubCategoryTagObject ? existingPantherSubCategoryTagObject.key : uuidv4(),
 							data: {
-								nameInternal: pantherTagInternalName,
+								nameInternal: pantherSubCategoryTagInternalName,
 								nameDisplay: attribute.sub_category,
 								applicationKey: esponFuoreApplicationKey,
 								tagKeys: [pantherData.fuoreSubCategoryTag.key, categoryKey],
