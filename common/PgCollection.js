@@ -123,11 +123,7 @@ class PgCollection {
 				relations = this.parseRelations(object, objects, user, extra);
 			})
 			.then(() => {
-				if (!this._legacy) {
-					return this.postgresCreateOne(object, objects, user, extra);
-				} else {
-					return this.mongoCreateOne(object, objects, user, extra);
-				}
+				return this.postgresCreateOne(object, objects, user, extra);
 			})
 			.then((createdObject) => {
 				return this.createRelated(object, createdObject, objects, user, extra)
@@ -355,11 +351,7 @@ class PgCollection {
 				relations = this.parseRelations(object, objects, user, extra);
 			})
 			.then(() => {
-				if (!this._legacy) {
-					return this.postgresUpdateOne(object, objects, user, extra);
-				} else {
-					return this.mongoUpdateOne(object, objects, user, extra);
-				}
+				return this.postgresUpdateOne(object, objects, user, extra);
 			})
 			.then((updatedObject) => {
 				return this.updateRelations(updatedObject.key, relations, object, objects, user, extra)
