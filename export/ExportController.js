@@ -65,6 +65,7 @@ class ExportController {
 		let filter = request.body.filter;
 		let features = request.body.features;
 		let user = request.session.user;
+		let snapToGrid = request.body.snapToGrid;
 
 		Promise.resolve()
 			.then(async () => {
@@ -184,11 +185,18 @@ class ExportController {
 						});
 
 						_.each(data.geometryColumns, (dataColumn) => {
+							let column = "";
 							if(tableName.includes(`au_`)) {
-								columns.push(`"au"."${dataColumn}"`)
+								column = `"au"."${dataColumn}"`;
 							} else {
-								columns.push(`"${dataColumn}"`);
+								column = `"${dataColumn}"`;
 							}
+
+							if(_.isNumber(snapToGrid)) {
+								column = `ST_SnapToGrid(${column}, ${snapToGrid})`;
+							}
+
+							columns.push(column);
 						})
 					});
 
