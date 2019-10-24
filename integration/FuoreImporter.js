@@ -574,9 +574,6 @@ class FuoreImporter {
 						if (!attributeMetadata.hasOwnProperty(`sub_category`)) {
 							throw new Error(`missing sub_category property in metadata of attribute ${attributeMetadata.name}`);
 						}
-						if (!attributeMetadata.hasOwnProperty(`color`)) {
-							throw new Error(`missing color property in metadata of attribute ${attributeMetadata.name}`);
-						}
 						if (!attributeMetadata.hasOwnProperty(`description`)) {
 							throw new Error(`missing description property in metadata of attribute ${attributeMetadata.name}`);
 						}
@@ -1094,7 +1091,7 @@ class FuoreImporter {
 							nameInternal: attributeNameInternal,
 							nameDisplay: attribute.name,
 							description: attribute.description,
-							color: attribute.color,
+							color: attribute.color || null,
 							applicationKey: esponFuoreApplicationKey,
 							unit: attribute.unit,
 							valueType: attribute.value_type
