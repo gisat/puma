@@ -200,10 +200,15 @@ class ExportController {
 						}
 					});
 
-					where.push(`"au"."objectid" IN (${features.join(`, `)})`);
+					if(features && features.length) {
+						where.push(`"au"."objectid" IN (${features.join(`, `)})`);
+					}
 
 					query.push(joins.join(` `));
-					query.push(`WHERE ${where.join(` `)}`);
+
+					if(where.length) {
+						query.push(`WHERE ${where.join(` `)}`);
+					}
 
 					let outputName = `export_output_${uuidv4()}`;
 
