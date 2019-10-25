@@ -530,7 +530,7 @@ class PgCollection {
 			})
 			.then((payload) => {
 				let resourceKeys = _.map(payload.data, 'key');
-				return this.getPermissionsForResourceKeys(resourceKeys, user)
+				return this.getPermissionsForResourceKeys(resourceKeys, user, isAdmin)
 					.then((permissions) => {
 						payload = {
 							...payload,
