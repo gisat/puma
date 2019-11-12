@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const uuidv4 = require(`uuid/v4`);
 
 const config = require(`../config`);
 
@@ -1238,6 +1239,20 @@ class PgCollection {
 				let isString = false;
 
 				switch (type) {
+					case 'timefrom':
+						where.push(
+							_.map(tableNamePrefixs, (tableNamePrefix) => {
+								return `"${tableNamePrefix}"."${column}" >= '${value}'::TIMESTAMP`
+							}).join(' OR ')
+						);
+						break;
+					case 'timeto':
+						where.push(
+							_.map(tableNamePrefixs, (tableNamePrefix) => {
+								return `"${tableNamePrefix}"."${column}" <= '${value}'::TIMESTAMP`
+							}).join(' OR ')
+						);
+						break;
 					case 'like':
 						where.push(
 							_.map(tableNamePrefixs, (tableNamePrefix) => {
