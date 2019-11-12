@@ -237,7 +237,9 @@ class PgCollection {
 			})
 			.then((created) => {
 				return {
-					...created
+					...created,
+					data: null,
+					success: true
 				};
 			});
 	}
@@ -321,7 +323,7 @@ class PgCollection {
 							return !result.success && result.message
 						});
 						let correctResults = _.filter(results, (result) => {
-							return !result.success && !result.message
+							return result.success && !result.message
 						});
 
 						let populatedCorrectResults = correctResults.length ? await this.get(
@@ -336,7 +338,16 @@ class PgCollection {
 							user,
 							extra
 						).then((getResult) => {
-							return getResult.data;
+							let payload = {
+								[this._groupName]: getResult.data
+							};
+
+							return this.populateData(
+								payload,
+								user
+							).then(() => {
+								return payload[this._groupName];
+							})
 						}) : [];
 
 						objects[this._groupName] = _.concat(populatedCorrectResults, faultyResults);
@@ -461,7 +472,9 @@ class PgCollection {
 
 				if (!sets.length) {
 					return {
-						key: object.key
+						key: object.key,
+						data: null,
+						success: true
 					}
 				}
 
@@ -501,6 +514,10 @@ class PgCollection {
 					if (Object.keys(requestedRelations).length) {
 						await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
 							.then((baseKeys) => {
+								if (!baseKeys.length) {
+									// todo this add random uuid when there are no baseKeys, there must be better way how to handle this, fow now it's neccessary to do that to return correct results
+									baseKeys.push(uuidv4());
+								}
 								if (request.filter.hasOwnProperty(`key`)) {
 									if (!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
 										request.filter.key = -1;
