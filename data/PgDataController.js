@@ -7,6 +7,7 @@ const config = require(`../config`);
 const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
 
 const FuoreImporter = require(`../integration/FuoreImporter`);
+const InsarSzdcImporter = require(`../integration/InsarSzdcImporter`);
 
 class PgDataController {
 	constructor(app, pgPool) {
@@ -15,27 +16,49 @@ class PgDataController {
 		this._pgDataSourcesCrud = new PgDataSourcesCrud(pgPool, config.pgSchema.dataSources);
 
 		this._fuoreImporter = new FuoreImporter(pgPool);
+		this._insarSzdcImporter = new InsarSzdcImporter(pgPool);
 
 		// Pg returns numeric type as a string, this is a hack to return it as a number
 		pgTypes.setTypeParser(1700, (value) => {
 			return Number(value);
 		});
 
-		this._fuoreImportStatus = {};
+		this._importStatus = {};
 
 		app.post(`/rest/data/filtered/spatial`, this.getSpatialData.bind(this));
 		app.post(`/rest/data/filtered/attribute`, this.getAttributeData.bind(this));
 		app.post(`/rest/statistic/filtered/attribute`, this.getAttributeDataStatistic.bind(this));
 
 		app.post(`/rest/data/import/fuore`, this.importFuoreData.bind(this));
+		app.post(`/rest/data/import/insar-szdc`, this.importInsarSzdcData.bind(this));
 
-		app.get(`/rest/status/import/fuore/:key`, this.importFuoreStatus.bind(this));
+		app.get(`/rest/status/import/fuore/:key`, this.getImportStatus.bind(this));
+		app.get(`/rest/status/import/insar-szdc/:key`, this.getImportStatus.bind(this));
+	}
+
+	importInsarSzdcData(request, response) {
+		let procesKey = uuidv4();
+
+		this._importStatus[procesKey] = {
+			started: new Date().toISOString(),
+			ended: null,
+			state: `running`,
+			error: null,
+			statusUrl: `/backend/rest/status/import/insar-szdc/${procesKey}`
+		};
+
+		this._insarSzdcImporter.import(request.files.file, request.session.user, this._importStatus[procesKey])
+			.then(() => {
+				this.cleanupRequestFiles(request);
+			});
+
+		response.status(200).send({status: this._importStatus[procesKey], success: true});
 	}
 
 	importFuoreData(request, response) {
 		let procesKey = uuidv4();
 
-		this._fuoreImportStatus[procesKey] = {
+		this._importStatus[procesKey] = {
 			started: new Date().toISOString(),
 			ended: null,
 			state: `running`,
@@ -43,16 +66,16 @@ class PgDataController {
 			statusUrl: `/backend/rest/status/import/fuore/${procesKey}`
 		};
 
-		this._fuoreImporter.import(request.files.file, request.session.user, this._fuoreImportStatus[procesKey])
+		this._fuoreImporter.import(request.files.file, request.session.user, this._importStatus[procesKey])
 			.then(() => {
 				this.cleanupRequestFiles(request);
 			});
 
-		response.status(200).send({status: this._fuoreImportStatus[procesKey], success: true});
+		response.status(200).send({status: this._importStatus[procesKey], success: true});
 	};
 
-	importFuoreStatus(request, response) {
-		response.status(200).send(this._fuoreImportStatus[request.params.key]);
+	getImportStatus(request, response) {
+		response.status(200).send(this._importStatus[request.params.key]);
 	}
 
 	cleanupRequestFiles(request) {
