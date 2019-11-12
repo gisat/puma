@@ -1908,9 +1908,7 @@ class FuoreImporter {
 		})
 	}
 
-	import(data,
-		   user, status
-	) {
+	import(data, user, status) {
 		let unzippedFs;
 		let analyticalUnits;
 		let attributes;

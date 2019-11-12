@@ -196,5 +196,17 @@ module.exports = {
 	},
 
 	pantherDataStoragePath: `/home/mbabic/Dokumenty/TempStorage/Panther`,
-	pantherTemporaryStoragePath: `/tmp/panther`
+	pantherTemporaryStoragePath: `/tmp/panther`,
+
+	pgSchema: {
+		analysis: `analysis`,
+		data: `data`,
+		metadata: `metadata`,
+		permissions: `permissions`,
+		views: `views`,
+		relations: `relations`,
+		dataSources: `dataSources`,
+		specific: `specific`,
+		application: `application`
+	}
 };
