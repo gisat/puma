@@ -34,6 +34,7 @@ class PgAttributeDataSourceRelations extends PgCollection {
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "attributeKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "areaTreeLevelKey" UUID;
       	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "fidColumnName" TEXT;
+      	ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "applicationKey" TEXT;
       	COMMIT;
 		`
 	}
