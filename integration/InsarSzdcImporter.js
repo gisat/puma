@@ -9,6 +9,7 @@ const config = require(`../config`);
 const PgApplicationsCrud = require(`../application/PgApplicationsCrud`);
 const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
 const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
+const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 
 const APPLICATION_KEY = "szdcInsar19";
 const BASIC_PERIOD_DAYS = [90, 180, 365, 1400];
@@ -130,6 +131,7 @@ class InsarSzdcImporter {
 		this._pgApplicationsCrud = new PgApplicationsCrud(pgPool, config.pgSchema.application);
 		this._pgMetadataCrud = new PgMetadataCrud(pgPool, config.pgSchema.metadata);
 		this._pgDataSourcesCrud = new PgDataSourcesCrud(pgPool, config.pgSchema.dataSources);
+		this._pgRelationsCrud = new PgRelationsCrud(pgPool, config.pgSchema.relations);
 	}
 
 	import(data, user, status) {
@@ -187,12 +189,18 @@ class InsarSzdcImporter {
 			})
 			.then(() => {
 				return this.ensureAreaTreeLevels(user, processData)
-					.then((areaTreeLevelss) => {
-						processData.ensureAreaTreeLevels = areaTreeLevelss;
+					.then((areaTreeLevels) => {
+						processData.areaTreeLevels = areaTreeLevels;
 					})
 			})
 			.then(() => {
 				return this.importLayersIntoPostgres(user, processData, unzippedFileSystem)
+			})
+			.then(() => {
+				return this.ensureLayerTemplates(user, processData)
+					.then((layerTemplates) => {
+						processData.layerTemplates = layerTemplates;
+					})
 			})
 			.then(() => {
 				return this.ensureSpatialDataSources(user, unzippedFileSystem)
@@ -207,11 +215,211 @@ class InsarSzdcImporter {
 					})
 			})
 			.then(() => {
+				return this.ensureAreaRelations(user, processData)
+					.then((areaRelations) => {
+						processData.areaRelations = areaRelations;
+					})
+			})
+			.then(() => {
+				return this.ensureAttributeDataSourceRelations(user, processData)
+					.then((attributeDataSourceRelations) => {
+						processData.attributeDataSourceRelations = attributeDataSourceRelations;
+					})
+			})
+			.then(() => {
 				console.log(`#### SZDC DATA IMPORT: DONE!`)
 			})
 			.catch((error) => {
 				console.log(error);
 			})
+	}
+
+	async ensureAttributeDataSourceRelations(user, processData) {
+		let existingAttributeDataSourceRelations = await this._pgRelationsCrud.get(
+			`attribute`,
+			{
+				filter: {
+					applicationKey: APPLICATION_KEY
+				}
+			},
+			user
+		).then((getResult) => {
+			return getResult.data.attribute;
+		});
+
+		let attributeDataSourceRelationsToCreateOrUpdate = [];
+
+		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+			let attributeDataSources = _.filter(processData.attributeDataSources, (attributeDataSource) => {
+				return attributeDataSource.data.tableName === layerName;
+			});
+
+			let areaTreeLevel = _.find(processData.areaTreeLevels, (areaTreeLevel) => {
+				return areaTreeLevel.data.nameInternal === layerName;
+			});
+
+			let layerTemplate = _.find(processData.layerTemplates, (layerTemplate) => {
+				return layerTemplate.data.nameInternal === layerName;
+			});
+
+			_.each(attributeDataSources, (attributeDataSource) => {
+				let attribute = _.find(processData.attributes, (attribute) => {
+					return attribute.data.nameInternal === attributeDataSource.data.columnName;
+				});
+
+				if(!attributeDataSource || !areaTreeLevel || !layerTemplate || !attribute) {
+					throw new Error(`ERR#02 - unable to create internal structures`)
+				}
+
+				let existingAttributeDataSourceRelation = _.find(existingAttributeDataSourceRelations, (existingAttributeDataSourceRelation) => {
+					return existingAttributeDataSourceRelation.data.attributeDataSourceKey === attributeDataSource.key
+						&& existingAttributeDataSourceRelation.data.layerTemplateKey === layerTemplate.key
+						&& existingAttributeDataSourceRelation.data.attributeKey === attribute.key
+						&& existingAttributeDataSourceRelation.data.areaTreeLevelKey === areaTreeLevel.key
+						&& existingAttributeDataSourceRelation.data.fidColumnName === FID_COLUMN
+						&& existingAttributeDataSourceRelation.data.applicationKey === APPLICATION_KEY
+				});
+
+				let key = existingAttributeDataSourceRelation ? existingAttributeDataSourceRelation.key : uuidv4();
+
+				attributeDataSourceRelationsToCreateOrUpdate.push(
+					{
+						key,
+						data: {
+							attributeDataSourceKey: attributeDataSource.key,
+							layerTemplateKey: layerTemplate.key,
+							attributeKey: attribute.key,
+							areaTreeLevelKey: areaTreeLevel.key,
+							fidColumnName: FID_COLUMN,
+							applicationKey: APPLICATION_KEY
+						}
+					}
+				)
+			})
+		});
+
+		return this._pgRelationsCrud.update(
+			{
+				attribute: attributeDataSourceRelationsToCreateOrUpdate
+			},
+			user,
+			{}
+		).then((data) => {
+			return data.attribute;
+		})
+	}
+
+	async ensureLayerTemplates(user, processData) {
+		let existingLayerTemplates = await this._pgMetadataCrud.get(
+			`layerTemplates`,
+			{
+				filter: {
+					applicationKey: APPLICATION_KEY,
+					nameInternal: {
+						in: _.map(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+							return layerName;
+						})
+					}
+				}
+			},
+			user
+		).then((getResult) => {
+			return getResult.data.layerTemplates;
+		});
+
+		let layerTemplatesToCreateOrUpdate = [];
+
+		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+			let existingLayerTemplate = _.find(existingLayerTemplates, (existingLayerTemplate) => {
+				return existingLayerTemplate.data.nameInternal === layerName;
+			});
+
+			let key = existingLayerTemplate ? existingLayerTemplate.key : uuidv4();
+
+			layerTemplatesToCreateOrUpdate.push(
+				{
+					key,
+					data: {
+						nameInternal: layerName,
+						applicationKey: APPLICATION_KEY
+					}
+				}
+			)
+		});
+
+		return this._pgMetadataCrud.update(
+			{
+				layerTemplates: layerTemplatesToCreateOrUpdate
+			},
+			user,
+			{}
+		).then((data) => {
+			return data.layerTemplates;
+		})
+	}
+
+	async ensureAreaRelations(user, processData) {
+		let existingAreaRelations = await this._pgRelationsCrud.get(
+			`area`,
+			{
+				filter: {
+					applicationKey: APPLICATION_KEY
+				}
+			},
+			user
+		).then((getResult) => {
+			return getResult.data.area;
+		});
+
+		let areaRelationsToCreateOrUpdate = [];
+		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+			let spatialDataSource = _.find(processData.spatialDataSources, (spatialDataSource) => {
+				return spatialDataSource.data.tableName === layerName;
+			});
+
+			let areaTree = _.find(processData.areaTrees, (areaTree) => {
+				return areaTree.data.nameInternal === layerName;
+			});
+
+			let areaTreeLevel = _.find(processData.areaTreeLevels, (areaTreeLevel) => {
+				return areaTreeLevel.data.nameInternal === layerName;
+			});
+
+			if(!spatialDataSource || !areaTree || !areaTreeLevel) {
+				throw new Error(`ERR#01 - unable to create internal structures`)
+			}
+
+			let existingAreaTreeRelation = _.find(existingAreaRelations, (existingAreaRelation) => {
+				return existingAreaRelation.data.dataSourceKey === spatialDataSource.key
+					&& existingAreaRelation.data.areaTreeKey === areaTree.key
+					&& existingAreaRelation.data.areaTreeLevelKey === areaTreeLevel.key
+			});
+
+			let key = existingAreaTreeRelation ? existingAreaTreeRelation.key : uuidv4();
+
+			areaRelationsToCreateOrUpdate.push(
+				{
+					key,
+					data: {
+						areaTreeKey: areaTree.key,
+						areaTreeLevelKey: areaTreeLevel.key,
+						fidColumn: FID_COLUMN,
+						dataSourceKey: spatialDataSource.key,
+						applicationKey: APPLICATION_KEY
+					}
+				}
+			);
+
+			return this._pgRelationsCrud.update(
+				{
+					area: areaRelationsToCreateOrUpdate
+				},
+				user,
+				{}
+			).then((data) => {
+				return data.area;
+			})
+		});
 	}
 
 	async ensureAttributeDataSources(user, processData) {
@@ -275,7 +483,7 @@ class InsarSzdcImporter {
 	}
 
 	async ensureSpatialDataSources(user, unzippedFileSystem) {
-		let spatialFileNames = _.map(unzippedFileSystem.contents(), (unzippedFile) => {
+		let layerNames = _.map(unzippedFileSystem.contents(), (unzippedFile) => {
 			return unzippedFile.replace(`.geojson`, ``);
 		});
 
@@ -285,7 +493,7 @@ class InsarSzdcImporter {
 				filter: {
 					type: `vector`,
 					tableName: {
-						in: spatialFileNames
+						in: layerNames
 					}
 				}
 			},
@@ -296,7 +504,7 @@ class InsarSzdcImporter {
 
 
 		let spatialDataSourceToCreateOrUpdate = [];
-		_.each(spatialFileNames, (spatialFileName) => {
+		_.each(layerNames, (spatialFileName) => {
 			let existingSpatialDataSource = _.find(existingSpatialDataSources, (existingSpatialDataSource) => {
 				return existingSpatialDataSource.data.tableName === spatialFileName;
 			});
