@@ -14,18 +14,75 @@ const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 const APPLICATION_KEY = "szdcInsar19";
 const BASIC_PERIOD_DAYS = [90, 180, 365, 1400];
 
-const VARIABLE_DEFINITIONS = {
-	t168: {
-		VAR: "VEL_AVG",
-		SVAR: "VEL_ACC"
+const ATTRIBUTE_ALIASES = {
+	totalDisplacement: `TD`,
+	dynamicTrend: `CL_DYN`,
+	progress: `CL_PRG`,
+	averageVelocity: `VEL_AVG`,
+	classification: `CLASS`,
+	verticalMovement: `TD_#period#_VT_FN`,
+	combinedMovement: {
+		vertical: `TD_#period#_U2`,
+		eastWest: `TD_#period#_E2`
+	}
+};
+
+const EXAMPLE_CONFIGURATION = {
+	periods: {
+		90: null,
+		180: null,
+		365: null,
+		1400: null
 	},
-	t95: {
-		VAR: "VEL_AVG",
-		SVAR: "VEL_ACC"
+	basePeriod: null,
+	trackColors: {
+		t44: `#ff565b`,
+		t95: `#00c400`,
+		t168: `#3c86ff`
 	},
-	t44: {
-		VAR: "VEL_AVG",
-		SVAR: "VEL_ACC"
+	track: {
+		areaTrees: [],
+		views: {
+			totalDisplacement: {
+				attribute: null,
+				style: {}
+			},
+			dynamicTrend: {
+				attribute: null,
+				style: {}
+			},
+			progress: {
+				attribute: null,
+				style: {}
+			},
+			averageVelocity: {
+				attribute: null,
+				style: {}
+			}
+		},
+		dAttribute: null,
+		mAttribute: null,
+		sAttribute: null,
+	},
+	zoneClassification: {
+		areaTree: "",
+		views: {
+			classification: {
+				attribute: null,
+				style: null
+			},
+			verticalMovement: {
+				attribute: null,
+				style: null
+			},
+			combinedMovement: {
+				attributes: {
+					vertical: null,
+					eastWest: null
+				},
+				style: null
+			}
+		}
 	}
 };
 
@@ -33,13 +90,15 @@ const FID_COLUMN = "ID";
 
 const ATTRIBUTE_DEFINITIONS = {
 	VEL_AVG: {
-		description: "průměrná rychlost [mm/r]"
+		description: "průměrná rychlost [mm/r]",
+		name: "Průměrná rychlost [mm/r]"
 	},
 	VEL_SD: {
 		description: "směrodatná odchylka rychlosti [mm/r], nereálná hodnota"
 	},
 	VEL_ACC: {
-		description: "směrodatná odchylka rychlosti [mm/r], reálná hodnota, vyčíslená z rozptylu rychlosti pro body mimo trať (za předpokladu všeobecné stability)"
+		description: "směrodatná odchylka rychlosti [mm/r], reálná hodnota, vyčíslená z rozptylu rychlosti pro body mimo trať (za předpokladu všeobecné stability)",
+		name: "Směrodatná odchylka rychlosti [mm/r]"
 	},
 	S0: {
 		description: "směrodatná odchylka polohy (jednoho měření) [mm]"
@@ -48,19 +107,23 @@ const ATTRIBUTE_DEFINITIONS = {
 		description: "celkový pohyb [mm] za celou dobu sledování, obecně za jinou dobu pro každý track"
 	},
 	COH: {
-		description: "koherence, 1 pro velmi kvalitní body, 0 pro body nekvalitní; body s koherencí < 0.4 byly vyloučeny"
+		description: "koherence, 1 pro velmi kvalitní body, 0 pro body nekvalitní; body s koherencí < 0.4 byly vyloučeny",
+		name: "Koherence"
 	},
 	CL_PRG: {
-		description: "trend pohybu pro daný bod za celou dobu sledování: STABILITY/UPLIFT/SUBSIDENCE/OSCILLATION"
+		description: "trend pohybu pro daný bod za celou dobu sledování: STABILITY/UPLIFT/SUBSIDENCE/OSCILLATION",
+		name: "Trend pohybu"
 	},
 	CL_DYN: {
-		description: "dynamický trend pohybu pro daný bod za celou dobu sledování: CONST_TREND/ACCELLERATION/DECCELLERATION/NO_CLASS"
+		description: "dynamický trend pohybu pro daný bod za celou dobu sledování: CONST_TREND/ACCELLERATION/DECCELLERATION/NO_CLASS",
+		name: "Dynamika trendu pohybu"
 	},
 	CL_JMP: {
 		description: "jedno- či dvouciferné číslo reprezentující jednorázové změny polohy. Jednotky udávají počet jednorázových změn (skoků) nahoru, desítky počet skoků směrem dolů. (nejde + a -?)"
 	},
 	CL_NOISE: {
-		description: "jedno- či dvouciferné číslo reprezentující změny úrovní šumu. Jednotky udávají počet zvýšení hladiny šumu, desítky počet snížení hladiny šumu. (nejde + a -?)"
+		description: "jedno- či dvouciferné číslo reprezentující změny úrovní šumu. Jednotky udávají počet zvýšení hladiny šumu, desítky počet snížení hladiny šumu. (nejde + a -?)",
+		name: "Změny úrovní šumu"
 	},
 	CL_UE: {
 		description: "Číslo reprezentující pravděpodobnost chyby z rozbalení fáze pro časový průběh daného bodu (na základě pouze časové informace), vždy >=0, vždy <=1"
@@ -86,41 +149,73 @@ const ATTRIBUTE_DEFINITIONS = {
 	DIL_C: {
 		description: "odhad dilatačního koeficientu [mm/degC] pro body s CL_TEMPC jiné než VERY WEAK"
 	},
-	TD_90: {
-		description: "celkový posun v LOS [mm] za posledních 90 dnů sledování"
+	TD: {
+		description: "celkový posun v LOS [mm] za posledních X dnů sledování",
+		name: "Posun v LOS (X dnů před Y)",
+		regex: /TD_([0-9]+)/
 	},
-	TD_180: {
-		description: "celkový posun v LOS [mm] za posledních 180 dnů sledování"
+	STD: {
+		description: "sm. odchylka [mm] celkového posunu za posledních X dnů sledování",
+		name: "Směrodatná odchylka posunu v LOS (X dnů před Y)",
+		regex: /STD_([0-9]+)/
 	},
-	TD_365: {
-		description: "celkový posun v LOS [mm] za posledních 365 dnů sledování"
-	},
-	TD_1400: {
-		description: "celkový posun v LOS [mm] za posledních 1400 dnů sledování"
-	},
-	STD_90: {
-		description: "sm. odchylka [mm] celkového posunu za posledních 90 dnů sledování"
-	},
-	STD_180: {
-		description: "sm. odchylka [mm] celkového posunu za posledních 180 dnů sledování"
-	},
-	STD_365: {
-		description: "sm. odchylka [mm] celkového posunu za posledních 365 dnů sledování"
-	},
-	STD_1400: {
-		description: "sm. odchylka [mm] celkového posunu za posledních 1400 dnů sledování"
-	},
-	d_: {
+	d: {
 		description: "hodnota polohy daného bodu [mm] pro dané datum",
-		regex: /d_[0-9]*/
+		regex: /d_([0-9]{8})/
 	},
-	m_: {
+	m: {
 		description: "modelová poloha daného bodu [mm] pro dané datum",
-		regex: /m_[0-9]*/
+		regex: /m_([0-9]{8})/
 	},
-	s_: {
+	s: {
 		description: "vyhlazená hodnota polohy daného bodu [mm] pro dané datum",
-		regex: /s_[0-9]*/
+		regex: /s_([0-9]{8})/
+	},
+	POINT_NO: {
+		description: "Počet bodů pro dekompozici (indikativní míra spolehlivosti)",
+		name: "Počet bodů pro dekompozici"
+	},
+	TRACK_NO: {
+		name: "Počet tracků pro dekompozici",
+		description: "Počet tracků pro dekompozici (indikativní míra spolehlivosti)"
+	},
+	CLASS: {
+		name: "Třída směru pohybu dle testování směrové dekompozice",
+		description: "Určení třídy směru pohybu a míry jeho spolehlivosti statistickým testováním směrové dekompozice pro blízké body z více drah"
+	},
+	CLASS_REL: {
+		name: "Míra spolehlivosti",
+		description: "Míra spolehlivosti určení typu pohybu"
+	},
+	VAR_VT_FN: {
+		name: "Vertikální posun|rychlost [mm | mm/rok] po ověření (X dnů před Y)",
+		description: "Velikost vertikálního posunu pro body, kde byl statistickým testováním ověřen vertikální směr posunu",
+		alias: "TD_#period#_VT_FN"
+	},
+	SVAR_VT_FN: {
+		name: "Směrodatná odchylka vertikálního posunu po ověření (X dnů před Y)",
+		description: "Směrodatná odchylka agregovaného vert. posunu pro body, kde byl statistickým testováním ověřen vertikální směr posunu",
+		alias: "STD_#period#_VT_FN"
+	},
+	VAR_U2: {
+		name: "Vertikální komponenta posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
+		description: "Velikost vertikální komponenta posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
+		alias: "TD_#period#_U2"
+	},
+	VAR_E2: {
+		name: "Horizontální komponenta posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
+		description: "Velikost východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
+		alias: "TD_#period#_E2"
+	},
+	SVAR_U2: {
+		name: "Směrodatná odchylka vertikální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
+		description: "Směrodatná odchylka velikosti vertikální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
+		alias: "STD_#period#_U2"
+	},
+	SVAR_E2: {
+		name: "Směrodatná odchylka horizontální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
+		description: "Směrodatná odchylka velikosti východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
+		alias: "STD_#period#_E2"
 	}
 };
 
@@ -197,12 +292,6 @@ class InsarSzdcImporter {
 				return this.importLayersIntoPostgres(user, processData, unzippedFileSystem)
 			})
 			.then(() => {
-				return this.ensureLayerTemplates(user, processData)
-					.then((layerTemplates) => {
-						processData.layerTemplates = layerTemplates;
-					})
-			})
-			.then(() => {
 				return this.ensureSpatialDataSources(user, unzippedFileSystem)
 					.then((spatialDataSources) => {
 						processData.spatialDataSources = spatialDataSources;
@@ -227,11 +316,68 @@ class InsarSzdcImporter {
 					})
 			})
 			.then(() => {
+				return this.updateConfiguration(user, processData);
+			})
+			.then(() => {
 				console.log(`#### SZDC DATA IMPORT: DONE!`)
 			})
 			.catch((error) => {
 				console.log(error);
 			})
+	}
+
+	async updateConfiguration(user, processData) {
+		let configurationData = _.cloneDeep(EXAMPLE_CONFIGURATION);
+
+		_.each(processData.basicPeriods, (basicPeriod) => {
+			configurationData.periods[basicPeriod.data.nameInternal] = basicPeriod.key;
+			if (Number(basicPeriod.data.nameInternal) === BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]) {
+				configurationData.basePeriod = basicPeriod.key;
+			}
+		});
+
+		_.each(processData.areaTreeLevels, (areaTreeLevel) => {
+			if (areaTreeLevel.data.nameInternal.startsWith(`Track`)) {
+				_.each(Object.keys(configurationData.track.views), (attributeName) => {
+					configurationData.track.views[attributeName].style[areaTreeLevel.key] = `fake-${uuidv4()}`;
+				});
+			}
+		});
+
+		_.each(processData.areaTrees, (areaTree) => {
+			if (areaTree.data.nameInternal.startsWith(`Track`)) {
+				configurationData.track.areaTrees.push(areaTree.key);
+			} else if (areaTree.data.nameInternal === `Zone classification`) {
+				configurationData.zoneClassification.areaTree = areaTree.key;
+			}
+		});
+
+		_.each(processData.attributes, (attribute) => {
+			if (attribute.data.nameInternal === "d") {
+				configurationData.track.dAttribute = attribute.key;
+			} else if (attribute.data.nameInternal === "m") {
+				configurationData.track.mAttribute = attribute.key;
+			} else if (attribute.data.nameInternal === "s") {
+				configurationData.track.sAttribute = attribute.key;
+			} else if (attribute.data.nameInternal === ATTRIBUTE_ALIASES.totalDisplacement) {
+				configurationData.track.views.totalDisplacement.attribute = attribute.key;
+			} else if (attribute.data.nameInternal === ATTRIBUTE_ALIASES.dynamicTrend) {
+				configurationData.track.views.dynamicTrend.attribute = attribute.key;
+			} else if (attribute.data.nameInternal === ATTRIBUTE_ALIASES.progress) {
+				configurationData.track.views.progress.attribute = attribute.key;
+			} else if (attribute.data.nameInternal === ATTRIBUTE_ALIASES.averageVelocity) {
+				configurationData.track.views.averageVelocity.attribute = attribute.key;
+			}
+		});
+
+		processData.configuration.data.data = configurationData;
+		return this._pgApplicationsCrud.update(
+			{
+				configurations: [processData.configuration]
+			},
+			user,
+			{}
+		)
 	}
 
 	async ensureAttributeDataSourceRelations(user, processData) {
@@ -250,34 +396,77 @@ class InsarSzdcImporter {
 		let attributeDataSourceRelationsToCreateOrUpdate = [];
 
 		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+			let [nameDisplay, nameInternal, isClass, isTrack, classPeriod, trackNo] = this.getMetadataFromLayerName(layerName);
+
 			let attributeDataSources = _.filter(processData.attributeDataSources, (attributeDataSource) => {
 				return attributeDataSource.data.tableName === layerName;
 			});
 
 			let areaTreeLevel = _.find(processData.areaTreeLevels, (areaTreeLevel) => {
-				return areaTreeLevel.data.nameInternal === layerName;
-			});
-
-			let layerTemplate = _.find(processData.layerTemplates, (layerTemplate) => {
-				return layerTemplate.data.nameInternal === layerName;
+				return areaTreeLevel.data.nameInternal === nameInternal;
 			});
 
 			_.each(attributeDataSources, (attributeDataSource) => {
-				let attribute = _.find(processData.attributes, (attribute) => {
-					return attribute.data.nameInternal === attributeDataSource.data.columnName;
+				let attributeDefinition, attributeNameInternal;
+
+				_.each(ATTRIBUTE_DEFINITIONS, (definition, attribute) => {
+					if (
+						(!definition.regex && attributeDataSource.data.columnName === attribute)
+						|| (definition.regex && attributeDataSource.data.columnName.match(definition.regex))
+					) {
+						if (definition.alias) {
+							attributeNameInternal = definition.alias.replace(`#period#`, classPeriod);
+						} else {
+							attributeNameInternal = attribute;
+						}
+						attributeDefinition = definition;
+						return false;
+					}
 				});
 
-				if(!attributeDataSource || !areaTreeLevel || !layerTemplate || !attribute) {
+				if (!attributeDefinition || !attributeNameInternal) {
+					throw new Error(`ERR#03 - unable to create internal structures`)
+				}
+
+				let attribute = _.find(processData.attributes, (attribute) => {
+					return attribute.data.nameInternal === attributeNameInternal;
+				});
+
+				let period;
+				if (!attributeDefinition.period) {
+					if (isTrack) {
+						period = _.find(processData.basicPeriods, (basicPeriod) => {
+							return basicPeriod.data.nameInternal === String(BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]);
+						})
+					} else if (isClass && BASIC_PERIOD_DAYS.includes(classPeriod)) {
+						period = _.find(processData.basicPeriods, (basicPeriod) => {
+							return basicPeriod.data.nameInternal === String(classPeriod);
+						})
+					}
+				} else {
+					let match = attributeDataSource.data.columnName.match(attributeDefinition.regexp);
+					if (isTrack) {
+						period = _.find(processData.attributePeriods, (attributePeriod) => {
+							return attributePeriod.data.nameDisplay === match[1];
+						})
+					} else if (isClass && BASIC_PERIOD_DAYS.includes(classPeriod)) {
+						period = _.find(processData.basicPeriods, (basicPeriod) => {
+							return basicPeriod.data.nameInternal === match.groups.period;
+						})
+					}
+				}
+
+				if (!attributeDataSource || !areaTreeLevel || !attribute || !period) {
 					throw new Error(`ERR#02 - unable to create internal structures`)
 				}
 
 				let existingAttributeDataSourceRelation = _.find(existingAttributeDataSourceRelations, (existingAttributeDataSourceRelation) => {
 					return existingAttributeDataSourceRelation.data.attributeDataSourceKey === attributeDataSource.key
-						&& existingAttributeDataSourceRelation.data.layerTemplateKey === layerTemplate.key
 						&& existingAttributeDataSourceRelation.data.attributeKey === attribute.key
 						&& existingAttributeDataSourceRelation.data.areaTreeLevelKey === areaTreeLevel.key
 						&& existingAttributeDataSourceRelation.data.fidColumnName === FID_COLUMN
 						&& existingAttributeDataSourceRelation.data.applicationKey === APPLICATION_KEY
+						&& existingAttributeDataSourceRelation.data.periodKey === period.key
 				});
 
 				let key = existingAttributeDataSourceRelation ? existingAttributeDataSourceRelation.key : uuidv4();
@@ -287,11 +476,11 @@ class InsarSzdcImporter {
 						key,
 						data: {
 							attributeDataSourceKey: attributeDataSource.key,
-							layerTemplateKey: layerTemplate.key,
 							attributeKey: attribute.key,
 							areaTreeLevelKey: areaTreeLevel.key,
 							fidColumnName: FID_COLUMN,
-							applicationKey: APPLICATION_KEY
+							applicationKey: APPLICATION_KEY,
+							periodKey: period.key
 						}
 					}
 				)
@@ -306,55 +495,6 @@ class InsarSzdcImporter {
 			{}
 		).then((data) => {
 			return data.attribute;
-		})
-	}
-
-	async ensureLayerTemplates(user, processData) {
-		let existingLayerTemplates = await this._pgMetadataCrud.get(
-			`layerTemplates`,
-			{
-				filter: {
-					applicationKey: APPLICATION_KEY,
-					nameInternal: {
-						in: _.map(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
-							return layerName;
-						})
-					}
-				}
-			},
-			user
-		).then((getResult) => {
-			return getResult.data.layerTemplates;
-		});
-
-		let layerTemplatesToCreateOrUpdate = [];
-
-		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
-			let existingLayerTemplate = _.find(existingLayerTemplates, (existingLayerTemplate) => {
-				return existingLayerTemplate.data.nameInternal === layerName;
-			});
-
-			let key = existingLayerTemplate ? existingLayerTemplate.key : uuidv4();
-
-			layerTemplatesToCreateOrUpdate.push(
-				{
-					key,
-					data: {
-						nameInternal: layerName,
-						applicationKey: APPLICATION_KEY
-					}
-				}
-			)
-		});
-
-		return this._pgMetadataCrud.update(
-			{
-				layerTemplates: layerTemplatesToCreateOrUpdate
-			},
-			user,
-			{}
-		).then((data) => {
-			return data.layerTemplates;
 		})
 	}
 
@@ -373,19 +513,21 @@ class InsarSzdcImporter {
 
 		let areaRelationsToCreateOrUpdate = [];
 		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+			let [nameDisplay, nameInternal] = this.getMetadataFromLayerName(layerName);
+
 			let spatialDataSource = _.find(processData.spatialDataSources, (spatialDataSource) => {
 				return spatialDataSource.data.tableName === layerName;
 			});
 
 			let areaTree = _.find(processData.areaTrees, (areaTree) => {
-				return areaTree.data.nameInternal === layerName;
+				return areaTree.data.nameInternal === nameInternal;
 			});
 
 			let areaTreeLevel = _.find(processData.areaTreeLevels, (areaTreeLevel) => {
-				return areaTreeLevel.data.nameInternal === layerName;
+				return areaTreeLevel.data.nameInternal === nameInternal;
 			});
 
-			if(!spatialDataSource || !areaTree || !areaTreeLevel) {
+			if (!spatialDataSource || !areaTree || !areaTreeLevel) {
 				throw new Error(`ERR#01 - unable to create internal structures`)
 			}
 
@@ -396,7 +538,6 @@ class InsarSzdcImporter {
 			});
 
 			let key = existingAreaTreeRelation ? existingAreaTreeRelation.key : uuidv4();
-
 			areaRelationsToCreateOrUpdate.push(
 				{
 					key,
@@ -434,25 +575,30 @@ class InsarSzdcImporter {
 					tableName: {
 						in: tableNames
 					}
-				}
+				},
+				limit: 999999
 			},
 			user
 		).then((getResult) => {
 			return getResult.data.attribute;
 		});
 
+
 		let attributeDataSourcesToCreateOrUpdate = [];
 		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
 			_.each(columns, (column) => {
 				_.each(ATTRIBUTE_DEFINITIONS, (definition, attribute) => {
-					if((!definition.regex && column === attribute) || (definition.regex && column.match(definition.regex))) {
+					if (
+						(!definition.regex && column === attribute)
+						|| (definition.regex && column.match(definition.regex))
+					) {
 						let existingPreparedAttributeDataSource = _.find(attributeDataSourcesToCreateOrUpdate, (existingPreparedAttributeDataSource) => {
-							return existingPreparedAttributeDataSource.data.tableName === layerName && existingPreparedAttributeDataSource.data.columnName === attribute;
+							return existingPreparedAttributeDataSource.data.tableName === layerName && existingPreparedAttributeDataSource.data.columnName === column;
 						});
 
-						if(!existingPreparedAttributeDataSource) {
+						if (!existingPreparedAttributeDataSource) {
 							let existingAttributeDataSource = _.find(existingAttributeDataSources, (existingAttributeDataSource) => {
-								return existingAttributeDataSource.data.tableName === layerName && existingAttributeDataSource.data.columnName === attribute;
+								return existingAttributeDataSource.data.tableName === layerName && existingAttributeDataSource.data.columnName === column;
 							});
 
 							let key = existingAttributeDataSource ? existingAttributeDataSource.key : uuidv4();
@@ -461,7 +607,7 @@ class InsarSzdcImporter {
 									key,
 									data: {
 										tableName: layerName,
-										columnName: attribute
+										columnName: column
 									}
 								}
 							)
@@ -534,7 +680,7 @@ class InsarSzdcImporter {
 	}
 
 	async importLayersIntoPostgres(user, processData, unzippedFileSystem) {
-		for(let zippedFile of unzippedFileSystem.contents()) {
+		for (let zippedFile of unzippedFileSystem.contents()) {
 			let layerName = zippedFile.replace(`.geojson`, ``);
 
 			let temporaryPath = `/tmp/${zippedFile}`;
@@ -542,7 +688,7 @@ class InsarSzdcImporter {
 			fse.writeJsonSync(temporaryPath, JSON.parse(unzippedFileSystem.read(zippedFile, `buffer`)));
 			child_process.execSync(`ogr2ogr -f "PostgreSQL" PG:"host=localhost dbname=geonode_data user=geonode password=geonode" -lco LAUNDER=NO -lco GEOMETRY_NAME=the_geom -nln "${layerName}" -overwrite "${temporaryPath}"`);
 
-			if(temporaryPath) {
+			if (temporaryPath) {
 				fse.removeSync(temporaryPath);
 			}
 		}
@@ -564,12 +710,14 @@ class InsarSzdcImporter {
 		let areaTreeLevelsToCreateOrUpdate = [];
 
 		Object.keys(processData.analyzeResults.columnsPerLayer).forEach((layerName) => {
+			let [nameDisplay, nameInternal] = this.getMetadataFromLayerName(layerName);
+
 			let existingAreaTreeLevel = _.find(existingAreaTreeLevels, (existingAreaTreeLevel) => {
-				return existingAreaTreeLevel.data.nameInternal === layerName;
+				return existingAreaTreeLevel.data.nameInternal === nameInternal;
 			});
 
 			let existingAreaTree = _.find(processData.areaTrees, (existinAreaTree) => {
-				return existinAreaTree.data.nameInternal === layerName;
+				return existinAreaTree.data.nameInternal === nameInternal;
 			});
 
 			let key = existingAreaTreeLevel ? existingAreaTreeLevel.key : uuidv4();
@@ -578,7 +726,7 @@ class InsarSzdcImporter {
 				{
 					key,
 					data: {
-						nameInternal: layerName,
+						nameInternal: nameInternal,
 						applicationKey: APPLICATION_KEY,
 						areaTreeKey: existingAreaTree.key,
 						level: 1
@@ -598,6 +746,23 @@ class InsarSzdcImporter {
 		})
 	}
 
+	getMetadataFromLayerName(layerName) {
+		let nameDisplay, nameInternal;
+
+		let classMatch = layerName.match(/td([0-9]+)/);
+		let trackMatch = layerName.match(/t([0-9]+)/);
+
+		if (classMatch) {
+			nameDisplay = `Zone classification - ${classMatch[1]} days`;
+			nameInternal = `Zone classification`;
+		} else if (trackMatch) {
+			nameDisplay = `Track ${trackMatch[1]}`;
+			nameInternal = nameDisplay;
+		}
+
+		return [nameDisplay, nameInternal, !!(classMatch), !!(trackMatch), Number(classMatch && classMatch[1]), Number(trackMatch && trackMatch[1])];
+	}
+
 	async ensureAreaTrees(user, processData) {
 		let existingAreaTrees = await this._pgMetadataCrud.get(
 			`areaTrees`,
@@ -612,23 +777,34 @@ class InsarSzdcImporter {
 		});
 
 		let areaTreesToCreateOrUpdate = [];
-
 		Object.keys(processData.analyzeResults.columnsPerLayer).forEach((layerName) => {
-			let existingAreaTree = _.find(existingAreaTrees, (existingAreaTree) => {
-				return existingAreaTree.data.nameInternal === layerName;
-			});
+			let [nameDisplay, nameInternal] = this.getMetadataFromLayerName(layerName);
 
-			let key = existingAreaTree ? existingAreaTree.key : uuidv4();
+			if (nameDisplay) {
+				let preparedAreaTree = _.find(areaTreesToCreateOrUpdate, (preparedAreaTree) => {
+					return preparedAreaTree.data.nameInternal === nameInternal
+						&& preparedAreaTree.data.applicationKey === APPLICATION_KEY;
+				});
 
-			areaTreesToCreateOrUpdate.push(
-				{
-					key,
-					data: {
-						nameInternal: layerName,
-						applicationKey: APPLICATION_KEY
-					}
+				if (!preparedAreaTree) {
+					let existingAreaTree = _.find(existingAreaTrees, (existingAreaTree) => {
+						return existingAreaTree.data.nameInternal === nameInternal;
+					});
+
+					let key = existingAreaTree ? existingAreaTree.key : uuidv4();
+
+					areaTreesToCreateOrUpdate.push(
+						{
+							key,
+							data: {
+								nameDisplay,
+								nameInternal,
+								applicationKey: APPLICATION_KEY
+							}
+						}
+					);
 				}
-			);
+			}
 		});
 
 		return this._pgMetadataCrud.update(
@@ -656,11 +832,6 @@ class InsarSzdcImporter {
 				} catch (e) {
 					throw new Error(`Unable to parse ${zippedFile}`);
 				}
-
-				// let trackIdent = zippedFile.split(`_`)[1];
-				// if(!trackIdent.match(/t[0-9]*/)) {
-				// 	throw new Error(`no track file`);
-				// }
 
 				let layerName = zippedFile.replace(`.geojson`, ``);
 
@@ -722,6 +893,7 @@ class InsarSzdcImporter {
 					key,
 					data: {
 						nameDisplay: `${days} days`,
+						nameInternal: days,
 						period: `${startDateString}/${endDateString}`,
 						start: startDateString,
 						end: endDateString,
@@ -793,6 +965,30 @@ class InsarSzdcImporter {
 		})
 	}
 
+	prepareAttribute(attributesToCreateOrUpdate, existingAttributes, attributeNameInternal, attributeDefinition) {
+		let existingAttribute = _.find(existingAttributes, (existingAttribute) => {
+			return existingAttribute.data.nameInternal === attributeNameInternal;
+		});
+
+		let key = existingAttribute ? existingAttribute.key : uuidv4();
+
+		attributesToCreateOrUpdate.push(
+			{
+				key,
+				data: {
+					nameInternal: attributeNameInternal,
+					nameDisplay: attributeDefinition.name || null,
+					description: attributeDefinition.description || null,
+					type: attributeDefinition.type || null,
+					unit: attributeDefinition.unit || null,
+					valueType: attributeDefinition.valueType || null,
+					color: attributeDefinition.color || null,
+					applicationKey: APPLICATION_KEY
+				}
+			}
+		)
+	}
+
 	async ensureAttributes(user, processData) {
 		let existingAttributes = await this._pgMetadataCrud.get(
 			`attributes`,
@@ -811,27 +1007,17 @@ class InsarSzdcImporter {
 
 		let attributesToCreateOrUpdate = [];
 		_.each(ATTRIBUTE_DEFINITIONS, (attributeDefinition, attributeNameInternal) => {
-			let existingAttribute = _.find(existingAttributes, (existingAttribute) => {
-				return existingAttribute.data.nameInternal === attributeNameInternal;
-			});
-
-			let key = existingAttribute ? existingAttribute.key : uuidv4();
-
-			attributesToCreateOrUpdate.push(
-				{
-					key,
-					data: {
-						nameInternal: attributeNameInternal,
-						nameDisplay: attributeDefinition.name || null,
-						description: attributeDefinition.description || null,
-						type: attributeDefinition.type || null,
-						unit: attributeDefinition.unit || null,
-						valueType: attributeDefinition.valueType || null,
-						color: attributeDefinition.color || null,
-						applicationKey: APPLICATION_KEY
+			if (attributeDefinition.alias) {
+				_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+					let [nameDisplay, nameInternal, isClass, isTrack, classPeriod, trackNo] = this.getMetadataFromLayerName(layerName);
+					if (columns.includes(attributeNameInternal) && isClass) {
+						let attributeNameInternal = attributeDefinition.alias.replace(`#period#`, classPeriod);
+						this.prepareAttribute(attributesToCreateOrUpdate, existingAttributes, attributeNameInternal, attributeDefinition);
 					}
-				}
-			)
+				})
+			} else {
+				this.prepareAttribute(attributesToCreateOrUpdate, existingAttributes, attributeNameInternal, attributeDefinition);
+			}
 		});
 
 		return this._pgMetadataCrud.update(
