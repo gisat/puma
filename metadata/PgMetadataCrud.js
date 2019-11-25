@@ -16,6 +16,7 @@ const PgLayerTemplates = require('./PgLayerTemplates');
 const PgAreaTrees = require('./PgAreaTrees');
 const PgAreaTreeLevels = require('./PgAreaTreeLevels');
 const PgTags = require('./PgTags');
+const PgStyles = require('./PgStyles');
 
 const PgApplications = require(`../application/PgApplications`);
 
@@ -50,6 +51,7 @@ class PgMetadataCrud extends PgCrud {
 		this._pgAreaTrees = new PgAreaTrees(pgPool, pgSchema);
 		this._pgAreaTreeLevels = new PgAreaTreeLevels(pgPool, pgSchema);
 		this._pgTags = new PgTags(pgPool, pgSchema);
+		this._pgStyles = new PgStyles(pgPool, pgSchema);
 
 		this._pgApplications = new PgApplications(pgPool, config.pgSchema.application);
 
@@ -64,6 +66,7 @@ class PgMetadataCrud extends PgCrud {
 		this._pgScenarios.setRelatedStores([this._pgApplications, this._pgTags]);
 		this._pgCases.setRelatedStores([this._pgApplications, this._pgTags]);
 		this._pgTags.setRelatedStores([this._pgApplications, this._pgScopes, this._pgTags]);
+		this._pgStyles.setRelatedStores([this._pgApplications, this._pgTags]);
 
 		this._pgAreaTrees.setRelatedStores([this._pgScopes, this._pgApplications, this._pgTags]);
 		this._pgAreaTreeLevels.setRelatedStores([this._pgAreaTrees, this._pgApplications, this._pgTags]);
@@ -120,6 +123,10 @@ class PgMetadataCrud extends PgCrud {
 			[PgTags.groupName()]: {
 				store: this._pgTags,
 				type: PgTags.tableName()
+			},
+			[PgStyles.groupName()]: {
+				store: this._pgStyles,
+				type: PgStyles.tableName()
 			},
 			// scenarios: {
 			// 	store: this._pgScenarios,
