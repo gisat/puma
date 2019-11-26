@@ -20,10 +20,10 @@ const ATTRIBUTE_ALIASES = {
 	progress: `CL_PRG`,
 	averageVelocity: `VEL_AVG`,
 	classification: `CLASS`,
-	verticalMovement: `TD_#period#_VT_FN`,
+	verticalMovement: `TD_VT_FN`,
 	combinedMovement: {
-		vertical: `TD_#period#_U2`,
-		eastWest: `TD_#period#_E2`
+		vertical: `TD_U2`,
+		eastWest: `TD_E2`
 	}
 };
 
@@ -190,32 +190,32 @@ const ATTRIBUTE_DEFINITIONS = {
 	VAR_VT_FN: {
 		name: "Vertikální posun|rychlost [mm | mm/rok] po ověření (X dnů před Y)",
 		description: "Velikost vertikálního posunu pro body, kde byl statistickým testováním ověřen vertikální směr posunu",
-		alias: "TD_#period#_VT_FN"
+		alias: "TD_VT_FN"
 	},
 	SVAR_VT_FN: {
 		name: "Směrodatná odchylka vertikálního posunu po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka agregovaného vert. posunu pro body, kde byl statistickým testováním ověřen vertikální směr posunu",
-		alias: "STD_#period#_VT_FN"
+		alias: "STD_VT_FN"
 	},
 	VAR_U2: {
 		name: "Vertikální komponenta posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Velikost vertikální komponenta posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "TD_#period#_U2"
+		alias: "TD_U2"
 	},
 	VAR_E2: {
 		name: "Horizontální komponenta posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Velikost východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "TD_#period#_E2"
+		alias: "TD_E2"
 	},
 	SVAR_U2: {
 		name: "Směrodatná odchylka vertikální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka velikosti vertikální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "STD_#period#_U2"
+		alias: "STD_U2"
 	},
 	SVAR_E2: {
 		name: "Směrodatná odchylka horizontální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka velikosti východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "STD_#period#_E2"
+		alias: "STD_E2"
 	}
 };
 
@@ -415,7 +415,7 @@ class InsarSzdcImporter {
 						|| (definition.regex && attributeDataSource.data.columnName.match(definition.regex))
 					) {
 						if (definition.alias) {
-							attributeNameInternal = definition.alias.replace(`#period#`, classPeriod);
+							attributeNameInternal = definition.alias;
 						} else {
 							attributeNameInternal = attribute;
 						}
@@ -1008,13 +1008,7 @@ class InsarSzdcImporter {
 		let attributesToCreateOrUpdate = [];
 		_.each(ATTRIBUTE_DEFINITIONS, (attributeDefinition, attributeNameInternal) => {
 			if (attributeDefinition.alias) {
-				_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
-					let [nameDisplay, nameInternal, isClass, isTrack, classPeriod, trackNo] = this.getMetadataFromLayerName(layerName);
-					if (columns.includes(attributeNameInternal) && isClass) {
-						let attributeNameInternal = attributeDefinition.alias.replace(`#period#`, classPeriod);
-						this.prepareAttribute(attributesToCreateOrUpdate, existingAttributes, attributeNameInternal, attributeDefinition);
-					}
-				})
+				this.prepareAttribute(attributesToCreateOrUpdate, existingAttributes, attributeDefinition.alias, attributeDefinition);
 			} else {
 				this.prepareAttribute(attributesToCreateOrUpdate, existingAttributes, attributeNameInternal, attributeDefinition);
 			}
