@@ -319,9 +319,14 @@ class InsarSzdcImporter {
 				return this.updateConfiguration(user, processData);
 			})
 			.then(() => {
+				status.state = `SUCCESSFULLY IMPORTED`;
+				status.ended = new Date().toISOString();
 				console.log(`#### SZDC DATA IMPORT: DONE!`)
 			})
 			.catch((error) => {
+				status.state = `ERROR`;
+				status.ended = new Date().toISOString();
+				status.error = error.message;
 				console.log(error);
 			})
 	}
