@@ -550,17 +550,17 @@ class InsarSzdcImporter {
 					}
 				}
 			);
-
-			return this._pgRelationsCrud.update(
-				{
-					area: areaRelationsToCreateOrUpdate
-				},
-				user,
-				{}
-			).then((data) => {
-				return data.area;
-			})
 		});
+
+		return this._pgRelationsCrud.update(
+			{
+				area: areaRelationsToCreateOrUpdate
+			},
+			user,
+			{}
+		).then((data) => {
+			return data.area;
+		})
 	}
 
 	async ensureAttributeDataSources(user, processData) {
