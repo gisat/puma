@@ -13,6 +13,7 @@ const PgLayerTemplates = require('../metadata/PgLayerTemplates');
 const PgAreaTrees = require('../metadata/PgAreaTrees');
 const PgAreaTreeLevels = require('../metadata/PgAreaTreeLevels');
 const PgTags = require('../metadata/PgTags');
+const PgStyles = require('../metadata/PgStyles');
 
 const PgSpatialDataSourceRelations = require(`../relations/PgSpatialDataSourceRelations`);
 const PgAttributeDataSourceRelations = require(`../relations/PgAttributeDataSourceRelations`);
@@ -50,7 +51,8 @@ class PgDatabase {
 					PgLayerTemplates,
 					PgAreaTrees,
 					PgAreaTreeLevels,
-					PgTags
+					PgTags,
+					PgStyles
 				]
 			},
 			{

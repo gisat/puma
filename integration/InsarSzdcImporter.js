@@ -27,6 +27,20 @@ const ATTRIBUTE_ALIASES = {
 	}
 };
 
+const BASE_TRACK_STYLE_DEFINITION = {
+	rules:[
+		{
+			styles: [
+				{
+					shape: null,
+					outlineWidth: 1,
+					fill: null
+				}
+			]
+		}
+	]
+};
+
 const EXAMPLE_CONFIGURATION = {
 	periods: {
 		90: null,
@@ -39,6 +53,11 @@ const EXAMPLE_CONFIGURATION = {
 		t44: `#ff565b`,
 		t95: `#00c400`,
 		t168: `#3c86ff`
+	},
+	trackShape: {
+		t44: `circle`,
+		t95: `square`,
+		t168: `triangel`
 	},
 	track: {
 		areaTrees: [],
@@ -316,6 +335,12 @@ class InsarSzdcImporter {
 					})
 			})
 			.then(() => {
+				return this.ensureStyles(user, processData)
+					.then((styles) => {
+						processData.styles = styles;
+					});
+			})
+			.then(() => {
 				return this.updateConfiguration(user, processData);
 			})
 			.then(() => {
@@ -331,6 +356,62 @@ class InsarSzdcImporter {
 			})
 	}
 
+	async ensureStyles(user, processData) {
+		let existingStyles = await this._pgMetadataCrud.get(
+			`styles`,
+			{
+				filter: {
+					applicationKey: APPLICATION_KEY
+				}
+			},
+			user
+		).then((getResult) => {
+			return getResult.data.styles;
+		});
+
+		let stylesToCreateOrUpdate = [];
+		_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+			let [nameDisplay, nameInternal, isClass, isTrack, period, trackNo] = this.getMetadataFromLayerName(layerName);
+
+			if(isTrack) {
+				_.each(Object.keys(EXAMPLE_CONFIGURATION.track.views), (attributeName) => {
+					let trackStyleDefinition = _.cloneDeep(BASE_TRACK_STYLE_DEFINITION);
+					let styleNameInternal = `${nameInternal} - ${attributeName}`;
+
+					trackStyleDefinition.rules[0].styles[0].shape = EXAMPLE_CONFIGURATION.trackShape[`t${trackNo}`];
+					trackStyleDefinition.rules[0].styles[0].fill = EXAMPLE_CONFIGURATION.trackColors[`t${trackNo}`];
+
+					let existingStyle = _.find(existingStyles, (existingStyle) => {
+						return existingStyle.data.nameInternal === styleNameInternal;
+					});
+
+					let key = existingStyle ? existingStyle.key : uuidv4();
+					stylesToCreateOrUpdate.push(
+						{
+							key,
+							data: {
+								nameInternal: styleNameInternal,
+								source: `definition`,
+								definition: trackStyleDefinition,
+								applicationKey: APPLICATION_KEY
+							}
+						}
+					)
+				});
+			}
+		});
+
+		return this._pgMetadataCrud.update(
+			{
+				styles: stylesToCreateOrUpdate
+			},
+			user,
+			{}
+		).then((data) => {
+			return data.styles;
+		})
+	}
+
 	async updateConfiguration(user, processData) {
 		let configurationData = _.cloneDeep(EXAMPLE_CONFIGURATION);
 
@@ -344,7 +425,13 @@ class InsarSzdcImporter {
 		_.each(processData.areaTreeLevels, (areaTreeLevel) => {
 			if (areaTreeLevel.data.nameInternal.startsWith(`Track`)) {
 				_.each(Object.keys(configurationData.track.views), (attributeName) => {
-					configurationData.track.views[attributeName].style[areaTreeLevel.key] = `fake-${uuidv4()}`;
+					let style = _.find(processData.styles, (style) => {
+						return style.data.nameInternal === `${areaTreeLevel.data.nameInternal} - ${attributeName}`;
+					});
+
+					if(style) {
+						configurationData.track.views[attributeName].style[areaTreeLevel.key] = style.key;
+					}
 				});
 			}
 		});
