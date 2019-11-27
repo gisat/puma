@@ -59,6 +59,8 @@ const EXAMPLE_CONFIGURATION = {
 		t95: `square`,
 		t168: `triangel`
 	},
+	areaTreesAndLevels: {
+	},
 	track: {
 		areaTrees: [],
 		views: {
@@ -460,6 +462,10 @@ class InsarSzdcImporter {
 			} else if (attribute.data.nameInternal === ATTRIBUTE_ALIASES.averageVelocity) {
 				configurationData.track.views.averageVelocity.attribute = attribute.key;
 			}
+		});
+
+		_.each(processData.areaTreeLevels, (areaTreeLevel) => {
+			configurationData.areaTreesAndLevels[areaTreeLevel.data.areaTreeKey] = areaTreeLevel.key;
 		});
 
 		processData.configuration.data.data = configurationData;
