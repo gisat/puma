@@ -192,6 +192,16 @@ const ATTRIBUTE_DEFINITIONS = {
 		description: "vyhlazená hodnota polohy daného bodu [mm] pro dané datum",
 		regex: /s_([0-9]{8})/
 	},
+	RISK: {
+		name: "Třída rizika posunu v LOS (X dnů před Y)",
+		description: "Třída rizika pohybu dle celkového posunu v LOS za X dnů před Y",
+		regex: /RISK_([0-9]+)/
+	},
+	REL: {
+		name: "Třída spolehlivost v LOS (X dnů před Y)",
+		description: "Třída spolehlivosti pohybu směrodatné odchylky celkového posunu v LOS za X dnů před Y",
+		regex: /RISK_([0-9]+)/
+	},
 	POINT_NO: {
 		description: "Počet bodů pro dekompozici (indikativní míra spolehlivosti)",
 		name: "Počet bodů pro dekompozici"
@@ -237,6 +247,20 @@ const ATTRIBUTE_DEFINITIONS = {
 		name: "Směrodatná odchylka horizontální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka velikosti východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
 		alias: "STD_E2"
+	},
+	REL_CLASS: {
+		name: "Míra spolehlivosti",
+		description: "Míra spolehlivosti určení typu pohybu"
+	},
+	RISK_VAR: {
+		name: "Třída rizika statisticky ověřeného vertikálního posunu(X dnů před Y)",
+		description: "Třída rizika vertikálního pohybu pohybu v buňce dle vertikálního posunu za X dnů před Y",
+		alias: "RISK_TD"
+	},
+	REL_VAR: {
+		name: "Třída spolehlivosti statisticky ověřeného vertikálního posunu (X dnů před Y)",
+		description: "Třída spolehlivosti vertikálního pohybu dle směrodatné odchylky vertikálního posunu za X dnů před Y",
+		alias: "REL_TD"
 	}
 };
 
