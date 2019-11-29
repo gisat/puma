@@ -666,7 +666,7 @@ class InsarSzdcImporter {
 					data: {
 						areaTreeKey: areaTree.key,
 						areaTreeLevelKey: areaTreeLevel.key,
-						fidColumn: FID_COLUMN,
+						fidColumnName: FID_COLUMN,
 						spatialDataSourceKey: spatialDataSource.key,
 						applicationKey: APPLICATION_KEY
 					}
