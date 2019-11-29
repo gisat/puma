@@ -227,7 +227,7 @@ class PgDataController {
 		};
 
 		if (filter && filter.attributeDataSourceKey && filter.fidColumnName) {
-			await this._pgDataSourcesCrud.get(`attribute`, {filter: {key: filter.attributeDataSourceKey}}, request.session.user)
+			await this._pgDataSourcesCrud.get(`attribute`, {filter: {key: filter.attributeDataSourceKey}, limit: 9999999}, request.session.user)
 				.then(async (attributeDataSources) => {
 					if (attributeDataSources.errors) {
 						payload.message = attributeDataSources.errors.attribute;
