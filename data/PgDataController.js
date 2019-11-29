@@ -226,7 +226,7 @@ class PgDataController {
 			success: true
 		};
 
-		if (filter && Object.keys(filter).length) {
+		if (filter && filter.attributeDataSourceKey && filter.fidColumnName) {
 			await this._pgDataSourcesCrud.get(`attribute`, {filter: {key: filter.attributeDataSourceKey}}, request.session.user)
 				.then(async (attributeDataSources) => {
 					if (attributeDataSources.errors) {
@@ -245,7 +245,7 @@ class PgDataController {
 					}
 				})
 		} else {
-			payload.message = `missing filter`;
+			payload.message = `missing or wrong filter`;
 			payload.success = false;
 		}
 
