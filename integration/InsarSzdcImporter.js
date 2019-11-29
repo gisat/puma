@@ -654,7 +654,7 @@ class InsarSzdcImporter {
 			}
 
 			let existingAreaTreeRelation = _.find(existingAreaRelations, (existingAreaRelation) => {
-				return existingAreaRelation.data.dataSourceKey === spatialDataSource.key
+				return existingAreaRelation.data.spatialDataSourceKey === spatialDataSource.key
 					&& existingAreaRelation.data.areaTreeKey === areaTree.key
 					&& existingAreaRelation.data.areaTreeLevelKey === areaTreeLevel.key
 			});
@@ -667,7 +667,7 @@ class InsarSzdcImporter {
 						areaTreeKey: areaTree.key,
 						areaTreeLevelKey: areaTreeLevel.key,
 						fidColumn: FID_COLUMN,
-						dataSourceKey: spatialDataSource.key,
+						spatialDataSourceKey: spatialDataSource.key,
 						applicationKey: APPLICATION_KEY
 					}
 				}
