@@ -254,9 +254,9 @@ class PgDataController {
 			.send(payload);
 	};
 
-	getAttributeDataSourceData(tableName, fidColumn, attributeColumn) {
+	getAttributeDataSourceData(tableName, fidColumnName, attributeColumnName) {
 		return this._pgPool
-			.query(`SELECT "${fidColumn}", "${attributeColumn}" FROM "${tableName}"`)
+			.query(`SELECT "${fidColumnName}", "${attributeColumnName}" FROM "${tableName}"`)
 			.then((pgResult) => {
 				return {
 					type: "FeatureCollection",
@@ -264,8 +264,8 @@ class PgDataController {
 						return {
 							type: "Feature",
 							properties: {
-								[fidColumn]: row[fidColumn],
-								[attributeColumn]: row[attributeColumn]
+								[fidColumnName]: row[fidColumnName],
+								[attributeColumnName]: row[attributeColumnName]
 							}
 						}
 					})
