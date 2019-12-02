@@ -57,7 +57,7 @@ const EXAMPLE_CONFIGURATION = {
 	trackShape: {
 		t44: `circle`,
 		t95: `square`,
-		t168: `triangel`
+		t168: `triangle`
 	},
 	areaTreesAndLevels: {
 	},
