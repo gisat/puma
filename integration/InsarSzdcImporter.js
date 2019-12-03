@@ -173,12 +173,14 @@ const ATTRIBUTE_DEFINITIONS = {
 	TD: {
 		description: "celkový posun v LOS [mm] za posledních X dnů sledování",
 		name: "Posun v LOS (X dnů před Y)",
-		regex: /TD_([0-9]+)/
+		regex: /TD_([0-9]+)/,
+		basePeriod: true
 	},
 	STD: {
 		description: "sm. odchylka [mm] celkového posunu za posledních X dnů sledování",
 		name: "Směrodatná odchylka posunu v LOS (X dnů před Y)",
-		regex: /STD_([0-9]+)/
+		regex: /STD_([0-9]+)/,
+		basePeriod: true
 	},
 	d: {
 		description: "hodnota polohy daného bodu [mm] pro dané datum",
@@ -195,12 +197,14 @@ const ATTRIBUTE_DEFINITIONS = {
 	RISK: {
 		name: "Třída rizika posunu v LOS (X dnů před Y)",
 		description: "Třída rizika pohybu dle celkového posunu v LOS za X dnů před Y",
-		regex: /RISK_([0-9]+)/
+		regex: /RISK_([0-9]+)/,
+		basePeriod: true
 	},
 	REL: {
 		name: "Třída spolehlivost v LOS (X dnů před Y)",
 		description: "Třída spolehlivosti pohybu směrodatné odchylky celkového posunu v LOS za X dnů před Y",
-		regex: /RISK_([0-9]+)/
+		regex: /REL_([0-9]+)/,
+		basePeriod: true
 	},
 	POINT_NO: {
 		description: "Počet bodů pro dekompozici (indikativní míra spolehlivosti)",
@@ -556,27 +560,38 @@ class InsarSzdcImporter {
 					return attribute.data.nameInternal === attributeNameInternal;
 				});
 
-				let period;
-				if (!attributeDefinition.period) {
-					if (isTrack) {
+				let period, match;
+				if(isTrack) {
+					if(attributeDefinition.regex && !attributeDefinition.basePeriod) {
+						match = attributeDataSource.data.columnName.match(attributeDefinition.regex);
+						period = _.find(processData.attributePeriods, (attributePeriod) => {
+							return attributePeriod.data.nameInternal === match[1];
+						})
+					} else if(attributeDefinition.regex && attributeDefinition.basePeriod) {
+						match = attributeDataSource.data.columnName.match(attributeDefinition.regex);
+						if(!BASIC_PERIOD_DAYS.includes(Number(match[1]))) {
+							period = _.find(processData.basicPeriods, (basicPeriod) => {
+								return basicPeriod.data.nameInternal === String(BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]);
+							});
+						} else {
+							period = _.find(processData.basicPeriods, (basicPeriod) => {
+								return basicPeriod.data.nameInternal === match[1];
+							})
+						}
+					} else {
 						period = _.find(processData.basicPeriods, (basicPeriod) => {
 							return basicPeriod.data.nameInternal === String(BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]);
-						})
-					} else if (isClass && BASIC_PERIOD_DAYS.includes(classPeriod)) {
+						});
+					}
+				} else if(isClass) {
+					if(BASIC_PERIOD_DAYS.includes(classPeriod)) {
 						period = _.find(processData.basicPeriods, (basicPeriod) => {
 							return basicPeriod.data.nameInternal === String(classPeriod);
-						})
-					}
-				} else {
-					let match = attributeDataSource.data.columnName.match(attributeDefinition.regexp);
-					if (isTrack) {
-						period = _.find(processData.attributePeriods, (attributePeriod) => {
-							return attributePeriod.data.nameDisplay === match[1];
-						})
-					} else if (isClass && BASIC_PERIOD_DAYS.includes(classPeriod)) {
+						});
+					} else {
 						period = _.find(processData.basicPeriods, (basicPeriod) => {
-							return basicPeriod.data.nameInternal === match.groups.period;
-						})
+							return basicPeriod.data.nameInternal === String(BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]);
+						});
 					}
 				}
 
@@ -998,9 +1013,9 @@ class InsarSzdcImporter {
 			`periods`,
 			{
 				filter: {
-					nameDisplay: {
+					nameInternal: {
 						in: _.map(BASIC_PERIOD_DAYS, (days) => {
-							return `${days} days`
+							return String(days);
 						})
 					},
 					applicationKey: APPLICATION_KEY
@@ -1056,7 +1071,7 @@ class InsarSzdcImporter {
 			`periods`,
 			{
 				filter: {
-					nameDisplay: {
+					nameInternal: {
 						in: processData.analyzeResults.attributePeriods
 					},
 					applicationKey: APPLICATION_KEY
@@ -1073,7 +1088,7 @@ class InsarSzdcImporter {
 		_.each(processData.analyzeResults.attributePeriods, (attributePeriod) => {
 			let periodDateIsoString = this.getDateFromNonStandardString(attributePeriod).toISOString();
 			let existingPeriod = _.find(existingPeriods, (existingPeriod) => {
-				return existingPeriod.data.nameDisplay === attributePeriod;
+				return existingPeriod.data.nameInternal === attributePeriod;
 			});
 
 			let key = existingPeriod ? existingPeriod.key : uuidv4();
@@ -1083,6 +1098,7 @@ class InsarSzdcImporter {
 					key,
 					data: {
 						nameDisplay: attributePeriod,
+						nameInternal: attributePeriod,
 						applicationKey: APPLICATION_KEY,
 						period: periodDateIsoString,
 						start: periodDateIsoString,
