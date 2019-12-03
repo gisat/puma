@@ -388,7 +388,8 @@ class InsarSzdcImporter {
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResult) => {
@@ -508,7 +509,8 @@ class InsarSzdcImporter {
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResult) => {
@@ -626,7 +628,8 @@ class InsarSzdcImporter {
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResult) => {
@@ -698,7 +701,7 @@ class InsarSzdcImporter {
 						in: tableNames
 					}
 				},
-				limit: 999999
+				limit: 9999999
 			},
 			user
 		).then((getResult) => {
@@ -763,7 +766,8 @@ class InsarSzdcImporter {
 					tableName: {
 						in: layerNames
 					}
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResult) => {
@@ -822,7 +826,8 @@ class InsarSzdcImporter {
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResults) => {
@@ -834,27 +839,36 @@ class InsarSzdcImporter {
 		Object.keys(processData.analyzeResults.columnsPerLayer).forEach((layerName) => {
 			let [nameDisplay, nameInternal] = this.getMetadataFromLayerName(layerName);
 
-			let existingAreaTreeLevel = _.find(existingAreaTreeLevels, (existingAreaTreeLevel) => {
-				return existingAreaTreeLevel.data.nameInternal === nameInternal;
-			});
+			if (nameInternal) {
+				let preparedAreaTreeLevel = _.find(areaTreeLevelsToCreateOrUpdate, (preparedAreaTreeLevel) => {
+					return preparedAreaTreeLevel.data.nameInternal === nameInternal
+						&& preparedAreaTreeLevel.data.applicationKey === APPLICATION_KEY;
+				});
 
-			let existingAreaTree = _.find(processData.areaTrees, (existinAreaTree) => {
-				return existinAreaTree.data.nameInternal === nameInternal;
-			});
+				if (!preparedAreaTreeLevel) {
+					let existingAreaTreeLevel = _.find(existingAreaTreeLevels, (existingAreaTreeLevel) => {
+						return existingAreaTreeLevel.data.nameInternal === nameInternal;
+					});
 
-			let key = existingAreaTreeLevel ? existingAreaTreeLevel.key : uuidv4();
+					let existingAreaTree = _.find(processData.areaTrees, (existinAreaTree) => {
+						return existinAreaTree.data.nameInternal === nameInternal;
+					});
 
-			areaTreeLevelsToCreateOrUpdate.push(
-				{
-					key,
-					data: {
-						nameInternal: nameInternal,
-						applicationKey: APPLICATION_KEY,
-						areaTreeKey: existingAreaTree.key,
-						level: 1
-					}
+					let key = existingAreaTreeLevel ? existingAreaTreeLevel.key : uuidv4();
+
+					areaTreeLevelsToCreateOrUpdate.push(
+						{
+							key,
+							data: {
+								nameInternal: nameInternal,
+								applicationKey: APPLICATION_KEY,
+								areaTreeKey: existingAreaTree.key,
+								level: 1
+							}
+						}
+					);
 				}
-			);
+			}
 		});
 
 		return this._pgMetadataCrud.update(
@@ -875,12 +889,12 @@ class InsarSzdcImporter {
 		let trackMatch = layerName.match(/t([0-9]+)/);
 
 		if (classMatch) {
-			nameDisplay = `Zone classification - ${classMatch[1]} days`;
-			nameInternal = `Zone classification`;
+			nameDisplay = `Zone classification`;
 		} else if (trackMatch) {
 			nameDisplay = `Track ${trackMatch[1]}`;
-			nameInternal = nameDisplay;
 		}
+
+		nameInternal = nameDisplay;
 
 		return [nameDisplay, nameInternal, !!(classMatch), !!(trackMatch), Number(classMatch && classMatch[1]), Number(trackMatch && trackMatch[1])];
 	}
@@ -891,7 +905,8 @@ class InsarSzdcImporter {
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResults) => {
@@ -902,7 +917,7 @@ class InsarSzdcImporter {
 		Object.keys(processData.analyzeResults.columnsPerLayer).forEach((layerName) => {
 			let [nameDisplay, nameInternal] = this.getMetadataFromLayerName(layerName);
 
-			if (nameDisplay) {
+			if (nameInternal) {
 				let preparedAreaTree = _.find(areaTreesToCreateOrUpdate, (preparedAreaTree) => {
 					return preparedAreaTree.data.nameInternal === nameInternal
 						&& preparedAreaTree.data.applicationKey === APPLICATION_KEY;
@@ -919,7 +934,6 @@ class InsarSzdcImporter {
 						{
 							key,
 							data: {
-								nameDisplay,
 								nameInternal,
 								applicationKey: APPLICATION_KEY
 							}
@@ -990,7 +1004,8 @@ class InsarSzdcImporter {
 						})
 					},
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResults) => {
@@ -1045,7 +1060,8 @@ class InsarSzdcImporter {
 						in: processData.analyzeResults.attributePeriods
 					},
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResults) => {
@@ -1116,11 +1132,9 @@ class InsarSzdcImporter {
 			`attributes`,
 			{
 				filter: {
-					nameInternal: {
-						in: Object.keys(ATTRIBUTE_DEFINITIONS)
-					},
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResults) => {
@@ -1172,7 +1186,8 @@ class InsarSzdcImporter {
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY
-				}
+				},
+				limit: 9999999
 			},
 			user
 		).then((getResults) => {
