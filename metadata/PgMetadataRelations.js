@@ -277,12 +277,17 @@ class PgMetadataRelations {
 			})
 	}
 
+	capitalizeFirstLetter(string) {
+		return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+
 	_getBaseMetadataTypeColumnName() {
-		return `parent${_.capitalize(this._baseStore.getTableName())}Key`;
+		return `parent${this.capitalizeFirstLetter(this._baseStore.getTableName())}Key`;
 	}
 
 	_getOldBaseMetadataTypeColumnName() {
-		return `${this._baseStore.getTableName()}Key`;
+		// return `${this._baseStore.getTableName()}Key`;
+		return `parent${_.capitalize(this._baseStore.getTableName())}Key`;
 	}
 
 	_getTableName() {
