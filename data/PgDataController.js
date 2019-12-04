@@ -236,7 +236,7 @@ class PgDataController {
 						attributeDataSources = attributeDataSources.data.attribute;
 
 						for (let attributeDataSource of attributeDataSources) {
-							let attributeData = await this.getAttributeDataSourceData(attributeDataSource.data.tableName, filter.fidColumnName, attributeDataSource.data.columnName);
+							let attributeData = await this.getAttributeDataSourceData(attributeDataSource.data.tableName, filter.fidColumnName, attributeDataSource.data.columnName, filter);
 							payload.data.attribute.push({
 								attributeDataSourceKey: attributeDataSource.key,
 								attributeData
@@ -254,9 +254,17 @@ class PgDataController {
 			.send(payload);
 	};
 
-	getAttributeDataSourceData(tableName, fidColumnName, attributeColumnName) {
+	getAttributeDataSourceData(tableName, fidColumnName, attributeColumnName, filter) {
+		let where = ``;
+		if(filter.fid) {
+			if(_.isObject(filter.fid) && filter.fid.hasOwnProperty(`in`)) {
+				where = ` WHERE "${fidColumnName}" IN (${filter.fid.in.join(', ')})`;
+			} else {
+				where = ` WHERE "${fidColumnName}" = ${filter.fid}`;
+			}
+		}
 		return this._pgPool
-			.query(`SELECT "${fidColumnName}", "${attributeColumnName}" FROM "${tableName}"`)
+			.query(`SELECT "${fidColumnName}", "${attributeColumnName}" FROM "${tableName}"${where}`)
 			.then((pgResult) => {
 				return {
 					type: "FeatureCollection",
