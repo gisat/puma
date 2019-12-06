@@ -265,6 +265,19 @@ class PgDataController {
 			}
 		}
 
+		if(transformation && transformation.hasOwnProperty(`simplify`)) {
+			if(transformation.simplify.hasOwnProperty(`tolerance`)) {
+				let tolerance = Number(transformation.simplify.tolerance);
+				let preserveCollapsed;
+
+				if(transformation.simplify.hasOwnProperty(`preserveCollapsed`)) {
+					preserveCollapsed = `, true`;
+				}
+
+				geometryOperations = `ST_Simplify(${geometryOperations}, ${tolerance}${preserveCollapsed})`;
+			}
+		}
+
 		return this._pgPool
 			.query(`SELECT "${fidColumn}", ST_AsGeoJson(${geometryOperations}, 14, 4) AS geometry FROM "${tableName}"`)
 			.then((pgResult) => {
