@@ -35,7 +35,9 @@ combination of the data and the interactive tools associated with it.
 - Place – It represents specific place. It is possible to link other concepts to Place
 - Period –  Basically it links the data and other metadata to the specific time or interval in time.
 - Area trees – It is possible to structure the data in the area trees. Like Continents -> Countries -> Regions
+- Attribute Set – Link of the attributes in the higher order groups.
 - Attribute – Link of the specific piece of the data e.g. column in a table.
+- Tag - Possible for organization of the concepts and searching in them.
 - Permission – This is main concept with respect to authorization toward different resources in the application.
 - User – User of the application. He has its credentials and information such as email and name and it is possible to
 assign permissions to it. It is also possible to assign it into the groups and then group permissions are added on top
@@ -43,6 +45,14 @@ of the user permissions.
 - Group – It is possible to group users in the application. There are three default groups, which represents guest
 (Someone who isn’t logged in the system), user (Someone who is logged in the system) and admin (Administrator of the
 application with full rights). Other than that, the user can specify any other groups and assign users to them.
+
+The full extent of all the metadata available in the application are available in a separate document:
+https://github.com/gisat/puma/blob/ptr3-fuore-import-update/endpoints-documentation.md
+
+The Diagram representing classes and dependencies is in the full form available here: https://gisat-panther.s3.eu-central-1.amazonaws.com/Panther-Backend.png
+![Backend schema of Panther](https://gisat-panther.s3.eu-central-1.amazonaws.com/Panther-Backend.png)
+
+Include the database schema.
 
 ##### Dependencies
 
@@ -54,7 +64,7 @@ To find a full list of dependencies consult current package.json (https://github
 
 #### Python version
 
-To be done later.
+To be done later together with the packages available there.
 
 ### Frontend Application
 
@@ -99,11 +109,10 @@ contracts down the road.
 #### Dependencies
 
 - Java/Tomcat 8 - Runtime environment plus application server
--
+- Spring (https://spring.io/) - Framework for application building in Java
+- Wicket (https://wicket.apache.org/) - Component web based UI framework.
 
 ## Deployment
-
-
 
 ### General structure
 
