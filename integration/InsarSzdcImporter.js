@@ -70,15 +70,18 @@ const EXAMPLE_CONFIGURATION = {
 			},
 			dynamicTrend: {
 				attribute: null,
-				style: {}
+				style: {},
+				period: 1400
 			},
 			progress: {
 				attribute: null,
-				style: {}
+				style: {},
+				period: 1400
 			},
 			averageVelocity: {
 				attribute: null,
-				style: {}
+				style: {},
+				period: 1400
 			}
 		},
 		dAttribute: null,
@@ -183,14 +186,17 @@ const ATTRIBUTE_DEFINITIONS = {
 		basePeriod: true
 	},
 	d: {
+		name: "Posun",
 		description: "hodnota polohy daného bodu [mm] pro dané datum",
 		regex: /d_([0-9]{8})/
 	},
 	m: {
+		name: "Posun",
 		description: "modelová poloha daného bodu [mm] pro dané datum",
 		regex: /m_([0-9]{8})/
 	},
 	s: {
+		name: "Posun",
 		description: "vyhlazená hodnota polohy daného bodu [mm] pro dané datum",
 		regex: /s_([0-9]{8})/
 	},
