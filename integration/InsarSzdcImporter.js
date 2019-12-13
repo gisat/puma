@@ -176,40 +176,40 @@ const ATTRIBUTE_DEFINITIONS = {
 	td: {
 		description: "celkový posun v LOS [mm] za posledních X dnů sledování",
 		name: "Posun v LOS (X dnů před Y)",
-		regex: /td_([0-9]+)/,
+		regex: /^td_([0-9]+)/,
 		basePeriod: true
 	},
 	std: {
 		description: "sm. odchylka [mm] celkového posunu za posledních X dnů sledování",
 		name: "Směrodatná odchylka posunu v LOS (X dnů před Y)",
-		regex: /std_([0-9]+)/,
+		regex: /^std_([0-9]+)/,
 		basePeriod: true
 	},
 	d: {
 		name: "Posun",
 		description: "hodnota polohy daného bodu [mm] pro dané datum",
-		regex: /d_([0-9]{8})/
+		regex: /^d_([0-9]{8})/
 	},
 	m: {
 		name: "Posun",
 		description: "modelová poloha daného bodu [mm] pro dané datum",
-		regex: /m_([0-9]{8})/
+		regex: /^m_([0-9]{8})/
 	},
 	s: {
 		name: "Posun",
 		description: "vyhlazená hodnota polohy daného bodu [mm] pro dané datum",
-		regex: /s_([0-9]{8})/
+		regex: /^s_([0-9]{8})/
 	},
 	risk: {
 		name: "Třída rizika posunu v LOS (X dnů před Y)",
 		description: "Třída rizika pohybu dle celkového posunu v LOS za X dnů před Y",
-		regex: /risk_([0-9]+)/,
+		regex: /^risk_([0-9]+)/,
 		basePeriod: true
 	},
 	rel: {
 		name: "Třída spolehlivost v LOS (X dnů před Y)",
 		description: "Třída spolehlivosti pohybu směrodatné odchylky celkového posunu v LOS za X dnů před Y",
-		regex: /rel_([0-9]+)/,
+		regex: /^rel_([0-9]+)/,
 		basePeriod: true
 	},
 	point_no: {
