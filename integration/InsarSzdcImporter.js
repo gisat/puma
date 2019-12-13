@@ -15,15 +15,15 @@ const APPLICATION_KEY = "szdcInsar19";
 const BASIC_PERIOD_DAYS = [90, 180, 365, 1400];
 
 const ATTRIBUTE_ALIASES = {
-	totalDisplacement: `TD`,
-	dynamicTrend: `CL_DYN`,
-	progress: `CL_PRG`,
-	averageVelocity: `VEL_AVG`,
-	classification: `CLASS`,
-	verticalMovement: `TD_VT_FN`,
+	totalDisplacement: `td`,
+	dynamicTrend: `cl_dyn`,
+	progress: `cl_prg`,
+	averageVelocity: `vel_avg`,
+	classification: `class`,
+	verticalMovement: `td_vt_fn`,
 	combinedMovement: {
-		vertical: `TD_U2`,
-		eastWest: `TD_E2`
+		vertical: `td_u2`,
+		eastWest: `td_e2`
 	}
 };
 
@@ -110,79 +110,79 @@ const EXAMPLE_CONFIGURATION = {
 	}
 };
 
-const FID_COLUMN = "ID";
+const FID_COLUMN = "id";
 
 const ATTRIBUTE_DEFINITIONS = {
-	VEL_AVG: {
+	vel_avg: {
 		description: "průměrná rychlost [mm/r]",
 		name: "Průměrná rychlost [mm/r]"
 	},
-	VEL_SD: {
+	vel_sd: {
 		description: "směrodatná odchylka rychlosti [mm/r], nereálná hodnota"
 	},
-	VEL_ACC: {
+	vel_acc: {
 		description: "směrodatná odchylka rychlosti [mm/r], reálná hodnota, vyčíslená z rozptylu rychlosti pro body mimo trať (za předpokladu všeobecné stability)",
 		name: "Směrodatná odchylka rychlosti [mm/r]"
 	},
-	S0: {
+	s0: {
 		description: "směrodatná odchylka polohy (jednoho měření) [mm]"
 	},
-	VEL_CUM: {
+	vel_cum: {
 		description: "celkový pohyb [mm] za celou dobu sledování, obecně za jinou dobu pro každý track"
 	},
-	COH: {
+	coh: {
 		description: "koherence, 1 pro velmi kvalitní body, 0 pro body nekvalitní; body s koherencí < 0.4 byly vyloučeny",
 		name: "Koherence"
 	},
-	CL_PRG: {
+	cl_prg: {
 		description: "trend pohybu pro daný bod za celou dobu sledování: STABILITY/UPLIFT/SUBSIDENCE/OSCILLATION",
 		name: "Trend pohybu"
 	},
-	CL_DYN: {
+	cl_dyn: {
 		description: "dynamický trend pohybu pro daný bod za celou dobu sledování: CONST_TREND/ACCELLERATION/DECCELLERATION/NO_CLASS",
 		name: "Dynamika trendu pohybu"
 	},
-	CL_JMP: {
+	cl_jmp: {
 		description: "jedno- či dvouciferné číslo reprezentující jednorázové změny polohy. Jednotky udávají počet jednorázových změn (skoků) nahoru, desítky počet skoků směrem dolů. (nejde + a -?)"
 	},
-	CL_NOISE: {
+	cl_noise: {
 		description: "jedno- či dvouciferné číslo reprezentující změny úrovní šumu. Jednotky udávají počet zvýšení hladiny šumu, desítky počet snížení hladiny šumu. (nejde + a -?)",
 		name: "Změny úrovní šumu"
 	},
-	CL_UE: {
+	cl_ue: {
 		description: "Číslo reprezentující pravděpodobnost chyby z rozbalení fáze pro časový průběh daného bodu (na základě pouze časové informace), vždy >=0, vždy <=1"
 	},
-	CORR_UE: {
+	corr_ue: {
 		description: "Počet opravených chyb z rozbalení fáze v daném průběhu"
 	},
-	VEL_LAST: {
+	vel_last: {
 		description: "Rychlost [mm/r] v posledním klasifikovaném úseku"
 	},
-	SVEL_LAST: {
+	svel_last: {
 		description: "Sm. odchylka rychlosti (reálná hodnota, [mm/r]) v posledním klasifikovaném úseku"
 	},
-	TD_LAST: {
+	td_last: {
 		description: "Celkový posun (total displacement) [mm] v posledním klasifikovaném úseku (pozn. tento klasifikovaný úsek je pro každý bod obecně jinak dlouhý!)"
 	},
-	STD_LAST: {
+	std_last: {
 		description: "Sm. odchylka [mm] celkového pohybu v posledním klasifikovaném úseku"
 	},
-	CL_TEMPC: {
+	cl_tempc: {
 		description: "korelační koeficient mezi časovým průběhem a přibližnými teplotami, udává možnost dilatace daného bodu vlivem teploty: VERY WEAK/WEAK/MODERATE/STRONG/VERY STRONG"
 	},
-	DIL_C: {
+	dil_c: {
 		description: "odhad dilatačního koeficientu [mm/degC] pro body s CL_TEMPC jiné než VERY WEAK"
 	},
-	TD: {
+	td: {
 		description: "celkový posun v LOS [mm] za posledních X dnů sledování",
 		name: "Posun v LOS (X dnů před Y)",
-		regex: /TD_([0-9]+)/,
+		regex: /td_([0-9]+)/,
 		basePeriod: true
 	},
-	STD: {
+	std: {
 		description: "sm. odchylka [mm] celkového posunu za posledních X dnů sledování",
 		name: "Směrodatná odchylka posunu v LOS (X dnů před Y)",
-		regex: /STD_([0-9]+)/,
+		regex: /std_([0-9]+)/,
 		basePeriod: true
 	},
 	d: {
@@ -200,77 +200,77 @@ const ATTRIBUTE_DEFINITIONS = {
 		description: "vyhlazená hodnota polohy daného bodu [mm] pro dané datum",
 		regex: /s_([0-9]{8})/
 	},
-	RISK: {
+	risk: {
 		name: "Třída rizika posunu v LOS (X dnů před Y)",
 		description: "Třída rizika pohybu dle celkového posunu v LOS za X dnů před Y",
-		regex: /RISK_([0-9]+)/,
+		regex: /risk_([0-9]+)/,
 		basePeriod: true
 	},
-	REL: {
+	rel: {
 		name: "Třída spolehlivost v LOS (X dnů před Y)",
 		description: "Třída spolehlivosti pohybu směrodatné odchylky celkového posunu v LOS za X dnů před Y",
-		regex: /REL_([0-9]+)/,
+		regex: /rel_([0-9]+)/,
 		basePeriod: true
 	},
-	POINT_NO: {
+	point_no: {
 		description: "Počet bodů pro dekompozici (indikativní míra spolehlivosti)",
 		name: "Počet bodů pro dekompozici"
 	},
-	TRACK_NO: {
+	track_no: {
 		name: "Počet tracků pro dekompozici",
 		description: "Počet tracků pro dekompozici (indikativní míra spolehlivosti)"
 	},
-	CLASS: {
+	class: {
 		name: "Třída směru pohybu dle testování směrové dekompozice",
 		description: "Určení třídy směru pohybu a míry jeho spolehlivosti statistickým testováním směrové dekompozice pro blízké body z více drah"
 	},
-	CLASS_REL: {
+	class_rel: {
 		name: "Míra spolehlivosti",
 		description: "Míra spolehlivosti určení typu pohybu"
 	},
-	VAR_VT_FN: {
+	var_vt_fn: {
 		name: "Vertikální posun|rychlost [mm | mm/rok] po ověření (X dnů před Y)",
 		description: "Velikost vertikálního posunu pro body, kde byl statistickým testováním ověřen vertikální směr posunu",
-		alias: "TD_VT_FN"
+		alias: "td_vt_fn"
 	},
-	SVAR_VT_FN: {
+	svar_vt_fn: {
 		name: "Směrodatná odchylka vertikálního posunu po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka agregovaného vert. posunu pro body, kde byl statistickým testováním ověřen vertikální směr posunu",
-		alias: "STD_VT_FN"
+		alias: "std_vt_fn"
 	},
-	VAR_U2: {
+	var_u2: {
 		name: "Vertikální komponenta posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Velikost vertikální komponenta posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "TD_U2"
+		alias: "td_u2"
 	},
-	VAR_E2: {
+	var_e2: {
 		name: "Horizontální komponenta posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Velikost východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "TD_E2"
+		alias: "td_e2"
 	},
-	SVAR_U2: {
+	svar_u2: {
 		name: "Směrodatná odchylka vertikální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka velikosti vertikální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "STD_U2"
+		alias: "std_u2"
 	},
-	SVAR_E2: {
+	svar_e2: {
 		name: "Směrodatná odchylka horizontální komponenty posunu|rychlosti [mm | mm/rok]] po ověření (X dnů před Y)",
 		description: "Směrodatná odchylka velikosti východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
-		alias: "STD_E2"
+		alias: "std_e2"
 	},
-	REL_CLASS: {
+	rel_class: {
 		name: "Míra spolehlivosti",
 		description: "Míra spolehlivosti určení typu pohybu"
 	},
-	RISK_VAR: {
+	risk_var: {
 		name: "Třída rizika statisticky ověřeného vertikálního posunu(X dnů před Y)",
 		description: "Třída rizika vertikálního pohybu pohybu v buňce dle vertikálního posunu za X dnů před Y",
-		alias: "RISK_TD"
+		alias: "risk_td"
 	},
-	REL_VAR: {
+	rel_var: {
 		name: "Třída spolehlivosti statisticky ověřeného vertikálního posunu (X dnů před Y)",
 		description: "Třída spolehlivosti vertikálního pohybu dle směrodatné odchylky vertikálního posunu za X dnů před Y",
-		alias: "REL_TD"
+		alias: "rel_td"
 	}
 };
 
