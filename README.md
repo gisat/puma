@@ -16,7 +16,7 @@ Developed as a part of the Panther itself
 
 ![Diagram representing the structure and components of the application](https://gisat-panther.s3.eu-central-1.amazonaws.com/Panther+Deployment+Diagram.png)
 
-### Backend Application
+### Backend
 
 #### Node.JS Version
 
@@ -66,7 +66,106 @@ To find a full list of dependencies consult current package.json (https://github
 
 To be done later together with the packages available there.
 
-### Frontend Application
+### Frontend
+
+The Frontend Application is from the user point of view separated in multiple applications. Every application has its 
+own User Interface which is focused on specific user needs. In the further part of the chapter we outline the possible 
+building pieces and example applications. 
+
+#### Maps
+
+One of the key functionalities is the possibility to display the different types of data on the different types of
+maps. The Framework supports internal style configuration for specifying the visuals of the layers and vector
+features displayed. 
+
+![Map with point style](https://gisat-panther.s3.eu-central-1.amazonaws.com/points1.png)
+
+To simplify the visual comparison of different points, layers and statistical information the Panther provides 
+the possibility to put any number of maps alongside with different pieces of information. 
+
+![Multiple Maps](https://gisat-panther.s3.eu-central-1.amazonaws.com/multipleMaps.png)
+
+In many cases statistical information needs to be displayed on the map. We support the display as 
+choropleth as well as the point layer. The Choropleth layers are good choice for the display of the proportional 
+information while the pointed layers are good for displaying absolute information. 
+
+![Point Layer](https://gisat-panther.s3.eu-central-1.amazonaws.com/PointLayer.png)
+
+It is possible for us to integrate with multiple map frameworks respecting different user needs. By default we integrate
+with a simple 2D framework Leaflet and a more complex 3D Web World Wind framework. The Web World Wind framework is 
+open source framework developed by NASA, which allows the users to understand and analyze the information using the
+detailed information about the terrain in the 3D. 
+
+#### Charts
+
+There is a wide variety of different charts available for display of the statistical information. Each of the 
+different types of the charts is proper for different types of information. 
+
+##### Line Chart
+
+The Line Chart is a default type of the Chart useful for most situations. Whenever you want to show progression in the data, 
+this is a good default. 
+
+![Standard Line Chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/lineChart.png)
+
+In the application the behavior of the chart changes based n the selection and amount of the units selected in the 
+chart. If there are more than 10 items in it the lines are grayed and only the focused one is in color. 
+
+![Grayed Line Chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/lineChartGreyed.png)
+
+If there is too many items to display every piece of the information the information is instead displayed in the 
+chart with three lines. The lines show minimum, average and maximum among the data. 
+
+![Aggregated line chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/averageMinMax.png)
+
+##### Bar Chart
+
+The Bar Chart belongs among the standard tools in the utility belt of the data analysts and visualization of the results.
+
+![Bar chart Colored](https://gisat-panther.s3.eu-central-1.amazonaws.com/columnChartColor.png)
+
+In the app the chart behaviour differs based on the amount of the units to display. As long as the amount is low
+enough the data are displayed separately in a column per unit. Once you get past the threshold instead of column
+per piece you will see a line of color showing the distribution of the values among the units. On hover you 
+can see which units belong to what part of the area. 
+
+![Aggregated bar Chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/AggregatedColumnChart.png)
+
+The Stacked bar chart is effective when you want to show distribution of the units. For example a distribution
+of Land use / land cover classes in certain city. 
+
+![Stacked bar Chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/stackedBar.png)
+
+The diverging bar chart shows that different units can have a different evolution even below zero. This is usually 
+used together with the stacked chart where different classes have different structure of change. 
+
+![Diverging Bar Chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/DivergingColumnChart.png)
+
+##### Scatter Chart
+
+The Scatter Chart is indispensable in case you have two or three dimensions to the data, which you want to display 
+side by side and the dimensions vary so it isn't possible to show in for example bar chart. 
+
+![Scatter chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/scatterChart.png)
+
+##### Aster Chart
+
+This type of chart allows for simple comparison of more than three dimensions. 
+
+![Aster chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/asterWithLegend.png)
+
+##### Sankeye Chart
+
+The best chart there is for analysis of the flows through the time. One of the great usages is to analyse and visualize
+the land use / land cover flows as you can see in the following figure. 
+
+![Sankeye chart](https://gisat-panther.s3.eu-central-1.amazonaws.com/sankeyChart.png)
+
+#### Application
+
+- Fuore (http://fuore.eu/)
+- EO4SD Storylines (https://urban-tep.eu/visat/scudeoStories19)
+- Urban Environment Ecosystem Accounting (https://urban-tep.eu/visat/unseea)
 
 #### Dependencies
 
