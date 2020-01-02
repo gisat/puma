@@ -29,6 +29,38 @@ const ATTRIBUTE_ALIASES = {
 	}
 };
 
+const CUSTOM_LAYER_DEFINITIONS = [
+	{
+		layerKey: "ortophoto",
+		layerTemplateNameDisplay: "ČÚZK Ortofoto",
+		type: "wms",
+		url: "http://geoportal.cuzk.cz/WMS_ORTOFOTO_PUB/WMService.aspx",
+		layers: "GR_ORTFOTORGB"
+	},
+	{
+		layerKey: "dem",
+		layerTemplateNameDisplay: "DEM",
+		opacity: 0.5,
+		type: "wms",
+		url: "http://192.168.2.206:8965/remote-geoserver-1/insar/wms",
+		layers: "insar:szdc_dmr5g_hillshaded"
+	},
+	{
+		layerKey: "pasportPrazce",
+		layerTemplateNameDisplay: "Pasport - pražce (rok)",
+		type: "wms",
+		url: "http://192.168.2.206:8965/remote-geoserver-1/insar/wms",
+		layers: "insar:trat140_pasport"
+	},
+	{
+		layerKey: "milestones",
+		layerTemplateNameDisplay: "Staničení",
+		type: "wms",
+		url: "http://192.168.2.206:8965/remote-geoserver-1/insar/wms",
+		layers: "insar:0112_stanicniky_wgs84"
+	}
+];
+
 const EXAMPLE_CONFIGURATION = {
 	periods: {
 		90: null,
@@ -49,6 +81,7 @@ const EXAMPLE_CONFIGURATION = {
 	},
 	areaTreesAndLevels: {
 	},
+	customLayers: [],
 	track: {
 		attributesToShow: [],
 		areaTrees: [],
@@ -367,7 +400,7 @@ class InsarSzdcImporter {
 					})
 			})
 			.then(() => {
-				// return this.importLayersIntoPostgres(user, processData, unzippedFileSystem)
+				return this.importLayersIntoPostgres(user, processData, unzippedFileSystem)
 			})
 			.then(() => {
 				return this.ensureSpatialDataSources(user, unzippedFileSystem)
@@ -400,6 +433,12 @@ class InsarSzdcImporter {
 					});
 			})
 			.then(() => {
+				return this.ensureCustomLayers(user, processData)
+					.then((customLayers) => {
+						processData.customLayers = customLayers;
+					})
+			})
+			.then(() => {
 				return this.updateConfiguration(user, processData);
 			})
 			.then(() => {
@@ -413,6 +452,128 @@ class InsarSzdcImporter {
 				status.error = error.message;
 				console.log(error);
 			})
+	}
+
+	async ensureCustomLayers(user, procesData) {
+		let existingLayerTemplates = await this._pgMetadataCrud.get(
+			`layerTemplates`,
+			{
+				filter: {
+					applicationKey: APPLICATION_KEY
+				},
+				limit: 9999999
+			},
+			user
+		).then((getResults) => {
+			return getResults.data.layerTemplates;
+		});
+
+		let existingSpatialDataSources = await this._pgDataSourcesCrud.get(
+			`spatial`,
+			{
+				limit: 9999999
+			},
+			user
+		).then((getResult) => {
+			return getResult.data.spatial;
+		});
+
+		let existingSpatialRelations = await this._pgRelationsCrud.get(
+			`spatal`,
+			{
+				filter: {
+					applicationKey: APPLICATION_KEY
+				},
+				limit: 9999999
+			},
+			user
+		).then((getResult) => {
+			return getResult.data.spatial;
+		});
+
+		let customLayers = [];
+		for(let customLayerDefinition of CUSTOM_LAYER_DEFINITIONS) {
+			let existingLayerTemplate = _.find(existingLayerTemplates, (existingLayerTemplate) => {
+				return existingLayerTemplate.data.nameDisplay === customLayerDefinition.layerTemplateNameDisplay;
+			});
+
+			let existingSpatialDataSource = _.find(existingSpatialDataSources, (existingSpatialDataSource) => {
+				return existingSpatialDataSource.data.type === customLayerDefinition.type
+					&& existingSpatialDataSource.data.url === customLayerDefinition.url
+					&& existingSpatialDataSource.data.layers === customLayerDefinition.layers;
+			});
+
+			let layerTemplate = {
+				key: existingLayerTemplate ? existingLayerTemplate.key : uuidv4(),
+				data: {
+					nameDisplay: customLayerDefinition.layerTemplateNameDisplay,
+					applicationKey: APPLICATION_KEY
+				}
+			};
+
+			layerTemplate = await this._pgMetadataCrud.update(
+				{
+					layerTemplates: [layerTemplate]
+				},
+				user,
+				{}
+			).then((data) => {
+				return data.layerTemplates[0];
+			});
+
+			let spatialDataSource = {
+				key: existingSpatialDataSource ? existingSpatialDataSource.key : uuidv4(),
+				data: {
+					type: customLayerDefinition.type,
+					url: customLayerDefinition.url,
+					layers: customLayerDefinition.layers
+				}
+			};
+
+			spatialDataSource = await this._pgDataSourcesCrud.update(
+				{
+					spatial: [spatialDataSource]
+				},
+				user,
+				{}
+			).then((data) => {
+				return data.spatial[0];
+			});
+
+			let existingSpatialRelation = _.find(existingSpatialRelations, (existingSpatialRelation) => {
+				return existingSpatialRelation.data.spatialDataSourceKey === spatialDataSource.key
+					&& existingSpatialRelation.data.layerTemplateKey === layerTemplate.key;
+			});
+
+			let spatialRelation = {
+				key: existingSpatialRelation ? existingSpatialRelation.key : uuidv4(),
+				data: {
+					spatialDataSourceKey: spatialDataSource.key,
+					layerTemplateKey: layerTemplate.key,
+					applicationKey: APPLICATION_KEY
+				}
+			};
+
+			await this._pgRelationsCrud.update(
+				{
+					spatial: [spatialRelation]
+				},
+				user,
+				{}
+			);
+
+			customLayers.push(
+				{
+					key: customLayerDefinition.layerKey,
+					data: {
+						layerTemplateKey: layerTemplate.key,
+						opacity: customLayerDefinition.opacity || null
+					}
+				}
+			)
+		}
+
+		return customLayers;
 	}
 
 	async ensureStyles(user, processData) {
@@ -443,63 +604,6 @@ class InsarSzdcImporter {
 		})
 	}
 
-	// async ensureStyles(user, processData) {
-	// 	let stylesToCreateOrUpdate = [];
-	// 	_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
-	// 		let [nameDisplay, nameInternal, isClass, isTrack, period, trackNo] = this.getMetadataFromLayerName(layerName);
-	//
-	// 		let existingStyle;
-	// 		if(isTrack) {
-	// 			_.each(Object.keys(EXAMPLE_CONFIGURATION.track.views), (attributeName) => {
-	// 				let styleNameInternal = `${nameInternal} - ${attributeName}`;
-	//
-	// 				existingStyle = _.find(InsarSzdcImporterStyles, (existingStyle) => {
-	// 					return existingStyle.data.nameInternal === styleNameInternal;
-	// 				});
-	// 			});
-	// 		} else if(isClass) {
-	// 			_.each(Object.keys(EXAMPLE_CONFIGURATION.zoneClassification.views), (attributeName) => {
-	// 				let styleNameInternal = `${nameInternal} - ${attributeName}`;
-	//
-	// 				existingStyle = _.find(InsarSzdcImporterStyles, (existingStyle) => {
-	// 					return existingStyle.data.nameInternal === styleNameInternal;
-	// 				});
-	// 			});
-	// 		}
-	//
-	// 		let preparedToCreateOrUpdate = _.find(stylesToCreateOrUpdate, (stylePreparedToCreateOrUpdate) => {
-	// 			return stylePreparedToCreateOrUpdate.key === existingStyle.key;
-	// 		});
-	//
-	// 		if(existingStyle && !preparedToCreateOrUpdate) {
-	// 			_.each(existingStyle.data.definition.rules, (rule) => {
-	// 				_.each(rule.styles, (style) => {
-	// 					if(style.hasOwnProperty(`attributeKey`)) {
-	// 						let existingAttribute = _.find(processData.attributes, (attribute) => {
-	// 							return attribute.data.nameInternal === style.attributeKey;
-	// 						});
-	//
-	// 						if(existingAttribute) {
-	// 							style.attributeKey = existingAttribute.key;
-	// 						}
-	// 					}
-	// 				});
-	// 			});
-	// 			stylesToCreateOrUpdate.push(existingStyle);
-	// 		}
-	// 	});
-	//
-	// 	return this._pgMetadataCrud.update(
-	// 		{
-	// 			styles: stylesToCreateOrUpdate
-	// 		},
-	// 		user,
-	// 		{}
-	// 	).then((data) => {
-	// 		return data.styles;
-	// 	})
-	// }
-
 	async updateConfiguration(user, processData) {
 		let configurationData = _.cloneDeep(EXAMPLE_CONFIGURATION);
 
@@ -525,15 +629,9 @@ class InsarSzdcImporter {
 
 				if(style) {
 					configurationData[property].views[attributeName].style[areaTreeLevel.key] = style.key;
-				} else {
-					console.log(`#### style not found for ${areaTreeLevel.data.nameInternal} - ${attributeName}`);
 				}
 			});
 		});
-
-		console.log(`#### styles name internal`, _.map(processData.styles, (style) => {
-			return style.data.nameInternal;
-		}));
 
 		_.each(processData.areaTrees, (areaTree) => {
 			if (areaTree.data.nameInternal.startsWith(`Track`)) {
@@ -615,6 +713,8 @@ class InsarSzdcImporter {
 		_.each(processData.areaTreeLevels, (areaTreeLevel) => {
 			configurationData.areaTreesAndLevels[areaTreeLevel.data.areaTreeKey] = areaTreeLevel.key;
 		});
+
+		configurationData.customLayers = processData.customLayers;
 
 		processData.configuration.data.data = configurationData;
 		return this._pgApplicationsCrud.update(
