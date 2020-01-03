@@ -79,11 +79,10 @@ const EXAMPLE_CONFIGURATION = {
 		t95: `square`,
 		t168: `triangle`
 	},
-	areaTreesAndLevels: {
-	},
+	areaTreesAndLevels: {},
 	customLayers: [],
 	track: {
-		attributesToShow: [],
+		attributesToShow: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
 		areaTrees: [],
 		views: {
 			totalDisplacement: {
@@ -111,7 +110,7 @@ const EXAMPLE_CONFIGURATION = {
 		sAttribute: null,
 	},
 	zoneClassification: {
-		attributesToShow: [],
+		attributesToShow: ["point_no", "track_no", "class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td", "td_u2", "td_e2", "std_u2", "std_e2"],
 		areaTree: "",
 		views: {
 			classification: {
@@ -123,11 +122,22 @@ const EXAMPLE_CONFIGURATION = {
 				style: {}
 			},
 			combinedMovement: {
-				attributes: {
-					vertical: "td_u2",
-					eastWest: "td_e2"
-				},
+				attributes: ["td_u2", "td_e2"],
 				style: {}
+			}
+		},
+		tracks: {
+			t44: {
+				areaTree: null,
+				idAttribute: "id_t44"
+			},
+			t95: {
+				areaTree: null,
+				idAttribute: "id_t95"
+			},
+			t168: {
+				areaTree: null,
+				idAttribute: "id_t168"
 			}
 		}
 	}
@@ -136,197 +146,196 @@ const EXAMPLE_CONFIGURATION = {
 const FID_COLUMN = "id";
 
 const ATTRIBUTE_DEFINITIONS = {
+	id: {
+		description: "Unikátní identifikátor bodu detekovaného PSI",
+		name: "ID"
+	},
 	vel_avg: {
-		description: "Průměrná rychlost v LOS [mm/r]",
-		name: "Průměrná rychlost [mm/r]",
-		show: ["track"]
+		description: "Průměrná rychlost v LOS",
+		name: "Průměrná rychlost",
+		unit: "mm/r"
 	},
 	vel_sd: {
-		description: "směrodatná odchylka rychlosti [mm/r], nereálná hodnota",
-		show: []
+		description: "směrodatná odchylka rychlosti, nereálná hodnota",
+		unit: "mm/r"
 	},
 	vel_acc: {
-		description: "Směrodatná odchylka rychlosti v LOS [mm/r]",
-		name: "Směrodatná odchylka rychlosti [mm/r]",
-		show: ["track"]
+		description: "Směrodatná odchylka rychlosti v LOS",
+		name: "Směrodatná odchylka rychlosti",
+		unit: "mm/r"
 	},
 	s0: {
-		description: "směrodatná odchylka polohy (jednoho měření) [mm]",
-		show: []
+		description: "směrodatná odchylka polohy (jednoho měření)",
+		unit: "mm"
 	},
 	vel_cum: {
-		description: "celkový pohyb [mm] za celou dobu sledování, obecně za jinou dobu pro každý track",
-		show: []
+		description: "celkový pohyb za celou dobu sledování, obecně za jinou dobu pro každý track",
+		unit: "mm"
 	},
 	coh: {
 		description: "koherence, 1 pro velmi kvalitní body, 0 pro body nekvalitní; body s koherencí < 0.4 byly vyloučeny",
-		name: "Koherence",
-		show: ["track"]
+		name: "Koherence"
 	},
 	cl_prg: {
 		description: "Trend pohybu detekovaného bodu za celou dobu sledování",
-		name: "Trend pohybu",
-		show: ["track"]
+		name: "Trend pohybu"
 	},
 	cl_dyn: {
 		description: "Dynamika trendu pohybu pro daný bod",
-		name: "Dynamika trendu pohybu",
-		show: ["track"]
+		name: "Dynamika trendu pohybu"
 	},
 	cl_jmp: {
-		description: "jedno- či dvouciferné číslo reprezentující jednorázové změny polohy. Jednotky udávají počet jednorázových změn (skoků) nahoru, desítky počet skoků směrem dolů. (nejde + a -?)",
-		show: []
+		description: "jedno- či dvouciferné číslo reprezentující jednorázové změny polohy. Jednotky udávají počet jednorázových změn (skoků) nahoru, desítky počet skoků směrem dolů. (nejde + a -?)"
 	},
 	cl_noise: {
 		description: "Změny úrovní šumu",
-		name: "Změny úrovní šumu",
-		show: []
+		name: "Změny úrovní šumu"
 	},
 	cl_ue: {
-		description: "Číslo reprezentující pravděpodobnost chyby z rozbalení fáze pro časový průběh daného bodu (na základě pouze časové informace), vždy >=0, vždy <=1",
-		show: []
+		description: "Číslo reprezentující pravděpodobnost chyby z rozbalení fáze pro časový průběh daného bodu (na základě pouze časové informace), vždy >=0, vždy <=1"
 	},
 	corr_ue: {
-		description: "Počet opravených chyb z rozbalení fáze v daném průběhu",
-		show: []
+		description: "Počet opravených chyb z rozbalení fáze v daném průběhu"
 	},
 	vel_last: {
-		description: "Rychlost [mm/r] v posledním klasifikovaném úseku",
-		show: []
+		description: "Rychlost v posledním klasifikovaném úseku",
+		unit: "mm/r"
 	},
 	svel_last: {
-		description: "Sm. odchylka rychlosti (reálná hodnota, [mm/r]) v posledním klasifikovaném úseku",
-		show: []
+		description: "Sm. odchylka rychlosti (reálná hodnota) v posledním klasifikovaném úseku",
+		unit: "mm/r"
 	},
 	td_last: {
-		description: "Celkový posun (total displacement) [mm] v posledním klasifikovaném úseku (pozn. tento klasifikovaný úsek je pro každý bod obecně jinak dlouhý!)",
-		show: []
+		description: "Celkový posun (total displacement) v posledním klasifikovaném úseku (pozn. tento klasifikovaný úsek je pro každý bod obecně jinak dlouhý!)",
+		unit: "mm"
 	},
 	std_last: {
-		description: "Sm. odchylka [mm] celkového pohybu v posledním klasifikovaném úseku",
-		show: []
+		description: "Sm. odchylka celkového pohybu v posledním klasifikovaném úseku",
+		unit: "mm"
 	},
 	cl_tempc: {
-		description: "korelační koeficient mezi časovým průběhem a přibližnými teplotami, udává možnost dilatace daného bodu vlivem teploty: VERY WEAK/WEAK/MODERATE/STRONG/VERY STRONG",
-		show: []
+		description: "korelační koeficient mezi časovým průběhem a přibližnými teplotami, udává možnost dilatace daného bodu vlivem teploty: VERY WEAK/WEAK/MODERATE/STRONG/VERY STRONG"
 	},
 	dil_c: {
-		description: "odhad dilatačního koeficientu [mm/degC] pro body s CL_TEMPC jiné než VERY WEAK",
-		show: []
+		description: "odhad dilatačního koeficientu pro body s CL_TEMPC jiné než VERY WEAK",
+		unit: "mm/degC"
 	},
 	td: {
-		description: "Celkový posun v LOS [mm] za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
+		description: "Celkový posun v LOS za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
 		name: "Posun v LOS za vybraný časový úsek",
 		regex: /^td_([0-9]+)/,
 		basePeriod: true,
-		show: ["track"]
+		unit: "mm"
 	},
 	std: {
-		description: "Směrodatná odchylka posunu v LOS [mm]  za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
+		description: "Směrodatná odchylka posunu v LOS za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
 		name: "Směrodatná odchylka posunu v LOS  za vybraný časový úsek",
 		regex: /^std_([0-9]+)/,
 		basePeriod: true,
-		show: ["track"]
+		unit: "mm"
 	},
 	d: {
 		name: "Posun",
-		description: "hodnota polohy daného bodu [mm] pro dané datum",
+		description: "hodnota polohy daného bodu pro dané datum",
 		regex: /^d_([0-9]{8})/,
-		show: []
+		unit: "mm"
 	},
 	m: {
 		name: "Posun",
-		description: "modelová poloha daného bodu [mm] pro dané datum",
+		description: "modelová poloha daného bodu pro dané datum",
 		regex: /^m_([0-9]{8})/,
-		show: []
+		unit: "mm"
 	},
 	s: {
 		name: "Posun",
-		description: "vyhlazená hodnota polohy daného bodu [mm] pro dané datum",
+		description: "vyhlazená hodnota polohy daného bodu pro dané datum",
 		regex: /^s_([0-9]{8})/,
-		show: []
+		unit: "mm"
 	},
 	risk: {
 		name: "Třída rizika posunu v LOS za vybraný časový úsek",
 		description: "Třída rizika pohybu dle celkového posunu v LOS  za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
 		regex: /^risk_([0-9]+)/,
-		basePeriod: true,
-		show: ["track"]
+		basePeriod: true
 	},
 	rel: {
 		name: "Třída spolehlivost v LOS za vybraný časový úsek",
 		description: "Třída spolehlivosti pohybu směrodatné odchylky celkového posunu v LOS  za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
 		regex: /^rel_([0-9]+)/,
-		basePeriod: true,
-		show: ["track"]
+		basePeriod: true
 	},
 	point_no: {
 		description: "Počet bodů pro dekompozici (indikativní míra spolehlivosti)",
-		name: "Počet bodů pro dekompozici",
-		show: ["zoneClassification"]
+		name: "Počet bodů pro dekompozici"
 	},
 	track_no: {
 		name: "Počet tracků pro dekompozici",
-		description: "Počet tracků pro dekompozici (indikativní míra spolehlivosti)",
-		show: ["zoneClassification"]
+		description: "Počet tracků pro dekompozici (indikativní míra spolehlivosti)"
 	},
 	class: {
 		name: "Třída směru pohybu dle testování směrové dekompozice",
-		description: "Určení třídy směru pohybu a míry jeho spolehlivosti statistickým testováním směrové dekompozice pro blízké body z více drah",
-		show: ["zoneClassification"]
+		description: "Určení třídy směru pohybu a míry jeho spolehlivosti statistickým testováním směrové dekompozice pro blízké body z více drah"
 	},
 	rel_class: {
 		name: "Míra spolehlivosti",
-		description: "Míra spolehlivosti určení typu pohybu",
-		show: ["zoneClassification"]
+		description: "Míra spolehlivosti určení typu pohybu"
 	},
 	var_vt_fn: {
-		name: "Statisticky ověřený vertikální posun|rychlost [mm|mm/rok] (X dnů před Y)",
+		name: "Statisticky ověřený vertikální posun ve vybraném časovém úseku před posledním měřením",
 		description: "Velikost vertikálního pohybu v buňce pro body, kde byl statistickým testováním ověřen vertikální směr posunu (hypotéza o vert. pohybu nebyla na dané hladině spolehlivosti zamítnuta)",
 		alias: "td_vt_fn",
-		show: ["zoneClassification"]
+		unit: "mm"
 	},
 	svar_vt_fn: {
 		name: "Směrodatná odchylka statisticky ověřeného vertikálního posunu ve vybraném časovém úseku před posledním měřením",
 		description: "Směrodatná odchylka vertikálního pohybu v buňce pro body, kde byl statistickým testováním ověřen vertikální směr posunu (hypotéza o vert. pohybu nebyla na dané hladině spolehlivosti zamítnuta)",
-		alias: "std_vt_fn",
-		show: ["zoneClassification"]
+		alias: "std_vt_fn"
 	},
 	var_u2: {
-		name: "Vertikální komponenta posunu|rychlosti [mm|mm/rok] po ověření ve vybraném časovém úseku před posledním měřením",
+		name: "Vertikální komponenta posunu po ověření ve vybraném časovém úseku před posledním měřením)",
 		description: "Velikost vertikální komponenta posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
 		alias: "td_u2",
-		show: ["zoneClassification"]
+		unit: "mm"
 	},
 	var_e2: {
-		name: "Horizontální komponenta posunu|rychlosti [mm|mm/rok] po ověření ve vybraném časovém úseku před posledním měřením",
+		name: "Horizontální komponenta posunu po ověření ve vybraném časovém úseku před posledním měřením",
 		description: "Velikost východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
 		alias: "td_e2",
-		show: ["zoneClassification"]
+		unit: "mm"
 	},
 	svar_u2: {
-		name: "Směrodatná odchylka vertikální komponenty posunu|rychlosti [mm|mm/rok] po ověření ve vybraném časovém úseku před posledním měřením",
+		name: "Směrodatná odchylka vertikální komponenty posunu po ověření ve vybraném časovém úseku před posledním měřením",
 		description: "Směrodatná odchylka velikosti vertikální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
 		alias: "std_u2",
-		show: ["zoneClassification"]
+		unit: "mm"
 	},
 	svar_e2: {
-		name: "Směrodatná odchylka horizontální komponenty posunu|rychlosti [mm|mm/rok] po ověření ve vybraném časovém úseku před posledním měřením",
+		name: "Směrodatná odchylka horizontální komponenty posun po ověření ve vybraném časovém úseku před posledním měřením",
 		description: "Směrodatná odchylka velikosti východo-západní horizontální komponenty posunu pro body, kde byl statistickým testováním ověřen významný posun v horizontálním směru po směrové dekompozici vektoru z LOS",
 		alias: "std_e2",
-		show: ["zoneClassification"]
+		unit: "mm"
 	},
 	risk_var: {
 		name: "Třída rizika statisticky ověřeného vertikálního posunu  ve vybraném časovém úseku před posledním měřením",
 		description: "Třída rizika vertikálního pohybu pohybu v buňce dle vertikálního posunu  za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
-		alias: "risk_td",
-		show: ["zoneClassification"]
+		alias: "risk_td"
 	},
 	rel_var: {
 		name: "Třída spolehlivosti statisticky ověřeného vertikálního posunu  ve vybraném časovém úseku před posledním měřením",
 		description: "Třída spolehlivosti vertikálního pohybu dle směrodatné odchylky vertikálního posunu za vybraný časový úsek (daný počtem dnů vybraného úseku před posledním měřením v časové řadě)",
-		alias: "rel_td",
-		show: ["zoneClassification"]
+		alias: "rel_td"
+	},
+	id_t44: {
+		name: "ID",
+		description: "IDs of points from the source SHPs used for the decomposition"
+	},
+	id_t95: {
+		name: "ID",
+		description: "IDs of points from the source SHPs used for the decomposition"
+	},
+	id_t168: {
+		name: "ID",
+		description: "IDs of points from the source SHPs used for the decomposition"
 	}
 };
 
@@ -492,7 +501,7 @@ class InsarSzdcImporter {
 		});
 
 		let customLayers = [];
-		for(let customLayerDefinition of CUSTOM_LAYER_DEFINITIONS) {
+		for (let customLayerDefinition of CUSTOM_LAYER_DEFINITIONS) {
 			let existingLayerTemplate = _.find(existingLayerTemplates, (existingLayerTemplate) => {
 				return existingLayerTemplate.data.nameDisplay === customLayerDefinition.layerTemplateNameDisplay;
 			});
@@ -562,15 +571,18 @@ class InsarSzdcImporter {
 				{}
 			);
 
-			customLayers.push(
-				{
-					key: customLayerDefinition.layerKey,
-					data: {
-						layerTemplateKey: layerTemplate.key,
-						opacity: customLayerDefinition.opacity || null
-					}
+			let customLayer = {
+				key: customLayerDefinition.layerKey,
+				data: {
+					layerTemplateKey: layerTemplate.key
 				}
-			)
+			};
+
+			if (customLayerDefinition.opacity) {
+				customLayer.data.opacity = customLayerDefinition.opacity;
+			}
+
+			customLayers.push(customLayer);
 		}
 
 		return customLayers;
@@ -580,12 +592,12 @@ class InsarSzdcImporter {
 		_.each(InsarSzdcImporterStyles, (styleDefinition) => {
 			_.each(styleDefinition.data.definition.rules, (rule) => {
 				_.each(rule.styles, (style) => {
-					if(style.hasOwnProperty(`attributeKey`)) {
+					if (style.hasOwnProperty(`attributeKey`)) {
 						let existingAttribute = _.find(processData.attributes, (attribute) => {
 							return attribute.data.nameInternal === style.attributeKey;
 						});
 
-						if(existingAttribute) {
+						if (existingAttribute) {
 							style.attributeKey = existingAttribute.key;
 						}
 					}
@@ -618,7 +630,7 @@ class InsarSzdcImporter {
 			let property;
 			if (areaTreeLevel.data.nameInternal.startsWith(`Track`)) {
 				property = `track`;
-			} else if(areaTreeLevel.data.nameInternal.startsWith(`Zone`)) {
+			} else if (areaTreeLevel.data.nameInternal.startsWith(`Zone`)) {
 				property = `zoneClassification`;
 			}
 
@@ -627,7 +639,7 @@ class InsarSzdcImporter {
 					return style.data.nameInternal === `${areaTreeLevel.data.nameInternal} - ${attributeName}`;
 				});
 
-				if(style) {
+				if (style) {
 					configurationData[property].views[attributeName].style[areaTreeLevel.key] = style.key;
 				}
 			});
@@ -649,7 +661,7 @@ class InsarSzdcImporter {
 					return attribute.data.nameInternal === attributeNameInternal;
 				});
 
-				if(existingAttribute) {
+				if (existingAttribute) {
 					attributes.push(existingAttribute.key);
 				}
 			});
@@ -658,7 +670,7 @@ class InsarSzdcImporter {
 		});
 
 		_.each(configurationData.zoneClassification.views, (definition, viewName) => {
-			if(_.isArray(definition.attributes)) {
+			if (_.isArray(definition.attributes)) {
 				let attributes = [];
 
 				_.each(definition.attributes, (attributeNameInternal) => {
@@ -666,18 +678,18 @@ class InsarSzdcImporter {
 						return attribute.data.nameInternal === attributeNameInternal;
 					});
 
-					if(existingAttribute) {
+					if (existingAttribute) {
 						attributes.push(existingAttribute.key);
 					}
 				});
 
 				definition.attributes = attributes;
-			} else if(_.isObject(definition.attributes)) {
+			} else if (_.isObject(definition.attributes)) {
 				_.each(definition.attributes, (value, key) => {
 					let existingAttribute = _.find(processData.attributes, (attribute) => {
 						return attribute.data.nameInternal === value;
 					});
-					if(existingAttribute) {
+					if (existingAttribute) {
 						definition.attributes[key] = existingAttribute.key;
 					}
 				})
@@ -694,20 +706,20 @@ class InsarSzdcImporter {
 			}
 		});
 
-		_.each(ATTRIBUTE_DEFINITIONS, (attributeDefinition, attributeDefinitionNameInternal) => {
-			let existingAttribute = _.find(processData.attributes, (attribute) => {
-				let nameInternal = attributeDefinitionNameInternal;
-				if(attributeDefinition.alias) {
-					nameInternal = attributeDefinition.alias;
+		let caseTypes = ["track", "zoneClassification"];
+		_.each(caseTypes, (caseType) => {
+			let attributesToShowKeys = [];
+			_.each(configurationData[caseType].attributesToShow, (attributeNameInternal) => {
+				let attributeToShow = _.find(processData.attributes, (attribute) => {
+					return attribute.data.nameInternal === attributeNameInternal;
+				});
+
+				if(attributeToShow) {
+					attributesToShowKeys.push(attributeToShow.key);
 				}
-				return attribute.data.nameInternal === nameInternal;
 			});
 
-			if(existingAttribute) {
-				_.each(attributeDefinition.show, (type) => {
-					configurationData[type].attributesToShow.push(existingAttribute.key);
-				});
-			}
+			configurationData[caseType].attributesToShow = attributesToShowKeys;
 		});
 
 		_.each(processData.areaTreeLevels, (areaTreeLevel) => {
@@ -715,6 +727,25 @@ class InsarSzdcImporter {
 		});
 
 		configurationData.customLayers = processData.customLayers;
+
+		_.each(configurationData.zoneClassification.tracks, (trackDefinition, key) => {
+			_.each(processData.analyzeResults.columnsPerLayer, (columns, layerName) => {
+				if(layerName.includes(key)) {
+					let [nameDisplay, nameInternal, isClass, isTrack, classPeriod, trackNo] = this.getMetadataFromLayerName(layerName);
+
+					let areaTree = _.find(processData.areaTrees, (areaTree) => {
+						return areaTree.data.nameInternal === nameInternal;
+					});
+
+					let attribute = _.find(processData.attributes, (attribute) => {
+						return attribute.data.nameInternal === trackDefinition.idAttribute;
+					});
+
+					trackDefinition.areaTree = areaTree.key;
+					trackDefinition.idAttribute = attribute.key;
+				};
+			})
+		});
 
 		processData.configuration.data.data = configurationData;
 		return this._pgApplicationsCrud.update(
@@ -780,15 +811,15 @@ class InsarSzdcImporter {
 				});
 
 				let period, match;
-				if(isTrack) {
-					if(attributeDefinition.regex && !attributeDefinition.basePeriod) {
+				if (isTrack) {
+					if (attributeDefinition.regex && !attributeDefinition.basePeriod) {
 						match = attributeDataSource.data.columnName.match(attributeDefinition.regex);
 						period = _.find(processData.attributePeriods, (attributePeriod) => {
 							return attributePeriod.data.nameInternal === match[1];
 						})
-					} else if(attributeDefinition.regex && attributeDefinition.basePeriod) {
+					} else if (attributeDefinition.regex && attributeDefinition.basePeriod) {
 						match = attributeDataSource.data.columnName.match(attributeDefinition.regex);
-						if(!BASIC_PERIOD_DAYS.includes(Number(match[1]))) {
+						if (!BASIC_PERIOD_DAYS.includes(Number(match[1]))) {
 							period = _.find(processData.basicPeriods, (basicPeriod) => {
 								return basicPeriod.data.nameInternal === String(BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]);
 							});
@@ -802,8 +833,8 @@ class InsarSzdcImporter {
 							return basicPeriod.data.nameInternal === String(BASIC_PERIOD_DAYS[BASIC_PERIOD_DAYS.length - 1]);
 						});
 					}
-				} else if(isClass) {
-					if(BASIC_PERIOD_DAYS.includes(classPeriod)) {
+				} else if (isClass) {
+					if (BASIC_PERIOD_DAYS.includes(classPeriod)) {
 						period = _.find(processData.basicPeriods, (basicPeriod) => {
 							return basicPeriod.data.nameInternal === String(classPeriod);
 						});
