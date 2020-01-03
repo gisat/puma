@@ -2,7 +2,7 @@ module.exports = [
 	{
 		"key": "9796b103-d1e2-4c54-abc7-8ca38e840510",
 		"data": {
-			"nameDisplay": "Track 168 - totalDisplacement",
+			"nameDisplay": null,
 			"nameInternal": "Track 168 - totalDisplacement",
 			"description": null,
 			"source": "definition",
@@ -149,7 +149,7 @@ module.exports = [
 	{
 		"key": "22a39704-ac42-41a7-a790-4bf767118315",
 		"data": {
-			"nameDisplay": "Track 44 - totalDisplacement",
+			"nameDisplay": null,
 			"nameInternal": "Track 44 - totalDisplacement",
 			"description": null,
 			"source": "definition",
@@ -296,7 +296,7 @@ module.exports = [
 	{
 		"key": "04f52df2-5946-4a44-ba31-3d63a3fb031b",
 		"data": {
-			"nameDisplay": "Track 168 - dynamicTrend",
+			"nameDisplay": null,
 			"nameInternal": "Track 168 - dynamicTrend",
 			"description": null,
 			"source": "definition",
@@ -341,7 +341,7 @@ module.exports = [
 	{
 		"key": "63599900-c803-4536-b06b-5404aae3a451",
 		"data": {
-			"nameDisplay": "Track 168 - averageVelocity",
+			"nameDisplay": null,
 			"nameInternal": "Track 168 - averageVelocity",
 			"description": null,
 			"source": "definition",
@@ -510,7 +510,7 @@ module.exports = [
 	{
 		"key": "a6fa80f6-52d8-454f-b69e-c9fd02e63884",
 		"data": {
-			"nameDisplay": "Track 95 - averageVelocity",
+			"nameDisplay": null,
 			"nameInternal": "Track 95 - averageVelocity",
 			"description": null,
 			"source": "definition",
@@ -679,7 +679,7 @@ module.exports = [
 	{
 		"key": "ed93f916-e0c5-47d4-ab9a-aa33c5664bc1",
 		"data": {
-			"nameDisplay": "Track 95 - totalDisplacement",
+			"nameDisplay": null,
 			"nameInternal": "Track 95 - totalDisplacement",
 			"description": null,
 			"source": "definition",
@@ -826,7 +826,7 @@ module.exports = [
 	{
 		"key": "c57e320e-d5fd-4510-89d3-1ff5b03644ed",
 		"data": {
-			"nameDisplay": "Track 95 - dynamicTrend",
+			"nameDisplay": null,
 			"nameInternal": "Track 95 - dynamicTrend",
 			"description": null,
 			"source": "definition",
@@ -871,7 +871,7 @@ module.exports = [
 	{
 		"key": "62963ad4-c57a-4edf-8669-6fa49b0fac49",
 		"data": {
-			"nameDisplay": "Track 44 - dynamicTrend",
+			"nameDisplay": null,
 			"nameInternal": "Track 44 - dynamicTrend",
 			"description": null,
 			"source": "definition",
@@ -916,7 +916,7 @@ module.exports = [
 	{
 		"key": "94b4f63a-fbf7-412c-87ff-c682ba0a40e4",
 		"data": {
-			"nameDisplay": "Track 44 - progress",
+			"nameDisplay": null,
 			"nameInternal": "Track 44 - progress",
 			"description": null,
 			"source": "definition",
@@ -961,7 +961,7 @@ module.exports = [
 	{
 		"key": "69930d76-e98c-4a79-ad10-a26f877b3574",
 		"data": {
-			"nameDisplay": "Track 44 - averageVelocity",
+			"nameDisplay": null,
 			"nameInternal": "Track 44 - averageVelocity",
 			"description": null,
 			"source": "definition",
@@ -1130,7 +1130,7 @@ module.exports = [
 	{
 		"key": "99db5cf4-a42d-49fe-8327-d1bbb158ca24",
 		"data": {
-			"nameDisplay": "Track 168 - progress",
+			"nameDisplay": null,
 			"nameInternal": "Track 168 - progress",
 			"description": null,
 			"source": "definition",
@@ -1175,7 +1175,7 @@ module.exports = [
 	{
 		"key": "e4dfba02-5d60-4d47-a37c-0439312fefbf",
 		"data": {
-			"nameDisplay": "Track 95 - progress",
+			"nameDisplay": null,
 			"nameInternal": "Track 95 - progress",
 			"description": null,
 			"source": "definition",
@@ -1221,7 +1221,7 @@ module.exports = [
 		"key": "9ffbd510-dd2a-4979-bc59-0242c16fbd17",
 		"data": {
 			"nameDisplay": "Zone classification - verticalMovement",
-			"nameInternal": "Zone classification - verticalMovement",
+			"nameInternal": "",
 			"description": "",
 			"source": "definition",
 			"definition": {
@@ -1229,37 +1229,89 @@ module.exports = [
 					{
 						"styles": [
 							{
-								"shape": "circle"
+								"shape": "circle",
+								"fillOpacity": 1,
+								"outlineColor": "#666666",
+								"outlineWidth": 0
 							},
 							{
 								"attributeKey": "td_vt_fn",
 								"attributeClasses": [
 									{
-										"fill": "#edf8fb",
+										"fill": "#b1001d",
 										"interval": [
-											0,
-											25
+											-1000,
+											-20
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									},
 									{
-										"fill": "#b3cde3",
+										"fill": "#f37b4d",
 										"interval": [
-											25,
-											50
+											-20,
+											-10
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									},
 									{
-										"fill": "#8c96c6",
+										"fill": "#fbfa03",
 										"interval": [
-											50,
-											75
+											-10,
+											-4
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									},
 									{
-										"fill": "#88419d",
+										"fill": "#a1ff62",
 										"interval": [
-											75,
-											101
+											-4,
+											4
+										],
+										"intervalBounds": [
+											true,
+											false
+										]
+									},
+									{
+										"fill": "#a8fff8",
+										"interval": [
+											4,
+											10
+										],
+										"intervalBounds": [
+											true,
+											false
+										]
+									},
+									{
+										"fill": "#87cdff",
+										"interval": [
+											10,
+											20
+										],
+										"intervalBounds": [
+											true,
+											false
+										]
+									},
+									{
+										"fill": "#2f3fd2",
+										"interval": [
+											20,
+											1000
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									}
 								]
@@ -1277,7 +1329,7 @@ module.exports = [
 		"key": "18ff8fd1-3257-49b2-8199-9eb0812d8a55",
 		"data": {
 			"nameDisplay": "Zone classification - classification",
-			"nameInternal": "Zone classification - classification",
+			"nameInternal": "",
 			"description": "",
 			"source": "definition",
 			"definition": {
@@ -1285,40 +1337,40 @@ module.exports = [
 					{
 						"styles": [
 							{
-								"shape": "circle"
+								"shape": "circle",
+								"outlineWidth": 0
 							},
 							{
 								"attributeKey": "class",
-								"attributeClasses": [
-									{
-										"fill": "#edf8fb",
-										"interval": [
-											0,
-											25
-										]
+								"attributeValues": {
+									"OK_1": {
+										"fill": "#007a0c"
 									},
-									{
-										"fill": "#b3cde3",
-										"interval": [
-											25,
-											50
-										]
+									"OK_3": {
+										"fill": "#007a0c"
 									},
-									{
-										"fill": "#8c96c6",
-										"interval": [
-											50,
-											75
-										]
+									"DIR_NA": {
+										"fill": "#bfbfbf"
 									},
-									{
-										"fill": "#88419d",
-										"interval": [
-											75,
-											101
-										]
+									"VERT_1": {
+										"fill": "#0015ff"
+									},
+									"VERT_3": {
+										"fill": "#0015ff"
+									},
+									"COMP1_ACC": {
+										"fill": "#bfbfbf"
+									},
+									"COMP2_ACC": {
+										"fill": "#bfbfbf"
+									},
+									"COMP1_HORIZ": {
+										"fill": "#ffea01"
+									},
+									"COMP2_HORIZ": {
+										"fill": "#ffea01"
 									}
-								]
+								}
 							}
 						]
 					}
@@ -1333,7 +1385,7 @@ module.exports = [
 		"key": "b33bcb31-017d-4b13-8132-be542a9b9f58",
 		"data": {
 			"nameDisplay": "Zone classification - combinedMovement",
-			"nameInternal": "Zone classification - combinedMovement",
+			"nameInternal": "",
 			"description": "",
 			"source": "definition",
 			"definition": {
@@ -1341,7 +1393,12 @@ module.exports = [
 					{
 						"styles": [
 							{
-								"shape": "circle-with-arrow"
+								"shape": "circle-with-arrow",
+								"arrowColor": "#39ff14",
+								"arrowWidth": 3,
+								"fillOpacity": 1,
+								"outlineColor": "#666666",
+								"outlineWidth": 0
 							},
 							{
 								"attributeKey": "td_e2",
@@ -1375,31 +1432,80 @@ module.exports = [
 								"attributeKey": "td_u2",
 								"attributeClasses": [
 									{
-										"fill": "#edf8fb",
+										"fill": "#b1001d",
 										"interval": [
-											0,
-											25
+											-1000,
+											-20
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									},
 									{
-										"fill": "#b3cde3",
+										"fill": "#f37b4d",
 										"interval": [
-											25,
-											50
+											-20,
+											-10
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									},
 									{
-										"fill": "#8c96c6",
+										"fill": "#fbfa03",
 										"interval": [
-											50,
-											75
+											-10,
+											-4
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									},
 									{
-										"fill": "#88419d",
+										"fill": "#a1ff62",
 										"interval": [
-											75,
-											101
+											-4,
+											4
+										],
+										"intervalBounds": [
+											true,
+											false
+										]
+									},
+									{
+										"fill": "#a8fff8",
+										"interval": [
+											4,
+											10
+										],
+										"intervalBounds": [
+											true,
+											false
+										]
+									},
+									{
+										"fill": "#87cdff",
+										"interval": [
+											10,
+											20
+										],
+										"intervalBounds": [
+											true,
+											false
+										]
+									},
+									{
+										"fill": "#2f3fd2",
+										"interval": [
+											20,
+											1000
+										],
+										"intervalBounds": [
+											true,
+											false
 										]
 									}
 								]
