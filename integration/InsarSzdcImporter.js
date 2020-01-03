@@ -516,7 +516,7 @@ class InsarSzdcImporter {
 		});
 
 		let existingSpatialRelations = await this._pgRelationsCrud.get(
-			`spatal`,
+			`spatial`,
 			{
 				filter: {
 					applicationKey: APPLICATION_KEY

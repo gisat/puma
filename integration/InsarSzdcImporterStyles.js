@@ -1235,7 +1235,7 @@ module.exports = [
 								"outlineWidth": 0
 							},
 							{
-								"attributeKey": "td_vt_fn",
+								"attributeKey": "td_vt",
 								"attributeClasses": [
 									{
 										"fill": "#b1001d",
