@@ -115,15 +115,27 @@ const EXAMPLE_CONFIGURATION = {
 		views: {
 			classification: {
 				attributes: ["class"],
-				style: {}
+				style: {},
+				attributesToShow: {
+					basePeriod: ["point_no", "track_no"],
+					selectedPeriod: ["class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td"],
+				}
 			},
 			verticalMovement: {
 				attributes: ["td_vt_fn"],
-				style: {}
+				style: {},
+				attributesToShow: {
+					basePeriod: ["point_no", "track_no"],
+					selectedPeriod: ["class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td"],
+				}
 			},
 			combinedMovement: {
 				attributes: ["td_u2", "td_e2"],
-				style: {}
+				style: {},
+				attributesToShow: {
+					basePeriod: ["point_no", "track_no"],
+					selectedPeriod: ["class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td", "td_u2", "td_e2", "std_u2", "std_e2"],
+				}
 			}
 		},
 		tracks: {
