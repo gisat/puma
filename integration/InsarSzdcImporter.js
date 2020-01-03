@@ -86,11 +86,11 @@ const EXAMPLE_CONFIGURATION = {
 		areaTrees: [],
 		views: {
 			totalDisplacement: {
-				attributes: ["td", "std", "risk", "rel"],
+				attributes: ["td", "risk", "std", "rel"],
 				style: {},
 				attributesToShow: {
-					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel"]
 				}
 			},
 			dynamicTrend: {
@@ -98,8 +98,8 @@ const EXAMPLE_CONFIGURATION = {
 				style: {},
 				period: 1400,
 				attributesToShow: {
-					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel"]
 				}
 			},
 			progress: {
@@ -107,8 +107,8 @@ const EXAMPLE_CONFIGURATION = {
 				style: {},
 				period: 1400,
 				attributesToShow: {
-					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel"]
 				}
 			},
 			averageVelocity: {
@@ -116,8 +116,8 @@ const EXAMPLE_CONFIGURATION = {
 				style: {},
 				period: 1400,
 				attributesToShow: {
-					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel"]
 				}
 			}
 		},
