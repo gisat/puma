@@ -22,7 +22,7 @@ const ATTRIBUTE_ALIASES = {
 	progress: `cl_prg`,
 	averageVelocity: `vel_avg`,
 	classification: `class`,
-	verticalMovement: `td_vt_fn`,
+	verticalMovement: `td_vt`,
 	combinedMovement: {
 		vertical: `td_u2`,
 		eastWest: `td_e2`
@@ -87,22 +87,38 @@ const EXAMPLE_CONFIGURATION = {
 		views: {
 			totalDisplacement: {
 				attributes: ["td", "std", "risk", "rel"],
-				style: {}
+				style: {},
+				attributesToShow: {
+					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+				}
 			},
 			dynamicTrend: {
 				attributes: ["cl_dyn"],
 				style: {},
-				period: 1400
+				period: 1400,
+				attributesToShow: {
+					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+				}
 			},
 			progress: {
 				attributes: ["cl_prg"],
 				style: {},
-				period: 1400
+				period: 1400,
+				attributesToShow: {
+					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+				}
 			},
 			averageVelocity: {
 				attributes: ["vel_avg", "vel_acc"],
 				style: {},
-				period: 1400
+				period: 1400,
+				attributesToShow: {
+					basePeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
+					selectedPeriod: ["td", "risk", "std", "rel", "coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"]
+				}
 			}
 		},
 		dAttribute: null,
@@ -110,7 +126,7 @@ const EXAMPLE_CONFIGURATION = {
 		sAttribute: null,
 	},
 	zoneClassification: {
-		attributesToShow: ["point_no", "track_no", "class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td", "td_u2", "td_e2", "std_u2", "std_e2"],
+		attributesToShow: ["class", "td_vt", "std_vt", "risk_td", "rel_td", "td_u2", "td_e2", "std_u2", "std_e2", "var_u2", "var_e2", "svar_u2", "svar_e2", "point_no", "track_no"],
 		areaTree: "",
 		views: {
 			classification: {
@@ -118,15 +134,15 @@ const EXAMPLE_CONFIGURATION = {
 				style: {},
 				attributesToShow: {
 					basePeriod: ["point_no", "track_no"],
-					selectedPeriod: ["class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td"],
+					selectedPeriod: ["class", "td_vt", "std_vt", "risk_td", "rel_td"]
 				}
 			},
 			verticalMovement: {
-				attributes: ["td_vt_fn"],
+				attributes: ["td_vt"],
 				style: {},
 				attributesToShow: {
 					basePeriod: ["point_no", "track_no"],
-					selectedPeriod: ["class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td"],
+					selectedPeriod: ["class", "td_vt", "std_vt", "risk_td", "rel_td"]
 				}
 			},
 			combinedMovement: {
@@ -134,7 +150,7 @@ const EXAMPLE_CONFIGURATION = {
 				style: {},
 				attributesToShow: {
 					basePeriod: ["point_no", "track_no"],
-					selectedPeriod: ["class", "td_vt_fn", "std_vt_fn", "risk_td", "rel_td", "td_u2", "td_e2", "std_u2", "std_e2"],
+					selectedPeriod: ["class", "td_vt", "std_vt", "risk_td", "rel_td", "td_u2", "td_e2", "std_u2", "std_e2"]
 				}
 			}
 		},
@@ -292,16 +308,16 @@ const ATTRIBUTE_DEFINITIONS = {
 		name: "Míra spolehlivosti",
 		description: "Míra spolehlivosti určení typu pohybu"
 	},
-	var_vt_fn: {
+	var_vt: {
 		name: "Statisticky ověřený vertikální posun ve vybraném časovém úseku před posledním měřením",
 		description: "Velikost vertikálního pohybu v buňce pro body, kde byl statistickým testováním ověřen vertikální směr posunu (hypotéza o vert. pohybu nebyla na dané hladině spolehlivosti zamítnuta)",
-		alias: "td_vt_fn",
+		alias: "td_vt",
 		unit: "mm"
 	},
-	svar_vt_fn: {
+	svar_vt: {
 		name: "Směrodatná odchylka statisticky ověřeného vertikálního posunu ve vybraném časovém úseku před posledním měřením",
 		description: "Směrodatná odchylka vertikálního pohybu v buňce pro body, kde byl statistickým testováním ověřen vertikální směr posunu (hypotéza o vert. pohybu nebyla na dané hladině spolehlivosti zamítnuta)",
-		alias: "std_vt_fn"
+		alias: "std_vt"
 	},
 	var_u2: {
 		name: "Vertikální komponenta posunu po ověření ve vybraném časovém úseku před posledním měřením)",
@@ -719,8 +735,10 @@ class InsarSzdcImporter {
 		});
 
 		let caseTypes = ["track", "zoneClassification"];
+		let periodTypes = ["basePeriod", "selectedPeriod"];
 		_.each(caseTypes, (caseType) => {
 			let attributesToShowKeys = [];
+
 			_.each(configurationData[caseType].attributesToShow, (attributeNameInternal) => {
 				let attributeToShow = _.find(processData.attributes, (attribute) => {
 					return attribute.data.nameInternal === attributeNameInternal;
@@ -732,6 +750,22 @@ class InsarSzdcImporter {
 			});
 
 			configurationData[caseType].attributesToShow = attributesToShowKeys;
+
+			_.each(configurationData[caseType].views, (view) => {
+				_.each(periodTypes, (periodType) => {
+					let attributeKeys = [];
+					_.each(view.attributesToShow[periodType], (attributeNameInternal) => {
+						let attributeToShow = _.find(processData.attributes, (attribute) => {
+							return attribute.data.nameInternal === attributeNameInternal;
+						});
+
+						if(attributeToShow) {
+							attributeKeys.push(attributeToShow.key);
+						}
+					});
+					view.attributesToShow[periodType] = attributeKeys;
+				});
+			})
 		});
 
 		_.each(processData.areaTreeLevels, (areaTreeLevel) => {
