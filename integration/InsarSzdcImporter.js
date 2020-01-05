@@ -90,7 +90,8 @@ const EXAMPLE_CONFIGURATION = {
 				style: {},
 				attributesToShow: {
 					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel"]
+					selectedPeriod: ["td", "risk", "std", "rel"],
+					track: ["track", "orbit_type"]
 				}
 			},
 			dynamicTrend: {
@@ -99,7 +100,8 @@ const EXAMPLE_CONFIGURATION = {
 				period: 1400,
 				attributesToShow: {
 					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel"]
+					selectedPeriod: ["td", "risk", "std", "rel"],
+					track: ["track", "orbit_type"]
 				}
 			},
 			progress: {
@@ -108,7 +110,8 @@ const EXAMPLE_CONFIGURATION = {
 				period: 1400,
 				attributesToShow: {
 					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel"]
+					selectedPeriod: ["td", "risk", "std", "rel"],
+					track: ["track", "orbit_type"]
 				}
 			},
 			averageVelocity: {
@@ -117,7 +120,8 @@ const EXAMPLE_CONFIGURATION = {
 				period: 1400,
 				attributesToShow: {
 					basePeriod: ["coh", "vel_avg", "vel_acc", "cl_prg", "cl_dyn", "cl_noise"],
-					selectedPeriod: ["td", "risk", "std", "rel"]
+					selectedPeriod: ["td", "risk", "std", "rel"],
+					track: ["track", "orbit_type"]
 				}
 			}
 		},
@@ -364,6 +368,12 @@ const ATTRIBUTE_DEFINITIONS = {
 	id_t168: {
 		name: "ID",
 		description: "IDs of points from the source SHPs used for the decomposition"
+	},
+	track: {
+		name: "Track"
+	},
+	orbit_type: {
+		name: "Orbita"
 	}
 };
 
@@ -735,7 +745,7 @@ class InsarSzdcImporter {
 		});
 
 		let caseTypes = ["track", "zoneClassification"];
-		let periodTypes = ["basePeriod", "selectedPeriod"];
+		let periodTypes = ["basePeriod", "selectedPeriod", "track"];
 		_.each(caseTypes, (caseType) => {
 			let attributesToShowKeys = [];
 
@@ -753,17 +763,21 @@ class InsarSzdcImporter {
 
 			_.each(configurationData[caseType].views, (view) => {
 				_.each(periodTypes, (periodType) => {
-					let attributeKeys = [];
-					_.each(view.attributesToShow[periodType], (attributeNameInternal) => {
-						let attributeToShow = _.find(processData.attributes, (attribute) => {
-							return attribute.data.nameInternal === attributeNameInternal;
+					if(view.attributesToShow.hasOwnProperty(periodType)) {
+						let attributeKeys = [];
+
+						_.each(view.attributesToShow[periodType], (attributeNameInternal) => {
+							let attributeToShow = _.find(processData.attributes, (attribute) => {
+								return attribute.data.nameInternal === attributeNameInternal;
+							});
+
+							if(attributeToShow) {
+								attributeKeys.push(attributeToShow.key);
+							}
 						});
 
-						if(attributeToShow) {
-							attributeKeys.push(attributeToShow.key);
-						}
-					});
-					view.attributesToShow[periodType] = attributeKeys;
+						view.attributesToShow[periodType] = attributeKeys;
+					}
 				});
 			})
 		});
