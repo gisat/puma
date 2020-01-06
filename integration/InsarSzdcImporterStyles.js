@@ -1394,7 +1394,7 @@ module.exports = [
 						"styles": [
 							{
 								"shape": "circle-with-arrow",
-								"arrowColor": "#39ff14",
+								"arrowColor": "#000000",
 								"arrowWidth": 3,
 								"fillOpacity": 1,
 								"outlineColor": "#666666",
