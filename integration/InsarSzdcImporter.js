@@ -42,21 +42,21 @@ const CUSTOM_LAYER_DEFINITIONS = [
 		layerTemplateNameDisplay: "DEM",
 		opacity: 0.5,
 		type: "wms",
-		url: "http://192.168.2.206:8965/remote-geoserver-1/insar/wms",
+		url: "http://insar.gisat.cz/remote-geoserver-1/insar/wms",
 		layers: "insar:szdc_dmr5g_hillshaded"
 	},
 	{
 		layerKey: "pasportPrazce",
 		layerTemplateNameDisplay: "Pasport - pražce (rok)",
 		type: "wms",
-		url: "http://192.168.2.206:8965/remote-geoserver-1/insar/wms",
+		url: "http://insar.gisat.cz/remote-geoserver-1/insar/wms",
 		layers: "insar:trat140_pasport"
 	},
 	{
 		layerKey: "milestones",
 		layerTemplateNameDisplay: "Staničení",
 		type: "wms",
-		url: "http://192.168.2.206:8965/remote-geoserver-1/insar/wms",
+		url: "http://insar.gisat.cz/remote-geoserver-1/insar/wms",
 		layers: "insar:0112_stanicniky_wgs84"
 	}
 ];
