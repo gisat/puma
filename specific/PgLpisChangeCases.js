@@ -17,7 +17,7 @@ class PgLpisChangeCases extends PgCollection {
 			this._basePermissionResourceType
 		];
 
-		this._customSqlColumns = `ST_AsGeoJSON("geometryBefore") AS "geometryBefore", ST_AsGeoJSON("geometryAfter") AS "geometryAfter"`;
+		this._customSqlColumns = `, ST_AsGeoJSON("geometryBefore") AS "geometryBefore", ST_AsGeoJSON("geometryAfter") AS "geometryAfter"`;
 	}
 
 	getTableSql() {
