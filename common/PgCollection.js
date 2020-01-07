@@ -220,7 +220,7 @@ class PgCollection {
 				return this._pgPool
 					.query(
 						`INSERT INTO "${this._pgSchema}"."${this._tableName}" ("${columns.join('", "')}") VALUES (${_.map(values, (value, index) => {
-							return keys[index] === 'geometry' ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
+							return keys[index].startsWith('geometry') ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
 						}).join(', ')}) RETURNING ${this.getReturningSql()};`,
 						values
 					)
