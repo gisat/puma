@@ -441,7 +441,7 @@ class PgCollection {
 					let sets = [];
 
 					Object.keys(dataSourceData).forEach((property, index) => {
-						if (property === `geometry` || property === `bbox`) {
+						if (property.startsWith(`geometry`) || property === `bbox`) {
 							sets.push(`"${property}" = ST_GeomFromGeoJSON($${index + 1})`);
 						} else {
 							sets.push(`"${property}" = $${index + 1}`);
