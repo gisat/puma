@@ -183,7 +183,7 @@ module.exports = {
 	dromasLpis: {
 		enabled: false,
 		groupBy: `year`,	// possible values: year, year-month, year-month-day
-		pathTo2SScenes: `/mnt/gisat-network-devices/nas/pracovni-archiv-01/Sentinel_L2I_10m_5514`,
+		pathToS2Scenes: `/mnt/gisat-network-devices/nas/pracovni-archiv-01/Sentinel_L2I_10m_5514`,
 		pathToImageMosaicDirectory: `/home/mbabic/Dokumenty/TempStorage/Dromas/data_pro_casovou_radu/s2_scenes_for_lpis_10m`,
 		imageMosaicPgStorage: {
 			host: `localhost`,
