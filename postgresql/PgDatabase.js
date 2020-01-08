@@ -29,6 +29,7 @@ const PgApplications = require(`../application/PgApplications`);
 const PgViews = require(`../view/PgViews`);
 
 const PgUsers = require(`../user/PgUsers`);
+const PgGroups = require(`../user/PgGroups`);
 
 const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 const PgLpisChangeCases = require(`../specific/PgLpisChangeCases`);
@@ -92,7 +93,8 @@ class PgDatabase {
 			{
 				schema: config.pgSchema.data,
 				stores: [
-					PgUsers
+					PgUsers,
+					PgGroups
 				]
 			},
 			{

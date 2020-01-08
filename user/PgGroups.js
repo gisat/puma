@@ -4,10 +4,10 @@ class PgGroups extends PgCollection {
 	constructor(pool, schema, mongo) {
 		super(pool, schema, mongo, `PgGroups`);
 
-		this._legacy = false;
-		this._collectionName = this.constructor.collectionName();
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
+
+		this._keyType = this.constructor.keyType();
 
 		this._permissionResourceTypes = [
 			`group`
@@ -32,8 +32,17 @@ class PgGroups extends PgCollection {
 		}
 	}
 
-	static collectionName() {
-		return 'groups';
+	getTableSql() {
+		return `
+		BEGIN;
+		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
+			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
+		);
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "name" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "key" ${this._keyType} DEFAULT gen_random_uuid();
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "id" SERIAL;
+		COMMIT;
+		`;
 	}
 
 	static groupName() {
@@ -42,6 +51,10 @@ class PgGroups extends PgCollection {
 
 	static tableName() {
 		return 'groups';
+	}
+
+	static keyType() {
+		return `UUID`;
 	}
 }
 
