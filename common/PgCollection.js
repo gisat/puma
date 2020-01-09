@@ -95,6 +95,9 @@ class PgCollection {
 
 			return Promise.all(promises)
 				.then(async (results) => {
+					results = _.filter(results, (result) => {
+						return !result.error;
+					});
 					if (results && results.length) {
 						objects[this._groupName] = await this.get(
 							{
@@ -110,6 +113,8 @@ class PgCollection {
 						).then((getResult) => {
 							return getResult.data;
 						});
+					} else {
+						objects[this._groupName] = [];
 					}
 				})
 		} else {
