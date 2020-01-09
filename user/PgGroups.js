@@ -4,6 +4,8 @@ class PgGroups extends PgCollection {
 	constructor(pool, schema, mongo) {
 		super(pool, schema, mongo, `PgGroups`);
 
+		this._checkPermissions = false;
+
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
@@ -15,21 +17,21 @@ class PgGroups extends PgCollection {
 	}
 
 	parsePostgresRow(row) {
+		let data = {
+			...row
+		};
+
+		delete data.key;
+		delete data.id;
+		delete data.uuid;
+		delete data.total;
+		delete data.created;
+
 		return {
 			key: row.key,
-			uuid: row.uuid,
-			data: {
-				...row,
-				key: undefined,
-				id: undefined,
-				uuid: undefined,
-				password: undefined,
-				created: undefined,
-				created_by: undefined,
-				changed: undefined,
-				changed_by: undefined
-			}
-		}
+			id: row.id,
+			data
+		};
 	}
 
 	getTableSql() {

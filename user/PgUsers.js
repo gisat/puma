@@ -6,6 +6,8 @@ class PgUsers extends PgCollection {
 	constructor(pool, schema, mongo) {
 		super(pool, schema, mongo, `PgUsers`);
 
+		this._checkPermissions = false;
+
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 
@@ -28,20 +30,25 @@ class PgUsers extends PgCollection {
 	}
 
 	parsePostgresRow(row) {
+		let data = {
+			...row
+		};
+
+		delete data.key;
+		delete data.id;
+		delete data.uuid;
+		delete data.total;
+		delete data.created;
+		delete data.password;
+		delete data.created_by;
+		delete data.changed;
+		delete data.changed_by;
+
 		return {
 			key: row.key,
-			uuid: row.uuid,
-			data: {
-				...row,
-				key: undefined,
-				uuid: undefined,
-				password: undefined,
-				created: undefined,
-				created_by: undefined,
-				changed: undefined,
-				changed_by: undefined
-			}
-		}
+			id: row.id,
+			data
+		};
 	}
 
 	getTableSql() {
