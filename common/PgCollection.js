@@ -1320,7 +1320,8 @@ class PgCollection {
 			}
 		});
 
-		where.push(`"mc"."action" = 'create'`);
+		// todo there is an issue with data (users, groups) which do not have record in metadata_changes table, no data will be returned
+		// where.push(`"mc"."action" = 'create'`);
 
 		if (this._checkPermissions) {
 			where.push(`"${this._tableName}"."key"::TEXT IN (SELECT resource_id FROM "${config.pgSchema.data}"."permissions" WHERE user_id = ${user.id} AND permission = '${Permission.READ}' AND resource_type = '${this._tableName}' UNION SELECT resource_id FROM "${config.pgSchema.data}"."group_permissions" WHERE group_id IN (${_.map(user.groups, 'id').join(', ')}) AND permission = '${Permission.READ}' AND resource_type = '${this._tableName}')`);
