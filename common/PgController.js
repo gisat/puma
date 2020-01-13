@@ -16,6 +16,8 @@ class PgController {
 		app.post(`/rest/${group}/filtered`, this.get.bind(this));
 		app.post(`/rest/${group}/filtered/:type`, this.get.bind(this));
 
+		app.post(`/rest/${group}/count/:type`, this.get.bind(this, true));
+
 		app.delete(`/rest/${group}`, this.delete.bind(this));
 
 		app.put(`/rest/${group}`, this.update.bind(this));
@@ -51,8 +53,8 @@ class PgController {
 		});
 	}
 
-	get(request, response) {
-		return this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user)
+	get(doCountOnly, request, response) {
+		return this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user, doCountOnly)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);

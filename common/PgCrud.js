@@ -28,7 +28,7 @@ class PgCrud {
 		return [data, errors];
 	}
 
-	async get(types, request, user) {
+	async get(types, request, user, doCountOnly) {
 		let promises = [];
 		let payload = {
 			data: {}
@@ -39,25 +39,30 @@ class PgCrud {
 		_.forEach(this._pgTypes, (pgObject, pgType) => {
 			if (types.includes(pgType)) {
 				promises.push(
-					pgObject.store.get(request, user, {})
+					pgObject.store.get(request, user, {}, doCountOnly)
 						.then((results) => {
 							payload.data[pgType] = results['data'];
-							payload.changes = {
-								...payload.changes,
-								[pgType]: results['change']
-							};
 
-							if (_.isUndefined(payload['limit'])) {
-								payload['limit'] = results['limit'];
-							}
-							if (_.isUndefined(payload['offset'])) {
-								payload['offset'] = results['offset'];
-							}
-							if (_.isUndefined(payload['total'])) {
-								payload['total'] = results['total'];
-							}
+							if(!doCountOnly) {
+								payload.changes = {
+									...payload.changes,
+									[pgType]: results['change']
+								};
 
-							return pgObject.store.populateData(payload.data, user);
+								if (_.isUndefined(payload['limit'])) {
+									payload['limit'] = results['limit'];
+								}
+								if (_.isUndefined(payload['offset'])) {
+									payload['offset'] = results['offset'];
+								}
+								if (_.isUndefined(payload['total'])) {
+									payload['total'] = results['total'];
+								}
+
+								return pgObject.store.populateData(payload.data, user);
+							} else {
+								return payload;
+							}
 						})
 						.catch((error) => {
 							console.log(error);

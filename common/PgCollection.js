@@ -502,78 +502,96 @@ class PgCollection {
 			});
 	}
 
-	get(request, user, extra) {
-		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
-
-		return Promise.resolve()
-			.then(async () => {
-				if (this._pgMetadataRelations) {
-					let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
-					let requestedRelations = {};
-					_.each(possibleRelationColumns, (possibleRelationColumn) => {
-						if (request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
-							requestedRelations[possibleRelationColumn] = request.filter[possibleRelationColumn];
-							delete request.filter[possibleRelationColumn];
-						}
-					});
-
-					if (Object.keys(requestedRelations).length) {
-						await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
-							.then((baseKeys) => {
-								if (!baseKeys.length) {
-									// todo this add random uuid when there are no baseKeys, there must be better way how to handle this, fow now it's neccessary to do that to return correct results
-									baseKeys.push(uuidv4());
-								}
-								if (request.filter.hasOwnProperty(`key`)) {
-									if (!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
-										request.filter.key = -1;
-									} else if (_.isObject(request.filter.key)) {
-										if (request.filter.key.hasOwnProperty(`in`)) {
-											request.filter.key.in = _.intersectionWith(request.filter.key.in, baseKeys, (first, second) => {
-												return String(first) === String(second);
-											})
-										} else {
-											request.filter.key.in = baseKeys;
-										}
-									}
-								} else {
-									request.filter.key = {
-										in: baseKeys
-									}
-								}
-							});
-					}
+	getRecordCountByFilter(filter) {
+		let sql = `SELECT COUNT(*) FROM ${config.pgSchema.data}."metadata_changes" WHERE "action" = '${filter.status}' AND "resource_type" = '${this._tableName}' AND "changed" >= '${filter.from}'`;
+		return this._pgPool
+			.query(sql)
+			.then((pgResult) => {
+				return {
+					data: [{
+						filter: filter,
+						count: pgResult.rows[0].count
+					}]
 				}
 			})
-			.then(() => {
-				return this.postgresGet(request, user, extra, isAdmin)
-					.then((payload) => {
-						return payload;
-					})
-			})
-			.then((payload) => {
-				let resourceKeys = _.map(payload.data, 'key');
-				return this.getPermissionsForResourceKeys(resourceKeys, user, isAdmin)
-					.then((permissions) => {
-						payload = {
-							...payload,
-							data: _.map(payload.data, (data) => {
-								return {
-									...data,
-									permissions: permissions[data.key]
-								};
-							})
-						};
-						return payload;
-					});
-			})
-			.then((payload) => {
-				return this.getLatestChangeForUser(user)
-					.then((change) => {
-						payload.change = change;
-						return payload;
-					});
-			})
+	}
+
+	get(request, user, extra, doCountOnly) {
+		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
+
+		if(doCountOnly) {
+			return this.getRecordCountByFilter(request.filter);
+		} else {
+			return Promise.resolve()
+				.then(async () => {
+					if (this._pgMetadataRelations) {
+						let possibleRelationColumns = this._pgMetadataRelations.getMetadataTypeKeyColumnNames();
+						let requestedRelations = {};
+						_.each(possibleRelationColumns, (possibleRelationColumn) => {
+							if (request.filter && request.filter.hasOwnProperty(possibleRelationColumn)) {
+								requestedRelations[possibleRelationColumn] = request.filter[possibleRelationColumn];
+								delete request.filter[possibleRelationColumn];
+							}
+						});
+
+						if (Object.keys(requestedRelations).length) {
+							await this._pgMetadataRelations.getBaseKeysByRelations(requestedRelations)
+								.then((baseKeys) => {
+									if (!baseKeys.length) {
+										// todo this add random uuid when there are no baseKeys, there must be better way how to handle this, fow now it's neccessary to do that to return correct results
+										baseKeys.push(uuidv4());
+									}
+									if (request.filter.hasOwnProperty(`key`)) {
+										if (!_.isObject(request.filter.key) && !baseKeys.includes(String(request.filter.key))) {
+											request.filter.key = -1;
+										} else if (_.isObject(request.filter.key)) {
+											if (request.filter.key.hasOwnProperty(`in`)) {
+												request.filter.key.in = _.intersectionWith(request.filter.key.in, baseKeys, (first, second) => {
+													return String(first) === String(second);
+												})
+											} else {
+												request.filter.key.in = baseKeys;
+											}
+										}
+									} else {
+										request.filter.key = {
+											in: baseKeys
+										}
+									}
+								});
+						}
+					}
+				})
+				.then(() => {
+					return this.postgresGet(request, user, extra, isAdmin)
+						.then((payload) => {
+							return payload;
+						})
+				})
+				.then((payload) => {
+					let resourceKeys = _.map(payload.data, 'key');
+					return this.getPermissionsForResourceKeys(resourceKeys, user, isAdmin)
+						.then((permissions) => {
+							payload = {
+								...payload,
+								data: _.map(payload.data, (data) => {
+									return {
+										...data,
+										permissions: permissions[data.key]
+									};
+								})
+							};
+							return payload;
+						});
+				})
+				.then((payload) => {
+					return this.getLatestChangeForUser(user)
+						.then((change) => {
+							payload.change = change;
+							return payload;
+						});
+				})
+		}
 	}
 
 	getLatestChangeForUser(user) {
