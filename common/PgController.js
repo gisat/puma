@@ -13,8 +13,8 @@ class PgController {
 
 		app.get(`/rest/${group}`, this.get.bind(this));
 		app.get(`/rest/${group}/:type`, this.get.bind(this));
-		app.post(`/rest/${group}/filtered`, this.get.bind(this));
-		app.post(`/rest/${group}/filtered/:type`, this.get.bind(this));
+		app.post(`/rest/${group}/filtered`, this.get.bind(this, false));
+		app.post(`/rest/${group}/filtered/:type`, this.get.bind(this, false));
 
 		app.post(`/rest/${group}/count/:type`, this.get.bind(this, true));
 
