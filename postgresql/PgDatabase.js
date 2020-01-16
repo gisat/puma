@@ -107,6 +107,17 @@ class PgDatabase {
 			}
 		];
 
+		this._variousTables = [
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.various}.attachments (
+				"key" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+				"originalName" TEXT,
+				"localPath" TEXT,
+				"relatedResourceKey" TEXT,
+				"description" TEXT,
+				"created" TIMESTAMP
+			)`
+		];
+
 		this._legacyTables = [
 			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.permissions (
 				 id SERIAL PRIMARY KEY,
@@ -163,6 +174,10 @@ class PgDatabase {
 
 				for(let legacyTableSql of this._legacyTables) {
 					await this._pgPool.query(legacyTableSql);
+				}
+
+				for(let variousTableSql of this._variousTables) {
+					await this._pgPool.query(variousTableSql);
 				}
 			});
 	}

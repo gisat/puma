@@ -1,5 +1,9 @@
 const _ = require('lodash');
 const uuidv4 = require(`uuid/v4`);
+const child_process = require(`child_process`);
+const fs = require(`fs`);
+const fse = require(`fs-extra`);
+const path = require(`path`);
 
 const config = require(`../config`);
 
@@ -9,6 +13,9 @@ const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const PgMetadataChanges = require('../metadata/PgMetadataChanges');
 const PgMetadataRelations = require('../metadata/PgMetadataRelations');
+
+const proj4KrovakDefinition = `+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=570.8,85.7,462.8,4.998,1.587,5.261,3.56 +units=m +no_defs`;
+const proj4Wgs84Definition = `+proj=longlat +datum=WGS84 +no_defs`;
 
 /**
  * Generic class that is used throughout the application. It represents a collection of metadata items stored in the
@@ -56,10 +63,12 @@ class PgCollection {
 		this._relatedColumns = null;
 
 		this._allowMultipleRelations = false;
+
+		this._allowAttachments = false;
 	}
 
 	create(objects, user, extra, overridePermissions) {
-		let group = objects[this._groupName];
+		let groupObjects = objects[this._groupName];
 
 		let canCreate = true;
 
@@ -77,9 +86,20 @@ class PgCollection {
 			}
 		}
 
-		if (group) {
+		if (groupObjects) {
+
+			if (
+				groupObjects
+				&& canCreate
+				&& this._allowAttachments
+				&& extra.files
+				&& extra.files.attachments
+			) {
+				this.processAttachments(groupObjects, extra.files.attachments);
+			}
+
 			let promises = [];
-			group.forEach((object) => {
+			groupObjects.forEach((object) => {
 				if (canCreate) {
 					if (object.key && !object.data) {
 						promises.push({key: object.key});
@@ -117,9 +137,136 @@ class PgCollection {
 						objects[this._groupName] = [];
 					}
 				})
+				.then(() => {
+					if(extra.files && extra.files.attachments) {
+						this.clearAttachedFiles(extra.files.attachments);
+					}
+				})
 		} else {
 			throw new Error('Group is not set!');
 		}
+	}
+
+	clearAttachedFiles(attachements) {
+		_.each(attachements, (attachement) => {
+			fse.removeSync(attachement.path);
+		});
+	}
+
+	unzipPackage(pathToZipPackage, tempDirectory) {
+		// unzip breclav-after.zip -d ./breclav-after
+		child_process.execSync(`unzip ${pathToZipPackage} -d ${tempDirectory}`);
+		return _.map(fs.readdirSync(tempDirectory), (fileName) => {
+			return `${tempDirectory}/${fileName}`;
+		});
+	}
+
+	isShpSomeKrovak(pathToShpFile) {
+		// gdalsrsinfo breclav-after.shp | grep -i "krovak"
+		return !!(child_process.execSync(`gdalsrsinfo ${pathToShpFile} | grep -i "krovak"`));
+	}
+
+	getGeojsonFromShp(pathToShpFile, isKrovak) {
+		return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -s_srs '${proj4KrovakDefinition}' -t_srs '${proj4Wgs84Definition}' /dev/stdout ${pathToShpFile}`));
+	}
+
+	parseGeometriesFromAttachments(object, objects, user, extra) {
+		let attachments = _.isArray(extra.files.attachments) ? extra.files.attachments : [extra.files.attachments];
+		_.each(object.data, (value, property) => {
+			if (value.startsWith(`attachment:`)) {
+				let stringParts = value.split(`:`);
+				let attachmentName = stringParts[1];
+				let tempDirectory = `/tmp/${uuidv4()}`;
+
+				let pathToShpFile, isKrovak, geojson;
+
+				_.each(attachments, (attachment) => {
+					if (attachment.originalFilename === attachmentName && attachment.originalFilename.toLocaleLowerCase().endsWith(`.zip`)) {
+						let unzippedFiles = this.unzipPackage(attachment.path, tempDirectory);
+
+						_.each(unzippedFiles, (unzippedFile) => {
+							if (unzippedFile.toLowerCase().endsWith(`.shp`)) {
+								isKrovak = this.isShpSomeKrovak(unzippedFile);
+								pathToShpFile = unzippedFile;
+							}
+						});
+					}
+				});
+
+				if (pathToShpFile) {
+					geojson = this.getGeojsonFromShp(pathToShpFile, isKrovak);
+				}
+
+				if (geojson) {
+					object.data[property] = geojson.features[0].geometry;
+				}
+
+				fse.removeSync(tempDirectory);
+			}
+		});
+	}
+
+	processAttachments(groupObjects, attachments) {
+		let storageDirectory = `./datastorage`;
+		fse.mkdirpSync(storageDirectory);
+
+		let filesToKeep = [];
+		let attachementsMetadataToStore = [];
+
+		_.each(groupObjects, (groupObject) => {
+			if(
+				groupObject.hasOwnProperty(`attachments`)
+				&& _.isArray(groupObject.attachments)
+				&& groupObject.attachments.length
+			) {
+				if(!groupObject.key) {
+					groupObject.key = uuidv4();
+				}
+
+				_.each(groupObject.attachments, (groupObjectAttachmentFilename) => {
+					let attachedFile = _.find(attachments, (attachedFile) => {
+						return attachedFile.originalFilename === groupObjectAttachmentFilename;
+					});
+
+
+
+					if(attachedFile && !filesToKeep.includes(attachedFile)) {
+						filesToKeep.push(attachedFile);
+					}
+
+					attachementsMetadataToStore.push(
+						{
+							originalName: attachedFile.originalFilename,
+							localPath: `${storageDirectory}/${path.basename(attachedFile.path)}`,
+							relatedResourceKey: groupObject.key,
+							created: new Date().toISOString()
+						}
+					)
+				})
+			}
+		});
+
+		_.each(filesToKeep, (fileToKeey) => {
+			fse.copySync(fileToKeey.path, `${storageDirectory}/${path.basename(fileToKeey.path)}`);
+		});
+
+		_.each(attachementsMetadataToStore, async (attachementMetadataToStore) => {
+			let sql = [], columns = [], values = [];
+
+			_.each(attachementMetadataToStore, (value, column) => {
+				columns.push(`"${column}"`);
+				values.push(`'${value}'`);
+			});
+
+			sql.push(`INSERT INTO ${config.pgSchema.various}."attachments"`);
+			sql.push(`(${columns.join(', ')})`);
+			sql.push(`VALUES`);
+			sql.push(`(${values.join(', ')})`);
+
+			await this
+				._pgPool
+				.query(sql.join(` `));
+		});
 	}
 
 	createOne(object, objects, user, extra) {
@@ -127,6 +274,11 @@ class PgCollection {
 		return Promise.resolve()
 			.then(() => {
 				relations = this.parseRelations(object, objects, user, extra);
+			})
+			.then(() => {
+				if (this._allowAttachments && extra.files && extra.files.attachments) {
+					this.parseGeometriesFromAttachments(object, objects, user, extra);
+				}
 			})
 			.then(() => {
 				return this.postgresCreateOne(object, objects, user, extra);
@@ -148,7 +300,7 @@ class PgCollection {
 					.then(() => {
 						return createdObject;
 					})
-			})
+			});
 	}
 
 	mongoCreateOne(object, objects, user, extra) {
@@ -519,7 +671,7 @@ class PgCollection {
 	get(request, user, extra, doCountOnly) {
 		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
 
-		if(doCountOnly) {
+		if (doCountOnly) {
 			return this.getRecordCountByFilter(request.filter);
 		} else {
 			return Promise.resolve()
