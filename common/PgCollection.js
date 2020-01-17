@@ -207,7 +207,7 @@ class PgCollection {
 	}
 
 	processAttachments(groupObjects, attachments) {
-		let storageDirectory = `./datastorage`;
+		let storageDirectory = config.pathToDatastorage;
 		fse.mkdirpSync(storageDirectory);
 
 		let filesToKeep = [];
