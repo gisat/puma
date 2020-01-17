@@ -93,9 +93,8 @@ class PgCollection {
 				&& canCreate
 				&& this._allowAttachments
 				&& extra.files
-				&& extra.files.attachments
 			) {
-				this.processAttachments(groupObjects, extra.files.attachments);
+				this.processAttachments(groupObjects, extra.files);
 			}
 
 			let promises = [];
@@ -138,8 +137,8 @@ class PgCollection {
 					}
 				})
 				.then(() => {
-					if(extra.files && extra.files.attachments) {
-						this.clearAttachedFiles(extra.files.attachments);
+					if(extra.files && extra.files.length) {
+						this.clearAttachedFiles(extra.files);
 					}
 				})
 		} else {
@@ -147,9 +146,9 @@ class PgCollection {
 		}
 	}
 
-	clearAttachedFiles(attachements) {
-		_.each(attachements, (attachement) => {
-			fse.removeSync(attachement.path);
+	clearAttachedFiles(files) {
+		_.each(files, (file) => {
+			fse.removeSync(file.path);
 		});
 	}
 
@@ -171,18 +170,17 @@ class PgCollection {
 	}
 
 	parseGeometriesFromAttachments(object, objects, user, extra) {
-		let attachments = _.isArray(extra.files.attachments) ? extra.files.attachments : [extra.files.attachments];
 		_.each(object.data, (value, property) => {
 			if (value.startsWith(`attachment:`)) {
 				let stringParts = value.split(`:`);
-				let attachmentName = stringParts[1];
+				let attachmentUuid = stringParts[1];
 				let tempDirectory = `/tmp/${uuidv4()}`;
 
 				let pathToShpFile, isKrovak, geojson;
 
-				_.each(attachments, (attachment) => {
-					if (attachment.originalFilename === attachmentName && attachment.originalFilename.toLocaleLowerCase().endsWith(`.zip`)) {
-						let unzippedFiles = this.unzipPackage(attachment.path, tempDirectory);
+				_.each(extra.files, (fileMetadata, fileUuid) => {
+					if (fileUuid === attachmentUuid && fileMetadata.originalFilename.toLocaleLowerCase().endsWith(`.zip`)) {
+						let unzippedFiles = this.unzipPackage(fileMetadata.path, tempDirectory);
 
 						_.each(unzippedFiles, (unzippedFile) => {
 							if (unzippedFile.toLowerCase().endsWith(`.shp`)) {
@@ -206,7 +204,7 @@ class PgCollection {
 		});
 	}
 
-	processAttachments(groupObjects, attachments) {
+	processAttachments(groupObjects, files) {
 		let storageDirectory = config.pathToDatastorage;
 		fse.mkdirpSync(storageDirectory);
 
@@ -223,12 +221,8 @@ class PgCollection {
 					groupObject.key = uuidv4();
 				}
 
-				_.each(groupObject.attachments, (groupObjectAttachmentFilename) => {
-					let attachedFile = _.find(attachments, (attachedFile) => {
-						return attachedFile.originalFilename === groupObjectAttachmentFilename;
-					});
-
-
+				_.each(groupObject.attachments, (groupObjectAttachmentUuid) => {
+					let attachedFile = files[groupObjectAttachmentUuid];
 
 					if(attachedFile && !filesToKeep.includes(attachedFile)) {
 						filesToKeep.push(attachedFile);
@@ -276,7 +270,7 @@ class PgCollection {
 				relations = this.parseRelations(object, objects, user, extra);
 			})
 			.then(() => {
-				if (this._allowAttachments && extra.files && extra.files.attachments) {
+				if (this._allowAttachments && extra.files) {
 					this.parseGeometriesFromAttachments(object, objects, user, extra);
 				}
 			})
