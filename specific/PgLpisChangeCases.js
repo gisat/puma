@@ -1,3 +1,5 @@
+const moment = require(`moment`);
+
 const PgCollection = require('../common/PgCollection');
 
 const config = require(`../config`);
@@ -24,6 +26,31 @@ class PgLpisChangeCases extends PgCollection {
 		this._allowAttachments = true;
 	}
 
+	getCurrentWeekCaseCount() {
+		let currentWeekStart = moment().startOf('isoWeek').toISOString();
+		let sql = `SELECT count(*) FROM (SELECT resource_key, array_agg(change->>'status') AS changes FROM "${config.pgSchema.data}"."metadata_changes" WHERE changed >= '${currentWeekStart}' GROUP BY resource_key) AS sub WHERE NOT changes @> array['${config.projectSpecific.szifLpisZmenovaRizeni.currentWeekLimit.ne}'] and changes @> array['${config.projectSpecific.szifLpisZmenovaRizeni.currentWeekLimit.eq}'];`;
+		console.log(sql);
+		return this._pgPool
+			.query(
+				sql
+			)
+			.then((pgResult) => {
+				return Number(pgResult.rows[0].count);
+		});
+	}
+
+	populatePayloadWithAdditionalData(payload) {
+		return this
+			.getCurrentWeekCaseCount()
+			.then((count) => {
+				payload.other = {
+					[this._tableName]: {
+						weekCaseCount: count
+					}
+				};
+			})
+	}
+
 	populateObjectWithAdditionalData(object, user) {
 		let changes = [];
 		let attachments = [];
@@ -45,13 +72,13 @@ class PgLpisChangeCases extends PgCollection {
 				if (attachments) {
 					object.attachments = attachments;
 				}
-			});
+			})
 	}
 
 	getCaseChanges(caseKey, user) {
 		let isGisatUser = false;
 		_.each(user.groups, (group) => {
-			if(config.projectSpecific.szifLpisZmenovaRizeni.gisatGroupIds.includes(group.id)) {
+			if (config.projectSpecific.szifLpisZmenovaRizeni.gisatGroupIds.includes(group.id)) {
 				isGisatUser = true;
 			}
 		});
@@ -60,7 +87,7 @@ class PgLpisChangeCases extends PgCollection {
 			+ ` UNION `
 			+ `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL AND changed_by NOT IN (SELECT user_id FROM data.group_has_members WHERE group_id = ${config.projectSpecific.szifLpisZmenovaRizeni.gisatUserGroupId}) ORDER BY changed DESC LIMIT 1);`;
 
-		if(isGisatUser) {
+		if (isGisatUser) {
 			sql = `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed LIMIT 1 )`
 				+ ` UNION `
 				+ `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed DESC LIMIT 1);`;
@@ -69,7 +96,7 @@ class PgLpisChangeCases extends PgCollection {
 		return this._pgPool
 			.query(sql)
 			.then((pgResult) => {
-				if(pgResult.rows.length) {
+				if (pgResult.rows.length) {
 					return pgResult.rows;
 				}
 			});

@@ -67,7 +67,11 @@ class PgCollection {
 		this._allowAttachments = false;
 	}
 
-	populateObjectWithAdditionalData(object, user) {
+	populatePayloadWithAdditionalData(object, user) {
+	}
+
+	populateObjectWithAdditionalData(payload) {
+
 	}
 
 	create(objects, user, extra, overridePermissions) {
@@ -742,11 +746,15 @@ class PgCollection {
 							payload.change = change;
 							return payload;
 						});
-				}).
-				then(async (payload) => {
+				})
+				.then(async (payload) => {
 					for(let object of payload.data) {
 						await this.populateObjectWithAdditionalData(object, user);
 					}
+					return payload;
+				})
+				.then(async (payload) => {
+					await this.populatePayloadWithAdditionalData(payload);
 					return payload;
 				})
 		}

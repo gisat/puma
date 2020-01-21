@@ -49,6 +49,10 @@ class PgCrud {
 									[pgType]: results['change']
 								};
 
+								if(results.hasOwnProperty('other')) {
+									payload.other = results.other;
+								}
+
 								if (_.isUndefined(payload['limit'])) {
 									payload['limit'] = results['limit'];
 								}
