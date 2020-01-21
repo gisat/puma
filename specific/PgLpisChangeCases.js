@@ -29,7 +29,6 @@ class PgLpisChangeCases extends PgCollection {
 	getCurrentWeekCaseCount() {
 		let currentWeekStart = moment().startOf('isoWeek').toISOString();
 		let sql = `SELECT count(*) FROM (SELECT resource_key, array_agg(change->>'status') AS changes FROM "${config.pgSchema.data}"."metadata_changes" WHERE changed >= '${currentWeekStart}' GROUP BY resource_key) AS sub WHERE NOT changes @> array['${config.projectSpecific.szifLpisZmenovaRizeni.currentWeekLimit.ne}'] and changes @> array['${config.projectSpecific.szifLpisZmenovaRizeni.currentWeekLimit.eq}'];`;
-		console.log(sql);
 		return this._pgPool
 			.query(
 				sql
