@@ -67,6 +67,9 @@ class PgCollection {
 		this._allowAttachments = false;
 	}
 
+	populateObjectWithAdditionalData(object, user) {
+	}
+
 	create(objects, user, extra, overridePermissions) {
 		let groupObjects = objects[this._groupName];
 
@@ -230,6 +233,7 @@ class PgCollection {
 
 					attachementsMetadataToStore.push(
 						{
+							attachmentKey: groupObjectAttachmentUuid,
 							originalName: attachedFile.originalFilename,
 							localPath: `${storageDirectory}/${path.basename(attachedFile.path)}`,
 							relatedResourceKey: groupObject.key,
@@ -259,7 +263,9 @@ class PgCollection {
 
 			await this
 				._pgPool
-				.query(sql.join(` `));
+				.query(sql.join(` `))
+				.catch((error) => {
+				})
 		});
 	}
 
@@ -736,6 +742,12 @@ class PgCollection {
 							payload.change = change;
 							return payload;
 						});
+				}).
+				then(async (payload) => {
+					for(let object of payload.data) {
+						await this.populateObjectWithAdditionalData(object, user);
+					}
+					return payload;
 				})
 		}
 	}
@@ -896,7 +908,7 @@ class PgCollection {
 		let resourceIdsPerType = {};
 		return Promise.resolve()
 			.then(() => {
-				if (isAdmin) {
+				if (isAdmin || !this._checkPermissions) {
 					return Promise.resolve([null, true]);
 				} else {
 					return this._pgPool

@@ -1,4 +1,5 @@
 const _ = require(`lodash`);
+const bcrypt = require(`bcrypt`);
 
 const config = require(`../config`);
 
@@ -110,6 +111,7 @@ class PgDatabase {
 		this._variousTables = [
 			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.various}.attachments (
 				"key" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+				"attachmentKey" TEXT,
 				"originalName" TEXT,
 				"localPath" TEXT,
 				"relatedResourceKey" TEXT,
@@ -179,6 +181,8 @@ class PgDatabase {
 				for(let variousTableSql of this._variousTables) {
 					await this._pgPool.query(variousTableSql);
 				}
+
+				await this.ensureCustomData();
 			});
 	}
 
@@ -209,6 +213,55 @@ class PgDatabase {
 					}
 				}
 			});
+	}
+
+	async ensureCustomData() {
+		if(!config.customData || !Object.keys(config.customData).length) {
+			console.log(`There is no custom data to create`);
+		} else {
+			let queries = [];
+
+			_.each(config.customData, (data, tableIdentifier) => {
+				let tableIdentifierParts = tableIdentifier.split(`\.`);
+				let tableSchema = tableIdentifierParts[0];
+				let tableName = tableIdentifierParts[1];
+
+				_.each(data, (record) => {
+					let columns = [], values = [], indexes = [], index = 1;
+					_.each(record, (value, column) => {
+						columns.push(column);
+						values.push(this.modifiyValueForInsert(value, column, tableName));
+						indexes.push(`$${index++}`)
+					});
+
+					queries.push(
+						{
+							sql: `INSERT INTO "${tableSchema}"."${tableName}" ("${columns.join('", "')}") VALUES (${indexes.join(', ')});`,
+							values
+						}
+					)
+				})
+			});
+
+			if(queries.length) {
+				for(let query of queries) {
+					await this._pgPool.query(query.sql, query.values)
+						.then((pgResult) => {
+						})
+						.catch((error) => {
+							console.log(`#####`, error.message);
+						})
+				}
+			}
+		}
+	}
+
+	modifiyValueForInsert(value, column, tableName) {
+		if(tableName === `panther_users` && column === `password`) {
+			return bcrypt.hashSync(value, 10);
+		} else {
+			return value;
+		}
 	}
 }
 

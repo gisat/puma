@@ -1,5 +1,7 @@
 const PgCollection = require('../common/PgCollection');
 
+const config = require(`../config`);
+
 class PgLpisChangeCases extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
@@ -20,6 +22,78 @@ class PgLpisChangeCases extends PgCollection {
 		this._customSqlColumns = `, ST_AsGeoJSON("geometryBefore") AS "geometryBefore", ST_AsGeoJSON("geometryAfter") AS "geometryAfter"`;
 
 		this._allowAttachments = true;
+	}
+
+	populateObjectWithAdditionalData(object, user) {
+		let changes = [];
+		let attachments = [];
+
+		return Promise
+			.resolve()
+			.then(() => {
+				return this.getCaseChanges(object.key, user);
+			})
+			.then((changes) => {
+				if (changes) {
+					object.changes = changes;
+				}
+			})
+			.then(() => {
+				return this.getCaseAttachments(object.key);
+			})
+			.then((attachments) => {
+				if (attachments) {
+					object.attachments = attachments;
+				}
+			});
+	}
+
+	getCaseChanges(caseKey, user) {
+		let isGisatUser = false;
+		_.each(user.groups, (group) => {
+			if(config.projectSpecific.szifLpisZmenovaRizeni.gisatGroupIds.includes(group.id)) {
+				isGisatUser = true;
+			}
+		});
+
+		let sql = `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed LIMIT 1 )`
+			+ ` UNION `
+			+ `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL AND changed_by NOT IN (SELECT user_id FROM data.group_has_members WHERE group_id = ${config.projectSpecific.szifLpisZmenovaRizeni.gisatUserGroupId}) ORDER BY changed DESC LIMIT 1);`;
+
+		if(isGisatUser) {
+			sql = `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed LIMIT 1 )`
+				+ ` UNION `
+				+ `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed DESC LIMIT 1);`;
+		}
+
+		return this._pgPool
+			.query(sql)
+			.then((pgResult) => {
+				if(pgResult.rows.length) {
+					return pgResult.rows;
+				}
+			});
+	}
+
+	getCaseAttachments(caseKey) {
+		return this._pgPool
+			.query(`SELECT * FROM "${config.pgSchema.various}"."attachments" WHERE "relatedResourceKey" = '${caseKey}' ORDER BY "created"`)
+			.then((pgResult) => {
+				return _.map(pgResult.rows, (row) => {
+					return {
+						key: row.key,
+						data: {
+							attachmentKey: row.attachmentKey,
+							filename: row.originalName
+						}
+					}
+				})
+			})
+			.then((attachments) => {
+				if (attachments.length) {
+					return attachments;
+				}
+			})
 	}
 
 	getTableSql() {
