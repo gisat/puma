@@ -67,6 +67,10 @@ class PgCollection {
 		this._allowAttachments = false;
 	}
 
+	checkForRestrictions(object, objects, user, extra) {
+
+	}
+
 	populatePayloadWithAdditionalData(object, user) {
 	}
 
@@ -144,7 +148,7 @@ class PgCollection {
 					}
 				})
 				.then(() => {
-					if(extra.files && extra.files.length) {
+					if (extra.files && extra.files.length) {
 						this.clearAttachedFiles(extra.files);
 					}
 				})
@@ -219,19 +223,19 @@ class PgCollection {
 		let attachementsMetadataToStore = [];
 
 		_.each(groupObjects, (groupObject) => {
-			if(
+			if (
 				groupObject.hasOwnProperty(`attachments`)
 				&& _.isArray(groupObject.attachments)
 				&& groupObject.attachments.length
 			) {
-				if(!groupObject.key) {
+				if (!groupObject.key) {
 					groupObject.key = uuidv4();
 				}
 
 				_.each(groupObject.attachments, (groupObjectAttachmentUuid) => {
 					let attachedFile = files[groupObjectAttachmentUuid];
 
-					if(attachedFile && !filesToKeep.includes(attachedFile)) {
+					if (attachedFile && !filesToKeep.includes(attachedFile)) {
 						filesToKeep.push(attachedFile);
 					}
 
@@ -276,6 +280,9 @@ class PgCollection {
 	createOne(object, objects, user, extra) {
 		let relations;
 		return Promise.resolve()
+			.then(() => {
+				return this.checkForRestrictions(object, objects, user, extra);
+			})
 			.then(() => {
 				relations = this.parseRelations(object, objects, user, extra);
 			})
@@ -378,13 +385,15 @@ class PgCollection {
 				return this.modifyColumnsAndValuesBeforeInsert(columns, values)
 			})
 			.then(([columns, values]) => {
-				return this._pgPool
-					.query(
-						`INSERT INTO "${this._pgSchema}"."${this._tableName}" ("${columns.join('", "')}") VALUES (${_.map(values, (value, index) => {
-							return keys[index].startsWith('geometry') ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
-						}).join(', ')}) RETURNING ${this.getReturningSql()};`,
-						values
-					)
+				let sql;
+				if (columns.length && values.length) {
+					sql = `INSERT INTO "${this._pgSchema}"."${this._tableName}" ("${columns.join('", "')}") VALUES (${_.map(values, (value, index) => {
+						return keys[index].startsWith('geometry') ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
+					}).join(', ')}) RETURNING ${this.getReturningSql()};`
+				} else {
+					sql = `INSERT INTO "${this._pgSchema}"."${this._tableName}" DEFAULT VALUES RETURNING ${this.getReturningSql()};`
+				}
+				return this._pgPool.query(sql, values);
 			})
 			.then((queryResult) => {
 				if (queryResult.rowCount) {
@@ -748,7 +757,7 @@ class PgCollection {
 						});
 				})
 				.then(async (payload) => {
-					for(let object of payload.data) {
+					for (let object of payload.data) {
 						await this.populateObjectWithAdditionalData(object, user);
 					}
 					return payload;
