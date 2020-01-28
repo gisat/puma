@@ -35,6 +35,8 @@ const CompoundAuthentication = require('./security/CompoundAuthentication');
 const PgAuthentication = require('./security/PgAuthentication');
 const SsoAuthentication = require('./security/SsoAuthentication');
 
+const TacrGeoinvazeImporter = require(`./integration/TacrGeoinvazeImporter`);
+
 const pool = new PgPool({
 	user: config.pgDataUser,
 	database: config.pgDataDatabase,
@@ -133,6 +135,9 @@ new PgDatabase(pool.pool())
 	})
 	.then(() => {
 		return new PrepareForInternalUser(config.pgSchema.data).run();
+	})
+	.then(() => {
+		return new TacrGeoinvazeImporter(pool).run();
 	})
 	// .then(() => {
 	// 	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
