@@ -23,8 +23,21 @@ class TacrGeoinvazeImporter {
 	}
 
 	run() {
-		return fse
-			.pathExists(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/.imported`)
+		return Promise
+			.resolve()
+			.then(() => {
+				if(
+					!config.projectSpecific
+					|| !config.projectSpecific.tacrGeoinvaze
+					|| !config.projectSpecific.tacrGeoinvaze.executeImport
+				) {
+					throw new Error(`Missing configuration or import disabled!`);
+				}
+			})
+			.then(() => {
+				return fse
+					.pathExists(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/.imported`);
+			})
 			.then((imported) => {
 				if (!imported || config.projectSpecific.tacrGeoinvaze.forceImport) {
 					return this.import();
