@@ -124,7 +124,7 @@ class PgLpisChangeCases extends PgCollection {
 			.then((count) => {
 				payload.other = {
 					[this._tableName]: {
-						weekCaseCount: count
+						weekCaseCountLeft: config.projectSpecific.szifLpisZmenovaRizeni.currentWeekLimit - count
 					}
 				};
 			})
