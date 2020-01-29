@@ -1,12 +1,18 @@
 const moment = require(`moment`);
 
 const PgCollection = require('../common/PgCollection');
+const PgApplicationsCrud = require(`../application/PgApplicationsCrud`);
+const PgPermissions = require('../security/PgPermissions');
+const Permission = require('../security/Permission');
 
 const config = require(`../config`);
 
 class PgLpisChangeCases extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
+
+		this._pgPermissions = new PgPermissions(this._pgPool, this._pgPermissionsSchema);
+		this._pgApplicationsCrud = new PgApplicationsCrud(pool, config.pgSchema.application);
 
 		this._checkPermissions = false;
 
@@ -24,6 +30,71 @@ class PgLpisChangeCases extends PgCollection {
 		this._customSqlColumns = `, ST_AsGeoJSON("geometryBefore") AS "geometryBefore", ST_AsGeoJSON("geometryAfter") AS "geometryAfter"`;
 
 		this._allowAttachments = true;
+	}
+
+	setAdditionalPermissionToResource(resourceKey, user) {
+		let configuration;
+		return this._pgApplicationsCrud
+			.get(
+				`configurations`,
+				{
+					filter: {
+						applicationKey: `szifLpisZmenovaRizeni`
+					}
+				},
+				user
+			).then((getResult) => {
+				configuration = getResult.data.configurations[0].data.data;
+			})
+			.then(() => {
+				return this.setPermissionsForSzifAdmins(resourceKey, user, configuration);
+			})
+			.then(() => {
+				return this.setPermissionsForSzifRegionalAdmins(resourceKey, user, configuration);
+			})
+			.then(() => {
+				return this.setPermissionsForGisat(resourceKey, user, configuration);
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+	}
+
+	setPermissionsToGroup(resourceKey, groupId) {
+		let promises = [];
+		_.each(['GET', 'PUT'], (permission) => {
+			promises.push(
+				this._pgPermissions.addGroup(groupId, this._basePermissionResourceType, resourceKey, permission)
+			);
+		});
+
+		return Promise.all(promises);
+	}
+
+	setPermissionsForSzifAdmins(resourceKey, user, configuration) {
+		return this.setPermissionsToGroup(resourceKey, configuration.permissionGroups.szifAdmins);
+	}
+
+	setPermissionsForSzifRegionalAdmins(resourceKey, user, configuration) {
+		let userGroupIds = _.map(user.groups, (userGroup) => {
+			return userGroup.id;
+		});
+
+		let promises = [];
+		_.each(configuration.regionGroups, (regionGroups) => {
+			if(userGroupIds.includes(regionGroups.base)) {
+				promises.push(this.setPermissionsToGroup(resourceKey, regionGroups.admin));
+			}
+		});
+
+		return Promise.all(promises);
+	}
+
+	setPermissionsForGisat(resourceKey, user, configuration) {
+		return Promise.all([
+			this.setPermissionsToGroup(resourceKey, configuration.permissionGroups.gisatAdmins),
+			this.setPermissionsToGroup(resourceKey, configuration.permissionGroups.gisatUsers)
+		])
 	}
 
 	checkForRestrictions(object, objects, user, extra) {

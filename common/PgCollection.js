@@ -407,6 +407,12 @@ class PgCollection {
 					})
 			})
 			.then((created) => {
+				return this.setAdditionalPermissionToResource(created.key, user)
+					.then(() => {
+						return created;
+					})
+			})
+			.then((created) => {
 				return {
 					...created,
 					data: null,
@@ -1687,6 +1693,10 @@ class PgCollection {
 		}
 
 		return Promise.all(promises);
+	}
+
+	setAdditionalPermissionToResource(resourceKey, user) {
+		return Promise.resolve();
 	}
 
 	setRelatedStores(stores) {
