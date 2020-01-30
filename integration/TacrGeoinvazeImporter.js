@@ -108,6 +108,7 @@ class TacrGeoinvazeImporter {
 			.then(() => {
 				return superagent
 					.get(`http://${config.geoserverHost}/${config.geoserverPath}/rest/layers.json`)
+					.auth(config.geoserverUsername, config.geoserverPassword)
 					.then((superagentResponse) => {
 						geoserverLayers = superagentResponse.body.layers.layer;
 					})
