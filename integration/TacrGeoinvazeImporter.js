@@ -477,7 +477,12 @@ class TacrGeoinvazeImporter {
 						.get(`${importData.href}/data`)
 						.auth(config.geoserverUsername, config.geoserverPassword)
 						.then((superagentResult) => {
-							if(superagentResult.body.files[0].file === `${layerName}.tif`) {
+							if(
+								superagentResult
+								&& superagentResult.body
+								&& superagentResult.body.files[0]
+								&& superagentResult.body.files[0].file === `${layerName}.tif`
+							) {
 								if(
 									superagentResult.body.location
 									&& superagentResult.body.location !== `/`
