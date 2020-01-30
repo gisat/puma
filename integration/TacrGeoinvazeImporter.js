@@ -480,6 +480,7 @@ class TacrGeoinvazeImporter {
 							if(
 								superagentResult
 								&& superagentResult.body
+								&& superagentResult.body.files
 								&& superagentResult.body.files[0]
 								&& superagentResult.body.files[0].file === `${layerName}.tif`
 							) {
