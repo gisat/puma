@@ -178,9 +178,9 @@ class PgCollection {
 
 	getGeojsonFromShp(pathToShpFile, isKrovak, hasPrj) {
 		if(isKrovak || !hasPrj) {
-			return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -s_srs '${proj4KrovakDefinition}' -t_srs '${proj4Wgs84Definition}' /dev/stdout ${pathToShpFile}`));
+			return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -s_srs '${proj4KrovakDefinition}' -t_srs '${proj4Wgs84Definition}' /dev/stdout "${pathToShpFile}"`));
 		} else {
-			return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -t_srs '${proj4Wgs84Definition}' /dev/stdout ${pathToShpFile}`));
+			return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -t_srs '${proj4Wgs84Definition}' /dev/stdout "${pathToShpFile}"`));
 		}
 	}
 
