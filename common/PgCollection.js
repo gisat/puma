@@ -173,11 +173,15 @@ class PgCollection {
 
 	isShpSomeKrovak(pathToShpFile) {
 		// gdalsrsinfo breclav-after.shp | grep -i "krovak"
-		return !!(child_process.execSync(`gdalsrsinfo ${pathToShpFile} | grep -i "krovak"`));
+		return !!(child_process.execSync(`gdalsrsinfo "${pathToShpFile}" | grep -i "krovak"`));
 	}
 
-	getGeojsonFromShp(pathToShpFile, isKrovak) {
-		return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -s_srs '${proj4KrovakDefinition}' -t_srs '${proj4Wgs84Definition}' /dev/stdout ${pathToShpFile}`));
+	getGeojsonFromShp(pathToShpFile, isKrovak, hasPrj) {
+		if(isKrovak || !hasPrj) {
+			return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -s_srs '${proj4KrovakDefinition}' -t_srs '${proj4Wgs84Definition}' /dev/stdout ${pathToShpFile}`));
+		} else {
+			return JSON.parse(child_process.execSync(`ogr2ogr -f GeoJSON -t_srs '${proj4Wgs84Definition}' /dev/stdout ${pathToShpFile}`));
+		}
 	}
 
 	parseGeometriesFromAttachments(object, objects, user, extra) {
@@ -187,7 +191,7 @@ class PgCollection {
 				let attachmentUuid = stringParts[1];
 				let tempDirectory = `/tmp/${uuidv4()}`;
 
-				let pathToShpFile, isKrovak, geojson;
+				let pathToShpFile, isKrovak, geojson, hasPrj;
 
 				_.each(extra.files, (fileMetadata, fileUuid) => {
 					if (fileUuid === attachmentUuid && fileMetadata.originalFilename.toLocaleLowerCase().endsWith(`.zip`)) {
@@ -195,15 +199,21 @@ class PgCollection {
 
 						_.each(unzippedFiles, (unzippedFile) => {
 							if (unzippedFile.toLowerCase().endsWith(`.shp`)) {
-								isKrovak = this.isShpSomeKrovak(unzippedFile);
 								pathToShpFile = unzippedFile;
+							}
+							if(unzippedFile.toLowerCase().endsWith(`.prj`)) {
+								hasPrj = true;
 							}
 						});
 					}
 				});
 
+				if(pathToShpFile && hasPrj) {
+					isKrovak = this.isShpSomeKrovak(pathToShpFile);
+				}
+
 				if (pathToShpFile) {
-					geojson = this.getGeojsonFromShp(pathToShpFile, isKrovak);
+					geojson = this.getGeojsonFromShp(pathToShpFile, isKrovak, hasPrj);
 				}
 
 				if (geojson) {
