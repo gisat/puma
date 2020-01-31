@@ -467,7 +467,6 @@ class TacrGeoinvazeImporter {
 	}
 
 	removeExistingRasterUploads(layerName) {
-		let pathsToRemove = [];
 		return superagent
 			.get(`http://${config.geoserverHost}/${config.geoserverPath}/rest/imports`)
 			.auth(config.geoserverUsername, config.geoserverPassword)
@@ -504,9 +503,6 @@ class TacrGeoinvazeImporter {
 							console.log(error);
 						});
 				}
-			})
-			.then(() => {
-				console.log(pathsToRemove);
 			})
 	}
 
