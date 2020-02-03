@@ -26,7 +26,7 @@ class TacrGeoinvazeImporter {
 		return Promise
 			.resolve()
 			.then(() => {
-				if(
+				if (
 					!config.projectSpecific
 					|| !config.projectSpecific.tacrGeoinvaze
 					|| !config.projectSpecific.tacrGeoinvaze.executeImport
@@ -119,7 +119,7 @@ class TacrGeoinvazeImporter {
 
 					console.log(`### Peeparing import of layers for ${speciesName}`);
 
-					for(let vectorLayer of data.speciesVectors) {
+					for (let vectorLayer of data.speciesVectors) {
 						console.log(`#### Reprojecting ${vectorLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
 						let vectorLayerName = path.parse(vectorLayer).name;
@@ -128,7 +128,7 @@ class TacrGeoinvazeImporter {
 							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${vectorLayerName}`;
 						});
 
-						if(existingGeoserverLayer) {
+						if (existingGeoserverLayer) {
 							await this.removeExistingGeoserverLayer(vectorLayerName, `vector`);
 							await this.removeExistingGeoserverStyle(`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}_${vectorLayerName}`);
 						}
@@ -143,13 +143,17 @@ class TacrGeoinvazeImporter {
 
 						await this.importLayerIntoGeoserver(vectorLayerName, `vector`);
 
+						await this.setDefaultStyleForGeoserverLayer(
+							`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${vectorLayerName}`,
+							this.getLayerDefaultStyleNameByLayerName(vectorLayerName)
+						);
+
 						await this.createPantherDataForLayer(vectorLayerName, data.caseKey, `vector`, user);
 
-						this.cleanup(
-							config.projectSpecific.tacrGeoinvaze.pathToImportData
-						);
+						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
 					}
 
+					let rasterImported = false;
 					for (let rasterLayer of data.speciesRasters) {
 						console.log(`#### Reprojecting ${rasterLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
@@ -176,11 +180,21 @@ class TacrGeoinvazeImporter {
 
 						await this.importLayerIntoGeoserver(rasterLayerName, `raster`);
 
+						await this.setDefaultStyleForGeoserverLayer(
+							`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${rasterLayerName}`,
+							this.getLayerDefaultStyleNameByLayerName(rasterLayerName)
+						);
+
 						await this.createPantherDataForLayer(rasterLayerName, data.caseKey, `raster`, user);
 
-						this.cleanup(
-							config.projectSpecific.tacrGeoinvaze.pathToImportData
-						);
+						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
+
+						rasterImported = true;
+						break;
+					}
+
+					if(rasterImported) {
+						break;
 					}
 				}
 			})
@@ -214,7 +228,7 @@ class TacrGeoinvazeImporter {
 				pantherPeriod = getResult.data.periods[0];
 			})
 			.then(() => {
-				if(!pantherPeriod) {
+				if (!pantherPeriod) {
 					return this._pgMetadataCrud
 						.create(
 							{
@@ -238,20 +252,26 @@ class TacrGeoinvazeImporter {
 				}
 			})
 			.then(() => {
-				let tableName = null;
-				if(type === `vector`) {
+				let tableName;
+				if (type === `vector`) {
 					tableName = layerName;
 				}
+
+				let filter = {
+					nameInternal: `${config.projectSpecific.tacrGeoinvaze.applicationKey}:${layerName}`,
+					type,
+					layerName: `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${layerName}`,
+				};
+
+				if(tableName) {
+					filter.tableName = tableName;
+				};
+
 				return this._pgDataSourceCrud
 					.get(
 						`spatial`,
 						{
-							filter: {
-								nameInternal: `${config.projectSpecific.tacrGeoinvaze.applicationKey}:${layerName}`,
-								type,
-								layerName: `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${layerName}`,
-								tableName
-							}
+							filter
 						},
 						user
 					)
@@ -260,9 +280,9 @@ class TacrGeoinvazeImporter {
 					})
 			})
 			.then(() => {
-				if(!pantherSpatialDataSource) {
+				if (!pantherSpatialDataSource) {
 					let tableName = null;
-					if(type === `vector`) {
+					if (type === `vector`) {
 						tableName = layerName;
 					}
 
@@ -308,7 +328,7 @@ class TacrGeoinvazeImporter {
 					})
 			})
 			.then(() => {
-				if(!pantherSpatialDataSourceRelation) {
+				if (!pantherSpatialDataSourceRelation) {
 					return this._pgRelationsCrud
 						.create(
 							{
@@ -332,20 +352,38 @@ class TacrGeoinvazeImporter {
 	}
 
 	getLayerTemplateKeyByLayerName(layerName) {
-		if(layerName.toLowerCase().includes("_gam_")) {
+		if (layerName.toLowerCase().includes("_gam_")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.modelGam;
-		} else if(layerName.toLowerCase().includes("_maxent_")) {
+		} else if (layerName.toLowerCase().includes("_maxent_")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.modelMaxEnt;
-		} else if(layerName.toLowerCase().includes("_gbm_")) {
+		} else if (layerName.toLowerCase().includes("_gbm_")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.modelGbm;
-		} else if(layerName.toLowerCase().includes("po_1_roce")) {
+		} else if (layerName.toLowerCase().includes("po_1_roce")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.model1;
-		} else if(layerName.toLowerCase().includes("po_2_roce")) {
+		} else if (layerName.toLowerCase().includes("po_2_roce")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.model2;
-		} else if(layerName.toLowerCase().includes("po_3_roce")) {
+		} else if (layerName.toLowerCase().includes("po_3_roce")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.model3;
 		} else {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.origin;
+		}
+	}
+
+	getLayerDefaultStyleNameByLayerName(layerName) {
+		if (layerName.toLowerCase().includes("_gam_")) {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.modelGam;
+		} else if (layerName.toLowerCase().includes("_maxent_")) {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.modelMaxEnt;
+		} else if (layerName.toLowerCase().includes("_gbm_")) {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.modelGbm;
+		} else if (layerName.toLowerCase().includes("po_1_roce")) {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.model1;
+		} else if (layerName.toLowerCase().includes("po_2_roce")) {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.model2;
+		} else if (layerName.toLowerCase().includes("po_3_roce")) {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.model3;
+		} else {
+			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.origin;
 		}
 	}
 
@@ -422,6 +460,19 @@ class TacrGeoinvazeImporter {
 			})
 	}
 
+	setDefaultStyleForGeoserverLayer(layerName, styleName) {
+		return superagent
+			.put(
+				`http://${config.geoserverHost}/${config.geoserverPath}/rest/layers/${layerName}`
+			)
+			.set(`Content-Type`, `application/xml`)
+			.send(`<?xml version="1.0" encoding="UTF-8"?><layer><defaultStyle><name>${styleName}</name></defaultStyle></layer>`)
+			.auth(config.geoserverUsername, config.geoserverPassword)
+			.catch((error) => {
+				console.log(error);
+			})
+	}
+
 	importLayerIntoGeoserver(layerName, type) {
 		if (type === `vector`) {
 			return this.importVectorLayerIntoGeoserver(layerName);
@@ -471,19 +522,19 @@ class TacrGeoinvazeImporter {
 			.get(`http://${config.geoserverHost}/${config.geoserverPath}/rest/imports`)
 			.auth(config.geoserverUsername, config.geoserverPassword)
 			.then(async (superagentResult) => {
-				for(let importData of superagentResult.body.imports) {
+				for (let importData of superagentResult.body.imports) {
 					await superagent
 						.get(`${importData.href}/data`)
 						.auth(config.geoserverUsername, config.geoserverPassword)
 						.then((superagentResult) => {
-							if(
+							if (
 								superagentResult
 								&& superagentResult.body
 								&& superagentResult.body.files
 								&& superagentResult.body.files[0]
 								&& superagentResult.body.files[0].file === `${layerName}.tif`
 							) {
-								if(
+								if (
 									superagentResult.body.location
 									&& superagentResult.body.location !== `/`
 									&& fs.existsSync(superagentResult.body.location)
@@ -507,7 +558,7 @@ class TacrGeoinvazeImporter {
 	}
 
 	removeExistingGeoserverLayer(layerName, type) {
-		if(type === `vector`) {
+		if (type === `vector`) {
 			return this.removeExistingGeoserverVectorLayer(layerName);
 		} else if (type === `raster`) {
 			return this.removeExistingGeoserverRasterLayer(layerName);
