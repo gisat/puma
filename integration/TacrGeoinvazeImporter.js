@@ -188,13 +188,6 @@ class TacrGeoinvazeImporter {
 						await this.createPantherDataForLayer(rasterLayerName, data.caseKey, `raster`, user);
 
 						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
-
-						rasterImported = true;
-						break;
-					}
-
-					if(rasterImported) {
-						break;
 					}
 				}
 			})
