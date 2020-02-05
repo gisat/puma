@@ -13,7 +13,6 @@ class ImageMosaic {
 		this._destination = destination;
 		this._pgOptions = pgOptions;
 		this._groupBy = groupBy;
-		this._sources = null;
 		this._pgPool = pgPool;
 
 		if (prepareData) {
