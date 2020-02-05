@@ -8,52 +8,55 @@ const czechRepublicBboxGeometry = {
 };
 
 class ImageMosaic {
-	constructor(source, destination, pgOptions, groupBy, prepareData) {
+	constructor(source, destination, pgOptions, groupBy, prepareData, pgPool) {
 		this._source = source;
 		this._destination = destination;
 		this._pgOptions = pgOptions;
 		this._groupBy = groupBy;
 		this._sources = null;
+		this._pgPool = pgPool;
 
 		if (prepareData) {
 			this.prepareImageMosaicDataStructure();
 		}
+
+		this.prepareSourcesTable();
+	}
+
+	async prepareSourcesTable() {
+		console.log(`#### Preparing sentinel 2 sources table...`);
+
+		let sourcesFilepath = `${this._destination}/.sources.json`;
+		let sourcesJson = JSON.parse(fs.readFileSync(sourcesFilepath));
+
+		await this._pgPool.query(`DROP TABLE IF EXISTS "sentinel_sources";`);
+
+		await this._pgPool.query(`DROP INDEX IF EXISTS "sentinel_sources_geom_idx";`);
+
+		await this._pgPool.query(`CREATE TABLE "sentinel_sources" (the_geom geometry, acquisition text);`);
+
+		for(let source of sourcesJson.sources) {
+			await this._pgPool.query(`INSERT INTO "sentinel_sources" VALUES (ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(source.geometry)}'), 4326)), '${source.acquisition}');`);
+		}
+
+		await this._pgPool.query(`CREATE INDEX "sentinel_sources_geom_idx" ON "sentinel_sources" USING GIST (the_geom);`);
+
+		console.log(`#### Preparing of sentinel 2 sources table is done!`);
 	}
 
 	getDatesByGeometry(geometry) {
-		let sourcesFilepath = `${this._destination}/.sources.json`;
-		this._sources = this._sources || fs.readFileSync(sourcesFilepath);
-		let sourcesJson = JSON.parse(this._sources);
-
-		if (geometry.type === `MultiPolygon`) {
-			geometry.type = `Polygon`;
-			geometry.coordinates = geometry.coordinates[0]
-		}
-
-		let dates = [];
-		sourcesJson.sources.forEach(source => {
-			if(this.isSourceContainValidDataForGeometry(source, geometry)) {
-				let year = source.acquisition.substring(0, 4);
-				let month = source.acquisition.substring(4, 6);
-				let day = source.acquisition.substring(6, 8);
-				let hour = source.acquisition.substring(9, 11);
-				let min = source.acquisition.substring(11, 13);
-				let sec = source.acquisition.substring(13);
-				dates.push(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
-				// dates.push(`${year}-${month}-${day}`);
-			}
-		});
-
-		return _.uniq(dates);
-	}
-
-	isSourceContainValidDataForGeometry(source, geometry) {
-		for(let coordinates of source.geometry.coordinates) {
-			if (turf.intersect(geometry, turf.polygon(coordinates))) {
-				return true;
-			}
-		}
-		return false;
+		return this._pgPool.query(`SELECT "acquisition" FROM "sentinel_sources" WHERE ST_Intersects(ST_GeomFromGeoJSON('${JSON.stringify(geometry)}'), "the_geom");`)
+			.then((pgResult) => {
+				return _.map(pgResult.rows, (row) => {
+					let year = row.acquisition.substring(0, 4);
+					let month = row.acquisition.substring(4, 6);
+					let day = row.acquisition.substring(6, 8);
+					let hour = row.acquisition.substring(9, 11);
+					let min = row.acquisition.substring(11, 13);
+					let sec = row.acquisition.substring(13);
+					return `${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`;
+				});
+			})
 	}
 
 	prepareImageMosaicFsStructure(groups) {

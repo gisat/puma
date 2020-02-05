@@ -4,13 +4,14 @@ const ImageMosaic = require(`../geoserver/ImageMosaic`);
 const config = require(`../config`);
 
 class ImageMosaicController {
-	constructor(app) {
+	constructor(app, pgPool) {
 		this._imageMosaic = new ImageMosaic(
 			config.dromasLpis.pathToS2Scenes,
 			config.dromasLpis.pathToImageMosaicDirectory,
 			config.dromasLpis.imageMosaicPgStorage,
 			config.dromasLpis.groupBy,
 			config.dromasLpis.enabled,
+			pgPool
 		);
 
 		app.post('/rest/imagemosaic/getDates', this.getDatesByGeometry.bind(this));

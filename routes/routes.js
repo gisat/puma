@@ -144,7 +144,7 @@ module.exports = function(app) {
 	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
-	new ImageMosaicController(app);
+	new ImageMosaicController(app, pool.pool());
 	new SzifCaseCreatorController(app, pool, mongo);
 
 	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
