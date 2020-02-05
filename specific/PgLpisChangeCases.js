@@ -14,8 +14,6 @@ class PgLpisChangeCases extends PgCollection {
 		this._pgPermissions = new PgPermissions(this._pgPool, this._pgPermissionsSchema);
 		this._pgApplicationsCrud = new PgApplicationsCrud(pool, config.pgSchema.application);
 
-		this._checkPermissions = false;
-
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
 

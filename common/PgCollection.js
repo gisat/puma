@@ -78,22 +78,46 @@ class PgCollection {
 
 	}
 
-	create(objects, user, extra, overridePermissions) {
+	async hasUserPermission(user, permission) {
+		let groupIds = _.map(user.groups, (group) => {
+			return group.id;
+		}).join(', ');
+
+		return Promise
+			.resolve()
+			.then(() => {
+				return this._pgPool
+					.query(
+						`SELECT DISTINCT * FROM ((SELECT "resource_type", "permission" FROM "${config.pgSchema.data}"."permissions" WHERE "user_id" = ${user.id} AND "resource_id" IS NULL) UNION (SELECT "resource_type", "permission" FROM "${config.pgSchema.data}"."group_permissions" WHERE "group_id" IN (${groupIds}) AND "resource_id" IS NULL)) AS sub;`
+					);
+			})
+			.then((pgResult) => {
+				let hasPermission = true;
+
+				for(let resourceType of this._permissionResourceTypes) {
+					let createPermissionForResourceType = _.find(pgResult.rows, (row) => {
+						return row.resource_type === resourceType && row.permission === permission;
+					});
+
+					if(!createPermissionForResourceType) {
+						hasPermission = false;
+					}
+				}
+
+				return hasPermission;
+			});
+	}
+
+	async create(objects, user, extra, overridePermissions) {
 		let groupObjects = objects[this._groupName];
 
 		let canCreate = true;
 
+		// todo temporary fix of problem with old permissions logic
+
 		if (this._checkPermissions && !overridePermissions) {
-			if (this._permissionResourceTypes) {
-				if (this._permissionResourceTypes.length) {
-					_.each(this._permissionResourceTypes, (resourceType) => {
-						if (!user.hasPermission(resourceType, Permission.CREATE, null)) {
-							canCreate = false;
-						}
-					});
-				} else {
-					canCreate = false;
-				}
+			if (!this._permissionResourceTypes || !await this.hasUserPermission(user, Permission.CREATE)) {
+				canCreate = false;
 			}
 		}
 
@@ -125,15 +149,19 @@ class PgCollection {
 
 			return Promise.all(promises)
 				.then(async (results) => {
-					results = _.filter(results, (result) => {
+					let failedResults = _.filter(results, (result) => {
+						return result.error;
+					});
+
+					let correctResults = _.filter(results, (result) => {
 						return !result.error;
 					});
-					if (results && results.length) {
+					if (correctResults && correctResults.length) {
 						objects[this._groupName] = await this.get(
 							{
 								filter: {
 									key: {
-										in: _.map(results, 'key')
+										in: _.map(correctResults, 'key')
 									}
 								},
 								unlimited: true
@@ -145,6 +173,10 @@ class PgCollection {
 						});
 					} else {
 						objects[this._groupName] = [];
+					}
+
+					if (failedResults && failedResults.length) {
+						objects[this._groupName] = _.concat(objects[this._groupName], failedResults);
 					}
 				})
 				.then(() => {
