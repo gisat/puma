@@ -17,9 +17,8 @@ class ImageMosaic {
 
 		if (prepareData) {
 			this.prepareImageMosaicDataStructure();
+			this.prepareSourcesTable();
 		}
-
-		this.prepareSourcesTable();
 	}
 
 	async prepareSourcesTable() {
