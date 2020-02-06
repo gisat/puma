@@ -17,29 +17,33 @@ class ImageMosaic {
 
 		if (prepareData) {
 			this.prepareImageMosaicDataStructure();
-			this.prepareSourcesTable();
 		}
+
+		this.prepareSourcesTable();
 	}
 
 	async prepareSourcesTable() {
-		console.log(`#### Preparing sentinel 2 sources table...`);
-
 		let sourcesFilepath = `${this._destination}/.sources.json`;
-		let sourcesJson = JSON.parse(fs.readFileSync(sourcesFilepath));
 
-		await this._pgPool.query(`DROP TABLE IF EXISTS "sentinel_sources";`);
+		if(fs.existsSync(sourcesFilepath)) {
+			console.log(`#### Preparing sentinel 2 sources table...`);
 
-		await this._pgPool.query(`DROP INDEX IF EXISTS "sentinel_sources_geom_idx";`);
+			let sourcesJson = JSON.parse(fs.readFileSync(sourcesFilepath));
 
-		await this._pgPool.query(`CREATE TABLE "sentinel_sources" (the_geom geometry, acquisition text);`);
+			await this._pgPool.query(`DROP TABLE IF EXISTS "sentinel_sources";`);
 
-		for(let source of sourcesJson.sources) {
-			await this._pgPool.query(`INSERT INTO "sentinel_sources" VALUES (ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(source.geometry)}'), 4326)), '${source.acquisition}');`);
+			await this._pgPool.query(`DROP INDEX IF EXISTS "sentinel_sources_geom_idx";`);
+
+			await this._pgPool.query(`CREATE TABLE "sentinel_sources" (the_geom geometry, acquisition text);`);
+
+			for(let source of sourcesJson.sources) {
+				await this._pgPool.query(`INSERT INTO "sentinel_sources" VALUES (ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(source.geometry)}'), 4326)), '${source.acquisition}');`);
+			}
+
+			await this._pgPool.query(`CREATE INDEX "sentinel_sources_geom_idx" ON "sentinel_sources" USING GIST (the_geom);`);
+
+			console.log(`#### Preparing of sentinel 2 sources table is done!`);
 		}
-
-		await this._pgPool.query(`CREATE INDEX "sentinel_sources_geom_idx" ON "sentinel_sources" USING GIST (the_geom);`);
-
-		console.log(`#### Preparing of sentinel 2 sources table is done!`);
 	}
 
 	getDatesByGeometry(geometry) {
