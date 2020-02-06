@@ -3,7 +3,7 @@ var logger = require('../common/Logger').applicationWideLogger;
 
 var PgPool = require('../postgresql/PgPool');
 var DatabaseSchema = require('../postgresql/DatabaseSchema');
-var MongoClient = require('mongodb').MongoClient;
+// var MongoClient = require('mongodb').MongoClient;
 
 class Migration {
 	constructor(name, schema) {
@@ -27,17 +27,17 @@ class Migration {
 			exists = pExists;
 		}).then(function () {
 			return new DatabaseSchema(self._connectionPool, self.schema).create()
-		}).then(function () {
-			return MongoClient.connect(config.mongoConnString);
-		}).then(function (client) {
-			if (!exists) {
-				return self.process(client, self._connectionPool).then(function () {
-					logger.info('Migration#run Success');
-					self.save();
-				});
-			} else {
-				return true;
-			}
+		// }).then(function () {
+		// 	return MongoClient.connect(config.mongoConnString);
+		// }).then(function (client) {
+		// 	if (!exists) {
+		// 		return self.process(client, self._connectionPool).then(function () {
+		// 			logger.info('Migration#run Success');
+		// 			self.save();
+		// 		});
+		// 	} else {
+		// 		return true;
+		// 	}
 		}).catch(function (error) {
 			logger.error('Migration#run Error', error);
 		});
