@@ -113,6 +113,7 @@ class PgDatabase {
 				"key" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
 				"originalName" TEXT,
 				"localPath" TEXT,
+				"mimeType" TEXT,
 				"relatedResourceKey" TEXT,
 				"description" TEXT,
 				"created" TIMESTAMP
