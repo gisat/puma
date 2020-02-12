@@ -283,7 +283,7 @@ class PgCollection {
 
 					attachementsMetadataToStore.push(
 						{
-							attachmentKey: groupObjectAttachmentUuid,
+							key: groupObjectAttachmentUuid,
 							originalName: attachedFile.originalFilename,
 							localPath: `${storageDirectory}/${path.basename(attachedFile.path)}`,
 							relatedResourceKey: groupObject.key,

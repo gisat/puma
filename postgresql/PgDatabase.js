@@ -111,7 +111,6 @@ class PgDatabase {
 		this._variousTables = [
 			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.various}.attachments (
 				"key" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
-				"attachmentKey" TEXT,
 				"originalName" TEXT,
 				"localPath" TEXT,
 				"relatedResourceKey" TEXT,

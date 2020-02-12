@@ -181,13 +181,12 @@ class PgLpisChangeCases extends PgCollection {
 
 	getCaseAttachments(caseKey) {
 		return this._pgPool
-			.query(`SELECT * FROM "${config.pgSchema.various}"."attachments" WHERE "relatedResourceKey" = '${caseKey}' ORDER BY "created"`)
+			.query(`SELECT key, "originalName" FROM "${config.pgSchema.various}"."attachments" WHERE "relatedResourceKey" = '${caseKey}' ORDER BY "created"`)
 			.then((pgResult) => {
 				return _.map(pgResult.rows, (row) => {
 					return {
 						key: row.key,
 						data: {
-							attachmentKey: row.attachmentKey,
 							filename: row.originalName
 						}
 					}
