@@ -71,6 +71,8 @@ const PgViewsController = require(`../view/PgViewsController`);
 
 const ExportController = require(`../export/ExportController`);
 
+const AttachmentsController = require(`../attachments/AttachmentsController`);
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -171,6 +173,8 @@ module.exports = function(app) {
 	new GeoserverProxyController(app, pool, config.postgreSqlSchema, mongo);
 
 	new ExportController(app, pool);
+
+	new AttachmentsController(app, pool.pool(), config.pgSchema.various);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
