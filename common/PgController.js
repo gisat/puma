@@ -7,6 +7,7 @@ class PgController {
 
 		if (group === `user`) {
 			app.get(`/rest/${group}/current`, this.getCurrent.bind(this));
+			app.post(`/rest/${group}/batch`, this.createBatch.bind(this));
 		}
 
 		app.post(`/rest/${group}`, this.create.bind(this));
@@ -119,6 +120,11 @@ class PgController {
 	getCurrent() {
 		throw new Error(`has to be rewriten`);
 	}
+
+	createBatch(request, response) {
+		throw new Error(`has to be overwriten`);
+	}
 }
+
 
 module.exports = PgController;

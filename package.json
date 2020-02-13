@@ -41,7 +41,7 @@
     "newrelic": "1.40.0",
     "node-gyp": "3.6.2",
     "node-sass": "3.13.1",
-    "nodemailer": "4.2.0",
+    "nodemailer": "4.7.0",
     "object-hash": "1.2.0",
     "onecolor": "2.3.4",
     "openlayers": "3.0.0",
