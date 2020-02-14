@@ -9,12 +9,11 @@ class PgUserBatch {
 
 		this._fromEmail = `lpis-admin@gisat.cz`;
 		this._transporter = nodemailer.createTransport({
-			host: "smtp.gisat.cz",
-			port: 587,
-			secure: false, // true for 465, false for other ports
+			host: "zimbra.gisat.cz",
+			secure: true,
 			auth: {
-				user: this._fromEmail,
-				pass: `secretPassword`
+				user: `lpis-admin`,
+				pass: `Lp82=QwEvXz`
 			}
 		});
 	}
@@ -74,10 +73,22 @@ class PgUserBatch {
 			})
 			.catch((error) => {
 				processedUser.message = error.message;
+				processedUser.created = false;
+				return this.clearUserRecordsOnError(processedUser);
 			})
 			.then(() => {
 				return processedUser;
 			})
+	}
+
+	clearUserRecordsOnError(processedUser) {
+		if(processedUser.id) {
+			return this._pgPool
+				.query(
+					`DELETE FROM "${config.pgSchema.data}"."panther_users" WHERE id = ${processedUser.id};`
+					+ `DELETE FROM "${config.pgSchema.data}"."group_has_members" WHERE user_id = ${processedUser.id};`
+				)
+		}
 	}
 
 	notifiyUser(processedUser) {
