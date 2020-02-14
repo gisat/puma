@@ -15,11 +15,11 @@ let PgGroups = require('./PgGroups');
  */
 class UserController {
 	constructor(app, pgPool, commonSchema, mongo) {
-        if(!config.email) {
-			throw new Error(`Invitation service won't work. Supply email to the configuration.`);
-        }
+        // if(!config.email) {
+		// 	throw new Error(`Invitation service won't work. Supply email to the configuration.`);
+        // }
 
-        app.post('/rest/invitation/user', this.invite.bind(this));
+        // app.post('/rest/invitation/user', this.invite.bind(this));
 
 		app.get('/rest/user', this.readAll.bind(this));
 		// app.get('/rest/user/simple', this.readAllSimple.bind(this));
@@ -29,12 +29,12 @@ class UserController {
 
         app.get('/rest/user/:id', this.byId.bind(this));
 
-		this.permissions = new PgPermissions(pgPool, commonSchema || config.postgreSqlSchema);
-		this.users = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
-		this.groups = new PgGroups(pgPool, commonSchema || config.postgreSqlSchema);
+		this.permissions = new PgPermissions(pgPool, commonSchema);
+		this.users = new PgUsers(pgPool, commonSchema);
+		this.groups = new PgGroups(pgPool, commonSchema);
 
 		this.pgPool = pgPool;
-		this.schema = commonSchema || config.postgreSqlSchema;
+		this.schema = commonSchema;
 		this.mongo = mongo;
 	}
 

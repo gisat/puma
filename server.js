@@ -64,7 +64,7 @@ function initServer(err) {
 	});
 
 	app.use(express.cookieParser());
-	app.use(express.bodyParser({limit: '50mb', parameterLimit: 1000000}));
+	app.use(express.bodyParser({limit: '2048mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
 	app.use(session({
 		name: "panthersid",
@@ -125,51 +125,9 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
-
 new PgDatabase(pool.pool())
 	.ensure()
 	.then(() => {
-		return new CreateDefaultUserAndGroup(config.pgSchema.data).run();
-	})
-	.then(() => {
-		return new PrepareForInternalUser(config.pgSchema.data).run();
-	})
-	// .then(() => {
-	// 	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new CreateDefaultUserAndGroup(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new IdOfTheResourceMayBeText(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new PrepareForInternalUser(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddCustomInfoToWms(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new MigrateAwayFromGeonode(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddAuditInformation(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddGetDatesToWmsLayers(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddPhoneToUser(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddMetadataToLayer(config.postgreSqlSchema).run();
-	// })
-	// .then(() => {
-	// 	return new AddSourceUrlToLayer(config.postgreSqlSchema).run();
-	// })
-	.then(function () {
-		// logger.info('Finished Migrations.');
-
 		app = express();
 		async.series([
 				function (callback) {
@@ -180,6 +138,7 @@ new PgDatabase(pool.pool())
 				}],
 			initServer
 		);
-	}).catch((err) => {
-	logger.error('Error with Migration. Error: ', err);
-});
+	})
+	.catch((error) => {
+		console.log(error);
+	});

@@ -102,9 +102,9 @@ module.exports = function(app) {
 		});
 	}
 	let mongo = conn.getMongoDb();
-	new DatabaseSchema(pool, config.postgreSqlSchema).create();
+	new DatabaseSchema(pool, config.pgSchema.data).create();
 
-	new StyleController(app, pool, config.postgreSqlSchema);
+	new StyleController(app, pool, config.pgSchema.data);
 	new AnalysisController(app, pool);
 	new AnalyticalUnitsController(app, pool, mongo);
 	new AreaTemplateController(app, pool);
@@ -129,26 +129,28 @@ module.exports = function(app) {
 	new TopicController(app, pool);
 	new VisualizationController(app, pool, mongo);
 	new YearController(app, pool);
-	new IntegrationController(app, pool, mongo,'public',viewsSchema,config.postgreSqlSchema);
+	new IntegrationController(app, pool, mongo,'public',viewsSchema,config.pgSchema.data);
 	new VersionController(app, '/opt/frontoffice/version.txt', '/opt/backoffice/version.txt', '/opt/backend/version.txt');
 
 	new LodController(app, pool);
-	new SharingController(app, pool, config.postgreSqlSchema, mongo);
-	new PgAnalysisController(app, pool, mongo, config.postgreSqlSchema);
+	new SharingController(app, pool, config.pgSchema.data, mongo);
+	new PgAnalysisController(app, pool, mongo, config.pgSchema.data);
 	new AreaController(app, pool, mongo);
 
-	new WpsController(app, pool, config.postgreSqlSchema, mongo, null);
+	new WpsController(app, pool, config.pgSchema.data, mongo, null);
 
-	new LayerImporterController(app, mongo, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
+	new LayerImporterController(app, mongo, pool, config.pgSchema.data, config.pantherDataStoragePath);
 	// Schema containing the imported data for Geoserver and schema for created views.
-	new GeoServerLayersController(app, mongo, pool, config.postgreSqlSchema);
+	new GeoServerLayersController(app, mongo, pool, config.pgSchema.data);
 	new AggregatedAnalyticalUnitsController(app, pool, poolRemote, 'views');
 
-	new ImageMosaicController(app);
+	if(config.dromasLpis) {
+		new ImageMosaicController(app);
+	}
 	new SzifCaseCreatorController(app, pool, mongo);
 
-	new PgSpatialDataSourcesController(app, pool, config.postgreSqlSchema);
-	new PgUserController(app, pool, config.postgreSqlSchema, mongo);
+	new PgSpatialDataSourcesController(app, pool, config.pgSchema.data);
+	new PgUserController(app, pool, config.pgSchema.data, mongo);
 
 	new PgMetadataController(app, pool.pool(), config.pgSchema.metadata);
 	new PgRelationsController(app, pool.pool(), config.pgSchema.relations);
@@ -157,18 +159,18 @@ module.exports = function(app) {
 	new PgViewsController(app, pool.pool(), config.pgSchema.views);
 	new PgSpecificController(app, pool.pool(), config.pgSchema.specific);
 
-	new PgPermissionController(app, pool, config.postgreSqlSchema);
+	new PgPermissionController(app, pool, config.pgSchema.data);
 
 	new PgDataController(app, pool);
 
-	new PermissionController(app, pool, config.postgreSqlSchema, mongo);
+	new PermissionController(app, pool, config.pgSchema.data, mongo);
 	new GroupController(app, pool);
 
-	new UploadManagerController(app, pool, config.postgreSqlSchema, config.pantherDataStoragePath);
+	new UploadManagerController(app, pool, config.pgSchema.data, config.pantherDataStoragePath);
 
-	new PucsMatlabProcessorController(app, pool, config.postgreSqlSchema, mongo);
+	new PucsMatlabProcessorController(app, pool, config.pgSchema.data, mongo);
 
-	new GeoserverProxyController(app, pool, config.postgreSqlSchema, mongo);
+	new GeoserverProxyController(app, pool, config.pgSchema.data, mongo);
 
 	new ExportController(app, pool);
 

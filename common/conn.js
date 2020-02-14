@@ -101,59 +101,41 @@ function initGeoserver() {
 	});
 }
 
-function initDatabases(pgDataConnString, pgGeonodeConnString, mongoConnString, callback) {
-	pgDataDB = new pg.Client(pgDataConnString);
+function initDatabases(callback) {
+	pgDataDB = new pg.Client({
+		host: config.pgDataHost,
+		port: config.pgDataPort,
+		user: config.pgDataUser,
+		password: config.pgDataPassword,
+		database: config.pgDataDatabase
+	});
 	pgDataDB.connect();
-	pgGeonodeDB = new pg.Client(pgGeonodeConnString);
-	pgGeonodeDB.connect();
 
 	// keeping connection alive
-	setInterval(function() {
+	setInterval(function () {
 		if (reconnectCommand) {
 			clearInterval(reconnectCommand);
 		}
-		var reconnectCommand = setInterval(function() {
-			if(!pgDataDB.activeQuery){
+		var reconnectCommand = setInterval(function () {
+			if (!pgDataDB.activeQuery) {
 				clearInterval(reconnectCommand);
 				pgDataDB.end();
-				pgDataDB = new pg.Client(config.pgDataConnString);
+				pgDataDB = new pg.Client({
+					host: config.pgDataHost,
+					port: config.pgDataPort,
+					user: config.pgDataUser,
+					password: config.pgDataPassword,
+					database: config.pgDataDatabase
+				});
 				pgDataDB.connect();
 				logger.info('conn#initDatabases Data DB reconnected');
-			}else{
+			} else {
 				logger.info('conn#initDatabases Data DB waiting for reconnect');
 			}
-		},2000);
-	},Math.round(1000*60*60*5.9));
+		}, 2000);
+	}, Math.round(1000 * 60 * 60 * 5.9));
 
-	setInterval(function() {
-		if (reconnectCommand) {
-			clearInterval(reconnectCommand);
-		}
-		var reconnectCommand = setInterval(function() {
-			if(!pgGeonodeDB.activeQuery){
-				clearInterval(reconnectCommand);
-				pgGeonodeDB.end();
-				pgGeonodeDB = new pg.Client(config.pgGeonodeConnString);
-				pgGeonodeDB.connect();
-				logger.info('conn#initDatabases Geonode DB reconnected');
-			}else{
-				logger.info('conn#initiDatabases Geonode DB waiting for reconnect');
-			}
-		},2000);
-	},Math.round(1000*60*60*5.42));
-
-	MongoClient.connect(mongoConnString, function(err, dbs) {
-		if (err){
-			return callback(err);
-		}
-		mongodb=dbs;
-		var mongoSettings = mongodb.collection('settings');
-		mongoSettings.findOne({_id:1},function(err,result) {
-			objectId = result ? result.objectId : null;
-			if (err || !objectId) return callback(err);
-			callback();
-		});
-	});
+	callback();
 }
 
 function init(app, callback) {
@@ -162,10 +144,7 @@ function init(app, callback) {
 	},590000);
 	initGeoserver();
 
-	initDatabases(config.pgDataConnString, config.pgGeonodeConnString, config.mongoConnString, callback);
-
-	//var server = require('http').createServer(app);
-	//server.listen(3100);
+	initDatabases(callback);
 }
 
 function getIo() {
