@@ -94,10 +94,10 @@ class PgUserBatch {
 	notifiyUser(processedUser) {
 		return this._transporter
 			.sendMail({
-				from: this._fromEmail,
+				from: `"GISAT LPIS update" <${this._fromEmail}>`,
 				to: processedUser.email,
-				subject: `Přístup na https://lpisup.gisat.cz`,
-				text: `Dobrý den\nNa serveru https://lpisup.gisat.cz Vám byl založen uživatelský účet.\n\nPro přihlášení použijte následující údaje:\nJméno: ${processedUser.email}\nHeslo: ${processedUser.password}`
+				subject: `Vyhodnocení snímků z družic Sentinels pro potřeby aktualizace LPIS`,
+				text: `Dobrý den\nposíláme Vám Vaše přístupové údaje do aplikace pro podporu ověření žádostí o aktualizaci LPIS.\n\nhttps://lpisup.gisat.cz/\nE-Mail: ${processedUser.email}\nHeslo: ${processedUser.password}\n\nV případě jakýchkoliv technických problému s přihlášením nebo funkčností aplikace nás informujte na e-mailové adrese lpis-admin@gisat.cz.\n\nDěkujeme.\nGISAT s.r.o.\nwww.gisat.cz\n`
 			})
 			.then(() => {
 				processedUser.notified = true;
