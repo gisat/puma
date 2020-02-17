@@ -315,6 +315,7 @@ class PgCollection {
 				._pgPool
 				.query(sql.join(` `))
 				.catch((error) => {
+					console.log(error);
 				})
 		});
 	}
