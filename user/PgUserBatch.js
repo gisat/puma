@@ -1,6 +1,6 @@
 const config = require(`../config`);
-const nodemailer = require(`nodemailer`);
 const bcrypt = require(`bcrypt`);
+const MailNotifier = require(`../notifications/MailNotifier`);
 
 class PgUserBatch {
 	constructor(pgPool, pgSchema) {
@@ -8,14 +8,14 @@ class PgUserBatch {
 		this._pgSchema = pgSchema;
 
 		this._fromEmail = `lpis-admin@gisat.cz`;
-		this._transporter = nodemailer.createTransport({
+		this._mailNotifier = new MailNotifier({
 			host: "zimbra.gisat.cz",
 			secure: true,
 			auth: {
 				user: `lpis-admin`,
 				pass: `Lp82=QwEvXz`
 			}
-		});
+		})
 	}
 
 	create(users) {
@@ -46,10 +46,13 @@ class PgUserBatch {
 		return Promise
 			.resolve()
 			.then(() => {
-				processedUser.groupIds = this.getGroupIdsForUser(user);
-
-				if (!processedUser.groupIds || !processedUser.groupIds.length) {
+				return this.getGroupIdsForUser(user);
+			})
+			.then((groupIds) => {
+				if (!groupIds || !groupIds.length) {
 					throw new Error(`Unable find groups to assign this user to!`);
+				} else {
+					processedUser.groupIds = groupIds;
 				}
 			})
 			.then(() => {
@@ -82,7 +85,7 @@ class PgUserBatch {
 	}
 
 	clearUserRecordsOnError(processedUser) {
-		if(processedUser.id) {
+		if (processedUser.id) {
 			return this._pgPool
 				.query(
 					`DELETE FROM "${config.pgSchema.data}"."panther_users" WHERE id = ${processedUser.id};`
@@ -92,13 +95,13 @@ class PgUserBatch {
 	}
 
 	notifiyUser(processedUser) {
-		return this._transporter
-			.sendMail({
-				from: `"GISAT LPIS update" <${this._fromEmail}>`,
-				to: processedUser.email,
-				subject: `Vyhodnocení snímků z družic Sentinels pro potřeby aktualizace LPIS`,
-				text: `Dobrý den\nposíláme Vám Vaše přístupové údaje do aplikace pro podporu ověření žádostí o aktualizaci LPIS.\n\nhttps://lpisup.gisat.cz/\nE-Mail: ${processedUser.email}\nHeslo: ${processedUser.password}\n\nV případě jakýchkoliv technických problémů s přihlášením nebo funkčností aplikace nás informujte na e-mailové adrese lpis-admin@gisat.cz.\n\nDěkujeme.\nGISAT s.r.o.\nwww.gisat.cz\n`
-			})
+		return this._mailNotifier
+			.send(
+				`"GISAT LPIS update" <${this._fromEmail}>`,
+				processedUser.email,
+				`Vyhodnocení snímků z družic Sentinels pro potřeby aktualizace LPIS`,
+				`Dobrý den\nposíláme Vám Vaše přístupové údaje do aplikace pro podporu ověření žádostí o aktualizaci LPIS.\n\nhttps://lpisup.gisat.cz/\nE-Mail: ${processedUser.email}\nHeslo: ${processedUser.password}\n\nV případě jakýchkoliv technických problémů s přihlášením nebo funkčností aplikace nás informujte na e-mailové adrese lpis-admin@gisat.cz.\n\nDěkujeme.\nGISAT s.r.o.\nwww.gisat.cz\n`
+			)
 			.then(() => {
 				processedUser.notified = true;
 			})
@@ -140,57 +143,60 @@ class PgUserBatch {
 	}
 
 	getGroupIdsForUser(user) {
-		if (!config.customData || !config.customData["data.groups"]) {
-			return [];
-		}
+		return this._pgPool
+			.query(`SELECT * FROM "${config.pgSchema.data}"."groups"`)
+			.then((pgResult) => {
+				return pgResult.rows;
+			})
+			.then((groups) => {
+				return _.map(
+					_.filter(
+						groups, (group) => {
+							if (user.groupName && user.groupName === group.name) {
+								return true;
+							}
 
-		return _.map(
-			_.filter(
-				config.customData["data.groups"], (group) => {
-					if (user.groupName && user.groupName === group.name) {
-						return true;
-					}
+							if (
+								user.region === `centrala`
+								&& user.role
+								&& user.role.includes(`admin`)
+								&& group.name === `SZIF správci`
+							) {
+								return true;
+							}
 
-					if (
-						user.region === `centrala`
-						&& user.role
-						&& user.role.includes(`admin`)
-						&& group.name === `SZIF správci`
-					) {
-						return true;
-					}
+							if (
+								user.region
+								&& user.region !== `centrala`
+								&& user.role
+								&& user.role.includes(`admin`)
+								&& (
+									group.name === `${user.region} správci`
+									|| group.name === user.region
+									|| group.name === `SZIF regionální správci`
+								)
+							) {
+								return true;
+							}
 
-					if (
-						user.region
-						&& user.region !== `centrala`
-						&& user.role
-						&& user.role.includes(`admin`)
-						&& (
-							group.name === `${user.region} správci`
-							|| group.name === user.region
-							|| group.name === `SZIF regionální správci`
-						)
-					) {
-						return true;
+							if (
+								user.region
+								&& user.region !== `centrala`
+								&& user.role
+								&& user.role.includes(`pracovnik`)
+								&& (
+									group.name === user.region
+									|| group.name === `SZIF uživatelé`
+								)
+							) {
+								return true;
+							}
+						}
+					), (group) => {
+						return group.id;
 					}
-
-					if (
-						user.region
-						&& user.region !== `centrala`
-						&& user.role
-						&& user.role.includes(`pracovnik`)
-						&& (
-							group.name === user.region
-							|| group.name === `SZIF uživatelé`
-						)
-					) {
-						return true;
-					}
-				}
-			), (group) => {
-				return group.id;
-			}
-		)
+				)
+			})
 	}
 }
 
