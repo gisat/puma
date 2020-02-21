@@ -68,15 +68,18 @@ class PgCollection {
 	}
 
 	checkForRestrictions(object, objects, user, extra) {
-
 	}
 
 	populatePayloadWithAdditionalData(object, user) {
 	}
 
 	populateObjectWithAdditionalData(payload) {
-
 	}
+
+	notifiChange(object) {
+		return Promise.resolve();
+	}
+
 
 	async hasUserPermission(user, permission) {
 		let groupIds = _.map(user.groups, (group) => {
@@ -354,7 +357,13 @@ class PgCollection {
 					.then(() => {
 						return createdObject;
 					})
-			});
+			})
+			.then((createdObject) => {
+				return this.notifiChange({...createdObject, ...object})
+					.then(() => {
+						return createdObject;
+					})
+			})
 	}
 
 	mongoCreateOne(object, objects, user, extra) {
@@ -594,6 +603,12 @@ class PgCollection {
 				return this._pgMetadataChanges.createChange('update', this._tableName, updatedObject.key, user.id, object.data)
 					.then(() => {
 						return updatedObject;
+					})
+			})
+			.then((createdObject) => {
+				return this.notifiChange({...createdObject, ...object})
+					.then(() => {
+						return createdObject;
 					})
 			})
 	}

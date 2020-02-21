@@ -4,6 +4,7 @@ const PgCollection = require('../common/PgCollection');
 const PgApplicationsCrud = require(`../application/PgApplicationsCrud`);
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
+const MailNotifier = require(`../notifications/MailNotifier`);
 
 const config = require(`../config`);
 
@@ -28,6 +29,48 @@ class PgLpisChangeCases extends PgCollection {
 		this._customSqlColumns = `, ST_AsGeoJSON("geometryBefore") AS "geometryBefore", ST_AsGeoJSON("geometryAfter") AS "geometryAfter"`;
 
 		this._allowAttachments = true;
+
+		this._mailNotifier = new MailNotifier({
+			host: "zimbra.gisat.cz",
+			secure: true,
+			auth: {
+				user: `lpis-admin`,
+				pass: `Lp82=QwEvXz`
+			}
+		})
+	}
+
+	getOwnerOfObjectByKey(key) {
+		return this._pgPool
+			.query(`SELECT pu.* FROM "${config.pgSchema.data}"."metadata_changes" AS mc LEFT JOIN "${config.pgSchema.data}"."panther_users" AS pu ON pu.id = mc.changed_by WHERE resource_key = '${key}' ORDER BY changed LIMIT 1`)
+			.then((pgResult) => {
+				return pgResult.rows[0];
+			})
+	}
+
+	notifiChange(object) {
+		return Promise
+			.resolve()
+			.then(() => {
+				if(object.data.status !== `EVALUATION_APPROVED`) {
+					throw new Error(`notification skipped, wrong status`);
+				}
+			})
+			.then(() => {
+				return this.getOwnerOfObjectByKey(object.key);
+			})
+			.then((owner) => {
+				return this._mailNotifier
+					.send(
+						`"GISAT LPIS update" <lpis-admin@gisat.cz>`,
+						owner.email,
+						`Vyhodnocení snímků z družic Sentinels pro potřeby aktualizace LPIS`,
+						`Dobrý den,\n\nřízení "${object.data.caseKey}" bylo vyhodnoceno.\n\nDěkujeme.\nGISAT s.r.o.\nwww.gisat.cz\n`
+					)
+			})
+			.catch((error) => {
+				console.log(error);
+			})
 	}
 
 	setAdditionalPermissionToResource(resourceKey, user) {
