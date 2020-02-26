@@ -19,10 +19,10 @@ class LayerGeonodeController {
 	constructor(app, pgPool, schema) {
 		this.mongo = conn.getMongoDb();
 
-		this.pgLayers = new PgLayers(pgPool, this.mongo, schema || config.postgreSqlSchema);
-		this.permissions = new PgPermissions(pgPool, schema || config.postgreSqlSchema);
+		this.pgLayers = new PgLayers(pgPool, this.mongo, schema || config.pgSchema.data);
+		this.permissions = new PgPermissions(pgPool, schema || config.pgSchema.data);
 
-		this.layerReferences = new FrontOfficeLayers(this.mongo, pgPool, schema || config.postgreSqlSchema);
+		this.layerReferences = new FrontOfficeLayers(this.mongo, pgPool, schema || config.pgSchema.data);
 
 		app.get('/rest/layer', this.readAll.bind(this));
 		app.post('/rest/layer', this.add.bind(this));

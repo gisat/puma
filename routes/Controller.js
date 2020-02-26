@@ -21,7 +21,7 @@ class Controller {
             );
         }
 
-        this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
+        this.permissions = new PgPermissions(pool, schema || config.pgSchema.data);
         this.type = type;
         this.set(app);
         if (service && entity) {

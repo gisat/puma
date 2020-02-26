@@ -17,7 +17,7 @@ class LoginController {
         app.post("/api/login/logout", this.logout.bind(this));
         app.post("/api/login/getLoginInfo", this.getLoginInfo.bind(this));
 
-        this.pgUsers = new PgUsers(pgPool, commonSchema || config.postgreSqlSchema);
+        this.pgUsers = new PgUsers(pgPool, commonSchema || config.pgSchema.data);
     }
 
     logged(request, response) {

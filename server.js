@@ -93,9 +93,9 @@ function initServer(err) {
 
 	// Make sure that every request knows the current information about user.
 	app.use((request, response, next) => {
-		let authenticators = [new PgAuthentication(pool, config.postgreSqlSchema)];
+		let authenticators = [new PgAuthentication(pool, config.pgSchema.data)];
 		if (config.toggles.useEoSso) {
-			authenticators.unshift(new SsoAuthentication(pool, config.postgreSqlSchema));
+			authenticators.unshift(new SsoAuthentication(pool, config.pgSchema.data));
 		}
 
 		new CompoundAuthentication(authenticators).authenticate(request, response, next).then(() => {

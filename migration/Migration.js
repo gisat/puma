@@ -16,7 +16,7 @@ class Migration {
 			port: config.pgDataPort
 		});
 		this._pool = this._connectionPool.pool();
-		this.schema = schema || config.postgreSqlSchema;
+		this.schema = schema || config.pgSchema.data;
 	}
 
 	run() {

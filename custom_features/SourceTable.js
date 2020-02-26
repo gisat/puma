@@ -17,7 +17,7 @@ class SourceTable {
      */
     checkIfExists (){
         let sql = `SELECT * FROM information_schema.tables` +
-            ` WHERE table_schema = '${config.postgreSqlSchema}'` +
+            ` WHERE table_schema = '${config.pgSchema.data}'` +
             ` AND table_name = '${this._tableName}';`;
 
         var self = this;
@@ -43,7 +43,7 @@ class SourceTable {
             where = where.slice(0,-4);
         }
 
-        var sql = `SELECT * FROM ${config.postgreSqlSchema}.${this._tableName} ` +
+        var sql = `SELECT * FROM ${config.pgSchema.data}.${this._tableName} ` +
             where +
             `ORDER BY name DESC;`;
 
@@ -86,7 +86,7 @@ class SourceTable {
         keys.push("user_name");
         values.push(user);
 
-        var sql = `INSERT INTO ${config.postgreSqlSchema}.${this._tableName} ` +
+        var sql = `INSERT INTO ${config.pgSchema.data}.${this._tableName} ` +
             `(${keys.join(",")})` +
             `VALUES` +
             `('${values.join("','")}');`;
@@ -110,7 +110,7 @@ class SourceTable {
      * @returns {Promise.<T>}
      */
     deleteRecord (params){
-        var sql = `DELETE FROM ${config.postgreSqlSchema}.${this._tableName} WHERE uuid='${params.id}'`;
+        var sql = `DELETE FROM ${config.pgSchema.data}.${this._tableName} WHERE uuid='${params.id}'`;
 
         logger.info(`INFO SourceTable#deleteRecord sql: ` + sql);
         return this._pgPool.pool().query(sql).then(function(res){

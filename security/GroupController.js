@@ -20,8 +20,8 @@ class GroupController {
 		app.post('/rest/group', this.create.bind(this));
         app.delete('/rest/group/:id', this.delete.bind(this));
 
-		this.groups = new PgGroups(pool, schema || config.postgreSqlSchema);
-		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
+		this.groups = new PgGroups(pool, schema || config.pgSchema.data);
+		this.permissions = new PgPermissions(pool, schema || config.pgSchema.data);
 		this.transaction = new PgTransaction(pool);
     }
 

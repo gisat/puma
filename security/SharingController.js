@@ -28,12 +28,12 @@ class SharingController {
         app.post('/rest/communities', this.updateCommunities.bind(this));
         // End of UTEP Specific stuff
 
-        this.permissions = new PgPermissions(pgPool, commonSchema || config.postgreSqlSchema);
-        this.groups = new PgGroups(pgPool, commonSchema || config.postgreSqlSchema);
-        this.wmsLayers = new PgWmsLayers(pgPool, mongo, commonSchema || config.postgreSqlSchema);
+        this.permissions = new PgPermissions(pgPool, commonSchema || config.pgSchema.data);
+        this.groups = new PgGroups(pgPool, commonSchema || config.pgSchema.data);
+        this.wmsLayers = new PgWmsLayers(pgPool, mongo, commonSchema || config.pgSchema.data);
 
         this.pgPool = pgPool;
-        this.schema = commonSchema || config.postgreSqlSchema;
+        this.schema = commonSchema || config.pgSchema.data;
         this.mongo = mongo;
     }
 

@@ -16,7 +16,7 @@ class LinesSourceTable extends SourceTable {
      * @param name {string} name of the table
      */
     createTable(name){
-        var sql = `CREATE TABLE ${config.postgreSqlSchema}.${name}(` +
+        var sql = `CREATE TABLE ${config.pgSchema.data}.${name}(` +
             `uuid text,` +
             `name text,` +
             `geometry text,` +

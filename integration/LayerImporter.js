@@ -299,7 +299,7 @@ class LayerImporter {
             let scopeIdFilter = inputs.scope;
             let user = inputs.user;
 
-            let pgPermissions = new PgPermissions(_pgPool, config.postgreSqlSchema);
+            let pgPermissions = new PgPermissions(_pgPool, config.pgSchema.data);
             pgPermissions.forUser(user.id).then(results => {
                 let filter = {
                     resourceType: MongoScope.collectionName(),
@@ -584,7 +584,7 @@ class LayerImporter {
 
             let mongoTopics = new MongoTopics(_mongo);
             let mongoLayerGroups = new MongoLayerGroups(_mongo);
-            let pgPermissions = new PgPermissions(_pgPool, config.postgreSqlSchema);
+            let pgPermissions = new PgPermissions(_pgPool, config.pgSchema.data);
 
             let geoserverImportTaskResults = currentProcess.geoserverImportTaskResults;
 
@@ -769,7 +769,7 @@ class LayerImporter {
             let performedAnalysis = currentProcess.performedAnalysis;
 
             let mongoLayerReferences = new MongoLayerReferences(this._mongo);
-            let pgPermissions = new PgPermissions(this._pgPool, config.postgreSqlSchema);
+            let pgPermissions = new PgPermissions(this._pgPool, config.pgSchema.data);
 
             let layerReferences = [];
             let layerReferencesPermissions = [];

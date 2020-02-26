@@ -31,7 +31,7 @@ function getLocationConf(params, req, res, callback) {
 			});
 		},
 		datasetMap: async function(asyncCallback) {
-			let pgPlaces = new PgPlaces(conn.getPgDataDb(), config.postgreSqlSchema, conn.getMongoDb());
+			let pgPlaces = new PgPlaces(conn.getPgDataDb(), config.pgSchema.data, conn.getMongoDb());
 			let [validResources, isAdmin] = await pgPlaces.getResourceIdsForUserAndPermissionType(req.session.user, Permission.READ);
 
 			let crudFilter = {
@@ -241,7 +241,7 @@ async function getThemeYearConf(params, req, res, callback) {
 			// 	return asyncCallback(null,locations);
 			// }
 
-			let pgPlaces = new PgPlaces(conn.getPgDataDb(), config.postgreSqlSchema, conn.getMongoDb());
+			let pgPlaces = new PgPlaces(conn.getPgDataDb(), config.pgSchema.data, conn.getMongoDb());
 			let [validResources, isAdmin] = await pgPlaces.getResourceIdsForUserAndPermissionType(req.session.user, Permission.READ);
 
 			let crudFilter = {

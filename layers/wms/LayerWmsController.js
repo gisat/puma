@@ -14,8 +14,8 @@ let Permission = require('../../security/Permission');
  */
 class LayerWmsController {
 	constructor(app, pool, mongo, schema){
-		this._pgLayers = new PgWmsLayers(pool, mongo, schema || config.postgreSqlSchema);
-		this.permissions = new PgPermissions(pool, schema || config.postgreSqlSchema);
+		this._pgLayers = new PgWmsLayers(pool, mongo, schema || config.pgSchema.data);
+		this.permissions = new PgPermissions(pool, schema || config.pgSchema.data);
 		this.type = PgWmsLayers.tableName();
 
 		app.get('/rest/wms/layer', this.readAll.bind(this));
