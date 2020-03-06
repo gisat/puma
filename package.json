@@ -15,7 +15,7 @@
     "@turf/turf": "5.1.6",
     "appoptics-apm": "5.8.0",
     "async": "1.5.2",
-    "bcrypt": "1.0.3",
+    "bcrypt": "4.0.1",
     "blueimp-md5": "2.10.0",
     "bower": "1.8.2",
     "csv": "1.2.1",
