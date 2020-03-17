@@ -37,7 +37,7 @@ class ImageMosaic {
 			await this._pgPool.query(`CREATE TABLE "sentinel_sources" (the_geom geometry, acquisition text);`);
 
 			for(let source of sourcesJson.sources) {
-				await this._pgPool.query(`INSERT INTO "sentinel_sources" VALUES (ST_MakeValid(ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(source.geometry)}'), 4326)), '${source.acquisition}');`);
+				await this._pgPool.query(`INSERT INTO "sentinel_sources" VALUES (ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(source.geometry)}'), 4326), '${source.acquisition}');`);
 			}
 
 			await this._pgPool.query(`CREATE INDEX "sentinel_sources_geom_idx" ON "sentinel_sources" USING GIST (the_geom);`);
