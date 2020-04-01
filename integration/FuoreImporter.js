@@ -258,7 +258,12 @@ class FuoreImporter {
 		return Promise.resolve()
 			.then(async () => {
 				if (unzippedFs.contents().includes('analytical_units.json')) {
-					let analyticalUnits = JSON.parse(unzippedFs.read('analytical_units.json', 'text'));
+					let analyticalUnits = this.prepareForImport(
+						JSON.parse(
+							unzippedFs.read('analytical_units.json', 'text')
+						),
+						true
+					);
 
 					let analyticalUnitIds = [];
 					let analyticalUnitUuids = [];
@@ -381,7 +386,7 @@ class FuoreImporter {
 				let columnType;
 				if (_.isString(attributeDataFirst[year])) {
 					columnType = `TEXT`;
-				} else if (_.isNumber(attributeDataFirst[year])) {
+				} else {
 					columnType = `NUMERIC`;
 				}
 
@@ -529,7 +534,12 @@ class FuoreImporter {
 		return Promise.resolve()
 			.then(async () => {
 				if (unzippedFs.contents().includes('attributes.json')) {
-					let attributes = JSON.parse(unzippedFs.read('attributes.json', 'text'));
+					let attributes = this.prepareForImport(
+						JSON.parse(
+							unzippedFs.read('attributes.json', 'text')
+						),
+						true
+					);
 
 					let attributeMetadataIds = [];
 					let attributeMetadataUuids = [];
@@ -714,23 +724,44 @@ class FuoreImporter {
 			})
 	}
 
-	createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, areaNameAttributeKey, countryCodeAttributeKey) {
+	createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherScopesToUpdateOrCreate = [];
-				for (let analyticalUnit of analyticalUnits) {
-					let scopeNameInternal = `fuore-au_${analyticalUnit.uuid}-do-not-edit`;
+
+				let analyticalUnitsLevel2 = _.filter(analyticalUnits, (analyticalUnit) => {
+					return analyticalUnit.au_level === 2;
+				});
+
+				for (let analyticalUnitLevel2 of analyticalUnitsLevel2) {
+					let scopeNameInternal = `fuore-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
+
+					let analyticalUnitLevel1 = _.find(analyticalUnits, (analyticalUnitLevel1) => {
+						return analyticalUnitLevel1.au_level === 1 && analyticalUnitLevel1.relation_key === analyticalUnitLevel2.relation_key;
+					});
+
+					let layerTemplateLevel1 = _.find(pantherData.layerTemplates, (layerTemplateLevel1) => {
+						return layerTemplateLevel1.data.nameInternal === `fuore-au_${analyticalUnitLevel1.uuid}-do-not-edit`;
+					});
+
+					let layerTemplateLevel2 = _.find(pantherData.layerTemplates, (layerTemplateLevel2) => {
+						return layerTemplateLevel2.data.nameInternal === `fuore-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
+					});
+
 					pantherScopesToUpdateOrCreate.push(
 						{
-							key: analyticalUnit.uuid,
+							key: analyticalUnitLevel2.uuid,
 							data: {
 								nameInternal: scopeNameInternal,
-								nameDisplay: analyticalUnit.type_of_region,
+								nameDisplay: analyticalUnitLevel2.type_of_region,
 								applicationKey: esponFuoreApplicationKey,
-								description: analyticalUnit.description,
+								description: analyticalUnitLevel2.description,
 								configuration: {
-									areaNameAttributeKey,
-									countryCodeAttributeKey
+									areaNameAttributeKey: pantherData.fuoreAuNameAttribute.key,
+									countryCodeAttributeKey: pantherData.fuoreAuCountryCodeAttribute.key,
+									regionType: analyticalUnitLevel2.region_type,
+									auLevel1LayerTemplateKey: layerTemplateLevel1.key,
+									auLevel2LayerTemplateKey: layerTemplateLevel2.key
 								}
 							}
 						}
@@ -1071,6 +1102,88 @@ class FuoreImporter {
 			});
 	}
 
+	createPantherAuLevel1TagForFuore(pantherData, user) {
+		let key = pantherData.fuoreConfiguration.data.data.auLevel1TagKey;
+		return Promise.resolve()
+			.then(async () => {
+				let existingPantherTag = await this._pgMetadataCrud.get(
+					`tags`,
+					{
+						filter: {
+							key
+						}
+					},
+					user
+				).then((getResult) => {
+					return getResult.data.tags[0];
+				});
+
+				if (existingPantherTag) {
+					return existingPantherTag;
+				} else {
+					return this._pgMetadataCrud.create(
+						{
+							tags: [
+								{
+									key,
+									data: {
+										nameInternal: `fuore_au_leve1`,
+										nameDisplay: `fuore_au_leve1`,
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							]
+						},
+						user,
+						{}
+					).then(([data, errors]) => {
+						return data.tags[0];
+					})
+				}
+			});
+	}
+
+	createPantherAuLevel2TagForFuore(pantherData, user) {
+		let key = pantherData.fuoreConfiguration.data.data.auLevel2TagKey;
+		return Promise.resolve()
+			.then(async () => {
+				let existingPantherTag = await this._pgMetadataCrud.get(
+					`tags`,
+					{
+						filter: {
+							key
+						}
+					},
+					user
+				).then((getResult) => {
+					return getResult.data.tags[0];
+				});
+
+				if (existingPantherTag) {
+					return existingPantherTag;
+				} else {
+					return this._pgMetadataCrud.create(
+						{
+							tags: [
+								{
+									key,
+									data: {
+										nameInternal: `fuore_au_leve2`,
+										nameDisplay: `fuore_au_leve2`,
+										applicationKey: esponFuoreApplicationKey
+									}
+								}
+							]
+						},
+						user,
+						{}
+					).then(([data, errors]) => {
+						return data.tags[0];
+					})
+				}
+			});
+	}
+
 	createPantherAttributesFromFuoreAttributes(attributes, analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
@@ -1165,6 +1278,58 @@ class FuoreImporter {
 				}
 
 				return _.concat(fuorePeriods, createdPeriods);
+			});
+	}
+
+	createPantherTagsFromFuoreAnalyticalUnits(analyticalUnits, user) {
+		return Promise.resolve()
+			.then(async () => {
+				let existingPantherTags = await this._pgMetadataCrud.get(
+					`tags`,
+					{
+						filter: {
+							applicationKey: esponFuoreApplicationKey
+						},
+						unlimited: true
+					},
+					user
+				).then((getResults) => {
+					return getResults.data.tags;
+				});
+
+				let fuoreTagsToCreateOrUpdate = [];
+				for (let analyticalUnit of analyticalUnits) {
+					let pantherAuRelationTagInternalName = `fuore-au-relation-${analyticalUnit.relationKey}-do-not-edit`;
+
+					let preparedAuRelationTagForUpdateOrCreate = _.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
+						return preparedPantherTag.key === analyticalUnit.relationKey;
+					});
+					let existingPantherAuRelationTagObject = _.find(existingPantherTags, (pantherTagObject) => {
+						return existingPantherTags.key === analyticalUnit.relationKey;
+					});
+
+					let tagKey = (preparedAuRelationTagForUpdateOrCreate && preparedAuRelationTagForUpdateOrCreate.key) || (existingPantherAuRelationTagObject && existingPantherAuRelationTagObject.key || analyticalUnit.relationKey);
+					if (!preparedAuRelationTagForUpdateOrCreate) {
+						fuoreTagsToCreateOrUpdate.push({
+							key: tagKey,
+							data: {
+								nameInternal: pantherAuRelationTagInternalName,
+								nameDisplay: pantherAuRelationTagInternalName,
+								applicationKey: esponFuoreApplicationKey
+							}
+						});
+					}
+				}
+
+				return this._pgMetadataCrud.update(
+					{
+						tags: fuoreTagsToCreateOrUpdate
+					},
+					user,
+					{}
+				).then((updateResult) => {
+					return updateResult.tags;
+				});
 			});
 	}
 
@@ -1310,13 +1475,14 @@ class FuoreImporter {
 								attributeKey: attribute.uuid,
 								scopeKey: analyticalUnit.uuid,
 								tagKeys: pantherTagKeys,
-								viewKey: pantherView.key
+								viewKey: pantherView.key,
+								twoSideScale: attribute.two_side_scale || false
 							}
 						}
 					);
 				}
 
-				return await this._pgSpecificCrud.update(
+				return this._pgSpecificCrud.update(
 					{
 						esponFuoreIndicators: esponFuoreIndicatorsToCreateOrUpdate
 					},
@@ -1332,20 +1498,6 @@ class FuoreImporter {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherSpatialDataSources = [];
-				// let pantherSpatialDataSources = await this._pgDataSourcesCrud.get(
-				// 	`spatial`,
-				// 	{
-				// 		filter: {
-				// 			tableName: {
-				// 				like: "fuore-au\\_"
-				// 			}
-				// 		},
-				// 		unlimited: true
-				// 	},
-				// 	user
-				// ).then((getResult) => {
-				// 	return getResult.data.spatial;
-				// });
 
 				let spatialDataSourcesToCreateOrUpdate = [];
 
@@ -1908,6 +2060,199 @@ class FuoreImporter {
 		})
 	}
 
+	updateScopeConfigurationsWithOrderData(attributes, analyticalUnits, user, pantherData) {
+		for(let pantherScope of pantherData.scopes) {
+			let baseScopeRelatedAnalyticalUnit = _.find(analyticalUnits, (scopeAnalyticalUnit) => {
+				return scopeAnalyticalUnit.uuid === pantherScope.key;
+			});
+
+			let secondScopeRelatedAnalyticalUnit = _.find(analyticalUnits, (scopeAnalyticalUnit) => {
+				return scopeAnalyticalUnit.uuid !== pantherScope.key
+					&& scopeAnalyticalUnit.relation_key === baseScopeRelatedAnalyticalUnit.relation_key;
+			});
+
+			let scopeRelatedAnalyticalUnits = [baseScopeRelatedAnalyticalUnit, secondScopeRelatedAnalyticalUnit];
+
+			let indicatorOrder = [];
+			let categoryOrder = [];
+			let subCategoryOrder = [];
+			for(let scopeRelatedAnalyticalUnit of scopeRelatedAnalyticalUnits) {
+				let scopeRelatedAnalyticalUnitRelatedAttributes = _.filter(attributes, (attribute) => {
+					return attribute.analytical_unit === scopeRelatedAnalyticalUnit.table_name;
+				});
+
+				for(let scopeRelatedAttribute of scopeRelatedAnalyticalUnitRelatedAttributes) {
+					let fuoreIndicatorNameInternal = `fuore-au_${scopeRelatedAnalyticalUnit.uuid}-attr_${scopeRelatedAttribute.uuid}-do-not-edit`;
+					let pantherCategoryTagInternalName = `fuore-category-${scopeRelatedAttribute.category}-au_${scopeRelatedAnalyticalUnit.uuid}-do-not-edit`;
+					let pantherSubCategoryTagInternalName = `fuore-subcategory-${scopeRelatedAttribute.sub_category}-au_${scopeRelatedAnalyticalUnit.uuid}-do-not-edit`;
+
+					let fuoreIndicator = _.find(pantherData.esponFuoreIndicators, (fuoreIndicator) => {
+						return fuoreIndicator.data.nameInternal === fuoreIndicatorNameInternal;
+					});
+
+					let fuoreCategoryTag = _.find(pantherData.tags, (fuoreCategoryTag) => {
+						return fuoreCategoryTag.data.nameInternal === pantherCategoryTagInternalName
+							&& !_.find(categoryOrder, (categoryOrderRecord) => {
+								return categoryOrderRecord.key === fuoreCategoryTag.key
+									&& categoryOrderRecord.order === scopeRelatedAttribute.category_order
+							});
+					});
+
+					let fuoreSubCategoryTag = _.find(pantherData.tags, (fuoreSubCategoryTag) => {
+						return fuoreSubCategoryTag.data.nameInternal === pantherSubCategoryTagInternalName
+							&& !_.find(subCategoryOrder, (subCategoryOrderRecord) => {
+								return subCategoryOrderRecord.key === fuoreSubCategoryTag.key
+									&& subCategoryOrderRecord.order === scopeRelatedAttribute.sub_category_order
+							});
+					});
+
+					indicatorOrder.push({
+						key: fuoreIndicator.key,
+						order: scopeRelatedAttribute.order
+					});
+
+					if(fuoreCategoryTag) {
+						categoryOrder.push({
+							key: fuoreCategoryTag.key,
+							order: scopeRelatedAttribute.category_order
+						});
+					}
+
+					if(fuoreSubCategoryTag) {
+						subCategoryOrder.push({
+							key: fuoreSubCategoryTag.key,
+							order: scopeRelatedAttribute.sub_category_order
+						})
+					}
+				}
+			}
+
+			indicatorOrder = _.sortBy(indicatorOrder, [`order`, `asc`]);
+			categoryOrder = _.sortBy(categoryOrder, [`order`, `asc`]);
+			subCategoryOrder = _.sortBy(subCategoryOrder, [`order`, `asc`]);
+
+			pantherScope.data.configuration.order = {
+				esponFuoreIndicatorKeys: _.map(indicatorOrder, `key`),
+				categoryTagKeys: _.map(categoryOrder, `key`),
+				subCategoryTagKeys: _.map(subCategoryOrder, `key`)
+			}
+		}
+
+		return this._pgMetadataCrud.update(
+			{
+				scopes: pantherData.scopes
+			},
+			user,
+			{}
+		);
+	}
+
+	prepareForImport(sourceJson, forceUpdate) {
+		let order = {
+			record: 1,
+			category: [],
+			subCategory: []
+		};
+
+		let outputJson = [];
+
+		for (let jsonObject of sourceJson) {
+			if (jsonObject.hasOwnProperty(`color`) && jsonObject.color === `standard`) {
+				delete jsonObject.color;
+			}
+
+			if (jsonObject.hasOwnProperty(`delete`)) {
+				jsonObject[`delete`] = jsonObject[`delete`] !== null && jsonObject[`delete`] !== false;
+			}
+
+			if (forceUpdate) {
+				jsonObject[`update`] = true;
+			} else if (jsonObject.hasOwnProperty(`update`)) {
+				jsonObject[`update`] = jsonObject[`update`] !== null && jsonObject[`update`] !== false;
+			}
+
+			if (jsonObject.hasOwnProperty(`twoSideScale`)) {
+				jsonObject[`twoSideScale`] = jsonObject[`twoSideScale`] !== null && jsonObject[`twoSideScale`] !== false;
+			}
+
+			if (!jsonObject.hasOwnProperty(`order`)) {
+				jsonObject[`order`] = order.record++;
+			}
+
+			if (!jsonObject.hasOwnProperty(`category_order`) && jsonObject.hasOwnProperty(`analytical_unit`)) {
+				if (!order.category.includes(jsonObject.category)) {
+					order.category.push(jsonObject.category);
+				}
+				jsonObject[`category_order`] = order.category.length;
+			}
+
+			if (!jsonObject.hasOwnProperty(`sub_category_order`) && jsonObject.hasOwnProperty(`analytical_unit`)) {
+				if (!order.subCategory.includes(jsonObject.sub_category)) {
+					order.subCategory.push(jsonObject.sub_category);
+				}
+				jsonObject[`sub_category_order`] = order.subCategory.length;
+			}
+
+			if (jsonObject.hasOwnProperty(`type_of_region`)) {
+				if (jsonObject.table_name === jsonObject.parent_table) {
+					jsonObject.parent_table = null;
+				}
+
+				if (jsonObject.table_name && jsonObject.parent_table) {
+					jsonObject.au_level = 2;
+
+					let auLevel1Object = _.find(outputJson, (object) => {
+						return object.relation_key && object.table_name === jsonObject.parent_table;
+					});
+
+					if (auLevel1Object) {
+						jsonObject.relation_key = auLevel1Object.relation_key;
+					} else {
+						jsonObject.relation_key = uuidv4();
+					}
+				}
+
+				if (jsonObject.table_name && !jsonObject.parent_table) {
+					jsonObject.au_level = 1;
+
+					let auLevel2Object = _.find(outputJson, (object) => {
+						return object.parent_table === jsonObject.table_name && object.relationKey;
+					});
+
+					if (auLevel2Object) {
+						jsonObject.relation_key = auLevel2Object.relation_key;
+					} else {
+						jsonObject.relation_key = uuidv4();
+					}
+				}
+
+				if (jsonObject.type_of_region.startsWith(`Functional Urban Areas`)) {
+					jsonObject.region_type = `fua`;
+				} else if (jsonObject.type_of_region.startsWith(`Border 'large' (90 minutes)`)) {
+					jsonObject.region_type = `border-large`;
+				} else if (jsonObject.type_of_region.startsWith(`Border 'narrow' (45 minutes)`)) {
+					jsonObject.region_type = `border-narrow`;
+				} else if (jsonObject.type_of_region.startsWith(`Green Infrastructure`)) {
+					jsonObject.region_type = `green-infrastructure`;
+				} else if (jsonObject.type_of_region.startsWith(`Islands`)) {
+					jsonObject.region_type = `islands`;
+				} else if (jsonObject.type_of_region.startsWith(`Coasts II`)) {
+					jsonObject.region_type = `msa`;
+				} else if (jsonObject.type_of_region.startsWith(`Coasts I`)) {
+					jsonObject.region_type = `tcoa`;
+				} else if (jsonObject.type_of_region.startsWith(`Mountains`)) {
+					jsonObject.region_type = `mountains`;
+				} else if (jsonObject.type_of_region.startsWith(`Sparsely populated Areas`)) {
+					jsonObject.region_type = `spa`;
+				}
+			}
+
+			outputJson.push(jsonObject);
+		}
+
+		return outputJson;
+	}
+
 	import(data, user, status) {
 		let unzippedFs;
 		let analyticalUnits;
@@ -1997,7 +2342,14 @@ class FuoreImporter {
 					});
 			})
 			.then(() => {
-				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData.fuoreAuNameAttribute.key, pantherData.fuoreAuCountryCodeAttribute.key)
+				return this.createPantherLayerTemplatesForFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
+					.then((pantherLayerTemplates) => {
+						pantherData.layerTemplates = pantherLayerTemplates;
+						console.log(`FuoreImport # createPantherLayerTemplatesForFuoreAnalyticalUnits done`);
+					})
+			})
+			.then(() => {
+				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
 					.then((pantherScopes) => {
 						pantherData.scopes = pantherScopes;
 						console.log(`FuoreImport # createPantherScopesFromFuoreAnalyticalUnits done`);
@@ -2022,13 +2374,6 @@ class FuoreImporter {
 					.then((pantherTags) => {
 						pantherData.tags = pantherTags;
 						console.log(`FuoreImport # createPantherTagsFromFuoreAttributes done`);
-					})
-			})
-			.then(() => {
-				return this.createPantherLayerTemplatesForFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
-					.then((pantherLayerTemplates) => {
-						pantherData.layerTemplates = pantherLayerTemplates;
-						console.log(`FuoreImport # createPantherLayerTemplatesForFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
@@ -2096,6 +2441,12 @@ class FuoreImporter {
 				return this.setGuestPermissionsForPantherData(pantherData)
 					.then(() => {
 						console.log(`FuoreImport # setGuestPermissionsForPantherData done`);
+					})
+			})
+			.then(() => {
+				return this.updateScopeConfigurationsWithOrderData(attributes, analyticalUnits, user, pantherData)
+					.then(() => {
+						console.log(`FuoreImport # updateScopeConfigurationsWithOrderData done`);
 					})
 			})
 			.then(() => {
