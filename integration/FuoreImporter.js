@@ -542,18 +542,11 @@ class FuoreImporter {
 					);
 
 					let attributeMetadataIds = [];
-					let attributeMetadataUuids = [];
 
 					for (let attributeMetadata of attributes) {
 						if (!attributeMetadata.hasOwnProperty(`uuid`)) {
-							attributeMetadata.uuid = uuidv4();
+							throw new Error(`Some of the attributes has no uuid property set!`);
 						}
-
-						if (attributeMetadataUuids.includes(attributeMetadata.uuid)) {
-							throw new Error(`Attributes units has non-unique uuids`);
-						}
-
-						attributeMetadataUuids.push(attributeMetadata.uuid);
 					}
 
 					for (let attributeMetadata of attributes) {
@@ -599,7 +592,7 @@ class FuoreImporter {
 	}
 
 	async updateMetadata(group, data, user) {
-		return await this._pgMetadataCrud.update({
+		return this._pgMetadataCrud.update({
 				[group]: data
 			},
 			user,
@@ -1197,19 +1190,24 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR07`);
 					}
 
-					let attributeNameInternal = `fuore-au_${analyticalUnit.uuid}-attr_${attribute.uuid}-do-not-edit`;
-					pantherAttributesToUpdateOrCreate.push({
-						key: attribute.uuid,
-						data: {
-							nameInternal: attributeNameInternal,
-							nameDisplay: attribute.name,
-							description: attribute.description,
-							color: attribute.color || null,
-							applicationKey: esponFuoreApplicationKey,
-							unit: attribute.unit,
-							valueType: attribute.value_type
-						}
+					let preparedPantherAttribute = _.find(pantherAttributesToUpdateOrCreate, (preparedPantherAttribute) => {
+						return preparedPantherAttribute.key === attribute.uuid;
 					});
+
+					if (!preparedPantherAttribute) {
+						pantherAttributesToUpdateOrCreate.push({
+							key: attribute.uuid,
+							data: {
+								nameInternal: `fuore-au_${analyticalUnit.uuid}-attr_${attribute.uuid}-do-not-edit`,
+								nameDisplay: attribute.name,
+								description: attribute.description,
+								color: attribute.color || null,
+								applicationKey: esponFuoreApplicationKey,
+								unit: attribute.unit,
+								valueType: attribute.value_type
+							}
+						});
+					}
 				}
 
 				return await this.updateMetadata(
@@ -2025,7 +2023,7 @@ class FuoreImporter {
 			});
 	}
 
-	getFuoreConfiguration(user) {
+	ensureFuoreConfiguration(user) {
 		let categoryTagKey = "75a06319-ed4d-4750-a139-86619c7b1283";
 		let subCategoryTagKey = "5decb5ec-40ea-498a-b92a-b53870f548ec";
 
@@ -2033,14 +2031,16 @@ class FuoreImporter {
 			filter: {
 				applicationKey: "esponFuore"
 			}
-		}, user).then((getResult) => {
-			if (getResult.data.configurations[0]) {
-				return getResult.data.configurations[0];
-			} else {
-				return this._pgApplicationsCrud.create(
+		}, user)
+			.then((getResult) => {
+				return getResult.data.configurations[0] ? getResult.data.configurations[0].key : uuidv4();
+			})
+			.then((key) => {
+				return this._pgApplicationsCrud.update(
 					{
 						configurations: [
 							{
+								key,
 								data: {
 									applicationKey: "esponFuore",
 									data: {
@@ -2053,15 +2053,15 @@ class FuoreImporter {
 					},
 					user,
 					{}
-				).then(([data, errors]) => {
-					return data.configurations[0];
-				})
-			}
-		})
+				)
+			})
+			.then((updateResult) => {
+				return updateResult.configurations[0];
+			})
 	}
 
 	updateScopeConfigurationsWithOrderData(attributes, analyticalUnits, user, pantherData) {
-		for(let pantherScope of pantherData.scopes) {
+		for (let pantherScope of pantherData.scopes) {
 			let baseScopeRelatedAnalyticalUnit = _.find(analyticalUnits, (scopeAnalyticalUnit) => {
 				return scopeAnalyticalUnit.uuid === pantherScope.key;
 			});
@@ -2076,12 +2076,12 @@ class FuoreImporter {
 			let indicatorOrder = [];
 			let categoryOrder = [];
 			let subCategoryOrder = [];
-			for(let scopeRelatedAnalyticalUnit of scopeRelatedAnalyticalUnits) {
+			for (let scopeRelatedAnalyticalUnit of scopeRelatedAnalyticalUnits) {
 				let scopeRelatedAnalyticalUnitRelatedAttributes = _.filter(attributes, (attribute) => {
 					return attribute.analytical_unit === scopeRelatedAnalyticalUnit.table_name;
 				});
 
-				for(let scopeRelatedAttribute of scopeRelatedAnalyticalUnitRelatedAttributes) {
+				for (let scopeRelatedAttribute of scopeRelatedAnalyticalUnitRelatedAttributes) {
 					let fuoreIndicatorNameInternal = `fuore-au_${scopeRelatedAnalyticalUnit.uuid}-attr_${scopeRelatedAttribute.uuid}-do-not-edit`;
 					let pantherCategoryTagInternalName = `fuore-category-${scopeRelatedAttribute.category}-au_${scopeRelatedAnalyticalUnit.uuid}-do-not-edit`;
 					let pantherSubCategoryTagInternalName = `fuore-subcategory-${scopeRelatedAttribute.sub_category}-au_${scopeRelatedAnalyticalUnit.uuid}-do-not-edit`;
@@ -2111,14 +2111,14 @@ class FuoreImporter {
 						order: scopeRelatedAttribute.order
 					});
 
-					if(fuoreCategoryTag) {
+					if (fuoreCategoryTag) {
 						categoryOrder.push({
 							key: fuoreCategoryTag.key,
 							order: scopeRelatedAttribute.category_order
 						});
 					}
 
-					if(fuoreSubCategoryTag) {
+					if (fuoreSubCategoryTag) {
 						subCategoryOrder.push({
 							key: fuoreSubCategoryTag.key,
 							order: scopeRelatedAttribute.sub_category_order
@@ -2141,6 +2141,33 @@ class FuoreImporter {
 		return this._pgMetadataCrud.update(
 			{
 				scopes: pantherData.scopes
+			},
+			user,
+			{}
+		);
+	}
+
+	updateConfigurationWithScopeOrder(analyticalUnits, user, pantherData) {
+		let scopesOrder = [];
+
+		_.each(analyticalUnits, (analyticalUnit) => {
+			if (analyticalUnit.au_level === 2) {
+				scopesOrder.push({
+					key: analyticalUnit.uuid,
+					order: analyticalUnit.order
+				})
+			}
+		});
+
+		let sortedScopeOrder = _.orderBy(scopesOrder, [`order`]);
+
+		pantherData.fuoreConfiguration.data.data.order = {
+			scopeKeys: _.map(sortedScopeOrder, `key`)
+		};
+
+		return this._pgApplicationsCrud.update(
+			{
+				configurations: [pantherData.fuoreConfiguration]
 			},
 			user,
 			{}
@@ -2264,7 +2291,7 @@ class FuoreImporter {
 
 		user.groups.push({id: 1, name: "admin"});
 
-		return this.getFuoreConfiguration(user)
+		return this.ensureFuoreConfiguration(user)
 			.then((pFuoreConfiguration) => {
 				pantherData.fuoreConfiguration = pFuoreConfiguration;
 			})
@@ -2312,6 +2339,12 @@ class FuoreImporter {
 					`COMMIT`
 				];
 				return this._pgPool.query(queries.join(`; `));
+			})
+			.then(() => {
+				return this.updateConfigurationWithScopeOrder(analyticalUnits, user, pantherData)
+					.then(() => {
+						console.log(`FuoreImport # updateConfigurationWithScopeOrder done`);
+					})
 			})
 			.then(() => {
 				return this.createPantherNameAttributeForFuore(nameAttributeKey, user)

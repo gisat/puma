@@ -43,12 +43,12 @@ class PgDataController {
 			statusUrl: `/backend/rest/status/import/fuore/${procesKey}`
 		};
 
+		response.status(200).send({status: this._fuoreImportStatus[procesKey], success: true});
+
 		this._fuoreImporter.import(request.files.file, request.session.user, this._fuoreImportStatus[procesKey])
 			.then(() => {
 				this.cleanupRequestFiles(request);
 			});
-
-		response.status(200).send({status: this._fuoreImportStatus[procesKey], success: true});
 	};
 
 	importFuoreStatus(request, response) {
