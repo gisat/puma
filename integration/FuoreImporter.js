@@ -741,6 +741,14 @@ class FuoreImporter {
 						return layerTemplateLevel2.data.nameInternal === `fuore-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
 					});
 
+					let viewLevel1 = _.find(pantherData.views, (viewLevel1) => {
+						return viewLevel1.data.nameInternal === `fuore-base-au_${analyticalUnitLevel1.uuid}-do-not-edit`;
+					});
+
+					let viewLevel2 = _.find(pantherData.views, (viewLevel2) => {
+						return viewLevel2.data.nameInternal === `fuore-base-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
+					});
+
 					pantherScopesToUpdateOrCreate.push(
 						{
 							key: analyticalUnitLevel2.uuid,
@@ -754,7 +762,9 @@ class FuoreImporter {
 									countryCodeAttributeKey: pantherData.fuoreAuCountryCodeAttribute.key,
 									regionType: analyticalUnitLevel2.region_type,
 									auLevel1LayerTemplateKey: layerTemplateLevel1.key,
-									auLevel2LayerTemplateKey: layerTemplateLevel2.key
+									auLevel2LayerTemplateKey: layerTemplateLevel2.key,
+									auLevel1ViewKey: viewLevel1.key,
+									auLevel2ViewKey: viewLevel2.key
 								}
 							}
 						}
@@ -2382,13 +2392,6 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
-					.then((pantherScopes) => {
-						pantherData.scopes = pantherScopes;
-						console.log(`FuoreImport # createPantherScopesFromFuoreAnalyticalUnits done`);
-					})
-			})
-			.then(() => {
 				return this.createPantherAttributesFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
 					.then((pantherAttributes) => {
 						pantherData.attributes = pantherAttributes;
@@ -2414,6 +2417,13 @@ class FuoreImporter {
 					.then((pantherViews) => {
 						pantherData.views = pantherViews;
 						console.log(`FuoreImport # createPantherViewsFromFuoreAnalyticalUnits done`);
+					})
+			})
+			.then(() => {
+				return this.createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData)
+					.then((pantherScopes) => {
+						pantherData.scopes = pantherScopes;
+						console.log(`FuoreImport # createPantherScopesFromFuoreAnalyticalUnits done`);
 					})
 			})
 			.then(() => {
