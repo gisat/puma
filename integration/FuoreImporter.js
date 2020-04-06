@@ -1885,18 +1885,21 @@ class FuoreImporter {
 					let nameInternalParts = pantherAttributeDataSourceObject.data.nameInternal.split(`#`);
 
 					let attributeKey = nameInternalParts[2].split(`_`)[1];
-					let scopeKey = nameInternalParts[3].split(`_`)[1];
+					let analyticalUnitKey = nameInternalParts[3].split(`_`)[1];
 					let attributeDataSourceKey = pantherAttributeDataSourceObject.key;
 
 					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
-						return analyticalUnit.uuid === scopeKey;
+						return analyticalUnit.uuid === analyticalUnitKey;
 					});
 
-					let pantherLayerTemplateObject = _.find(pantherData.layerTemplates, (pantherLayerTemplateObject) => {
-						return pantherLayerTemplateObject.data.nameInternal.includes(scopeKey);
+					let baseAnalyticalUnit = _.find(analyticalUnits, (baseAnalyticalUnit) => {
+						return baseAnalyticalUnit.au_level === 2
+							&& baseAnalyticalUnit.relation_key === analyticalUnit.relation_key;
 					});
 
-					let layerTemplateKey = pantherLayerTemplateObject.key;
+					let scope = _.find(pantherData.scopes, (scope) => {
+						return scope.key === baseAnalyticalUnit.uuid;
+					});
 
 					let fidColumnName = analyticalUnit.fid_column;
 
@@ -1906,30 +1909,32 @@ class FuoreImporter {
 
 					let periodKey = pantherPeriodObject ? pantherPeriodObject.key : null;
 
-					let existingPantherAttributeRelationObject = _.find(existingPantherAttributeRelationObjects, (existingPantherAttributeRelationObject) => {
-						return existingPantherAttributeRelationObject.data.attributeKey === attributeKey
-							&& existingPantherAttributeRelationObject.data.scopeKey === scopeKey
-							&& existingPantherAttributeRelationObject.data.attributeDataSourceKey === attributeDataSourceKey
-							&& existingPantherAttributeRelationObject.data.fidColumnName === fidColumnName
-							&& existingPantherAttributeRelationObject.data.layerTemplateKey === layerTemplateKey
-							&& existingPantherAttributeRelationObject.data.periodKey === periodKey
-					});
+					_.each([scope.data.configuration.auLevel1LayerTemplateKey, scope.data.configuration.auLevel2LayerTemplateKey], (layerTemplateKey) => {
+						let existingPantherAttributeRelationObject = _.find(existingPantherAttributeRelationObjects, (existingPantherAttributeRelationObject) => {
+							return existingPantherAttributeRelationObject.data.attributeKey === attributeKey
+								&& existingPantherAttributeRelationObject.data.scopeKey === scope.key
+								&& existingPantherAttributeRelationObject.data.attributeDataSourceKey === attributeDataSourceKey
+								&& existingPantherAttributeRelationObject.data.fidColumnName === fidColumnName
+								&& existingPantherAttributeRelationObject.data.layerTemplateKey === layerTemplateKey
+								&& existingPantherAttributeRelationObject.data.periodKey === periodKey
+						});
 
-					let key = existingPantherAttributeRelationObject ? existingPantherAttributeRelationObject.key : uuidv4();
+						let key = existingPantherAttributeRelationObject ? existingPantherAttributeRelationObject.key : uuidv4();
 
-					pantherAttributeRelationsToCreateOrUpdate.push(
-						{
-							key,
-							data: {
-								attributeKey,
-								scopeKey,
-								attributeDataSourceKey,
-								fidColumnName,
-								layerTemplateKey,
-								periodKey
+						pantherAttributeRelationsToCreateOrUpdate.push(
+							{
+								key,
+								data: {
+									attributeKey,
+									scopeKey: scope.key,
+									attributeDataSourceKey,
+									fidColumnName,
+									layerTemplateKey,
+									periodKey
+								}
 							}
-						}
-					);
+						);
+					});
 				}
 
 				return this._pgRelationsCrud.update(
