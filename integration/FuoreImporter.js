@@ -335,120 +335,10 @@ class FuoreImporter {
 		if (!isTableCreated && unzippedFs.contents().includes(attributeDataFileName)) {
 			await this.createAttributeDataTable(attributeMetadata, unzippedFs);
 		} else if (attributeMetadata.update) {
-			await this.updateAttributeDataTable(attributeMetadata, unzippedFs, attributeDataFileName);
+			await this.recreateAttributeDataTable(attributeMetadata, unzippedFs);
 		} else {
 			throw new Error(`analytical unit table ${attributeDataFileName} already exists`);
 		}
-	}
-
-	async updateAttributeDataTable(attributeMetadata, unzippedFs, attributeDataFileName) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}`;
-		let attributeData;
-		if (unzippedFs.contents().includes(attributeDataFileName)) {
-			attributeData = JSON.parse(unzippedFs.read(attributeDataFileName, 'text'));
-		}
-
-		let attributeMetadataYearsParts = attributeMetadata.years.split(`-`);
-		let attributeMetadataStartYear = attributeMetadataYearsParts[0];
-		let attributeMetadataEndYear = attributeMetadataYearsParts[1] || attributeMetadataYearsParts[0];
-
-		let attributeMetadataYears = _.map(_.range(Number(attributeMetadataStartYear), Number(attributeMetadataEndYear) + 1), (yearNumber) => {
-			return String(yearNumber);
-		});
-
-		let existingYearColumns = await this._pgPool
-			.query(`SELECT column_name FROM information_schema.columns WHERE table_name = '${attributeDataTableName}' AND column_name ~ '^[0-9]{4}$';`)
-			.then((queryResult) => {
-				return _.map(queryResult.rows, (row) => {
-					return row.column_name;
-				})
-			});
-
-		// let attributeMetadataYearsToUpdate = _.intersection(attributeMetadataYears, existingYearColumns);
-		let attributeMetadataYearsToDelete = _.difference(existingYearColumns, attributeMetadataYears);
-		let attributeMetadataYearsToAdd = _.difference(attributeMetadataYears, existingYearColumns);
-
-		let updateTableQueries = [];
-
-		if (attributeMetadataYearsToAdd.length && !attributeData) {
-			throw new Error(`Unable to update data for attribute with uuid ${attributeMetadata.uuid}. Missing data file ${attributeDataFileName}`);
-		}
-
-		if (attributeMetadataYearsToDelete.length) {
-			for (let year of attributeMetadataYearsToDelete) {
-				updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP COLUMN "${year}"`);
-			}
-		}
-
-		if (attributeMetadataYearsToAdd.length) {
-			let attributeDataFirst = attributeData[0];
-			for (let year of attributeMetadataYearsToAdd) {
-				let columnType;
-				if (_.isString(attributeDataFirst[year])) {
-					columnType = `TEXT`;
-				} else {
-					columnType = `NUMERIC`;
-				}
-
-				if (columnType) {
-					updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD COLUMN "${year}" ${columnType}`);
-				} else {
-					throw new Error(`Unable to find data for column ${year} for attribute with uuid ${attributeMetadata.uuid}`);
-				}
-			}
-		}
-
-		let fidColumn = attributeMetadata.fid_column;
-
-		if (attributeData) {
-			updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" DROP CONSTRAINT IF EXISTS "${attributeDataTableName}_objectid_key"`);
-			updateTableQueries.push(`ALTER TABLE "${attributeDataTableName}" ADD CONSTRAINT "${attributeDataTableName}_objectid_key" UNIQUE ("${fidColumn}")`);
-		}
-
-		await this._pgPool.query(
-			`BEGIN; ${updateTableQueries.join(`; `)}; COMMIT;`
-		);
-
-		let existingYearColumnsAfterAlter = await this._pgPool
-			.query(`SELECT column_name FROM information_schema.columns WHERE table_name = '${attributeDataTableName}' AND column_name ~ '^[0-9]{4}$';`)
-			.then((queryResult) => {
-				return _.map(queryResult.rows, (row) => {
-					return row.column_name;
-				})
-			});
-
-		let yearRegExp = RegExp('^[0-9]{4}$');
-		let updateDataQueries = [];
-		for (let data of attributeData) {
-			let columns = [], values = [], sets = [];
-
-			_.forEach(data, (value, column) => {
-				if (!yearRegExp.test(column) || existingYearColumnsAfterAlter.includes(column)) {
-					if (_.isString(value)) {
-						value = `'${value}'`;
-					}
-
-					if (value === null) {
-						value = String(value)
-					}
-
-					// todo remove when data will contains correct no data values
-					if (yearRegExp.test(column) && value === 0) {
-						value = String(null);
-					}
-
-					columns.push(`"${column}"`);
-					values.push(value);
-					sets.push(`"${column}" = ${value}`);
-				}
-			});
-
-			updateDataQueries.push(`INSERT INTO "${attributeDataTableName}" (${columns.join(', ')}) VALUES (${values.join(', ')}) ON CONFLICT ("${fidColumn}") DO UPDATE SET ${sets.join(', ')}`)
-		}
-
-		await this._pgPool.query(
-			`BEGIN; ${updateDataQueries.join(`; `)}; COMMIT;`
-		);
 	}
 
 	async createAttributeDataTable(attributeMetadata, unzippedFs) {
@@ -528,6 +418,16 @@ class FuoreImporter {
 		sql.push(`COMMIT;`);
 
 		await this._pgPool.query(sql.join(`\n`));
+	}
+
+	async deleteAttributeDataTable(attributeMetadata) {
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}`;
+		await this._pgPool.query(`DROP TABLE IF EXISTS "public"."${attributeDataTableName}"`);
+	}
+
+	async recreateAttributeDataTable(attributeMetadata, unzippedFs) {
+		await this.deleteAttributeDataTable(attributeMetadata);
+		await this.createAttributeDataTable(attributeMetadata, unzippedFs);
 	}
 
 	ensureAttributesData(unzippedFs) {
