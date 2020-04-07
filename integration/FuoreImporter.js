@@ -246,7 +246,7 @@ class FuoreImporter {
 	}
 
 	async isAttributeDataTableExisting(attributeMetadata) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}`;
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
 		return await this._pgPool
 			.query(`SELECT count(*) FROM pg_tables WHERE "schemaname" = 'public' AND "tablename" = '${attributeDataTableName}';`)
 			.then((pgResults) => {
@@ -342,7 +342,7 @@ class FuoreImporter {
 	}
 
 	async createAttributeDataTable(attributeMetadata, unzippedFs) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}`;
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
 		let attributeData = JSON.parse(unzippedFs.read(`${attributeMetadata.table_name}.json`, 'text'));
 
 		let attributeMetadataYearsParts = attributeMetadata.years.split(`-`);
@@ -421,7 +421,7 @@ class FuoreImporter {
 	}
 
 	async deleteAttributeDataTable(attributeMetadata) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}`;
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
 		await this._pgPool.query(`DROP TABLE IF EXISTS "public"."${attributeDataTableName}"`);
 	}
 
@@ -1566,22 +1566,22 @@ class FuoreImporter {
 				});
 
 				let pantherAttributeDataSourcesToCreateOrUpdate = [];
-				for (let attribute of attributes) {
-					let yearsParts = attribute.years.split(`-`);
+				for (let attributeMetadata of attributes) {
+					let yearsParts = attributeMetadata.years.split(`-`);
 					let yearStart = Number(yearsParts[0]);
 					let yearEnd = Number(yearsParts[1] || yearStart);
 
 					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
-						return analyticalUnit.id === attribute.analytical_unit_id
+						return analyticalUnit.id === attributeMetadata.analytical_unit_id
 					});
 
 					for (let year of _.range(yearStart, yearEnd)) {
-						let tableName = `fuore-attr_${attribute.uuid}`;
-						let nameInternal = `fuore#attribute#attr_${attribute.uuid}#au_${analyticalUnit.uuid}`;
+						let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
+						let nameInternal = `fuore#attribute#attr_${attributeMetadata.uuid}#au_${analyticalUnit.uuid}`;
 						let columnName = String(year);
 
 						let existingPantherAttributeDataSource = _.find(pantherAttributeDataSources, (pantherAttributeDataSourceObject) => {
-							return pantherAttributeDataSourceObject.data.tableName === tableName && pantherAttributeDataSourceObject.data.columnName === columnName;
+							return pantherAttributeDataSourceObject.data.tableName === attributeDataTableName && pantherAttributeDataSourceObject.data.columnName === columnName;
 						});
 
 						let key = existingPantherAttributeDataSource ? existingPantherAttributeDataSource.key : uuidv4();
@@ -1591,7 +1591,7 @@ class FuoreImporter {
 								key,
 								data: {
 									nameInternal,
-									tableName,
+									tableName: attributeDataTableName,
 									columnName
 								}
 							}
