@@ -2172,7 +2172,7 @@ class FuoreImporter {
 					jsonObject.au_level = 1;
 
 					let auLevel2Object = _.find(outputJson, (object) => {
-						return object.parent_table === jsonObject.table_name && object.relationKey;
+						return object.parent_table === jsonObject.table_name && object.relation_key;
 					});
 
 					if (auLevel2Object) {
