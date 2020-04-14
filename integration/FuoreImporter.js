@@ -246,7 +246,7 @@ class FuoreImporter {
 	}
 
 	async isAttributeDataTableExisting(attributeMetadata) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_${attributeMetadata.analytical_unit_id}`;
 		return await this._pgPool
 			.query(`SELECT count(*) FROM pg_tables WHERE "schemaname" = 'public' AND "tablename" = '${attributeDataTableName}';`)
 			.then((pgResults) => {
@@ -342,7 +342,7 @@ class FuoreImporter {
 	}
 
 	async createAttributeDataTable(attributeMetadata, unzippedFs) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_${attributeMetadata.analytical_unit_id}`;
 		let attributeData = JSON.parse(unzippedFs.read(`${attributeMetadata.table_name}.json`, 'text'));
 
 		let attributeMetadataYearsParts = attributeMetadata.years.split(`-`);
@@ -421,7 +421,7 @@ class FuoreImporter {
 	}
 
 	async deleteAttributeDataTable(attributeMetadata) {
-		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
+		let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_${attributeMetadata.analytical_unit_id}`;
 		await this._pgPool.query(`DROP TABLE IF EXISTS "public"."${attributeDataTableName}"`);
 	}
 
@@ -1576,7 +1576,7 @@ class FuoreImporter {
 					});
 
 					for (let year of _.range(yearStart, yearEnd)) {
-						let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_au_${attributeMetadata.analytical_unit_id}`;
+						let attributeDataTableName = `fuore-attr_${attributeMetadata.uuid}_${attributeMetadata.analytical_unit_id}`;
 						let nameInternal = `fuore#attribute#attr_${attributeMetadata.uuid}#au_${analyticalUnit.uuid}`;
 						let columnName = String(year);
 
