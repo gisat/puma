@@ -69,7 +69,7 @@ class ExportController {
 
 		Promise.resolve()
 			.then(async () => {
-				if (filter.scopeKey && filter.attributeKey && filter.periodKey) {
+				if (filter.scopeKey && filter.attributeKey && filter.periodKey && filter.layerTemplateKey) {
 					let scope = await this._pgMetadataCrud.get(
 						`scopes`,
 						{
@@ -94,6 +94,7 @@ class ExportController {
 								attributeKey: {
 									in: [filter.attributeKey, scope.data.configuration.areaNameAttributeKey, scope.data.configuration.countryCodeAttributeKey]
 								},
+								layerTemplateKey: filter.layerTemplateKey,
 								periodKey: {
 									in: filter.periodKey.in
 								}
@@ -112,6 +113,7 @@ class ExportController {
 								attributeKey: {
 									in: [filter.attributeKey, scope.data.configuration.areaNameAttributeKey, scope.data.configuration.countryCodeAttributeKey]
 								},
+								layerTemplateKey: filter.layerTemplateKey,
 								periodKey: null
 							}
 						},
