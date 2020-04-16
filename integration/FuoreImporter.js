@@ -1257,18 +1257,23 @@ class FuoreImporter {
 					return getResults.data.tags;
 				});
 
+				let analyticalUnitsLevel2 = _.filter(analyticalUnits, (analyticalUnit) => {
+					return analyticalUnit.au_level === 2;
+				});
+
+				let analyticalUnitNamesLeve2 = _.map(analyticalUnitsLevel2, `table_name`);
+
+				let attributesLevel2 = _.filter(attributes, (attributeLevel2) => {
+					return analyticalUnitNamesLeve2.includes(attributeLevel2.analytical_unit);
+				});
+
 				let fuoreTagsToCreateOrUpdate = [];
-				for (let attribute of attributes) {
-					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
-						return analyticalUnit.id === attribute.analytical_unit_id;
-					});
+				for (let attribute of attributesLevel2) {
+					let attributeAnalyticalUnit = _.find(analyticalUnitsLevel2, (attributeAnalyticalUnit) => {
+						return attributeAnalyticalUnit.table_name === attribute.analytical_unit;
+					})
 
-
-					if (!analyticalUnit) {
-						throw new Error(`unable to create internal data structure - #ERR03`);
-					}
-
-					let pantherCategoryTagInternalName = `fuore-category-${attribute.category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let pantherCategoryTagInternalName = `fuore-category-${attribute.category}-scope_${attributeAnalyticalUnit.uuid}-do-not-edit`;
 
 					let preparedCategoryTagForUpdateOrCreate = _.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
 						return preparedPantherTag.data.nameInternal === pantherCategoryTagInternalName;
@@ -1286,12 +1291,12 @@ class FuoreImporter {
 								nameDisplay: attribute.category,
 								applicationKey: esponFuoreApplicationKey,
 								tagKeys: [pantherData.fuoreCategoryTag.key],
-								scopeKey: analyticalUnit.uuid
+								scopeKey: attributeAnalyticalUnit.uuid
 							}
 						});
 					}
 
-					let pantherSubCategoryTagInternalName = `fuore-subcategory-${attribute.sub_category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let pantherSubCategoryTagInternalName = `fuore-subcategory-${attribute.sub_category}-scope_${attributeAnalyticalUnit.uuid}-do-not-edit`;
 					let isPreparedSubCategoryTagForUpdateOrCreate = !!(_.find(fuoreTagsToCreateOrUpdate, (preparedPantherTag) => {
 						return preparedPantherTag.data.nameInternal === pantherSubCategoryTagInternalName
 					}));
@@ -1307,7 +1312,7 @@ class FuoreImporter {
 								nameDisplay: attribute.sub_category,
 								applicationKey: esponFuoreApplicationKey,
 								tagKeys: [pantherData.fuoreSubCategoryTag.key, categoryKey],
-								scopeKey: analyticalUnit.uuid
+								scopeKey: attributeAnalyticalUnit.uuid
 							}
 						})
 					}
@@ -1344,8 +1349,30 @@ class FuoreImporter {
 						return analyticalUnitObject.id === attribute.analytical_unit_id;
 					});
 
-					let categoryPantherTagInternalName = `fuore-category-${attribute.category}-au_${analyticalUnit.uuid}-do-not-edit`;
-					let subCategoryPantherTagInternalName = `fuore-subcategory-${attribute.sub_category}-au_${analyticalUnit.uuid}-do-not-edit`;
+					let analyticalUnitLevel1 = _.find(analyticalUnits, (analyticalUnitLevel1) => {
+						return analyticalUnitLevel1.au_level === 1
+							&& analyticalUnitLevel1.relation_key === analyticalUnit.relation_key
+					});
+
+					let analyticalUnitLevel2 = _.find(analyticalUnits, (analyticalUnitLevel2) => {
+						return analyticalUnitLevel2.au_level === 2
+							&& analyticalUnitLevel2.relation_key === analyticalUnit.relation_key
+					});
+
+					let sameAttributes = _.filter(attributes, (sameAttribute) => {
+						return sameAttribute.uuid === attribute.uuid;
+					});
+
+					let dataL1 = !!(_.find(sameAttributes, (sameAttribute) => {
+						return sameAttribute.analytical_unit === analyticalUnitLevel1.table_name;
+					}))
+
+					let dataL2 = !!(_.find(sameAttributes, (sameAttribute) => {
+						return sameAttribute.analytical_unit === analyticalUnitLevel2.table_name;
+					}))
+
+					let categoryPantherTagInternalName = `fuore-category-${attribute.category}-scope_${analyticalUnitLevel2.uuid}-do-not-edit`;
+					let subCategoryPantherTagInternalName = `fuore-subcategory-${attribute.sub_category}-scope_${analyticalUnitLevel2.uuid}-do-not-edit`;
 
 					let pantherTags = _.filter(pantherData.tags, (pantherTagObject) => {
 						return pantherTagObject.data.nameInternal === categoryPantherTagInternalName || pantherTagObject.data.nameInternal === subCategoryPantherTagInternalName;
@@ -1359,35 +1386,45 @@ class FuoreImporter {
 						return pantherView.data.nameInternal === `fuore-base-au_${analyticalUnit.uuid}-do-not-edit`;
 					});
 
-					if (!analyticalUnit || !pantherTagKeys.length || !pantherView) {
+					if (!analyticalUnit || !pantherTagKeys.length || !pantherView || !analyticalUnitLevel2) {
 						console.log(categoryPantherTagInternalName, subCategoryPantherTagInternalName);
 						throw new Error(`unable to create internal data structure - #ERR04`);
 					}
 
-					let fuoreIndicatorNameInternal = `fuore-au_${analyticalUnit.uuid}-attr_${attribute.uuid}-do-not-edit`;
+					let fuoreIndicatorNameInternal = `fuore-scope_${analyticalUnitLevel2.uuid}-attr_${attribute.uuid}-do-not-edit`;
 
 					let existingFuoreIndicator = _.find(pantherEsponFuoreIndicators, (pantherEsponFuoreIndicatorObject) => {
 						return pantherEsponFuoreIndicatorObject.data.nameInternal === fuoreIndicatorNameInternal;
 					});
 
-					let esponFuoreIndicatorKey = existingFuoreIndicator ? existingFuoreIndicator.key : uuidv4();
+					let preparedFuoreIndicator = _.find(esponFuoreIndicatorsToCreateOrUpdate, (preparedFuoreIndicator) => {
+						return preparedFuoreIndicator.data.nameInternal === fuoreIndicatorNameInternal;
+					});
 
-					esponFuoreIndicatorsToCreateOrUpdate.push(
-						{
-							key: esponFuoreIndicatorKey,
-							data: {
-								nameInternal: fuoreIndicatorNameInternal,
-								nameDisplay: attribute.name,
-								type: attribute.value_type,
-								description: attribute.description,
-								attributeKey: attribute.uuid,
-								scopeKey: analyticalUnit.uuid,
-								tagKeys: pantherTagKeys,
-								viewKey: pantherView.key,
-								twoSideScale: attribute.two_side_scale || false
+					if(!preparedFuoreIndicator) {
+						let esponFuoreIndicatorKey = existingFuoreIndicator ? existingFuoreIndicator.key : uuidv4();
+
+						esponFuoreIndicatorsToCreateOrUpdate.push(
+							{
+								key: esponFuoreIndicatorKey,
+								data: {
+									nameInternal: fuoreIndicatorNameInternal,
+									nameDisplay: attribute.name,
+									type: attribute.value_type,
+									description: attribute.description,
+									attributeKey: attribute.uuid,
+									scopeKey: analyticalUnitLevel2.uuid,
+									tagKeys: pantherTagKeys,
+									viewKey: pantherView.key,
+									twoSideScale: attribute.two_side_scale || false,
+									other: {
+										dataL1,
+										dataL2
+									}
+								}
 							}
-						}
-					);
+						);
+					}
 				}
 
 				return this._pgSpecificCrud.update(
@@ -1991,68 +2028,60 @@ class FuoreImporter {
 
 	updateScopeConfigurationsWithOrderData(attributes, analyticalUnits, user, pantherData) {
 		for (let pantherScope of pantherData.scopes) {
-			let baseScopeRelatedAnalyticalUnit = _.find(analyticalUnits, (scopeAnalyticalUnit) => {
+			let scopeAnalyticalUnit = _.find(analyticalUnits, (scopeAnalyticalUnit) => {
 				return scopeAnalyticalUnit.uuid === pantherScope.key;
 			});
-
-			let secondScopeRelatedAnalyticalUnit = _.find(analyticalUnits, (scopeAnalyticalUnit) => {
-				return scopeAnalyticalUnit.uuid !== pantherScope.key
-					&& scopeAnalyticalUnit.relation_key === baseScopeRelatedAnalyticalUnit.relation_key;
-			});
-
-			let scopeRelatedAnalyticalUnits = [baseScopeRelatedAnalyticalUnit, secondScopeRelatedAnalyticalUnit];
 
 			let indicatorOrder = [];
 			let categoryOrder = [];
 			let subCategoryOrder = [];
-			for (let scopeRelatedAnalyticalUnit of scopeRelatedAnalyticalUnits) {
-				let scopeRelatedAnalyticalUnitRelatedAttributes = _.filter(attributes, (attribute) => {
-					return attribute.analytical_unit === scopeRelatedAnalyticalUnit.table_name;
+
+			let scopeRelatedAnalyticalUnitRelatedAttributes = _.filter(attributes, (attribute) => {
+				return attribute.analytical_unit === scopeAnalyticalUnit.table_name;
+			});
+
+			for (let scopeRelatedAttribute of scopeRelatedAnalyticalUnitRelatedAttributes) {
+				let fuoreIndicatorNameInternal = `fuore-scope_${pantherScope.key}-attr_${scopeRelatedAttribute.uuid}-do-not-edit`;
+				let pantherCategoryTagInternalName = `fuore-category-${scopeRelatedAttribute.category}-scope_${pantherScope.key}-do-not-edit`;
+				let pantherSubCategoryTagInternalName = `fuore-subcategory-${scopeRelatedAttribute.sub_category}-scope_${pantherScope.key}-do-not-edit`;
+
+				let fuoreIndicator = _.find(pantherData.esponFuoreIndicators, (fuoreIndicator) => {
+					return fuoreIndicator.data.nameInternal === fuoreIndicatorNameInternal;
 				});
 
-				for (let scopeRelatedAttribute of scopeRelatedAnalyticalUnitRelatedAttributes) {
-					let fuoreIndicatorNameInternal = `fuore-au_${scopeRelatedAnalyticalUnit.uuid}-attr_${scopeRelatedAttribute.uuid}-do-not-edit`;
-					let pantherCategoryTagInternalName = `fuore-category-${scopeRelatedAttribute.category}-au_${scopeRelatedAnalyticalUnit.uuid}-do-not-edit`;
-					let pantherSubCategoryTagInternalName = `fuore-subcategory-${scopeRelatedAttribute.sub_category}-au_${scopeRelatedAnalyticalUnit.uuid}-do-not-edit`;
-
-					let fuoreIndicator = _.find(pantherData.esponFuoreIndicators, (fuoreIndicator) => {
-						return fuoreIndicator.data.nameInternal === fuoreIndicatorNameInternal;
-					});
-
-					let fuoreCategoryTag = _.find(pantherData.tags, (fuoreCategoryTag) => {
-						return fuoreCategoryTag.data.nameInternal === pantherCategoryTagInternalName
-							&& !_.find(categoryOrder, (categoryOrderRecord) => {
-								return categoryOrderRecord.key === fuoreCategoryTag.key
-									&& categoryOrderRecord.order === scopeRelatedAttribute.category_order
-							});
-					});
-
-					let fuoreSubCategoryTag = _.find(pantherData.tags, (fuoreSubCategoryTag) => {
-						return fuoreSubCategoryTag.data.nameInternal === pantherSubCategoryTagInternalName
-							&& !_.find(subCategoryOrder, (subCategoryOrderRecord) => {
-								return subCategoryOrderRecord.key === fuoreSubCategoryTag.key
-									&& subCategoryOrderRecord.order === scopeRelatedAttribute.sub_category_order
-							});
-					});
-
-					indicatorOrder.push({
-						key: fuoreIndicator.key,
-						order: scopeRelatedAttribute.order
-					});
-
-					if (fuoreCategoryTag) {
-						categoryOrder.push({
-							key: fuoreCategoryTag.key,
-							order: scopeRelatedAttribute.category_order
+				let fuoreCategoryTag = _.find(pantherData.tags, (fuoreCategoryTag) => {
+					return fuoreCategoryTag.data.nameInternal === pantherCategoryTagInternalName
+						&& !_.find(categoryOrder, (categoryOrderRecord) => {
+							return categoryOrderRecord.key === fuoreCategoryTag.key
+								&& categoryOrderRecord.order === scopeRelatedAttribute.category_order
 						});
-					}
+				});
 
-					if (fuoreSubCategoryTag) {
-						subCategoryOrder.push({
-							key: fuoreSubCategoryTag.key,
-							order: scopeRelatedAttribute.sub_category_order
-						})
-					}
+				let fuoreSubCategoryTag = _.find(pantherData.tags, (fuoreSubCategoryTag) => {
+					return fuoreSubCategoryTag.data.nameInternal === pantherSubCategoryTagInternalName
+						&& !_.find(subCategoryOrder, (subCategoryOrderRecord) => {
+							return subCategoryOrderRecord.key === fuoreSubCategoryTag.key
+								&& subCategoryOrderRecord.order === scopeRelatedAttribute.sub_category_order
+						});
+				});
+
+				indicatorOrder.push({
+					key: fuoreIndicator.key,
+					order: scopeRelatedAttribute.order
+				});
+
+				if (fuoreCategoryTag) {
+					categoryOrder.push({
+						key: fuoreCategoryTag.key,
+						order: scopeRelatedAttribute.category_order
+					});
+				}
+
+				if (fuoreSubCategoryTag) {
+					subCategoryOrder.push({
+						key: fuoreSubCategoryTag.key,
+						order: scopeRelatedAttribute.sub_category_order
+					})
 				}
 			}
 
