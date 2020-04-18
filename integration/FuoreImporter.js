@@ -679,6 +679,56 @@ class FuoreImporter {
 			});
 	}
 
+	getCommonPeriods(attributes, analyticalUnits) {
+		let indicatorsPerPeriodPerScope = {}
+
+		_.each(analyticalUnits, (analyticalUnit) => {
+			indicatorsPerPeriodPerScope[analyticalUnit.relation_key] = indicatorsPerPeriodPerScope[analyticalUnit.relation_key] || {
+				periods: {},
+				indicators: []
+			}
+			let attributesForAnalyticalUnit = _.filter(attributes, (attribute) => {
+				return attribute.analytical_unit === analyticalUnit.table_name;
+			});
+
+			_.each(attributesForAnalyticalUnit, (attribute) => {
+				let periodsParts = attribute.years.split(`-`);
+				let periodStart = periodsParts[0];
+				let periodEnd = periodsParts[1];
+
+				let periodRange = _.range(Number(periodStart), Number(periodEnd) + 1);
+
+				_.each(periodRange, (period) => {
+					if (!indicatorsPerPeriodPerScope[analyticalUnit.relation_key].periods.hasOwnProperty(period)) {
+						indicatorsPerPeriodPerScope[analyticalUnit.relation_key].periods[period] = [attribute.uuid];
+					} else {
+						indicatorsPerPeriodPerScope[analyticalUnit.relation_key].periods[period].push(attribute.uuid);
+					}
+				})
+
+				indicatorsPerPeriodPerScope[analyticalUnit.relation_key].indicators.push(attribute.uuid);
+			});
+
+		});
+
+		let indicatorCountsPerPeriodPerScope = {}
+
+		_.each(indicatorsPerPeriodPerScope, (indicatorsPerPeriod, scope) => {
+			indicatorCountsPerPeriodPerScope[scope] = indicatorCountsPerPeriodPerScope[scope] || [];
+			_.each(indicatorsPerPeriod.periods, (indicators, period) => {
+					indicatorCountsPerPeriodPerScope[scope].push(
+						{
+							period: Number(period),
+							percentage: _.uniq(indicators).length / (_.uniq(indicatorsPerPeriod.indicators).length / 100)
+						})
+				}
+			);
+			indicatorCountsPerPeriodPerScope[scope] = _.orderBy(indicatorCountsPerPeriodPerScope[scope], [`percentage`, `period`], [`desc`, `desc`]);
+		});
+
+		return indicatorCountsPerPeriodPerScope;
+	}
+
 	createPantherViewsFromFuoreAnalyticalUnits(attributes, analyticalUnits, user, pantherData) {
 		return Promise.resolve()
 			.then(async () => {
@@ -694,6 +744,8 @@ class FuoreImporter {
 				).then((getResults) => {
 					return getResults.data.views;
 				});
+
+				let commonPeriods = this.getCommonPeriods(attributes, analyticalUnits);
 
 				let pantherViewsToCreateOrUpdate = [];
 				for (let analyticalUnit of analyticalUnits) {
@@ -717,30 +769,20 @@ class FuoreImporter {
 						throw new Error(`unable to create internal data structure - #ERR01`);
 					}
 
-					let attributeYears = [];
-					let commonYearValues = _.intersection(..._.map(attributesForAnalytiticalUnit, (attribute) => {
-						let attributeYearsParts = attribute.years.split(`-`);
-						let attributeYearStart = Number(attributeYearsParts[0]);
-						let attributeYearEnd = Number(attributeYearsParts[1] || attributeYearStart);
-
-						let years = _.range(attributeYearStart, attributeYearEnd);
-						attributeYears.push(years);
-
-						return years;
-					}));
-
-					let availableYearValues = _.uniq(_.flatten(attributeYears));
-
-					let intervalYearValues = [
-						_.nth(availableYearValues, 0),
-						_.nth(availableYearValues, (availableYearValues.length / 2) - 1),
-						_.nth(availableYearValues, availableYearValues.length - 1)
-					];
-
-					let activeYearValue = commonYearValues.length ? _.last(commonYearValues) : _.last(availableYearValues);
+					let activeYearValue = commonPeriods[analyticalUnit.relation_key][0].period;
 					let activeYearPeriodKey = _.find(pantherData.periods, (pantherPeriod) => {
 						return pantherPeriod.data.nameInternal === `fuore-${String(activeYearValue)}-do-not-edit`;
 					}).key;
+
+					let intervalPeriods = _.map(_.filter(commonPeriods[analyticalUnit.relation_key], (commonPeriod) => {
+						return commonPeriod.percentage === commonPeriods[analyticalUnit.relation_key][0].percentage;
+					}), `period`).sort();
+
+					let intervalYearValues = [
+						_.nth(intervalPeriods, 0),
+						_.nth(intervalPeriods, (intervalPeriods.length / 2) - 1),
+						_.nth(intervalPeriods, intervalPeriods.length - 1)
+					];
 
 					let intervalYearPeriodKeys = _.map(intervalYearValues, (intervalYearValue) => {
 						return _.find(pantherData.periods, (pantherPeriod) => {
