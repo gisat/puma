@@ -17,6 +17,10 @@ const _ = require(`lodash`);
 const child_process = require(`child_process`);
 const uuidv4 = require(`uuid/v4`);
 const fs = require(`fs`);
+const fse = require(`fs-extra`);
+const { parse: json2csv} = require(`json2csv`);
+const json2xls = require(`json2xls`);
+const wellknown = require('wellknown');
 
 const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 const PgMetadataCrud = require(`../metadata/PgMetadataCrud`);
@@ -34,6 +38,8 @@ class ExportController {
 
 		app.post(`/rest/export/geojson/filtered`, this.exportFiltered.bind(this, `geojson`));
 		app.post(`/rest/export/shp/filtered`, this.exportFiltered.bind(this, `shp`));
+		app.post(`/rest/export/csv/filtered`, this.exportFiltered.bind(this, `csv`));
+		app.post(`/rest/export/xls/filtered`, this.exportFiltered.bind(this, `xls`));
 	}
 
 	getColumNamesForTableName(tableName) {
@@ -234,6 +240,26 @@ class ExportController {
 
 						response.setHeader('Content-Type', 'application/octet-stream');
 						response.send(fs.readFileSync(`${outputName}.zip`));
+					} else if(type === `csv` || type === `xls`) {
+						child_process.execSync(`ogr2ogr -f GeoJSON ${outputName}.geojson "PG:host=localhost dbname=geonode_data user=geonode password=geonode" -sql '${query.join(` `)}'`);
+
+						let json = fse.readJsonSync(`${outputName}.geojson`);
+						let jsonPrepared = [];
+
+						_.each(json.features, (feature) => {
+							jsonPrepared.push({
+								...feature.properties
+							})
+						})
+
+						if(type === `csv`) {
+							let csv = json2csv(jsonPrepared);
+
+							response.setHeader('Content-Type', 'application/octet-stream');
+							response.send(csv);
+						} else {
+							response.xls(`${outputName}.xlsx`, jsonPrepared);
+						}
 					}
 
 					child_process.execSync(`rm -rf ${outputName}.*`);

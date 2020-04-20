@@ -5,6 +5,7 @@ const conn = require('./common/conn');
 const staticFn = express['static'];
 const session = require('express-session');
 const xmlparser = require('express-xml-bodyparser');
+const json2xls = require(`json2xls`);
 
 const async = require('async');
 const loc = require('./common/loc');
@@ -66,6 +67,7 @@ function initServer(err) {
 	app.use(express.cookieParser());
 	app.use(express.bodyParser({limit: '2048mb', parameterLimit: 1000000}));
 	app.use(xmlparser());
+	app.use(json2xls.middleware);
 	app.use(session({
 		name: "panthersid",
 		secret: "panther",
