@@ -2198,8 +2198,8 @@ class FuoreImporter {
 				jsonObject[`update`] = jsonObject[`update`] !== null && jsonObject[`update`] !== false;
 			}
 
-			if (jsonObject.hasOwnProperty(`twoSideScale`)) {
-				jsonObject[`twoSideScale`] = jsonObject[`twoSideScale`] !== null && jsonObject[`twoSideScale`] !== false;
+			if (jsonObject.hasOwnProperty(`two_side_scale`)) {
+				jsonObject[`two_side_scale`] = jsonObject[`two_side_scale`] !== null && jsonObject[`two_side_scale`] !== false;
 			}
 
 			if (!jsonObject.hasOwnProperty(`order`)) {
@@ -2253,24 +2253,26 @@ class FuoreImporter {
 					}
 				}
 
-				if (jsonObject.type_of_region.startsWith(`Functional Urban Areas`)) {
-					jsonObject.region_type = `fua`;
-				} else if (jsonObject.type_of_region.startsWith(`Border 'large' (90 minutes)`)) {
-					jsonObject.region_type = `border-large`;
-				} else if (jsonObject.type_of_region.startsWith(`Border 'narrow' (45 minutes)`)) {
-					jsonObject.region_type = `border-narrow`;
-				} else if (jsonObject.type_of_region.startsWith(`Green Infrastructure`)) {
-					jsonObject.region_type = `green-infrastructure`;
-				} else if (jsonObject.type_of_region.startsWith(`Islands`)) {
-					jsonObject.region_type = `islands`;
-				} else if (jsonObject.type_of_region.startsWith(`Coasts II`)) {
-					jsonObject.region_type = `msa`;
-				} else if (jsonObject.type_of_region.startsWith(`Coasts I`)) {
-					jsonObject.region_type = `tcoa`;
-				} else if (jsonObject.type_of_region.startsWith(`Mountains`)) {
-					jsonObject.region_type = `mountains`;
-				} else if (jsonObject.type_of_region.startsWith(`Sparsely populated Areas`)) {
-					jsonObject.region_type = `spa`;
+				if(!jsonObject.hasOwnProperty(`region_type`)) {
+					if (jsonObject.type_of_region.startsWith(`Functional Urban Areas`)) {
+						jsonObject.region_type = `fua`;
+					} else if (jsonObject.type_of_region.startsWith(`Border 'large' (90 minutes)`)) {
+						jsonObject.region_type = `border-large`;
+					} else if (jsonObject.type_of_region.startsWith(`Border 'narrow' (45 minutes)`)) {
+						jsonObject.region_type = `border-narrow`;
+					} else if (jsonObject.type_of_region.startsWith(`Green Infrastructure`)) {
+						jsonObject.region_type = `green-infrastructure`;
+					} else if (jsonObject.type_of_region.startsWith(`Islands`)) {
+						jsonObject.region_type = `islands`;
+					} else if (jsonObject.type_of_region.startsWith(`Coasts II`)) {
+						jsonObject.region_type = `msa`;
+					} else if (jsonObject.type_of_region.startsWith(`Coasts I`)) {
+						jsonObject.region_type = `tcoa`;
+					} else if (jsonObject.type_of_region.startsWith(`Mountains`)) {
+						jsonObject.region_type = `mountains`;
+					} else if (jsonObject.type_of_region.startsWith(`Sparsely populated Areas`)) {
+						jsonObject.region_type = `spa`;
+					}
 				}
 			}
 
