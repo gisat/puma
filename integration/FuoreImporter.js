@@ -664,7 +664,8 @@ class FuoreImporter {
 									auLevel1LayerTemplateKey: layerTemplateLevel1.key,
 									auLevel2LayerTemplateKey: layerTemplateLevel2.key,
 									auLevel1ViewKey: viewLevel1.key,
-									auLevel2ViewKey: viewLevel2.key
+									auLevel2ViewKey: viewLevel2.key,
+									baseOrder: analyticalUnitLevel2.order
 								}
 							}
 						}
@@ -2147,31 +2148,40 @@ class FuoreImporter {
 		);
 	}
 
-	updateConfigurationWithScopeOrder(analyticalUnits, user, pantherData) {
+	updateConfigurationWithScopeOrder(user, pantherData) {
 		let scopesOrder = [];
 
-		_.each(analyticalUnits, (analyticalUnit) => {
-			if (analyticalUnit.au_level === 2) {
-				scopesOrder.push({
-					key: analyticalUnit.uuid,
-					order: analyticalUnit.order
-				})
-			}
-		});
-
-		let sortedScopeOrder = _.orderBy(scopesOrder, [`order`]);
-
-		pantherData.fuoreConfiguration.data.data.order = {
-			scopeKeys: _.map(sortedScopeOrder, `key`)
-		};
-
-		return this._pgApplicationsCrud.update(
+		return this._pgMetadataCrud.get(
+			`scopes`,
 			{
-				configurations: [pantherData.fuoreConfiguration]
+				filter: {
+					applicationKey: "esponFuore"
+				}
 			},
-			user,
-			{}
-		);
+			user
+		).then((getResult) => {
+			let pantherScopes = getResult.data.scopes;
+			_.each(pantherScopes, (scope) => {
+				scopesOrder.push({
+					key: scope.key,
+					order: scope.data.configuration.baseOrder
+				})
+			});
+
+			let sortedScopeOrder = _.orderBy(scopesOrder, [`order`]);
+
+			pantherData.fuoreConfiguration.data.data.order = {
+				scopeKeys: _.map(sortedScopeOrder, `key`)
+			};
+
+			return this._pgApplicationsCrud.update(
+				{
+					configurations: [pantherData.fuoreConfiguration]
+				},
+				user,
+				{}
+			);
+		})
 	}
 
 	prepareForImport(sourceJson, forceUpdate) {
@@ -2482,6 +2492,12 @@ class FuoreImporter {
 				return this.updateScopeConfigurationsWithOrderData(attributes, analyticalUnits, user, pantherData)
 					.then(() => {
 						console.log(`FuoreImport # updateScopeConfigurationsWithOrderData done`);
+					})
+			})
+			.then(() => {
+				return this.updateConfigurationWithScopeOrder(user, pantherData)
+					.then(() => {
+						console.log(`FuoreImport # updateConfigurationWithScopeOrder done`);
 					})
 			})
 			.then(() => {
