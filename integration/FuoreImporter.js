@@ -1645,12 +1645,16 @@ class FuoreImporter {
 		return Promise.resolve()
 			.then(async () => {
 
+				let tableNames = _.map(attributes, (attribute) => {
+					return `fuore-attr_${attribute.uuid}_${attribute.analytical_unit_id}`;
+				});
+
 				let pantherAttributeDataSources = await this._pgDataSourcesCrud.get(
 					`attribute`,
 					{
 						filter: {
 							tableName: {
-								like: `fuore-attr\\_`
+								in: tableNames
 							}
 						},
 						unlimited: true
