@@ -265,6 +265,15 @@ class FuoreImporter {
 						true
 					);
 
+					analyticalUnits = _.filter(analyticalUnits, (analyticalUnit) => {
+						let relatedAnalyticalUnits = _.filter(analyticalUnits, (relatedAnalyticalUnit) => {
+							return relatedAnalyticalUnit.relation_key === analyticalUnit.relation_key
+								&& relatedAnalyticalUnit.delete;
+						})
+
+						return !relatedAnalyticalUnits.length;
+					})
+
 					let analyticalUnitIds = [];
 					let analyticalUnitUuids = [];
 
@@ -441,7 +450,13 @@ class FuoreImporter {
 						true
 					);
 
-					let attributeMetadataIds = [];
+					attributes = _.filter(attributes, (attribute) => {
+						let relatedAttributes = _.filter(attributes, (relatedAttribute) => {
+							return relatedAttribute.uuid === attribute.uuid
+								&& relatedAttribute.delete;
+						})
+						return !relatedAttributes.length;
+					});
 
 					for (let attributeMetadata of attributes) {
 						if (!attributeMetadata.hasOwnProperty(`uuid`)) {
