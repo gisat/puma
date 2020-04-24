@@ -2350,34 +2350,6 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				let queries = [
-					`BEGIN`,
-						`DELETE FROM metadata.attribute`,
-						`DELETE FROM metadata.tag`,
-						`DELETE FROM metadata.scope`,
-						`DELETE FROM metadata.period`,
-						`DELETE FROM metadata."layerTemplate"`,
-						`DELETE FROM views.view`,
-						`DELETE FROM specific."esponFuoreIndicator"`,
-						`DELETE FROM "dataSources"."dataSource"`,
-						`DELETE FROM "dataSources"."vector"`,
-						`DELETE FROM "dataSources"."attributeDataSource"`,
-						`DELETE FROM application."layerTree"`,
-						`DELETE FROM relations."attributeDataSourceRelation"`,
-						`DELETE FROM relations."spatialDataSourceRelation"`,
-						`DELETE FROM data.permissions`,
-						`DELETE FROM data.group_permissions`,
-					`COMMIT`
-				];
-				return this._pgPool.query(queries.join(`; `));
-			})
-			.then(() => {
-				return this.updateConfigurationWithScopeOrder(analyticalUnits, user, pantherData)
-					.then(() => {
-						console.log(`FuoreImport # updateConfigurationWithScopeOrder done`);
-					})
-			})
-			.then(() => {
 				return this.createPantherNameAttributeForFuore(nameAttributeKey, user)
 					.then((pantherAttribute) => {
 						pantherData.fuoreAuNameAttribute = pantherAttribute;
