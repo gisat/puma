@@ -337,7 +337,7 @@ class FuoreImporter {
 		} else if (attributeMetadata.update) {
 			await this.recreateAttributeDataTable(attributeMetadata, unzippedFs);
 		} else {
-			throw new Error(`analytical unit table ${attributeDataFileName} already exists`);
+			throw new Error(`Attribute data table ${attributeDataFileName} already exists`);
 		}
 	}
 
@@ -1444,7 +1444,7 @@ class FuoreImporter {
 						return preparedFuoreIndicator.data.nameInternal === fuoreIndicatorNameInternal;
 					});
 
-					if(!preparedFuoreIndicator) {
+					if (!preparedFuoreIndicator) {
 						let esponFuoreIndicatorKey = existingFuoreIndicator ? existingFuoreIndicator.key : uuidv4();
 
 						esponFuoreIndicatorsToCreateOrUpdate.push(
@@ -1891,7 +1891,7 @@ class FuoreImporter {
 					});
 
 					let layerTemplateKey;
-					if(analyticalUnit.au_level === 1) {
+					if (analyticalUnit.au_level === 1) {
 						layerTemplateKey = scope.data.configuration.auLevel1LayerTemplateKey;
 					} else if (analyticalUnit.au_level === 2) {
 						layerTemplateKey = scope.data.configuration.auLevel2LayerTemplateKey;
@@ -2263,7 +2263,7 @@ class FuoreImporter {
 					}
 				}
 
-				if(!jsonObject.hasOwnProperty(`region_type`)) {
+				if (!jsonObject.hasOwnProperty(`region_type`)) {
 					if (jsonObject.type_of_region.startsWith(`Functional Urban Areas`)) {
 						jsonObject.region_type = `fua`;
 					} else if (jsonObject.type_of_region.startsWith(`Border 'large' (90 minutes)`)) {
