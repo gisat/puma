@@ -273,7 +273,7 @@ class FuoreImporter {
 						&& analyticalUnitLevel2.au_level === 2;
 				})
 
-				if(analyticalUnitLevel1 && analyticalUnitLevel2) {
+				if (analyticalUnitLevel1 && analyticalUnitLevel2) {
 					await this.removeScopeWithRelatedItems(analyticalUnitLevel1, analyticalUnitLevel2);
 				}
 			}
@@ -288,9 +288,19 @@ class FuoreImporter {
 
 		for (let attribute of attributes) {
 			if (attribute.delete) {
-
+				await this.removeAttributesAndRelated(attribute);
 			}
 		}
+	}
+
+	async removeAttributesAndRelated(attribute) {
+		await this._pgPool.query(`DELETE FROM "metadata"."attribute" WHERE key = '${attribute.uuid}';`);
+
+		await this._pgPool.query(
+				`DELETE FROM specific."esponFuoreIndicator" WHERE key IN (
+					SELECT "parentEsponfuoreindicatorKey" FROM relations."esponFuoreIndicatorRelation" WHERE "attributeKey" = '${attribute.uuid}'
+				);`
+		);
 	}
 
 	async removeScopeWithRelatedItems(analyticalUnitLevel1, analyticalUnitLevel2) {
@@ -317,7 +327,7 @@ class FuoreImporter {
 				return _.map(pgQueryResult.rows, `table_name`);
 			});
 
-		for(let tableToDelete of tablesToDelete) {
+		for (let tableToDelete of tablesToDelete) {
 			await this._pgPool.query(`DROP TABLE IF EXISTS "${tableToDelete}";`);
 		}
 	}
