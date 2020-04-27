@@ -254,6 +254,74 @@ class FuoreImporter {
 			});
 	}
 
+	async cleanUnnecessaryItems(unzippedFs) {
+		let analyticalUnits = this.prepareForImport(
+			JSON.parse(
+				unzippedFs.read('analytical_units.json', 'text')
+			),
+			true
+		);
+
+		for (let analyticalUnit of analyticalUnits) {
+			if (analyticalUnit.delete) {
+				let analyticalUnitLevel1 = _.find(analyticalUnits, (analyticalUnitLevel1) => {
+					return analyticalUnitLevel1.relation_key === analyticalUnit.relation_key
+						&& analyticalUnitLevel1.au_level === 1;
+				})
+				let analyticalUnitLevel2 = _.find(analyticalUnits, (analyticalUnitLevel2) => {
+					return analyticalUnitLevel2.relation_key === analyticalUnit.relation_key
+						&& analyticalUnitLevel2.au_level === 2;
+				})
+
+				if(analyticalUnitLevel1 && analyticalUnitLevel2) {
+					await this.removeScopeWithRelatedItems(analyticalUnitLevel1, analyticalUnitLevel2);
+				}
+			}
+		}
+
+		let attributes = this.prepareForImport(
+			JSON.parse(
+				unzippedFs.read('attributes.json', 'text')
+			),
+			true
+		);
+
+		for (let attribute of attributes) {
+			if (attribute.delete) {
+
+			}
+		}
+	}
+
+	async removeScopeWithRelatedItems(analyticalUnitLevel1, analyticalUnitLevel2) {
+		let scopeKey = analyticalUnitLevel2.uuid;
+		let esponFuoreIndicatorKeys = await this._pgPool.query(`SELECT "parentEsponfuoreindicatorKey" FROM relations."esponFuoreIndicatorRelation" WHERE "scopeKey" = '${scopeKey}'`)
+			.then((pgQueryResult) => {
+				return _.map(pgQueryResult.rows, `parentEsponfuoreindicatorKey`);
+			});
+
+		let attributeKeys = await this._pgPool.query(`SELECT "attributeKey" FROM relations."esponFuoreIndicatorRelation" WHERE "attributeKey" IS NOT NULL AND "parentEsponfuoreindicatorKey" IN ('${esponFuoreIndicatorKeys.join(`', '`)}')`)
+			.then((pgQueryResult) => {
+				return _.map(pgQueryResult.rows, `attributeKey`);
+			})
+
+		await this._pgPool.query(`DELETE FROM specific."esponFuoreIndicator" WHERE key IN ('${esponFuoreIndicatorKeys.join(`', '`)}');`);
+
+		await this._pgPool.query(`DELETE FROM metadata."attribute" WHERE key IN ('${attributeKeys.join(`', '`)}');`);
+
+		await this._pgPool.query(`DELETE FROM metadata."scope" WHERE key = '${scopeKey}';`);
+
+		let tableIdentifiers = _.concat(attributeKeys, scopeKey);
+		let tablesToDelete = await this._pgPool.query(`SELECT table_name FROM information_schema.tables WHERE table_name SIMILAR TO 'fuore-%(${tableIdentifiers.join(`|`)})%';`)
+			.then((pgQueryResult) => {
+				return _.map(pgQueryResult.rows, `table_name`);
+			});
+
+		for(let tableToDelete of tablesToDelete) {
+			await this._pgPool.query(`DROP TABLE IF EXISTS "${tableToDelete}";`);
+		}
+	}
+
 	async ensureAnalyticalUnits(unzippedFs) {
 		return Promise.resolve()
 			.then(async () => {
@@ -2335,6 +2403,15 @@ class FuoreImporter {
 
 				unzippedFs = zipper.sync.unzip(data.path).memory();
 			})
+			.then(() => {
+				return this.cleanUnnecessaryItems(unzippedFs)
+					.then(() => {
+						console.log(`FuoreImport # cleanUnnecessaryItems done`);
+					})
+			})
+			// .then(() => {
+			// 	return Promise.reject(`#### STOP ####`);
+			// })
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
