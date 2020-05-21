@@ -4,7 +4,7 @@ const PgCommonSpatialDataSource = require(`./PgCommonSpatialDataSource`);
 const PgAttributeDataSource = require(`./PgAttributeDataSource`);
 
 class PgDataSourcesCrud extends PgCrud {
-	constructor(pgPool, pgSchema) {
+	constructor(pgPool, pgSchema, initRelatedStores) {
 		super();
 
 		this._pgCommonSpatialDataSource = new PgCommonSpatialDataSource(pgPool, pgSchema);

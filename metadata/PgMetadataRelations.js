@@ -1,7 +1,7 @@
 const _ = require(`lodash`);
 
 class PgMetadataRelations {
-	constructor(pgPool, pgSchema, baseStore, relatedStores) {
+	constructor(pgPool, pgSchema, baseStore, relatedStores, initRelatedStores) {
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
 
@@ -9,7 +9,9 @@ class PgMetadataRelations {
 		this._baseMetadataType = baseStore.getTableName();
 		this._relatedToStores = relatedStores;
 
-		this._initPgTable();
+		if(initRelatedStores) {
+			this._initPgTable();
+		}
 	}
 
 	addRelations(baseKey, relations) {

@@ -6,7 +6,7 @@ const PgAttributeDataSourceRelations = require('../relations/PgAttributeDataSour
 const PgAreaRelations = require('../relations/PgAreaRelations');
 
 class PgRelationsCrud extends PgCrud {
-	constructor(pgPool, pgSchema) {
+	constructor(pgPool, pgSchema, initRelatedStores) {
 		super();
 
 		this._pgSpatialDataSourceRelations = new PgSpatialDataSourceRelations(pgPool, pgSchema);

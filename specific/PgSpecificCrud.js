@@ -12,7 +12,7 @@ const PgTags = require(`../metadata/PgTags`);
 const PgScopes = require(`../metadata/PgScopes`);
 
 class PgSpecificCrud extends PgCrud {
-	constructor(pgPool, pgSchema) {
+	constructor(pgPool, pgSchema, initRelatedStores) {
 		super();
 
 		this._pgEsponFuoreIndicators = new PgEsponFuoreIndicators(pgPool, pgSchema);
@@ -25,8 +25,8 @@ class PgSpecificCrud extends PgCrud {
 
 		this._pgViews = new PgViews(pgPool, config.pgSchema.views);
 
-		this._pgEsponFuoreIndicators.setRelatedStores([this._pgAttributes, this._pgViews, this._pgTags, this._pgScopes]);
-		this._pgLpisChangeCase.setRelatedStores([this._pgViews, this._pgTags]);
+		this._pgEsponFuoreIndicators.setRelatedStores([this._pgAttributes, this._pgViews, this._pgTags, this._pgScopes], initRelatedStores);
+		this._pgLpisChangeCase.setRelatedStores([this._pgViews, this._pgTags], initRelatedStores);
 
 		this._pgTypes = {
 			[PgEsponFuoreIndicators.groupName()]: {

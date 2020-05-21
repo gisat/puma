@@ -7,14 +7,14 @@ const PgViews = require(`./PgViews`);
 const PgApplications = require(`../application/PgApplications`);
 
 class PgViewsCrud extends PgCrud {
-	constructor(pgPool, pgSchema) {
+	constructor(pgPool, pgSchema, initRelatedStores) {
 		super();
 
 		this._pgViews = new PgViews(pgPool, pgSchema);
 
 		this._pgApplications = new PgApplications(pgPool, config.pgSchema.application);
 
-		this._pgViews.setRelatedStores([this._pgApplications]);
+		this._pgViews.setRelatedStores([this._pgApplications], initRelatedStores);
 
 		this._pgTypes = {
 			[PgViews.groupName()]: {

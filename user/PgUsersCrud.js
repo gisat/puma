@@ -6,11 +6,11 @@ const PgUsers = require(`./PgUsers`);
 const PgGroups = require(`./PgGroups`);
 
 class PgUsersCrud extends PgCrud {
-	constructor(pgPool, pgSchema, mongo) {
-		super(pgPool, pgSchema, mongo);
+	constructor(pgPool, pgSchema, initRelatedStores) {
+		super(pgPool, pgSchema);
 
-		this._pgUsers = new PgUsers(pgPool, pgSchema, mongo);
-		this._pgGroups = new PgGroups(pgPool, pgSchema, mongo);
+		this._pgUsers = new PgUsers(pgPool, pgSchema);
+		this._pgGroups = new PgGroups(pgPool, pgSchema);
 
 		this._pgTypes = {
 			[PgUsers.groupName()]: {

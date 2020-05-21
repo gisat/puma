@@ -10,7 +10,7 @@ const PgApplications = require('../application/PgApplications');
 const PgConfigurations = require('../application/PgConfigurations');
 
 class PgApplicationsCrud extends PgCrud {
-	constructor(pgPool, pgSchema) {
+	constructor(pgPool, pgSchema, initRelatedStores) {
 		super();
 
 		this._pgScopes = new PgScopes(pgPool, config.pgSchema.metadata);
@@ -19,8 +19,8 @@ class PgApplicationsCrud extends PgCrud {
 		this._pgApplications = new PgApplications(pgPool, pgSchema);
 		this._pgConfigurations = new PgConfigurations(pgPool, pgSchema);
 
-		this._pgLayerTrees.setRelatedStores([this._pgScopes, this._pgApplications]);
-		this._pgConfigurations.setRelatedStores([this._pgApplications]);
+		this._pgLayerTrees.setRelatedStores([this._pgScopes, this._pgApplications], initRelatedStores);
+		this._pgConfigurations.setRelatedStores([this._pgApplications], initRelatedStores);
 
 		this._pgTypes = {
 			[PgLayerTrees.groupName()]: {
