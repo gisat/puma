@@ -1731,10 +1731,10 @@ class PgCollection {
 		return Promise.resolve();
 	}
 
-	setRelatedStores(stores) {
+	setRelatedStores(stores, initRelatedStores) {
 		this._relatedMetadataStores = _.concat(this._relatedMetadataStores, stores);
 		if (this._relatedMetadataStores.length) {
-			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this, this._relatedMetadataStores);
+			this._pgMetadataRelations = new PgMetadataRelations(this._pgPool, config.pgSchema.relations, this, this._relatedMetadataStores, initRelatedStores);
 		}
 	}
 
