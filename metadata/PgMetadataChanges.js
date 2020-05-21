@@ -9,7 +9,7 @@ class PgMetadataChanges {
 	createChange(action, resourceType, resourceKey, changedBy, change) {
 		return this._pgPool
 			.query(
-				`INSERT INTO "${this._pgSchema}"."metadata_changes" (action, resource_type, resource_key, changed_by, change) VALUES ($1, $2, $3, $4, $5)`,
+				`INSERT INTO "${this._pgSchema}"."metadataChanges" ("action", "resourceType", "resourceKey", "changedBy", "change") VALUES ($1, $2, $3, $4, $5)`,
 				[action, resourceType, resourceKey, changedBy, change]
 			)
 			.then((result) => {
@@ -28,11 +28,10 @@ class PgMetadataChanges {
 			let availableResources = ``;
 
 			if(!isAdmin) {
-				availableResources = ` AND resource_key in ('${resourceKeys.join("', '")}')`
+				availableResources = ` AND "resourceKey" in ('${resourceKeys.join("', '")}')`
 			}
 
-			let query = `SELECT changed FROM "${this._pgSchema}"."metadata_changes" WHERE resource_type = '${resourceType}'${availableResources} ORDER BY changed DESC LIMIT 1`;
-			// console.log(query);
+			let query = `SELECT changed FROM "${this._pgSchema}"."metadataChanges" WHERE "resourceType" = '${resourceType}'${availableResources} ORDER BY changed DESC LIMIT 1`;
 			promises.push(
 				this._pgPool
 					.query(query)
