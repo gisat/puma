@@ -1,41 +1,26 @@
-var pg = require('pg');
+const { Pool } = require('pg');
 
-/**
- * This class represents pool of PostgreSQL connections.
- * It returns Promise of connection in order to simplify further work.
- * @alias PgPool
- * @param config {Object}
- * @param config.user {String} User under which we should connect to the database.
- * @param config.database {String} Name of the database to which we connect.
- * @param config.password {String} Password under which we connect to the database.
- * @param config.host {String} Host on which the databse runs.
- * @param config.port {Number} Optional. Port on which the database listens.
- * @param config.max {Number} Optional. Maximum amount of simultaneous connections.
- * @param config.idleTimeoutLimits {Number} Optional. idle milliseconds before the client is closed.
- * @constructor
- */
-var PgPool = function(config) {
-	config.max = config.max || 50;
-	config.idleTimeoutLimits = config.idleTimeoutLimits || 30000;
-	config.port = config.port || 5432;
+const config = require('../config');
 
-	this._pool = new pg.Pool(config);
-};
+class PgPool {
+	constructor() {
+	}
 
-/**
- * It returns configured instance of Pool.
- * @returns {pg.Pool}
- */
-PgPool.prototype.pool = function(){
-	return this._pool;
-};
+	getPool(superuser) {
+		if(superuser && config.pgConfig.superuser) {
+			return this.getSuperUser();
+		} else {
+			return this.getNormal();
+		}
+	}
 
-PgPool.prototype.end = function() {
-	this._pool.end();
-};
+	getNormal() {
+		return new Pool(config.pgConfig.normal);
+	}
 
-PgPool.prototype.query = function() {
-	return this._pool.query.apply(this._pool, arguments);
-};
+	getSuperUser() {
+		return new Pool(config.pgConfig.superuser);
+	}
+}
 
 module.exports = PgPool;
