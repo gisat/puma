@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 class PgController {
 	constructor(app, pgPool, pgSchema, group) {
 		this._pgPool = pgPool;
@@ -5,23 +7,25 @@ class PgController {
 
 		this._crud = null;
 
-		if (group === `user`) {
-			app.get(`/rest/${group}/current`, this.getCurrent.bind(this));
-			app.post(`/rest/${group}/batch`, this.createBatch.bind(this));
+		if(app) {
+			if (group === `user`) {
+				app.get(`/rest/${group}/current`, this.getCurrent.bind(this));
+				app.post(`/rest/${group}/batch`, this.createBatch.bind(this));
+			}
+
+			app.post(`/rest/${group}`, this.create.bind(this));
+
+			app.get(`/rest/${group}`, this.get.bind(this));
+			app.get(`/rest/${group}/:type`, this.get.bind(this));
+			app.post(`/rest/${group}/filtered`, this.get.bind(this, false));
+			app.post(`/rest/${group}/filtered/:type`, this.get.bind(this, false));
+
+			app.post(`/rest/${group}/count/:type`, this.get.bind(this, true));
+
+			app.delete(`/rest/${group}`, this.delete.bind(this));
+
+			app.put(`/rest/${group}`, this.update.bind(this));
 		}
-
-		app.post(`/rest/${group}`, this.create.bind(this));
-
-		app.get(`/rest/${group}`, this.get.bind(this));
-		app.get(`/rest/${group}/:type`, this.get.bind(this));
-		app.post(`/rest/${group}/filtered`, this.get.bind(this, false));
-		app.post(`/rest/${group}/filtered/:type`, this.get.bind(this, false));
-
-		app.post(`/rest/${group}/count/:type`, this.get.bind(this, true));
-
-		app.delete(`/rest/${group}`, this.delete.bind(this));
-
-		app.put(`/rest/${group}`, this.update.bind(this));
 	}
 
 	create(request, response) {
