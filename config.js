@@ -27,6 +27,10 @@ const ptr4 = {
 		application: `application`,
 		various: `various`,
 		user: `user`
+	},
+	jwt: {
+		secret: 'changeMe',
+		expiresIn: '7d'
 	}
 };
 
