@@ -7,8 +7,6 @@ const path = require(`path`);
 
 const config = require(`../config`);
 
-const conn = require('../common/conn');
-
 const PgPermissions = require('../security/PgPermissions');
 const Permission = require('../security/Permission');
 const PgMetadataChanges = require('../metadata/PgMetadataChanges');
@@ -363,30 +361,6 @@ class PgCollection {
 					.then(() => {
 						return createdObject;
 					})
-			})
-	}
-
-	mongoCreateOne(object, objects, user, extra) {
-		let key = Number(conn.getNextId());
-		let model = {
-			_id: key,
-			...object.data
-		};
-		return this._mongo
-			.collection(this._collectionName)
-			.insert(model)
-			.then(() => {
-				return this.setAllPermissionsToResourceForUser(key, user);
-			})
-			.then(() => {
-				return {
-					key: key,
-					uuid: object.uuid,
-					data: {
-						...model,
-						_id: undefined
-					}
-				};
 			})
 	}
 
