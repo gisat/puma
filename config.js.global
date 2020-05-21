@@ -1,0 +1,1050 @@
+const ptr4 = {
+	clusterPorts: [9850, 9851, 9852, 9853, 9854, 9855, 9856, 9857, 9858, 9859],
+	keepAliveWorkers: true,
+	pgConfig: {
+		normal: {
+			user: `panther`,
+			password: `panther`,
+			database: `panther`,
+			host: `localhost`
+		},
+		superuser: {
+			user: `postgres`,
+			password: `postgres`,
+			database: `postgres`,
+			host: `localhost`
+		}
+	},
+	pgSchema: {
+		analysis: `analysis`,
+		data: `data`,
+		metadata: `metadata`,
+		permissions: `permissions`,
+		views: `views`,
+		relations: `relations`,
+		dataSources: `dataSources`,
+		specific: `specific`,
+		application: `application`,
+		various: `various`,
+		user: `user`
+	}
+};
+
+const visat = {
+	localPort: 3000,
+
+	remoteProtocol: "http",
+	remoteAddress: "urban-tep.eu/unseea",
+	projectHome: "",
+
+	toggles: {
+		useEoSso: true,
+		loggedOnly: false
+	},
+
+	loggingLevel: 0,
+
+	pgDataUser: 'geonode',
+	pgDataPassword: 'geonode',
+	pgDataDatabase: 'geonode_data',
+	pgDataHost: 'localhost',
+	pgDataPort: '5432',
+
+	geoserverHost: "localhost",
+	geoserverPort: 80,
+	geoserverPath: "/geoserver",
+	geoserverUsername: "admin",
+	geoserverPassword: "geoserver",
+
+	pgSchema: {
+		analysis: `analysis`,
+		data: `data`,
+		metadata: `metadata`,
+		permissions: `permissions`,
+		views: `views`,
+		relations: `relations`,
+		dataSources: `dataSources`,
+		specific: `specific`,
+		application: `application`,
+		various: `various`
+	},
+
+	pantherDataStoragePath: `./datastorage`
+};
+
+const local = {
+	localHost: "localhost",
+	localPort: 3000,
+	localPath: "",
+
+	remoteProtocol: "http",
+	remoteAddress: "localhost",
+	projectHome: "",
+
+	pgDataConnString: "postgres://geonode:geonode@localhost:5432/geonode_data",
+	pgGeonodeConnString: "postgres://geonode:geonode@localhost:5432/geonode",
+	mongoConnString: "mongodb://localhost:27017/panther",
+
+	workspaceSchemaMap: {
+		geonode: "public",
+		panther: "views",
+		analysis: "analysis"
+	},
+
+	geoserverHost: "localhost",
+	geoserverPort: 80,
+	geoserverPath: "/geoserver",
+	geoserverUsername: "admin",
+	geoserverPassword: "geoserver",
+	/*
+	 * It contains workspace, which is used when storing and generating things in the geoserver.
+	 */
+	geoserverWorkspace: "panther",
+
+	geoserver2Host: "localhost",
+	geoserver2Port: 80,
+	geoserver2Path: "/geoserver",
+	geoserver2Username: "admin",
+	geoserver2Password: "geoserver",
+	geoserver2Workspace: "panther",
+
+	geonodeProtocol: "http",
+	geonodeHost: "localhost",
+	geonodePort: 80,
+	geonodePath: "/",
+	geonodeHome: "/",
+
+	/**
+	 * Full URL of the geonode usable for the requests.
+	 */
+	geonodeUrl: "http://localhost:80/",
+
+	/**
+	 * Full URL of the GeoServer usable for the requests.
+	 */
+	geoServerUrl: "http://localhost:80/geoserver/",
+
+	/**
+	 * Data store used for storing the layers.
+	 */
+	geoServerDataStore: "datastore",
+
+	/**
+	 * Path to the directory where temporary sld will be stored. It is used mainly for debugging. It is about thematic
+	 * maps and the borders of the analytical units.
+	 */
+	temporarySldFilesPath: "/tmp/",
+
+	googleAnalyticsTracker: '',
+	googleAnalyticsCookieDomain: 'auto',
+	// see https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers
+
+	toggles: {
+		/**
+		 * When this flag is set, the EO SSO protocol is used to supply the information about the user.
+		 */
+		useEoSso: true,
+
+		/**
+		 * If only logged in users are allowed, then the all the requests will redirect the user to the login point.
+		 */
+		loggedOnly: false
+	},
+
+	allowedOrigins: "http://localhost:5555",
+	/*
+	 * It decides to which level will be the information logged. Default value is 1 meaning Info and higher will be logged
+	 * 0 - TRACE
+	 * 1 - INFO
+	 * 2 - WARNING
+	 * 3 - ERROR
+	 * 4 - NOTHING
+	 * Set level and all above will be logged.
+	 */
+	loggingLevel: 0,
+
+	/*
+	 * UrbanTEP - Destination of temporary downloaded files.
+	 */
+	temporaryDownloadedFilesLocation: 'C:\\Users\\jbalhar\\',
+
+	/*
+	* Environment in which is the application run. The used libraries will differ.
+	* Allowed values: 'production', 'development'
+	* If no value is present production will be used
+	*/
+	environment: 'production',
+
+	/*
+	In this Schema all additional data ni PostgreSQL, such as Symbologies will be stored.
+	 */
+	postgreSqlSchema: 'data',
+
+	/*
+	 * Schema containing produced tables and views - base_ and layers_ with the data for usge in Panther.
+	 */
+	viewsSchema: 'views',
+
+	/*
+	Connection String split to pieces for the PostgreSQL.
+	 */
+	pgDataUser: 'geonode',
+	pgDataPassword: 'geonode',
+	pgDataDatabase: 'geonode_data',
+	pgDataHost: 'localhost',
+	pgDataPort: '5432',
+
+	/*
+	This is the directory where Puma generates images to be downloaded as snapshots. It doesn't have to last long.
+	*/
+	snapshotDirectory: '/tmp/',
+
+	/*
+	 This is the directory where will be temporary files for export generated.
+	 */
+	exportDirectory: '/tmp/',
+
+	isUrbis: false,
+
+	/**
+	 * Name of the application used for watching the servers.
+	 */
+	appName: 'Localhost',
+
+	/**
+	 * When is isn't allowed for unauthenticated users to access the system, this is the Url to which they will be
+	 * redirected instead.
+	 */
+	notAuthenticatedUrl: 'localhost/tool/',
+
+	/**
+	 * Deafult admin user for Geonode usable to login users to Geonode.
+	 */
+	geonodeAdminUser: {
+		name: 'admin',
+		password: 'admin'
+	},
+
+	/**
+	 * Url used for generating the screenshots.
+	 */
+	printUrl: 'http://localhost/tool/index.html',
+
+	/**
+	 * Information necessary to send emails to the users.
+	 * host: Hostname of the SMTP server e.g. zimbra.gisat.cz
+	 * user: Username of the user using server e.g. puma.geonode@gisat.cz
+	 * port: Port of the SMTP service. Usually 587
+	 * password: Password of the user e.g. XXXXXXX
+	 * from: The email address sending the email e.g. puma.geonode@gisat.cz
+	 * subject: Subject of the email. It should contain the core information about the service
+	 */
+	email: {
+		host: 'zimbra.gisat.cz',
+		user: 'panther@gisat.cz',
+		port: 587,
+		password: '7Mn3+wXcQ2',
+		from: 'panther@gisat.cz',
+		subject: 'Panther - Visualisation and analysis platform. Internal'
+	},
+
+	/**
+	 * It ignores following migration steps if the isCleanInstance is true.
+	 *  MigrateAwayFromGeonode
+	 */
+	isCleanInstance: true,
+
+	dromasLpis: {
+		enabled: false,
+		groupBy: `year`,	// possible values: year, year-month, year-month-day
+		pathToS2Scenes: `/mnt/gisat-network-devices/nas/pracovni-archiv-01/Sentinel_L2I_10m_5514`,
+		pathToImageMosaicDirectory: `/home/mbabic/Dokumenty/TempStorage/szif-zmenova-rizeni`,
+		imageMosaicPgStorage: {
+			host: `localhost`,
+			port: 5432,
+			database: `geonode_data`,
+			schema: `public`,
+			user: `geonode`,
+			passwd: `geonode`
+		}
+	},
+
+	pantherDataStoragePath: `/home/mbabic/Dokumenty/TempStorage/Panther`,
+	pantherTemporaryStoragePath: `/tmp/panther`,
+
+	pgSchema: {
+		analysis: `analysis`,
+		data: `data`,
+		metadata: `metadata`,
+		permissions: `permissions`,
+		views: `views`,
+		relations: `relations`,
+		dataSources: `dataSources`,
+		specific: `specific`,
+		application: `application`,
+		various: `various`
+	},
+
+	pathToDatastorage: `./datastorage`,
+
+	projectSpecific: {
+		szifLpisZmenovaRizeni: {
+			gisatGroupIds: [
+				2147000000,
+				2147000001
+			],
+			gisatUserGroupId: 2147000000,
+			currentWeekLimit: {
+				limit: 200,
+				ne: "INVALID",
+				eq: "CREATED"
+			}
+		},
+		tacrGeoinvaze: {
+			applicationKey: "tacrGeoinvaze",
+			pathToImportData: "/home/mbabic/Dokumenty/TempStorage/geoinvaze/import",
+			executeImport: false,
+			forceImport: false,
+			geoserverWorkspace: `ptr3`,
+			geoserverStore: `geonode_data`,
+			transformation: {
+				source: "EPSG:5514",
+				target: "EPSG:4326"
+			},
+			quarter: {
+				Q1: ['01', '03'],
+				Q2: ['04', '06'],
+				Q3: ['07', '09'],
+				Q4: ['10', '12']
+			},
+			layerTemplates: {
+				origin: "5ff15c35-e6dc-4204-9720-80ad5f7b67a0",
+				model1: "8612225f-cf93-437b-b301-d30f1e1d1284",
+				model2: "e7e25290-6910-4332-8599-4a86437c6b0e",
+				model3: "730b8aa1-5929-4d04-8760-793a1bc74715",
+				modelGam: "ce159e81-1b39-4d6b-8ac3-4290aae783a3",
+				modelGbm: "b10d0a54-c0ba-4ad3-bfda-e48764486d0c",
+				modelMaxEnt: "a6d89c48-28b9-4884-91e1-c413c3faead7"
+			},
+			geoserverStyles: {
+				origin: "geoinvaze-input",
+				model1: "geoinvaze-po_123_roce",
+				model2: "geoinvaze-po_123_roce",
+				model3: "geoinvaze-po_123_roce",
+				modelGam: "geoinvaze-gam-gbm-maxent",
+				modelGbm: "geoinvaze-gam-gbm-maxent",
+				modelMaxEnt: "geoinvaze-gam-gbm-maxent"
+			}
+		}
+	},
+
+	customData: {
+		"relations.configurationRelation": [
+			{
+				key: "f825a4c2-ef9e-4e4a-899e-6e501c426344",
+				parentConfigurationKey: "4941d287-5670-4ba7-bde7-96362d405bb3",
+				applicationKey: "szifLpisZmenovaRizeni"
+			}
+		],
+		"relations.viewRelation": [
+			{
+				key: "e182e56b-a008-4edc-ac0a-2585b7e437a7",
+				parentViewKey: "3bb594c3-dd3a-4ac7-992c-af8b50b6091b",
+				applicationKey: "szifLpisZmenovaRizeni"
+			}
+		],
+		"views.view": [
+			{
+				key: "3bb594c3-dd3a-4ac7-992c-af8b50b6091b",
+				"nameInternal": null,
+				"nameDisplay": null,
+				"description": null,
+				"state": {
+					"maps": {
+						"maps": {
+							"szifLpisZmenovaRizeni-map-1": {
+								"key": "szifLpisZmenovaRizeni-map-1",
+								"data": {},
+								"name": null
+							},
+							"szifLpisZmenovaRizeni-map-2": {
+								"key": "szifLpisZmenovaRizeni-map-2",
+								"data": {},
+								"name": null
+							},
+							"szifLpisZmenovaRizeni-map-3": {
+								"key": "szifLpisZmenovaRizeni-map-3",
+								"data": {},
+								"name": null
+							},
+							"szifLpisZmenovaRizeni-map-4": {
+								"key": "szifLpisZmenovaRizeni-map-4",
+								"data": {},
+								"name": null
+							},
+							"szifLpisZmenovaRizeni-map-5": {
+								"key": "szifLpisZmenovaRizeni-map-5",
+								"data": {},
+								"name": null
+							},
+							"szifLpisZmenovaRizeni-map-6": {
+								"key": "szifLpisZmenovaRizeni-map-6",
+								"data": {},
+								"name": null
+							}
+						},
+						"sets": {
+							"szifLpisZmenovaRizeni-map-set": {
+								"key": "szifLpisZmenovaRizeni-map-set",
+								"data": {
+									"view": {
+										"center": {
+											"lat": 50,
+											"lon": 15
+										},
+										"boxRange": 1000000
+									},
+									"backgroundLayer": {
+										"key": "zm",
+										"type": "wmts",
+										"options": {
+											"url": "https://ags.cuzk.cz/arcgis/rest/services/zmwm/MapServer/tile/{z}/{y}/{x}?blankTile=false"
+										}
+									}
+								},
+								"maps": [
+									"szifLpisZmenovaRizeni-map-1",
+									"szifLpisZmenovaRizeni-map-2",
+									"szifLpisZmenovaRizeni-map-3",
+									"szifLpisZmenovaRizeni-map-4",
+									"szifLpisZmenovaRizeni-map-5",
+									"szifLpisZmenovaRizeni-map-6"
+								],
+								"sync": {
+									"roll": true,
+									"tilt": true,
+									"range": true,
+									"center": true,
+									"heading": true,
+									"boxRange": true
+								},
+								"activeMapKey": "szifLpisZmenovaRizeni-map-1"
+							}
+						},
+						"activeSetKey": "szifLpisZmenovaRizeni-map-set"
+					}
+				}
+			}
+		],
+		"application.configuration": [
+			{
+				key: "4941d287-5670-4ba7-bde7-96362d405bb3",
+				data: {
+					"period": {
+						"end": "2020",
+						"start": "2016"
+					},
+					"timeRange": "2016/2020",
+					"getDatesUrl": "https://lpisup.gisat.cz/backend/rest/imagemosaic/getDates",
+					"regionGroups": [
+						{
+							"base": 2147000005,
+							"admin": 2147000015
+						},
+						{
+							"base": 2147000006,
+							"admin": 2147000016
+						},
+						{
+							"base": 2147000007,
+							"admin": 2147000017
+						},
+						{
+							"base": 2147000008,
+							"admin": 2147000018
+						},
+						{
+							"base": 2147000009,
+							"admin": 2147000019
+						},
+						{
+							"base": 2147000010,
+							"admin": 2147000020
+						},
+						{
+							"base": 2147000011,
+							"admin": 2147000021
+						}
+					],
+					"defaultLayers": [
+						{
+							"key": "ortofoto_akt",
+							"type": "wms",
+							"title": "Ortofoto LPIS",
+							"period": {
+								"end": "2020",
+								"start": "2016"
+							},
+							"zIndex": 1,
+							"options": {
+								"url": "http://eagri.cz/public/app/wms/plpis.fcgi",
+								"type": "wms",
+								"params": {
+									"layers": "ILPIS_RASTRY"
+								}
+							}
+						},
+						{
+							"key": "ortofoto_2016_vychod",
+							"info": "východ 2016",
+							"type": "wms",
+							"title": "Ortofoto východ/západ",
+							"period": {
+								"end": "2017",
+								"start": "2016"
+							},
+							"zIndex": 2,
+							"options": {
+								"url": "http://eagri.cz/public/app/wms/public_podklad.fcgi",
+								"type": "wms",
+								"params": {
+									"time": "2016",
+									"layers": "ORTOFOTO_16_VYCHOD"
+								}
+							}
+						},
+						{
+							"key": "ortofoto_2017_zapad",
+							"info": "západ 2017",
+							"type": "wms",
+							"title": "Ortofoto východ/západ",
+							"period": {
+								"end": "2018",
+								"start": "2017"
+							},
+							"zIndex": 2,
+							"options": {
+								"url": "http://eagri.cz/public/app/wms/public_podklad.fcgi",
+								"type": "wms",
+								"params": {
+									"time": "2017",
+									"layers": "ORTOFOTO_17_ZAPAD"
+								}
+							}
+						},
+						{
+							"key": "ortofoto_2018_vychod",
+							"info": "východ 2018",
+							"type": "wms",
+							"title": "Ortofoto východ/západ",
+							"period": {
+								"end": "2019",
+								"start": "2018"
+							},
+							"zIndex": 2,
+							"options": {
+								"url": "http://eagri.cz/public/app/wms/public_podklad.fcgi",
+								"type": "wms",
+								"params": {
+									"time": "2018",
+									"layers": "ORTOFOTO_AKT_VYCHOD"
+								}
+							}
+						},
+						{
+							"key": "ortofoto_2019_zapad",
+							"info": "západ 2019",
+							"type": "wms",
+							"title": "Ortofoto východ/západ",
+							"period": {
+								"end": "2020",
+								"start": "2019"
+							},
+							"zIndex": 2,
+							"options": {
+								"url": "http://eagri.cz/public/app/wms/public_podklad.fcgi",
+								"type": "wms",
+								"params": {
+									"time": "2019",
+									"layers": "ORTOFOTO_AKT_ZAPAD"
+								}
+							}
+						}
+					],
+					"seninelLayers": {
+						"infrared": "ptr3:S2_843_2019",
+						"trueColor": "ptr3:S2_432_2019"
+					},
+					"defaultViewKey": "3bb594c3-dd3a-4ac7-992c-af8b50b6091b",
+					"permissionGroups": {
+						"szifUsers": 2147000002,
+						"gisatUsers": 2147000000,
+						"szifAdmins": 2147000003,
+						"gisatAdmins": 2147000001,
+						"szifRegionalAdmins": 2147000022
+					},
+					"sentinelGeoserverUrl": "https://lpisup.gisat.cz/geoserver/wms"
+				}
+			}
+		],
+		"data.group_permissions": [
+			{
+				id: 2147000000,
+				group_id: 2147000000,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000001,
+				group_id: 2147000001,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000002,
+				group_id: 2147000002,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000003,
+				group_id: 2147000003,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000004,
+				group_id: 2147000005,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000005,
+				group_id: 2147000015,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000006,
+				group_id: 2147000006,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000007,
+				group_id: 2147000016,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000008,
+				group_id: 2147000007,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000009,
+				group_id: 2147000017,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000010,
+				group_id: 2147000008,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000011,
+				group_id: 2147000018,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000012,
+				group_id: 2147000009,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000013,
+				group_id: 2147000019,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000014,
+				group_id: 2147000010,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000015,
+				group_id: 2147000020,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000016,
+				group_id: 2147000011,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000017,
+				group_id: 2147000021,
+				permission: "POST",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000018,
+				group_id: 2147000000,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000019,
+				group_id: 2147000001,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000020,
+				group_id: 2147000002,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000021,
+				group_id: 2147000003,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000022,
+				group_id: 2147000005,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000023,
+				group_id: 2147000015,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000024,
+				group_id: 2147000006,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000025,
+				group_id: 2147000016,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000026,
+				group_id: 2147000007,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000027,
+				group_id: 2147000017,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000028,
+				group_id: 2147000008,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000029,
+				group_id: 2147000018,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000030,
+				group_id: 2147000009,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000031,
+				group_id: 2147000019,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000032,
+				group_id: 2147000010,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000033,
+				group_id: 2147000020,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000034,
+				group_id: 2147000011,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000035,
+				group_id: 2147000021,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000036,
+				group_id: 2147000022,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			},
+			{
+				id: 2147000037,
+				group_id: 2147000022,
+				permission: "PUT",
+				resource_type: "lpisChangeCase"
+			}
+		],
+		"data.group_has_members": [
+			{
+				id: 2147000000,
+				user_id: 2147000000,
+				group_id: 2147000002
+			},
+			{
+				id: 2147000001,
+				user_id: 2147000000,
+				group_id: 2147000006
+			},
+			{
+				id: 2147000002,
+				user_id: 2147000001,
+				group_id: 2147000002
+			},
+			{
+				id: 2147000003,
+				user_id: 2147000001,
+				group_id: 2147000011
+			},
+			{
+				id: 2147000004,
+				user_id: 2147000002,
+				group_id: 2147000003
+			},
+			{
+				id: 2147000005,
+				user_id: 2147000003,
+				group_id: 2147000016
+			},
+			{
+				id: 2147000006,
+				user_id: 2147000003,
+				group_id: 2147000006
+			},
+			{
+				id: 2147000007,
+				user_id: 2147000004,
+				group_id: 2147000021
+			},
+			{
+				id: 2147000008,
+				user_id: 2147000004,
+				group_id: 2147000011
+			},
+			{
+				id: 2147000009,
+				user_id: 2147000005,
+				group_id: 2147000000
+			},
+			{
+				id: 2147000010,
+				user_id: 2147000006,
+				group_id: 2147000000
+			},
+			{
+				id: 2147000011,
+				user_id: 2147000007,
+				group_id: 2147000001
+			},
+			{
+				id: 2147000011,
+				user_id: 2147000003,
+				group_id: 2147000022
+			},
+			{
+				id: 2147000012,
+				user_id: 2147000004,
+				group_id: 2147000022
+			}
+		],
+		"data.panther_users": [
+			{
+				name: "szifUzivatel1@no.gisat.cz",
+				email: "szifUzivatel1@no.gisat.cz",
+				password: "szifUzivatel1@no.gisat.cz",
+				id: 2147000000,
+				key: "a2a84797-77cf-4fa4-b827-c6174848c61d"
+			},
+			{
+				name: "szifUzivatel2@no.gisat.cz",
+				email: "szifUzivatel2@no.gisat.cz",
+				password: "szifUzivatel2@no.gisat.cz",
+				id: 2147000001,
+				key: "445e6cb9-c1c1-48c2-9efa-d840964b7f97"
+			},
+			{
+				name: "szifSpravce@no.gisat.cz",
+				email: "szifSpravce@no.gisat.cz",
+				password: "szifSpravce@no.gisat.cz",
+				id: 2147000002,
+				key: "8b980570-ae71-42da-8dda-0b741e32049c"
+			},
+			{
+				name: "szifRegionalniSpravce1@no.gisat.cz",
+				email: "szifRegionalniSpravce1@no.gisat.cz",
+				password: "szifRegionalniSpravce1@no.gisat.cz",
+				id: 2147000003,
+				key: "c561672c-eb63-4750-8d85-16a7130d3d2d"
+			},
+			{
+				name: "szifRegionalniSpravce2@no.gisat.cz",
+				email: "szifRegionalniSpravce2@no.gisat.cz",
+				password: "szifRegionalniSpravce2@no.gisat.cz",
+				id: 2147000004,
+				key: "d4b0edcb-dacf-41ac-9584-4713dcadb820"
+			},
+			{
+				name: "gisatUzivatel1@no.gisat.cz",
+				email: "gisatUzivatel1@no.gisat.cz",
+				password: "gisatUzivatel1@no.gisat.cz",
+				id: 2147000005,
+				key: "e3b65116-d078-4f5b-9f53-f93bef625f97"
+			},
+			{
+				name: "gisatUzivatel2@no.gisat.cz",
+				email: "gisatUzivatel2@no.gisat.cz",
+				password: "gisatUzivatel2@no.gisat.cz",
+				id: 2147000006,
+				key: "76e803d9-c2d3-4bf4-badc-e11a9e133e71"
+			},
+			{
+				name: "gisatSpravce@no.gisat.cz",
+				email: "gisatSpravce@no.gisat.cz",
+				password: "gisatSpravce@no.gisat.cz",
+				id: 2147000007,
+				key: "29c14085-bd43-4dc9-879a-56396bb69d29"
+			}
+		],
+		"data.groups": [
+			{
+				name: "Uživatelé Gisat",
+				id: 2147000000,
+				key: "6cbf8876-d5ce-4470-81e2-6c4666059067"
+			},
+			{
+				name: "Gisat správci",
+				id: 2147000001,
+				key: "0a1403c1-8884-4dc1-8f8a-667efc681ef9"
+			},
+			{
+				name: "SZIF uživatelé",
+				id: 2147000002,
+				key: "7925e9f9-ea40-41f0-89e7-b1f61e7194ed"
+			},
+			{
+				name: "SZIF správci",
+				id: 2147000003,
+				key: "01917631-b64f-43c6-8a23-1efbde983269"
+			},
+			{
+				name: "Ústí nad Labem",
+				id: 2147000005,
+				key: "3ae6c5ee-c304-4331-a1e4-64616fdc3ab3"
+			},
+			{
+				name: "Ústí nad Labem správci",
+				id: 2147000015,
+				key: "48e40427-81db-4fac-8d7b-1c865825513d"
+			},
+			{
+				name: "Praha",
+				id: 2147000006,
+				key: "5678c123-eb0b-4fcf-94c8-782fffc11589"
+			},
+			{
+				name: "Praha správci",
+				id: 2147000016,
+				key: "e2ca7cf4-9298-4665-a2d1-3ff7f978f037"
+			},
+			{
+				name: "Hradec Králové",
+				id: 2147000007,
+				key: "22ee8555-62aa-46aa-8598-16234d49ef9d"
+			},
+			{
+				name: "Hradec Králové správci",
+				id: 2147000017,
+				key: "b314bee5-3b00-4c16-a601-b950acb27672"
+			},
+			{
+				name: "České Budějovice",
+				id: 2147000008,
+				key: "22f3357f-1f98-4cfb-970e-12488eeea389"
+			},
+			{
+				name: "České Budějovice správci",
+				id: 2147000018,
+				key: "868e2ef8-3157-471e-8e31-4f89804743ae"
+			},
+			{
+				name: "Brno",
+				id: 2147000009,
+				key: "bd7f63b0-fb09-4f63-acf7-b3450b2c4cad"
+			},
+			{
+				name: "Brno správci",
+				id: 2147000019,
+				key: "bf1e2295-dd7c-4dbd-b3fc-d0252c86cf69"
+			},
+			{
+				name: "Olomouc",
+				id: 2147000010,
+				key: "9805292e-09cb-40dd-826b-b5d58eceef6e"
+			},
+			{
+				name: "Olomouc správci",
+				id: 2147000020,
+				key: "e3b28704-7fb2-48bb-b98c-23861ca675bf"
+			},
+			{
+				name: "Opava",
+				id: 2147000011,
+				key: "147ce5ca-28d8-451a-9dd0-896f5a3ae9b5"
+			},
+			{
+				name: "Opava správci",
+				id: 2147000021,
+				key: "0bb69d83-7b39-4728-9073-d3dd6679a8fc"
+			},
+			{
+				name: "SZIF regionální správci",
+				id: 2147000022,
+				key: "a7f99005-e9df-4871-a671-9bf18a8f05e9"
+			}
+		]
+	}
+};
+
+module.exports = ptr4;
