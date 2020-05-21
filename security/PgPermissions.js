@@ -1,5 +1,3 @@
-let Promise = require('promise');
-
 /**
  * It represents permissions stored in the PostgreSQL database.
  * @alias PgPermissions
