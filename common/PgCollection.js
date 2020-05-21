@@ -30,7 +30,7 @@ class PgCollection {
 		this._pgDataSchema = config.pgSchema.data;
 
 		this._pgPermissions = new PgPermissions(this._pgPool, this._pgPermissionsSchema);
-		this._pgMetadataChanges = new PgMetadataChanges(this._pgPool, this._pgDataSchema);
+		this._pgMetadataChanges = new PgMetadataChanges(this._pgPool, config.pgSchema.various);
 
 		this._relatedMetadataStores = [];
 		this._pgMetadataRelations = null;
