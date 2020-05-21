@@ -35,10 +35,11 @@ const PgGroups = require(`../user/PgGroups`);
 const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 const PgLpisChangeCases = require(`../specific/PgLpisChangeCases`);
 
-class PgDatabase {
-	constructor(pgPool) {
-		this._pgPool = pgPool;
+const PgClient = require('./PgClient');
+const PgPool = require('./PgPool');
 
+class PgDatabase {
+	constructor() {
 		this._dataTypes = [
 			{
 				group: `metadata`,
@@ -92,7 +93,8 @@ class PgDatabase {
 				]
 			},
 			{
-				schema: config.pgSchema.data,
+				group: `users`,
+				schema: config.pgSchema.user,
 				stores: [
 					PgUsers,
 					PgGroups
@@ -117,49 +119,16 @@ class PgDatabase {
 				"relatedResourceKey" TEXT,
 				"description" TEXT,
 				"created" TIMESTAMP
-			)`
-		];
-
-		this._legacyTables = [
-			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.permissions (
-				 id SERIAL PRIMARY KEY,
-				 user_id int NOT NULL,
-				 resource_id TEXT,
-				 resource_type varchar(20),
-				 permission varchar(20)
 			)`,
-			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.group_permissions (
-				 id SERIAL PRIMARY KEY,
-				 group_id int NOT NULL,
-				 resource_id TEXT,
-				 resource_type varchar(20),
-				 permission varchar(20)
-			)`,
-			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.groups (
-				id SERIAL PRIMARY KEY,
-				name text,
-				created timestamp,
-				created_by int, 
-				changed timestamp, 
-				changed_by int
-			)`,
-			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.group_has_members (
-				id SERIAL PRIMARY KEY,
-				group_id int NOT NULL,
-				user_id int NOT NULL,
-				created timestamp,
-				created_by int, 
-				changed timestamp, 
-				changed_by int
-			)`,
-			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.panther_users (
-				id SERIAL PRIMARY KEY, 
-				email text NOT NULL,
-				created timestamp,
-				created_by int, 
-				changed timestamp, 
-				changed_by int  
-			);`
+			`CREATE TABLE IF NOT EXISTS "${config.pgSchema.various}"."metadataChanges" (
+				  "key" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+				  "resourceType" TEXT,
+				  "resourceKey" TEXT,
+				  "action" TEXT,
+				  "changed" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+				  "changedBy" TEXT,
+				  "change" JSONB
+    		)`
 		];
 	}
 
@@ -168,22 +137,112 @@ class PgDatabase {
 	}
 
 	ensure() {
-		return this.ensureSchemas()
-			.then(async () => {
-				for(let dataType of this._dataTypes) {
-					await this.ensureTables(dataType.stores, dataType.schema);
+		return this
+			.ensureDatabase()
+			.then(() => {
+				return this.ensureSchemas();
+			})
+			.then(() => {
+				let promises = [];
+				for (let dataType of this._dataTypes) {
+					promises.push(
+						this.ensureTables(dataType.stores, dataType.schema)
+					);
 				}
 
-				for(let legacyTableSql of this._legacyTables) {
-					await this._pgPool.query(legacyTableSql);
+				return Promise.allSettled(promises);
+			})
+			.then(() => {
+				let promises = [];
+				for (let variousTableSql of this._variousTables) {
+					let pgClient = new PgClient().getClient();
+					promises.push(
+						pgClient
+							.connect()
+							.then(() => {
+								return pgClient.query(variousTableSql);
+							})
+							.then(() => {
+								pgClient.end();
+							})
+					)
 				}
 
-				for(let variousTableSql of this._variousTables) {
-					await this._pgPool.query(variousTableSql);
-				}
+				return Promise.allSettled(promises)
+			})
+			.then(() => {
+				return this.ensureCustomData();
+			})
+	}
 
-				await this.ensureCustomData();
-			});
+	ensureDatabaseExtensions() {
+		let pgClient = new PgClient().getClient();
+		return pgClient
+			.connect()
+			.then(() => {
+				return pgClient
+					.query(`CREATE EXTENSION "postgis";`)
+					.catch((error) => {
+						console.log(`#WARNING#`, error.message);
+					})
+			})
+			.then(() => {
+				return pgClient
+					.query(`CREATE EXTENSION "pgcrypto";`)
+					.catch((error) => {
+						console.log(`#WARNING#`, error.message);
+					})
+			})
+			.then(() => {
+				pgClient.end();
+			})
+	}
+
+	async ensureDatabase() {
+		return Promise.resolve()
+			.then(() => {
+				if (config.pgConfig.superuser) {
+					let pgClient = new PgClient().getClient(true);
+					return pgClient
+						.connect()
+						.then(() => {
+							return pgClient.query(`CREATE ROLE "${config.pgConfig.normal.user}"`)
+								.catch((error) => {
+									console.log(`#WARNING#`, error.message);
+								})
+						})
+						.then(() => {
+							return pgClient.query(`ALTER ROLE "${config.pgConfig.normal.user}" PASSWORD '${config.pgConfig.normal.password}'`)
+								.catch((error) => {
+									console.log(`#WARNING#`, error.message);
+								})
+						})
+						.then(() => {
+							return pgClient.query(`ALTER ROLE "${config.pgConfig.normal.user}" LOGIN`)
+								.catch((error) => {
+									console.log(`#WARNING#`, error.message);
+								})
+						})
+						.then(() => {
+							return pgClient.query(`ALTER ROLE "${config.pgConfig.normal.user}" SUPERUSER`)
+								.catch((error) => {
+									console.log(`#WARNING#`, error.message);
+								})
+						})
+						.then(() => {
+							return pgClient.query(`CREATE DATABASE "panther" WITH OWNER "panther";`)
+								.catch((error) => {
+									console.log(`#WARNING#`, error.message);
+								})
+						})
+						.then(() => {
+							return pgClient.end();
+						});
+				}
+			})
+			.then(() => {
+				return this.ensureDatabaseExtensions();
+			})
 	}
 
 	ensureSchemas() {
@@ -200,24 +259,49 @@ class PgDatabase {
 			`COMMIT;`
 		);
 
-		return this._pgPool.query(schemasSql.join(` `));
+		let pgClient = new PgClient().getClient();
+		return pgClient
+			.connect()
+			.then(() => {
+				return pgClient.query(schemasSql.join(` `))
+			})
+			.catch((error) => {
+
+			})
+			.then(() => {
+				return pgClient.end();
+			})
 	}
 
 	ensureTables(stores, schema) {
 		return Promise.resolve()
-			.then(async () => {
-				for(let store of stores) {
-					let tableSql = new store(this._pgPool, schema).getTableSql();
+			.then(() => {
+				let queries = [];
+				for (let store of stores) {
+					let tableSql = new store(new PgPool().getPool(), schema).getTableSql();
+					let pgClient = new PgClient().getClient();
+
 					if (tableSql) {
-						await this._pgPool.query(tableSql);
+						queries.push(
+							pgClient
+								.connect()
+								.then(() => {
+									return pgClient.query(tableSql);
+								})
+								.then(() => {
+									pgClient.end();
+								})
+						)
 					}
 				}
+
+				return Promise.allSettled(queries);
 			});
 	}
 
 	async ensureCustomData() {
-		if(!config.customData || !Object.keys(config.customData).length) {
-			console.log(`There is no custom data to create`);
+		if (!config.customData || !Object.keys(config.customData).length) {
+			console.log(`#NOTE# There are no custom data to create!`);
 		} else {
 			let queries = [];
 
@@ -243,8 +327,8 @@ class PgDatabase {
 				})
 			});
 
-			if(queries.length) {
-				for(let query of queries) {
+			if (queries.length) {
+				for (let query of queries) {
 					await this._pgPool.query(query.sql, query.values)
 						.then((pgResult) => {
 						})
@@ -257,7 +341,7 @@ class PgDatabase {
 	}
 
 	modifiyValueForInsert(value, column, tableName) {
-		if(tableName === `panther_users` && column === `password`) {
+		if (tableName === `users` && column === `password`) {
 			return bcrypt.hashSync(value, 10);
 		} else {
 			return value;
