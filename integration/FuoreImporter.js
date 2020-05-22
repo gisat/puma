@@ -297,7 +297,7 @@ class FuoreImporter {
 		await this._pgPool.query(`DELETE FROM "metadata"."attribute" WHERE key = '${attribute.uuid}';`);
 
 		await this._pgPool.query(
-				`DELETE FROM specific."esponFuoreIndicator" WHERE key IN (
+			`DELETE FROM specific."esponFuoreIndicator" WHERE key IN (
 					SELECT "parentEsponfuoreindicatorKey" FROM relations."esponFuoreIndicatorRelation" WHERE "attributeKey" = '${attribute.uuid}'
 				);`
 		);
@@ -421,8 +421,10 @@ class FuoreImporter {
 
 		if (!isTableCreated && unzippedFs.contents().includes(attributeDataFileName)) {
 			await this.createAttributeDataTable(attributeMetadata, unzippedFs);
-		} else if (attributeMetadata.update) {
+		} else if (attributeMetadata.update && unzippedFs.contents().includes(attributeDataFileName)) {
 			await this.recreateAttributeDataTable(attributeMetadata, unzippedFs);
+		} else if (attributeMetadata.update && !unzippedFs.contents().includes(attributeDataFileName)) {
+			// skip missing data file - partial data creation
 		} else {
 			throw new Error(`Attribute data table ${attributeDataFileName} already exists`);
 		}
@@ -712,7 +714,22 @@ class FuoreImporter {
 
 	createPantherScopesFromFuoreAnalyticalUnits(analyticalUnits, user, pantherData) {
 		return Promise.resolve()
-			.then(async () => {
+			.then(() => {
+				return this._pgMetadataCrud
+					.get(
+						`scopes`,
+						{
+							filter: {
+								applicationKey: esponFuoreApplicationKey
+							}
+						},
+						user
+					)
+					.then((getResults) => {
+						return getResults.data.scopes;
+					})
+			})
+			.then(async (existingScopes) => {
 				let pantherScopesToUpdateOrCreate = [];
 
 				let analyticalUnitsLevel2 = _.filter(analyticalUnits, (analyticalUnit) => {
@@ -726,21 +743,50 @@ class FuoreImporter {
 						return analyticalUnitLevel1.au_level === 1 && analyticalUnitLevel1.relation_key === analyticalUnitLevel2.relation_key;
 					});
 
-					let layerTemplateLevel1 = _.find(pantherData.layerTemplates, (layerTemplateLevel1) => {
-						return layerTemplateLevel1.data.nameInternal === `fuore-au_${analyticalUnitLevel1.uuid}-do-not-edit`;
-					});
+					let existingScope = _.find(existingScopes, (existingScope) => {
+						return existingScope.key === analyticalUnitLevel2.uuid;
+					})
 
-					let layerTemplateLevel2 = _.find(pantherData.layerTemplates, (layerTemplateLevel2) => {
-						return layerTemplateLevel2.data.nameInternal === `fuore-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
-					});
+					let layerTemplateLevel1Key;
+					let layerTemplateLevel2Key;
+					let viewLevel1Key;
+					let viewLevel2Key;
 
-					let viewLevel1 = _.find(pantherData.views, (viewLevel1) => {
-						return viewLevel1.data.nameInternal === `fuore-base-au_${analyticalUnitLevel1.uuid}-do-not-edit`;
-					});
+					if (analyticalUnitLevel1) {
+						let layerTemplateLevel1 = _.find(pantherData.layerTemplates, (layerTemplateLevel1) => {
+							return layerTemplateLevel1.data.nameInternal === `fuore-au_${analyticalUnitLevel1.uuid}-do-not-edit`;
+						});
+						layerTemplateLevel1Key = layerTemplateLevel1.key;
 
-					let viewLevel2 = _.find(pantherData.views, (viewLevel2) => {
-						return viewLevel2.data.nameInternal === `fuore-base-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
-					});
+						let layerTemplateLevel2 = _.find(pantherData.layerTemplates, (layerTemplateLevel2) => {
+							return layerTemplateLevel2.data.nameInternal === `fuore-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
+						});
+						layerTemplateLevel2Key = layerTemplateLevel2.key;
+
+						let viewLevel1 = _.find(pantherData.views, (viewLevel1) => {
+							return viewLevel1.data.nameInternal === `fuore-base-au_${analyticalUnitLevel1.uuid}-do-not-edit`;
+						});
+						viewLevel1Key = viewLevel1.key;
+
+						let viewLevel2 = _.find(pantherData.views, (viewLevel2) => {
+							return viewLevel2.data.nameInternal === `fuore-base-au_${analyticalUnitLevel2.uuid}-do-not-edit`;
+						});
+						viewLevel2Key = viewLevel2.key;
+					} else {
+						if (!existingScope) {
+							throw new Error(`scope not found - #ERR_bylqx2jM`);
+						}
+
+						layerTemplateLevel2Key = existingScope.data.configuration.auLevel2LayerTemplateKey;
+						layerTemplateLevel1Key = existingScope.data.configuration.auLevel1LayerTemplateKey;
+						viewLevel1Key = existingScope.data.configuration.auLevel1ViewKey;
+						viewLevel2Key = existingScope.data.configuration.auLevel2ViewKey;
+					}
+
+					let order = {};
+					if (existingScope) {
+						order = existingScope.data.configuration.order;
+					}
 
 					pantherScopesToUpdateOrCreate.push(
 						{
@@ -754,18 +800,19 @@ class FuoreImporter {
 									areaNameAttributeKey: pantherData.fuoreAuNameAttribute.key,
 									countryCodeAttributeKey: pantherData.fuoreAuCountryCodeAttribute.key,
 									regionType: analyticalUnitLevel2.region_type,
-									auLevel1LayerTemplateKey: layerTemplateLevel1.key,
-									auLevel2LayerTemplateKey: layerTemplateLevel2.key,
-									auLevel1ViewKey: viewLevel1.key,
-									auLevel2ViewKey: viewLevel2.key,
-									baseOrder: analyticalUnitLevel2.order
+									auLevel1LayerTemplateKey: layerTemplateLevel1Key,
+									auLevel2LayerTemplateKey: layerTemplateLevel2Key,
+									auLevel1ViewKey: viewLevel1Key,
+									auLevel2ViewKey: viewLevel2Key,
+									baseOrder: analyticalUnitLevel2.order,
+									order
 								}
 							}
 						}
 					);
 				}
 
-				return await this.updateMetadata(
+				return this.updateMetadata(
 					`scopes`,
 					pantherScopesToUpdateOrCreate,
 					user
@@ -807,20 +854,54 @@ class FuoreImporter {
 
 		let indicatorCountsPerPeriodPerScope = {}
 
-		_.each(indicatorsPerPeriodPerScope, (indicatorsPerPeriod, scope) => {
-			indicatorCountsPerPeriodPerScope[scope] = indicatorCountsPerPeriodPerScope[scope] || [];
-			_.each(indicatorsPerPeriod.periods, (indicators, period) => {
-					indicatorCountsPerPeriodPerScope[scope].push(
-						{
-							period: Number(period),
-							percentage: _.uniq(indicators).length / (_.uniq(indicatorsPerPeriod.indicators).length / 100)
-						})
-				}
-			);
-			indicatorCountsPerPeriodPerScope[scope] = _.orderBy(indicatorCountsPerPeriodPerScope[scope], [`percentage`, `period`], [`desc`, `desc`]);
-		});
+		return this._pgPool
+			.query(`
+                SELECT DISTINCT "scopeKey",
+                                p."period",
+                                "attributeKey"
+                FROM relations."attributeDataSourceRelation" AS r
+                         LEFT JOIN metadata.period AS p ON p.key = r."periodKey"
+                WHERE "periodKey" IS NOT NULL;
+			`)
+			.then((queryRestul) => {
+				_.each(queryRestul.rows, (row) => {
+					if (!indicatorsPerPeriodPerScope.hasOwnProperty(row.scopeKey)) {
+						indicatorsPerPeriodPerScope[row.scopeKey] = {
+							periods: {
+								[row.period]: [row.attributeKey]
+							},
+							indicators: [row.attributeKey]
+						}
+					} else {
+						if (!indicatorsPerPeriodPerScope[row.scopeKey].periods.hasOwnProperty(row.period)) {
+							indicatorsPerPeriodPerScope[row.scopeKey].periods[row.period] = [row.attributeKey];
+						} else if (!indicatorsPerPeriodPerScope[row.scopeKey].periods[row.period].includes(row.attributeKey)) {
+							indicatorsPerPeriodPerScope[row.scopeKey].periods[row.period].push(row.attributeKey)
+						}
 
-		return indicatorCountsPerPeriodPerScope;
+						if (!indicatorsPerPeriodPerScope[row.scopeKey].indicators.includes(row.attributeKey)) {
+							indicatorsPerPeriodPerScope[row.scopeKey].indicators.push(row.attributeKey);
+						}
+					}
+				})
+			})
+			.then(() => {
+				_.each(indicatorsPerPeriodPerScope, (indicatorsPerPeriod, scope) => {
+					indicatorCountsPerPeriodPerScope[scope] = indicatorCountsPerPeriodPerScope[scope] || [];
+					_.each(indicatorsPerPeriod.periods, (indicators, period) => {
+							indicatorCountsPerPeriodPerScope[scope].push(
+								{
+									period: Number(period),
+									percentage: _.uniq(indicators).length / (_.uniq(indicatorsPerPeriod.indicators).length / 100)
+								})
+						}
+					);
+					indicatorCountsPerPeriodPerScope[scope] = _.orderBy(indicatorCountsPerPeriodPerScope[scope], [`percentage`, `period`], [`desc`, `desc`]);
+				});
+			})
+			.then(() => {
+				return indicatorCountsPerPeriodPerScope;
+			})
 	}
 
 	createPantherViewsFromFuoreAnalyticalUnits(attributes, analyticalUnits, user, pantherData) {
@@ -839,7 +920,7 @@ class FuoreImporter {
 					return getResults.data.views;
 				});
 
-				let commonPeriods = this.getCommonPeriods(attributes, analyticalUnits);
+				let commonPeriods = await this.getCommonPeriods(attributes, analyticalUnits);
 
 				let pantherViewsToCreateOrUpdate = [];
 				for (let analyticalUnit of analyticalUnits) {
@@ -855,11 +936,7 @@ class FuoreImporter {
 						return pantherLayerTemplate.data.nameInternal === pantherLayerTemplateNameInternal;
 					});
 
-					let attributesForAnalytiticalUnit = _.filter(attributes, (attribute) => {
-						return attribute.analytical_unit_id === analyticalUnit.id;
-					});
-
-					if (!layerTemplate || !attributesForAnalytiticalUnit.length) {
+					if (!layerTemplate) {
 						throw new Error(`unable to create internal data structure - #ERR01`);
 					}
 
@@ -874,7 +951,7 @@ class FuoreImporter {
 
 					let intervalYearValues = [
 						_.nth(intervalPeriods, 0),
-						_.nth(intervalPeriods, (intervalPeriods.length / 2) - 1),
+						_.nth(intervalPeriods, Math.ceil(intervalPeriods.length / 2) - 1),
 						_.nth(intervalPeriods, intervalPeriods.length - 1)
 					];
 
@@ -1466,7 +1543,7 @@ class FuoreImporter {
 			});
 	}
 
-	createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData) {
+	createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData, unzippedFs) {
 		return Promise.resolve()
 			.then(async () => {
 				let pantherEsponFuoreIndicators = await this._pgSpecificCrud.get(
@@ -1495,17 +1572,45 @@ class FuoreImporter {
 							&& analyticalUnitLevel2.relation_key === analyticalUnit.relation_key
 					});
 
-					let sameAttributes = _.filter(attributes, (sameAttribute) => {
-						return sameAttribute.uuid === attribute.uuid;
+					let fuoreIndicatorNameInternal = `fuore-scope_${analyticalUnitLevel2.uuid}-attr_${attribute.uuid}-do-not-edit`;
+
+					let existingFuoreIndicator = _.find(pantherEsponFuoreIndicators, (pantherEsponFuoreIndicatorObject) => {
+						return pantherEsponFuoreIndicatorObject.data.nameInternal === fuoreIndicatorNameInternal;
 					});
 
-					let dataL1 = !!(_.find(sameAttributes, (sameAttribute) => {
-						return sameAttribute.analytical_unit === analyticalUnitLevel1.table_name;
-					}))
+					let dataL1;
+					let dataL2;
+					if (analyticalUnitLevel1) {
+						let sameAttributes = _.filter(attributes, (sameAttribute) => {
+							return sameAttribute.uuid === attribute.uuid;
+						});
 
-					let dataL2 = !!(_.find(sameAttributes, (sameAttribute) => {
-						return sameAttribute.analytical_unit === analyticalUnitLevel2.table_name;
-					}))
+						dataL1 = !!(_.find(sameAttributes, (sameAttribute) => {
+							return sameAttribute.analytical_unit === analyticalUnitLevel1.table_name
+								&& unzippedFs.contents().includes(`${sameAttribute.table_name}.json`);
+						}))
+
+						dataL2 = !!(_.find(sameAttributes, (sameAttribute) => {
+							return sameAttribute.analytical_unit === analyticalUnitLevel2.table_name
+								&& unzippedFs.contents().includes(`${sameAttribute.table_name}.json`);
+						}))
+
+						if (existingFuoreIndicator) {
+							if (existingFuoreIndicator.data.other.dataL1) {
+								dataL1 = true;
+							}
+							if (existingFuoreIndicator.data.other.dataL2) {
+								dataL2 = true;
+							}
+						}
+					} else {
+						if (!existingFuoreIndicator) {
+							throw new Error(`fuore indicator not found - #ERR_rlvr15DX`);
+						}
+
+						dataL1 = existingFuoreIndicator.data.other.dataL1;
+						dataL2 = existingFuoreIndicator.data.other.dataL2;
+					}
 
 					let categoryPantherTagInternalName = `fuore-category-${attribute.category}-scope_${analyticalUnitLevel2.uuid}-do-not-edit`;
 					let subCategoryPantherTagInternalName = `fuore-subcategory-${attribute.sub_category}-scope_${analyticalUnitLevel2.uuid}-do-not-edit`;
@@ -1526,12 +1631,6 @@ class FuoreImporter {
 						console.log(categoryPantherTagInternalName, subCategoryPantherTagInternalName);
 						throw new Error(`unable to create internal data structure - #ERR04`);
 					}
-
-					let fuoreIndicatorNameInternal = `fuore-scope_${analyticalUnitLevel2.uuid}-attr_${attribute.uuid}-do-not-edit`;
-
-					let existingFuoreIndicator = _.find(pantherEsponFuoreIndicators, (pantherEsponFuoreIndicatorObject) => {
-						return pantherEsponFuoreIndicatorObject.data.nameInternal === fuoreIndicatorNameInternal;
-					});
 
 					let preparedFuoreIndicator = _.find(esponFuoreIndicatorsToCreateOrUpdate, (preparedFuoreIndicator) => {
 						return preparedFuoreIndicator.data.nameInternal === fuoreIndicatorNameInternal;
@@ -1746,7 +1845,7 @@ class FuoreImporter {
 				for (let attributeMetadata of attributes) {
 					let yearsParts = attributeMetadata.years.split(`-`);
 					let yearStart = Number(yearsParts[0]);
-					let yearEnd = Number(yearsParts[1] || yearStart);
+					let yearEnd = Number(yearsParts[1] || yearStart) + 1;
 
 					let analyticalUnit = _.find(analyticalUnits, (analyticalUnit) => {
 						return analyticalUnit.id === attributeMetadata.analytical_unit_id
@@ -2229,10 +2328,40 @@ class FuoreImporter {
 			categoryOrder = _.sortBy(categoryOrder, [`order`, `asc`]);
 			subCategoryOrder = _.sortBy(subCategoryOrder, [`order`, `asc`]);
 
+			let esponFuoreIndicatorKeys = _.map(indicatorOrder, `key`);
+			if (pantherScope.data.configuration.order.esponFuoreIndicatorKeys) {
+				esponFuoreIndicatorKeys = pantherScope.data.configuration.order.esponFuoreIndicatorKeys;
+				_.each(indicatorOrder, (indicator) => {
+					if (!esponFuoreIndicatorKeys.includes(indicator.key)) {
+						esponFuoreIndicatorKeys.splice(indicator.order, 0, indicator.key);
+					}
+				})
+			}
+
+			let categoryTagKeys = _.map(categoryOrder, `key`);
+			if (pantherScope.data.configuration.order.categoryTagKeys) {
+				categoryTagKeys = pantherScope.data.configuration.order.categoryTagKeys;
+				_.each(categoryOrder, (category) => {
+					if (!categoryTagKeys.includes(category.key)) {
+						categoryTagKeys.splice(category.order, 0, category.key);
+					}
+				})
+			}
+
+			let subCategoryTagKeys = _.map(subCategoryOrder, `key`);
+			if (pantherScope.data.configuration.order.subCategoryTagKeys) {
+				subCategoryTagKeys = pantherScope.data.configuration.order.subCategoryTagKeys;
+				_.each(subCategoryOrder, (subCategory) => {
+					if (!subCategoryTagKeys.includes(subCategory.key)) {
+						subCategoryTagKeys.splice(subCategory.order, 0, subCategory.key);
+					}
+				})
+			}
+
 			pantherScope.data.configuration.order = {
-				esponFuoreIndicatorKeys: _.map(indicatorOrder, `key`),
-				categoryTagKeys: _.map(categoryOrder, `key`),
-				subCategoryTagKeys: _.map(subCategoryOrder, `key`)
+				esponFuoreIndicatorKeys,
+				categoryTagKeys,
+				subCategoryTagKeys
 			}
 		}
 
@@ -2419,9 +2548,6 @@ class FuoreImporter {
 						console.log(`FuoreImport # cleanUnnecessaryItems done`);
 					})
 			})
-			// .then(() => {
-			// 	return Promise.reject(`#### STOP ####`);
-			// })
 			.then(() => {
 				return this.ensureAnalyticalUnits(unzippedFs)
 					.then((pAnalyticalUnits) => {
@@ -2507,7 +2633,7 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				return this.createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData)
+				return this.createPantherEsponFuoreIndicatorsFromFuoreAttributes(attributes, analyticalUnits, user, pantherData, unzippedFs)
 					.then((pantherEsponFuoreIndicators) => {
 						pantherData.esponFuoreIndicators = pantherEsponFuoreIndicators;
 						console.log(`FuoreImport # createPantherEsponFuoreIndicatorsFromFuoreAttributes done`);
