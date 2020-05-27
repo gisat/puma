@@ -34,11 +34,12 @@ const initWorkers = () => {
 
 const initWorker = () => {
 	const express = require('express');
-	const session = require('express-session');
+	const cookieParser = require('cookie-parser');
 
 	const app = express();
 	const userAuthentication = new UserAuthentication();
 
+	app.use(cookieParser());
 	app.use(userAuthentication.authenticate);
 
 	app.listen(process.env.port, () => {
