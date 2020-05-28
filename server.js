@@ -35,15 +35,20 @@ const initWorkers = () => {
 const initWorker = () => {
 	const express = require('express');
 	const cookieParser = require('cookie-parser');
+	const bodyParser = require('body-parser');
+
+	const pgPool = new PgPool().getPool();
 
 	const app = express();
-	const userAuthentication = new UserAuthentication();
 
 	app.use(cookieParser());
-	app.use(userAuthentication.authenticate);
+	app.use(bodyParser.json());
+	app.use((request, response, next) => {
+		new UserAuthentication(pgPool).authenticate(request, response, next);
+	});
 
 	app.listen(process.env.port, () => {
-		new Routes(app, new PgPool().getPool()).init();
+		new Routes(app, pgPool).init();
 		console.log(`#NOTE# Cluster worker id ${cluster.worker.id} is listening on port ${process.env.port}`);
 	});
 }

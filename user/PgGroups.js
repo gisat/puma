@@ -11,6 +11,8 @@ class PgGroups extends PgCollection {
 
 		this._keyType = this.constructor.keyType();
 
+		this._allowMultipleRelations = true;
+
 		this._permissionResourceTypes = [
 			`group`
 		];
@@ -22,14 +24,10 @@ class PgGroups extends PgCollection {
 		};
 
 		delete data.key;
-		delete data.id;
-		delete data.uuid;
 		delete data.total;
-		delete data.created;
 
 		return {
 			key: row.key,
-			id: row.id,
 			data
 		};
 	}
@@ -38,11 +36,11 @@ class PgGroups extends PgCollection {
 		return `
 		BEGIN;
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
-			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
+			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid(),
+			"name" TEXT UNIQUE
 		);
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "name" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "key" ${this._keyType} DEFAULT gen_random_uuid();
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "id" SERIAL;
+		INSERT INTO "${this._pgSchema}"."${this._tableName}" VALUES ('52ddabec-d01a-49a0-bb4d-5ff931bd346e', 'guest') ON CONFLICT (key) DO NOTHING;
+		INSERT INTO "${this._pgSchema}"."${this._tableName}" VALUES ('e56f3545-57f5-44f9-9094-2750a69ef67e', 'user') ON CONFLICT (key) DO NOTHING;
 		COMMIT;
 		`;
 	}

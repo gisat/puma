@@ -1,32 +1,49 @@
 const _ = require('lodash');
+const { v4: uuid } = require('uuid');
 
-const PgDatabase = require(`../postgresql/PgDatabase`);
+const PgDatabase = require('../postgresql/PgDatabase');
 
 class PgUserCurrent {
-	constructor(pgPool, pgSchema, userId) {
+	constructor(pgPool, pgSchema, userKey) {
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
-		this._userId = userId;
+		this._userKey = userKey;
 
 		this._pgDatabase = new PgDatabase(pgPool);
 
-		this._guestGroupId = 2;
-		this._userGroupId = 3;
+		this._guestGroupKey = `52ddabec-d01a-49a0-bb4d-5ff931bd346e`;
+		this._userGroupKey = `e56f3545-57f5-44f9-9094-2750a69ef67e`;
 	}
 
 	getCurrent() {
-		return this._pgPool
-			.query(`SELECT name, email, phone FROM "${this._pgSchema}"."panther_users" WHERE id = ${Number(this._userId)}`)
-			.then(async (result) => {
-				let groups = await this.getGroups();
-				let permissions = await this.getPermissions(groups);
+		return Promise
+			.resolve()
+			.then(() => {
+				if(this._userKey) {
+					return this._pgPool
+						.query(`SELECT "name", "email", "other" FROM "${this._pgSchema}"."users" WHERE "key" = '${this._userKey}'`)
+						.then(async (result) => {
+							return result.rows[0]
+						});
+				} else {
+					return {};
+				}
+			})
+			.then(async (user) => {
+
+				console.log(`#WARNING# REWRITE NEEDED #7b9f7e9a9691#`);
+
+				// let groups = await this.getGroups();
+				// let permissions = await this.getPermissions(groups);
+				let groups = [];
+				let permissions = {};
 				return {
-					key: this._userId,
+					key: this._userKey || uuid(),
 					data: {
-						name: "",
-						email: "",
-						phone: "",
-						...result.rows[0]
+						name: null,
+						email: null,
+						other: null,
+						...user
 					},
 					groups: groups,
 					permissions: {

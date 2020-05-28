@@ -31,6 +31,9 @@ const PgViews = require(`../view/PgViews`);
 
 const PgUsers = require(`../user/PgUsers`);
 const PgGroups = require(`../user/PgGroups`);
+// const PgUserPermissions = require(`../user/PgUserPermissions`);
+// const PgGroupPermissions = require(`../user/PgGroupPermissions`);
+const PgPermissions = require(`../user/PgPermissions`);
 
 const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 const PgLpisChangeCases = require(`../specific/PgLpisChangeCases`);
@@ -97,7 +100,10 @@ class PgDatabase {
 				schema: config.pgSchema.user,
 				stores: [
 					PgUsers,
-					PgGroups
+					PgGroups,
+					// PgUserPermissions,
+					// PgGroupPermissions
+					PgPermissions
 				]
 			},
 			{
@@ -341,11 +347,13 @@ class PgDatabase {
 	}
 
 	modifiyValueForInsert(value, column, tableName) {
-		if (tableName === `users` && column === `password`) {
-			return bcrypt.hashSync(value, 10);
-		} else {
-			return value;
-		}
+		// if (tableName === `users` && column === `password`) {
+		// 	return bcrypt.hashSync(value, 10);
+		// } else {
+		// 	return value;
+		// }
+		console.log("#WARNING# REWRITE NEEDED #21969261f2ff#")
+		return value;
 	}
 }
 
