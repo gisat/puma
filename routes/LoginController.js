@@ -40,7 +40,7 @@ function getUser(pgPool, schema, email, password) {
     return pgPool
         .query(
             SQL`SELECT "key", "password" FROM`
-                .append(` "${schema}"."panther_users" `)
+                .append(` "${schema}"."users" `)
                 .append(SQL`WHERE "email" = ${email}`)
         )
         .then((results) => {

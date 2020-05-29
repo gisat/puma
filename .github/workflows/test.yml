@@ -3,10 +3,21 @@ on: [push]
 jobs:
     build:
         runs-on: ubuntu-latest
+        services:
+            postgres:
+                image: postgres:12
+                ports:
+                    - '5432:5432'
+                env:
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: panther
         steps:
             - uses: actions/checkout@v2
             - uses: actions/setup-node@v1
               with:
                   node-version: '12.x'
-            - run: npm install
-            - run: npm test
+            - run: 'npm install'
+            - run: 'npm run start &'
+            - run: './node_modules/.bin/wait-port -t 5000 localhost:9850'
+            - run: './bin/load-fixtures'
+            - run: 'npm test'

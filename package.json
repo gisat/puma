@@ -30,7 +30,8 @@
     "mocha": "^7.1.2",
     "node-fetch": "^2.6.0",
     "node-mocks-http": "^1.8.1",
-    "npm-watch": "^0.6.0"
+    "npm-watch": "^0.6.0",
+    "wait-port": "^0.2.9"
   },
   "watch": {
     "test": {

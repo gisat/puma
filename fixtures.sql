@@ -1,4 +1,4 @@
-INSERT INTO "user"."panther_users"
+INSERT INTO "user"."users"
   ("key", "email", "password")
 VALUES
   -- password: test
