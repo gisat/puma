@@ -1,5 +1,9 @@
 const ptr4 = {
 	clusterPorts: [9850, 9851, 9852, 9853, 9854, 9855, 9856, 9857, 9858, 9859],
+	jsonWebToken: {
+		string: "57808ccb-b490-44d0-9df9-aa111b56682f",
+		cookieMaxAge: 10000
+	},
 	keepAliveWorkers: true,
 	pgConfig: {
 		normal: {

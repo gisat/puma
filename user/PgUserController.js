@@ -4,22 +4,18 @@ const PgUserCurrent = require('../user/PgUserCurrent');
 const PgUserBatch = require('./PgUserBatch');
 
 class PgUserController extends PgController {
-	constructor(app, pgPool, pgSchema, mongo) {
+	constructor(app, pgPool, pgSchema, initRelatedStores) {
 		super(app, pgPool, pgSchema, `user`);
 
-		this._crud = new PgUsersCrud(pgPool, pgSchema, mongo);
+		this._crud = new PgUsersCrud(pgPool, pgSchema, initRelatedStores);
 	}
 
 	getCurrent(request, response) {
-		new PgUserCurrent(this._pgPool, this._pgSchema, request.session.user.id)
-			.getCurrent()
-			.then((currentUser) => {
-				response.status(200).json(currentUser)
-			});
+		response.status(200).json(request.user);
 	};
 
 	createBatch(request, response) {
-		new PgUserBatch(this._pgPool, this._pgSchema, request.session.user.id)
+		new PgUserBatch(this._pgPool, this._pgSchema, request.user.key)
 			.create(request.body)
 			.then((batchResult) => {
 				response.status(200).json(batchResult);

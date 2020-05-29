@@ -1,10 +1,11 @@
 const bcrypt = require(`bcrypt`);
+const _ = require('lodash');
 
 const PgCollection = require('../common/PgCollection');
 
 class PgUsers extends PgCollection {
-	constructor(pool, schema, mongo) {
-		super(pool, schema, mongo, `PgUsers`);
+	constructor(pool, schema) {
+		super(pool, schema, `PgUsers`);
 
 		this._checkPermissions = false;
 
@@ -13,21 +14,22 @@ class PgUsers extends PgCollection {
 
 		this._keyType = this.constructor.keyType();
 
+		this._allowMultipleRelations = true;
+
 		this._permissionResourceTypes = [
 			`user`
 		];
 	}
 
-	modifyColumnsAndValuesBeforeInsert(columns, values) {
-
-		_.each(columns, (column, index) => {
-			if(column === `password`) {
-				values[index] = bcrypt.hashSync(values[index], 10);
-			}
-		});
-
-		return [columns, values];
-	}
+	// modifyColumnsAndValuesBeforeInsert(columns, values) {
+	// 	_.each(columns, (column, index) => {
+	// 		if(column === `password`) {
+	// 			// values[index] = bcrypt.hashSync(values[index], 10);
+	// 			values[index] = `crypt('${values[index]}', gen_salt('bf')`;
+	// 		}
+	// 	});
+	// 	return [columns, values];
+	// }
 
 	parsePostgresRow(row) {
 		let data = {
@@ -35,18 +37,11 @@ class PgUsers extends PgCollection {
 		};
 
 		delete data.key;
-		delete data.id;
-		delete data.uuid;
 		delete data.total;
-		delete data.created;
 		delete data.password;
-		delete data.created_by;
-		delete data.changed;
-		delete data.changed_by;
 
 		return {
 			key: row.key,
-			id: row.id,
 			data
 		};
 	}
@@ -55,14 +50,12 @@ class PgUsers extends PgCollection {
 		return `
 		BEGIN;
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
-			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
+			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid(),
+			"email" TEXT UNIQUE
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "name" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "email" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "password" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "phone" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "key" ${this._keyType} DEFAULT gen_random_uuid();
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "id" SERIAL;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "other" JSONB;
 		COMMIT;
 		`;
 	}
@@ -72,7 +65,7 @@ class PgUsers extends PgCollection {
 	}
 
 	static tableName() {
-		return 'panther_users';
+		return 'users';
 	}
 
 	static keyType() {

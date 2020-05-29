@@ -407,14 +407,19 @@ class PgCollection {
 					columns.push(`key`);
 					values.push(object.key);
 				}
-
 				return this.modifyColumnsAndValuesBeforeInsert(columns, values)
 			})
 			.then(([columns, values]) => {
 				let sql;
 				if (columns.length && values.length) {
 					sql = `INSERT INTO "${this._pgSchema}"."${this._tableName}" ("${columns.join('", "')}") VALUES (${_.map(values, (value, index) => {
-						return keys[index].startsWith('geometry') ? `ST_GeomFromGeoJSON($${index + 1})` : `$${index + 1}`
+						if(keys[index].startsWith('geometry')) {
+							return `ST_GeomFromGeoJSON($${index + 1})`;
+						} else if(keys[index].startsWith('password')) {
+							return `crypt($${index + 1}, gen_salt('bf'))`;
+						} else {
+							return `$${index + 1}`
+						}
 					}).join(', ')}) RETURNING ${this.getReturningSql()};`
 				} else {
 					sql = `INSERT INTO "${this._pgSchema}"."${this._tableName}" DEFAULT VALUES RETURNING ${this.getReturningSql()};`
@@ -706,7 +711,7 @@ class PgCollection {
 	}
 
 	getRecordCountByFilter(filter) {
-		let sql = `SELECT COUNT(*) FROM ${config.pgSchema.data}."metadata_changes" WHERE "action" = '${filter.status}' AND "resource_type" = '${this._tableName}' AND "changed" >= '${filter.from}'`;
+		let sql = `SELECT COUNT(*) FROM ${config.pgSchema.various}."metadataChanges" WHERE "action" = '${filter.status}' AND "resourceType" = '${this._tableName}' AND "changed" >= '${filter.from}'`;
 		return this._pgPool
 			.query(sql)
 			.then((pgResult) => {
@@ -720,8 +725,6 @@ class PgCollection {
 	}
 
 	get(request, user, extra, doCountOnly) {
-		let isAdmin = !!(_.find(user.groups, {name: 'admin'}));
-
 		if (doCountOnly) {
 			return this.getRecordCountByFilter(request.filter);
 		} else {
@@ -766,14 +769,14 @@ class PgCollection {
 					}
 				})
 				.then(() => {
-					return this.postgresGet(request, user, extra, isAdmin)
+					return this.postgresGet(request, user, extra)
 						.then((payload) => {
 							return payload;
 						})
 				})
 				.then((payload) => {
 					let resourceKeys = _.map(payload.data, 'key');
-					return this.getPermissionsForResourceKeys(resourceKeys, user, isAdmin)
+					return this.getPermissionsForResourceKeys(resourceKeys, user)
 						.then((permissions) => {
 							payload = {
 								...payload,
@@ -808,28 +811,31 @@ class PgCollection {
 	}
 
 	getLatestChangeForUser(user) {
-		let userId = user.id;
-		let groupIds = _.map(user.groups, `id`);
-
-		let query = [
-			`SELECT "changed" FROM "${config.pgSchema.data}"."metadata_changes"`,
-			`WHERE "resource_key" IN (`,
-			`SELECT DISTINCT "resource_id" FROM ${config.pgSchema.data}."permissions"`,
-			`WHERE "resource_type" = '${this._tableName}'`,
-			`AND user_id = ${userId}`,
-			`AND permission = '${Permission.READ}'`,
-			`UNION`,
-			`SELECT DISTINCT "resource_id"`,
-			`FROM "${config.pgSchema.data}"."group_permissions"`,
-			`WHERE "resource_type" = '${this._tableName}'`,
-			`AND "group_id" in (${groupIds.join(`, `)})`,
-			`AND "permission" = '${Permission.READ}')`,
-			`ORDER BY "changed" DESC LIMIT 1`
-		];
-
-		return this._pgPool.query(query.join(` `))
-			.then((queryResult) => {
-				return queryResult.rows[0] && queryResult.rows[0].changed;
+		// let query = [
+		// 	`SELECT "changed" FROM "${config.pgSchema.various}"."metadataChanges"`,
+		// 	`WHERE "resourceKey" IN (`,
+		// 	`SELECT DISTINCT "resourceKey" FROM ${config.pgSchema.user}."permissions"`,
+		// 	`WHERE "resource_type" = '${this._tableName}'`,
+		// 	`AND user_id = ${userId}`,
+		// 	`AND permission = '${Permission.READ}'`,
+		// 	`UNION`,
+		// 	`SELECT DISTINCT "resource_id"`,
+		// 	`FROM "${config.pgSchema.data}"."group_permissions"`,
+		// 	`WHERE "resource_type" = '${this._tableName}'`,
+		// 	`AND "group_id" in (${groupIds.join(`, `)})`,
+		// 	`AND "permission" = '${Permission.READ}')`,
+		// 	`ORDER BY "changed" DESC LIMIT 1`
+		// ];
+		//
+		// return this._pgPool.query(query.join(` `))
+		// 	.then((queryResult) => {
+		// 		return queryResult.rows[0] && queryResult.rows[0].changed;
+		// 	})
+		return Promise
+			.resolve()
+			.then(() => {
+				console.log(`#WARNING# REWRITE NEEDED #71e71bbd7fbb#`)
+				return [];
 			})
 	}
 
@@ -914,45 +920,49 @@ class PgCollection {
 	}
 
 	getPermissionsForResourceKeysByUserGroupIds(resourceKeys, groupIds) {
+		console.log(`#WARNING# REWRITE NEEDED #1d949e7ebcd3#`);
+		return [];
 		// TODO this._tableName and this._collectionName are propably unnecessary
-		if (!resourceKeys || !resourceKeys.length) {
-			return Promise.resolve([]);
-		}
-
-		let query = [
-			`SELECT * FROM "${this._pgPermissionsSchema}"."group_permissions" AS gp `,
-			`WHERE`,
-			`gp.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
-			`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
-			`AND group_id IN (${groupIds.join(`, `)})`
-		];
-
-		return this._pgPool
-			.query(query.join(` `))
-			.then((queryResult) => {
-				return queryResult.rows;
-			});
+		// if (!resourceKeys || !resourceKeys.length) {
+		// 	return Promise.resolve([]);
+		// }
+		//
+		// let query = [
+		// 	`SELECT * FROM "${this._pgPermissionsSchema}"."group_permissions" AS gp `,
+		// 	`WHERE`,
+		// 	`gp.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
+		// 	`AND gp.resource_id IN ('${resourceKeys.join(`', '`)}')`,
+		// 	`AND group_id IN (${groupIds.join(`, `)})`
+		// ];
+		//
+		// return this._pgPool
+		// 	.query(query.join(` `))
+		// 	.then((queryResult) => {
+		// 		return queryResult.rows;
+		// 	});
 	}
 
 	getPermissionsForResourceKeysByUserId(resourceKeys, userId) {
+		console.log(`#WARNING# REWRITE NEEDED #5ef137194e56#`);
+		return [];
 		// TODO this._tableName and this._collectionName are propably unnecessary
-		if (!resourceKeys || !resourceKeys.length) {
-			return Promise.resolve([]);
-		}
-
-		let query = [
-			`SELECT * FROM "${this._pgPermissionsSchema}"."permissions" AS p `,
-			`WHERE`,
-			`p.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
-			`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
-			`AND user_id = ${userId}`
-		];
-
-		return this._pgPool
-			.query(query.join(` `))
-			.then((queryResult) => {
-				return queryResult.rows;
-			});
+		// if (!resourceKeys || !resourceKeys.length) {
+		// 	return Promise.resolve([]);
+		// }
+		//
+		// let query = [
+		// 	`SELECT * FROM "${this._pgPermissionsSchema}"."permissions" AS p `,
+		// 	`WHERE`,
+		// 	`p.resource_type IN ('${this._permissionResourceTypes.join(`', '`)}')`,
+		// 	`AND p.resource_id IN ('${resourceKeys.join(`', '`)}')`,
+		// 	`AND user_id = ${userId}`
+		// ];
+		//
+		// return this._pgPool
+		// 	.query(query.join(` `))
+		// 	.then((queryResult) => {
+		// 		return queryResult.rows;
+		// 	})
 	}
 
 	getResourceIdsForUserAndPermissionType(user, permissionType, isAdmin) {
@@ -1438,7 +1448,7 @@ class PgCollection {
 		);
 
 		sql.push(
-			`LEFT JOIN "${config.pgSchema.data}"."metadata_changes" AS mc ON "mc"."resource_key" = "${this._tableName}"."key"::TEXT`
+			`LEFT JOIN "${config.pgSchema.various}"."metadataChanges" AS mc ON "mc"."resourceKey" = "${this._tableName}"."key"::TEXT`
 		);
 
 		if (this._dataSources && this._relatedColumns) {

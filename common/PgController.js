@@ -1,4 +1,7 @@
 const _ = require('lodash');
+const jwt = require('jsonwebtoken');
+
+const UserLogin = require('../auth/UserLogin');
 
 class PgController {
 	constructor(app, pgPool, pgSchema, group) {
@@ -11,6 +14,9 @@ class PgController {
 			if (group === `user`) {
 				app.get(`/rest/${group}/current`, this.getCurrent.bind(this));
 				app.post(`/rest/${group}/batch`, this.createBatch.bind(this));
+				app.post(`/rest/${group}/login`, (request, response) => {
+					new UserLogin(pgPool, pgSchema).login(request, response);
+				});
 			}
 
 			app.post(`/rest/${group}`, this.create.bind(this));
@@ -31,7 +37,7 @@ class PgController {
 	create(request, response) {
 		this._crud.create(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
-			request.session.user,
+			request.user,
 			{
 				files: request.files,
 				configuration: this._isJson(request.body.configuration) ? JSON.parse(request.body.configuration) : request.body.configuration
@@ -59,7 +65,7 @@ class PgController {
 	}
 
 	get(doCountOnly, request, response) {
-		return this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.session.user, doCountOnly)
+		return this._crud.get(request.params['type'], _.assign({}, request.query, request.body), request.user, doCountOnly)
 			.then((payload) => {
 				payload.success = true;
 				response.status(200).json(payload);
@@ -74,7 +80,7 @@ class PgController {
 	}
 
 	delete(request, response) {
-		this._crud.delete(request.body.data, request.session.user)
+		this._crud.delete(request.body.data, request.user)
 			.then((data) => {
 				response.status(200).json({
 					data: data,
@@ -93,7 +99,7 @@ class PgController {
 	update(request, response) {
 		this._crud.update(
 			this._isJson(request.body.data) ? JSON.parse(request.body.data) : request.body.data,
-			request.session.user,
+			request.user,
 			{
 				files: request.files,
 				configuration: this._isJson(request.body.configuration) ? JSON.parse(request.body.configuration) : request.body.configuration
