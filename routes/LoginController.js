@@ -3,15 +3,18 @@ const logger = require('../common/Logger').applicationWideLogger;
 const {SQL} = require('sql-template-strings');
 const jwt = require('jsonwebtoken');
 const userMiddleware = require('../middlewares/user');
+const authMiddleware = require('../middlewares/auth');
 const db = require('../db');
+const uuid = require('../uuid');
+const _ = require('lodash');
 
 /**
  * @param {Object} user
  *
  * @returns {Object} Payload
  */
-function tokenPayload({key}) {
-    return {key};
+function tokenPayload({key, type}) {
+    return {key, type};
 }
 
 /**
@@ -45,9 +48,23 @@ function getUser(schema, email, password) {
                     SQL`WHERE "email" = ${email} AND "password" = crypt(${password}, "password")`
                 )
         )
-        .then((results) => {
-            return results.rows[0];
+        .then((res) => {
+            return res.rows[0];
         });
+}
+
+function getUserInfoByKey(schema, key) {
+    if (key == null) {
+        return;
+    }
+
+    return db
+        .query(
+            SQL`SELECT "email", "name" FROM`
+                .append(` "${schema}"."users" `)
+                .append(SQL`WHERE "key" = ${key}`)
+        )
+        .then((res) => res.rows[0]);
 }
 
 /**
@@ -65,8 +82,14 @@ class LoginController {
         }
         app.get('/rest/logged', userMiddleware, this.logged.bind(this));
         app.post('/api/login/login', this.login.bind(this));
+        app.post('/api/login/login-guest', this.loginGuest.bind(this));
         app.post('/api/login/logout', this.logout.bind(this));
-        app.post('/api/login/getLoginInfo', this.getLoginInfo.bind(this));
+        app.get(
+            '/api/login/getLoginInfo',
+            userMiddleware,
+            authMiddleware,
+            this.getLoginInfo.bind(this)
+        );
 
         this.schema = commonSchema;
     }
@@ -89,7 +112,9 @@ class LoginController {
                 return;
             }
 
-            const token = await createAuthToken(tokenPayload(user));
+            const token = await createAuthToken(
+                tokenPayload({...user, ...{type: 'user'}})
+            );
 
             return response.status(200).json({token}).end();
         } catch (err) {
@@ -97,23 +122,32 @@ class LoginController {
         }
     }
 
+    async loginGuest(request, response) {
+        const token = await createAuthToken(
+            tokenPayload({key: uuid.generate(), type: 'guest'})
+        );
+
+        return response.status(200).json({token}).end();
+    }
+
     logout(request, response, next) {
         response.status(200).end();
     }
 
-    getLoginInfo(request, response) {
-        if (request.user.key) {
-            response.status(200).json({
-                data: {
-                    userId: request.session.userId,
-                    userName: request.session.user.username,
-                    groups: request.session.user.groups,
-                },
-                success: true,
-            });
-        } else {
-            response.status(200).json({});
-        }
+    async getLoginInfo(request, response) {
+        const user = request.user;
+        const userInfo = await getUserInfoByKey(this.schema, user.key);
+
+        response.status(200).json({
+            key: user.key,
+            data: {
+                name: _.get(userInfo, 'name', null),
+                email: _.get(userInfo, 'email', null),
+                // todo: add phone
+            },
+            groups: [], // todo
+            permissions: {}, // todo
+        });
     }
 }
 

@@ -3,56 +3,86 @@ const http = require('http');
 const config = require('../../../config');
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
+const uuid = require('../../../uuid');
 
 function url(path) {
     return 'http://localhost:' + config.clusterPorts[0] + path;
 }
 
 describe('routes/LoginController', function () {
-    it('login', function (done) {
-        fetch(url('/api/login/login'), {
+    describe('login', function () {
+        it('login', function (done) {
+            fetch(url('/api/login/login'), {
+                method: 'POST',
+                headers: new fetch.Headers({
+                    'Content-Type': 'application/json',
+                }),
+                body: JSON.stringify({
+                    username: 'test@example.com',
+                    password: 'test',
+                }),
+            }).then((response) => {
+                assert.strictEqual(response.status, 200);
+                response.json().then((data) => {
+                    const decoded = jwt.verify(data.token, config.jwt.secret);
+                    assert.strictEqual(
+                        decoded.key,
+                        '7c5acddd-3625-46ef-90b3-82f829afb258'
+                    );
+
+                    done();
+                });
+            });
+        });
+
+        describe('invalid login', function () {
+            const tests = [
+                {
+                    name: 'invalid password',
+                    body: {
+                        username: 'test@example.com',
+                        password: 'wrong',
+                    },
+                },
+                {
+                    name: 'non existing username',
+                    body: {
+                        username: 'nonexisting@example.com',
+                        password: 'test',
+                    },
+                },
+            ];
+
+            tests.forEach((test) => {
+                it(test.name, function (done) {
+                    fetch(url('/api/login/login'), {
+                        method: 'POST',
+                        headers: new fetch.Headers({
+                            'Content-Type': 'application/json',
+                        }),
+                        body: JSON.stringify(test.body),
+                    }).then((response) => {
+                        assert.strictEqual(response.status, 401);
+                        done();
+                    });
+                });
+            });
+        });
+    });
+
+    it('loginGuest', function (done) {
+        fetch(url('/api/login/login-guest'), {
             method: 'POST',
             headers: new fetch.Headers({
                 'Content-Type': 'application/json',
             }),
-            body: JSON.stringify({
-                username: 'test@example.com',
-                password: 'test',
-            }),
         }).then((response) => {
             assert.strictEqual(response.status, 200);
-            // todo: verify token
-            done();
-        });
-    });
+            response.json().then((data) => {
+                const decoded = jwt.verify(data.token, config.jwt.secret);
+                assert.isString(decoded.key);
 
-    describe('invalid login', function () {
-        const tests = [
-            {
-                name: 'invalid password',
-                body: {
-                    username: 'test@example.com',
-                    password: 'wrong',
-                },
-            },
-            {
-                name: 'non existing username',
-                body: {username: 'nonexisting@example.com', password: 'test'},
-            },
-        ];
-
-        tests.forEach((test) => {
-            it(test.name, function (done) {
-                fetch(url('/api/login/login'), {
-                    method: 'POST',
-                    headers: new fetch.Headers({
-                        'Content-Type': 'application/json',
-                    }),
-                    body: JSON.stringify(test.body),
-                }).then((response) => {
-                    assert.strictEqual(response.status, 401);
-                    done();
-                });
+                done();
             });
         });
     });
@@ -94,6 +124,63 @@ describe('routes/LoginController', function () {
                 assert.strictEqual(response.status, 200);
                 response.json().then((data) => {
                     assert.deepStrictEqual(data, {key: 'k3'});
+                    done();
+                });
+            });
+        });
+    });
+
+    describe('getLoginInfo', function () {
+        it('logged in user', function (done) {
+            fetch(url('/api/login/getLoginInfo'), {
+                method: 'GET',
+                headers: new fetch.Headers({
+                    'Content-Type': 'application/json',
+                    Authorization:
+                        'Bearer ' +
+                        jwt.sign(
+                            {key: '7c5acddd-3625-46ef-90b3-82f829afb258'},
+                            config.jwt.secret
+                        ),
+                }),
+            }).then((response) => {
+                assert.strictEqual(response.status, 200);
+                response.json().then((data) => {
+                    assert.deepStrictEqual(data, {
+                        key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                        data: {
+                            name: null,
+                            email: 'test@example.com',
+                        },
+                        groups: [],
+                        permissions: {},
+                    });
+                    done();
+                });
+            });
+        });
+
+        it('gest', function (done) {
+            const key = uuid.generate();
+            fetch(url('/api/login/getLoginInfo'), {
+                method: 'GET',
+                headers: new fetch.Headers({
+                    'Content-Type': 'application/json',
+                    Authorization:
+                        'Bearer ' + jwt.sign({key: key}, config.jwt.secret),
+                }),
+            }).then((response) => {
+                assert.strictEqual(response.status, 200);
+                response.json().then((data) => {
+                    assert.deepStrictEqual(data, {
+                        key: key,
+                        data: {
+                            name: null,
+                            email: null,
+                        },
+                        groups: [],
+                        permissions: {},
+                    });
                     done();
                 });
             });
