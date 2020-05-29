@@ -158,8 +158,10 @@ class LoginController {
 
     async getLoginInfo(request, response) {
         const user = request.user;
-        const userInfo = await getUserInfoByKey(this.schema, user.key);
-        const userGroups = await userGroupsByKey(this.schema, user.key);
+        const [userInfo, userGroups] = await Promise.all([
+            getUserInfoByKey(this.schema, user.key),
+            userGroupsByKey(this.schema, user.key),
+        ]);
 
         response.status(200).json({
             key: user.key,
