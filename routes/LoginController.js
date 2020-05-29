@@ -67,6 +67,28 @@ function getUserInfoByKey(schema, key) {
         .then((res) => res.rows[0]);
 }
 
+function userGroupsByKey(schema, key) {
+    if (key == null) {
+        return [];
+    }
+
+    return db
+        .query(
+            SQL`
+SELECT "g"."name"
+FROM`.append(`
+  "${schema}"."users" "u"
+  JOIN "${schema}"."userGroups" "ug" ON "ug"."userKey" = "u"."key"
+  JOIN "${schema}"."groups" "g" ON "g"."key" = "ug"."groupKey"`).append(SQL`
+WHERE
+  "u"."key" = ${key}
+ORDER BY
+  "g"."key"
+`)
+        )
+        .then((res) => res.rows.map((r) => r.name));
+}
+
 /**
  * Controller for handling the login and logout of the user from the system. Internally this implementation uses Geonode
  * to log the user in.
@@ -137,6 +159,7 @@ class LoginController {
     async getLoginInfo(request, response) {
         const user = request.user;
         const userInfo = await getUserInfoByKey(this.schema, user.key);
+        const userGroups = await userGroupsByKey(this.schema, user.key);
 
         response.status(200).json({
             key: user.key,
@@ -145,7 +168,7 @@ class LoginController {
                 email: _.get(userInfo, 'email', null),
                 // todo: add phone
             },
-            groups: [], // todo
+            groups: userGroups,
             permissions: {}, // todo
         });
     }

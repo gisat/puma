@@ -34,6 +34,7 @@ const PgGroups = require(`../user/PgGroups`);
 // const PgUserPermissions = require(`../user/PgUserPermissions`);
 // const PgGroupPermissions = require(`../user/PgGroupPermissions`);
 const PgPermissions = require(`../user/PgPermissions`);
+const PgUserGroups = require('../user/PgUserGroups');
 
 const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 const PgLpisChangeCases = require(`../specific/PgLpisChangeCases`);
@@ -103,7 +104,8 @@ class PgDatabase {
 					PgGroups,
 					// PgUserPermissions,
 					// PgGroupPermissions
-					PgPermissions
+					PgPermissions,
+					PgUserGroups,
 				]
 			},
 			{
@@ -156,7 +158,7 @@ class PgDatabase {
 					);
 				}
 
-				return Promise.allSettled(promises);
+				return Promise.all(promises);
 			})
 			.then(() => {
 				let promises = [];
@@ -279,30 +281,22 @@ class PgDatabase {
 			})
 	}
 
-	ensureTables(stores, schema) {
-		return Promise.resolve()
-			.then(() => {
-				let queries = [];
-				for (let store of stores) {
-					let tableSql = new store(new PgPool().getPool(), schema).getTableSql();
-					let pgClient = new PgClient().getClient();
+	async ensureTables(stores, schema) {
+		for (let store of stores) {
+			let tableSql = new store(new PgPool().getPool(), schema).getTableSql();
+			let pgClient = new PgClient().getClient();
 
-					if (tableSql) {
-						queries.push(
-							pgClient
-								.connect()
-								.then(() => {
-									return pgClient.query(tableSql);
-								})
-								.then(() => {
-									pgClient.end();
-								})
-						)
-					}
-				}
-
-				return Promise.allSettled(queries);
-			});
+			if (tableSql) {
+				await pgClient
+					.connect()
+					.then(() => {
+						return pgClient.query(tableSql);
+					})
+					.then(() => {
+						pgClient.end();
+					});
+			}
+		}
 	}
 
 	async ensureCustomData() {

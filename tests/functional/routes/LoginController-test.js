@@ -160,6 +160,34 @@ describe('routes/LoginController', function () {
             });
         });
 
+        it('logged in user with groups', function () {
+            return fetch(url('/api/login/getLoginInfo'), {
+                method: 'GET',
+                headers: new fetch.Headers({
+                    'Content-Type': 'application/json',
+                    Authorization:
+                        'Bearer ' +
+                        jwt.sign(
+                            {key: '2bf6c1da-991a-4592-acc1-b10192db9363'},
+                            config.jwt.secret
+                        ),
+                }),
+            }).then((response) => {
+                assert.strictEqual(response.status, 200);
+                return response.json().then((data) => {
+                    assert.deepStrictEqual(data, {
+                        key: '2bf6c1da-991a-4592-acc1-b10192db9363',
+                        data: {
+                            name: null,
+                            email: 'testWithGroups@example.com',
+                        },
+                        groups: ['guest', 'user'],
+                        permissions: {},
+                    });
+                });
+            });
+        });
+
         it('gest', function (done) {
             const key = uuid.generate();
             fetch(url('/api/login/getLoginInfo'), {

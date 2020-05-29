@@ -19,9 +19,9 @@ class CreateDefaultUserAndGroup extends Migration {
 		return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('admin')`).then(() => {
 			return pool.pool().query(`INSERT INTO ${this.schema}.group_has_members (user_id, group_id) VALUES (1,1)`);
 		}).then(() => {
-			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('guest')`);
+			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name, key) VALUES ('guest', '52ddabec-d01a-49a0-bb4d-5ff931bd346e')`);
 		}).then(() => {
-			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name) VALUES ('user')`);
+			return pool.pool().query(`INSERT INTO ${this.schema}.groups (name, key) VALUES ('user', 'e56f3545-57f5-44f9-9094-2750a69ef67e')`);
 		}).then(() => {
 			// return this.fillDefaultPermissions(mongoDatabase, pool);
 		});
