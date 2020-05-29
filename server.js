@@ -12,7 +12,7 @@ const initMaster = () => {
 	new PgDatabase()
 		.ensure()
 		.then(() => {
-			new Routes(null, new PgPool().getPool(), true).init();
+			// new Routes(null, new PgPool().getPool(), true).init();
 		})
 		.then(() => {
 			return initWorkers();

@@ -39,6 +39,7 @@ async function userMiddleware(request, response, next) {
     const authorizatonHeader = request.headers.authorization;
     const token = parseToken(authorizatonHeader);
     if (!token) {
+        delete request.user; // something adds `user` into request. Let's remove him if he is not authenticated.
         return next();
     }
 
