@@ -30,17 +30,20 @@
     "mocha": "^7.1.2",
     "node-fetch": "^2.6.0",
     "node-mocks-http": "^1.8.1",
+    "nodemon": "^2.0.4",
     "npm-watch": "^0.6.0",
     "wait-port": "^0.2.9"
   },
   "watch": {
-    "test": {
+    "test:wait": {
       "patterns": "*.js"
     }
   },
   "scripts": {
     "start": "node server.js",
+    "start:watch": "nodemon server.js",
     "test": "mocha",
-    "test:watch": "npm-watch test"
+    "test:wait": "wait-port localhost:9850 && yarn run test",
+    "test:watch": "npm-watch test:wait"
   }
 }

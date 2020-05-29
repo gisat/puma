@@ -5,6 +5,7 @@ const PgPool = require('./postgresql/PgPool');
 const UserAuthentication = require('./auth/UserAuthentication');
 
 const config = require('./config');
+const db = require('./db');
 
 const initMaster = () => {
 	const PgDatabase = require('./postgresql/PgDatabase');
@@ -37,7 +38,8 @@ const initWorker = () => {
 	const cookieParser = require('cookie-parser');
 	const bodyParser = require('body-parser');
 
-	const pgPool = new PgPool().getPool();
+	db.init();
+	const pgPool = db.getPool();
 
 	const app = express();
 

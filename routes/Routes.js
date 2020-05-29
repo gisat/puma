@@ -26,7 +26,7 @@ class Routes {
 		new PgSpecificController(this._app, this._pgPool, config.pgSchema.specific, this._initRelatedStores);
 		new PgUserController(this._app, this._pgPool, config.pgSchema.user, this._initRelatedStores);
 		new PgDataController(this._app, this._pgPool, this._initRelatedStores);
-		new LoginController(this._app, this._pgPool, config.pgSchema.user);
+		new LoginController(this._app, config.pgSchema.user);
 	}
 }
 

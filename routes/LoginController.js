@@ -1,9 +1,9 @@
 const config = require('../config');
 const logger = require('../common/Logger').applicationWideLogger;
-const bcrypt = require('bcrypt');
 const {SQL} = require('sql-template-strings');
 const jwt = require('jsonwebtoken');
 const userMiddleware = require('../middlewares/user');
+const db = require('../db');
 
 /**
  * @param {Object} user
@@ -36,27 +36,17 @@ function createAuthToken(payload) {
     });
 }
 
-function getUser(pgPool, schema, email, password) {
-    return pgPool
+function getUser(schema, email, password) {
+    return db
         .query(
             SQL`SELECT "key", "password" FROM`
                 .append(` "${schema}"."users" `)
-                .append(SQL`WHERE "email" = ${email}`)
+                .append(
+                    SQL`WHERE "email" = ${email} AND "password" = crypt(${password}, "password")`
+                )
         )
         .then((results) => {
-            if (results.rows.length === 0) {
-                return null;
-            }
-
-            user = results.rows[0];
-
-            return bcrypt.compare(password, user.password).then((result) => {
-                if (!result) {
-                    return null;
-                }
-
-                return user;
-            });
+            return results.rows[0];
         });
 }
 
@@ -65,7 +55,7 @@ function getUser(pgPool, schema, email, password) {
  * to log the user in.
  */
 class LoginController {
-    constructor(app, pgPool, commonSchema) {
+    constructor(app, commonSchema) {
         if (!app) {
             throw new Error(
                 logger.error(
@@ -78,7 +68,6 @@ class LoginController {
         app.post('/api/login/logout', this.logout.bind(this));
         app.post('/api/login/getLoginInfo', this.getLoginInfo.bind(this));
 
-        this.pgPool = pgPool;
         this.schema = commonSchema;
     }
 
@@ -94,13 +83,7 @@ class LoginController {
         const {username, password} = request.body;
 
         try {
-            // const user = await this.pgUsers.verify(username, password);
-            const user = await getUser(
-                this.pgPool,
-                this.schema,
-                username,
-                password
-            );
+            const user = await getUser(this.schema, username, password);
             if (user == null) {
                 response.status(401).json().end();
                 return;
