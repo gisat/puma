@@ -6,7 +6,7 @@ const PgSpecificController = require('../specific/PgSpecificController');
 const PgDataSourcesController = require(`../dataSources/PgDataSourcesController`);
 const PgViewsController = require(`../view/PgViewsController`);
 const PgDataController = require(`../data/PgDataController`);
-const LoginController = require('../routes/LoginController');
+const modulesRouter = require('../modules/index').router;
 
 const config = require(`../config`);
 
@@ -26,7 +26,7 @@ class Routes {
 		new PgSpecificController(this._app, this._pgPool, config.pgSchema.specific, this._initRelatedStores);
 		new PgUserController(this._app, this._pgPool, config.pgSchema.user, this._initRelatedStores);
 		new PgDataController(this._app, this._pgPool, this._initRelatedStores);
-		new LoginController(this._app, config.pgSchema.user);
+		this._app.use(modulesRouter);
 	}
 }
 
