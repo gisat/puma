@@ -9,7 +9,7 @@ function url(path) {
     return 'http://localhost:' + config.clusterPorts[0] + path;
 }
 
-describe('routes/LoginController', function () {
+describe('modules/login', function () {
     describe('login', function () {
         it('login', function (done) {
             fetch(url('/api/login/login'), {
