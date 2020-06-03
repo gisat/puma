@@ -1,5 +1,4 @@
 const {assert} = require('chai');
-const http = require('http');
 const config = require('../../../config');
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
