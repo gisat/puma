@@ -8,6 +8,18 @@ function url(path) {
     return 'http://localhost:' + config.clusterPorts[0] + path;
 }
 
+function createToken(payload) {
+    return jwt.sign(payload, config.jwt.secret);
+}
+
+function createUserAuthHeader(key) {
+    return 'Bearer ' + createToken({key, type: 'user'});
+}
+
+function createGuestAuthHeader(key) {
+    return 'Bearer ' + createToken({key, type: 'guest'});
+}
+
 describe('modules/login', function () {
     describe('login', function () {
         it('login', function () {
@@ -109,8 +121,7 @@ describe('modules/login', function () {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization:
-                        'Bearer ' + jwt.sign({key: 'k3'}, config.jwt.secret),
+                    Authorization: createUserAuthHeader('k3'),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -127,12 +138,9 @@ describe('modules/login', function () {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization:
-                        'Bearer ' +
-                        jwt.sign(
-                            {key: '7c5acddd-3625-46ef-90b3-82f829afb258'},
-                            config.jwt.secret
-                        ),
+                    Authorization: createUserAuthHeader(
+                        '7c5acddd-3625-46ef-90b3-82f829afb258'
+                    ),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -156,12 +164,9 @@ describe('modules/login', function () {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization:
-                        'Bearer ' +
-                        jwt.sign(
-                            {key: '2bf6c1da-991a-4592-acc1-b10192db9363'},
-                            config.jwt.secret
-                        ),
+                    Authorization: createUserAuthHeader(
+                        '2bf6c1da-991a-4592-acc1-b10192db9363'
+                    ),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -185,12 +190,9 @@ describe('modules/login', function () {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization:
-                        'Bearer ' +
-                        jwt.sign(
-                            {key: 'e2f5d20e-2784-4690-a3f0-339c60b04245'},
-                            config.jwt.secret
-                        ),
+                    Authorization: createUserAuthHeader(
+                        'e2f5d20e-2784-4690-a3f0-339c60b04245'
+                    ),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -215,8 +217,7 @@ describe('modules/login', function () {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization:
-                        'Bearer ' + jwt.sign({key: key}, config.jwt.secret),
+                    Authorization: createGuestAuthHeader(key),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -228,7 +229,7 @@ describe('modules/login', function () {
                             email: null,
                             phone: null,
                         },
-                        groups: [],
+                        groups: ['user', 'guest'],
                         permissions: {},
                     });
                 });

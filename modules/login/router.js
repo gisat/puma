@@ -88,7 +88,9 @@ router.get(
         const user = request.user;
         const [userInfo, userGroups] = await Promise.all([
             q.getUserInfoByKey(user.key),
-            q.userGroupsByKey(user.key),
+            user.type === 'guest'
+                ? ['user', 'guest']
+                : q.userGroupsByKey(user.key),
         ]);
 
         response.status(200).json({
