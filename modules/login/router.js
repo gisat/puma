@@ -96,7 +96,7 @@ router.get(
             data: {
                 name: _.get(userInfo, 'name', null),
                 email: _.get(userInfo, 'email', null),
-                // todo: add phone
+                phone: _.get(userInfo, 'phone', null),
             },
             groups: userGroups,
             permissions: {}, // todo

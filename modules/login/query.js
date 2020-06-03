@@ -25,7 +25,7 @@ function getUserInfoByKey(key) {
 
     return db
         .query(
-            SQL`SELECT "email", "name" FROM`
+            SQL`SELECT "email", "name", "phone" FROM`
                 .append(` "${schema}"."users" `)
                 .append(SQL`WHERE "key" = ${key}`)
         )

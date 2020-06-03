@@ -3,11 +3,12 @@
 -- user: e56f3545-57f5-44f9-9094-2750a69ef67e
 
 INSERT INTO "user"."users"
-  ("key", "email", "password")
+  ("key", "email", "password", "phone")
 VALUES
   -- all have password: test
-  ('7c5acddd-3625-46ef-90b3-82f829afb258', 'test@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS'),
-  ('2bf6c1da-991a-4592-acc1-b10192db9363', 'testWithGroups@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS');
+  ('7c5acddd-3625-46ef-90b3-82f829afb258', 'test@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
+  ('2bf6c1da-991a-4592-acc1-b10192db9363', 'testWithGroups@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
+  ('e2f5d20e-2784-4690-a3f0-339c60b04245', 'testWithPhone@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', '+420123456789');
 
 INSERT INTO "user"."userGroups"
   ("userKey", "groupKey")

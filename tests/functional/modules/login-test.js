@@ -10,8 +10,8 @@ function url(path) {
 
 describe('modules/login', function () {
     describe('login', function () {
-        it('login', function (done) {
-            fetch(url('/api/login/login'), {
+        it('login', function () {
+            return fetch(url('/api/login/login'), {
                 method: 'POST',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
@@ -22,14 +22,12 @@ describe('modules/login', function () {
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
-                response.json().then((data) => {
+                return response.json().then((data) => {
                     const decoded = jwt.verify(data.token, config.jwt.secret);
                     assert.strictEqual(
                         decoded.key,
                         '7c5acddd-3625-46ef-90b3-82f829afb258'
                     );
-
-                    done();
                 });
             });
         });
@@ -53,8 +51,8 @@ describe('modules/login', function () {
             ];
 
             tests.forEach((test) => {
-                it(test.name, function (done) {
-                    fetch(url('/api/login/login'), {
+                it(test.name, function () {
+                    return fetch(url('/api/login/login'), {
                         method: 'POST',
                         headers: new fetch.Headers({
                             'Content-Type': 'application/json',
@@ -62,57 +60,52 @@ describe('modules/login', function () {
                         body: JSON.stringify(test.body),
                     }).then((response) => {
                         assert.strictEqual(response.status, 401);
-                        done();
                     });
                 });
             });
         });
     });
 
-    it('loginGuest', function (done) {
-        fetch(url('/api/login/login-guest'), {
+    it('loginGuest', function () {
+        return fetch(url('/api/login/login-guest'), {
             method: 'POST',
             headers: new fetch.Headers({
                 'Content-Type': 'application/json',
             }),
         }).then((response) => {
             assert.strictEqual(response.status, 200);
-            response.json().then((data) => {
+            return response.json().then((data) => {
                 const decoded = jwt.verify(data.token, config.jwt.secret);
                 assert.isString(decoded.key);
-
-                done();
             });
         });
     });
 
-    it('logout', function (done) {
-        fetch(url('/api/login/logout'), {
+    it('logout', function () {
+        return fetch(url('/api/login/logout'), {
             method: 'POST',
             headers: new fetch.Headers({
                 'Content-Type': 'application/json',
             }),
         }).then((response) => {
             assert.strictEqual(response.status, 200);
-            done();
         });
     });
 
     describe('logged', function () {
-        it('guest', function (done) {
-            fetch(url('/rest/logged'), {
+        it('guest', function () {
+            return fetch(url('/rest/logged'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 404);
-                done();
             });
         });
 
-        it('logged user', function (done) {
-            fetch(url('/rest/logged'), {
+        it('logged user', function () {
+            return fetch(url('/rest/logged'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
@@ -121,17 +114,16 @@ describe('modules/login', function () {
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
-                response.json().then((data) => {
+                return response.json().then((data) => {
                     assert.deepStrictEqual(data, {key: 'k3'});
-                    done();
                 });
             });
         });
     });
 
     describe('getLoginInfo', function () {
-        it('logged in user', function (done) {
-            fetch(url('/api/login/getLoginInfo'), {
+        it('logged in user', function () {
+            return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
@@ -144,17 +136,17 @@ describe('modules/login', function () {
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
-                response.json().then((data) => {
+                return response.json().then((data) => {
                     assert.deepStrictEqual(data, {
                         key: '7c5acddd-3625-46ef-90b3-82f829afb258',
                         data: {
                             name: null,
                             email: 'test@example.com',
+                            phone: null,
                         },
                         groups: [],
                         permissions: {},
                     });
-                    done();
                 });
             });
         });
@@ -179,6 +171,7 @@ describe('modules/login', function () {
                         data: {
                             name: null,
                             email: 'testWithGroups@example.com',
+                            phone: null,
                         },
                         groups: ['guest', 'user'],
                         permissions: {},
@@ -187,9 +180,38 @@ describe('modules/login', function () {
             });
         });
 
-        it('gest', function (done) {
+        it('logged in user with phone', function () {
+            return fetch(url('/api/login/getLoginInfo'), {
+                method: 'GET',
+                headers: new fetch.Headers({
+                    'Content-Type': 'application/json',
+                    Authorization:
+                        'Bearer ' +
+                        jwt.sign(
+                            {key: 'e2f5d20e-2784-4690-a3f0-339c60b04245'},
+                            config.jwt.secret
+                        ),
+                }),
+            }).then((response) => {
+                assert.strictEqual(response.status, 200);
+                return response.json().then((data) => {
+                    assert.deepStrictEqual(data, {
+                        key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
+                        data: {
+                            name: null,
+                            email: 'testWithPhone@example.com',
+                            phone: '+420123456789',
+                        },
+                        groups: [],
+                        permissions: {},
+                    });
+                });
+            });
+        });
+
+        it('gest', function () {
             const key = uuid.generate();
-            fetch(url('/api/login/getLoginInfo'), {
+            return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
@@ -198,17 +220,17 @@ describe('modules/login', function () {
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
-                response.json().then((data) => {
+                return response.json().then((data) => {
                     assert.deepStrictEqual(data, {
                         key: key,
                         data: {
                             name: null,
                             email: null,
+                            phone: null,
                         },
                         groups: [],
                         permissions: {},
                     });
-                    done();
                 });
             });
         });
