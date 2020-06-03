@@ -31,8 +31,8 @@ const PgViews = require(`../view/PgViews`);
 
 const PgUsers = require(`../user/PgUsers`);
 const PgGroups = require(`../user/PgGroups`);
-// const PgUserPermissions = require(`../user/PgUserPermissions`);
-// const PgGroupPermissions = require(`../user/PgGroupPermissions`);
+const PgUserPermissions = require('../user/PgUserPermissions');
+const PgGroupPermissions = require('../user/PgGroupPermissions');
 const PgPermissions = require(`../user/PgPermissions`);
 const PgUserGroups = require('../user/PgUserGroups');
 
@@ -102,10 +102,10 @@ class PgDatabase {
 				stores: [
 					PgUsers,
 					PgGroups,
-					// PgUserPermissions,
-					// PgGroupPermissions
-					PgPermissions,
 					PgUserGroups,
+					PgPermissions,
+					PgUserPermissions,
+					PgGroupPermissions,
 				]
 			},
 			{

@@ -6,6 +6,8 @@ const authMiddleware = require('../../middlewares/auth');
 const uuid = require('../../uuid');
 const _ = require('lodash');
 const q = require('./query');
+const PgDatabase = require('../../postgresql/PgDatabase');
+const db = require('../../db');
 
 /**
  * @param {Object} user
@@ -36,6 +38,36 @@ function createAuthToken(payload) {
             }
         );
     });
+}
+
+function formatPermissions(permissions) {
+    const permissionsByResourceType = _.groupBy(
+        permissions,
+        (p) => p.resourceType
+    );
+    const pgDatabase = new PgDatabase(db.getPool());
+    const dataTypesGroupedByType = pgDatabase.getDataTypeStoresGroupedByType();
+
+    const formattedPermissions = {};
+    dataTypesGroupedByType.forEach((dataType) => {
+        const group = dataType.group;
+        if (group == null) {
+            return;
+        }
+        formattedPermissions[group] = {};
+        dataType.stores.forEach((store) => {
+            const resourceType = store.tableName();
+            const permissions = Object.fromEntries(
+                _.map(permissionsByResourceType[resourceType], (v) => [
+                    v.permission,
+                    true,
+                ])
+            );
+            formattedPermissions[group][resourceType] = permissions;
+        });
+    });
+
+    return formattedPermissions;
 }
 
 const router = express.Router();
@@ -88,10 +120,12 @@ router.get(
         const user = request.user;
         const [userInfo, userGroups] = await Promise.all([
             q.getUserInfoByKey(user.key),
-            user.type === 'guest'
-                ? ['user', 'guest']
-                : q.userGroupsByKey(user.key),
+            q.userGroupsByUser(user),
         ]);
+
+        const permissions = await (user.type === 'guest'
+            ? q.groupPermissionsByKeys(userGroups.map((g) => g.key))
+            : q.userPermissionsByKey(user.key));
 
         response.status(200).json({
             key: user.key,
@@ -100,8 +134,8 @@ router.get(
                 email: _.get(userInfo, 'email', null),
                 phone: _.get(userInfo, 'phone', null),
             },
-            groups: userGroups,
-            permissions: {}, // todo
+            groups: userGroups.map((g) => g.name),
+            permissions: formatPermissions(permissions),
         });
     }
 );

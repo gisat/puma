@@ -145,6 +145,7 @@ describe('modules/login', function () {
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
                 return response.json().then((data) => {
+                    delete data.permissions; // skip permission check
                     assert.deepStrictEqual(data, {
                         key: '7c5acddd-3625-46ef-90b3-82f829afb258',
                         data: {
@@ -153,7 +154,6 @@ describe('modules/login', function () {
                             phone: null,
                         },
                         groups: [],
-                        permissions: {},
                     });
                 });
             });
@@ -171,6 +171,7 @@ describe('modules/login', function () {
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
                 return response.json().then((data) => {
+                    delete data.permissions; // skip permission check
                     assert.deepStrictEqual(data, {
                         key: '2bf6c1da-991a-4592-acc1-b10192db9363',
                         data: {
@@ -179,7 +180,6 @@ describe('modules/login', function () {
                             phone: null,
                         },
                         groups: ['guest', 'user'],
-                        permissions: {},
                     });
                 });
             });
@@ -197,6 +197,7 @@ describe('modules/login', function () {
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
                 return response.json().then((data) => {
+                    delete data.permissions; // skip permission check
                     assert.deepStrictEqual(data, {
                         key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
                         data: {
@@ -205,7 +206,81 @@ describe('modules/login', function () {
                             phone: '+420123456789',
                         },
                         groups: [],
-                        permissions: {},
+                    });
+                });
+            });
+        });
+
+        it('logged in user with permissions', function () {
+            return fetch(url('/api/login/getLoginInfo'), {
+                method: 'GET',
+                headers: new fetch.Headers({
+                    'Content-Type': 'application/json',
+                    Authorization: createUserAuthHeader(
+                        '3e3f4300-1336-4043-baa3-b65a025c2d83'
+                    ),
+                }),
+            }).then((response) => {
+                assert.strictEqual(response.status, 200);
+                return response.json().then((data) => {
+                    assert.deepStrictEqual(data, {
+                        key: '3e3f4300-1336-4043-baa3-b65a025c2d83',
+                        data: {
+                            name: null,
+                            email: 'testWithPermissions@example.com',
+                            phone: null,
+                        },
+                        groups: ['test'],
+                        permissions: {
+                            application: {
+                                application: {},
+                                configuration: {},
+                                layerTree: {},
+                            },
+                            dataSources: {
+                                attributeDataSource: {},
+                                dataSource: {},
+                            },
+                            metadata: {
+                                areaTree: {},
+                                areaTreeLevel: {},
+                                attribute: {},
+                                attributeSet: {},
+                                layerTemplate: {},
+                                period: {},
+                                place: {},
+                                scenario: {},
+                                style: {},
+                                tag: {},
+                                case: {
+                                    create: true,
+                                    update: true,
+                                },
+                                scope: {
+                                    delete: true,
+                                },
+                            },
+                            relations: {
+                                areaRelation: {},
+                                attributeDataSourceRelation: {},
+                                spatialDataSourceRelation: {},
+                            },
+                            specific: {
+                                esponFuoreIndicator: {},
+                                lpisChangeCase: {},
+                            },
+                            users: {
+                                groupPermissions: {},
+                                groups: {},
+                                permissions: {},
+                                userGroups: {},
+                                userPermissions: {},
+                                users: {},
+                            },
+                            views: {
+                                view: {},
+                            },
+                        },
                     });
                 });
             });
@@ -229,8 +304,54 @@ describe('modules/login', function () {
                             email: null,
                             phone: null,
                         },
-                        groups: ['user', 'guest'],
-                        permissions: {},
+                        groups: ['guest', 'user'],
+                        permissions: {
+                            application: {
+                                application: {},
+                                configuration: {},
+                                layerTree: {},
+                            },
+                            dataSources: {
+                                attributeDataSource: {},
+                                dataSource: {},
+                            },
+                            metadata: {
+                                areaTree: {},
+                                areaTreeLevel: {},
+                                attribute: {},
+                                attributeSet: {},
+                                layerTemplate: {},
+                                period: {},
+                                place: {},
+                                scenario: {},
+                                style: {},
+                                tag: {},
+                                case: {
+                                    update: true,
+                                },
+                                scope: {},
+                            },
+                            relations: {
+                                areaRelation: {},
+                                attributeDataSourceRelation: {},
+                                spatialDataSourceRelation: {},
+                            },
+                            specific: {
+                                esponFuoreIndicator: {},
+                                lpisChangeCase: {},
+                            },
+                            users: {
+                                groupPermissions: {},
+                                groups: {},
+                                permissions: {},
+                                userGroups: {},
+                                userPermissions: {},
+                                users: {},
+                            },
+                            views: {
+                                view: {},
+                            },
+                        },
                     });
                 });
             });

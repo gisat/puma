@@ -23,6 +23,7 @@ class PgPermissions extends PgCollection {
 			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "resourceKey" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "resourceType" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "permission" TEXT;
 		COMMIT;
 		`;
