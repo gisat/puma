@@ -19,15 +19,22 @@ describe('modules/user', function () {
                 expectedResult: {
                     status: 200,
                     body: {
-                        rows: [
-                            {
-                                key: '7c5acddd-3625-46ef-90b3-82f829afb258',
-                                email: 'test@example.com',
-                                name: null,
-                                phone: null,
-                            },
-                        ],
-                        count: 1,
+                        data: {
+                            users: [
+                                {
+                                    key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                                    data: {
+                                        email: 'test@example.com',
+                                        name: null,
+                                        phone: null,
+                                    },
+                                },
+                            ],
+                        },
+                        total: 1,
+                        limit: 100,
+                        offset: 0,
+                        success: true,
                     },
                 },
             },
@@ -47,21 +54,30 @@ describe('modules/user', function () {
                 expectedResult: {
                     status: 200,
                     body: {
-                        rows: [
-                            {
-                                key: '7c5acddd-3625-46ef-90b3-82f829afb258',
-                                email: 'test@example.com',
-                                name: null,
-                                phone: null,
-                            },
-                            {
-                                email: 'testWithPhone@example.com',
-                                key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
-                                name: null,
-                                phone: '+420123456789',
-                            },
-                        ],
-                        count: 2,
+                        data: {
+                            users: [
+                                {
+                                    key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                                    data: {
+                                        email: 'test@example.com',
+                                        name: null,
+                                        phone: null,
+                                    },
+                                },
+                                {
+                                    key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
+                                    data: {
+                                        email: 'testWithPhone@example.com',
+                                        name: null,
+                                        phone: '+420123456789',
+                                    },
+                                },
+                            ],
+                        },
+                        total: 2,
+                        offset: 0,
+                        limit: 100,
+                        success: true,
                     },
                 },
             },
@@ -81,21 +97,30 @@ describe('modules/user', function () {
                 expectedResult: {
                     status: 200,
                     body: {
-                        rows: [
-                            {
-                                email: 'testWithPhone@example.com',
-                                key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
-                                name: null,
-                                phone: '+420123456789',
-                            },
-                            {
-                                key: '7c5acddd-3625-46ef-90b3-82f829afb258',
-                                email: 'test@example.com',
-                                name: null,
-                                phone: null,
-                            },
-                        ],
-                        count: 2,
+                        data: {
+                            users: [
+                                {
+                                    key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
+                                    data: {
+                                        email: 'testWithPhone@example.com',
+                                        name: null,
+                                        phone: '+420123456789',
+                                    },
+                                },
+                                {
+                                    key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                                    data: {
+                                        email: 'test@example.com',
+                                        name: null,
+                                        phone: null,
+                                    },
+                                },
+                            ],
+                        },
+                        total: 2,
+                        offset: 0,
+                        limit: 100,
+                        success: true,
                     },
                 },
             },

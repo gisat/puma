@@ -48,21 +48,41 @@ const FilteredUserBodySchema = Joi.object().keys({
     offset: Joi.number().integer().default(0),
 });
 
+function formatRow(row) {
+    return {
+        key: row.key,
+        data: _.omit(row, ['key']),
+    };
+}
+
+function formatList(group, {rows, count}, {limit, offset}) {
+    return {
+        data: {
+            [group]: rows.map(formatRow),
+        },
+        success: true,
+        limit: limit,
+        offset: offset,
+        total: count,
+    };
+}
+
 router.post(
     '/rest/user/filtered/users',
     parameters({body: FilteredUserBodySchema}),
     async function (request, response) {
         const parameters = request.parameters.body;
+        const page = {
+            limit: parameters.limit,
+            offset: parameters.offset,
+        };
         const userList = await q.userList({
             sort: parameters.order,
             filter: parameters.filter,
-            page: {
-                limit: parameters.limit,
-                offset: parameters.offset,
-            },
+            page: page,
         });
 
-        response.status(200).json(userList);
+        response.status(200).json(formatList('users', userList, page));
     }
 );
 
