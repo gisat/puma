@@ -24,7 +24,8 @@ class Routes {
 		new PgApplicationController(this._app, this._pgPool, config.pgSchema.application, this._initRelatedStores);
 		new PgViewsController(this._app, this._pgPool, config.pgSchema.views, this._initRelatedStores);
 		new PgSpecificController(this._app, this._pgPool, config.pgSchema.specific, this._initRelatedStores);
-		new PgUserController(this._app, this._pgPool, config.pgSchema.user, this._initRelatedStores);
+		// todo: remove once reimplemented
+		// new PgUserController(this._app, this._pgPool, config.pgSchema.user, this._initRelatedStores);
 		new PgDataController(this._app, this._pgPool, this._initRelatedStores);
 		this._app.use(modulesRouter);
 	}
