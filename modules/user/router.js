@@ -2,6 +2,7 @@ const express = require('express');
 const Joi = require('@hapi/joi');
 const q = require('./query');
 const parameters = require('../../middlewares/parameters');
+const _ = require('lodash');
 
 function createOrderSchema(validColumns) {
     return Joi.array()
@@ -16,12 +17,29 @@ function createOrderSchema(validColumns) {
 
 const router = express.Router();
 
+function stringFilterSchema() {
+    const ValueSchema = Joi.string();
+    const validFilters = ['like', 'in', 'notin', 'eq'];
+
+    return Joi.alternatives().try(
+        ValueSchema,
+        Joi.object().keys({
+            like: ValueSchema,
+            eq: ValueSchema,
+            in: Joi.array().items(ValueSchema),
+            notin: Joi.array().items(ValueSchema),
+        })
+    );
+}
+
+const StringFilterSchema = stringFilterSchema();
+
 const FilteredUserBodySchema = Joi.object().keys({
     filter: Joi.object().default({}).keys({
-        key: Joi.string(),
-        email: Joi.string(),
-        name: Joi.string(),
-        phone: Joi.string(),
+        key: StringFilterSchema,
+        email: StringFilterSchema,
+        name: StringFilterSchema,
+        phone: StringFilterSchema,
     }),
     order: Joi.array()
         .items(createOrderSchema(['key', 'email', 'name', 'phone']))

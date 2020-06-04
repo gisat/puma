@@ -22,13 +22,13 @@ const filterOperatorToSqlExpr = {
     in: function (filter) {
         return qb.expr.in(
             filter.column,
-            filter.value.map((v) => qb.inlineParam(v))
+            filter.value.map((v) => qb.val.inlineParam(v))
         );
     },
     notin: function (filter) {
         return qb.expr.notin(
             filter.column,
-            filter.value.map((v) => qb.inlineParam(v))
+            filter.value.map((v) => qb.val.inlineParam(v))
         );
     },
     eq: function (filter) {
@@ -87,12 +87,12 @@ function filtersToSqlExpr(filters) {
         return {};
     }
 
-    return qb.expr.where(qb.expr.and(...exprs));
+    return qb.where(qb.expr.and(...exprs));
 }
 
 function sortToSqlExpr(requestSort, alias) {
     const exprs = requestSort.map(([field, order]) => {
-        return qb.order(
+        return qb.orderBy(
             `${alias}.${field}`,
             order === 'ascending' ? 'ASC' : 'DESC'
         );
