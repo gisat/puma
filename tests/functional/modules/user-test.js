@@ -197,4 +197,28 @@ describe('modules/user', function () {
             });
         });
     });
+
+    it('PUT /rest/user', function () {
+        return fetch(url('/rest/user'), {
+            method: 'PUT',
+            headers: new fetch.Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                            data: {
+                                phone: '+420111111111',
+                            },
+                        },
+                    ],
+                },
+            }),
+        }).then((response) => {
+            assert.strictEqual(response.status, 200);
+            // todo: test response
+        });
+    });
 });

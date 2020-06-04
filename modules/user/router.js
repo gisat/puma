@@ -127,8 +127,40 @@ router.post(
     }
 );
 
+const UpdateUserSchema = Joi.object().keys({
+    key: Joi.string().uuid().required(),
+    data: Joi.object()
+        .keys({
+            email: Joi.string(),
+            name: Joi.string(),
+            phone: Joi.string(),
+        })
+        .required(),
+});
+
+const UpdateUserBodySchema = Joi.object()
+    .required()
+    .keys({
+        data: Joi.object()
+            .required()
+            .keys({
+                users: Joi.array().required().items(UpdateUserSchema).min(1),
+            }),
+    });
+
+router.put(
+    '/rest/user',
+    parameters({body: UpdateUserBodySchema}),
+    async function (request, response) {
+        const users = request.parameters.body.data.users;
+        const updatedUsers = await q.updateUsers(users);
+
+        // todo: return users
+        response.status(200).json({});
+    }
+);
+
 // todo:
-// router.put('/rest/user', function (request, response) {});
 // router.delete('/rest/user', function (request, response) {});
 
 module.exports = router;

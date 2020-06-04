@@ -158,7 +158,30 @@ function createUsers(users) {
     return db.query(qb.toSql(sqlMap)).then((res) => res.rows);
 }
 
+function updateExprs(userData) {
+    return Object.entries(userData).map(([col, value]) => {
+        return qb.expr.eq(col, qb.val.inlineParam(value));
+    });
+}
+
+function updateUser(client, user) {
+    const sqlMap = qb.merge(
+        qb.update(`${schema}.users`, 'u'),
+        qb.set(updateExprs(user.data)),
+        qb.where(qb.expr.eq('u.key', qb.val.inlineParam(user.key)))
+    );
+
+    return client.query(qb.toSql(sqlMap));
+}
+
+async function updateUsers(users) {
+    return db.transactional(async (client) => {
+        await Promise.all(users.map((u) => updateUser(client, u)));
+    });
+}
+
 module.exports = {
     createUsers,
     userList,
+    updateUsers,
 };
