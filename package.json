@@ -38,13 +38,14 @@
   },
   "watch": {
     "test:wait": {
-      "patterns": "*.js"
+      "patterns": "*.js",
+      "ignore": ["dummy.md"]
     }
   },
   "scripts": {
     "start": "node server.js",
     "start:watch": "nodemon server.js",
-    "test": "mocha",
+    "test": "./bin/load-fixtures && mocha",
     "test:wait": "wait-port localhost:9850 && yarn run test",
     "test:watch": "npm-watch test:wait"
   }

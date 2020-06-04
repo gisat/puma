@@ -7,7 +7,7 @@ function url(path) {
 }
 
 describe('modules/user', function () {
-    describe('/rest/user/filtered/users', function () {
+    describe('POST /rest/user/filtered/users', function () {
         const tests = [
             {
                 name: 'single user',
@@ -142,6 +142,57 @@ describe('modules/user', function () {
                     return response.json().then((data) => {
                         assert.deepStrictEqual(data, test.expectedResult.body);
                     });
+                });
+            });
+        });
+    });
+
+    it('POST /rest/user', function () {
+        return fetch(url('/rest/user'), {
+            method: 'POST',
+            headers: new fetch.Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            data: {
+                                email: 'new@example.com',
+                            },
+                        },
+                        {
+                            key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                            data: {
+                                email: 'newWithKey@example.com',
+                            },
+                        },
+                    ],
+                },
+            }),
+        }).then((response) => {
+            assert.strictEqual(response.status, 201);
+            return response.json().then((data) => {
+                const users = data.data.users;
+
+                const firstUser = users[0];
+                assert.isString(firstUser.key);
+                delete firstUser.key;
+                assert.deepStrictEqual(users[0], {
+                    data: {
+                        email: 'new@example.com',
+                        name: null,
+                        phone: null,
+                    },
+                });
+
+                assert.deepStrictEqual(users[1], {
+                    key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                    data: {
+                        email: 'newWithKey@example.com',
+                        name: null,
+                        phone: null,
+                    },
                 });
             });
         });

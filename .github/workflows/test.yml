@@ -19,5 +19,4 @@ jobs:
             - run: 'npm install'
             - run: 'npm run start &'
             - run: './node_modules/.bin/wait-port -t 5000 localhost:9850'
-            - run: './bin/load-fixtures'
             - run: 'npm test'

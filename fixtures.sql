@@ -3,6 +3,8 @@ BEGIN;
 -- guest: 52ddabec-d01a-49a0-bb4d-5ff931bd346e
 -- user: e56f3545-57f5-44f9-9094-2750a69ef67e
 
+TRUNCATE "user"."users", "user"."groups", "user"."permissions" CASCADE;
+
 INSERT INTO "user"."users"
   ("key", "email", "password", "phone")
 VALUES
@@ -15,6 +17,8 @@ VALUES
 INSERT INTO "user"."groups"
   ("key", "name")
 VALUES
+  ('52ddabec-d01a-49a0-bb4d-5ff931bd346e', 'guest'),
+  ('e56f3545-57f5-44f9-9094-2750a69ef67e', 'user'),
   ('742b6f3f-a77e-4267-8e96-1e4cea96dec3', 'test');
 
 INSERT INTO "user"."userGroups"

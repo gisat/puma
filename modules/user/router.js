@@ -3,6 +3,7 @@ const Joi = require('@hapi/joi');
 const q = require('./query');
 const parameters = require('../../middlewares/parameters');
 const _ = require('lodash');
+const uuid = require('../../uuid');
 
 function createOrderSchema(validColumns) {
     return Joi.array()
@@ -17,8 +18,7 @@ function createOrderSchema(validColumns) {
 
 const router = express.Router();
 
-function stringFilterSchema() {
-    const ValueSchema = Joi.string();
+function stringFilterSchema(ValueSchema) {
     const validFilters = ['like', 'in', 'notin', 'eq'];
 
     return Joi.alternatives().try(
@@ -32,11 +32,12 @@ function stringFilterSchema() {
     );
 }
 
-const StringFilterSchema = stringFilterSchema();
+const StringFilterSchema = stringFilterSchema(Joi.string());
+const UuidFilterSchema = stringFilterSchema(Joi.string().uuid());
 
 const FilteredUserBodySchema = Joi.object().keys({
     filter: Joi.object().default({}).keys({
-        key: StringFilterSchema,
+        key: UuidFilterSchema,
         email: StringFilterSchema,
         name: StringFilterSchema,
         phone: StringFilterSchema,
@@ -55,11 +56,15 @@ function formatRow(row) {
     };
 }
 
+function formatData(group, rows) {
+    return {
+        [group]: rows.map(formatRow),
+    };
+}
+
 function formatList(group, {rows, count}, {limit, offset}) {
     return {
-        data: {
-            [group]: rows.map(formatRow),
-        },
+        data: formatData(group, rows),
         success: true,
         limit: limit,
         offset: offset,
@@ -86,8 +91,43 @@ router.post(
     }
 );
 
+const CreateUserSchema = Joi.object().keys({
+    key: Joi.string()
+        .uuid()
+        .default(() => uuid.generate()),
+    data: Joi.object()
+        .keys({
+            email: Joi.string().default(null),
+            name: Joi.string().default(null),
+            phone: Joi.string().default(null),
+        })
+        .required(),
+});
+
+const CreateUserBodySchema = Joi.object()
+    .required()
+    .keys({
+        data: Joi.object()
+            .required()
+            .keys({
+                users: Joi.array().required().items(CreateUserSchema).min(1),
+            }),
+    });
+
+router.post(
+    '/rest/user',
+    parameters({body: CreateUserBodySchema}),
+    async function (request, response) {
+        const users = request.parameters.body.data.users;
+        const createdUsers = await q.createUsers(users);
+
+        response.status(201).json({
+            data: formatData('users', createdUsers),
+        });
+    }
+);
+
 // todo:
-// router.post('/rest/user', function (request, response) {});
 // router.put('/rest/user', function (request, response) {});
 // router.delete('/rest/user', function (request, response) {});
 

@@ -139,6 +139,26 @@ function userList({sort, filter, page}) {
     }));
 }
 
+const createColumns = ['email', 'name', 'phone', 'key'];
+
+function userValues(user, columns) {
+    const data = {...user.data, ...{key: user.key}};
+
+    return columns.map((c) => qb.val.inlineParam(data[c]));
+}
+
+function createUsers(users) {
+    const sqlMap = qb.merge(
+        qb.insertInto(`${schema}.users`),
+        qb.columns(createColumns),
+        qb.values(users.map((u) => userValues(u, createColumns))),
+        qb.returning(createColumns)
+    );
+
+    return db.query(qb.toSql(sqlMap)).then((res) => res.rows);
+}
+
 module.exports = {
+    createUsers,
     userList,
 };
