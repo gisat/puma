@@ -1,60 +1,56 @@
 const Joi = require('@hapi/joi');
 const apiUtil = require('../util/api');
 
-function parameters(parameters) {
-    return function (request, response, next) {
-        const responseParameters = {};
+function parameters(request, response, next) {
+    const parameters = request.match.data.parameters;
 
-        const QuerySchema = parameters.query;
-        if (QuerySchema != null) {
-            const validationResult = QuerySchema.validate(request.query, {
-                abortEarly: false,
-            });
-            if (validationResult.error) {
-                return response
-                    .status(400)
-                    .json(
-                        apiUtil.createQueryErrorObject(validationResult.error)
-                    );
-            }
+    const responseParameters = {};
 
-            responseParameters.query = validationResult.value;
+    const QuerySchema = parameters.query;
+    if (QuerySchema != null) {
+        const validationResult = QuerySchema.validate(request.query, {
+            abortEarly: false,
+        });
+        if (validationResult.error) {
+            return response
+                .status(400)
+                .json(apiUtil.createQueryErrorObject(validationResult.error));
         }
 
-        const BodySchema = parameters.body;
-        if (BodySchema != null) {
-            const validationResult = BodySchema.validate(request.body, {
-                abortEarly: false,
-            });
-            if (validationResult.error) {
-                return response
-                    .status(400)
-                    .json(
-                        apiUtil.createDataErrorObject(validationResult.error)
-                    );
-            }
+        responseParameters.query = validationResult.value;
+    }
 
-            responseParameters.body = validationResult.value;
+    const BodySchema = parameters.body;
+    if (BodySchema != null) {
+        const validationResult = BodySchema.validate(request.body, {
+            abortEarly: false,
+        });
+        if (validationResult.error) {
+            return response
+                .status(400)
+                .json(apiUtil.createDataErrorObject(validationResult.error));
         }
 
-        const PathSchema = parameters.path;
-        if (PathSchema != null) {
-            const validationResult = PathSchema.validate(request.params, {
-                abortEarly: false,
-            });
+        responseParameters.body = validationResult.value;
+    }
 
-            if (validationResult.error) {
-                return response
-                    .status(400)
-                    .json({errors: [{title: 'Invalid path params'}]});
-            }
+    const PathSchema = parameters.path;
+    if (PathSchema != null) {
+        const validationResult = PathSchema.validate(request.params, {
+            abortEarly: false,
+        });
 
-            responseParameters.path = validationResult.value;
+        if (validationResult.error) {
+            return response
+                .status(400)
+                .json({errors: [{title: 'Invalid path params'}]});
         }
 
-        request.parameters = responseParameters;
-        next();
-    };
+        responseParameters.path = validationResult.value;
+    }
+
+    request.parameters = responseParameters;
+    next();
 }
 
 module.exports = parameters;

@@ -8,6 +8,10 @@ function routerFromApi(api) {
         apiRouter[handler.method].call(
             apiRouter,
             handler.path,
+            function (request, response, next) {
+                request.match = {data: handler};
+                next();
+            },
             ...middlewares,
             handler.handler
         );

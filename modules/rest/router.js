@@ -38,9 +38,10 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}/filtered/${type}`,
             method: 'post',
-            middlewares: [
-                parameters({body: schema.listBody(plan, group, type)}),
-            ],
+            parameters: {
+                body: schema.listBody(plan, group, type),
+            },
+            middlewares: [parameters],
             handler: async function (request, response) {
                 const parameters = request.parameters.body;
                 const page = {
@@ -59,9 +60,10 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}`,
             method: 'post',
-            middlewares: [
-                parameters({body: schema.createBody(plan, group, type)}),
-            ],
+            parameters: {
+                body: schema.createBody(plan, group, type),
+            },
+            middlewares: [parameters],
             handler: async function (request, response) {
                 const records = request.parameters.body.data[type];
                 const createdKeys = await q.create(plan, group, type, records);
@@ -76,9 +78,10 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}`,
             method: 'put',
-            middlewares: [
-                parameters({body: schema.updateBody(plan, group, type)}),
-            ],
+            parameters: {
+                body: schema.updateBody(plan, group, type),
+            },
+            middlewares: [parameters],
             handler: async function (request, response) {
                 const records = request.parameters.body.data.users;
                 await q.update(plan, group, type, records);
@@ -93,9 +96,8 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}`,
             method: 'delete',
-            middlewares: [
-                parameters({body: schema.deleteBody(plan, group, type)}),
-            ],
+            parameters: {body: schema.deleteBody(plan, group, type)},
+            middlewares: [parameters],
             handler: async function (request, response) {
                 const records = request.parameters.body.data[type];
                 await q.deleteRecords(plan, group, type, records);

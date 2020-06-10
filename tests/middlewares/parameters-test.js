@@ -96,27 +96,24 @@ describe('routing/middleware/parameters', function () {
         tests.forEach((test) => {
             it(test.name, function (done) {
                 const app = express();
-                app.get('/url', parameters(test.parameters), function (
-                    request,
-                    response
-                ) {
+                app.get('/url', parameters, function (request, response) {
                     response.status(200).json({
                         route: 'url',
                         parameters: request.parameters,
                     });
                 });
-                app.get(
-                    '/url/:one/:count',
-                    parameters(test.parameters),
-                    function (request, response) {
-                        response.status(200).json({
-                            route: 'url_one_count',
-                            parameters: request.parameters,
-                        });
-                    }
-                );
+                app.get('/url/:one/:count', parameters, function (
+                    request,
+                    response
+                ) {
+                    response.status(200).json({
+                        route: 'url_one_count',
+                        parameters: request.parameters,
+                    });
+                });
 
                 const request = httpMocks.createRequest(test.request);
+                request.match = {data: {parameters: test.parameters}};
                 const response = httpMocks.createResponse({
                     eventEmitter: EventEmitter,
                 });
@@ -214,27 +211,24 @@ describe('routing/middleware/parameters', function () {
         tests.forEach((test) => {
             it(test.name, function (done) {
                 const app = express();
-                app.get('/url', parameters(test.parameters), function (
-                    request,
-                    response
-                ) {
+                app.get('/url', parameters, function (request, response) {
                     response.status(200).json({
                         route: 'url',
                         parameters: request.parameters,
                     });
                 });
-                app.get(
-                    '/url/:one/:count',
-                    parameters(test.parameters),
-                    function (request, response) {
-                        response.status(200).json({
-                            route: 'url_one_count',
-                            parameters: request.parameters,
-                        });
-                    }
-                );
+                app.get('/url/:one/:count', parameters, function (
+                    request,
+                    response
+                ) {
+                    response.status(200).json({
+                        route: 'url_one_count',
+                        parameters: request.parameters,
+                    });
+                });
 
                 const request = httpMocks.createRequest(test.request);
+                request.match = {data: {parameters: test.parameters}};
                 const response = httpMocks.createResponse({
                     eventEmitter: EventEmitter,
                 });

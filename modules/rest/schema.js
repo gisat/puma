@@ -24,23 +24,27 @@ function listBody(plan, group, type) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.columns;
 
-    return Joi.object().keys({
-        filter: _.mapValues(columns, colFilterSchema),
-        order: Joi.array()
-            .items(
-                Joi.array()
-                    .length(2)
-                    .items(
-                        Joi.string()
-                            .valid(...Object.keys(columns))
-                            .required(),
-                        Joi.string().required().valid('ascending', 'descending')
-                    )
-            )
-            .default([]),
-        limit: Joi.number().integer().default(100),
-        offset: Joi.number().integer().default(0),
-    });
+    return Joi.object()
+        .meta({className: `${type}List`})
+        .keys({
+            filter: _.mapValues(columns, colFilterSchema),
+            order: Joi.array()
+                .items(
+                    Joi.array()
+                        .length(2)
+                        .items(
+                            Joi.string()
+                                .valid(...Object.keys(columns))
+                                .required(),
+                            Joi.string()
+                                .required()
+                                .valid('ascending', 'descending')
+                        )
+                )
+                .default([]),
+            limit: Joi.number().integer().default(100),
+            offset: Joi.number().integer().default(0),
+        });
 }
 
 function dataColCreateSchema(col) {
@@ -58,6 +62,7 @@ function createBody(plan, group, type) {
     const dataCols = _.omit(columns, ['key']);
 
     return Joi.object()
+        .meta({className: `${type}Create`})
         .required()
         .keys({
             data: Joi.object()
@@ -98,6 +103,7 @@ function updateBody(plan, group, type) {
     const dataCols = _.omit(columns, ['key']);
 
     return Joi.object()
+        .meta({className: `${type}Update`})
         .required()
         .keys({
             data: Joi.object()
@@ -130,6 +136,7 @@ function deleteBody(plan, group, type) {
     const keyCol = columns.key;
 
     return Joi.object()
+        .meta({className: `${type}Delete`})
         .required()
         .keys({
             data: Joi.object()

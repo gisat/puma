@@ -2,7 +2,21 @@ const j2s = require('joi-to-swagger');
 const _ = require('lodash');
 
 function operationFromHandler(handler) {
-    return handler.swagger || {};
+    const operation = {};
+
+    const BodySchema = _.get(handler, ['parameters', 'body']);
+    if (BodySchema != null) {
+        const ref = _.get(j2s(BodySchema, {}), ['swagger', '$ref']);
+        operation.requestBody = {
+            content: {
+                'application/json': {
+                    schema: {$ref: ref},
+                },
+            },
+        };
+    }
+
+    return operation;
 }
 
 function pathsFromApi(api) {
@@ -17,6 +31,13 @@ function pathsFromApi(api) {
     });
 
     return paths;
+}
+
+function schemasFromApi(api) {
+    return _.filter(
+        _.map(api, (handler) => _.get(handler, ['parameters', 'body'])),
+        (v) => v != null
+    );
 }
 
 function configFromApi(api) {
@@ -40,6 +61,13 @@ function configFromApi(api) {
                     bearerFormat: 'JWT',
                 },
             },
+            schemas: Object.assign(
+                {},
+                ..._.map(
+                    schemasFromApi(api),
+                    (schema) => j2s(schema, {}).components.schemas
+                )
+            ),
         },
     };
 }
