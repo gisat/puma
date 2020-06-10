@@ -1,9 +1,22 @@
 const {assert} = require('chai');
 const fetch = require('node-fetch');
 const config = require('../../../config');
+const db = require('../../../db');
+const _ = require('lodash');
+
+db.init();
 
 function url(path) {
     return 'http://localhost:' + config.clusterPorts[0] + path;
+}
+
+function userExists(key) {
+    return db
+        .query(
+            `SELECT "key" FROM "${config.pgSchema.user}"."users" WHERE key = $1`,
+            [key]
+        )
+        .then((res) => res.rows.length > 0);
 }
 
 describe('modules/user', function () {
@@ -147,8 +160,8 @@ describe('modules/user', function () {
         });
     });
 
-    it('POST /rest/user', function () {
-        return fetch(url('/rest/user'), {
+    it('POST /rest/user', async function () {
+        const response = await fetch(url('/rest/user'), {
             method: 'POST',
             headers: new fetch.Headers({
                 'Content-Type': 'application/json',
@@ -170,36 +183,41 @@ describe('modules/user', function () {
                     ],
                 },
             }),
-        }).then((response) => {
-            assert.strictEqual(response.status, 201);
-            return response.json().then((data) => {
-                const users = data.data.users;
+        });
 
-                const firstUser = users[0];
-                assert.isString(firstUser.key);
-                delete firstUser.key;
-                assert.deepStrictEqual(users[0], {
-                    data: {
-                        email: 'new@example.com',
-                        name: null,
-                        phone: null,
-                    },
-                });
+        assert.strictEqual(response.status, 201);
 
-                assert.deepStrictEqual(users[1], {
-                    key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
-                    data: {
-                        email: 'newWithKey@example.com',
-                        name: null,
-                        phone: null,
+        const data = await response.json();
+        data.data.users = _.sortBy(data.data.users, (u) => u.data.email);
+        delete data.data.users[0].key;
+
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [
+                    {
+                        data: {
+                            email: 'new@example.com',
+                            name: null,
+                            phone: null,
+                        },
                     },
-                });
-            });
+                    {
+                        key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                        data: {
+                            email: 'newWithKey@example.com',
+                            name: null,
+                            phone: null,
+                        },
+                    },
+                ],
+            },
+            success: true,
+            total: 2,
         });
     });
 
-    it('PUT /rest/user', function () {
-        return fetch(url('/rest/user'), {
+    it('PUT /rest/user', async function () {
+        const response = await fetch(url('/rest/user'), {
             method: 'PUT',
             headers: new fetch.Headers({
                 'Content-Type': 'application/json',
@@ -216,9 +234,51 @@ describe('modules/user', function () {
                     ],
                 },
             }),
-        }).then((response) => {
-            assert.strictEqual(response.status, 200);
-            // todo: test response
         });
+
+        assert.strictEqual(response.status, 200);
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [
+                    {
+                        data: {
+                            email: 'newWithKey@example.com',
+                            name: null,
+                            phone: '+420111111111',
+                        },
+                        key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                    },
+                ],
+            },
+            success: true,
+            total: 1,
+        });
+    });
+
+    it('DELETE /rest/user', async function () {
+        const userKey = '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8';
+
+        // guard
+        assert.isTrue(await userExists(userKey));
+
+        const response = await fetch(url('/rest/user'), {
+            method: 'DELETE',
+            headers: new fetch.Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: userKey,
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 200);
+        assert.isFalse(await userExists(userKey));
     });
 });

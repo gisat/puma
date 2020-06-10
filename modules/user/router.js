@@ -62,14 +62,19 @@ function formatData(group, rows) {
     };
 }
 
-function formatList(group, {rows, count}, {limit, offset}) {
-    return {
+function formatList(group, {rows, count}, page) {
+    const data = {
         data: formatData(group, rows),
         success: true,
-        limit: limit,
-        offset: offset,
         total: count,
     };
+
+    if (page != null) {
+        data.limit = page.limit;
+        data.offset = page.offset;
+    }
+
+    return data;
 }
 
 router.post(
@@ -119,11 +124,13 @@ router.post(
     parameters({body: CreateUserBodySchema}),
     async function (request, response) {
         const users = request.parameters.body.data.users;
-        const createdUsers = await q.createUsers(users);
+        const createdKeys = await q.createUsers(users);
 
-        response.status(201).json({
-            data: formatData('users', createdUsers),
+        const createdUsers = await q.userList({
+            filter: {key: {in: createdKeys}},
         });
+
+        response.status(201).json(formatList('users', createdUsers));
     }
 );
 
@@ -153,14 +160,39 @@ router.put(
     parameters({body: UpdateUserBodySchema}),
     async function (request, response) {
         const users = request.parameters.body.data.users;
-        const updatedUsers = await q.updateUsers(users);
+        await q.updateUsers(users);
 
-        // todo: return users
-        response.status(200).json({});
+        const updatedUsers = await q.userList({
+            filter: {key: {in: users.map((u) => u.key)}},
+        });
+
+        response.status(200).json(formatList('users', updatedUsers));
     }
 );
 
-// todo:
-// router.delete('/rest/user', function (request, response) {});
+const DeleteUserSchema = Joi.object().keys({
+    key: Joi.string().uuid().required(),
+});
+
+const DeleteUserBodySchema = Joi.object()
+    .required()
+    .keys({
+        data: Joi.object()
+            .required()
+            .keys({
+                users: Joi.array().required().items(DeleteUserSchema).min(1),
+            }),
+    });
+
+router.delete(
+    '/rest/user',
+    parameters({body: DeleteUserBodySchema}),
+    async function (request, response) {
+        const users = request.parameters.body.data.users;
+        await q.deleteUsers(users);
+
+        response.status(200).json({});
+    }
+);
 
 module.exports = router;

@@ -31,6 +31,10 @@ async function transactional(cb) {
 }
 
 function init() {
+    if (pool != null) {
+        return;
+    }
+
     pool = new PgPool().getPool();
 }
 

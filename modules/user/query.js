@@ -91,6 +91,10 @@ function filtersToSqlExpr(filters) {
 }
 
 function sortToSqlExpr(requestSort, alias) {
+    if (requestSort == null) {
+        return {};
+    }
+
     const exprs = requestSort.map(([field, order]) => {
         return qb.orderBy(
             `${alias}.${field}`,
@@ -103,6 +107,14 @@ function sortToSqlExpr(requestSort, alias) {
     }
 
     return qb.append(...exprs);
+}
+
+function pageToQuery(page) {
+    if (page == null) {
+        return {};
+    }
+
+    return qb.merge(qb.limit(page.limit), qb.offset(page.offset));
 }
 
 function userList({sort, filter, page}) {
@@ -124,8 +136,7 @@ function userList({sort, filter, page}) {
                     qb.merge(
                         sqlMap,
                         sortToSqlExpr(sort, 'u'),
-                        qb.limit(page.limit),
-                        qb.offset(page.offset)
+                        pageToQuery(page)
                     )
                 )
             )
@@ -152,10 +163,10 @@ function createUsers(users) {
         qb.insertInto(`${schema}.users`),
         qb.columns(createColumns),
         qb.values(users.map((u) => userValues(u, createColumns))),
-        qb.returning(createColumns)
+        qb.returning(['key'])
     );
 
-    return db.query(qb.toSql(sqlMap)).then((res) => res.rows);
+    return db.query(qb.toSql(sqlMap)).then((res) => res.rows.map((r) => r.key));
 }
 
 function updateExprs(userData) {
@@ -180,8 +191,20 @@ async function updateUsers(users) {
     });
 }
 
+async function deleteUsers(users) {
+    const keys = users.map((u) => u.key);
+    if (keys.length === 0) {
+        return;
+    }
+
+    await db.query(`DELETE FROM "${schema}"."users" WHERE key = ANY($1)`, [
+        keys,
+    ]);
+}
+
 module.exports = {
     createUsers,
     userList,
     updateUsers,
+    deleteUsers,
 };
