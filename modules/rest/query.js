@@ -1,9 +1,6 @@
-const qb = require('@imatic/pgqb');
-const config = require('../../config');
 const db = require('../../db');
+const qb = require('@imatic/pgqb');
 const _ = require('lodash');
-
-const schema = config.pgSchema.user;
 
 const filterOperatorToSqlExpr = {
     timefrom: function (filter) {
@@ -117,16 +114,19 @@ function pageToQuery(page) {
     return qb.merge(qb.limit(page.limit), qb.offset(page.offset));
 }
 
-function userList({sort, filter, page}) {
+function list(plan, group, type, {sort, filter, page}) {
+    const typeSchema = plan[group][type];
+    const columns = typeSchema.context.list.columns;
+
     const sqlMap = qb.merge(
-        qb.select(['u.key', 'u.email', 'u.name', 'u.phone']),
-        qb.from(`${schema}.users`, 'u'),
-        filtersToSqlExpr(createFilters(filter, 'u'))
+        qb.select(columns.map((c) => 't.' + c)),
+        qb.from(`${group}.${type}`, 't'),
+        filtersToSqlExpr(createFilters(filter, 't'))
     );
 
     const countSqlMap = qb.merge(
         sqlMap,
-        qb.select([qb.expr.as(qb.expr.fn('COUNT', 'u.key'), 'count')])
+        qb.select([qb.expr.as(qb.expr.fn('COUNT', 't.key'), 'count')])
     );
 
     return Promise.all([
@@ -135,7 +135,7 @@ function userList({sort, filter, page}) {
                 qb.toSql(
                     qb.merge(
                         sqlMap,
-                        sortToSqlExpr(sort, 'u'),
+                        sortToSqlExpr(sort, 't'),
                         pageToQuery(page)
                     )
                 )
@@ -150,61 +150,63 @@ function userList({sort, filter, page}) {
     }));
 }
 
-const createColumns = ['email', 'name', 'phone', 'key'];
-
-function userValues(user, columns) {
-    const data = {...user.data, ...{key: user.key}};
+function recordValues(record, columns) {
+    const data = {...record.data, ...{key: record.key}};
 
     return columns.map((c) => qb.val.inlineParam(data[c]));
 }
 
-function createUsers(users) {
+function create(plan, group, type, records) {
+    const columns = ['key', ...Object.keys(records[0].data)];
+
     const sqlMap = qb.merge(
-        qb.insertInto(`${schema}.users`),
-        qb.columns(createColumns),
-        qb.values(users.map((u) => userValues(u, createColumns))),
+        qb.insertInto(`${group}.${type}`),
+        qb.columns(columns),
+        qb.values(records.map((r) => recordValues(r, columns))),
         qb.returning(['key'])
     );
 
     return db.query(qb.toSql(sqlMap)).then((res) => res.rows.map((r) => r.key));
 }
 
-function updateExprs(userData) {
-    return Object.entries(userData).map(([col, value]) => {
+function updateExprs(recordData) {
+    return Object.entries(recordData).map(([col, value]) => {
         return qb.expr.eq(col, qb.val.inlineParam(value));
     });
 }
 
-function updateUser(client, user) {
+function updateRecord(group, type, client, record) {
     const sqlMap = qb.merge(
-        qb.update(`${schema}.users`, 'u'),
-        qb.set(updateExprs(user.data)),
-        qb.where(qb.expr.eq('u.key', qb.val.inlineParam(user.key)))
+        qb.update(`${group}.${type}`, 'r'),
+        qb.set(updateExprs(record.data)),
+        qb.where(qb.expr.eq('r.key', qb.val.inlineParam(record.key)))
     );
 
     return client.query(qb.toSql(sqlMap));
 }
 
-async function updateUsers(users) {
+async function update(plan, group, type, records) {
     return db.transactional(async (client) => {
-        await Promise.all(users.map((u) => updateUser(client, u)));
+        await Promise.all(
+            records.map((r) => updateRecord(group, type, client, r))
+        );
     });
 }
 
-async function deleteUsers(users) {
-    const keys = users.map((u) => u.key);
+async function deleteRecords(plan, group, type, records) {
+    const keys = records.map((r) => r.key);
     if (keys.length === 0) {
         return;
     }
 
-    await db.query(`DELETE FROM "${schema}"."users" WHERE key = ANY($1)`, [
+    await db.query(`DELETE FROM "${group}"."${type}" WHERE key = ANY($1)`, [
         keys,
     ]);
 }
 
 module.exports = {
-    createUsers,
-    userList,
-    updateUsers,
-    deleteUsers,
+    list,
+    create,
+    update,
+    deleteRecords,
 };

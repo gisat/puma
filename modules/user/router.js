@@ -1,9 +1,9 @@
 const express = require('express');
-const q = require('./query');
 const parameters = require('../../middlewares/parameters');
 const _ = require('lodash');
 const plan = require('../rest/plan');
 const schema = require('../rest/schema');
+const q = require('../rest/query');
 
 const router = express.Router();
 
@@ -44,7 +44,7 @@ router.post(
             limit: parameters.limit,
             offset: parameters.offset,
         };
-        const userList = await q.userList({
+        const userList = await q.list(plan, 'user', 'users', {
             sort: parameters.order,
             filter: parameters.filter,
             page: page,
@@ -59,9 +59,9 @@ router.post(
     parameters({body: schema.createBody(plan, 'user', 'users')}),
     async function (request, response) {
         const users = request.parameters.body.data.users;
-        const createdKeys = await q.createUsers(users);
+        const createdKeys = await q.create(plan, 'user', 'users', users);
 
-        const createdUsers = await q.userList({
+        const createdUsers = await q.list(plan, 'user', 'users', {
             filter: {key: {in: createdKeys}},
         });
 
@@ -74,9 +74,9 @@ router.put(
     parameters({body: schema.updateBody(plan, 'user', 'users')}),
     async function (request, response) {
         const users = request.parameters.body.data.users;
-        await q.updateUsers(users);
+        await q.update(plan, 'user', 'users', users);
 
-        const updatedUsers = await q.userList({
+        const updatedUsers = await q.list(plan, 'user', 'users', {
             filter: {key: {in: users.map((u) => u.key)}},
         });
 
@@ -89,7 +89,7 @@ router.delete(
     parameters({body: schema.deleteBody(plan, 'user', 'users')}),
     async function (request, response) {
         const users = request.parameters.body.data.users;
-        await q.deleteUsers(users);
+        await q.deleteRecords(plan, 'user', 'users', users);
 
         response.status(200).json({});
     }

@@ -15,6 +15,11 @@ const uuid = require('../../uuid');
 module.exports = {
     user: {
         users: {
+            context: {
+                list: {
+                    columns: ['key', 'email', 'name', 'phone'],
+                },
+            },
             columns: {
                 key: {
                     defaultValue: () => uuid.generate(),
