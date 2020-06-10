@@ -10,8 +10,7 @@ const filterOperatorToSqlExpr = {
         return qb.expr.lte(filter.column, qb.val.inlineParam(filter.value));
     },
     like: function (filter) {
-        // todo: ilike
-        return qb.expr.like(
+        return qb.expr.ilike(
             filter.column,
             qb.val.inlineParam(`%${filter.value}%`)
         );
