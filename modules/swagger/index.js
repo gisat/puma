@@ -16,6 +16,11 @@ function operationFromHandler(handler) {
         };
     }
 
+    const responses = _.get(handler, 'responses', {});
+    operation.responses = _.mapValues(responses, (response) =>
+        Object.assign({}, {description: ''}, response)
+    );
+
     return operation;
 }
 

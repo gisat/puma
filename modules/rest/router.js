@@ -41,6 +41,7 @@ function create(plan, group, type) {
             parameters: {
                 body: schema.listBody(plan, group, type),
             },
+            responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
                 const parameters = request.parameters.body;
@@ -63,6 +64,7 @@ function create(plan, group, type) {
             parameters: {
                 body: schema.createBody(plan, group, type),
             },
+            responses: {201: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
                 const records = request.parameters.body.data[type];
@@ -81,6 +83,7 @@ function create(plan, group, type) {
             parameters: {
                 body: schema.updateBody(plan, group, type),
             },
+            responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
                 const records = request.parameters.body.data.users;
@@ -97,6 +100,7 @@ function create(plan, group, type) {
             path: `/rest/${group}`,
             method: 'delete',
             parameters: {body: schema.deleteBody(plan, group, type)},
+            responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
                 const records = request.parameters.body.data[type];
