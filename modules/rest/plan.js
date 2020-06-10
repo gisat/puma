@@ -11,12 +11,26 @@ const uuid = require('../../uuid');
  *
  * ### defaultValue
  *   Default value if none was provided (https://hapi.dev/module/joi/api/#anydefaultvalue).
+ *
+ * ## context
+ *
+ * Configuration for specific operations
+ *
+ * ### columns
+ *
+ * Allowed columns during this operation.
  */
 module.exports = {
     user: {
         users: {
             context: {
                 list: {
+                    columns: ['key', 'email', 'name', 'phone'],
+                },
+                create: {
+                    columns: ['key', 'email', 'name', 'phone'],
+                },
+                update: {
                     columns: ['key', 'email', 'name', 'phone'],
                 },
             },

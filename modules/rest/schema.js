@@ -49,7 +49,10 @@ function dataColCreateSchema(col) {
 
 function createBody(plan, group, type) {
     const typeSchema = plan[group][type];
-    const columns = typeSchema.columns;
+    const columns = _.pick(
+        typeSchema.columns,
+        typeSchema.context.create.columns
+    );
 
     const keyCol = columns.key;
     const dataCols = _.omit(columns, ['key']);
@@ -86,7 +89,10 @@ function dataColUpdateSchema(col) {
 
 function updateBody(plan, group, type) {
     const typeSchema = plan[group][type];
-    const columns = typeSchema.columns;
+    const columns = _.pick(
+        typeSchema.columns,
+        typeSchema.context.update.columns
+    );
 
     const keyCol = columns.key;
     const dataCols = _.omit(columns, ['key']);
