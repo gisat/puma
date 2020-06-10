@@ -21,7 +21,9 @@ function operationFromHandler(handler) {
         Object.assign({}, {description: ''}, response)
     );
 
-    return operation;
+    const override = _.get(handler, 'swagger', {});
+
+    return Object.assign({}, operation, override);
 }
 
 function pathsFromApi(api) {

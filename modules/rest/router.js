@@ -38,6 +38,9 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}/filtered/${type}`,
             method: 'post',
+            swagger: {
+                tags: [group],
+            },
             parameters: {
                 body: schema.listBody(plan, group, type),
             },
@@ -61,6 +64,9 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}`,
             method: 'post',
+            swagger: {
+                tags: [group],
+            },
             parameters: {
                 body: schema.createBody(plan, group, type),
             },
@@ -80,6 +86,9 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}`,
             method: 'put',
+            swagger: {
+                tags: [group],
+            },
             parameters: {
                 body: schema.updateBody(plan, group, type),
             },
@@ -99,6 +108,9 @@ function create(plan, group, type) {
         {
             path: `/rest/${group}`,
             method: 'delete',
+            swagger: {
+                tags: [group],
+            },
             parameters: {body: schema.deleteBody(plan, group, type)},
             responses: {200: {}},
             middlewares: [parameters],
