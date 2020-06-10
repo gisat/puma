@@ -34,81 +34,88 @@ function formatList(group, {rows, count}, page) {
 }
 
 function create(plan, group, type) {
-    const router = express.Router();
+    return [
+        {
+            path: `/rest/${group}/filtered/${type}`,
+            method: 'post',
+            middlewares: [
+                parameters({body: schema.listBody(plan, group, type)}),
+            ],
+            handler: async function (request, response) {
+                const parameters = request.parameters.body;
+                const page = {
+                    limit: parameters.limit,
+                    offset: parameters.offset,
+                };
+                const recordList = await q.list(plan, group, type, {
+                    sort: parameters.order,
+                    filter: parameters.filter,
+                    page: page,
+                });
 
-    router.post(
-        `/rest/${group}/filtered/${type}`,
-        parameters({body: schema.listBody(plan, group, type)}),
-        async function (request, response) {
-            const parameters = request.parameters.body;
-            const page = {
-                limit: parameters.limit,
-                offset: parameters.offset,
-            };
-            const recordList = await q.list(plan, group, type, {
-                sort: parameters.order,
-                filter: parameters.filter,
-                page: page,
-            });
+                response.status(200).json(formatList(type, recordList, page));
+            },
+        },
+        {
+            path: `/rest/${group}`,
+            method: 'post',
+            middlewares: [
+                parameters({body: schema.createBody(plan, group, type)}),
+            ],
+            handler: async function (request, response) {
+                const records = request.parameters.body.data[type];
+                const createdKeys = await q.create(plan, group, type, records);
 
-            response.status(200).json(formatList(type, recordList, page));
-        }
-    );
+                const createdRecords = await q.list(plan, group, type, {
+                    filter: {key: {in: createdKeys}},
+                });
 
-    router.post(
-        `/rest/${group}`,
-        parameters({body: schema.createBody(plan, group, type)}),
-        async function (request, response) {
-            const records = request.parameters.body.data[type];
-            const createdKeys = await q.create(plan, group, type, records);
+                response.status(201).json(formatList(type, createdRecords));
+            },
+        },
+        {
+            path: `/rest/${group}`,
+            method: 'put',
+            middlewares: [
+                parameters({body: schema.updateBody(plan, group, type)}),
+            ],
+            handler: async function (request, response) {
+                const records = request.parameters.body.data.users;
+                await q.update(plan, group, type, records);
 
-            const createdRecords = await q.list(plan, group, type, {
-                filter: {key: {in: createdKeys}},
-            });
+                const updatedUsers = await q.list(plan, group, type, {
+                    filter: {key: {in: records.map((u) => u.key)}},
+                });
 
-            response.status(201).json(formatList(type, createdRecords));
-        }
-    );
+                response.status(200).json(formatList(type, updatedUsers));
+            },
+        },
+        {
+            path: `/rest/${group}`,
+            method: 'delete',
+            middlewares: [
+                parameters({body: schema.deleteBody(plan, group, type)}),
+            ],
+            handler: async function (request, response) {
+                const records = request.parameters.body.data[type];
+                await q.deleteRecords(plan, group, type, records);
 
-    router.put(
-        `/rest/${group}`,
-        parameters({body: schema.updateBody(plan, group, type)}),
-        async function (request, response) {
-            const records = request.parameters.body.data.users;
-            await q.update(plan, group, type, records);
-
-            const updatedUsers = await q.list(plan, group, type, {
-                filter: {key: {in: records.map((u) => u.key)}},
-            });
-
-            response.status(200).json(formatList(type, updatedUsers));
-        }
-    );
-
-    router.delete(
-        `/rest/${group}`,
-        parameters({body: schema.deleteBody(plan, group, type)}),
-        async function (request, response) {
-            const records = request.parameters.body.data[type];
-            await q.deleteRecords(plan, group, type, records);
-
-            response.status(200).json({});
-        }
-    );
-
-    return router;
+                response.status(200).json({});
+            },
+        },
+    ];
 }
 
 function createAll(plan) {
-    const router = express.Router();
+    const handlers = [];
 
     _.forEach(plan, function (g, group) {
         _.forEach(g, function (t, type) {
-            router.use(create(plan, group, type));
+            handlers.push(...create(plan, group, type));
         });
     });
 
-    return router;
+    return handlers;
 }
 
 module.exports = {

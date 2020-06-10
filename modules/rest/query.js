@@ -47,7 +47,7 @@ const filterOperatorToSqlExpr = {
  */
 function createFilters(requestFilter, alias) {
     const filters = [];
-    Object.entries(requestFilter).forEach(([field, filterData]) => {
+    _.forEach(requestFilter, (filterData, field) => {
         const column = `${alias}.${field}`;
 
         if (_.isObject(filterData)) {
