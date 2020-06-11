@@ -36,6 +36,10 @@ const filterOperatorToSqlExpr = {
     },
 };
 
+function getDb(client) {
+    return client || db;
+}
+
 /**
  * Converts filters to the structure:
  * {
@@ -113,7 +117,7 @@ function pageToQuery(page) {
     return qb.merge(qb.limit(page.limit), qb.offset(page.offset));
 }
 
-function list(plan, group, type, {sort, filter, page}) {
+function list({plan, group, type, client}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
 
@@ -127,6 +131,8 @@ function list(plan, group, type, {sort, filter, page}) {
         sqlMap,
         qb.select([qb.expr.as(qb.expr.fn('COUNT', 't.key'), 'count')])
     );
+
+    const db = getDb(client);
 
     return Promise.all([
         db
@@ -155,7 +161,7 @@ function recordValues(record, columns) {
     return columns.map((c) => qb.val.inlineParam(data[c]));
 }
 
-function create(plan, group, type, records) {
+function create({plan, group, type, client}, records) {
     const columns = ['key', ...Object.keys(records[0].data)];
 
     const sqlMap = qb.merge(
@@ -165,7 +171,9 @@ function create(plan, group, type, records) {
         qb.returning(['key'])
     );
 
-    return db.query(qb.toSql(sqlMap)).then((res) => res.rows.map((r) => r.key));
+    return getDb(client)
+        .query(qb.toSql(sqlMap))
+        .then((res) => res.rows.map((r) => r.key));
 }
 
 function updateExprs(recordData) {
@@ -184,23 +192,23 @@ function updateRecord(group, type, client, record) {
     return client.query(qb.toSql(sqlMap));
 }
 
-async function update(plan, group, type, records) {
-    return db.transactional(async (client) => {
+async function update({plan, group, type, client}, records) {
+    return getDb(client).transactional(async (client) => {
         await Promise.all(
             records.map((r) => updateRecord(group, type, client, r))
         );
     });
 }
 
-async function deleteRecords(plan, group, type, records) {
+async function deleteRecords({group, type, client}, records) {
     const keys = records.map((r) => r.key);
     if (keys.length === 0) {
         return;
     }
 
-    await db.query(`DELETE FROM "${group}"."${type}" WHERE key = ANY($1)`, [
-        keys,
-    ]);
+    await getDb(
+        client
+    ).query(`DELETE FROM "${group}"."${type}" WHERE key = ANY($1)`, [keys]);
 }
 
 module.exports = {

@@ -15,6 +15,9 @@ function query(queryTextOrConfig, values) {
  */
 async function transactional(cb) {
     const client = await pool.connect();
+    client.transactional = async function (cb) {
+        return cb(client);
+    };
 
     try {
         await client.query('BEGIN');

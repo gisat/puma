@@ -2,6 +2,7 @@ const parameters = require('../../middlewares/parameters');
 const _ = require('lodash');
 const schema = require('./schema');
 const q = require('./query');
+const db = require('../../db');
 
 function formatRow(row) {
     return {
@@ -68,11 +69,14 @@ function createGroup(plan, group) {
                     limit: parameters.limit,
                     offset: parameters.offset,
                 };
-                const recordList = await q.list(plan, group, type, {
-                    sort: parameters.order,
-                    filter: parameters.filter,
-                    page: page,
-                });
+                const recordList = await q.list(
+                    {plan, group, type},
+                    {
+                        sort: parameters.order,
+                        filter: parameters.filter,
+                        page: page,
+                    }
+                );
 
                 response.status(200).json(formatList(type, recordList, page));
             },
@@ -89,25 +93,27 @@ function createGroup(plan, group) {
             responses: {201: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
-                // todo: transactional, find out proper format in case of multiple types
+                // todo: find out proper format in case of multiple types
 
                 const data = request.parameters.body.data;
-                const records = await Promise.all(
-                    _.map(data, async function (records, type) {
-                        const createdKeys = await q.create(
-                            plan,
-                            group,
-                            type,
-                            records
-                        );
+                const records = await db.transactional(async function (client) {
+                    return await Promise.all(
+                        _.map(data, async function (records, type) {
+                            const createdKeys = await q.create(
+                                {plan, group, type, client},
+                                records
+                            );
+                            const createdRecords = await q.list(
+                                {plan, group, type, client},
+                                {
+                                    filter: {key: {in: createdKeys}},
+                                }
+                            );
 
-                        const createdRecords = await q.list(plan, group, type, {
-                            filter: {key: {in: createdKeys}},
-                        });
-
-                        return createdRecords;
-                    })
-                );
+                            return createdRecords;
+                        })
+                    );
+                });
                 const recordsByType = _.zipObject(_.keys(data), records);
 
                 response.status(201).json(formatList2(recordsByType));
@@ -125,25 +131,30 @@ function createGroup(plan, group) {
             responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
-                // todo: transactional, find out proper format in case of multiple types
+                // todo: find out proper format in case of multiple types
 
                 const data = request.parameters.body.data;
-                const records = await Promise.all(
-                    _.map(data, async function (records, type) {
-                        const createdKeys = await q.update(
-                            plan,
-                            group,
-                            type,
-                            records
-                        );
+                const records = await db.transactional(async function (client) {
+                    return await Promise.all(
+                        _.map(data, async function (records, type) {
+                            await q.update(
+                                {plan, group, type, client},
+                                records
+                            );
 
-                        const updatedRecords = await q.list(plan, group, type, {
-                            filter: {key: {in: records.map((u) => u.key)}},
-                        });
+                            const updatedRecords = await q.list(
+                                {plan, group, type, client},
+                                {
+                                    filter: {
+                                        key: {in: records.map((u) => u.key)},
+                                    },
+                                }
+                            );
 
-                        return updatedRecords;
-                    })
-                );
+                            return updatedRecords;
+                        })
+                    );
+                });
                 const recordsByType = _.zipObject(_.keys(data), records);
 
                 response.status(200).json(formatList2(recordsByType));
@@ -159,16 +170,19 @@ function createGroup(plan, group) {
             responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
-                // todo: transactional
-
-                await Promise.all(
-                    _.map(request.parameters.body.data, async function (
-                        records,
-                        type
-                    ) {
-                        await q.deleteRecords(plan, group, type, records);
-                    })
-                );
+                await db.transactional(async function (client) {
+                    await Promise.all(
+                        _.map(request.parameters.body.data, async function (
+                            records,
+                            type
+                        ) {
+                            await q.deleteRecords(
+                                {plan, group, type, client},
+                                records
+                            );
+                        })
+                    );
+                });
 
                 response.status(200).json({});
             },
