@@ -13,10 +13,10 @@ const PgDataSourcesCrud = require(`../dataSources/PgDataSourcesCrud`);
 const PgRelationsCrud = require(`../relations/PgRelationsCrud`);
 
 class TacrGeoinvazeImporter {
-	constructor(customPgPool) {
-		this._pgPool = customPgPool.pool();
+	constructor(pgPool) {
+		this._pgPool = pgPool;
 
-		this._pgUsers = new PgUsers(customPgPool, config.pgSchema.data);
+		this._pgUsers = new PgUsers(pgPool, config.pgSchema.data);
 		this._pgMetadataCrud = new PgMetadataCrud(this._pgPool, config.pgSchema.metadata);
 		this._pgDataSourceCrud = new PgDataSourcesCrud(this._pgPool, config.pgSchema.dataSources);
 		this._pgRelationsCrud = new PgRelationsCrud(this._pgPool, config.pgSchema.relations);
@@ -51,7 +51,7 @@ class TacrGeoinvazeImporter {
 			})
 	}
 
-	import() {
+	import(options) {
 		let user;
 		let speciesLayersToImport = {};
 		let geoserverLayers;
@@ -84,8 +84,20 @@ class TacrGeoinvazeImporter {
 				})
 			})
 			.then((pgCases) => {
-				let rasters = fs.readdirSync(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/rasters`);
-				let vectors = fs.readdirSync(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/vectors`);
+				let rasters = [];
+				let vectors = [];
+
+				try {
+					rasters = fs.readdirSync(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/rasters`);
+				} catch (e) {
+
+				}
+
+				try {
+					vectors = fs.readdirSync(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/vectors`);
+				} catch (e) {
+
+				}
 
 				_.each(pgCases, (pgCase) => {
 					let speciesName = pgCase.data.nameInternal.toLowerCase().replace(/\ /g, '_');
@@ -134,7 +146,7 @@ class TacrGeoinvazeImporter {
 						}
 
 						this.reprojectFile(
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/vectors/${vectorLayer}`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/vectors/${vectorLayer}`,
 							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${vectorLayerName}.shp`,
 							config.projectSpecific.tacrGeoinvaze.transformation.source,
 							config.projectSpecific.tacrGeoinvaze.transformation.target,
@@ -148,7 +160,7 @@ class TacrGeoinvazeImporter {
 							this.getLayerDefaultStyleNameByLayerName(vectorLayerName)
 						);
 
-						await this.createPantherDataForLayer(vectorLayerName, data.caseKey, `vector`, user);
+						await this.createPantherDataForLayer(vectorLayerName, data.caseKey, `vector`, user, options.year, options.quarter);
 
 						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
 					}
@@ -171,11 +183,12 @@ class TacrGeoinvazeImporter {
 						await this.removeExistingRasterUploads(rasterLayerName, user);
 
 						this.reprojectFile(
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/rasters/${rasterLayer}`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/rasters/${rasterLayer}`,
 							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.tif`,
 							config.projectSpecific.tacrGeoinvaze.transformation.source,
 							config.projectSpecific.tacrGeoinvaze.transformation.target,
-							`raster`
+							`raster`,
+							config.projectSpecific.tacrGeoinvaze.transformation.raster.noData
 						);
 
 						await this.importLayerIntoGeoserver(rasterLayerName, `raster`);
@@ -185,21 +198,21 @@ class TacrGeoinvazeImporter {
 							this.getLayerDefaultStyleNameByLayerName(rasterLayerName)
 						);
 
-						await this.createPantherDataForLayer(rasterLayerName, data.caseKey, `raster`, user);
+						await this.createPantherDataForLayer(rasterLayerName, data.caseKey, `raster`, user, options.year, options.quarter);
 
 						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
 					}
 				}
-			})
-			.then(() => {
-				return fse.ensureFile(`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/.imported`);
 			});
 	}
 
-	createPantherDataForLayer(layerName, caseKey, type, user) {
-		let periodString = this.getPeriodStringFromLayerName(layerName);
-		let yearString = this.getYearFromPeriodString(periodString);
-		let quarterString = this.getQuarterFromPeriodStrin(periodString);
+	createPantherDataForLayer(layerName, caseKey, type, user, year, quarter) {
+		// let periodString = this.getPeriodStringFromLayerName(layerName);
+		// let yearString = this.getYearFromPeriodString(periodString);
+		// let quarterString = this.getQuarterFromPeriodStrin(periodString);
+
+		let yearString = String(year);
+		let quarterString = `Q${quarter}`;
 
 		let pantherPeriod, pantherSpatialDataSource, pantherSpatialDataSourceRelation;
 		let pantherLayerTemplateKey = this.getLayerTemplateKeyByLayerName(layerName);
@@ -574,7 +587,7 @@ class TacrGeoinvazeImporter {
 		});
 	}
 
-	reprojectFile(source, destination, sourceSrs, targetSrs, type) {
+	reprojectFile(source, destination, sourceSrs, targetSrs, type, noDataValue = -9999) {
 		if (type === `vector`) {
 			child_process.execSync(
 				`ogr2ogr -f "ESRI Shapefile" `
@@ -588,6 +601,7 @@ class TacrGeoinvazeImporter {
 				`gdalwarp `
 				+ `-t_srs ${targetSrs} `
 				+ `-s_srs ${sourceSrs} `
+				+ `-dstnodata ${noDataValue} `
 				+ `${source} `
 				+ `${destination}`
 			);

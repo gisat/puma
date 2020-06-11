@@ -137,7 +137,7 @@ new PgDatabase(pool.pool())
 		return new PrepareForInternalUser(config.pgSchema.data).run();
 	})
 	.then(() => {
-		return new TacrGeoinvazeImporter(pool).run();
+		// return new TacrGeoinvazeImporter(pool).run();
 	})
 	// .then(() => {
 	// 	return new SymbologyToPostgreSqlMigration(config.postgreSqlSchema).run();

@@ -71,6 +71,8 @@ const PgViewsController = require(`../view/PgViewsController`);
 
 const ExportController = require(`../export/ExportController`);
 
+const GeoinvImportController = require('../integration/GeoinvImportController');
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -171,6 +173,8 @@ module.exports = function(app) {
 	new GeoserverProxyController(app, pool, config.postgreSqlSchema, mongo);
 
 	new ExportController(app, pool);
+
+	new GeoinvImportController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
