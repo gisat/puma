@@ -40,6 +40,42 @@ describe('modules/user', function () {
                                         email: 'test@example.com',
                                         name: null,
                                         phone: null,
+                                        groupKeys: null,
+                                        permissionKeys: null,
+                                    },
+                                },
+                            ],
+                        },
+                        total: 1,
+                        limit: 100,
+                        offset: 0,
+                        success: true,
+                    },
+                },
+            },
+            {
+                name: 'single user with groups',
+                body: {
+                    filter: {
+                        key: '2bf6c1da-991a-4592-acc1-b10192db9363',
+                    },
+                },
+                expectedResult: {
+                    status: 200,
+                    body: {
+                        data: {
+                            users: [
+                                {
+                                    key: '2bf6c1da-991a-4592-acc1-b10192db9363',
+                                    data: {
+                                        email: 'testWithGroups@example.com',
+                                        name: null,
+                                        phone: null,
+                                        groupKeys: [
+                                            '52ddabec-d01a-49a0-bb4d-5ff931bd346e',
+                                            'e56f3545-57f5-44f9-9094-2750a69ef67e',
+                                        ],
+                                        permissionKeys: null,
                                     },
                                 },
                             ],
@@ -75,6 +111,8 @@ describe('modules/user', function () {
                                         email: 'test@example.com',
                                         name: null,
                                         phone: null,
+                                        groupKeys: null,
+                                        permissionKeys: null,
                                     },
                                 },
                                 {
@@ -83,6 +121,8 @@ describe('modules/user', function () {
                                         email: 'testWithPhone@example.com',
                                         name: null,
                                         phone: '+420123456789',
+                                        groupKeys: null,
+                                        permissionKeys: null,
                                     },
                                 },
                             ],
@@ -118,6 +158,8 @@ describe('modules/user', function () {
                                         email: 'testWithPhone@example.com',
                                         name: null,
                                         phone: '+420123456789',
+                                        groupKeys: null,
+                                        permissionKeys: null,
                                     },
                                 },
                                 {
@@ -126,6 +168,8 @@ describe('modules/user', function () {
                                         email: 'test@example.com',
                                         name: null,
                                         phone: null,
+                                        groupKeys: null,
+                                        permissionKeys: null,
                                     },
                                 },
                             ],
@@ -199,6 +243,8 @@ describe('modules/user', function () {
                             email: 'new@example.com',
                             name: null,
                             phone: null,
+                            groupKeys: null,
+                            permissionKeys: null,
                         },
                     },
                     {
@@ -207,6 +253,8 @@ describe('modules/user', function () {
                             email: 'newWithKey@example.com',
                             name: null,
                             phone: null,
+                            groupKeys: null,
+                            permissionKeys: null,
                         },
                     },
                 ],
@@ -246,6 +294,8 @@ describe('modules/user', function () {
                             email: 'newWithKey@example.com',
                             name: null,
                             phone: '+420111111111',
+                            groupKeys: null,
+                            permissionKeys: null,
                         },
                         key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
                     },

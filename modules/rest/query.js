@@ -117,6 +117,43 @@ function pageToQuery(page) {
     return qb.merge(qb.limit(page.limit), qb.offset(page.offset));
 }
 
+function relationsQuery({plan, group, type}, alias) {
+    const relations = plan[group][type].relations;
+
+    const queries = _.map(relations, (rel, name) => {
+        switch (rel.type) {
+            case 'manyToMany':
+                const relAlias = 'rel_' + name;
+                const column = name + 'Keys';
+                const ownKey = `${relAlias}.${rel.ownKey}`;
+                const inverseKey = `${relAlias}.${rel.inverseKey}`;
+
+                return qb.merge(
+                    qb.select([
+                        qb.val.raw(
+                            `ARRAY_AGG("${relAlias}"."${rel.inverseKey}") FILTER (WHERE "${relAlias}"."${rel.inverseKey}" IS NOT NULL) AS "${column}"`
+                        ),
+                    ]),
+                    qb.joins(
+                        qb.leftJoin(
+                            rel.relationTable,
+                            relAlias,
+                            qb.expr.eq(ownKey, `${alias}.key`)
+                        )
+                    )
+                );
+        }
+
+        throw new Error(`Unspported relation type: ${rel.type}`);
+    });
+
+    if (queries.length === 0) {
+        return {};
+    }
+
+    return qb.append(...queries);
+}
+
 function list({plan, group, type, client}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
@@ -138,10 +175,14 @@ function list({plan, group, type, client}, {sort, filter, page}) {
         db
             .query(
                 qb.toSql(
-                    qb.merge(
-                        sqlMap,
-                        sortToSqlExpr(sort, 't'),
-                        pageToQuery(page)
+                    qb.append(
+                        qb.merge(
+                            sqlMap,
+                            qb.groupBy(['t.key']),
+                            sortToSqlExpr(sort, 't'),
+                            pageToQuery(page)
+                        ),
+                        relationsQuery({plan, group, type}, 't')
                     )
                 )
             )

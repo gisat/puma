@@ -12,6 +12,8 @@ const uuid = require('../../uuid');
  * ### defaultValue (optional)
  *   Default value if none was provided (https://hapi.dev/module/joi/api/#anydefaultvalue).
  *
+ * ## relations
+ *
  * ## context (required)
  *
  * Configuration for specific operations. Supported operations are: `list`, `create`, `update`.
@@ -50,6 +52,20 @@ module.exports = {
                 phone: {
                     defaultValue: null,
                     schema: Joi.string(),
+                },
+            },
+            relations: {
+                group: {
+                    type: 'manyToMany',
+                    relationTable: 'user.userGroups',
+                    ownKey: 'userKey',
+                    inverseKey: 'groupKey',
+                },
+                permission: {
+                    type: 'manyToMany',
+                    relationTable: 'user.userPermissions',
+                    ownKey: 'userKey',
+                    inverseKey: 'permissionKey',
                 },
             },
         },
