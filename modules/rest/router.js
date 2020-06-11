@@ -17,26 +17,15 @@ function formatData(group, rows) {
     };
 }
 
-function formatList(group, {rows, count}, page) {
-    const data = {
-        data: formatData(group, rows),
-        success: true,
-        total: count,
-    };
-
-    if (page != null) {
-        data.limit = page.limit;
-        data.offset = page.offset;
-    }
-
-    return data;
-}
-
-function formatList2(recordsByType, page) {
+function formatList(recordsByType, page) {
     const data = {
         data: _.mapValues(recordsByType, (r) => r.rows.map(formatRow)),
         success: true,
-        total: _.reduce(recordsByType, (res, next) => res + next.count, 0),
+        total: _.reduce(
+            recordsByType,
+            (res, next) => Math.max(res, next.count),
+            0
+        ),
     };
 
     if (page != null) {
@@ -94,7 +83,9 @@ function createGroup(plan, group) {
                     })
                 );
 
-                response.status(200).json(formatList(type, recordList, page));
+                response
+                    .status(200)
+                    .json(formatList({[type]: recordList}, page));
             },
         },
         {
@@ -109,8 +100,6 @@ function createGroup(plan, group) {
             responses: {201: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
-                // todo: find out proper format in case of multiple types
-
                 const data = request.parameters.body.data;
                 const records = await db.transactional(async function (client) {
                     return await Promise.all(
@@ -132,7 +121,7 @@ function createGroup(plan, group) {
                 });
                 const recordsByType = _.zipObject(_.keys(data), records);
 
-                response.status(201).json(formatList2(recordsByType));
+                response.status(201).json(formatList(recordsByType));
             },
         },
         {
@@ -147,8 +136,6 @@ function createGroup(plan, group) {
             responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
-                // todo: find out proper format in case of multiple types
-
                 const data = request.parameters.body.data;
                 const records = await db.transactional(async function (client) {
                     return await Promise.all(
@@ -173,7 +160,7 @@ function createGroup(plan, group) {
                 });
                 const recordsByType = _.zipObject(_.keys(data), records);
 
-                response.status(200).json(formatList2(recordsByType));
+                response.status(200).json(formatList(recordsByType));
             },
         },
         {
