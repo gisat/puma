@@ -53,5 +53,27 @@ module.exports = {
                 },
             },
         },
+        groups: {
+            context: {
+                list: {
+                    columns: ['key', 'name'],
+                },
+                create: {
+                    columns: ['key', 'name'],
+                },
+                update: {
+                    columns: ['key', 'name'],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                name: {
+                    schema: Joi.string(),
+                },
+            },
+        },
     },
 };

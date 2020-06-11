@@ -16,6 +16,16 @@ function operationFromHandler(handler) {
         };
     }
 
+    const PathSchema = _.get(handler, ['parameters', 'path']);
+    if (PathSchema != null) {
+        operation.parameters = _.map(
+            j2s(PathSchema, {}).swagger.properties,
+            function (schema, property) {
+                return {in: 'path', name: property, required: true, schema};
+            }
+        );
+    }
+
     const responses = _.get(handler, 'responses', {});
     operation.responses = _.mapValues(responses, (response) =>
         Object.assign({}, {description: ''}, response)
@@ -26,13 +36,20 @@ function operationFromHandler(handler) {
     return Object.assign({}, operation, override);
 }
 
+/**
+ * Converts expres `:param` to swagger `{param}`
+ */
+function expressPathToSwaggerPath(path) {
+    return path.replace(/:(\w+)/g, '{$1}');
+}
+
 function pathsFromApi(api) {
     const paths = {};
 
     api.forEach((handler) => {
         _.set(
             paths,
-            [handler.path, handler.method],
+            [expressPathToSwaggerPath(handler.path), handler.method],
             operationFromHandler(handler)
         );
     });
