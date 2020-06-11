@@ -50,6 +50,7 @@ async function userMiddleware(request, response, next) {
         }
 
         request.user = verifiedToken;
+        request.authToken = token;
         next();
     } catch (err) {
         response.status(401).end();

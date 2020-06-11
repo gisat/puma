@@ -12,12 +12,24 @@ function createToken(payload) {
     return jwt.sign(payload, config.jwt.secret);
 }
 
+function createUserToken(key) {
+    return createToken({key, type: 'user'});
+}
+
+function createGuestToken(key) {
+    return createToken({key, type: 'guest'});
+}
+
+function createAuthHeader(token) {
+    return 'Bearer ' + token;
+}
+
 function createUserAuthHeader(key) {
-    return 'Bearer ' + createToken({key, type: 'user'});
+    return createAuthHeader(createUserToken(key));
 }
 
 function createGuestAuthHeader(key) {
-    return 'Bearer ' + createToken({key, type: 'guest'});
+    return createAuthHeader(createGuestToken(key));
 }
 
 describe('modules/login', function () {
@@ -134,13 +146,14 @@ describe('modules/login', function () {
 
     describe('getLoginInfo', function () {
         it('logged in user', function () {
+            const token = createUserToken(
+                '7c5acddd-3625-46ef-90b3-82f829afb258'
+            );
             return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization: createUserAuthHeader(
-                        '7c5acddd-3625-46ef-90b3-82f829afb258'
-                    ),
+                    Authorization: createAuthHeader(token),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -153,20 +166,21 @@ describe('modules/login', function () {
                             email: 'test@example.com',
                             phone: null,
                         },
-                        groups: [],
+                        authToken: token,
                     });
                 });
             });
         });
 
         it('logged in user with groups', function () {
+            const token = createUserToken(
+                '2bf6c1da-991a-4592-acc1-b10192db9363'
+            );
             return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization: createUserAuthHeader(
-                        '2bf6c1da-991a-4592-acc1-b10192db9363'
-                    ),
+                    Authorization: createAuthHeader(token),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -179,20 +193,21 @@ describe('modules/login', function () {
                             email: 'testWithGroups@example.com',
                             phone: null,
                         },
-                        groups: ['guest', 'user'],
+                        authToken: token,
                     });
                 });
             });
         });
 
         it('logged in user with phone', function () {
+            const token = createUserToken(
+                'e2f5d20e-2784-4690-a3f0-339c60b04245'
+            );
             return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization: createUserAuthHeader(
-                        'e2f5d20e-2784-4690-a3f0-339c60b04245'
-                    ),
+                    Authorization: createAuthHeader(token),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -205,20 +220,21 @@ describe('modules/login', function () {
                             email: 'testWithPhone@example.com',
                             phone: '+420123456789',
                         },
-                        groups: [],
+                        authToken: token,
                     });
                 });
             });
         });
 
         it('logged in user with permissions', function () {
+            const token = createUserToken(
+                '3e3f4300-1336-4043-baa3-b65a025c2d83'
+            );
             return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization: createUserAuthHeader(
-                        '3e3f4300-1336-4043-baa3-b65a025c2d83'
-                    ),
+                    Authorization: createAuthHeader(token),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -230,28 +246,10 @@ describe('modules/login', function () {
                             email: 'testWithPermissions@example.com',
                             phone: null,
                         },
-                        groups: ['test'],
                         permissions: {
-                            application: {
-                                application: {},
-                                configuration: {},
-                                layerTree: {},
-                            },
-                            dataSources: {
-                                attributeDataSource: {},
-                                dataSource: {},
-                            },
+                            application: {},
+                            dataSources: {},
                             metadata: {
-                                areaTree: {},
-                                areaTreeLevel: {},
-                                attribute: {},
-                                attributeSet: {},
-                                layerTemplate: {},
-                                period: {},
-                                place: {},
-                                scenario: {},
-                                style: {},
-                                tag: {},
                                 case: {
                                     create: true,
                                     update: true,
@@ -260,27 +258,12 @@ describe('modules/login', function () {
                                     delete: true,
                                 },
                             },
-                            relations: {
-                                areaRelation: {},
-                                attributeDataSourceRelation: {},
-                                spatialDataSourceRelation: {},
-                            },
-                            specific: {
-                                esponFuoreIndicator: {},
-                                lpisChangeCase: {},
-                            },
-                            users: {
-                                groupPermissions: {},
-                                groups: {},
-                                permissions: {},
-                                userGroups: {},
-                                userPermissions: {},
-                                users: {},
-                            },
-                            views: {
-                                view: {},
-                            },
+                            relations: {},
+                            specific: {},
+                            users: {},
+                            views: {},
                         },
+                        authToken: token,
                     });
                 });
             });
@@ -288,11 +271,12 @@ describe('modules/login', function () {
 
         it('gest', function () {
             const key = uuid.generate();
+            const token = createGuestToken(key);
             return fetch(url('/api/login/getLoginInfo'), {
                 method: 'GET',
                 headers: new fetch.Headers({
                     'Content-Type': 'application/json',
-                    Authorization: createGuestAuthHeader(key),
+                    Authorization: createAuthHeader(token),
                 }),
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
@@ -304,54 +288,20 @@ describe('modules/login', function () {
                             email: null,
                             phone: null,
                         },
-                        groups: ['guest', 'user'],
                         permissions: {
-                            application: {
-                                application: {},
-                                configuration: {},
-                                layerTree: {},
-                            },
-                            dataSources: {
-                                attributeDataSource: {},
-                                dataSource: {},
-                            },
+                            application: {},
+                            dataSources: {},
                             metadata: {
-                                areaTree: {},
-                                areaTreeLevel: {},
-                                attribute: {},
-                                attributeSet: {},
-                                layerTemplate: {},
-                                period: {},
-                                place: {},
-                                scenario: {},
-                                style: {},
-                                tag: {},
                                 case: {
                                     update: true,
                                 },
-                                scope: {},
                             },
-                            relations: {
-                                areaRelation: {},
-                                attributeDataSourceRelation: {},
-                                spatialDataSourceRelation: {},
-                            },
-                            specific: {
-                                esponFuoreIndicator: {},
-                                lpisChangeCase: {},
-                            },
-                            users: {
-                                groupPermissions: {},
-                                groups: {},
-                                permissions: {},
-                                userGroups: {},
-                                userPermissions: {},
-                                users: {},
-                            },
-                            views: {
-                                view: {},
-                            },
+                            relations: {},
+                            specific: {},
+                            users: {},
+                            views: {},
                         },
+                        authToken: token,
                     });
                 });
             });

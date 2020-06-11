@@ -57,6 +57,10 @@ function formatPermissions(permissions) {
         formattedPermissions[group] = {};
         dataType.stores.forEach((store) => {
             const resourceType = store.tableName();
+            if (permissionsByResourceType[resourceType] == null) {
+                return;
+            }
+
             const permissions = Object.fromEntries(
                 _.map(permissionsByResourceType[resourceType], (v) => [
                     v.permission,
@@ -112,9 +116,23 @@ router.post('/api/login/logout', function (request, response) {
     response.status(200).end();
 });
 
+async function autoLogin(request, response, next) {
+    if (request.user != null) {
+        return next();
+    }
+
+    const user = {key: uuid.generate(), type: 'guest'};
+    const token = await createAuthToken(tokenPayload(user));
+
+    request.user = user;
+    request.authToken = token;
+    next();
+}
+
 router.get(
     '/api/login/getLoginInfo',
     userMiddleware,
+    autoLogin,
     authMiddleware,
     async function (request, response) {
         const user = request.user;
@@ -134,8 +152,8 @@ router.get(
                 email: _.get(userInfo, 'email', null),
                 phone: _.get(userInfo, 'phone', null),
             },
-            groups: userGroups.map((g) => g.name),
             permissions: formatPermissions(permissions),
+            authToken: request.authToken,
         });
     }
 );
