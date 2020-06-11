@@ -74,6 +74,28 @@ function formatPermissions(permissions) {
     return formattedPermissions;
 }
 
+async function getLoginInfo(user, token) {
+    const [userInfo, userGroups] = await Promise.all([
+        q.getUserInfoByKey(user.key),
+        q.userGroupsByUser(user),
+    ]);
+
+    const permissions = await (user.type === 'guest'
+        ? q.groupPermissionsByKeys(userGroups.map((g) => g.key))
+        : q.userPermissionsByKey(user.key));
+
+    return {
+        key: user.key,
+        data: {
+            name: _.get(userInfo, 'name', null),
+            email: _.get(userInfo, 'email', null),
+            phone: _.get(userInfo, 'phone', null),
+        },
+        permissions: formatPermissions(permissions),
+        authToken: token,
+    };
+}
+
 const router = express.Router();
 
 router.get('/rest/logged', userMiddleware, function (request, response) {
@@ -98,7 +120,7 @@ router.post('/api/login/login', async function (request, response, next) {
             tokenPayload({...user, ...{type: 'user'}})
         );
 
-        return response.status(200).json({token}).end();
+        return response.status(200).json(await getLoginInfo(user, token));
     } catch (err) {
         next(err);
     }
@@ -127,26 +149,9 @@ router.get(
     autoLogin,
     authMiddleware,
     async function (request, response) {
-        const user = request.user;
-        const [userInfo, userGroups] = await Promise.all([
-            q.getUserInfoByKey(user.key),
-            q.userGroupsByUser(user),
-        ]);
-
-        const permissions = await (user.type === 'guest'
-            ? q.groupPermissionsByKeys(userGroups.map((g) => g.key))
-            : q.userPermissionsByKey(user.key));
-
-        response.status(200).json({
-            key: user.key,
-            data: {
-                name: _.get(userInfo, 'name', null),
-                email: _.get(userInfo, 'email', null),
-                phone: _.get(userInfo, 'phone', null),
-            },
-            permissions: formatPermissions(permissions),
-            authToken: request.authToken,
-        });
+        response
+            .status(200)
+            .json(await getLoginInfo(request.user, request.authToken));
     }
 );
 

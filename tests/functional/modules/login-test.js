@@ -47,11 +47,27 @@ describe('modules/login', function () {
             }).then((response) => {
                 assert.strictEqual(response.status, 200);
                 return response.json().then((data) => {
-                    const decoded = jwt.verify(data.token, config.jwt.secret);
-                    assert.strictEqual(
-                        decoded.key,
-                        '7c5acddd-3625-46ef-90b3-82f829afb258'
-                    );
+                    const token = data.authToken;
+                    delete data.authToken;
+
+                    assert.isString(token);
+                    assert.deepStrictEqual(data, {
+                        data: {
+                            email: 'test@example.com',
+                            name: null,
+                            phone: null,
+                        },
+                        key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                        permissions: {
+                            application: {},
+                            dataSources: {},
+                            metadata: {},
+                            relations: {},
+                            specific: {},
+                            users: {},
+                            views: {},
+                        },
+                    });
                 });
             });
         });
