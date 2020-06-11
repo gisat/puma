@@ -47,6 +47,22 @@ function formatList2(recordsByType, page) {
     return data;
 }
 
+function filterListParamsByType(plan, group, type, params) {
+    const columnNames = Object.keys(plan[group][type].columns);
+    const columnNamesSet = new Set(columnNames);
+
+    return _.mapValues(params, function (v, name) {
+        switch (name) {
+            case 'filter':
+                return _.pick(v, columnNames);
+            case 'sort':
+                return _.filter(v, (s) => columnNamesSet.has(s[0]));
+        }
+
+        return v;
+    });
+}
+
 function createGroup(plan, group) {
     return [
         {
@@ -71,11 +87,11 @@ function createGroup(plan, group) {
                 };
                 const recordList = await q.list(
                     {plan, group, type},
-                    {
+                    filterListParamsByType(plan, group, type, {
                         sort: parameters.order,
                         filter: parameters.filter,
                         page: page,
-                    }
+                    })
                 );
 
                 response.status(200).json(formatList(type, recordList, page));

@@ -28,9 +28,31 @@ function listPath(plan, group) {
         .keys({types: Joi.string().valid(...types)});
 }
 
+/**
+ * Since we can use one filter for many types and many types can have same columns,
+ * we need to make sure that given filter is valid for all types.
+ */
+function mergeColumns(columns) {
+    const merged = {};
+
+    _.forEach(columns, function (cols) {
+        _.forEach(cols, function (col, name) {
+            const existing = merged[name];
+            if (existing) {
+                col = Object.assign({}, existing, {
+                    schema: existing.schema.concat(col.schema),
+                });
+            }
+
+            merged[name] = col;
+        });
+    });
+
+    return merged;
+}
+
 function listBody(plan, group) {
-    // todo: this merge won't work properly
-    const columns = Object.assign({}, ..._.map(plan[group], (g) => g.columns));
+    const columns = mergeColumns(_.flatMap(plan[group], (s) => s.columns));
 
     return Joi.object()
         .meta({className: `${group}List`})
