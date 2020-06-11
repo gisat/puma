@@ -158,15 +158,23 @@ function list({plan, group, type, client}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
 
-    const sqlMap = qb.merge(
-        qb.select(columns.map((c) => 't.' + c)),
-        qb.from(`${group}.${type}`, 't'),
-        filtersToSqlExpr(createFilters(filter, 't'))
+    const sqlMap = qb.append(
+        qb.merge(
+            qb.select(columns.map((c) => 't.' + c)),
+            qb.from(`${group}.${type}`, 't'),
+            filtersToSqlExpr(createFilters(filter, 't'))
+        ),
+        relationsQuery({plan, group, type}, 't')
     );
 
     const countSqlMap = qb.merge(
         sqlMap,
-        qb.select([qb.expr.as(qb.expr.fn('COUNT', 't.key'), 'count')])
+        qb.select([
+            qb.expr.as(
+                qb.expr.fn('COUNT ', qb.val.raw('DISTINCT "t"."key"')),
+                'count'
+            ),
+        ])
     );
 
     const db = getDb(client);
@@ -181,8 +189,7 @@ function list({plan, group, type, client}, {sort, filter, page}) {
                             qb.groupBy(['t.key']),
                             sortToSqlExpr(sort, 't'),
                             pageToQuery(page)
-                        ),
-                        relationsQuery({plan, group, type}, 't')
+                        )
                     )
                 )
             )
