@@ -4,19 +4,19 @@ const uuid = require('../../uuid');
 /**
  * Plain of individual types is stored under <group>.<type>.
  *
- * ## column
+ * ## columns
  *
- * ### schema
- *   Joi schema (https://hapi.dev/module/joi/api/).
+ * ### schema (required)
+ *   Joi schema (https://hapi.dev/module/joi/api/). `.required()` should not be used as it is added automatically based on context.
  *
- * ### defaultValue
+ * ### defaultValue (optional)
  *   Default value if none was provided (https://hapi.dev/module/joi/api/#anydefaultvalue).
  *
- * ## context
+ * ## context (required)
  *
- * Configuration for specific operations
+ * Configuration for specific operations. Supported operations are: `list`, `create`, `update`.
  *
- * ### columns
+ * ### columns (required)
  *
  * Allowed columns during this operation.
  */
