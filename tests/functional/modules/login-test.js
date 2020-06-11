@@ -90,21 +90,6 @@ describe('modules/login', function () {
         });
     });
 
-    it('loginGuest', function () {
-        return fetch(url('/api/login/login-guest'), {
-            method: 'POST',
-            headers: new fetch.Headers({
-                'Content-Type': 'application/json',
-            }),
-        }).then((response) => {
-            assert.strictEqual(response.status, 200);
-            return response.json().then((data) => {
-                const decoded = jwt.verify(data.token, config.jwt.secret);
-                assert.isString(decoded.key);
-            });
-        });
-    });
-
     it('logout', function () {
         return fetch(url('/api/login/logout'), {
             method: 'POST',

@@ -104,14 +104,6 @@ router.post('/api/login/login', async function (request, response, next) {
     }
 });
 
-router.post('/api/login/login-guest', async function (request, response) {
-    const token = await createAuthToken(
-        tokenPayload({key: uuid.generate(), type: 'guest'})
-    );
-
-    return response.status(200).json({token}).end();
-});
-
 router.post('/api/login/logout', function (request, response) {
     response.status(200).end();
 });
