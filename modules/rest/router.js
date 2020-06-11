@@ -11,12 +11,6 @@ function formatRow(row) {
     };
 }
 
-function formatData(group, rows) {
-    return {
-        [group]: rows.map(formatRow),
-    };
-}
-
 function formatList(recordsByType, page) {
     const data = {
         data: _.mapValues(recordsByType, (r) => r.rows.map(formatRow)),
@@ -67,25 +61,29 @@ function createGroup(plan, group) {
             responses: {200: {}},
             middlewares: [parameters],
             handler: async function (request, response) {
-                const type = request.parameters.path.types;
-
+                const types = request.parameters.path.types;
                 const parameters = request.parameters.body;
                 const page = {
                     limit: parameters.limit,
                     offset: parameters.offset,
                 };
-                const recordList = await q.list(
-                    {plan, group, type},
-                    filterListParamsByType(plan, group, type, {
-                        sort: parameters.order,
-                        filter: parameters.filter,
-                        page: page,
+
+                const records = await Promise.all(
+                    _.map(types, async function (type) {
+                        return await q.list(
+                            {plan, group, type},
+                            filterListParamsByType(plan, group, type, {
+                                sort: parameters.order,
+                                filter: parameters.filter,
+                                page: page,
+                            })
+                        );
                     })
                 );
 
-                response
-                    .status(200)
-                    .json(formatList({[type]: recordList}, page));
+                const recordsByType = _.zipObject(types, records);
+
+                response.status(200).json(formatList(recordsByType, page));
             },
         },
         {

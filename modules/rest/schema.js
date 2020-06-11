@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('../../joi');
 const _ = require('lodash');
 
 function colFilterSchema(col) {
@@ -25,7 +25,7 @@ function listPath(plan, group) {
 
     return Joi.object()
         .required()
-        .keys({types: Joi.string().valid(...types)});
+        .keys({types: Joi.stringArray().items(Joi.string().valid(...types))});
 }
 
 /**
