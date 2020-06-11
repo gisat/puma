@@ -47,8 +47,6 @@ function formatList2(recordsByType, page) {
 }
 
 function createGroup(plan, group) {
-    const types = Object.keys(group);
-
     return [
         {
             path: `/rest/${group}/filtered/:types`,

@@ -75,5 +75,51 @@ module.exports = {
                 },
             },
         },
+        permissions: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'resourceKey',
+                        'resourceType',
+                        'permission',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'resourceKey',
+                        'resourceType',
+                        'permission',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'resourceKey',
+                        'resourceType',
+                        'permission',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                resourceKey: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                resourceType: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                permission: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
     },
 };
