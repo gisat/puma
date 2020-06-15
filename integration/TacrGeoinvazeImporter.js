@@ -100,7 +100,7 @@ class TacrGeoinvazeImporter {
 				}
 
 				_.each(pgCases, (pgCase) => {
-					let speciesName = pgCase.data.nameInternal.toLowerCase().replace(/\ /g, '_');
+					let speciesName = pgCase.data.nameInternal.toLowerCase().replace(/\ |-/g, '_');
 					let speciesRasters = _.filter(rasters, (raster) => {
 						return raster.includes(speciesName) && raster.toLowerCase().endsWith(`tif`);
 					});
@@ -135,6 +135,10 @@ class TacrGeoinvazeImporter {
 						console.log(`#### Reprojecting ${vectorLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
 						let vectorLayerName = path.parse(vectorLayer).name;
+
+						if(vectorLayerName.length > 45) {
+							throw new Error(`Layer ${vectorLayerName} exceeded max name length of 63 characters!`)
+						}
 
 						let existingGeoserverLayer = _.find(geoserverLayers, (geoserverLayer) => {
 							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${vectorLayerName}`;
@@ -171,6 +175,10 @@ class TacrGeoinvazeImporter {
 
 						let rasterLayerName = path.parse(rasterLayer).name;
 
+						if(rasterLayerName.length > 45) {
+							throw new Error(`Layer ${rasterLayerName} exceeded max name length of 63 characters!`)
+						}
+
 						let existingGeoserverLayer = _.find(geoserverLayers, (geoserverLayer) => {
 							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${rasterLayerName}`;
 						});
@@ -184,11 +192,16 @@ class TacrGeoinvazeImporter {
 
 						this.reprojectFile(
 							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/rasters/${rasterLayer}`,
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.tif`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.vrt`,
 							config.projectSpecific.tacrGeoinvaze.transformation.source,
 							config.projectSpecific.tacrGeoinvaze.transformation.target,
 							`raster`,
 							config.projectSpecific.tacrGeoinvaze.transformation.raster.noData
+						);
+
+						this.compressRaster(
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.vrt`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.tif`
 						);
 
 						await this.importLayerIntoGeoserver(rasterLayerName, `raster`);
@@ -358,11 +371,11 @@ class TacrGeoinvazeImporter {
 	}
 
 	getLayerTemplateKeyByLayerName(layerName) {
-		if (layerName.toLowerCase().includes("_gam_")) {
+		if (layerName.toLowerCase().includes("_gam")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.modelGam;
-		} else if (layerName.toLowerCase().includes("_maxent_")) {
+		} else if (layerName.toLowerCase().includes("_maxent")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.modelMaxEnt;
-		} else if (layerName.toLowerCase().includes("_gbm_")) {
+		} else if (layerName.toLowerCase().includes("_gbm")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.modelGbm;
 		} else if (layerName.toLowerCase().includes("po_1_roce")) {
 			return config.projectSpecific.tacrGeoinvaze.layerTemplates.model1;
@@ -376,11 +389,11 @@ class TacrGeoinvazeImporter {
 	}
 
 	getLayerDefaultStyleNameByLayerName(layerName) {
-		if (layerName.toLowerCase().includes("_gam_")) {
+		if (layerName.toLowerCase().includes("_gam")) {
 			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.modelGam;
-		} else if (layerName.toLowerCase().includes("_maxent_")) {
+		} else if (layerName.toLowerCase().includes("_maxent")) {
 			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.modelMaxEnt;
-		} else if (layerName.toLowerCase().includes("_gbm_")) {
+		} else if (layerName.toLowerCase().includes("_gbm")) {
 			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.modelGbm;
 		} else if (layerName.toLowerCase().includes("po_1_roce")) {
 			return config.projectSpecific.tacrGeoinvaze.geoserverStyles.model1;
@@ -581,6 +594,7 @@ class TacrGeoinvazeImporter {
 				|| file.toLowerCase().endsWith(`.dbf`)
 				|| file.toLowerCase().endsWith(`.prj`)
 				|| file.toLowerCase().endsWith(`.tif`)
+				|| file.toLowerCase().endsWith(`.vrt`)
 			) {
 				fs.unlinkSync(`${path}/${file}`);
 			}
@@ -602,10 +616,20 @@ class TacrGeoinvazeImporter {
 				+ `-t_srs ${targetSrs} `
 				+ `-s_srs ${sourceSrs} `
 				+ `-dstnodata ${noDataValue} `
+				+ `-of vrt `
 				+ `${source} `
 				+ `${destination}`
 			);
 		}
+	}
+
+	compressRaster(source, destination) {
+		child_process.execSync(
+			`gdal_translate `
+			+ `-co compress=LZW `
+			+ `${source} `
+			+ `${destination}`
+		)
 	}
 }
 
