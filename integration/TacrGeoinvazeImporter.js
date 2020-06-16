@@ -424,7 +424,7 @@ class TacrGeoinvazeImporter {
 	importRasterLayerIntoGeoserver(layerName) {
 		return superagent
 			.post(
-				`http://${config.geoserverHost}/${config.geoserverPath}/rest/imports?exec=true`
+				`http://127.0.0.1:8080/geoserver/rest/imports?exec=true`
 			)
 			.send({
 				"import": {
@@ -448,7 +448,7 @@ class TacrGeoinvazeImporter {
 	importVectorLayerIntoGeoserver(layerName) {
 		return superagent
 			.post(
-				`http://${config.geoserverHost}/${config.geoserverPath}/rest/imports?exec=true`
+				`http://127.0.0.1:8080/geoserver/rest/imports?exec=true`
 			)
 			.send({
 				"import": {
@@ -482,7 +482,7 @@ class TacrGeoinvazeImporter {
 	setDefaultStyleForGeoserverLayer(layerName, styleName) {
 		return superagent
 			.put(
-				`http://${config.geoserverHost}/${config.geoserverPath}/rest/layers/${layerName}`
+				`http://127.0.0.1:8080/geoserver/rest/layers/${layerName}`
 			)
 			.set(`Content-Type`, `application/xml`)
 			.send(`<?xml version="1.0" encoding="UTF-8"?><layer><defaultStyle><name>${styleName}</name></defaultStyle></layer>`)
@@ -503,7 +503,7 @@ class TacrGeoinvazeImporter {
 	removeExistingGeoserverStyle(styleName) {
 		return superagent
 			.delete(
-				`http://${config.geoserverHost}/${config.geoserverPath}/rest/styles/${styleName}?recurse=true`
+				`http://127.0.0.1:8080/geoserver/rest/styles/${styleName}?recurse=true`
 			)
 			.auth(config.geoserverUsername, config.geoserverPassword)
 			.catch((error) => {
@@ -514,7 +514,7 @@ class TacrGeoinvazeImporter {
 	removeExistingGeoserverVectorLayer(layerName) {
 		return superagent
 			.delete(
-				`http://${config.geoserverHost}/${config.geoserverPath}/rest/workspaces/${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}/datastores/${config.projectSpecific.tacrGeoinvaze.geoserverStore}/featuretypes/${layerName}?recurse=true`
+				`http://127.0.0.1:8080/geoserver/rest/workspaces/${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}/datastores/${config.projectSpecific.tacrGeoinvaze.geoserverStore}/featuretypes/${layerName}?recurse=true`
 			)
 			.auth(config.geoserverUsername, config.geoserverPassword)
 			.then(() => {
@@ -528,7 +528,7 @@ class TacrGeoinvazeImporter {
 	removeExistingGeoserverRasterLayer(layerName) {
 		return superagent
 			.delete(
-				`http://${config.geoserverHost}/${config.geoserverPath}/rest/workspaces/${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}/coveragestores/${layerName}?recurse=true&purge=true`
+				`http://127.0.0.1:8080/geoserver/rest/workspaces/${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}/coveragestores/${layerName}?recurse=true&purge=true`
 			)
 			.auth(config.geoserverUsername, config.geoserverPassword)
 			.catch((error) => {
@@ -538,7 +538,7 @@ class TacrGeoinvazeImporter {
 
 	removeExistingRasterUploads(layerName) {
 		return superagent
-			.get(`http://${config.geoserverHost}/${config.geoserverPath}/rest/imports`)
+			.get(`http://127.0.0.1:8080/geoserver/rest/imports`)
 			.auth(config.geoserverUsername, config.geoserverPassword)
 			.then(async (superagentResult) => {
 				for (let importData of superagentResult.body.imports) {
