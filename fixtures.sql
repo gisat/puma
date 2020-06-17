@@ -41,7 +41,8 @@ VALUES
   ('820c4a94-9588-4926-8ba0-2df7abe2eb7f', null, 'scope', 'delete'),
   ('6a7df854-4dc0-4093-b8a0-15e2e0a91ed0', null, 'place', 'delete'),
   ('6897b1fc-a3e3-4195-a41a-f492d4a9df2a', null, 'users', 'create'),
-  ('913e3bae-e5dd-4600-a854-ca7b65199bbf', null, 'users', 'update');
+  ('913e3bae-e5dd-4600-a854-ca7b65199bbf', null, 'users', 'update'),
+  ('9ac648e7-00d0-4196-be44-9ae2d7cfb598', null, 'users', 'delete');
 
 INSERT INTO "user"."userPermissions"
   ("userKey", "permissionKey")
@@ -51,7 +52,9 @@ VALUES
   -- user: admin@example.com             ,  users:create
   ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '6897b1fc-a3e3-4195-a41a-f492d4a9df2a'),
   -- user: admin@example.com             ,  users:update
-  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '913e3bae-e5dd-4600-a854-ca7b65199bbf');
+  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '913e3bae-e5dd-4600-a854-ca7b65199bbf'),
+  -- user: admin@example.com             ,  users:delete
+  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '9ac648e7-00d0-4196-be44-9ae2d7cfb598');
 
 INSERT INTO "user"."groupPermissions"
   ("groupKey", "permissionKey")

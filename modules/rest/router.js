@@ -199,14 +199,26 @@ function createGroup(plan, group) {
             },
             parameters: {body: schema.deleteBody(plan, group)},
             responses: {200: {}},
-            middlewares: [parameters],
+            middlewares: [parameters, userMiddleware],
             handler: async function (request, response) {
+                const data = request.parameters.body.data;
+
+                const requiredPermissions = Object.keys(data).map((k) => ({
+                    resourceType: k,
+                    permission: 'delete',
+                }));
+                if (
+                    !(await permission.userHasAllPermissions(
+                        request.user,
+                        requiredPermissions
+                    ))
+                ) {
+                    return response.status(403).json({success: false});
+                }
+
                 await db.transactional(async function (client) {
                     await Promise.all(
-                        _.map(request.parameters.body.data, async function (
-                            records,
-                            type
-                        ) {
+                        _.map(data, async function (records, type) {
                             await q.deleteRecords(
                                 {plan, group, type, client},
                                 records

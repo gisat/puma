@@ -380,6 +380,32 @@ describe('modules/user', function () {
         });
     });
 
+    it('DELETE /rest/user without permissions', async function () {
+        const userKey = '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8';
+
+        // guard
+        assert.isTrue(await userExists(userKey));
+
+        const response = await fetch(url('/rest/user'), {
+            method: 'DELETE',
+            headers: new fetch.Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: userKey,
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 403);
+        assert.isTrue(await userExists(userKey));
+    });
+
     it('DELETE /rest/user', async function () {
         const userKey = '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8';
 
@@ -389,6 +415,7 @@ describe('modules/user', function () {
         const response = await fetch(url('/rest/user'), {
             method: 'DELETE',
             headers: new fetch.Headers({
+                Authorization: createAdminToken(),
                 'Content-Type': 'application/json',
             }),
             body: JSON.stringify({
