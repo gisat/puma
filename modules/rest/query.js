@@ -131,7 +131,7 @@ function relationsQuery({plan, group, type}, alias) {
                 return qb.merge(
                     qb.select([
                         qb.val.raw(
-                            `ARRAY_AGG("${relAlias}"."${rel.inverseKey}") FILTER (WHERE "${relAlias}"."${rel.inverseKey}" IS NOT NULL) AS "${column}"`
+                            `ARRAY_AGG("${relAlias}"."${rel.inverseKey}" ORDER BY "${relAlias}"."${rel.inverseKey}") FILTER (WHERE "${relAlias}"."${rel.inverseKey}" IS NOT NULL) AS "${column}"`
                         ),
                     ]),
                     qb.joins(
@@ -237,8 +237,11 @@ function recordValues(record, columns) {
     return columns.map((c) => qb.val.inlineParam(data[c]));
 }
 
-function create({plan, group, type, client}, records) {
-    const columns = ['key', ...Object.keys(records[0].data)];
+async function create({plan, group, type, client}, records) {
+    const validColumns = new Set(Object.keys(plan[group][type].columns));
+    const columns = ['key', ...Object.keys(records[0].data)].filter((c) =>
+        validColumns.has(c)
+    );
 
     const sqlMap = qb.merge(
         qb.insertInto(`${group}.${type}`),
@@ -247,9 +250,74 @@ function create({plan, group, type, client}, records) {
         qb.returning(['key'])
     );
 
-    return getDb(client)
-        .query(qb.toSql(sqlMap))
-        .then((res) => res.rows.map((r) => r.key));
+    const relationsByCol = _.mapKeys(plan[group][type].relations, function (
+        rel,
+        name
+    ) {
+        switch (rel.type) {
+            case 'manyToMany':
+                return name + 'Keys';
+        }
+
+        throw new Error(`Unspported relation type: ${rel.type}`);
+    });
+    const validRelationCols = _.keys(relationsByCol);
+    const relationQueryMaps = _.reduce(
+        validRelationCols,
+        function (acc, relCol) {
+            const rel = relationsByCol[relCol];
+            const values = _.filter(
+                _.flatMap(records, function (record) {
+                    const relKey = record.data[relCol];
+                    if (relKey == null) {
+                        return;
+                    }
+
+                    switch (rel.type) {
+                        case 'manyToMany':
+                            if (relKey.length === 0) {
+                                return;
+                            }
+
+                            return _.map(relKey, (rk) => [
+                                qb.val.inlineParam(record.key),
+                                qb.val.inlineParam(rk),
+                            ]);
+                    }
+
+                    throw new Error(`Unspported relation type: ${rel.type}`);
+                }),
+                (v) => v != null
+            );
+
+            if (values.length === 0) {
+                return acc;
+            }
+
+            acc.push(
+                qb.merge(
+                    qb.insertInto(rel.relationTable),
+                    qb.columns([rel.ownKey, rel.inverseKey]),
+                    qb.values(values)
+                )
+            );
+
+            return acc;
+        },
+        []
+    );
+
+    return getDb(client).transactional(async (client) => {
+        const res = await client
+            .query(qb.toSql(sqlMap))
+            .then((res) => res.rows.map((r) => r.key));
+
+        await Promise.all(
+            _.map(relationQueryMaps, (sqlMap) => client.query(qb.toSql(sqlMap)))
+        );
+
+        return res;
+    });
 }
 
 function updateExprs(recordData) {

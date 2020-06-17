@@ -314,6 +314,16 @@ describe('modules/user', function () {
                                 email: 'newWithKey@example.com',
                             },
                         },
+                        {
+                            key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
+                            data: {
+                                email: 'newWithGroups@example.com',
+                                groupKeys: [
+                                    '52ddabec-d01a-49a0-bb4d-5ff931bd346e',
+                                    '742b6f3f-a77e-4267-8e96-1e4cea96dec3',
+                                ],
+                            },
+                        },
                     ],
                 },
             }),
@@ -338,6 +348,19 @@ describe('modules/user', function () {
                         },
                     },
                     {
+                        key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
+                        data: {
+                            email: 'newWithGroups@example.com',
+                            name: null,
+                            phone: null,
+                            groupKeys: [
+                                '52ddabec-d01a-49a0-bb4d-5ff931bd346e',
+                                '742b6f3f-a77e-4267-8e96-1e4cea96dec3',
+                            ],
+                            permissionKeys: null,
+                        },
+                    },
+                    {
                         key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
                         data: {
                             email: 'newWithKey@example.com',
@@ -350,7 +373,7 @@ describe('modules/user', function () {
                 ],
             },
             success: true,
-            total: 2,
+            total: 3,
         });
     });
 

@@ -86,7 +86,7 @@ function dataColCreateSchema(col) {
 }
 
 function createBody(plan, group) {
-    const dataKeys = _.mapValues(plan[group], function (typeSchema) {
+    const dataKeys = _.mapValues(plan[group], function (typeSchema, type) {
         const columns = _.pick(
             typeSchema.columns,
             typeSchema.context.create.columns
@@ -95,12 +95,33 @@ function createBody(plan, group) {
         const keyCol = columns.key;
         const dataCols = _.omit(columns, ['key']);
 
+        const relations = plan[group][type].relations;
+        const relationSchemas = {};
+        _.forEach(relations, function (rel, name) {
+            switch (rel.type) {
+                case 'manyToMany':
+                    relationSchemas[name + 'Keys'] = Joi.array().items(
+                        plan[rel.resourceGroup][rel.resourceType].columns.key
+                            .schema
+                    );
+                    return;
+            }
+
+            throw new Error(`Unspported relation type: ${rel.type}`);
+        });
+
         return Joi.array()
             .items(
                 Joi.object().keys({
                     key: keyCol.schema.default(keyCol.defaultValue),
                     data: Joi.object()
-                        .keys(_.mapValues(dataCols, dataColCreateSchema))
+                        .keys(
+                            Object.assign(
+                                {},
+                                _.mapValues(dataCols, dataColCreateSchema),
+                                relationSchemas
+                            )
+                        )
                         .required(),
                 })
             )
