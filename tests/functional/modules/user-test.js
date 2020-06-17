@@ -454,6 +454,94 @@ describe('modules/user', function () {
         });
     });
 
+    it('PUT /rest/user changing groups', async function () {
+        const response = await fetch(url('/rest/user'), {
+            method: 'PUT',
+            headers: new fetch.Headers({
+                Authorization: createAdminToken(),
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
+                            data: {
+                                groupKeys: [
+                                    '52ddabec-d01a-49a0-bb4d-5ff931bd346e',
+                                ],
+                            },
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 200);
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [
+                    {
+                        key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
+                        data: {
+                            email: 'newWithGroups@example.com',
+                            name: null,
+                            phone: null,
+                            groupKeys: ['52ddabec-d01a-49a0-bb4d-5ff931bd346e'],
+                            permissionKeys: null,
+                        },
+                    },
+                ],
+            },
+            success: true,
+            total: 1,
+        });
+    });
+
+    it('PUT /rest/user removing groups', async function () {
+        const response = await fetch(url('/rest/user'), {
+            method: 'PUT',
+            headers: new fetch.Headers({
+                Authorization: createAdminToken(),
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
+                            data: {
+                                groupKeys: [],
+                            },
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 200);
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [
+                    {
+                        key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
+                        data: {
+                            email: 'newWithGroups@example.com',
+                            name: null,
+                            phone: null,
+                            groupKeys: null,
+                            permissionKeys: null,
+                        },
+                    },
+                ],
+            },
+            success: true,
+            total: 1,
+        });
+    });
+
     it('PUT /rest/user with specific permissions', async function () {
         const response = await fetch(url('/rest/user'), {
             method: 'PUT',

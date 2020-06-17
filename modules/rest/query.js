@@ -1,6 +1,7 @@
 const db = require('../../db');
 const qb = require('@imatic/pgqb');
 const _ = require('lodash');
+const {SQL} = require('sql-template-strings');
 
 const filterOperatorToSqlExpr = {
     timefrom: function (filter) {
@@ -326,7 +327,15 @@ function updateExprs(recordData) {
     });
 }
 
-function updateRecord(group, type, client, record) {
+function updateRecord({plan, group, type, client}, record) {
+    const validColumns = new Set(Object.keys(plan[group][type].columns));
+    const columns = _.keys(record.data).filter((c) => validColumns.has(c));
+
+    const data = _.pick(record.data, columns);
+    if (_.isEmpty(data)) {
+        return Promise.resolve();
+    }
+
     const sqlMap = qb.merge(
         qb.update(`${group}.${type}`, 'r'),
         qb.set(updateExprs(record.data)),
@@ -336,10 +345,104 @@ function updateRecord(group, type, client, record) {
     return client.query(qb.toSql(sqlMap));
 }
 
+function quoteIdentifier(name) {
+    return name
+        .split('.')
+        .map((v) => '"' + v + '"')
+        .join('.');
+}
+
+async function updateRecordRelation({plan, group, type, client}, record) {
+    const relationsByCol = _.mapKeys(plan[group][type].relations, function (
+        rel,
+        name
+    ) {
+        switch (rel.type) {
+            case 'manyToMany':
+                return name + 'Keys';
+        }
+
+        throw new Error(`Unspported relation type: ${rel.type}`);
+    });
+    const validRelationCols = _.keys(relationsByCol);
+    const relationQueries = _.reduce(
+        validRelationCols,
+        function (acc, relCol) {
+            if (!record.data.hasOwnProperty(relCol)) {
+                return acc;
+            }
+
+            const rel = relationsByCol[relCol];
+            const relKey = record.data[relCol];
+
+            switch (rel.type) {
+                case 'manyToMany':
+                    if (relKey == null || relKey.length === 0) {
+                        acc.push(
+                            SQL`DELETE FROM `
+                                .append(
+                                    `${quoteIdentifier(
+                                        rel.relationTable
+                                    )} WHERE "${rel.ownKey}" = `
+                                )
+                                .append(SQL`${record.key}`)
+                        );
+
+                        return acc;
+                    }
+
+                    acc.push(
+                        SQL`DELETE FROM `
+                            .append(
+                                `${quoteIdentifier(rel.relationTable)} WHERE "${
+                                    rel.ownKey
+                                }" = `
+                            )
+                            .append(SQL`${record.key} AND NOT (`)
+                            .append(`"${rel.inverseKey}"`)
+                            .append(SQL` = ANY(${relKey}))`)
+                    );
+
+                    const values = _.map(relKey, (rk) => {
+                        return [
+                            qb.val.inlineParam(record.key),
+                            qb.val.inlineParam(rk),
+                        ];
+                    });
+
+                    acc.push(
+                        qb.toSql(
+                            qb.merge(
+                                qb.insertInto(rel.relationTable),
+                                qb.columns([rel.ownKey, rel.inverseKey]),
+                                qb.values(values),
+                                qb.onConflict([rel.ownKey, rel.inverseKey]),
+                                qb.doNothing()
+                            )
+                        )
+                    );
+
+                    return acc;
+            }
+
+            throw new Error(`Unspported relation type: ${rel.type}`);
+        },
+        []
+    );
+
+    await Promise.all(_.map(relationQueries, (sql) => client.query(sql)));
+}
+
 async function update({plan, group, type, client}, records) {
     return getDb(client).transactional(async (client) => {
         await Promise.all(
-            records.map((r) => updateRecord(group, type, client, r))
+            records.map((r) => updateRecord({plan, group, type, client}, r))
+        );
+
+        await Promise.all(
+            records.map((r) =>
+                updateRecordRelation({plan, group, type, client}, r)
+            )
         );
     });
 }
