@@ -154,16 +154,44 @@ function relationsQuery({plan, group, type}, alias) {
     return qb.append(...queries);
 }
 
-function list({plan, group, type, client}, {sort, filter, page}) {
+function listPermissionQuery({user, type}, alias) {
+    if (user == null) {
+        return {};
+    }
+
+    return qb.merge(
+        qb.joins(
+            qb.join(
+                'user.v_userPermissions',
+                'tp',
+                qb.expr.and(
+                    qb.expr.eq('tp.resourceType', qb.val.inlineParam(type)),
+                    qb.expr.eq('tp.permission', qb.val.inlineParam('view')),
+                    qb.expr.or(
+                        qb.expr.null('tp.resourceKey'),
+                        qb.expr.eq(
+                            'tp.resourceKey',
+                            qb.val.raw(`"${alias}"."key"::text`)
+                        )
+                    )
+                )
+            )
+        ),
+        qb.where(qb.expr.eq('tp.userKey', qb.val.inlineParam(user.key)))
+    );
+}
+
+function list({plan, group, type, client, user}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
 
     const sqlMap = qb.append(
         qb.merge(
             qb.select(columns.map((c) => 't.' + c)),
-            qb.from(`${group}.${type}`, 't'),
-            filtersToSqlExpr(createFilters(filter, 't'))
+            qb.from(`${group}.${type}`, 't')
         ),
+        listPermissionQuery({user, type}, 't'),
+        filtersToSqlExpr(createFilters(filter, 't')),
         relationsQuery({plan, group, type}, 't')
     );
 

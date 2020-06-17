@@ -46,14 +46,18 @@ VALUES
   ('6897b1fc-a3e3-4195-a41a-f492d4a9df2a', null, 'users', 'create'),
   ('913e3bae-e5dd-4600-a854-ca7b65199bbf', null, 'users', 'update'),
   ('9ac648e7-00d0-4196-be44-9ae2d7cfb598', null, 'users', 'delete'),
+  ('828af8c1-5438-475b-9f91-af432745e83f', null, 'users', 'view'),
   ('4f2b3dc7-9b3f-4624-82c0-93d139e19baa', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'update'),
-  ('e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'delete');
+  ('e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'delete'),
+  ('432348bc-6adf-4fd3-ac44-48a15f7d8ac6', '7c5acddd-3625-46ef-90b3-82f829afb258', 'users', 'view');
 
 INSERT INTO "user"."userPermissions"
   ("userKey", "permissionKey")
 VALUES
   -- testWithPermissions@example.com     ,  case:create
   ('3e3f4300-1336-4043-baa3-b65a025c2d83', '0da66083-77ad-4e66-9338-0c8344de9eba'),
+  -- user: admin@example.com             ,  users:view
+  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '828af8c1-5438-475b-9f91-af432745e83f'),
   -- user: admin@example.com             ,  users:create
   ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '6897b1fc-a3e3-4195-a41a-f492d4a9df2a'),
   -- user: admin@example.com             ,  users:update
@@ -63,7 +67,9 @@ VALUES
   -- user: specificPermsAdmin@example.com, users[key]:update
   ('39ed471f-8383-4283-bb8a-303cb05cadef', '4f2b3dc7-9b3f-4624-82c0-93d139e19baa'),
   -- user: specificPermsAdmin@example.com, users[key]:delete
-  ('39ed471f-8383-4283-bb8a-303cb05cadef', 'e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f');
+  ('39ed471f-8383-4283-bb8a-303cb05cadef', 'e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f'),
+  -- user: specificPermsAdmin@example.com, users[key]:view
+  ('39ed471f-8383-4283-bb8a-303cb05cadef', '432348bc-6adf-4fd3-ac44-48a15f7d8ac6');
 
 INSERT INTO "user"."groupPermissions"
   ("groupKey", "permissionKey")

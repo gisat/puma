@@ -30,6 +30,16 @@ function createAdminToken() {
     );
 }
 
+function createNoPermissionUserToken() {
+    return (
+        'Bearer ' +
+        jwt.sign(
+            {key: '7c5acddd-3625-46ef-90b3-82f829afb258', type: 'user'},
+            config.jwt.secret
+        )
+    );
+}
+
 function createSpecificPermsAdminToken() {
     return (
         'Bearer ' +
@@ -209,6 +219,7 @@ describe('modules/user', function () {
                 return fetch(url('/rest/user/filtered/users'), {
                     method: 'POST',
                     headers: new fetch.Headers({
+                        Authorization: createAdminToken(),
                         'Content-Type': 'application/json',
                     }),
                     body: JSON.stringify(test.body),
@@ -222,6 +233,63 @@ describe('modules/user', function () {
                     });
                 });
             });
+        });
+    });
+
+    it('POST /rest/user/filtered/users without permissions', async function () {
+        const response = await fetch(url('/rest/user/filtered/users'), {
+            method: 'POST',
+            headers: new fetch.Headers({
+                Authorization: createNoPermissionUserToken(),
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({}),
+        });
+        assert.strictEqual(response.status, 200);
+
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [],
+            },
+            limit: 100,
+            offset: 0,
+            total: 0,
+            success: true,
+        });
+    });
+
+    it('POST /rest/user/filtered/users with specific permissions', async function () {
+        const response = await fetch(url('/rest/user/filtered/users'), {
+            method: 'POST',
+            headers: new fetch.Headers({
+                Authorization: createSpecificPermsAdminToken(),
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({}),
+        });
+        assert.strictEqual(response.status, 200);
+
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [
+                    {
+                        key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                        data: {
+                            email: 'test@example.com',
+                            name: null,
+                            phone: null,
+                            groupKeys: null,
+                            permissionKeys: null,
+                        },
+                    },
+                ],
+            },
+            limit: 100,
+            offset: 0,
+            total: 1,
+            success: true,
         });
     });
 

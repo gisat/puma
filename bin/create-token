@@ -1,0 +1,10 @@
+#!/usr/bin/env node
+
+const jwt = require('jsonwebtoken');
+const config = require('../config');
+
+if (process.argv.length !== 3) {
+    throw new Error('Script expects exactly one parameter - user key.');
+}
+
+console.log(jwt.sign({key: process.argv[2], type: 'user'}, config.jwt.secret));

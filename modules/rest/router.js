@@ -1,5 +1,6 @@
 const parameters = require('../../middlewares/parameters');
 const userMiddleware = require('../../middlewares/user');
+const authMiddleware = require('../../middlewares/auth');
 const permission = require('../../permission');
 const _ = require('lodash');
 const schema = require('./schema');
@@ -61,7 +62,7 @@ function createGroup(plan, group) {
                 body: schema.listBody(plan, group),
             },
             responses: {200: {}},
-            middlewares: [parameters],
+            middlewares: [parameters, userMiddleware, authMiddleware],
             handler: async function (request, response) {
                 const types = request.parameters.path.types;
                 const parameters = request.parameters.body;
@@ -73,7 +74,7 @@ function createGroup(plan, group) {
                 const records = await Promise.all(
                     _.map(types, async function (type) {
                         return await q.list(
-                            {plan, group, type},
+                            {plan, group, type, user: request.user},
                             filterListParamsByType(plan, group, type, {
                                 sort: parameters.order,
                                 filter: parameters.filter,
