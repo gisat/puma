@@ -155,6 +155,7 @@ function createGroup(plan, group) {
                 const requiredPermissions = Object.keys(data).map((k) => ({
                     resourceType: k,
                     permission: 'update',
+                    resourceKey: data[k].map((m) => m.key),
                 }));
                 if (
                     !(await permission.userHasAllPermissions(
@@ -206,6 +207,7 @@ function createGroup(plan, group) {
                 const requiredPermissions = Object.keys(data).map((k) => ({
                     resourceType: k,
                     permission: 'delete',
+                    resourceKey: data[k].map((m) => m.key),
                 }));
                 if (
                     !(await permission.userHasAllPermissions(

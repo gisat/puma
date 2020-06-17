@@ -30,6 +30,16 @@ function createAdminToken() {
     );
 }
 
+function createSpecificPermsAdminToken() {
+    return (
+        'Bearer ' +
+        jwt.sign(
+            {key: '39ed471f-8383-4283-bb8a-303cb05cadef', type: 'user'},
+            config.jwt.secret
+        )
+    );
+}
+
 describe('modules/user', function () {
     describe('POST /rest/user/filtered/users', function () {
         const tests = [
@@ -341,6 +351,49 @@ describe('modules/user', function () {
                             email: 'newWithKey@example.com',
                             name: null,
                             phone: '+420111111111',
+                            groupKeys: null,
+                            permissionKeys: null,
+                        },
+                        key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                    },
+                ],
+            },
+            success: true,
+            total: 1,
+        });
+    });
+
+    it('PUT /rest/user with specific permissions', async function () {
+        const response = await fetch(url('/rest/user'), {
+            method: 'PUT',
+            headers: new fetch.Headers({
+                Authorization: createSpecificPermsAdminToken(),
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                            data: {
+                                phone: '+420222222222',
+                            },
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 200);
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            data: {
+                users: [
+                    {
+                        data: {
+                            email: 'newWithKey@example.com',
+                            name: null,
+                            phone: '+420222222222',
                             groupKeys: null,
                             permissionKeys: null,
                         },

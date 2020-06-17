@@ -13,7 +13,10 @@ VALUES
   ('2bf6c1da-991a-4592-acc1-b10192db9363', 'testWithGroups@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
   ('e2f5d20e-2784-4690-a3f0-339c60b04245', 'testWithPhone@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', '+420123456789'),
   ('3e3f4300-1336-4043-baa3-b65a025c2d83', 'testWithPermissions@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
-  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', 'admin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null);
+  -- this user should not have permissions with NOT NULL resourceKey
+  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', 'admin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
+  -- this user should not have permissions with NULL resourceKey
+  ('39ed471f-8383-4283-bb8a-303cb05cadef', 'specificPermsAdmin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null);
 
 INSERT INTO "user"."groups"
   ("key", "name")
@@ -42,7 +45,9 @@ VALUES
   ('6a7df854-4dc0-4093-b8a0-15e2e0a91ed0', null, 'place', 'delete'),
   ('6897b1fc-a3e3-4195-a41a-f492d4a9df2a', null, 'users', 'create'),
   ('913e3bae-e5dd-4600-a854-ca7b65199bbf', null, 'users', 'update'),
-  ('9ac648e7-00d0-4196-be44-9ae2d7cfb598', null, 'users', 'delete');
+  ('9ac648e7-00d0-4196-be44-9ae2d7cfb598', null, 'users', 'delete'),
+  ('4f2b3dc7-9b3f-4624-82c0-93d139e19baa', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'update'),
+  ('e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'delete');
 
 INSERT INTO "user"."userPermissions"
   ("userKey", "permissionKey")
@@ -54,7 +59,11 @@ VALUES
   -- user: admin@example.com             ,  users:update
   ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '913e3bae-e5dd-4600-a854-ca7b65199bbf'),
   -- user: admin@example.com             ,  users:delete
-  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '9ac648e7-00d0-4196-be44-9ae2d7cfb598');
+  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', '9ac648e7-00d0-4196-be44-9ae2d7cfb598'),
+  -- user: specificPermsAdmin@example.com, users[key]:update
+  ('39ed471f-8383-4283-bb8a-303cb05cadef', '4f2b3dc7-9b3f-4624-82c0-93d139e19baa'),
+  -- user: specificPermsAdmin@example.com, users[key]:delete
+  ('39ed471f-8383-4283-bb8a-303cb05cadef', 'e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f');
 
 INSERT INTO "user"."groupPermissions"
   ("groupKey", "permissionKey")

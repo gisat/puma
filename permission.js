@@ -1,9 +1,26 @@
 const qb = require('@imatic/pgqb');
 const db = require('./db');
 
+function permissionExpr(permission) {
+    const keys = (permission.resourceKey || []).map((k) =>
+        qb.expr.eq('p.resourceKey', qb.val.inlineParam(k))
+    );
+
+    return qb.expr.and(
+        qb.expr.eq(
+            'p.resourceType',
+            qb.val.inlineParam(permission.resourceType)
+        ),
+        qb.expr.eq('p.permission', qb.val.inlineParam(permission.permission)),
+        keys.length > 0
+            ? qb.expr.or(qb.expr.null('p.resourceKey'), qb.expr.and(...keys))
+            : qb.expr.null('p.resourceKey')
+    );
+}
+
 /**
  * @param {Object} user
- * @param {Array<{resourceType: string, permission: string}>} permissions
+ * @param {Array<{resourceType: string, permission: string, resourceKey: (Array<string>|undefined)}>} permissions
  *
  * @returns {boolean}
  */
@@ -17,21 +34,7 @@ async function userHasAllPermissions(user, permissions) {
         qb.from('user.v_userPermissions', 'p'),
         qb.where(
             qb.expr.and(
-                qb.expr.and(
-                    ...permissions.map((p) =>
-                        qb.expr.and(
-                            qb.expr.eq(
-                                'p.resourceType',
-                                qb.val.inlineParam(p.resourceType)
-                            ),
-                            qb.expr.eq(
-                                'p.permission',
-                                qb.val.inlineParam(p.permission)
-                            ),
-                            qb.expr.null('p.resourceKey')
-                        )
-                    )
-                ),
+                ...permissions.map(permissionExpr),
                 qb.expr.eq('p.userKey', qb.val.inlineParam(user.key))
             )
         ),
