@@ -1,4 +1,6 @@
 const parameters = require('../../middlewares/parameters');
+const userMiddleware = require('../../middlewares/user');
+const permission = require('../../permission');
 const _ = require('lodash');
 const schema = require('./schema');
 const q = require('./query');
@@ -96,9 +98,24 @@ function createGroup(plan, group) {
                 body: schema.createBody(plan, group),
             },
             responses: {201: {}},
-            middlewares: [parameters],
+            middlewares: [parameters, userMiddleware],
             handler: async function (request, response) {
                 const data = request.parameters.body.data;
+
+                const requiredPermissions = Object.keys(data).map((k) => ({
+                    resourceType: k,
+                    permission: 'create',
+                }));
+                console.log('required permissions', requiredPermissions);
+                if (
+                    !(await permission.userHasAllPermissions(
+                        request.user,
+                        requiredPermissions
+                    ))
+                ) {
+                    return response.status(403).json({success: false});
+                }
+
                 const records = await db.transactional(async function (client) {
                     return await Promise.all(
                         _.map(data, async function (records, type) {

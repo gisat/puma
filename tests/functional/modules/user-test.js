@@ -3,6 +3,7 @@ const fetch = require('node-fetch');
 const config = require('../../../config');
 const db = require('../../../db');
 const _ = require('lodash');
+const jwt = require('jsonwebtoken');
 
 db.init();
 
@@ -17,6 +18,16 @@ function userExists(key) {
             [key]
         )
         .then((res) => res.rows.length > 0);
+}
+
+function createAdminToken() {
+    return (
+        'Bearer ' +
+        jwt.sign(
+            {key: '2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', type: 'user'},
+            config.jwt.secret
+        )
+    );
 }
 
 describe('modules/user', function () {
@@ -208,6 +219,7 @@ describe('modules/user', function () {
         const response = await fetch(url('/rest/user'), {
             method: 'POST',
             headers: new fetch.Headers({
+                Authorization: createAdminToken(),
                 'Content-Type': 'application/json',
             }),
             body: JSON.stringify({
@@ -261,6 +273,40 @@ describe('modules/user', function () {
             },
             success: true,
             total: 2,
+        });
+    });
+
+    it('POST /rest/user without permissions', async function () {
+        const response = await fetch(url('/rest/user'), {
+            method: 'POST',
+            headers: new fetch.Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            data: {
+                                email: 'new@example.com',
+                            },
+                        },
+                        {
+                            key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                            data: {
+                                email: 'newWithKey@example.com',
+                            },
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 403);
+
+        const data = await response.json();
+
+        assert.deepStrictEqual(data, {
+            success: false,
         });
     });
 

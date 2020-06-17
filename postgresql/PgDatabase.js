@@ -136,7 +136,20 @@ class PgDatabase {
 				  "changed" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 				  "changedBy" TEXT,
 				  "change" JSONB
-    		)`
+			)`,
+		    `CREATE OR REPLACE VIEW "user"."v_userPermissions" AS
+			SELECT
+			  "p"."resourceType", "p"."resourceKey", "p"."permission", "up"."userKey"
+			FROM
+			  "user"."permissions" "p"
+			  JOIN "user"."userPermissions" "up" ON "up"."permissionKey" = "p"."key"
+			UNION
+			SELECT
+			  "p"."resourceType", "p"."resourceKey", "p"."permission", "ug"."userKey"
+			FROM
+			  "user"."permissions" "p"
+			  JOIN "user"."groupPermissions" "gp" ON "gp"."permissionKey" = "p"."key"
+			  JOIN "user"."userGroups" "ug" ON "ug"."groupKey" = "gp"."groupKey"`
 		];
 	}
 
