@@ -118,6 +118,21 @@ describe('middlewares/user', function () {
             },
         },
         {
+            name: 'valid authorization cookie',
+            request: {
+                method: 'get',
+                url: '/user-info',
+                cookies: {authToken: jwt.sign({id: 1}, config.jwt.secret)},
+            },
+            expectedResponse: {
+                status: 200,
+                body: {
+                    route: 'user-info',
+                    user: {id: 1},
+                },
+            },
+        },
+        {
             name: 'expired token',
             request: {
                 method: 'get',

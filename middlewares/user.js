@@ -31,13 +31,21 @@ function verifyToken(token) {
     });
 }
 
+function tokenFromRequest(request) {
+    const authorizatonHeader = request.headers.authorization;
+    if (authorizatonHeader != null) {
+        return parseToken(authorizatonHeader);
+    }
+
+    return request.cookies.authToken;
+}
+
 /**
  * If authorization header is sent, it adds `user` into request or responds with `401` if invalid.
  * If authorizaton header is not sent, all is fine.
  */
 async function userMiddleware(request, response, next) {
-    const authorizatonHeader = request.headers.authorization;
-    const token = parseToken(authorizatonHeader);
+    const token = tokenFromRequest(request);
     if (!token) {
         delete request.user; // something adds `user` into request. Let's remove him if he is not authenticated.
         return next();
@@ -50,6 +58,7 @@ async function userMiddleware(request, response, next) {
         }
 
         request.user = verifiedToken;
+        request.authToken = token;
         next();
     } catch (err) {
         response.status(401).end();

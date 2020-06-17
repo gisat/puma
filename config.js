@@ -34,7 +34,7 @@ const ptr4 = {
 	},
 	jwt: {
 		secret: 'changeMe',
-		expiresIn: '7d'
+		expiresIn: 604800, // seconds (604800 = 7 days)
 	},
 	password: {
 		iteration_counts: 4

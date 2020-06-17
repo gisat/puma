@@ -57,6 +57,10 @@ function formatPermissions(permissions) {
         formattedPermissions[group] = {};
         dataType.stores.forEach((store) => {
             const resourceType = store.tableName();
+            if (permissionsByResourceType[resourceType] == null) {
+                return;
+            }
+
             const permissions = Object.fromEntries(
                 _.map(permissionsByResourceType[resourceType], (v) => [
                     v.permission,
@@ -68,6 +72,28 @@ function formatPermissions(permissions) {
     });
 
     return formattedPermissions;
+}
+
+async function getLoginInfo(user, token) {
+    const [userInfo, userGroups] = await Promise.all([
+        q.getUserInfoByKey(user.key),
+        q.userGroupsByUser(user),
+    ]);
+
+    const permissions = await (user.type === 'guest'
+        ? q.groupPermissionsByKeys(userGroups.map((g) => g.key))
+        : q.userPermissionsByKey(user.key));
+
+    return {
+        key: user.key,
+        data: {
+            name: _.get(userInfo, 'name', null),
+            email: _.get(userInfo, 'email', null),
+            phone: _.get(userInfo, 'phone', null),
+        },
+        permissions: formatPermissions(permissions),
+        authToken: token,
+    };
 }
 
 const router = express.Router();
@@ -94,49 +120,56 @@ router.post('/api/login/login', async function (request, response, next) {
             tokenPayload({...user, ...{type: 'user'}})
         );
 
-        return response.status(200).json({token}).end();
+        const expires = new Date();
+        expires.setSeconds(expires.getSeconds() + config.jwt.expiresIn);
+
+        return response
+            .cookie('authToken', token, {
+                expires: expires,
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+            })
+            .status(200)
+            .json(await getLoginInfo(user, token));
     } catch (err) {
         next(err);
     }
 });
 
-router.post('/api/login/login-guest', async function (request, response) {
-    const token = await createAuthToken(
-        tokenPayload({key: uuid.generate(), type: 'guest'})
-    );
-
-    return response.status(200).json({token}).end();
-});
-
 router.post('/api/login/logout', function (request, response) {
-    response.status(200).end();
+    response
+        .clearCookie('authToken', {
+            httpOnly: true,
+            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production',
+        })
+        .status(200)
+        .end();
 });
+
+async function autoLogin(request, response, next) {
+    if (request.user != null) {
+        return next();
+    }
+
+    const user = {key: uuid.generate(), type: 'guest'};
+    const token = await createAuthToken(tokenPayload(user));
+
+    request.user = user;
+    request.authToken = token;
+    next();
+}
 
 router.get(
     '/api/login/getLoginInfo',
     userMiddleware,
+    autoLogin,
     authMiddleware,
     async function (request, response) {
-        const user = request.user;
-        const [userInfo, userGroups] = await Promise.all([
-            q.getUserInfoByKey(user.key),
-            q.userGroupsByUser(user),
-        ]);
-
-        const permissions = await (user.type === 'guest'
-            ? q.groupPermissionsByKeys(userGroups.map((g) => g.key))
-            : q.userPermissionsByKey(user.key));
-
-        response.status(200).json({
-            key: user.key,
-            data: {
-                name: _.get(userInfo, 'name', null),
-                email: _.get(userInfo, 'email', null),
-                phone: _.get(userInfo, 'phone', null),
-            },
-            groups: userGroups.map((g) => g.name),
-            permissions: formatPermissions(permissions),
-        });
+        response
+            .status(200)
+            .json(await getLoginInfo(request.user, request.authToken));
     }
 );
 
