@@ -27,7 +27,8 @@ async function userHasAllPermissions(user, permissions) {
                             qb.expr.eq(
                                 'p.permission',
                                 qb.val.inlineParam(p.permission)
-                            )
+                            ),
+                            qb.expr.null('p.resourceKey')
                         )
                     )
                 ),

@@ -314,6 +314,7 @@ describe('modules/user', function () {
         const response = await fetch(url('/rest/user'), {
             method: 'PUT',
             headers: new fetch.Headers({
+                Authorization: createAdminToken(),
                 'Content-Type': 'application/json',
             }),
             body: JSON.stringify({
@@ -349,6 +350,33 @@ describe('modules/user', function () {
             },
             success: true,
             total: 1,
+        });
+    });
+
+    it('PUT /rest/user without permissions', async function () {
+        const response = await fetch(url('/rest/user'), {
+            method: 'PUT',
+            headers: new fetch.Headers({
+                'Content-Type': 'application/json',
+            }),
+            body: JSON.stringify({
+                data: {
+                    users: [
+                        {
+                            key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                            data: {
+                                phone: '+420111111111',
+                            },
+                        },
+                    ],
+                },
+            }),
+        });
+
+        assert.strictEqual(response.status, 403);
+        const data = await response.json();
+        assert.deepStrictEqual(data, {
+            success: false,
         });
     });
 

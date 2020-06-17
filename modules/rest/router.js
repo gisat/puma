@@ -106,7 +106,6 @@ function createGroup(plan, group) {
                     resourceType: k,
                     permission: 'create',
                 }));
-                console.log('required permissions', requiredPermissions);
                 if (
                     !(await permission.userHasAllPermissions(
                         request.user,
@@ -149,9 +148,23 @@ function createGroup(plan, group) {
                 body: schema.updateBody(plan, group),
             },
             responses: {200: {}},
-            middlewares: [parameters],
+            middlewares: [parameters, userMiddleware],
             handler: async function (request, response) {
                 const data = request.parameters.body.data;
+
+                const requiredPermissions = Object.keys(data).map((k) => ({
+                    resourceType: k,
+                    permission: 'update',
+                }));
+                if (
+                    !(await permission.userHasAllPermissions(
+                        request.user,
+                        requiredPermissions
+                    ))
+                ) {
+                    return response.status(403).json({success: false});
+                }
+
                 const records = await db.transactional(async function (client) {
                     return await Promise.all(
                         _.map(data, async function (records, type) {
