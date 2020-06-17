@@ -120,32 +120,14 @@ router.post('/api/login/login', async function (request, response, next) {
             tokenPayload({...user, ...{type: 'user'}})
         );
 
-        const expires = new Date();
-        expires.setSeconds(expires.getSeconds() + config.jwt.expiresIn);
-
-        return response
-            .cookie('authToken', token, {
-                expires: expires,
-                httpOnly: true,
-                sameSite: 'lax',
-                secure: process.env.NODE_ENV === 'production',
-            })
-            .status(200)
-            .json(await getLoginInfo(user, token));
+        return response.status(200).json(await getLoginInfo(user, token));
     } catch (err) {
         next(err);
     }
 });
 
 router.post('/api/login/logout', function (request, response) {
-    response
-        .clearCookie('authToken', {
-            httpOnly: true,
-            sameSite: 'lax',
-            secure: process.env.NODE_ENV === 'production',
-        })
-        .status(200)
-        .end();
+    response.status(200).end();
 });
 
 async function autoLogin(request, response, next) {
