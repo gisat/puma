@@ -5,6 +5,7 @@ const plan = require('./rest/plan');
 const routing = require('./routing/index');
 const swagger = require('./swagger/index');
 const swaggerUi = require('swagger-ui-express');
+const {errorMiddleware} = require('./error/index');
 
 function apiRouter() {
     const router = express.Router();
@@ -25,6 +26,7 @@ function apiRouter() {
 const router = express.Router();
 router.use(loginRouter);
 router.use(apiRouter());
+router.use(errorMiddleware);
 
 module.exports = {
     router,

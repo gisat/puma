@@ -1,5 +1,6 @@
 const Joi = require('@hapi/joi');
 const apiUtil = require('../util/api');
+const {HttpError} = require('../modules/error');
 
 /**
  * Coerces request parameters (body, path, query) using given Joi schema.
@@ -23,9 +24,12 @@ function parameters(request, response, next) {
             abortEarly: false,
         });
         if (validationResult.error) {
-            return response
-                .status(400)
-                .json(apiUtil.createQueryErrorObject(validationResult.error));
+            return next(
+                new HttpError(
+                    400,
+                    apiUtil.createQueryErrorObject(validationResult.error)
+                )
+            );
         }
 
         responseParameters.query = validationResult.value;
@@ -37,9 +41,12 @@ function parameters(request, response, next) {
             abortEarly: false,
         });
         if (validationResult.error) {
-            return response
-                .status(400)
-                .json(apiUtil.createDataErrorObject(validationResult.error));
+            return next(
+                new HttpError(
+                    400,
+                    apiUtil.createDataErrorObject(validationResult.error)
+                )
+            );
         }
 
         responseParameters.body = validationResult.value;
@@ -52,9 +59,11 @@ function parameters(request, response, next) {
         });
 
         if (validationResult.error) {
-            return response
-                .status(400)
-                .json({errors: [{title: 'Invalid path params'}]});
+            return next(
+                new HttpError(400, {
+                    errors: [{title: 'Invalid path params'}],
+                })
+            );
         }
 
         responseParameters.path = validationResult.value;

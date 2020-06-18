@@ -42,9 +42,9 @@ const initWorker = () => {
 	app.use((request, response, next) => {
 		new UserAuthentication(pgPool).authenticate(request, response, next);
 	});
+	new Routes(app, pgPool).init();
 
 	app.listen(process.env.port, () => {
-		new Routes(app, pgPool).init();
 		console.log(`#NOTE# Cluster worker id ${cluster.worker.id} is listening on port ${process.env.port}`);
 	});
 }

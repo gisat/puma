@@ -15,6 +15,10 @@ function responseMap(response) {
     return m;
 }
 
+function errorMiddleware(err, request, response, next) {
+    response.status(err.status).json(err.data);
+}
+
 const ObjectSchema = Joi.object().keys({
     one: Joi.string().valid('first', 'second').required(),
     count: Joi.number().integer().required(),
@@ -211,21 +215,26 @@ describe('routing/middleware/parameters', function () {
         tests.forEach((test) => {
             it(test.name, function (done) {
                 const app = express();
-                app.get('/url', parameters, function (request, response) {
+                app.get('/url', parameters, errorMiddleware, function (
+                    request,
+                    response
+                ) {
                     response.status(200).json({
                         route: 'url',
                         parameters: request.parameters,
                     });
                 });
-                app.get('/url/:one/:count', parameters, function (
-                    request,
-                    response
-                ) {
-                    response.status(200).json({
-                        route: 'url_one_count',
-                        parameters: request.parameters,
-                    });
-                });
+                app.get(
+                    '/url/:one/:count',
+                    parameters,
+                    errorMiddleware,
+                    function (request, response) {
+                        response.status(200).json({
+                            route: 'url_one_count',
+                            parameters: request.parameters,
+                        });
+                    }
+                );
 
                 const request = httpMocks.createRequest(test.request);
                 request.match = {data: {parameters: test.parameters}};
