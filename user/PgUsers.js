@@ -57,6 +57,7 @@ class PgUsers extends PgCollection {
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "password" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "phone" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "other" JSONB;
+		INSERT INTO "${this._pgSchema}"."${this._tableName}"("key", "name") VALUES ('cad8ea0d-f95e-43c1-b162-0704bfc1d3f6', 'guest') ON CONFLICT ("key") DO NOTHING;
 		COMMIT;
 		`;
 	}

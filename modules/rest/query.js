@@ -177,7 +177,7 @@ function listPermissionQuery({user, type}, alias) {
                 )
             )
         ),
-        qb.where(qb.expr.eq('tp.userKey', qb.val.inlineParam(user.key)))
+        qb.where(qb.expr.eq('tp.userKey', qb.val.inlineParam(user.realKey)))
     );
 }
 

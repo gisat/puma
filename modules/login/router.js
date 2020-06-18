@@ -9,17 +9,30 @@ const q = require('./query');
 const PgDatabase = require('../../postgresql/PgDatabase');
 const db = require('../../db');
 
+const GUEST_KEY = 'cad8ea0d-f95e-43c1-b162-0704bfc1d3f6';
+
+const UserType = {
+    USER: 'user',
+    GUEST: 'guest',
+};
+
 /**
- * @param {Object} user
+ * @param {Object} payload
+ * @param {String} payload.key Key from database in case `type` is `user` or random in case `type` is `guest`
+ * @param {String} payload.realKey Key from database
+ * @param {String} payload.type `guest` or `user`
  *
  * @returns {Object} Payload
  */
-function tokenPayload({key, type}) {
-    return {key, type};
+function tokenPayload({key, type, realKey}) {
+    return {key, type, realKey};
 }
 
 /**
  * @param {Object} payload
+ * @param {String} payload.key Key from database in case `type` is `user` or random in case `type` is `guest`
+ * @param {String} payload.realKey Key from database
+ * @param {String} payload.type `guest` or `user`
  *
  * @returns Promise
  */
@@ -75,14 +88,10 @@ function formatPermissions(permissions) {
 }
 
 async function getLoginInfo(user, token) {
-    const [userInfo, userGroups] = await Promise.all([
-        q.getUserInfoByKey(user.key),
-        q.userGroupsByUser(user),
+    const [userInfo, permissions] = await Promise.all([
+        q.getUserInfoByKey(user.realKey),
+        q.userPermissionsByKey(user.realKey),
     ]);
-
-    const permissions = await (user.type === 'guest'
-        ? q.groupPermissionsByKeys(userGroups.map((g) => g.key))
-        : q.userPermissionsByKey(user.key));
 
     return {
         key: user.key,
@@ -117,10 +126,17 @@ router.post('/api/login/login', async function (request, response, next) {
         }
 
         const token = await createAuthToken(
-            tokenPayload({...user, ...{type: 'user'}})
+            tokenPayload({...user, ...{type: UserType.USER, realKey: user.key}})
         );
 
-        return response.status(200).json(await getLoginInfo(user, token));
+        return response
+            .status(200)
+            .json(
+                await getLoginInfo(
+                    Object.assign({}, user, {realKey: user.key}),
+                    token
+                )
+            );
     } catch (err) {
         next(err);
     }
@@ -135,7 +151,11 @@ async function autoLogin(request, response, next) {
         return next();
     }
 
-    const user = {key: uuid.generate(), type: 'guest'};
+    const user = {
+        key: uuid.generate(),
+        type: UserType.GUEST,
+        realKey: GUEST_KEY,
+    };
     const token = await createAuthToken(tokenPayload(user));
 
     request.user = user;

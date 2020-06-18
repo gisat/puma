@@ -6,17 +6,18 @@ BEGIN;
 TRUNCATE "user"."users", "user"."groups", "user"."permissions" CASCADE;
 
 INSERT INTO "user"."users"
-  ("key", "email", "password", "phone")
+  ("key", "email", "password", "phone", "name")
 VALUES
+  ('cad8ea0d-f95e-43c1-b162-0704bfc1d3f6', null, null, null, 'guest'),
   -- all have password: test
-  ('7c5acddd-3625-46ef-90b3-82f829afb258', 'test@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
-  ('2bf6c1da-991a-4592-acc1-b10192db9363', 'testWithGroups@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
-  ('e2f5d20e-2784-4690-a3f0-339c60b04245', 'testWithPhone@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', '+420123456789'),
-  ('3e3f4300-1336-4043-baa3-b65a025c2d83', 'testWithPermissions@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
+  ('7c5acddd-3625-46ef-90b3-82f829afb258', 'test@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null, null),
+  ('2bf6c1da-991a-4592-acc1-b10192db9363', 'testWithGroups@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null, null),
+  ('e2f5d20e-2784-4690-a3f0-339c60b04245', 'testWithPhone@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', '+420123456789', null),
+  ('3e3f4300-1336-4043-baa3-b65a025c2d83', 'testWithPermissions@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null, null),
   -- this user should not have permissions with NOT NULL resourceKey
-  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', 'admin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null),
+  ('2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', 'admin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null, null),
   -- this user should not have permissions with NULL resourceKey
-  ('39ed471f-8383-4283-bb8a-303cb05cadef', 'specificPermsAdmin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null);
+  ('39ed471f-8383-4283-bb8a-303cb05cadef', 'specificPermsAdmin@example.com', '$2a$04$iDjo0YV1HpIVGFqN1xFrUeuduvBdRs.o8HR5RVsRIz8OOLi/uOezS', null, null);
 
 INSERT INTO "user"."groups"
   ("key", "name")
@@ -28,6 +29,10 @@ VALUES
 INSERT INTO "user"."userGroups"
   ("userKey", "groupKey")
 VALUES
+  -- user: guest
+  -- groups: guest, user
+  ('cad8ea0d-f95e-43c1-b162-0704bfc1d3f6', '52ddabec-d01a-49a0-bb4d-5ff931bd346e'),
+  ('cad8ea0d-f95e-43c1-b162-0704bfc1d3f6', 'e56f3545-57f5-44f9-9094-2750a69ef67e'),
   -- user: testWithGroups@example.com
   -- groups: guest, user
   ('2bf6c1da-991a-4592-acc1-b10192db9363', '52ddabec-d01a-49a0-bb4d-5ff931bd346e'),

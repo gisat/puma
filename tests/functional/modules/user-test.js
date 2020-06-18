@@ -24,7 +24,11 @@ function createAdminToken() {
     return (
         'Bearer ' +
         jwt.sign(
-            {key: '2d069e3a-f77f-4a1f-aeda-50fd06c8c35d', type: 'user'},
+            {
+                key: '2d069e3a-f77f-4a1f-aeda-50fd06c8c35d',
+                realKey: '2d069e3a-f77f-4a1f-aeda-50fd06c8c35d',
+                type: 'user',
+            },
             config.jwt.secret
         )
     );
@@ -34,7 +38,11 @@ function createNoPermissionUserToken() {
     return (
         'Bearer ' +
         jwt.sign(
-            {key: '7c5acddd-3625-46ef-90b3-82f829afb258', type: 'user'},
+            {
+                key: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                realKey: '7c5acddd-3625-46ef-90b3-82f829afb258',
+                type: 'user',
+            },
             config.jwt.secret
         )
     );
@@ -44,7 +52,11 @@ function createSpecificPermsAdminToken() {
     return (
         'Bearer ' +
         jwt.sign(
-            {key: '39ed471f-8383-4283-bb8a-303cb05cadef', type: 'user'},
+            {
+                key: '39ed471f-8383-4283-bb8a-303cb05cadef',
+                realKey: '39ed471f-8383-4283-bb8a-303cb05cadef',
+                type: 'user',
+            },
             config.jwt.secret
         )
     );

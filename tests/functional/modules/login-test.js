@@ -13,11 +13,15 @@ function createToken(payload) {
 }
 
 function createUserToken(key) {
-    return createToken({key, type: 'user'});
+    return createToken({key, realKey: key, type: 'user'});
 }
 
 function createGuestToken(key) {
-    return createToken({key, type: 'guest'});
+    return createToken({
+        key,
+        realKey: 'cad8ea0d-f95e-43c1-b162-0704bfc1d3f6',
+        type: 'guest',
+    });
 }
 
 function createAuthHeader(token) {
@@ -270,7 +274,7 @@ describe('modules/login', function () {
             });
         });
 
-        it('gest', function () {
+        it('guest', function () {
             const key = uuid.generate();
             const token = createGuestToken(key);
             return fetch(url('/api/login/getLoginInfo'), {
@@ -285,7 +289,7 @@ describe('modules/login', function () {
                     assert.deepStrictEqual(data, {
                         key: key,
                         data: {
-                            name: null,
+                            name: 'guest',
                             email: null,
                             phone: null,
                         },
