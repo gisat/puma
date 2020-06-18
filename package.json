@@ -24,7 +24,8 @@
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "nodemailer": "^6.4.6",
-    "pg": "^7.18.2",
+    "pg": "^8.2.1",
+    "postgrator": "^4.0.1",
     "sql-template-strings": "^2.2.2",
     "swagger-ui-express": "^4.1.4",
     "uuid": "^7.0.3"
@@ -51,6 +52,7 @@
     "start:watch": "nodemon server.js",
     "test": "./bin/load-fixtures && mocha",
     "test:wait": "wait-port localhost:9850 && yarn run test",
-    "test:watch": "npm-watch test:wait"
+    "test:watch": "npm-watch test:wait",
+    "db:migrations:create": "version=$(date +%Y%m%d%H%M) && touch \"migrations/${version}.do.sql\" && touch \"migrations/${version}.undo.sql\""
   }
 }

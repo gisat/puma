@@ -1,23 +1,20 @@
 const cluster = require('cluster');
 
 const Routes = require('./routes/Routes');
-const PgPool = require('./postgresql/PgPool');
 const UserAuthentication = require('./auth/UserAuthentication');
 
 const config = require('./config');
 const db = require('./db');
+const migrations = require('./migrations');
 
-const initMaster = () => {
-	const PgDatabase = require('./postgresql/PgDatabase');
+const initMaster = async () => {
+	try {
+		await migrations.migrate();
 
-	new PgDatabase()
-		.ensure()
-		.then(() => {
-			return initWorkers();
-		})
-		.catch((error) => {
-			console.log(`#ERROR#`, error)
-		});
+		return initWorkers()
+	} catch (error) {
+		console.log(`#ERROR#`, error)
+	}
 }
 
 const initWorkers = () => {
