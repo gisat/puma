@@ -307,7 +307,7 @@ async function create({plan, group, type, client}, records) {
         []
     );
 
-    return getDb(client).transactional(async (client) => {
+    return client.transactional(async (client) => {
         const res = await client
             .query(qb.toSql(sqlMap))
             .then((res) => res.rows.map((r) => r.key));
@@ -433,7 +433,7 @@ async function updateRecordRelation({plan, group, type, client}, record) {
 }
 
 async function update({plan, group, type, client}, records) {
-    return getDb(client).transactional(async (client) => {
+    return client.transactional(async (client) => {
         await Promise.all(
             records.map((r) => updateRecord({plan, group, type, client}, r))
         );
@@ -452,9 +452,9 @@ async function deleteRecords({group, type, client}, records) {
         return;
     }
 
-    await getDb(
-        client
-    ).query(`DELETE FROM "${group}"."${type}" WHERE key = ANY($1)`, [keys]);
+    await client.query(`DELETE FROM "${group}"."${type}" WHERE key = ANY($1)`, [
+        keys,
+    ]);
 }
 
 module.exports = {

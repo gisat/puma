@@ -99,7 +99,7 @@ function createGroup(plan, group) {
                 body: schema.createBody(plan, group),
             },
             responses: {201: {}},
-            middlewares: [parameters, userMiddleware],
+            middlewares: [parameters, userMiddleware, authMiddleware],
             handler: async function (request, response) {
                 const data = request.parameters.body.data;
 
@@ -117,6 +117,8 @@ function createGroup(plan, group) {
                 }
 
                 const records = await db.transactional(async function (client) {
+                    await client.setUser(request.user.realKey);
+
                     return await Promise.all(
                         _.map(data, async function (records, type) {
                             const createdKeys = await q.create(
@@ -149,7 +151,7 @@ function createGroup(plan, group) {
                 body: schema.updateBody(plan, group),
             },
             responses: {200: {}},
-            middlewares: [parameters, userMiddleware],
+            middlewares: [parameters, userMiddleware, authMiddleware],
             handler: async function (request, response) {
                 const data = request.parameters.body.data;
 
@@ -168,6 +170,8 @@ function createGroup(plan, group) {
                 }
 
                 const records = await db.transactional(async function (client) {
+                    await client.setUser(request.user.realKey);
+
                     return await Promise.all(
                         _.map(data, async function (records, type) {
                             await q.update(
@@ -201,7 +205,7 @@ function createGroup(plan, group) {
             },
             parameters: {body: schema.deleteBody(plan, group)},
             responses: {200: {}},
-            middlewares: [parameters, userMiddleware],
+            middlewares: [parameters, userMiddleware, authMiddleware],
             handler: async function (request, response) {
                 const data = request.parameters.body.data;
 
@@ -220,6 +224,7 @@ function createGroup(plan, group) {
                 }
 
                 await db.transactional(async function (client) {
+                    await client.setUser(request.user.realKey);
                     await Promise.all(
                         _.map(data, async function (records, type) {
                             await q.deleteRecords(

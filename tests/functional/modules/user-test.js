@@ -393,6 +393,7 @@ describe('modules/user', function () {
         const response = await fetch(url('/rest/user'), {
             method: 'POST',
             headers: new fetch.Headers({
+                Authorization: createNoPermissionUserToken(),
                 'Content-Type': 'application/json',
             }),
             body: JSON.stringify({
@@ -601,6 +602,7 @@ describe('modules/user', function () {
         const response = await fetch(url('/rest/user'), {
             method: 'PUT',
             headers: new fetch.Headers({
+                Authorization: createNoPermissionUserToken(),
                 'Content-Type': 'application/json',
             }),
             body: JSON.stringify({
@@ -633,6 +635,7 @@ describe('modules/user', function () {
         const response = await fetch(url('/rest/user'), {
             method: 'DELETE',
             headers: new fetch.Headers({
+                Authorization: createNoPermissionUserToken(),
                 'Content-Type': 'application/json',
             }),
             body: JSON.stringify({

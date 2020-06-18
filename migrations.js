@@ -57,9 +57,9 @@ function createPostgrator() {
     });
 }
 
-async function migrate() {
+async function migrate(version = 'max') {
     await ensureDb();
-    console.log(await createPostgrator().migrate());
+    console.log(await createPostgrator().migrate(version));
 }
 
 module.exports = {

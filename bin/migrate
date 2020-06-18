@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+const migrations = require('../migrations');
+
+const targetVersion = process.argv[2] || 'max';
+migrations.migrate(targetVersion);
