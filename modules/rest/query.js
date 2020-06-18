@@ -127,7 +127,6 @@ function relationsQuery({plan, group, type}, alias) {
                 const relAlias = 'rel_' + name;
                 const column = name + 'Keys';
                 const ownKey = `${relAlias}.${rel.ownKey}`;
-                const inverseKey = `${relAlias}.${rel.inverseKey}`;
 
                 return qb.merge(
                     qb.select([
