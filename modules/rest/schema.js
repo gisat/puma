@@ -85,6 +85,24 @@ function dataColCreateSchema(col) {
     return col.schema.required();
 }
 
+function relationSchemas(plan, group, type) {
+    const relations = plan[group][type].relations;
+    const relationSchemas = {};
+    _.forEach(relations, function (rel, name) {
+        switch (rel.type) {
+            case 'manyToMany':
+                relationSchemas[name + 'Keys'] = Joi.array().items(
+                    plan[rel.resourceGroup][rel.resourceType].columns.key.schema
+                );
+                return;
+        }
+
+        throw new Error(`Unspported relation type: ${rel.type}`);
+    });
+
+    return relationSchemas;
+}
+
 function createBody(plan, group) {
     const dataKeys = _.mapValues(plan[group], function (typeSchema, type) {
         const columns = _.pick(
@@ -95,20 +113,7 @@ function createBody(plan, group) {
         const keyCol = columns.key;
         const dataCols = _.omit(columns, ['key']);
 
-        const relations = plan[group][type].relations;
-        const relationSchemas = {};
-        _.forEach(relations, function (rel, name) {
-            switch (rel.type) {
-                case 'manyToMany':
-                    relationSchemas[name + 'Keys'] = Joi.array().items(
-                        plan[rel.resourceGroup][rel.resourceType].columns.key
-                            .schema
-                    );
-                    return;
-            }
-
-            throw new Error(`Unspported relation type: ${rel.type}`);
-        });
+        const rs = relationSchemas(plan, group, type);
 
         return Joi.array()
             .items(
@@ -119,7 +124,7 @@ function createBody(plan, group) {
                             Object.assign(
                                 {},
                                 _.mapValues(dataCols, dataColCreateSchema),
-                                relationSchemas
+                                rs
                             )
                         )
                         .required(),
@@ -150,20 +155,7 @@ function updateBody(plan, group) {
         const keyCol = columns.key;
         const dataCols = _.omit(columns, ['key']);
 
-        const relations = plan[group][type].relations;
-        const relationSchemas = {};
-        _.forEach(relations, function (rel, name) {
-            switch (rel.type) {
-                case 'manyToMany':
-                    relationSchemas[name + 'Keys'] = Joi.array().items(
-                        plan[rel.resourceGroup][rel.resourceType].columns.key
-                            .schema
-                    );
-                    return;
-            }
-
-            throw new Error(`Unspported relation type: ${rel.type}`);
-        });
+        const rs = relationSchemas(plan, group, type);
 
         return Joi.array().items(
             Joi.object()
@@ -174,7 +166,7 @@ function updateBody(plan, group) {
                             Object.assign(
                                 {},
                                 _.mapValues(dataCols, dataColUpdateSchema),
-                                relationSchemas
+                                rs
                             )
                         )
                         .required(),
