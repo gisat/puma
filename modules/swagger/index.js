@@ -1,6 +1,9 @@
 const j2s = require('joi-to-swagger');
 const _ = require('lodash');
 
+/**
+ * @param {import('../routing').RouteData} handler
+ */
 function operationFromHandler(handler) {
     const operation = {};
 
@@ -38,11 +41,18 @@ function operationFromHandler(handler) {
 
 /**
  * Converts expres `:param` to swagger `{param}`
+ *
+ * @param {string} path
+ *
+ * @returns {string}
  */
 function expressPathToSwaggerPath(path) {
     return path.replace(/:(\w+)/g, '{$1}');
 }
 
+/**
+ * @param {Array<import('../routing').RouteData} api
+ */
 function pathsFromApi(api) {
     const paths = {};
 
@@ -57,6 +67,9 @@ function pathsFromApi(api) {
     return paths;
 }
 
+/**
+ * @param {Array<import('../routing').RouteData} api
+ */
 function schemasFromApi(api) {
     return _.filter(
         _.map(api, (handler) => _.get(handler, ['parameters', 'body'])),
@@ -64,6 +77,10 @@ function schemasFromApi(api) {
     );
 }
 
+/**
+ * @param {Array<import('../routing').RouteData} api
+ * @returns {object} Swagger document
+ */
 function configFromApi(api) {
     return {
         openapi: '3.0.2',

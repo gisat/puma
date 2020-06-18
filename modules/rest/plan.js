@@ -2,7 +2,7 @@ const Joi = require('@hapi/joi');
 const uuid = require('../../uuid');
 
 /**
- * Plain of individual types is stored under <group>.<type>.
+ * Plan of individual types is stored under <group>.<type>.
  *
  * ## columns
  *

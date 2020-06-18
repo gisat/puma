@@ -1,6 +1,19 @@
 const qb = require('@imatic/pgqb');
 const db = require('./db');
 
+/**
+ * @typedef {object} Permission
+ * @property {string} resourceType
+ * @property {string} permission
+ * @property {Array<string|undefined>=} resourceKey - All resource keys we need access to
+ *   (helpful if user doesn't have global access to the resource, but has access to individual resources)
+ */
+
+/**
+ * @param {Permission} permission
+ *
+ * @returns {import('@imatic/pgqb').Expr}
+ */
 function permissionExpr(permission) {
     const keys = (permission.resourceKey || []).map((k) =>
         qb.expr.eq('p.resourceKey', qb.val.inlineParam(k))
@@ -20,7 +33,7 @@ function permissionExpr(permission) {
 
 /**
  * @param {Object} user
- * @param {Array<{resourceType: string, permission: string, resourceKey: (Array<string>|undefined)}>} permissions
+ * @param {Array<Permission>} permissions
  *
  * @returns {boolean}
  */

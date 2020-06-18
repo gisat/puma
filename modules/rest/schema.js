@@ -8,12 +8,14 @@ function colFilterSchema(col) {
         case 'string':
             return Joi.alternatives().try(
                 schema,
-                Joi.object().keys({
-                    like: schema,
-                    eq: schema,
-                    in: Joi.array().items(schema),
-                    notin: Joi.array().items(schema),
-                })
+                Joi.object()
+                    .keys({
+                        like: schema,
+                        eq: schema,
+                        in: Joi.array().items(schema).min(1),
+                        notin: Joi.array().items(schema).min(1),
+                    })
+                    .length(1)
             );
     }
 
@@ -25,7 +27,11 @@ function listPath(plan, group) {
 
     return Joi.object()
         .required()
-        .keys({types: Joi.stringArray().items(Joi.string().valid(...types))});
+        .keys({
+            types: Joi.stringArray()
+                .items(Joi.string().valid(...types))
+                .min(1),
+        });
 }
 
 /**
