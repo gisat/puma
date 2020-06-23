@@ -85,7 +85,7 @@ class PgDataController {
 								await this.getGeometryColumnsForTableName(spatialDataSource.data.tableName)
 									.then(async (geometryColumnNames) => {
 										if (geometryColumnNames.length === 1) {
-											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0], transformation);
+											let spatialData = await this.getSpatialDataSourceData(spatialDataSource.data.tableName, filter.fidColumnName, geometryColumnNames[0], transformation, filter.bbox);
 											payload.data.spatial.push({
 												spatialDataSourceKey: spatialDataSource.key,
 												spatialData
@@ -213,7 +213,7 @@ class PgDataController {
 						attributeDataSources = attributeDataSources.data.attribute;
 
 						for (let attributeDataSource of attributeDataSources) {
-							let attributeData = await this.getAttributeDataSourceData(attributeDataSource.data.tableName, filter.fidColumnName, attributeDataSource.data.columnName);
+							let attributeData = await this.getAttributeDataSourceData(attributeDataSource.data.tableName, filter.fidColumnName, attributeDataSource.data.columnName, filter.bbox);
 							payload.data.attribute.push({
 								attributeDataSourceKey: attributeDataSource.key,
 								attributeData
@@ -250,8 +250,9 @@ class PgDataController {
 			});
 	}
 
-	getSpatialDataSourceData(tableName, fidColumn, geometryColumn, transformation) {
+	getSpatialDataSourceData(tableName, fidColumn, geometryColumn, transformation, bbox) {
 		let geometryOperations = `"${geometryColumn}"`;
+		let where = `WHERE`;
 
 		if(transformation && transformation.hasOwnProperty(`transform`)) {
 			let proj = _.isNumber(transformation.transform) ? transformation.transform : `'${transformation.transform}'`;
@@ -278,8 +279,17 @@ class PgDataController {
 			}
 		}
 
+		if(bbox) {
+			let envelope = `ST_MakeEnvelope(${bbox.coordinates.join(', ')}, ${bbox.srid})`;
+			where += ` ST_Intersects(ST_Transform("${geometryColumn}", ${bbox.srid}), ${envelope})`;
+		}
+
+		let sql = `SELECT "${fidColumn}", ST_AsGeoJson(${geometryOperations}, 14, 4) AS geometry FROM "${tableName}" ${where}`;
+
+		console.log(sql);
+
 		return this._pgPool
-			.query(`SELECT "${fidColumn}", ST_AsGeoJson(${geometryOperations}, 14, 4) AS geometry FROM "${tableName}"`)
+			.query(sql)
 			.then((pgResult) => {
 				return {
 					type: "FeatureCollection",
