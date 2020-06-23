@@ -16,6 +16,8 @@ class PgLpisCheckInternalCases extends PgCollection {
 		this._permissionResourceTypes = [
 			this._basePermissionResourceType
 		];
+
+		this._customSqlColumns = `, ST_AsGeoJSON(ST_Transform(geometry, 4326), 15, 4) AS geometry`;
 	}
 
 	getTableSql() {
@@ -31,7 +33,7 @@ class PgLpisCheckInternalCases extends PgCollection {
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "chybaNote" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "quarter" SMALLINT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "stav" TEXT;
-		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "geometrie" GEOMETRY;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "geometry" GEOMETRY;
 		COMMIT;
 		`;
 	}
