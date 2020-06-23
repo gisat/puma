@@ -3,7 +3,8 @@ const config = require(`../config`);
 const PgCrud = require(`../common/PgCrud`);
 
 const PgEsponFuoreIndicators = require(`./PgEsponFuoreIndicators`);
-const PgLpisChangeCase = require(`./PgLpisChangeCases`);
+const PgLpisChangeCases = require(`./PgLpisChangeCases`);
+const PgLpisCheckInternalCases = require(`./PgLpisCheckInternalCases`);
 
 const PgAttributes = require(`../metadata/PgAttributes`);
 
@@ -16,7 +17,8 @@ class PgSpecificCrud extends PgCrud {
 		super();
 
 		this._pgEsponFuoreIndicators = new PgEsponFuoreIndicators(pgPool, pgSchema);
-		this._pgLpisChangeCase = new PgLpisChangeCase(pgPool, pgSchema);
+		this._pgLpisChangeCases = new PgLpisChangeCases(pgPool, pgSchema);
+		this._pgLpisCheckInternalCase = new PgLpisCheckInternalCases(pgPool, pgSchema);
 
 		this._pgAttributes = new PgAttributes(pgPool, config.pgSchema.metadata);
 		this._pgTags = new PgTags(pgPool, config.pgSchema.metadata);
@@ -33,9 +35,13 @@ class PgSpecificCrud extends PgCrud {
 				store: this._pgEsponFuoreIndicators,
 				type: PgEsponFuoreIndicators.tableName()
 			},
-			[PgLpisChangeCase.groupName()]: {
-				store: this._pgLpisChangeCase,
-				type: PgLpisChangeCase.tableName()
+			[PgLpisChangeCases.groupName()]: {
+				store: this._pgLpisChangeCases,
+				type: PgLpisChangeCases.tableName()
+			},
+			[PgLpisCheckInternalCases.groupName()]: {
+				store: this._pgLpisCheckInternalCase,
+				type: PgLpisCheckInternalCases.tableName()
 			}
 		};
 	}

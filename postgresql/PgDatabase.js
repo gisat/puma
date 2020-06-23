@@ -34,6 +34,7 @@ const PgGroups = require(`../user/PgGroups`);
 
 const PgEsponFuoreIndicators = require(`../specific/PgEsponFuoreIndicators`);
 const PgLpisChangeCases = require(`../specific/PgLpisChangeCases`);
+const PgLpisCheckInternalCases = require(`../specific/PgLpisCheckInternalCases`);
 
 class PgDatabase {
 	constructor(pgPool) {
@@ -103,7 +104,8 @@ class PgDatabase {
 				schema: config.pgSchema.specific,
 				stores: [
 					PgEsponFuoreIndicators,
-					PgLpisChangeCases
+					PgLpisChangeCases,
+					PgLpisCheckInternalCases
 				]
 			}
 		];
