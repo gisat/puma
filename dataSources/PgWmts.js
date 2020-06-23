@@ -17,7 +17,7 @@ class PgWmts extends PgBaseDataSource {
 			"key" UUID PRIMARY KEY DEFAULT gen_random_uuid()
 		);
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "urls" TEXT[];
-		
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "params" JSONB;
 		COMMIT;
 		`;
 	}
