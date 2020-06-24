@@ -26,6 +26,7 @@ class PgLpisCheckInternalCases extends PgCollection {
 		CREATE TABLE IF NOT EXISTS "${this._pgSchema}"."${this._tableName}" (
 			"key" ${this._keyType} PRIMARY KEY DEFAULT gen_random_uuid()
 		);
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "kodDpb" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "lpisKultura" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "chyba" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "chybaKategorie" TEXT;
