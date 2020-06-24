@@ -1,13 +1,14 @@
-const express = require('express');
 const config = require('../../config');
 const jwt = require('jsonwebtoken');
 const userMiddleware = require('../../middlewares/user');
 const authMiddleware = require('../../middlewares/auth');
+const parametersMiddleware = require('../../middlewares/parameters');
 const uuid = require('../../uuid');
 const _ = require('lodash');
 const q = require('./query');
 const PgDatabase = require('../../postgresql/PgDatabase');
 const db = require('../../db');
+const Joi = require('../../joi');
 
 const GUEST_KEY = 'cad8ea0d-f95e-43c1-b162-0704bfc1d3f6';
 
@@ -105,47 +106,6 @@ async function getLoginInfo(user, token) {
     };
 }
 
-const router = express.Router();
-
-router.get('/rest/logged', userMiddleware, function (request, response) {
-    if (request.user) {
-        response.status(200).json({key: request.user.key});
-    } else {
-        response.status(404).json({status: 'Nobody is logged in.'});
-    }
-});
-
-router.post('/api/login/login', async function (request, response, next) {
-    const {username, password} = request.body;
-
-    try {
-        const user = await q.getUser(username, password);
-        if (user == null) {
-            response.status(401).json().end();
-            return;
-        }
-
-        const token = await createAuthToken(
-            tokenPayload({...user, ...{type: UserType.USER, realKey: user.key}})
-        );
-
-        return response
-            .status(200)
-            .json(
-                await getLoginInfo(
-                    Object.assign({}, user, {realKey: user.key}),
-                    token
-                )
-            );
-    } catch (err) {
-        next(err);
-    }
-});
-
-router.post('/api/login/logout', function (request, response) {
-    response.status(200).end();
-});
-
 async function autoLogin(request, response, next) {
     if (request.user != null) {
         return next();
@@ -163,16 +123,92 @@ async function autoLogin(request, response, next) {
     next();
 }
 
-router.get(
-    '/api/login/getLoginInfo',
-    userMiddleware,
-    autoLogin,
-    authMiddleware,
-    async function (request, response) {
-        response
-            .status(200)
-            .json(await getLoginInfo(request.user, request.authToken));
-    }
-);
+const LoginBodySchema = Joi.object().meta({className: 'Login'}).keys({
+    username: Joi.string().required(),
+    password: Joi.string().required(),
+});
 
-module.exports = router;
+module.exports = [
+    {
+        path: '/rest/logged',
+        method: 'get',
+        swagger: {
+            tags: ['login'],
+        },
+        responses: {200: {}},
+        middlewares: [userMiddleware],
+        handler: function (request, response) {
+            if (request.user) {
+                response.status(200).json({key: request.user.key});
+            } else {
+                response.status(404).json({status: 'Nobody is logged in.'});
+            }
+        },
+    },
+    {
+        path: '/api/login/login',
+        method: 'post',
+        swagger: {
+            tags: ['login'],
+        },
+        parameters: {
+            body: LoginBodySchema,
+        },
+        responses: {200: {}},
+        middlewares: [parametersMiddleware],
+        handler: async function (request, response, next) {
+            const {username, password} = request.parameters.body;
+
+            try {
+                const user = await q.getUser(username, password);
+                if (user == null) {
+                    response.status(401).json().end();
+                    return;
+                }
+
+                const token = await createAuthToken(
+                    tokenPayload({
+                        ...user,
+                        ...{type: UserType.USER, realKey: user.key},
+                    })
+                );
+
+                return response
+                    .status(200)
+                    .json(
+                        await getLoginInfo(
+                            Object.assign({}, user, {realKey: user.key}),
+                            token
+                        )
+                    );
+            } catch (err) {
+                next(err);
+            }
+        },
+    },
+    {
+        path: '/api/login/logout',
+        method: 'post',
+        swagger: {
+            tags: ['login'],
+        },
+        responses: {200: {}},
+        handler: function (request, response) {
+            response.status(200).end();
+        },
+    },
+    {
+        path: '/api/login/getLoginInfo',
+        method: 'get',
+        swagger: {
+            tags: ['login'],
+        },
+        responses: {200: {}},
+        middlewares: [userMiddleware, autoLogin, authMiddleware],
+        handler: async function (request, response) {
+            response
+                .status(200)
+                .json(await getLoginInfo(request.user, request.authToken));
+        },
+    },
+];
