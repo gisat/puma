@@ -3,6 +3,8 @@ const qb = require('@imatic/pgqb');
 const _ = require('lodash');
 const {SQL} = require('sql-template-strings');
 
+const GUEST_KEY = 'cad8ea0d-f95e-43c1-b162-0704bfc1d3f6';
+
 const filterOperatorToSqlExpr = {
     timefrom: function (filter) {
         return qb.expr.gte(filter.column, qb.val.inlineParam(filter.value));
@@ -131,7 +133,7 @@ function relationsQuery({plan, group, type}, alias) {
                 return qb.merge(
                     qb.select([
                         qb.val.raw(
-                            `ARRAY_AGG("${relAlias}"."${rel.inverseKey}" ORDER BY "${relAlias}"."${rel.inverseKey}") FILTER (WHERE "${relAlias}"."${rel.inverseKey}" IS NOT NULL) AS "${column}"`
+                            `ARRAY_AGG(DISTINCT "${relAlias}"."${rel.inverseKey}" ORDER BY "${relAlias}"."${rel.inverseKey}") FILTER (WHERE "${relAlias}"."${rel.inverseKey}" IS NOT NULL) AS "${column}"`
                         ),
                     ]),
                     qb.joins(
@@ -181,6 +183,58 @@ function listPermissionQuery({user, type}, alias) {
     );
 }
 
+function specificUserPermissionsQuery(userKey, type, alias, permissionsAlias) {
+    const joinAlias = 'rela_' + permissionsAlias;
+
+    return qb.merge(
+        qb.select([
+            qb.expr.as(
+                qb.val.raw(`array_agg(DISTINCT "${joinAlias}"."permission")`),
+                permissionsAlias
+            ),
+        ]),
+        qb.joins(
+            qb.leftJoin(
+                'user.v_userPermissions',
+                joinAlias,
+                qb.expr.and(
+                    qb.expr.eq(
+                        `${joinAlias}.resourceType`,
+                        qb.val.inlineParam(type)
+                    ),
+                    qb.expr.or(
+                        qb.expr.null('tp.resourceKey'),
+                        qb.expr.eq(
+                            'tp.resourceKey',
+                            qb.val.raw(`"${alias}"."key"::text`)
+                        )
+                    ),
+                    qb.expr.eq(
+                        `${joinAlias}.userKey`,
+                        qb.val.inlineParam(userKey)
+                    )
+                )
+            )
+        )
+    );
+}
+
+function listUserPermissionsQuery({user, type}, alias) {
+    if (user == null) {
+        return {};
+    }
+
+    return qb.append(
+        specificUserPermissionsQuery(
+            user.realKey,
+            type,
+            alias,
+            'active_user_p'
+        ),
+        specificUserPermissionsQuery(GUEST_KEY, type, alias, 'guest_user_p')
+    );
+}
+
 function list({plan, group, type, client, user}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
@@ -191,6 +245,7 @@ function list({plan, group, type, client, user}, {sort, filter, page}) {
             qb.from(`${group}.${type}`, 't')
         ),
         listPermissionQuery({user, type}, 't'),
+        listUserPermissionsQuery({user, type}, 't'),
         filtersToSqlExpr(createFilters(filter, 't')),
         relationsQuery({plan, group, type}, 't')
     );

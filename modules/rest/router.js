@@ -7,10 +7,32 @@ const schema = require('./schema');
 const q = require('./query');
 const db = require('../../db');
 
+const defaultPermissions = {
+    view: false,
+    create: false,
+    update: false,
+    delete: false,
+};
+
+function formatPermissions(row, key) {
+    return Object.assign(
+        {},
+        defaultPermissions,
+        _.pick(
+            _.fromPairs(_.map(_.get(row, key, {}), (v) => [v, true])),
+            _.keys(defaultPermissions)
+        )
+    );
+}
+
 function formatRow(row) {
     return {
         key: row.key,
-        data: _.omit(row, ['key']),
+        data: _.omit(row, ['key', 'guest_user_p', 'active_user_p']),
+        permissions: {
+            guest: formatPermissions(row, 'guest_user_p'),
+            activeUser: formatPermissions(row, 'active_user_p'),
+        },
     };
 }
 
@@ -126,7 +148,7 @@ function createGroup(plan, group) {
                                 records
                             );
                             const createdRecords = await q.list(
-                                {plan, group, type, client},
+                                {plan, group, type, client, user: request.user},
                                 {
                                     filter: {key: {in: createdKeys}},
                                 }
@@ -180,7 +202,7 @@ function createGroup(plan, group) {
                             );
 
                             const updatedRecords = await q.list(
-                                {plan, group, type, client},
+                                {plan, group, type, client, user: request.user},
                                 {
                                     filter: {
                                         key: {in: records.map((u) => u.key)},

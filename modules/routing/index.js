@@ -8,7 +8,7 @@ function wrapHandler(handler) {
         try {
             await handler(request, response, next);
         } catch (e) {
-            console.log('error');
+            console.error(e);
             next(e);
         }
     };

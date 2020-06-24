@@ -86,6 +86,20 @@ describe('modules/user', function () {
                                         groupKeys: null,
                                         permissionKeys: null,
                                     },
+                                    permissions: {
+                                        activeUser: {
+                                            view: true,
+                                            create: true,
+                                            update: true,
+                                            delete: true,
+                                        },
+                                        guest: {
+                                            view: false,
+                                            create: false,
+                                            update: false,
+                                            delete: false,
+                                        },
+                                    },
                                 },
                             ],
                         },
@@ -119,6 +133,20 @@ describe('modules/user', function () {
                                             'e56f3545-57f5-44f9-9094-2750a69ef67e',
                                         ],
                                         permissionKeys: null,
+                                    },
+                                    permissions: {
+                                        activeUser: {
+                                            view: true,
+                                            create: true,
+                                            update: true,
+                                            delete: true,
+                                        },
+                                        guest: {
+                                            view: false,
+                                            create: false,
+                                            update: false,
+                                            delete: false,
+                                        },
                                     },
                                 },
                             ],
@@ -157,6 +185,20 @@ describe('modules/user', function () {
                                         groupKeys: null,
                                         permissionKeys: null,
                                     },
+                                    permissions: {
+                                        activeUser: {
+                                            view: true,
+                                            create: true,
+                                            update: true,
+                                            delete: true,
+                                        },
+                                        guest: {
+                                            view: false,
+                                            create: false,
+                                            update: false,
+                                            delete: false,
+                                        },
+                                    },
                                 },
                                 {
                                     key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
@@ -166,6 +208,20 @@ describe('modules/user', function () {
                                         phone: '+420123456789',
                                         groupKeys: null,
                                         permissionKeys: null,
+                                    },
+                                    permissions: {
+                                        activeUser: {
+                                            view: true,
+                                            create: true,
+                                            update: true,
+                                            delete: true,
+                                        },
+                                        guest: {
+                                            view: false,
+                                            create: false,
+                                            update: false,
+                                            delete: false,
+                                        },
                                     },
                                 },
                             ],
@@ -204,6 +260,20 @@ describe('modules/user', function () {
                                         groupKeys: null,
                                         permissionKeys: null,
                                     },
+                                    permissions: {
+                                        activeUser: {
+                                            view: true,
+                                            create: true,
+                                            update: true,
+                                            delete: true,
+                                        },
+                                        guest: {
+                                            view: false,
+                                            create: false,
+                                            update: false,
+                                            delete: false,
+                                        },
+                                    },
                                 },
                                 {
                                     key: '7c5acddd-3625-46ef-90b3-82f829afb258',
@@ -213,6 +283,20 @@ describe('modules/user', function () {
                                         phone: null,
                                         groupKeys: null,
                                         permissionKeys: null,
+                                    },
+                                    permissions: {
+                                        activeUser: {
+                                            view: true,
+                                            create: true,
+                                            update: true,
+                                            delete: true,
+                                        },
+                                        guest: {
+                                            view: false,
+                                            create: false,
+                                            update: false,
+                                            delete: false,
+                                        },
                                     },
                                 },
                             ],
@@ -295,6 +379,20 @@ describe('modules/user', function () {
                             groupKeys: null,
                             permissionKeys: null,
                         },
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: false,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
+                        },
                     },
                 ],
             },
@@ -358,6 +456,20 @@ describe('modules/user', function () {
                             groupKeys: null,
                             permissionKeys: null,
                         },
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: true,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
+                        },
                     },
                     {
                         key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
@@ -371,6 +483,20 @@ describe('modules/user', function () {
                             ],
                             permissionKeys: null,
                         },
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: true,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
+                        },
                     },
                     {
                         key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
@@ -380,6 +506,20 @@ describe('modules/user', function () {
                             phone: null,
                             groupKeys: null,
                             permissionKeys: null,
+                        },
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: true,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
                         },
                     },
                 ],
@@ -459,6 +599,20 @@ describe('modules/user', function () {
                             permissionKeys: null,
                         },
                         key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: true,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
+                        },
                     },
                 ],
             },
@@ -504,6 +658,20 @@ describe('modules/user', function () {
                             groupKeys: ['52ddabec-d01a-49a0-bb4d-5ff931bd346e'],
                             permissionKeys: null,
                         },
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: true,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
+                        },
                     },
                 ],
             },
@@ -546,6 +714,20 @@ describe('modules/user', function () {
                             phone: null,
                             groupKeys: null,
                             permissionKeys: null,
+                        },
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: true,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
                         },
                     },
                 ],
@@ -590,6 +772,20 @@ describe('modules/user', function () {
                             permissionKeys: null,
                         },
                         key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
+                        permissions: {
+                            activeUser: {
+                                view: true,
+                                create: false,
+                                update: true,
+                                delete: true,
+                            },
+                            guest: {
+                                view: false,
+                                create: false,
+                                update: false,
+                                delete: false,
+                            },
+                        },
                     },
                 ],
             },
