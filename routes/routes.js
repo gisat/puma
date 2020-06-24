@@ -73,6 +73,8 @@ const ExportController = require(`../export/ExportController`);
 
 const AttachmentsController = require(`../attachments/AttachmentsController`);
 
+const LpisCheckInternalController = require('../integration/LpisCheckInternalController');
+
 var api = {
 	layers: require('../api/layers'),
 	theme: require('../api/theme'),
@@ -175,6 +177,8 @@ module.exports = function(app) {
 	new ExportController(app, pool);
 
 	new AttachmentsController(app, pool.pool(), config.pgSchema.various);
+
+	new LpisCheckInternalController(app, pool);
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
