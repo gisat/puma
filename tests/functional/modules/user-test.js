@@ -325,7 +325,10 @@ describe('modules/user', function () {
                         test.expectedResult.status
                     );
                     return response.json().then((data) => {
-                        assert.deepStrictEqual(data, test.expectedResult.body);
+                        assert.deepStrictEqual(
+                            _.omit(data, ['changes']),
+                            test.expectedResult.body
+                        );
                     });
                 });
             });
@@ -344,7 +347,7 @@ describe('modules/user', function () {
         assert.strictEqual(response.status, 200);
 
         const data = await response.json();
-        assert.deepStrictEqual(data, {
+        assert.deepStrictEqual(_.omit(data, ['changes']), {
             data: {
                 users: [],
             },
@@ -367,7 +370,7 @@ describe('modules/user', function () {
         assert.strictEqual(response.status, 200);
 
         const data = await response.json();
-        assert.deepStrictEqual(data, {
+        assert.deepStrictEqual(_.omit(data, ['changes']), {
             data: {
                 users: [
                     {

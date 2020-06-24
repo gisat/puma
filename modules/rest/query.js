@@ -235,6 +235,25 @@ function listUserPermissionsQuery({user, type}, alias) {
     );
 }
 
+async function lastChange({group, type}) {
+    const sqlMap = qb.merge(
+        qb.select([qb.expr.as('a.action_tstamp_stm', 'change')]),
+        qb.from('audit.logged_actions', 'a'),
+        qb.where(
+            qb.expr.and(
+                qb.expr.eq('a.schema_name', qb.val.inlineParam(group)),
+                qb.expr.eq('a.table_name', qb.val.inlineParam(type))
+            )
+        ),
+        qb.orderBy('a.action_tstamp_stm', 'DESC'),
+        qb.limit(1)
+    );
+
+    const res = await db.query(qb.toSql(sqlMap));
+
+    return _.first(_.map(res.rows, (row) => row.change));
+}
+
 function list({plan, group, type, client, user}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
@@ -517,4 +536,5 @@ module.exports = {
     create,
     update,
     deleteRecords,
+    lastChange,
 };

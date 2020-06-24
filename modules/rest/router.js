@@ -93,7 +93,7 @@ function createGroup(plan, group) {
                     offset: parameters.offset,
                 };
 
-                const records = await Promise.all(
+                const recordsP = Promise.all(
                     _.map(types, async function (type) {
                         return await q.list(
                             {plan, group, type, user: request.user},
@@ -105,10 +105,27 @@ function createGroup(plan, group) {
                         );
                     })
                 );
+                const changesP = Promise.all(
+                    _.map(types, async function (type) {
+                        return await q.lastChange({group, type});
+                    })
+                );
+
+                const records = await recordsP;
+                const changes = await changesP;
 
                 const recordsByType = _.zipObject(types, records);
+                const changeByType = _.zipObject(types, changes);
 
-                response.status(200).json(formatList(recordsByType, page));
+                response
+                    .status(200)
+                    .json(
+                        Object.assign(
+                            {},
+                            {changes: changeByType},
+                            formatList(recordsByType, page)
+                        )
+                    );
             },
         },
         {
