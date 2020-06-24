@@ -1,6 +1,20 @@
 const express = require('express');
 
 /**
+ * Catches any uncaught errors. This causes errors to be handled properly.
+ */
+function wrapHandler(handler) {
+    return async function (request, response, next) {
+        try {
+            await handler(request, response, next);
+        } catch (e) {
+            console.log('error');
+            next(e);
+        }
+    };
+}
+
+/**
  * @typedef {Object} RouteData
  * @property {String} path
  * @property {String} method
@@ -28,7 +42,7 @@ function routerFromApi(api) {
                 next();
             },
             ...middlewares,
-            handler.handler
+            wrapHandler(handler.handler)
         );
     });
 
