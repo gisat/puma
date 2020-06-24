@@ -43,19 +43,9 @@ function userPermissionsByKey(key) {
 SELECT
   "p"."resourceType", "p"."permission"
 FROM
-  "${schema}"."permissions" "p"
-  JOIN "${schema}"."userPermissions" "up" ON "up"."permissionKey" = "p"."key"
+  "${schema}"."v_userPermissions" "p"
 WHERE
-  "p"."resourceKey" IS NULL AND "up"."userKey" = $1
-UNION
-SELECT
-  "p"."resourceType", "p"."permission"
-FROM
-  "${schema}"."permissions" "p"
-  JOIN "${schema}"."groupPermissions" "gp" ON "gp"."permissionKey" = "p"."key"
-  JOIN "${schema}"."userGroups" "ug" ON "ug"."groupKey" = "gp"."groupKey"
-WHERE
-  "p"."resourceKey" IS NULL AND "ug"."userKey" = $1;
+  "p"."resourceKey" IS NULL AND "p"."userKey" = $1
 `,
             [key]
         )
