@@ -28,7 +28,7 @@ async function log(data) {
 
 function requestData(request) {
     return {
-        uri: request.uri,
+        url: request.url,
         method: request.method,
         user: request.user,
     };
