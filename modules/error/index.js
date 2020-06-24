@@ -62,7 +62,9 @@ async function errorMiddleware(err, request, response, next) {
         errorData: formatted.data,
     });
 
-    return response.status(500).json({success: formatted.status, code: logId});
+    return response
+        .status(formatted.status)
+        .json({success: false, code: logId});
 }
 
 module.exports = {
