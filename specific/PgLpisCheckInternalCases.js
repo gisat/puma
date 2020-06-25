@@ -4,7 +4,7 @@ class PgLpisCheckInternalCases extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
 
-		this._checkPermissions = false;
+		// this._checkPermissions = false;
 
 		this._groupName = this.constructor.groupName();
 		this._tableName = this.constructor.tableName();
