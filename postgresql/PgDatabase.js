@@ -127,14 +127,14 @@ class PgDatabase {
 				 id SERIAL PRIMARY KEY,
 				 user_id int NOT NULL,
 				 resource_id TEXT,
-				 resource_type varchar(20),
+				 resource_type TEXT,
 				 permission varchar(20)
 			)`,
 			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.group_permissions (
 				 id SERIAL PRIMARY KEY,
 				 group_id int NOT NULL,
 				 resource_id TEXT,
-				 resource_type varchar(20),
+				 resource_type TEXT,
 				 permission varchar(20)
 			)`,
 			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.data}.groups (
