@@ -8,7 +8,8 @@ class PgWms extends PgBaseDataSource {
 			`url`,
 			`layers`,
 			`styles`,
-			`configuration`
+			`configuration`,
+			`params`
 		];
 	}
 

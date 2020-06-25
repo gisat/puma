@@ -5,7 +5,8 @@ class PgWmts extends PgBaseDataSource {
 		super(`wmts`, `wmts`, pgSchema);
 
 		this._relevantColumns = [
-			`urls`
+			`urls`,
+			`params`
 		];
 	}
 
