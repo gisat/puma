@@ -39,6 +39,11 @@ class PgLpisCheckInternalCases extends PgCollection {
 		`;
 	}
 
+	populateObjectWithAdditionalData(payload) {
+		payload.data.geometry = JSON.parse(payload.data.geometry);
+		return payload;
+	}
+
 	static groupName() {
 		return 'lpisCheckInternalCases';
 	}
