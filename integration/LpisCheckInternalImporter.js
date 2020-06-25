@@ -52,6 +52,7 @@ class LpisCheckInternalImporter {
 						data[value] = rawData.properties[property];
 					})
 
+					data.stav = "Created";
 					data.geometry = rawData.geometry;
 
 					return data;
