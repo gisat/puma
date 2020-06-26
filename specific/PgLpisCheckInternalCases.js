@@ -1,5 +1,7 @@
 const PgCollection = require('../common/PgCollection');
 
+const config = require('../config');
+
 class PgLpisCheckInternalCases extends PgCollection {
 	constructor(pool, schema) {
 		super(pool, schema);
@@ -40,9 +42,36 @@ class PgLpisCheckInternalCases extends PgCollection {
 		`;
 	}
 
-	populateObjectWithAdditionalData(payload) {
-		payload.data.geometry = JSON.parse(payload.data.geometry);
-		return payload;
+	populateObjectWithAdditionalData(object, user) {
+		let changes = [];
+		let attachments = [];
+
+		object.data.geometry = JSON.parse(object.data.geometry);
+
+		return Promise
+			.resolve()
+			.then(() => {
+				return this.getCaseChanges(object.key, user);
+			})
+			.then((changes) => {
+				if (changes) {
+					object.changes = changes;
+				}
+			})
+	}
+
+	getCaseChanges(caseKey, user) {
+		let sql = `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed LIMIT 1 )`
+			+ ` UNION `
+			+ `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL AND changed_by NOT IN (SELECT user_id FROM data.group_has_members WHERE group_id = ${config.projectSpecific.szifLpisZmenovaRizeni.gisatUserGroupId}) ORDER BY changed DESC LIMIT 1);`;
+
+		return this._pgPool
+			.query(sql)
+			.then((pgResult) => {
+				if (pgResult.rows.length) {
+					return pgResult.rows;
+				}
+			});
 	}
 
 	static groupName() {
