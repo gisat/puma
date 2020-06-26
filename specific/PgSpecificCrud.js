@@ -29,6 +29,7 @@ class PgSpecificCrud extends PgCrud {
 
 		this._pgEsponFuoreIndicators.setRelatedStores([this._pgAttributes, this._pgViews, this._pgTags, this._pgScopes]);
 		this._pgLpisChangeCases.setRelatedStores([this._pgViews, this._pgTags]);
+		this._pgLpisCheckInternalCase.setRelatedStores([this._pgViews]);
 
 		this._pgTypes = {
 			[PgEsponFuoreIndicators.groupName()]: {
