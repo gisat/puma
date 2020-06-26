@@ -178,7 +178,7 @@ module.exports = function(app) {
 
 	new AttachmentsController(app, pool.pool(), config.pgSchema.various);
 
-	new LpisCheckInternalController(app, pool);
+	new LpisCheckInternalController(app, pool.pool());
 
 	app.get('/api/chart/drawChart/:gid/:confId', function(req,res,next) {
 		logger.info("/api/chart/drawChart/", req.params.gid, "/", req.params.confId, " by User: ", req.session.userId);
