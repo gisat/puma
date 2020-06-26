@@ -92,15 +92,23 @@ class LpisCheckInternalImporter {
 				+ ` RETURNING key`
 			)
 			.then((pgQueryResult) => {
+				return this.setPerissionsForLpisCheckInternalCase(pgQueryResult.rows[0].key);
 			})
 	}
 
-	createLpisCheckInternalCaseChange(data) {
-
-	}
-
-	setPerissionsForLpisCheckInternalCase(data) {
-
+	setPerissionsForLpisCheckInternalCase(caseKey) {
+		return this
+			._pgPool
+			.query(
+				`INSERT INTO "${config.pgSchema.data}"."group_permissions"`
+				+ ` ("group_id", "resource_id", "resource_type", "permission")`
+				+ ` VALUES`
+				+ ` (2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
+				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
+				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
+				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
+				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'DELETE')`
+			);
 	}
 }
 
