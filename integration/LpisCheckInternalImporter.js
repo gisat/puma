@@ -82,6 +82,7 @@ class LpisCheckInternalImporter {
 			}
 		})
 
+		let caseKey;
 		return this
 			._pgPool
 			.query(
@@ -92,8 +93,37 @@ class LpisCheckInternalImporter {
 				+ ` RETURNING key`
 			)
 			.then((pgQueryResult) => {
-				return this.setPerissionsForLpisCheckInternalCase(pgQueryResult.rows[0].key);
+				caseKey = pgQueryResult.rows[0].key;
 			})
+			.then(() => {
+				return this.createLpisCheckIternalChange({
+					resource_type: PgLpisCheckInternalCases.tableName(),
+					resource_key: caseKey,
+					action: "create",
+					change: JSON.stringify(data)
+				});
+			})
+			.then(() => {
+				return this.setPerissionsForLpisCheckInternalCase(caseKey);
+			})
+	}
+
+	createLpisCheckIternalChange(data) {
+		let columns = [], values = [];
+
+		_.each(data, (value, property) => {
+			columns.push(`"${property}"`);
+			values.push(`'${value}'`);
+		})
+
+		return this
+			._pgPool
+			.query(
+				`INSERT INTO "${config.pgSchema.data}"."metadata_changes"`
+				+ ` (${columns.join(', ')})`
+				+ ` VALUES`
+				+ ` (${values.join(', ')})`
+			);
 	}
 
 	setPerissionsForLpisCheckInternalCase(caseKey) {
