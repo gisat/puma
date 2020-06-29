@@ -1,5 +1,6 @@
 const LpisCheckInternalImporter = require('./LpisCheckInternalImporter');
 const LpisCheckInternalCaseGetter = require('./LpisCheckInternalCaseGetter');
+const LpisCheckInternalExporter = require('./LpisCheckInternalExporter');
 
 class LpisCheckInternalController {
 	constructor(app, pgPool) {
@@ -13,6 +14,10 @@ class LpisCheckInternalController {
 		this._app.get('/rest/project/lpisCheck', (request, response) => {
 			new LpisCheckInternalCaseGetter(pgPool).getCase(request, response);
 		});
+
+		this._app.post('/rest/export/lpisCheck', (request, response) => {
+			new LpisCheckInternalExporter(pgPool).export(request, response);
+		})
 	}
 }
 
