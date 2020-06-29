@@ -79,7 +79,7 @@ class PgLpisCheckInternalCases extends PgCollection {
 	}
 
 	static tableName() {
-		return 'lpisCheckInternalCases';
+		return 'lpisCheckInternalCase';
 	}
 
 	static keyType() {
