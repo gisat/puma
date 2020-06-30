@@ -1606,10 +1606,13 @@ class PgCollection {
 		if (request.order) {
 			sql.push(`ORDER BY`);
 
+			let orderSql = [];
 			_.map(request.order, ([key, order]) => {
 				let direction = order && order.toLowerCase() === "descending" ? "DESC" : "ASC";
-				sql.push(`"${key}" ${direction}`);
+				orderSql.push(`"${key}" ${direction}`);
 			});
+
+			sql.push(orderSql.join(', '));
 		} else {
 			sql.push(`ORDER BY created`);
 		}
