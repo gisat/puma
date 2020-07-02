@@ -1618,7 +1618,18 @@ class FuoreImporter {
 					user,
 					{}
 				).then((updateResult) => {
-					return updateResult.tags;
+					return this._pgMetadataCrud.get(
+						`tags`,
+						{
+							filter: {
+								applicationKey: esponFuoreApplicationKey
+							},
+							unlimited: true
+						},
+						user
+					)
+				}).then((getResults) => {
+					return getResults.data.tags;
 				});
 			});
 	}
