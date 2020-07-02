@@ -254,6 +254,86 @@ class FuoreImporter {
 			});
 	}
 
+	storeSourceData(unzippedFs) {
+		let analyticalUnits, attributes;
+		if (unzippedFs.contents().includes('analytical_units.json')) {
+			analyticalUnits = this.prepareForImport(
+				JSON.parse(
+					unzippedFs.read('analytical_units.json', 'text')
+				),
+				true
+			);
+		}
+
+		if (unzippedFs.contents().includes('attributes.json')) {
+			attributes = this.prepareForImport(
+				JSON.parse(
+					unzippedFs.read('attributes.json', 'text')
+				),
+				true
+			);
+		}
+
+		let queries = [];
+
+		_.each(analyticalUnits, (analyticalUnit) => {
+			if(analyticalUnit.delete) {
+				queries.push(
+					`DELETE FROM "${config.pgSchema.various}"."fuoreRawData" WHERE key = '${analyticalUnit.uuid}'`
+				);
+			} else {
+				let dataString = JSON.stringify(analyticalUnit).replace(/'/g, "&apos;");
+				queries.push(
+					`INSERT INTO "${config.pgSchema.various}"."fuoreRawData" ("key", "type", "data") VALUES ('${analyticalUnit.uuid}', 'analytical_unit', '${dataString}')`
+					+ ` ON CONFLICT("key")`
+					+ ` DO UPDATE SET "data" = '${dataString}'`
+				);
+			}
+		})
+
+		_.each(attributes, (attribute) => {
+			if(attribute.delete) {
+				queries.push(
+					`DELETE FROM "${config.pgSchema.various}"."fuoreRawData" WHERE key = '${attribute.uuid}_${attribute.analytical_unit_id}'`
+				);
+			} else {
+				let dataString = JSON.stringify(attribute).replace(/'/g, "&apos;");
+				queries.push(
+					`INSERT INTO "${config.pgSchema.various}"."fuoreRawData" ("key", "type", "data") VALUES ('${attribute.uuid}_${attribute.analytical_unit_id}', 'attribute', '${dataString}')`
+					+ ` ON CONFLICT("key")`
+					+ ` DO UPDATE SET "data" = '${dataString}'`
+				);
+			}
+		})
+
+		return this
+			._pgPool
+			.query(
+				`BEGIN;`
+				+ ` ${queries.join('; ')};`
+				+ ` COMMIT;`
+			)
+			.then(() => {
+				return this
+					._pgPool
+					.query(`SELECT * FROM "${config.pgSchema.various}"."fuoreRawData";`);
+			})
+			.then((pgQueryResult) => {
+				let analyticalUnits = [];
+				let attributes = [];
+
+				_.each(pgQueryResult.rows, (row) => {
+					if(row.type === "analytical_unit") {
+						analyticalUnits.push(row.data);
+					} else if(row.type === "attribute") {
+						attributes.push(row.data);
+					}
+				});
+
+				return [analyticalUnits, attributes];
+			})
+	}
+
 	async cleanUnnecessaryItems(unzippedFs) {
 		let analyticalUnits = this.prepareForImport(
 			JSON.parse(
@@ -1669,8 +1749,16 @@ class FuoreImporter {
 					user,
 					{}
 				).then((updateResult) => {
-					return updateResult.esponFuoreIndicators
-				})
+					return this._pgSpecificCrud.get(
+						`esponFuoreIndicators`,
+						{
+							unlimited: true
+						},
+						user
+					)
+				}).then((getResult) => {
+					return getResult.data.esponFuoreIndicators;
+				});
 			});
 	}
 
@@ -2324,42 +2412,12 @@ class FuoreImporter {
 				}
 			}
 
-			indicatorOrder = _.sortBy(indicatorOrder, [`order`, `asc`]);
-			categoryOrder = _.sortBy(categoryOrder, [`order`, `asc`]);
-			subCategoryOrder = _.sortBy(subCategoryOrder, [`order`, `asc`]);
-
-			let esponFuoreIndicatorKeys = _.map(indicatorOrder, `key`);
-			if (pantherScope.data.configuration.order.esponFuoreIndicatorKeys) {
-				esponFuoreIndicatorKeys = pantherScope.data.configuration.order.esponFuoreIndicatorKeys;
-				_.each(indicatorOrder, (indicator) => {
-					if (!esponFuoreIndicatorKeys.includes(indicator.key)) {
-						esponFuoreIndicatorKeys.splice(indicator.order, 0, indicator.key);
-					}
-				})
-			}
-
-			let categoryTagKeys = _.map(categoryOrder, `key`);
-			if (pantherScope.data.configuration.order.categoryTagKeys) {
-				categoryTagKeys = pantherScope.data.configuration.order.categoryTagKeys;
-				_.each(categoryOrder, (category) => {
-					if (!categoryTagKeys.includes(category.key)) {
-						categoryTagKeys.splice(category.order, 0, category.key);
-					}
-				})
-			}
-
-			let subCategoryTagKeys = _.map(subCategoryOrder, `key`);
-			if (pantherScope.data.configuration.order.subCategoryTagKeys) {
-				subCategoryTagKeys = pantherScope.data.configuration.order.subCategoryTagKeys;
-				_.each(subCategoryOrder, (subCategory) => {
-					if (!subCategoryTagKeys.includes(subCategory.key)) {
-						subCategoryTagKeys.splice(subCategory.order, 0, subCategory.key);
-					}
-				})
-			}
+			let indicatorKeys = _.map(_.sortBy(indicatorOrder, [`order`, `asc`]), `key`);
+			let categoryTagKeys = _.map(_.sortBy(categoryOrder, [`order`, `asc`]), `key`);
+			let subCategoryTagKeys = _.map(_.sortBy(subCategoryOrder, [`order`, `asc`]), `key`);
 
 			pantherScope.data.configuration.order = {
-				esponFuoreIndicatorKeys,
+				indicatorKeys,
 				categoryTagKeys,
 				subCategoryTagKeys
 			}
@@ -2522,6 +2580,8 @@ class FuoreImporter {
 		let unzippedFs;
 		let analyticalUnits;
 		let attributes;
+		let analyticalUnitsAll;
+		let attributesAll;
 		let pantherData = {};
 
 		let nameAttributeKey = "1032d588-6899-41a9-99b0-0a8f2c889f30";
@@ -2546,6 +2606,13 @@ class FuoreImporter {
 				return this.cleanUnnecessaryItems(unzippedFs)
 					.then(() => {
 						console.log(`FuoreImport # cleanUnnecessaryItems done`);
+					})
+			})
+			.then(() => {
+				return this.storeSourceData(unzippedFs)
+					.then(([storedAnalyticalUnits, storedAttributesAll]) => {
+						analyticalUnitsAll = storedAnalyticalUnits;
+						attributesAll = storedAttributesAll;
 					})
 			})
 			.then(() => {
@@ -2693,7 +2760,7 @@ class FuoreImporter {
 					})
 			})
 			.then(() => {
-				return this.updateScopeConfigurationsWithOrderData(attributes, analyticalUnits, user, pantherData)
+				return this.updateScopeConfigurationsWithOrderData(attributesAll, analyticalUnitsAll, user, pantherData)
 					.then(() => {
 						console.log(`FuoreImport # updateScopeConfigurationsWithOrderData done`);
 					})

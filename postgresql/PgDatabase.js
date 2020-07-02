@@ -142,6 +142,14 @@ class PgDatabase {
 				changed_by int  
 			);`
 		];
+
+		this._variousTables = [
+			`CREATE TABLE IF NOT EXISTS ${config.pgSchema.various}."fuoreRawData" (
+				"key" TEXT PRIMARY KEY DEFAULT gen_random_uuid(),
+				"type" TEXT,
+				"data" JSONB
+			)`
+		];
 	}
 
 	getDataTypeStoresGroupedByType() {
@@ -157,6 +165,10 @@ class PgDatabase {
 
 				for(let legacyTableSql of this._legacyTables) {
 					await this._pgPool.query(legacyTableSql);
+				}
+
+				for(let variousTableSql of this._variousTables) {
+					await this._pgPool.query(variousTableSql);
 				}
 			});
 	}
