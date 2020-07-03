@@ -133,11 +133,11 @@ class LpisCheckInternalImporter {
 				`INSERT INTO "${config.pgSchema.data}"."group_permissions"`
 				+ ` ("group_id", "resource_id", "resource_type", "permission")`
 				+ ` VALUES`
-				+ ` (2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
-				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
-				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
+				+ ` (2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
 				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
-				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'DELETE')`
+				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
+				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
+				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'DELETE')`
 			);
 	}
 }
