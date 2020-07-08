@@ -397,14 +397,15 @@ async function create({plan, group, type, client}, records) {
     });
 }
 
-function updateExprs(recordData) {
+function updateExprs(recordData, columnsConfig) {
     return Object.entries(recordData).map(([col, value]) => {
-        return qb.expr.eq(col, qb.val.inlineParam(value));
+        return qb.expr.eq(col, columnsConfig[col].modifyExpr({value}));
     });
 }
 
 function updateRecord({plan, group, type, client}, record) {
-    const validColumns = new Set(Object.keys(plan[group][type].columns));
+    const columnsConfig = plan[group][type].columns;
+    const validColumns = new Set(Object.keys(columnsConfig));
     const columns = _.keys(record.data).filter((c) => validColumns.has(c));
     const table = _.get(plan[group][type], 'table', type);
 
@@ -415,7 +416,7 @@ function updateRecord({plan, group, type, client}, record) {
 
     const sqlMap = qb.merge(
         qb.update(`${group}.${table}`, 'r'),
-        qb.set(updateExprs(record.data)),
+        qb.set(updateExprs(record.data, columnsConfig)),
         qb.where(qb.expr.eq('r.key', qb.val.inlineParam(record.key)))
     );
 
