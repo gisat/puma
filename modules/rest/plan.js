@@ -176,6 +176,7 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'configuration',
                     ],
                 },
                 create: {
@@ -184,6 +185,7 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'configuration',
                     ],
                 },
                 update: {
@@ -192,6 +194,7 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'configuration',
                     ],
                 },
             },
@@ -212,7 +215,10 @@ module.exports = compiler.compile({
                     defaultValue: null,
                     schema: Joi.string(),
                 },
-                // todo: configuration
+                configuration: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                },
             },
         },
         place: {
@@ -223,6 +229,8 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'geometry',
+                        'bbox',
                     ],
                 },
                 create: {
@@ -231,6 +239,8 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'geometry',
+                        'bbox',
                     ],
                 },
                 update: {
@@ -239,6 +249,8 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'geometry',
+                        'bbox',
                     ],
                 },
             },
@@ -259,9 +271,28 @@ module.exports = compiler.compile({
                     defaultValue: null,
                     schema: Joi.string(),
                 },
-                // todo:
-                // geometry: {},
-                // bbox: {},
+                geometry: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                    modifyExpr: function ({value}) {
+                        if (value == null) {
+                            return qb.val.inlineParam(null);
+                        }
+
+                        return qb.val.raw(SQL`ST_GeomFromGeoJSON(${value})`);
+                    },
+                },
+                bbox: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                    modifyExpr: function ({value}) {
+                        if (value == null) {
+                            return qb.val.inlineParam(null);
+                        }
+
+                        return qb.val.raw(SQL`ST_GeomFromGeoJSON(${value})`);
+                    },
+                },
             },
         },
         period: {
@@ -273,6 +304,8 @@ module.exports = compiler.compile({
                         'nameInternal',
                         'description',
                         'period',
+                        'start',
+                        'end',
                     ],
                 },
                 create: {
@@ -282,6 +315,8 @@ module.exports = compiler.compile({
                         'nameInternal',
                         'description',
                         'period',
+                        'start',
+                        'end',
                     ],
                 },
                 update: {
@@ -291,6 +326,8 @@ module.exports = compiler.compile({
                         'nameInternal',
                         'description',
                         'period',
+                        'start',
+                        'end',
                     ],
                 },
             },
@@ -315,9 +352,14 @@ module.exports = compiler.compile({
                     defaultValue: null,
                     schema: Joi.string(),
                 },
-                // todo:
-                // start: {},
-                // end: {},
+                start: {
+                    defaultValue: null,
+                    schema: Joi.date(),
+                },
+                end: {
+                    defaultValue: null,
+                    schema: Joi.date(),
+                },
             },
         },
         attributeSet: {
@@ -632,6 +674,7 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'level',
                     ],
                 },
                 create: {
@@ -640,6 +683,7 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'level',
                     ],
                 },
                 update: {
@@ -648,6 +692,7 @@ module.exports = compiler.compile({
                         'nameDisplay',
                         'nameInternal',
                         'description',
+                        'level',
                     ],
                 },
             },
@@ -668,8 +713,7 @@ module.exports = compiler.compile({
                     defaultValue: null,
                     schema: Joi.string(),
                 },
-                // todo:
-                // level: {defaultValue: null, schema: Joi.number().integer()},
+                level: {defaultValue: null, schema: Joi.number().integer()},
             },
         },
         tag: {
@@ -735,6 +779,7 @@ module.exports = compiler.compile({
                         'description',
                         'source',
                         'nameGeoserver',
+                        'definition',
                     ],
                 },
                 create: {
@@ -745,6 +790,7 @@ module.exports = compiler.compile({
                         'description',
                         'source',
                         'nameGeoserver',
+                        'definition',
                     ],
                 },
                 update: {
@@ -755,6 +801,7 @@ module.exports = compiler.compile({
                         'description',
                         'source',
                         'nameGeoserver',
+                        'definition',
                     ],
                 },
             },
@@ -783,8 +830,10 @@ module.exports = compiler.compile({
                     defaultValue: null,
                     schema: Joi.string(),
                 },
-                // todo:
-                // definition: {}
+                definition: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                },
             },
         },
     },

@@ -18,7 +18,6 @@ class Routes {
 	}
 
 	init() {
-		new PgMetadataController(this._app, this._pgPool, config.pgSchema.metadata, this._initRelatedStores);
 		new PgRelationsController(this._app, this._pgPool, config.pgSchema.relations, this._initRelatedStores);
 		new PgDataSourcesController(this._app, this._pgPool, config.pgSchema.dataSources, this._initRelatedStores);
 		new PgApplicationController(this._app, this._pgPool, config.pgSchema.application, this._initRelatedStores);

@@ -17,6 +17,32 @@ function colFilterSchema(col) {
                     })
                     .length(1)
             );
+        case 'number':
+            return Joi.alternatives().try(
+                schema,
+                Joi.object()
+                    .keys({
+                        eq: schema,
+                        in: Joi.array().items(schema).min(1),
+                        notin: Joi.array().items(schema).min(1),
+                    })
+                    .length(1)
+            );
+        case 'date':
+            return Joi.alternatives().try(
+                schema,
+                Joi.object()
+                    .keys({
+                        eq: schema,
+                        timefrom: schema,
+                        timeto: schema,
+                        in: Joi.array().items(schema).min(1),
+                        notin: Joi.array().items(schema).min(1),
+                    })
+                    .length(1)
+            );
+        case 'object':
+            return null;
     }
 
     throw new Error(`Type "${type}" is not supported in filter.`);
@@ -63,7 +89,7 @@ function listBody(plan, group) {
     return Joi.object()
         .meta({className: `${group}List`})
         .keys({
-            filter: _.mapValues(columns, colFilterSchema),
+            filter: _.omitBy(_.mapValues(columns, colFilterSchema), _.isNil),
             order: Joi.array()
                 .items(
                     Joi.array()

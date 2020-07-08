@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+
+const _ = require('lodash/fp');
+const plan = require('../modules/rest/plan');
+const uuid = require('../uuid');
+const qb = require('@imatic/pgqb');
+const db = require('../db');
+
+db.init();
+
+const permissions = ['view', 'create', 'update', 'delete'];
+const types = _.flatMap(_.keys, plan);
+
+const columns = ['key', 'resourceType', 'permission'];
+
+function typeToValues(type) {
+    return _.map(
+        (p) => _.map(qb.val.inlineParam, [uuid.generate(), type, p]),
+        permissions
+    );
+}
+
+const sqlMap = qb.merge(
+    qb.insertInto('user.permissions'),
+    qb.columns(columns),
+    qb.values(_.flatMap(typeToValues, types))
+);
+
+db.query(qb.toSql(sqlMap));
