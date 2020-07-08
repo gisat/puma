@@ -1,10 +1,14 @@
 const Joi = require('@hapi/joi');
 const uuid = require('../../uuid');
+const config = require('../../config');
+const qb = require('@imatic/pgqb');
+const compiler = require('./compiler');
+const {SQL} = require('sql-template-strings');
 
 /**
  * Plan of individual types is stored under <group>.<type>.
  *
- * ## table
+ * ## table (optional)
  *
  * Table name in case it differs from type name.
  *
@@ -16,6 +20,9 @@ const uuid = require('../../uuid');
  * ### defaultValue (optional)
  *   Default value if none was provided (https://hapi.dev/module/joi/api/#anydefaultvalue).
  *
+ * ### modifyExpr (optional)
+ *   Returns query expression used as a value in create and update queries.
+ *
  * ## relations
  *
  * ## context (required)
@@ -26,7 +33,7 @@ const uuid = require('../../uuid');
  *
  * Allowed columns during this operation.
  */
-module.exports = {
+module.exports = compiler.compile({
     user: {
         user: {
             table: 'users',
@@ -35,10 +42,10 @@ module.exports = {
                     columns: ['key', 'email', 'name', 'phone'],
                 },
                 create: {
-                    columns: ['key', 'email', 'name', 'phone'],
+                    columns: ['key', 'email', 'name', 'phone', 'password'],
                 },
                 update: {
-                    columns: ['key', 'email', 'name', 'phone'],
+                    columns: ['key', 'email', 'name', 'phone', 'password'],
                 },
             },
             columns: {
@@ -57,6 +64,19 @@ module.exports = {
                 phone: {
                     defaultValue: null,
                     schema: Joi.string(),
+                },
+                password: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                    modifyExpr: function ({value}) {
+                        if (value == null) {
+                            return qb.val.inlineParam(null);
+                        }
+
+                        return qb.val.raw(
+                            SQL`CRYPT(${value}, GEN_SALT('bf', ${config.password.iteration_counts}))`
+                        );
+                    },
                 },
             },
             relations: {
@@ -147,4 +167,4 @@ module.exports = {
             },
         },
     },
-};
+});
