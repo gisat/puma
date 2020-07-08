@@ -257,11 +257,12 @@ async function lastChange({group, type}) {
 function list({plan, group, type, client, user}, {sort, filter, page}) {
     const typeSchema = plan[group][type];
     const columns = typeSchema.context.list.columns;
+    const table = _.get(typeSchema, 'table', type);
 
     const sqlMap = qb.append(
         qb.merge(
             qb.select(columns.map((c) => 't.' + c)),
-            qb.from(`${group}.${type}`, 't')
+            qb.from(`${group}.${table}`, 't')
         ),
         listPermissionQuery({user, type}, 't'),
         listUserPermissionsQuery({user, type}, 't'),
@@ -316,9 +317,10 @@ async function create({plan, group, type, client}, records) {
     const columns = ['key', ...Object.keys(records[0].data)].filter((c) =>
         validColumns.has(c)
     );
+    const table = _.get(plan[group][type], 'table', type);
 
     const sqlMap = qb.merge(
-        qb.insertInto(`${group}.${type}`),
+        qb.insertInto(`${group}.${table}`),
         qb.columns(columns),
         qb.values(records.map((r) => recordValues(r, columns))),
         qb.returning(['key'])
@@ -403,6 +405,7 @@ function updateExprs(recordData) {
 function updateRecord({plan, group, type, client}, record) {
     const validColumns = new Set(Object.keys(plan[group][type].columns));
     const columns = _.keys(record.data).filter((c) => validColumns.has(c));
+    const table = _.get(plan[group][type], 'table', type);
 
     const data = _.pick(record.data, columns);
     if (_.isEmpty(data)) {
@@ -410,7 +413,7 @@ function updateRecord({plan, group, type, client}, record) {
     }
 
     const sqlMap = qb.merge(
-        qb.update(`${group}.${type}`, 'r'),
+        qb.update(`${group}.${table}`, 'r'),
         qb.set(updateExprs(record.data)),
         qb.where(qb.expr.eq('r.key', qb.val.inlineParam(record.key)))
     );
@@ -520,15 +523,17 @@ async function update({plan, group, type, client}, records) {
     });
 }
 
-async function deleteRecords({group, type, client}, records) {
+async function deleteRecords({plan, group, type, client}, records) {
+    const table = _.get(plan[group][type], 'table', type);
     const keys = records.map((r) => r.key);
     if (keys.length === 0) {
         return;
     }
 
-    await client.query(`DELETE FROM "${group}"."${type}" WHERE key = ANY($1)`, [
-        keys,
-    ]);
+    await client.query(
+        `DELETE FROM "${group}"."${table}" WHERE key = ANY($1)`,
+        [keys]
+    );
 }
 
 module.exports = {

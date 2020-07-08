@@ -63,7 +63,7 @@ function createSpecificPermsAdminToken() {
 }
 
 describe('modules/user', function () {
-    describe('POST /rest/user/filtered/users', function () {
+    describe('POST /rest/user/filtered/user', function () {
         const tests = [
             {
                 name: 'single user',
@@ -76,7 +76,7 @@ describe('modules/user', function () {
                     status: 200,
                     body: {
                         data: {
-                            users: [
+                            user: [
                                 {
                                     key: '7c5acddd-3625-46ef-90b3-82f829afb258',
                                     data: {
@@ -121,7 +121,7 @@ describe('modules/user', function () {
                     status: 200,
                     body: {
                         data: {
-                            users: [
+                            user: [
                                 {
                                     key: '2bf6c1da-991a-4592-acc1-b10192db9363',
                                     data: {
@@ -175,7 +175,7 @@ describe('modules/user', function () {
                     status: 200,
                     body: {
                         data: {
-                            users: [
+                            user: [
                                 {
                                     key: '7c5acddd-3625-46ef-90b3-82f829afb258',
                                     data: {
@@ -250,7 +250,7 @@ describe('modules/user', function () {
                     status: 200,
                     body: {
                         data: {
-                            users: [
+                            user: [
                                 {
                                     key: 'e2f5d20e-2784-4690-a3f0-339c60b04245',
                                     data: {
@@ -312,7 +312,7 @@ describe('modules/user', function () {
 
         tests.forEach((test) => {
             it(test.name, function () {
-                return fetch(url('/rest/user/filtered/users'), {
+                return fetch(url('/rest/user/filtered/user'), {
                     method: 'POST',
                     headers: new fetch.Headers({
                         Authorization: createAdminToken(),
@@ -335,8 +335,8 @@ describe('modules/user', function () {
         });
     });
 
-    it('POST /rest/user/filtered/users without permissions', async function () {
-        const response = await fetch(url('/rest/user/filtered/users'), {
+    it('POST /rest/user/filtered/user without permissions', async function () {
+        const response = await fetch(url('/rest/user/filtered/user'), {
             method: 'POST',
             headers: new fetch.Headers({
                 Authorization: createNoPermissionUserToken(),
@@ -349,7 +349,7 @@ describe('modules/user', function () {
         const data = await response.json();
         assert.deepStrictEqual(_.omit(data, ['changes']), {
             data: {
-                users: [],
+                user: [],
             },
             limit: 100,
             offset: 0,
@@ -358,8 +358,8 @@ describe('modules/user', function () {
         });
     });
 
-    it('POST /rest/user/filtered/users with specific permissions', async function () {
-        const response = await fetch(url('/rest/user/filtered/users'), {
+    it('POST /rest/user/filtered/user with specific permissions', async function () {
+        const response = await fetch(url('/rest/user/filtered/user'), {
             method: 'POST',
             headers: new fetch.Headers({
                 Authorization: createSpecificPermsAdminToken(),
@@ -372,7 +372,7 @@ describe('modules/user', function () {
         const data = await response.json();
         assert.deepStrictEqual(_.omit(data, ['changes']), {
             data: {
-                users: [
+                user: [
                     {
                         key: '7c5acddd-3625-46ef-90b3-82f829afb258',
                         data: {
@@ -415,7 +415,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             data: {
                                 email: 'new@example.com',
@@ -445,12 +445,12 @@ describe('modules/user', function () {
         assert.strictEqual(response.status, 201);
 
         const data = await response.json();
-        data.data.users = _.sortBy(data.data.users, (u) => u.data.email);
-        delete data.data.users[0].key;
+        data.data.user = _.sortBy(data.data.user, (u) => u.data.email);
+        delete data.data.user[0].key;
 
         assert.deepStrictEqual(data, {
             data: {
-                users: [
+                user: [
                     {
                         data: {
                             email: 'new@example.com',
@@ -541,7 +541,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             data: {
                                 email: 'new@example.com',
@@ -576,7 +576,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
                             data: {
@@ -592,7 +592,7 @@ describe('modules/user', function () {
         const data = await response.json();
         assert.deepStrictEqual(data, {
             data: {
-                users: [
+                user: [
                     {
                         data: {
                             email: 'newWithKey@example.com',
@@ -633,7 +633,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
                             data: {
@@ -651,7 +651,7 @@ describe('modules/user', function () {
         const data = await response.json();
         assert.deepStrictEqual(data, {
             data: {
-                users: [
+                user: [
                     {
                         key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
                         data: {
@@ -692,7 +692,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
                             data: {
@@ -708,7 +708,7 @@ describe('modules/user', function () {
         const data = await response.json();
         assert.deepStrictEqual(data, {
             data: {
-                users: [
+                user: [
                     {
                         key: '516743c6-37b1-4ed2-9fb6-0d8a8d2c2a9e',
                         data: {
@@ -749,7 +749,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
                             data: {
@@ -765,7 +765,7 @@ describe('modules/user', function () {
         const data = await response.json();
         assert.deepStrictEqual(data, {
             data: {
-                users: [
+                user: [
                     {
                         data: {
                             email: 'newWithKey@example.com',
@@ -806,7 +806,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8',
                             data: {
@@ -839,7 +839,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: userKey,
                         },
@@ -866,7 +866,7 @@ describe('modules/user', function () {
             }),
             body: JSON.stringify({
                 data: {
-                    users: [
+                    user: [
                         {
                             key: userKey,
                         },

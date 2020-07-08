@@ -48,14 +48,14 @@ VALUES
   ('42e8bdf8-19c8-4658-aded-b1c724539072', null, 'case', 'update'),
   ('820c4a94-9588-4926-8ba0-2df7abe2eb7f', null, 'scope', 'delete'),
   ('6a7df854-4dc0-4093-b8a0-15e2e0a91ed0', null, 'place', 'delete'),
-  ('6897b1fc-a3e3-4195-a41a-f492d4a9df2a', null, 'users', 'create'),
-  ('913e3bae-e5dd-4600-a854-ca7b65199bbf', null, 'users', 'update'),
-  ('9ac648e7-00d0-4196-be44-9ae2d7cfb598', null, 'users', 'delete'),
-  ('828af8c1-5438-475b-9f91-af432745e83f', null, 'users', 'view'),
-  ('f2ead234-6402-4a6e-9374-b243647edc44', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'view'),
-  ('4f2b3dc7-9b3f-4624-82c0-93d139e19baa', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'update'),
-  ('e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'users', 'delete'),
-  ('432348bc-6adf-4fd3-ac44-48a15f7d8ac6', '7c5acddd-3625-46ef-90b3-82f829afb258', 'users', 'view');
+  ('6897b1fc-a3e3-4195-a41a-f492d4a9df2a', null, 'user', 'create'),
+  ('913e3bae-e5dd-4600-a854-ca7b65199bbf', null, 'user', 'update'),
+  ('9ac648e7-00d0-4196-be44-9ae2d7cfb598', null, 'user', 'delete'),
+  ('828af8c1-5438-475b-9f91-af432745e83f', null, 'user', 'view'),
+  ('f2ead234-6402-4a6e-9374-b243647edc44', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'user', 'view'),
+  ('4f2b3dc7-9b3f-4624-82c0-93d139e19baa', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'user', 'update'),
+  ('e84dfa30-f2fc-4a1f-988c-b7f4e2489f2f', '8b162b2f-44ee-47a4-af6c-0bbc882b6bb8', 'user', 'delete'),
+  ('432348bc-6adf-4fd3-ac44-48a15f7d8ac6', '7c5acddd-3625-46ef-90b3-82f829afb258', 'user', 'view');
 
 INSERT INTO "user"."userPermissions"
   ("userKey", "permissionKey")

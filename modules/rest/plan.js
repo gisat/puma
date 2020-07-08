@@ -4,6 +4,10 @@ const uuid = require('../../uuid');
 /**
  * Plan of individual types is stored under <group>.<type>.
  *
+ * ## table
+ *
+ * Table name in case it differs from type name.
+ *
  * ## columns
  *
  * ### schema (required)
@@ -24,7 +28,8 @@ const uuid = require('../../uuid');
  */
 module.exports = {
     user: {
-        users: {
+        user: {
+            table: 'users',
             context: {
                 list: {
                     columns: ['key', 'email', 'name', 'phone'],
