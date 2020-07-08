@@ -264,5 +264,561 @@ module.exports = compiler.compile({
                 // bbox: {},
             },
         },
+        period: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'period',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'period',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'period',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                period: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                // todo:
+                // start: {},
+                // end: {},
+            },
+        },
+        attributeSet: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        attribute: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'type',
+                        'unit',
+                        'valueType',
+                        'color',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'type',
+                        'unit',
+                        'valueType',
+                        'color',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'type',
+                        'unit',
+                        'valueType',
+                        'color',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                type: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                unit: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                valueType: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                color: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        layerTemplate: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        scenario: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        case: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        areaTree: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        areaTreeLevel: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                // todo:
+                // level: {defaultValue: null, schema: Joi.number().integer()},
+            },
+        },
+        tag: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'color',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'color',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'color',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                color: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        style: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'source',
+                        'nameGeoserver',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'source',
+                        'nameGeoserver',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'source',
+                        'nameGeoserver',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                source: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameGeoserver: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                // todo:
+                // definition: {}
+            },
+        },
+    },
+    application: {
+        application: {
+            context: {
+                list: {
+                    columns: ['key', 'name', 'description', 'color'],
+                },
+                create: {
+                    columns: ['key', 'name', 'description', 'color'],
+                },
+                update: {
+                    columns: ['key', 'name', 'description', 'color'],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                name: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                color: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
     },
 });
