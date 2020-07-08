@@ -39,9 +39,9 @@ const initWorker = () => {
 
 	app.use(cookieParser());
 	app.use(bodyParser.json());
-	app.use((request, response, next) => {
-		new UserAuthentication(pgPool).authenticate(request, response, next);
-	});
+	// app.use((request, response, next) => {
+	// 	new UserAuthentication(pgPool).authenticate(request, response, next);
+	// });
 	new Routes(app, pgPool).init();
 
 	app.listen(process.env.port, () => {
