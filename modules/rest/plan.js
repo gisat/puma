@@ -167,4 +167,102 @@ module.exports = compiler.compile({
             },
         },
     },
+    metadata: {
+        scope: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                // todo: configuration
+            },
+        },
+        place: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                // todo:
+                // geometry: {},
+                // bbox: {},
+            },
+        },
+    },
 });
