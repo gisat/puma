@@ -59,7 +59,10 @@ function createPostgrator() {
 
 async function migrate(version = 'max') {
     await ensureDb();
-    console.log(await createPostgrator().migrate(version));
+    const appliedMigrations = await createPostgrator().migrate(version);
+    if (appliedMigrations.length > 0) {
+        console.log(appliedMigrations);
+    }
 }
 
 module.exports = {
