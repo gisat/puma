@@ -2624,6 +2624,7 @@ class FuoreImporter {
 					.then(([storedAnalyticalUnits, storedAttributesAll]) => {
 						analyticalUnitsAll = storedAnalyticalUnits;
 						attributesAll = storedAttributesAll;
+						console.log(`FuoreImport # storeSourceData done`);
 					})
 			})
 			.then(() => {
