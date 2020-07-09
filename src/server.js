@@ -1,6 +1,6 @@
 const cluster = require('cluster');
 const modulesRouter = require('./modules/index').router;
-const config = require('./config');
+const config = require('../config');
 const db = require('./db');
 const migrations = require('./migrations');
 

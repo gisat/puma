@@ -1,5 +1,5 @@
 const {assert} = require('chai');
-const Joi = require('../joi');
+const Joi = require('../src/joi');
 
 describe('joi', function () {
     describe('stringArray', function () {

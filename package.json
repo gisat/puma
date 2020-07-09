@@ -48,8 +48,8 @@
     }
   },
   "scripts": {
-    "start": "node server.js",
-    "start:watch": "nodemon server.js",
+    "start": "node src/server.js",
+    "start:watch": "nodemon src/server.js",
     "test": "./bin/load-fixtures && mocha",
     "test:wait": "wait-port localhost:9850 && yarn run test",
     "test:watch": "npm-watch test:wait",

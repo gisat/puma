@@ -1,7 +1,7 @@
 const {assert} = require('chai');
 const fetch = require('node-fetch');
 const config = require('../../../config');
-const db = require('../../../db');
+const db = require('../../../src/db');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 

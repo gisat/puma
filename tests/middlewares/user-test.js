@@ -4,7 +4,7 @@ const {assert} = require('chai');
 const {EventEmitter} = require('events');
 const config = require('../../config');
 const jwt = require('jsonwebtoken');
-const userMiddleware = require('../../middlewares/user');
+const userMiddleware = require('../../src/middlewares/user');
 
 function responseMap(response) {
     const m = {status: response.statusCode};

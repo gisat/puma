@@ -1,6 +1,6 @@
 const Joi = require('@hapi/joi');
 const uuid = require('../../uuid');
-const config = require('../../config');
+const config = require('../../../config');
 const qb = require('@imatic/pgqb');
 const compiler = require('./compiler');
 const {SQL} = require('sql-template-strings');

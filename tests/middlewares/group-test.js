@@ -2,7 +2,7 @@ const express = require('express');
 const httpMocks = require('node-mocks-http');
 const {assert} = require('chai');
 const {EventEmitter} = require('events');
-const groupMiddleware = require('../../middlewares/group');
+const groupMiddleware = require('../../src/middlewares/group');
 
 function responseMap(response) {
     const m = {status: response.statusCode};

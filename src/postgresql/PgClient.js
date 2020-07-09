@@ -1,6 +1,6 @@
 const { Client } = require('pg');
 
-const config = require('../config');
+const config = require('../../config');
 
 class PgClient {
 	constructor() {

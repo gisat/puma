@@ -2,7 +2,7 @@ const {assert} = require('chai');
 const config = require('../../../config');
 const fetch = require('node-fetch');
 const jwt = require('jsonwebtoken');
-const uuid = require('../../../uuid');
+const uuid = require('../../../src/uuid');
 
 function url(path) {
     return 'http://localhost:' + config.clusterPorts[0] + path;

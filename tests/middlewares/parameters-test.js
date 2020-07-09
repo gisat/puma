@@ -2,7 +2,7 @@ const express = require('express');
 const httpMocks = require('node-mocks-http');
 const {assert} = require('chai');
 const {EventEmitter} = require('events');
-const parameters = require('../../middlewares/parameters');
+const parameters = require('../../src/middlewares/parameters');
 const Joi = require('@hapi/joi');
 
 function responseMap(response) {

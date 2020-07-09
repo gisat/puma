@@ -1,5 +1,5 @@
 const {assert} = require('chai');
-const apiUtil = require('../../util/api');
+const apiUtil = require('../../src/util/api');
 
 describe('util/api', function () {
     describe('fieldPathToQueryPath', function () {

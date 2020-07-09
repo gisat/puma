@@ -1,4 +1,4 @@
-const config = require('./config');
+const config = require('../config');
 const PgClient = require('./postgresql/PgClient');
 const Postgrator = require('postgrator');
 
@@ -47,7 +47,7 @@ function createPostgrator() {
     const normalConfig = config.pgConfig.normal;
 
     return new Postgrator({
-        migrationDirectory: __dirname + '/migrations',
+        migrationDirectory: __dirname + '/../migrations',
         driver: 'pg',
         host: normalConfig.host,
         database: normalConfig.database,
