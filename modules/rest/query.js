@@ -356,6 +356,8 @@ async function create({plan, group, type, client}, records) {
         switch (rel.type) {
             case 'manyToMany':
                 return name + 'Keys';
+            case 'manyToOne':
+                return name + 'Key';
         }
 
         throw new Error(`Unspported relation type: ${rel.type}`);
@@ -367,13 +369,14 @@ async function create({plan, group, type, client}, records) {
             const rel = relationsByCol[relCol];
             const values = _.filter(
                 _.flatMap(records, function (record) {
-                    const relKey = record.data[relCol];
+                    const relKey = ensureArray(record.data[relCol]);
                     if (relKey == null) {
                         return;
                     }
 
                     switch (rel.type) {
                         case 'manyToMany':
+                        case 'manyToOne':
                             if (relKey.length === 0) {
                                 return;
                             }
