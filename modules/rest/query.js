@@ -153,7 +153,9 @@ function relationsQuery({plan, group, type}, alias) {
                 return qb.merge(
                     qb.select([
                         qb.expr.as(
-                            qb.expr.fn('min', `${relAlias}.${rel.inverseKey}`),
+                            qb.val.raw(
+                                `MIN("${relAlias}"."${rel.inverseKey}"::text)`
+                            ),
                             column
                         ),
                     ]),
