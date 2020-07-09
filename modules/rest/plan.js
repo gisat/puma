@@ -1613,4 +1613,69 @@ module.exports = compiler.compile({
             },
         },
     },
+    views: {
+        view: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'nameDisplay',
+                        'description',
+                        'state',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'nameDisplay',
+                        'description',
+                        'state',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'nameDisplay',
+                        'description',
+                        'state',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                state: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.viewRelation',
+                    ownKey: 'parentViewKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+            },
+        },
+    },
 });

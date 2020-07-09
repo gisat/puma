@@ -103,3 +103,8 @@ ALTER TABLE "relations"."configurationRelation"
   ADD CONSTRAINT "configurationRelation_parentConfigurationKey_fkey" FOREIGN KEY ("parentConfigurationKey") REFERENCES "application"."configuration"("key") ON DELETE CASCADE,
   ADD CONSTRAINT "configurationRelation_applicationKey_fkey" FOREIGN KEY ("applicationKey") REFERENCES "application"."application"("key") ON DELETE CASCADE,
   ADD CONSTRAINT configurationRelation_parentConfigurationKey_applicationKey_uniq UNIQUE ("parentConfigurationKey", "applicationKey");
+
+ALTER TABLE "relations"."viewRelation"
+  ADD CONSTRAINT "viewRelation_parentViewKey_fkey" FOREIGN KEY ("parentViewKey") REFERENCES "views"."view"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "viewRelation_applicationKey_fkey" FOREIGN KEY ("applicationKey") REFERENCES "application"."application"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT viewRelation_parentViewKey_applicationKey_uniq UNIQUE ("parentViewKey", "applicationKey");

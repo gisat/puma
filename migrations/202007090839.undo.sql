@@ -103,3 +103,8 @@ ALTER TABLE "relations"."configurationRelation"
   DROP CONSTRAINT "configurationRelation_parentConfigurationKey_fkey",
   DROP CONSTRAINT "configurationRelation_applicationKey_fkey",
   DROP CONSTRAINT configurationRelation_parentConfigurationKey_applicationKey_uniq;
+
+ALTER TABLE "relations"."viewRelation"
+  DROP CONSTRAINT "viewRelation_parentViewKey_fkey",
+  DROP CONSTRAINT "viewRelation_applicationKey_fkey",
+  DROP CONSTRAINT viewRelation_parentViewKey_applicationKey_uniq;
