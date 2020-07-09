@@ -1,4 +1,6 @@
-const PgPool = require('./postgresql/PgPool');
+const {Pool} = require('pg');
+const {Client} = require('pg');
+const config = require('../config');
 
 let pool;
 
@@ -67,25 +69,21 @@ async function transactional(cb) {
     }
 }
 
+function getSuperUserClient() {
+    return new Client(config.pgConfig.superuser || config.pgConfig.normal);
+}
+
 function init() {
     if (pool != null) {
         return;
     }
 
-    pool = new PgPool().getPool();
-}
-
-/**
- * @deprecated Pool should be internal to this module.
- *   This funciton is here just because of backward compatibility;
- */
-function getPool() {
-    return pool;
+    pool = new Pool(config.pgConfig.normal);
 }
 
 module.exports = {
     init,
     query,
     transactional,
-    getPool,
+    getSuperUserClient,
 };

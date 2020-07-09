@@ -1,5 +1,5 @@
 const config = require('../config');
-const PgClient = require('./postgresql/PgClient');
+const db = require('./db');
 const Postgrator = require('postgrator');
 
 async function ensureDb() {
@@ -7,7 +7,7 @@ async function ensureDb() {
         return;
     }
 
-    const pgClient = new PgClient().getClient(true);
+    const pgClient = db.getSuperUserClient();
     await pgClient.connect();
     await pgClient
         .query(`CREATE ROLE "${config.pgConfig.normal.user}"`)
