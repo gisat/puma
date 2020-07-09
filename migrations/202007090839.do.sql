@@ -108,3 +108,21 @@ ALTER TABLE "relations"."viewRelation"
   ADD CONSTRAINT "viewRelation_parentViewKey_fkey" FOREIGN KEY ("parentViewKey") REFERENCES "views"."view"("key") ON DELETE CASCADE,
   ADD CONSTRAINT "viewRelation_applicationKey_fkey" FOREIGN KEY ("applicationKey") REFERENCES "application"."application"("key") ON DELETE CASCADE,
   ADD CONSTRAINT viewRelation_parentViewKey_applicationKey_uniq UNIQUE ("parentViewKey", "applicationKey");
+
+ALTER TABLE "relations"."esponFuoreIndicatorRelation"
+  ADD CONSTRAINT "esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_fkey" FOREIGN KEY ("parentEsponFuoreIndicatorKey") REFERENCES "specific"."esponFuoreIndicator"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "esponFuoreIndicatorRelation_attributeKey_fkey" FOREIGN KEY ("attributeKey") REFERENCES "metadata"."scope"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "esponFuoreIndicatorRelation_viewKey_fkey" FOREIGN KEY ("viewKey") REFERENCES "views"."view"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "esponFuoreIndicatorRelation_scopeKey_fkey" FOREIGN KEY ("scopeKey") REFERENCES "metadata"."attribute"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "esponFuoreIndicatorRelation_tagKey_fkey" FOREIGN KEY ("tagKey") REFERENCES "metadata"."tag"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_attributeKey_uniq UNIQUE ("parentEsponFuoreIndicatorKey", "attributeKey"),
+  ADD CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_viewKey_uniq UNIQUE ("parentEsponFuoreIndicatorKey", "viewKey"),
+  ADD CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_tagKey_uniq UNIQUE ("parentEsponFuoreIndicatorKey", "tagKey"),
+  ADD CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_scopeKey_uniq UNIQUE ("parentEsponFuoreIndicatorKey", "scopeKey");
+
+ALTER TABLE "relations"."lpisChangeCaseRelation"
+  ADD CONSTRAINT "lpisChangeCaseRelation_parentLpisChangeCaseKey_fkey" FOREIGN KEY ("parentLpisChangeCaseKey") REFERENCES "specific"."lpisChangeCase"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "lpisChangeCaseRelation_viewKey_fkey" FOREIGN KEY ("viewKey") REFERENCES "views"."view"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "lpisChangeCaseRelation_tagKey_fkey" FOREIGN KEY ("tagKey") REFERENCES "metadata"."tag"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT lpisChangeCaseRelation_parentLpisChangeCaseKey_viewKey_uniq UNIQUE ("parentLpisChangeCaseKey", "viewKey"),
+  ADD CONSTRAINT lpisChangeCaseRelation_parentLpisChangeCaseKey_tagKey_uniq UNIQUE ("parentLpisChangeCaseKey", "tagKey");

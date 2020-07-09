@@ -1678,4 +1678,248 @@ module.exports = compiler.compile({
             },
         },
     },
+    specific: {
+        esponFuoreIndicator: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'type',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'type',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameDisplay',
+                        'nameInternal',
+                        'description',
+                        'type',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameDisplay: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                description: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                type: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+            relations: {
+                attribute: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.esponFuoreIndicatorRelation',
+                    ownKey: 'parentEsponFuoreIndicatorKey',
+                    inverseKey: 'attributeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'attribute',
+                },
+                view: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.esponFuoreIndicatorRelation',
+                    ownKey: 'parentEsponFuoreIndicatorKey',
+                    inverseKey: 'viewKey',
+                    resourceGroup: 'views',
+                    resourceType: 'view',
+                },
+                scope: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.esponFuoreIndicatorRelation',
+                    ownKey: 'parentEsponFuoreIndicatorKey',
+                    inverseKey: 'scopeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'scope',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.esponFuoreIndicatorRelation',
+                    ownKey: 'parentEsponFuoreIndicatorKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
+        },
+        lpisChangeCase: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'submitDate',
+                        'codeDpb',
+                        'codeJi',
+                        'caseKey',
+                        'changeDescription',
+                        'changeDescriptionPlace',
+                        'changeDescriptionOther',
+                        'evaluationResult',
+                        'evaluationDescription',
+                        'evaluationDescriptionOther',
+                        'evaluationUsedSources',
+                        'geometryBefore',
+                        'geometryAfter',
+                        'status',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'submitDate',
+                        'codeDpb',
+                        'codeJi',
+                        'caseKey',
+                        'changeDescription',
+                        'changeDescriptionPlace',
+                        'changeDescriptionOther',
+                        'evaluationResult',
+                        'evaluationDescription',
+                        'evaluationDescriptionOther',
+                        'evaluationUsedSources',
+                        'geometryBefore',
+                        'geometryAfter',
+                        'status',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'submitDate',
+                        'codeDpb',
+                        'codeJi',
+                        'caseKey',
+                        'changeDescription',
+                        'changeDescriptionPlace',
+                        'changeDescriptionOther',
+                        'evaluationResult',
+                        'evaluationDescription',
+                        'evaluationDescriptionOther',
+                        'evaluationUsedSources',
+                        'geometryBefore',
+                        'geometryAfter',
+                        'status',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                submitDate: {
+                    defaultValue: null,
+                    schema: Joi.date(),
+                },
+                codeDpb: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                codeJi: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                caseKey: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                changeDescription: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                changeDescriptionPlace: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                changeDescriptionOther: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                evaluationResult: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                evaluationDescription: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                evaluationDescriptionOther: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                evaluationUsedSources: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                geometryBefore: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                    modifyExpr: function ({value}) {
+                        if (value == null) {
+                            return qb.val.inlineParam(null);
+                        }
+
+                        return qb.val.raw(SQL`ST_GeomFromGeoJSON(${value})`);
+                    },
+                },
+                geometryAfter: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                    modifyExpr: function ({value}) {
+                        if (value == null) {
+                            return qb.val.inlineParam(null);
+                        }
+
+                        return qb.val.raw(SQL`ST_GeomFromGeoJSON(${value})`);
+                    },
+                },
+                status: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+            relations: {
+                view: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.lpisChangeCaseRelation',
+                    ownKey: 'parentLpisChangeCaseKey',
+                    inverseKey: 'viewKey',
+                    resourceGroup: 'views',
+                    resourceType: 'view',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.lpisChangeCaseRelation',
+                    ownKey: 'parentLpisChangeCaseKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
+        },
+    },
 });

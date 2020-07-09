@@ -108,3 +108,21 @@ ALTER TABLE "relations"."viewRelation"
   DROP CONSTRAINT "viewRelation_parentViewKey_fkey",
   DROP CONSTRAINT "viewRelation_applicationKey_fkey",
   DROP CONSTRAINT viewRelation_parentViewKey_applicationKey_uniq;
+
+ALTER TABLE "relations"."esponFuoreIndicatorRelation"
+  DROP CONSTRAINT "esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_fkey",
+  DROP CONSTRAINT "esponFuoreIndicatorRelation_attributeKey_fkey",
+  DROP CONSTRAINT "esponFuoreIndicatorRelation_viewKey_fkey",
+  DROP CONSTRAINT "esponFuoreIndicatorRelation_scopeKey_fkey",
+  DROP CONSTRAINT "esponFuoreIndicatorRelation_tagKey_fkey",
+  DROP CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_attributeKey_uniq,
+  DROP CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_viewKey_uniq,
+  DROP CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_tagKey_uniq,
+  DROP CONSTRAINT esponFuoreIndicatorRelation_parentEsponFuoreIndicatorKey_scopeKey_uniq;
+
+ALTER TABLE "relations"."lpisChangeCaseRelation"
+  DROP CONSTRAINT "lpisChangeCaseRelation_parentLpisChangeCaseKey_fkey",
+  DROP CONSTRAINT "lpisChangeCaseRelation_viewKey_fkey",
+  DROP CONSTRAINT "lpisChangeCaseRelation_tagKey_fkey",
+  DROP CONSTRAINT lpisChangeCaseRelation_parentLpisChangeCaseKey_viewKey_uniq,
+  DROP CONSTRAINT lpisChangeCaseRelation_parentLpisChangeCaseKey_tagKey_uniq;

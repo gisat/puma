@@ -18,7 +18,6 @@ class Routes {
 	}
 
 	init() {
-		new PgSpecificController(this._app, this._pgPool, config.pgSchema.specific, this._initRelatedStores);
 		new PgDataController(this._app, this._pgPool, this._initRelatedStores);
 		this._app.use(modulesRouter);
 	}
