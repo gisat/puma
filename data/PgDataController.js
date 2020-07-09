@@ -252,7 +252,6 @@ class PgDataController {
 
 	getSpatialDataSourceData(tableName, fidColumn, geometryColumn, transformation, bbox) {
 		let geometryOperations = `"${geometryColumn}"`;
-		let where = `WHERE`;
 
 		if(transformation && transformation.hasOwnProperty(`transform`)) {
 			let proj = _.isNumber(transformation.transform) ? transformation.transform : `'${transformation.transform}'`;
@@ -279,7 +278,11 @@ class PgDataController {
 			}
 		}
 
+		let where;
 		if(bbox) {
+			if(!where) {
+				where = `WHERE`;
+			}
 			let envelope = `ST_MakeEnvelope(${bbox.coordinates.join(', ')}, ${bbox.srid})`;
 			where += ` ST_Intersects(ST_Transform("${geometryColumn}", ${bbox.srid}), ${envelope})`;
 		}
