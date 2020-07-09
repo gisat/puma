@@ -1,8 +1,5 @@
 const cluster = require('cluster');
-
-const Routes = require('./routes/Routes');
-const UserAuthentication = require('./auth/UserAuthentication');
-
+const modulesRouter = require('./modules/index').router;
 const config = require('./config');
 const db = require('./db');
 const migrations = require('./migrations');
@@ -20,8 +17,9 @@ const initMaster = async () => {
 const initWorkers = () => {
 	const os = require('os');
 	const cpuCount = os.cpus().length;
+	const workersCount = Math.min(cpuCount, config.clusterPorts.length);
 
-	for(let i = 0; i < cpuCount && i < (config.clusterPorts.length); i++) {
+	for(let i = 0; i < workersCount; i++) {
 		let port = config.clusterPorts[i];
 		createWorker({port});
 	}
@@ -33,16 +31,11 @@ const initWorker = () => {
 	const bodyParser = require('body-parser');
 
 	db.init();
-	const pgPool = db.getPool();
 
 	const app = express();
-
 	app.use(cookieParser());
 	app.use(bodyParser.json());
-	// app.use((request, response, next) => {
-	// 	new UserAuthentication(pgPool).authenticate(request, response, next);
-	// });
-	new Routes(app, pgPool).init();
+	app.use(modulesRouter);
 
 	app.listen(process.env.port, () => {
 		console.log(`#NOTE# Cluster worker id ${cluster.worker.id} is listening on port ${process.env.port}`);

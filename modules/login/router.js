@@ -6,9 +6,9 @@ const parametersMiddleware = require('../../middlewares/parameters');
 const uuid = require('../../uuid');
 const _ = require('lodash');
 const q = require('./query');
-const PgDatabase = require('../../postgresql/PgDatabase');
 const db = require('../../db');
 const Joi = require('../../joi');
+const plan = require('../rest/plan');
 
 const GUEST_KEY = 'cad8ea0d-f95e-43c1-b162-0704bfc1d3f6';
 
@@ -59,18 +59,11 @@ function formatPermissions(permissions) {
         permissions,
         (p) => p.resourceType
     );
-    const pgDatabase = new PgDatabase(db.getPool());
-    const dataTypesGroupedByType = pgDatabase.getDataTypeStoresGroupedByType();
 
     const formattedPermissions = {};
-    dataTypesGroupedByType.forEach((dataType) => {
-        const group = dataType.group;
-        if (group == null) {
-            return;
-        }
+    _.each(plan, (dataType, group) => {
         formattedPermissions[group] = {};
-        dataType.stores.forEach((store) => {
-            const resourceType = store.tableName();
+        _.each(_.keys(dataType), (resourceType) => {
             if (permissionsByResourceType[resourceType] == null) {
                 return;
             }
