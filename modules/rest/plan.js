@@ -312,6 +312,24 @@ module.exports = compiler.compile({
                     },
                 },
             },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.placeRelation',
+                    ownKey: 'parentPlaceKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.placeRelation',
+                    ownKey: 'parentPlaceKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         period: {
             context: {
@@ -379,6 +397,32 @@ module.exports = compiler.compile({
                     schema: Joi.date(),
                 },
             },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.periodRelation',
+                    ownKey: 'parentPeriodKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                scope: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.periodRelation',
+                    ownKey: 'parentPeriodKey',
+                    inverseKey: 'scopeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'scope',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.periodRelation',
+                    ownKey: 'parentPeriodKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         attributeSet: {
             context: {
@@ -423,6 +467,24 @@ module.exports = compiler.compile({
                 description: {
                     defaultValue: null,
                     schema: Joi.string(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.attributeSetRelation',
+                    ownKey: 'parentAttributeSetKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.attributeSetRelation',
+                    ownKey: 'parentAttributeSetKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
                 },
             },
         },
@@ -499,6 +561,24 @@ module.exports = compiler.compile({
                     schema: Joi.string(),
                 },
             },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.attributeRelation',
+                    ownKey: 'parentAttributeKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.attributeRelation',
+                    ownKey: 'parentAttributeKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         layerTemplate: {
             context: {
@@ -543,6 +623,32 @@ module.exports = compiler.compile({
                 description: {
                     defaultValue: null,
                     schema: Joi.string(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.layerTemplateRelation',
+                    ownKey: 'parentLayerTemplateKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                scope: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.layerTemplateRelation',
+                    ownKey: 'parentLayerTemplateKey',
+                    inverseKey: 'scopeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'scope',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.layerTemplateRelation',
+                    ownKey: 'parentLayerTemplateKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
                 },
             },
         },
@@ -591,6 +697,24 @@ module.exports = compiler.compile({
                     schema: Joi.string(),
                 },
             },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.scenarioRelation',
+                    ownKey: 'parentScenarioKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.scenarioRelation',
+                    ownKey: 'parentScenarioKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         case: {
             context: {
@@ -637,6 +761,24 @@ module.exports = compiler.compile({
                     schema: Joi.string(),
                 },
             },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.caseRelation',
+                    ownKey: 'parentCaseKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.caseRelation',
+                    ownKey: 'parentCaseKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         areaTree: {
             context: {
@@ -681,6 +823,32 @@ module.exports = compiler.compile({
                 description: {
                     defaultValue: null,
                     schema: Joi.string(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.areaTreeRelation',
+                    ownKey: 'parentAreaTreeKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                scope: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.areaTreeRelation',
+                    ownKey: 'parentAreaTreeKey',
+                    inverseKey: 'scopeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'scope',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.areaTreeRelation',
+                    ownKey: 'parentAreaTreeKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
                 },
             },
         },
@@ -733,6 +901,32 @@ module.exports = compiler.compile({
                 },
                 level: {defaultValue: null, schema: Joi.number().integer()},
             },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.areaTreeLevelRelation',
+                    ownKey: 'parentAreaTreeLevelKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                areaTree: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.areaTreeLevelRelation',
+                    ownKey: 'parentAreaTreeLevelKey',
+                    inverseKey: 'areaTreeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'areaTree',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.areaTreeLevelRelation',
+                    ownKey: 'parentAreaTreeLevelKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         tag: {
             context: {
@@ -762,6 +956,32 @@ module.exports = compiler.compile({
                         'description',
                         'color',
                     ],
+                },
+                relations: {
+                    application: {
+                        type: 'manyToOne',
+                        relationTable: 'relations.tagRelation',
+                        ownKey: 'parentTagKey',
+                        inverseKey: 'applicationKey',
+                        resourceGroup: 'application',
+                        resourceType: 'application',
+                    },
+                    scope: {
+                        type: 'manyToOne',
+                        relationTable: 'relations.tagRelation',
+                        ownKey: 'parentTagKey',
+                        inverseKey: 'scopeKey',
+                        resourceGroup: 'metadata',
+                        resourceType: 'scope',
+                    },
+                    tag: {
+                        type: 'manyToMany',
+                        relationTable: 'relations.tagRelation',
+                        ownKey: 'parentTagKey',
+                        inverseKey: 'tagKey',
+                        resourceGroup: 'metadata',
+                        resourceType: 'tag',
+                    },
                 },
             },
             columns: {
@@ -851,6 +1071,24 @@ module.exports = compiler.compile({
                 definition: {
                     defaultValue: null,
                     schema: Joi.object(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.styleRelation',
+                    ownKey: 'parentStyleKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.styleRelation',
+                    ownKey: 'parentStyleKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
                 },
             },
         },
