@@ -1204,4 +1204,112 @@ module.exports = compiler.compile({
             },
         },
     },
+    dataSources: {
+        attributeDataSource: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'attribution',
+                        'tableName',
+                        'columnName',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'attribution',
+                        'tableName',
+                        'columnName',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'attribution',
+                        'tableName',
+                        'columnName',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                attribution: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                tableName: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                columnName: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        dataSource: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'attribution',
+                        'type',
+                        'sourceKey',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'attribution',
+                        'type',
+                        'sourceKey',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'nameInternal',
+                        'attribution',
+                        'type',
+                        'sourceKey',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                attribution: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                type: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                sourceKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+            },
+        },
+    },
 });
