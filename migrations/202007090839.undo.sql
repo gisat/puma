@@ -91,3 +91,15 @@ ALTER TABLE "relations"."layerTemplateRelation"
   DROP CONSTRAINT layerTemplateRelation_parentLayerTemplateKey_tagKey_uniq,
   DROP CONSTRAINT layerTemplateRelation_parentLayerTemplateKey_scopeKey_uniq,
   DROP CONSTRAINT layerTemplateRelation_parentLayerTemplateKey_applicationKey_uniq;
+
+ALTER TABLE "relations"."layerTreeRelation"
+  DROP CONSTRAINT "layerTreeRelation_parentLayerTreeKey_fkey",
+  DROP CONSTRAINT "layerTreeRelation_applicationKey_fkey",
+  DROP CONSTRAINT "layerTreeRelation_scopeKey_fkey",
+  DROP CONSTRAINT layerTreeRelation_parentLayerTreeKey_scopeKey_uniq,
+  DROP CONSTRAINT layerTreeRelation_parentLayerTreeKey_applicationKey_uniq;
+
+ALTER TABLE "relations"."configurationRelation"
+  DROP CONSTRAINT "configurationRelation_parentConfigurationKey_fkey",
+  DROP CONSTRAINT "configurationRelation_applicationKey_fkey",
+  DROP CONSTRAINT configurationRelation_parentConfigurationKey_applicationKey_uniq;

@@ -91,3 +91,15 @@ ALTER TABLE "relations"."layerTemplateRelation"
   ADD CONSTRAINT layerTemplateRelation_parentLayerTemplateKey_tagKey_uniq UNIQUE ("parentLayerTemplateKey", "tagKey"),
   ADD CONSTRAINT layerTemplateRelation_parentLayerTemplateKey_scopeKey_uniq UNIQUE ("parentLayerTemplateKey", "scopeKey"),
   ADD CONSTRAINT layerTemplateRelation_parentLayerTemplateKey_applicationKey_uniq UNIQUE ("parentLayerTemplateKey", "applicationKey");
+
+ALTER TABLE "relations"."layerTreeRelation"
+  ADD CONSTRAINT "layerTreeRelation_parentLayerTreeKey_fkey" FOREIGN KEY ("parentLayerTreeKey") REFERENCES "application"."layerTree"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "layerTreeRelation_applicationKey_fkey" FOREIGN KEY ("applicationKey") REFERENCES "application"."application"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "layerTreeRelation_scopeKey_fkey" FOREIGN KEY ("scopeKey") REFERENCES "metadata"."scope"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT layerTreeRelation_parentLayerTreeKey_scopeKey_uniq UNIQUE ("parentLayerTreeKey", "scopeKey"),
+  ADD CONSTRAINT layerTreeRelation_parentLayerTreeKey_applicationKey_uniq UNIQUE ("parentLayerTreeKey", "applicationKey");
+
+ALTER TABLE "relations"."configurationRelation"
+  ADD CONSTRAINT "configurationRelation_parentConfigurationKey_fkey" FOREIGN KEY ("parentConfigurationKey") REFERENCES "application"."configuration"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT "configurationRelation_applicationKey_fkey" FOREIGN KEY ("applicationKey") REFERENCES "application"."application"("key") ON DELETE CASCADE,
+  ADD CONSTRAINT configurationRelation_parentConfigurationKey_applicationKey_uniq UNIQUE ("parentConfigurationKey", "applicationKey");

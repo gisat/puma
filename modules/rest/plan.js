@@ -1125,5 +1125,83 @@ module.exports = compiler.compile({
                 },
             },
         },
+        configuration: {
+            context: {
+                list: {
+                    columns: ['key', 'data'],
+                },
+                create: {
+                    columns: ['key', 'data'],
+                },
+                update: {
+                    columns: ['key', 'data'],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                data: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.configurationRelation',
+                    ownKey: 'parentConfigurationKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+            },
+        },
+        layerTree: {
+            context: {
+                list: {
+                    columns: ['key', 'nameInternal', 'structure'],
+                },
+                create: {
+                    columns: ['key', 'nameInternal', 'structure'],
+                },
+                update: {
+                    columns: ['key', 'nameInternal', 'structure'],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                nameInternal: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                structure: {
+                    defaultValue: null,
+                    schema: Joi.object(),
+                },
+            },
+            relations: {
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.layerTreeRelation',
+                    ownKey: 'parentLayerTreeKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
+                scope: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.layerTreeRelation',
+                    ownKey: 'parentLayerTreeKey',
+                    inverseKey: 'scopeKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'scope',
+                },
+            },
+        },
     },
 });
