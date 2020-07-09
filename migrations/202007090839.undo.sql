@@ -4,3 +4,4 @@ ALTER TABLE "relations"."scopeRelation"
   DROP CONSTRAINT "scopeRelation_tagKey_fkey";
 
 ALTER TABLE "relations"."scopeRelation" DROP CONSTRAINT scopeRelation_parentScopeKey_tagKey_uniq;
+ALTER TABLE "relations"."scopeRelation" DROP CONSTRAINT scopeRelation_applicationKey_tagKey_uniq;

@@ -4,3 +4,4 @@ ALTER TABLE "relations"."scopeRelation"
   ADD CONSTRAINT "scopeRelation_tagKey_fkey" FOREIGN KEY ("tagKey") REFERENCES "metadata"."tag"("key") ON DELETE CASCADE;
 
 ALTER TABLE "relations"."scopeRelation" ADD CONSTRAINT scopeRelation_parentScopeKey_tagKey_uniq UNIQUE ("parentScopeKey", "tagKey");
+ALTER TABLE "relations"."scopeRelation" ADD CONSTRAINT scopeRelation_applicationKey_tagKey_uniq UNIQUE ("parentScopeKey", "applicationKey");

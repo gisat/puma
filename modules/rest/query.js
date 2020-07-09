@@ -125,7 +125,7 @@ function relationsQuery({plan, group, type}, alias) {
 
     const queries = _.map(relations, (rel, name) => {
         switch (rel.type) {
-            case 'manyToMany':
+            case 'manyToMany': {
                 const relAlias = 'rel_' + name;
                 const column = name + 'Keys';
                 const ownKey = `${relAlias}.${rel.ownKey}`;
@@ -144,6 +144,28 @@ function relationsQuery({plan, group, type}, alias) {
                         )
                     )
                 );
+            }
+            case 'manyToOne': {
+                const relAlias = 'rel_' + name;
+                const column = name + 'Key';
+                const ownKey = `${relAlias}.${rel.ownKey}`;
+
+                return qb.merge(
+                    qb.select([
+                        qb.expr.as(
+                            qb.expr.fn('min', `${relAlias}.${rel.inverseKey}`),
+                            column
+                        ),
+                    ]),
+                    qb.joins(
+                        qb.leftJoin(
+                            rel.relationTable,
+                            relAlias,
+                            qb.expr.eq(ownKey, `${alias}.key`)
+                        )
+                    )
+                );
+            }
         }
 
         throw new Error(`Unspported relation type: ${rel.type}`);
@@ -430,6 +452,14 @@ function quoteIdentifier(name) {
         .join('.');
 }
 
+function ensureArray(v) {
+    if (v == null || _.isArray(v)) {
+        return v;
+    }
+
+    return [v];
+}
+
 async function updateRecordRelation({plan, group, type, client}, record) {
     const relationsByCol = _.mapKeys(plan[group][type].relations, function (
         rel,
@@ -438,6 +468,8 @@ async function updateRecordRelation({plan, group, type, client}, record) {
         switch (rel.type) {
             case 'manyToMany':
                 return name + 'Keys';
+            case 'manyToOne':
+                return name + 'Key';
         }
 
         throw new Error(`Unspported relation type: ${rel.type}`);
@@ -451,10 +483,11 @@ async function updateRecordRelation({plan, group, type, client}, record) {
             }
 
             const rel = relationsByCol[relCol];
-            const relKey = record.data[relCol];
+            const relKey = ensureArray(record.data[relCol]);
 
             switch (rel.type) {
                 case 'manyToMany':
+                case 'manyToOne':
                     if (relKey == null || relKey.length === 0) {
                         acc.push(
                             SQL`DELETE FROM `

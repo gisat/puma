@@ -127,6 +127,11 @@ function relationSchemas(plan, group, type) {
                     plan[rel.resourceGroup][rel.resourceType].columns.key.schema
                 );
                 return;
+            case 'manyToOne':
+                relationSchemas[name + 'Key'] = plan[rel.resourceGroup][
+                    rel.resourceType
+                ].columns.key.schema.allow(null);
+                return;
         }
 
         throw new Error(`Unspported relation type: ${rel.type}`);

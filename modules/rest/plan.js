@@ -221,10 +221,14 @@ module.exports = compiler.compile({
                 },
             },
             relations: {
-                // todo
-                // application: {
-                //     type: 'manyToOne',
-                // },
+                application: {
+                    type: 'manyToOne',
+                    relationTable: 'relations.scopeRelation',
+                    ownKey: 'parentScopeKey',
+                    inverseKey: 'applicationKey',
+                    resourceGroup: 'application',
+                    resourceType: 'application',
+                },
                 tag: {
                     type: 'manyToMany',
                     relationTable: 'relations.scopeRelation',
