@@ -13,7 +13,7 @@ class DataController {
 	getFilteredData(request, response) {
 		return this
 			._dataGetter
-			.get(request.body)
+			.get(request.body, request.session.user)
 			.then((filteredData) => {
 				response.status(200).send(filteredData);
 			})
