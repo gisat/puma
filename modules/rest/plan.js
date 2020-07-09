@@ -1312,4 +1312,305 @@ module.exports = compiler.compile({
             },
         },
     },
+    relations: {
+        spatialDataSourceRelation: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'scopeKey',
+                        'periodKey',
+                        'placeKey',
+                        'spatialDataSourceKey',
+                        'layerTemplateKey',
+                        'scenarioKey',
+                        'caseKey',
+                        'fidColumnName',
+                        'applicationKey',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'scopeKey',
+                        'periodKey',
+                        'placeKey',
+                        'spatialDataSourceKey',
+                        'layerTemplateKey',
+                        'scenarioKey',
+                        'caseKey',
+                        'fidColumnName',
+                        'applicationKey',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'scopeKey',
+                        'periodKey',
+                        'placeKey',
+                        'spatialDataSourceKey',
+                        'layerTemplateKey',
+                        'scenarioKey',
+                        'caseKey',
+                        'fidColumnName',
+                        'applicationKey',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                scopeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                periodKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                placeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                spatialDataSourceKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                layerTemplateKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                scenarioKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                caseKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                fidColumnName: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                applicationKey: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        attributeDataSourceRelation: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'scopeKey',
+                        'periodKey',
+                        'placeKey',
+                        'attributeDataSourceKey',
+                        'layerTemplateKey',
+                        'scenarioKey',
+                        'caseKey',
+                        'attributeSetKey',
+                        'attributeKey',
+                        'areaTreeLevelKey',
+                        'fidColumnName',
+                        'applicationKey',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'scopeKey',
+                        'periodKey',
+                        'placeKey',
+                        'attributeDataSourceKey',
+                        'layerTemplateKey',
+                        'scenarioKey',
+                        'caseKey',
+                        'attributeSetKey',
+                        'attributeKey',
+                        'areaTreeLevelKey',
+                        'fidColumnName',
+                        'applicationKey',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'scopeKey',
+                        'periodKey',
+                        'placeKey',
+                        'attributeDataSourceKey',
+                        'layerTemplateKey',
+                        'scenarioKey',
+                        'caseKey',
+                        'attributeSetKey',
+                        'attributeKey',
+                        'areaTreeLevelKey',
+                        'fidColumnName',
+                        'applicationKey',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                scopeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                periodKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                placeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                attributeDataSourceKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                layerTemplateKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                scenarioKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                caseKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                attributeSetKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                attributeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                areaTreeLevelKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                fidColumnName: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                applicationKey: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+        areaRelation: {
+            context: {
+                list: {
+                    columns: [
+                        'key',
+                        'areaTreeKey',
+                        'areaTreeLevelKey',
+                        'fidColumnName',
+                        'parentFidColumnName',
+                        'spatialDataSourceKey',
+                        'scopeKey',
+                        'placeKey',
+                        'periodKey',
+                        'caseKey',
+                        'scenarioKey',
+                        'applicationKey',
+                    ],
+                },
+                create: {
+                    columns: [
+                        'key',
+                        'areaTreeKey',
+                        'areaTreeLevelKey',
+                        'fidColumnName',
+                        'parentFidColumnName',
+                        'spatialDataSourceKey',
+                        'scopeKey',
+                        'placeKey',
+                        'periodKey',
+                        'caseKey',
+                        'scenarioKey',
+                        'applicationKey',
+                    ],
+                },
+                update: {
+                    columns: [
+                        'key',
+                        'areaTreeKey',
+                        'areaTreeLevelKey',
+                        'fidColumnName',
+                        'parentFidColumnName',
+                        'spatialDataSourceKey',
+                        'scopeKey',
+                        'placeKey',
+                        'periodKey',
+                        'caseKey',
+                        'scenarioKey',
+                        'applicationKey',
+                    ],
+                },
+            },
+            columns: {
+                key: {
+                    defaultValue: () => uuid.generate(),
+                    schema: Joi.string().uuid(),
+                },
+                areaTreeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                areaTreeLevelKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                fidColumnName: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                parentFidColumnName: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+                spatialDataSourceKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                scopeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                placeKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                periodKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                caseKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                scenarioKey: {
+                    defaultValue: null,
+                    schema: Joi.string().uuid(),
+                },
+                applicationKey: {
+                    defaultValue: null,
+                    schema: Joi.string(),
+                },
+            },
+        },
+    },
 });

@@ -18,7 +18,6 @@ class Routes {
 	}
 
 	init() {
-		new PgRelationsController(this._app, this._pgPool, config.pgSchema.relations, this._initRelatedStores);
 		new PgViewsController(this._app, this._pgPool, config.pgSchema.views, this._initRelatedStores);
 		new PgSpecificController(this._app, this._pgPool, config.pgSchema.specific, this._initRelatedStores);
 		new PgDataController(this._app, this._pgPool, this._initRelatedStores);
