@@ -416,7 +416,7 @@ function updateRecord({plan, group, type, client}, record) {
 
     const sqlMap = qb.merge(
         qb.update(`${group}.${table}`, 'r'),
-        qb.set(updateExprs(record.data, columnsConfig)),
+        qb.set(updateExprs(data, columnsConfig)),
         qb.where(qb.expr.eq('r.key', qb.val.inlineParam(record.key)))
     );
 

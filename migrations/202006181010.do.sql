@@ -393,6 +393,32 @@ CREATE TABLE relations."areaRelation" (
 
 
 --
+-- Name: areaTreeLevelRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."areaTreeLevelRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentAreaTreeLevelKey" uuid,
+    "areaTreeKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: areaTreeRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."areaTreeRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentAreaTreeKey" uuid,
+    "scopeKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
 -- Name: attributeDataSourceRelation; Type: TABLE; Schema: relations; Owner: -
 --
 
@@ -414,6 +440,165 @@ CREATE TABLE relations."attributeDataSourceRelation" (
 
 
 --
+-- Name: attributeRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."attributeRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentAttributeKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: attributeSetRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."attributeSetRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentAttributeSetKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: caseRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."caseRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentCaseKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: configurationRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."configurationRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentConfigurationKey" uuid,
+    "applicationKey" text
+);
+
+
+--
+-- Name: esponFuoreIndicatorRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."esponFuoreIndicatorRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentEsponFuoreIndicatorKey" uuid,
+    "attributeKey" uuid,
+    "viewKey" uuid,
+    "tagKey" uuid,
+    "scopeKey" uuid
+);
+
+
+--
+-- Name: layerTemplateRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."layerTemplateRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentLayerTemplateKey" uuid,
+    "scopeKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: layerTreeRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."layerTreeRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentLayerTreeKey" uuid,
+    "scopeKey" uuid,
+    "applicationKey" text
+);
+
+
+--
+-- Name: lpisChangeCaseRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."lpisChangeCaseRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentLpisChangeCaseKey" uuid,
+    "viewKey" uuid,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: periodRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."periodRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentPeriodKey" uuid,
+    "applicationKey" text,
+    "scopeKey" uuid,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: permissionsRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."permissionsRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentPermissionsKey" uuid,
+    "usersKey" uuid,
+    "groupsKey" uuid
+);
+
+
+--
+-- Name: placeRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."placeRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentPlaceKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: scenarioRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."scenarioRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentScenarioKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: scopeRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."scopeRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentScopeKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
 -- Name: spatialDataSourceRelation; Type: TABLE; Schema: relations; Owner: -
 --
 
@@ -427,6 +612,53 @@ CREATE TABLE relations."spatialDataSourceRelation" (
     "scenarioKey" uuid,
     "caseKey" uuid,
     "fidColumnName" text,
+    "applicationKey" text
+);
+
+
+--
+-- Name: styleRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."styleRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentStyleKey" uuid,
+    "applicationKey" text,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: tagRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."tagRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentTagKey" uuid,
+    "applicationKey" text,
+    "scopeKey" uuid,
+    "tagKey" uuid
+);
+
+
+--
+-- Name: usersRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."usersRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentUsersKey" uuid,
+    "groupsKey" uuid
+);
+
+
+--
+-- Name: viewRelation; Type: TABLE; Schema: relations; Owner: -
+--
+
+CREATE TABLE relations."viewRelation" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "parentViewKey" uuid,
     "applicationKey" text
 );
 
@@ -995,6 +1227,22 @@ ALTER TABLE ONLY relations."areaRelation"
 
 
 --
+-- Name: areaTreeLevelRelation areaTreeLevelRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."areaTreeLevelRelation"
+    ADD CONSTRAINT "areaTreeLevelRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: areaTreeRelation areaTreeRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."areaTreeRelation"
+    ADD CONSTRAINT "areaTreeRelation_pkey" PRIMARY KEY (key);
+
+
+--
 -- Name: attributeDataSourceRelation attributeDataSourceRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
 --
 
@@ -1003,11 +1251,147 @@ ALTER TABLE ONLY relations."attributeDataSourceRelation"
 
 
 --
+-- Name: attributeRelation attributeRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."attributeRelation"
+    ADD CONSTRAINT "attributeRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: attributeSetRelation attributeSetRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."attributeSetRelation"
+    ADD CONSTRAINT "attributeSetRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: caseRelation caseRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."caseRelation"
+    ADD CONSTRAINT "caseRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: configurationRelation configurationRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."configurationRelation"
+    ADD CONSTRAINT "configurationRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: esponFuoreIndicatorRelation esponFuoreIndicatorRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."esponFuoreIndicatorRelation"
+    ADD CONSTRAINT "esponFuoreIndicatorRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: layerTemplateRelation layerTemplateRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."layerTemplateRelation"
+    ADD CONSTRAINT "layerTemplateRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: layerTreeRelation layerTreeRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."layerTreeRelation"
+    ADD CONSTRAINT "layerTreeRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: lpisChangeCaseRelation lpisChangeCaseRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."lpisChangeCaseRelation"
+    ADD CONSTRAINT "lpisChangeCaseRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: periodRelation periodRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."periodRelation"
+    ADD CONSTRAINT "periodRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: permissionsRelation permissionsRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."permissionsRelation"
+    ADD CONSTRAINT "permissionsRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: placeRelation placeRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."placeRelation"
+    ADD CONSTRAINT "placeRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: scenarioRelation scenarioRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."scenarioRelation"
+    ADD CONSTRAINT "scenarioRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: scopeRelation scopeRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."scopeRelation"
+    ADD CONSTRAINT "scopeRelation_pkey" PRIMARY KEY (key);
+
+
+--
 -- Name: spatialDataSourceRelation spatialDataSourceRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
 --
 
 ALTER TABLE ONLY relations."spatialDataSourceRelation"
     ADD CONSTRAINT "spatialDataSourceRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: styleRelation styleRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."styleRelation"
+    ADD CONSTRAINT "styleRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: tagRelation tagRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."tagRelation"
+    ADD CONSTRAINT "tagRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: usersRelation usersRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."usersRelation"
+    ADD CONSTRAINT "usersRelation_pkey" PRIMARY KEY (key);
+
+
+--
+-- Name: viewRelation viewRelation_pkey; Type: CONSTRAINT; Schema: relations; Owner: -
+--
+
+ALTER TABLE ONLY relations."viewRelation"
+    ADD CONSTRAINT "viewRelation_pkey" PRIMARY KEY (key);
 
 
 --

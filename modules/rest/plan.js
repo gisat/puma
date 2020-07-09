@@ -220,6 +220,20 @@ module.exports = compiler.compile({
                     schema: Joi.object(),
                 },
             },
+            relations: {
+                // todo
+                // application: {
+                //     type: 'manyToOne',
+                // },
+                tag: {
+                    type: 'manyToMany',
+                    relationTable: 'relations.scopeRelation',
+                    ownKey: 'parentScopeKey',
+                    inverseKey: 'tagKey',
+                    resourceGroup: 'metadata',
+                    resourceType: 'tag',
+                },
+            },
         },
         place: {
             context: {
