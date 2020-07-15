@@ -27,16 +27,10 @@ const initWorkers = () => {
 
 const initWorker = () => {
 	const express = require('express');
-	const cookieParser = require('cookie-parser');
-	const bodyParser = require('body-parser');
 
 	db.init();
-
 	const app = express();
-	app.use(cookieParser());
-	app.use(bodyParser.json());
 	app.use(modulesRouter);
-
 	app.listen(process.env.port, () => {
 		console.log(`#NOTE# Cluster worker id ${cluster.worker.id} is listening on port ${process.env.port}`);
 	});

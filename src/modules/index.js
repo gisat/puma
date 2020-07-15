@@ -6,6 +6,8 @@ const routing = require('./routing/index');
 const swagger = require('./swagger/index');
 const swaggerUi = require('swagger-ui-express');
 const {errorMiddleware} = require('./error/index');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
 
 function apiRouter() {
     const router = express.Router();
@@ -24,6 +26,8 @@ function apiRouter() {
 }
 
 const router = express.Router();
+router.use(cookieParser());
+router.use(bodyParser.json());
 router.use(apiRouter());
 router.use(errorMiddleware);
 
