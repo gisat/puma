@@ -61,10 +61,38 @@ class PgLpisCheckInternalCases extends PgCollection {
 			})
 	}
 
+	executeCustomDatabaseQuery() {
+		return this
+			._pgPool
+			.query(
+					`SELECT count(*)
+                     FROM pg_matviews
+                     WHERE matviewname = 'metadata_changes_mview'`
+			)
+			.then((pgResult) => {
+				if (pgResult.rows[0].count !== '0') {
+					return this
+						._pgPool
+						.query(
+							`REFRESH MATERIALIZED VIEW CONCURRENTLY "data"."metadata_changes_mview"`
+						)
+				} else {
+				}
+				return this
+					._pgPool
+					.query(
+						`BEGIN;
+						CREATE MATERIALIZED VIEW "data"."metadata_changes_mview" AS SELECT id, "changed", "changed_by", "change"->>'status' AS "status", "resource_key" FROM "data"."metadata_changes";
+						CREATE UNIQUE INDEX ON "data"."metadata_changes_mview" (id);
+						COMMIT;`
+					)
+			})
+	}
+
 	getCaseChanges(caseKey, user) {
-		let sql = `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL ORDER BY changed DESC LIMIT 1 )`
+		let sql = `(SELECT "changed", "changed_by" AS "userId", "status" FROM "${config.pgSchema.data}"."metadata_changes_mview" WHERE "resource_key" = '${caseKey}' AND "status" IS NOT NULL ORDER BY changed DESC LIMIT 1 )`
 			+ ` UNION `
-			+ `(SELECT "changed", "changed_by" AS "userId", "change"->>'status' AS "status" FROM "${config.pgSchema.data}"."metadata_changes" WHERE "resource_key" = '${caseKey}' AND "change"->>'status' IS NOT NULL AND changed_by NOT IN (SELECT user_id FROM data.group_has_members WHERE group_id = ${config.projectSpecific.szifLpisZmenovaRizeni.gisatUserGroupId}) ORDER BY changed DESC LIMIT 1);`;
+			+ `(SELECT "changed", "changed_by" AS "userId", "status" FROM "${config.pgSchema.data}"."metadata_changes_mview" WHERE "resource_key" = '${caseKey}' AND "status" IS NOT NULL AND changed_by NOT IN (SELECT user_id FROM data.group_has_members WHERE group_id = ${config.projectSpecific.szifLpisZmenovaRizeni.gisatUserGroupId}) ORDER BY changed DESC LIMIT 1);`;
 
 		return this._pgPool
 			.query(sql)

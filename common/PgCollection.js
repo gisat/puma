@@ -80,6 +80,10 @@ class PgCollection {
 		return Promise.resolve();
 	}
 
+	executeCustomDatabaseQuery() {
+		return Promise.resolve();
+	}
+
 
 	async hasUserPermission(user, permission) {
 		let groupIds = _.map(user.groups, (group) => {
@@ -812,6 +816,13 @@ class PgCollection {
 							};
 							return payload;
 						});
+				})
+				.then((payload) => {
+					return this
+						.executeCustomDatabaseQuery()
+						.then(() => {
+							return payload;
+						})
 				})
 				.then((payload) => {
 					return this.getLatestChangeForUser(user)
