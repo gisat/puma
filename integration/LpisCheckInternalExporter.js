@@ -18,7 +18,7 @@ class LpisCheckInternalExporter {
 			temporaryName
 		};
 
-		let exportedFilePath = this.exportTempFile(params);
+		this.exportTempFile(params);
 
 		try {
 			response.status(200).send(this.readTempFile(params));
