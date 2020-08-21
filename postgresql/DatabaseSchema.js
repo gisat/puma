@@ -340,7 +340,7 @@ DatabaseSchema.prototype.create = function () {
       action TEXT,
       changed TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
       changed_by INTEGER,
-      change JSON
+      change JSONB
     );
     CREATE TABLE IF NOT EXISTS ${this.schema}.postgis_table (
       id   SERIAL PRIMARY KEY,
