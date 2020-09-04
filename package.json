@@ -41,7 +41,7 @@
     "mongodb": "2.2.19",
     "newrelic": "1.40.0",
     "node-gyp": "3.6.2",
-    "node-sass": "3.13.1",
+    "node-sass": "4.14.1",
     "nodemailer": "4.2.0",
     "object-hash": "1.2.0",
     "onecolor": "2.3.4",
