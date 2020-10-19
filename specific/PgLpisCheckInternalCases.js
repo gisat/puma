@@ -39,6 +39,8 @@ class PgLpisCheckInternalCases extends PgCollection {
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "geometry" GEOMETRY;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "workerKey" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "confirmed" BOOLEAN DEFAULT FALSE;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "probabilityCategory" TEXT;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "delivery" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "changeDate" TIMESTAMP WITH TIME ZONE;
 		COMMIT;
 		`;
