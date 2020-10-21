@@ -12,7 +12,7 @@ class LpisCheckInternalCaseGetter {
 			.resolve()
 			.then(() => {
 				if (!_.find(request.session.user.groups, (group) => {
-					return group.name === "brigadnik";
+					return group.id === 2147000000;
 				})) {
 					throw new Error("user is not in correct group");
 				}
