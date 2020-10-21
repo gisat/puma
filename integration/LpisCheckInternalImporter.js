@@ -75,7 +75,7 @@ class LpisCheckInternalImporter {
 		_.each(data, (value, property) => {
 			columns.push(`"${property}"`);
 
-			if(property === "geometry") {
+			if (property === "geometry") {
 				values.push(`ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(value)}'), ${options.sourceEpsg})`);
 			} else {
 				values.push(`'${value}'`);
@@ -139,6 +139,87 @@ class LpisCheckInternalImporter {
 				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
 				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'DELETE')`
 			);
+	}
+
+	setPermissionsForExistingLpisCheckInternalCases() {
+		let groups;
+		return this
+			._pgPool
+			.query(`SELECT "id", "name" FROM "${config.pgSchema.data}"."groups"`)
+			.then((pgResult) => {
+				groups = pgResult.rows;
+			})
+			.then(() => {
+				return this
+					._pgPool
+					.query(
+						`SELECT "key", "region" FROM "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}"`
+					)
+			})
+			.then((pgResult) => {
+				return pgResult.rows;
+			})
+			.then((lpisCheckInternalCases) => {
+				let queries = _.map(lpisCheckInternalCases, (lpisCheckInternalCase) => {
+					let regionGroup = _.find(groups, (group) => {
+						return group.name === lpisCheckInternalCase.region;
+					});
+					let uzivateleSzifGroup = {
+						id: 2147000002
+					}
+					let spravciSzifGroup = {
+						id: 2147000003
+					}
+					let uzivatelGisatGroup = {
+						id: 2147000000
+					};
+					let spravciGisatGroup = {
+						id: 2147000001
+					}
+
+					let inserts = [];
+
+					inserts.push(
+						`DELETE FROM "${config.pgSchema.data}"."group_permissions" WHERE "resource_id" = '${lpisCheckInternalCase.key}'`
+					)
+
+					inserts.push(
+						`INSERT INTO "${config.pgSchema.data}"."group_permissions" 
+    						("group_id", "resource_id", "resource_type", "permission") 
+    					VALUES 
+    					    (${spravciSzifGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'GET'),
+    					    (${spravciSzifGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'PUT'),
+    					    (${uzivatelGisatGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'GET'),
+    					    (${uzivatelGisatGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'PUT'),
+    					    (${spravciGisatGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'GET'),
+    					    (${spravciGisatGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
+					)
+
+					if (regionGroup) {
+						inserts.push(
+							`INSERT INTO "${config.pgSchema.data}"."group_permissions" 
+    						("group_id", "resource_id", "resource_type", "permission") 
+    					VALUES 
+    					    (${regionGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'GET'),
+    					    (${regionGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
+						)
+					} else {
+						inserts.push(
+							`INSERT INTO "${config.pgSchema.data}"."group_permissions" 
+    						("group_id", "resource_id", "resource_type", "permission") 
+    					VALUES 
+    					    (${uzivateleSzifGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'GET'),
+    					    (${uzivateleSzifGroup.id}, '${lpisCheckInternalCase.key}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
+						)
+					}
+
+					return inserts.join("; ");
+				})
+
+				return this
+					._pgPool
+					.query(queries.join("; "))
+			})
 	}
 }
 

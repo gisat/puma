@@ -18,6 +18,16 @@ class LpisCheckInternalController {
 		this._app.post('/rest/export/lpisCheck', (request, response) => {
 			new LpisCheckInternalExporter(pgPool).export(request, response);
 		})
+
+		this._app.get('/rest/project/lpisCheck/setPermissions', (request, response) => {
+			new LpisCheckInternalImporter(pgPool).setPermissionsForExistingLpisCheckInternalCases()
+				.then(() => {
+					response.status(200).send("DONE!");
+				})
+				.catch((error) => {
+					response.status(500).send(`ERROR#${error.message}`);
+				})
+		})
 	}
 }
 
