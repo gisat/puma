@@ -31,6 +31,9 @@ class LpisCheckInternalImporter {
 			.then((casesData) => {
 				return this.createLpisCheckInternalCases(casesData, options);
 			})
+			.then((caseKeys) => {
+				return this.setPermissionsForExistingLpisCheckInternalCases(caseKeys);
+			})
 			.then(() => {
 				response.status(200).send({success: true});
 			})
@@ -49,7 +52,9 @@ class LpisCheckInternalImporter {
 					data.key = uuid();
 
 					_.each(options.columns, (value, property) => {
-						data[value] = rawData.properties[property];
+						if (rawData.properties.hasOwnProperty(property)) {
+							data[value] = rawData.properties[property];
+						}
 					})
 
 					data.status = data.status || "CREATED";
@@ -62,11 +67,16 @@ class LpisCheckInternalImporter {
 
 	createLpisCheckInternalCases(data, options) {
 		return Promise
-			.all(
-				_.map(data, (caseData) => {
-					return this.createLpisCheckInternalCase(caseData, options);
-				})
-			)
+			.resolve()
+			.then(async () => {
+				let caseKeys = [];
+				for (let caseData of data) {
+					caseKeys.push(
+						await this.createLpisCheckInternalCase(caseData, options)
+					);
+				}
+				return caseKeys;
+			})
 	}
 
 	createLpisCheckInternalCase(data, options) {
@@ -80,7 +90,7 @@ class LpisCheckInternalImporter {
 			} else {
 				values.push(`'${value}'`);
 			}
-		})
+		});
 
 		let caseKey;
 		return this
@@ -104,7 +114,22 @@ class LpisCheckInternalImporter {
 				});
 			})
 			.then(() => {
-				return this.setPerissionsForLpisCheckInternalCase(caseKey);
+				return this
+					._pgPool
+					.query(`SELECT "name" FROM "${config.pgSchema.data}"."groups";`)
+			})
+			.then((pgResult) => {
+				return _.map(pgResult.rows, "name");
+			})
+			.then((groupNames) => {
+				if (!groupNames.includes(data.region)) {
+					return this
+						._pgPool
+						.query(`INSERT INTO "${config.pgSchema.data}"."groups" ("name") VALUES ('${data.region}')`);
+				}
+			})
+			.then(() => {
+				return caseKey;
 			})
 	}
 
@@ -126,22 +151,7 @@ class LpisCheckInternalImporter {
 			);
 	}
 
-	setPerissionsForLpisCheckInternalCase(caseKey) {
-		return this
-			._pgPool
-			.query(
-				`INSERT INTO "${config.pgSchema.data}"."group_permissions"`
-				+ ` ("group_id", "resource_id", "resource_type", "permission")`
-				+ ` VALUES`
-				+ ` (2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
-				+ ` ,(2147000001, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
-				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'GET')`
-				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'PUT')`
-				+ ` ,(2147000000, '${caseKey}', '${PgLpisCheckInternalCases.tableName()}', 'DELETE')`
-			);
-	}
-
-	setPermissionsForExistingLpisCheckInternalCases() {
+	setPermissionsForExistingLpisCheckInternalCases(caseKeys) {
 		let groups;
 		return this
 			._pgPool
@@ -150,11 +160,19 @@ class LpisCheckInternalImporter {
 				groups = pgResult.rows;
 			})
 			.then(() => {
+				let query = [
+					`SELECT "key", "region" FROM "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}"`
+				];
+
+				if (caseKeys && caseKeys.length) {
+					query.push(
+						`WHERE "key" IN ('${caseKeys.join("', '")}')`
+					)
+				}
+
 				return this
 					._pgPool
-					.query(
-						`SELECT "key", "region" FROM "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}"`
-					)
+					.query(query.join(" "));
 			})
 			.then((pgResult) => {
 				return pgResult.rows;
