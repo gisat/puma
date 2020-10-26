@@ -28,6 +28,10 @@ class LpisCheckInternalController {
 					response.status(500).send(`ERROR#${error.message}`);
 				})
 		})
+
+		this._app.post('/rest/project/lpisCheck/ensureUsers', (request, response) => {
+			new LpisCheckInternalImporter(pgPool).ensureUsers(request, response);
+		})
 	}
 }
 

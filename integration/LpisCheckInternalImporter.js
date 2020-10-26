@@ -239,6 +239,106 @@ class LpisCheckInternalImporter {
 					.query(queries.join("; "))
 			})
 	}
+
+	ensureUsers(request, response) {
+		let users = request.body;
+		let ensuredUsers = [];
+		return Promise
+			.resolve()
+			.then(async () => {
+				for (let user of users) {
+					let ensuredUser;
+
+					let dbUser = await this.getUserByEmail(user.email);
+					if (!dbUser) {
+						let password = user.password || this.getRandomPassword();
+						dbUser = await this.createUser({email: user.email, name: user.name || user.email, password});
+						ensuredUser = {
+							...user,
+							...dbUser,
+							password
+						}
+					} else {
+						ensuredUser = {
+							...user,
+							...dbUser,
+							password: "#encrypted#"
+						}
+					}
+
+					let userGroupIds = await this.getUserGroupIds(ensuredUser);
+					let groupIdsToAssign = _.difference(ensuredUser.groupIds, userGroupIds);
+
+					if (groupIdsToAssign.length) {
+						await this.addUserToGroups(ensuredUser, groupIdsToAssign);
+					}
+
+					ensuredUsers.push(ensuredUser);
+				}
+			})
+			.then(() => {
+				response.send(ensuredUsers);
+			})
+	}
+
+	getRandomPassword() {
+		return Math.random().toString(36).substr(2, 8);
+	}
+
+	addUserToGroups(user, groupIds) {
+		let values = [];
+
+		_.each(groupIds, (groupId) => {
+			values.push(`(${user.id}, ${groupId})`);
+		})
+
+		return this
+			._pgPool
+			.query(`INSERT INTO "${config.pgSchema.data}"."group_has_members" ("user_id", "group_id") VALUES ${values.join(", ")}`)
+			.catch((error) => {
+				console.log(error);
+			})
+	}
+
+	createUser(user) {
+		return this
+			._pgPool
+			.query(`INSERT INTO "${config.pgSchema.data}"."panther_users" ("name", "email", "password") VALUES ('${user.name}', '${user.email}', crypt('${user.password}', gen_salt('bf'))) RETURNING "id", "name", "email"`)
+			.then((pgResult) => {
+				if (pgResult.rows.length) {
+					return pgResult.rows[0];
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+	}
+
+	getUserByEmail(email) {
+		return this
+			._pgPool
+			.query(`SELECT "id", "name", "email" FROM "${config.pgSchema.data}"."panther_users" WHERE email = '${email}'`)
+			.then((pgResult) => {
+				if (pgResult.rows.length) {
+					return pgResult.rows[0];
+				}
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+	}
+
+	getUserGroupIds(user) {
+		return this
+			._pgPool
+			.query(`SELECT * FROM "${config.pgSchema.data}"."group_has_members" WHERE "user_id" = ${user.id}`)
+			.then((pgResult) => {
+				return pgResult.rows;
+			})
+			.catch((error) => {
+				console.log(error);
+			})
+	}
 }
 
 module.exports = LpisCheckInternalImporter;
