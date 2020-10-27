@@ -35,10 +35,42 @@ class LpisCheckInternalImporter {
 				return this.setPermissionsForExistingLpisCheckInternalCases(caseKeys);
 			})
 			.then(() => {
+				return this.updateApplicationConfiguration();
+			})
+			.then(() => {
 				response.status(200).send({success: true});
 			})
 			.catch((error) => {
 				response.status(500).send({success: false, message: error.message});
+			})
+	}
+
+	updateApplicationConfiguration() {
+		let applicationKey = "szifLpisZmenovaRizeni";
+		let deliveries = [];
+		return Promise
+			.resolve()
+			.then(() => {
+				return this
+					._pgPool
+					.query(`SELECT DISTINCT "delivery" FROM "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}" ORDER BY "delivery"`)
+					.then((pgResult) => {
+						deliveries = _.map(pgResult.rows, 'delivery');
+					})
+			})
+			.then(() => {
+				return this
+					._pgPool
+					.query(`SELECT * FROM "${config.pgSchema.application}"."configuration" WHERE "key" IN (SELECT "parentConfigurationKey" FROM "${config.pgSchema.relations}"."configurationRelation" WHERE "applicationKey" = '${applicationKey}')`)
+					.then((pgResult) => {
+						return pgResult.rows[0];
+					})
+			})
+			.then((applicationConfiguration) => {
+				applicationConfiguration.data.deliveries = deliveries;
+				return this
+					._pgPool
+					.query(`UPDATE "application"."configuration" SET "data" = '${JSON.stringify(applicationConfiguration.data)}' WHERE "key" = '${applicationConfiguration.key}'`)
 			})
 	}
 
