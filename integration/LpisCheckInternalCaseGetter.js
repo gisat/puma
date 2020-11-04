@@ -18,9 +18,12 @@ class LpisCheckInternalCaseGetter {
 				}
 			})
 			.then(() => {
-				return this.getAvailableCaseKeyForUser(request.session.user.key || request.session.user.id);
+				return this.getAvailableCaseKeyForUser(request.session.user.key || request.session.user.id)
 			})
 			.then((caseKey) => {
+				if (!caseKey) {
+					throw new Error("No case was found");
+				}
 				return new PgLpisCheckInternalCases(this._pgPool, config.pgSchema.specific).get(
 					{
 						filter: {
