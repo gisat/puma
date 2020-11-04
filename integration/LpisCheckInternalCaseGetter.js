@@ -43,30 +43,42 @@ class LpisCheckInternalCaseGetter {
 			})
 	}
 
-	async getAvailableCaseKeyForUser(userKey) {
-		let client = await this._pgPool.connect();
+	getAvailableCaseKeyForUser(userKey) {
+		let client;
+		return Promise
+			.resolve()
+			.then(async () => {
+				client = await this._pgPool.connect();
+			})
+			.then(async () => {
+				await client.query(
+					`BEGIN`
+				);
 
-		await client.query(
-			`BEGIN`
-		);
+				let queryResult = await client.query(
+					`SELECT key FROM "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}" WHERE "status" = 'CREATED' AND ("workerKey" = '${userKey}' OR "workerKey" IS NULL) ORDER BY "workerKey" LIMIT 1;`
+				);
 
-		let queryResult = await client.query(
-			`SELECT key FROM "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}" WHERE "status" = 'CREATED' AND ("workerKey" = '${userKey}' OR "workerKey" IS NULL) ORDER BY "workerKey" LIMIT 1;`
-		);
+				let caseKey = queryResult.rows[0].key;
 
-		let caseKey = queryResult.rows[0].key;
+				await client.query(
+					`UPDATE "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}" SET "workerKey" = '${userKey}' WHERE "key" = '${caseKey}'`
+				);
 
-		await client.query(
-			`UPDATE "${config.pgSchema.specific}"."${PgLpisCheckInternalCases.tableName()}" SET "workerKey" = '${userKey}' WHERE "key" = '${caseKey}'`
-		);
+				await client.query(
+					`COMMIT`
+				);
 
-		await client.query(
-			`COMMIT`
-		);
+				await client.release();
 
-		await client.release();
-
-		return caseKey;
+				return caseKey;
+			})
+			.catch(async () => {
+				if (client) {
+					await client.query(`ROLLBACK`);
+					await client.release();
+				}
+			})
 	}
 }
 
