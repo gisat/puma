@@ -49,7 +49,7 @@ class LpisCheckInternalExporter {
 		}
 
 		if(params.outputEpsg) {
-			geometryColumn = `ST_Transform(\\"${params.geometryColumnName}\\", ${params.outputProj4}) AS \\"the_geom\\"`;
+			geometryColumn = `ST_Transform(\\"${params.geometryColumnName}\\", ${params.outputEpsg}) AS \\"the_geom\\"`;
 		}
 
 		let where = `WHERE lc.status != 'CREATED'`;
