@@ -81,14 +81,13 @@ class LpisCheckInternalImporter {
 				return _.map(rawData, (rawData) => {
 					let data = {};
 
-					data.key = uuid();
-
 					_.each(options.columns, (value, property) => {
 						if (rawData.properties.hasOwnProperty(property)) {
 							data[value] = rawData.properties[property];
 						}
 					})
 
+					data.key = data.key || uuid();
 					data.status = data.status || "CREATED";
 					data.geometry = rawData.geometry;
 
@@ -112,15 +111,18 @@ class LpisCheckInternalImporter {
 	}
 
 	createLpisCheckInternalCase(data, options) {
-		let columns = [], values = [];
+		let columns = [], values = [], updates = [];
 
 		_.each(data, (value, property) => {
 			columns.push(`"${property}"`);
 
 			if (property === "geometry") {
-				values.push(`ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(value)}'), ${options.sourceEpsg})`);
+				let geometry = `ST_SetSRID(ST_GeomFromGeoJSON('${JSON.stringify(value)}'), ${options.sourceEpsg})`;
+				values.push(geometry);
+				updates.push(`"${property}" = ${geometry}`)
 			} else {
 				values.push(`'${value}'`);
+				updates.push(`"${property}" = '${value}'`);
 			}
 		});
 
@@ -132,6 +134,8 @@ class LpisCheckInternalImporter {
 				+ ` (${columns.join(', ')})`
 				+ ` VALUES`
 				+ ` (${values.join(', ')})`
+				+ ` ON CONFLICT ("key")`
+				+ ` DO UPDATE SET ${updates.join(', ')}`
 				+ ` RETURNING key`
 			)
 			.then((pgQueryResult) => {
