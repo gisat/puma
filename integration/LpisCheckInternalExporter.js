@@ -52,11 +52,20 @@ class LpisCheckInternalExporter {
 			geometryColumn = `ST_Transform(\\"${params.geometryColumnName}\\", ${params.outputProj4}) AS \\"the_geom\\"`;
 		}
 
+		let where = `WHERE lc.status != 'CREATED'`;
+		if (params.filter && _.keys(params.filter).length) {
+			where = [];
+
+			_.forIn(params.filter, (value, property) => {
+				where.push(`"${property}" = ${_.isString(value) ? `'${value}'` : value}`);
+			})
+
+			where = `WHERE ${where.join(', ')}`;
+		}
+
 		let ogrCommand = `ogr2ogr -f ${format} /tmp/${params.temporaryName}.${extension}`
 			+ ` "PG:host=${config.pgDataHost} dbname=${config.pgDataDatabase} user=${config.pgDataUser} password=${config.pgDataPassword}"`
-			+ ` -sql "SELECT ${columns.join(', ')}, ${geometryColumn} FROM \\"${config.pgSchema.specific}\\".\\"${LpisCheckInternalCases.tableName()}\\" AS lc WHERE lc.status != 'CREATED'"""`;
-
-		console.log(ogrCommand);
+			+ ` -sql "SELECT ${columns.join(', ')}, ${geometryColumn} FROM \\"${config.pgSchema.specific}\\".\\"${LpisCheckInternalCases.tableName()}\\" AS lc ${where}"""`;
 
 		childProcess.execSync(ogrCommand);
 	}
