@@ -152,43 +152,7 @@ class PgUserBatch {
 				return _.map(
 					_.filter(
 						groups, (group) => {
-							if (user.groupName && user.groupName === group.name) {
-								return true;
-							}
-
-							if (
-								user.region === `centrala`
-								&& user.role
-								&& user.role.includes(`admin`)
-								&& group.name === `SZIF správci`
-							) {
-								return true;
-							}
-
-							if (
-								user.region
-								&& user.region !== `centrala`
-								&& user.role
-								&& user.role.includes(`admin`)
-								&& (
-									group.name === `${user.region} správci`
-									|| group.name === user.region
-									|| group.name === `SZIF regionální správci`
-								)
-							) {
-								return true;
-							}
-
-							if (
-								user.region
-								&& user.region !== `centrala`
-								&& user.role
-								&& user.role.includes(`pracovnik`)
-								&& (
-									group.name === user.region
-									|| group.name === `SZIF uživatelé`
-								)
-							) {
+							if (user.groups && user.groups.includes(group.name)) {
 								return true;
 							}
 						}
