@@ -43,6 +43,8 @@ class PgGroups extends PgCollection {
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "name" TEXT;
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "key" ${this._keyType} DEFAULT gen_random_uuid();
 		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD COLUMN IF NOT EXISTS "id" SERIAL;
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" DROP CONSTRAINT IF EXISTS "groups_id_key";
+		ALTER TABLE "${this._pgSchema}"."${this._tableName}" ADD CONSTRAINT "groups_id_key" UNIQUE (id);
 		COMMIT;
 		`;
 	}

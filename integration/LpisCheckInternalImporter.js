@@ -7,6 +7,25 @@ const config = require('../config');
 
 const PgLpisCheckInternalCases = require('../specific/PgLpisCheckInternalCases');
 
+const baseGroups = [
+	{
+		id: 2147000000,
+		name: "Uživatelé Gisat"
+	},
+	{
+		id: 2147000001,
+		name: "Gisat správci"
+	},
+	{
+		id: 2147000002,
+		name: "SZIF uživatelé"
+	},
+	{
+		id: 2147000003,
+		name: "SZIF správci"
+	}
+]
+
 class LpisCheckInternalImporter {
 	constructor(pgPool) {
 		this._pgPool = pgPool;
@@ -22,6 +41,7 @@ class LpisCheckInternalImporter {
 					throw new Error(`Source not found!`);
 				}
 			})
+			.then(() => this.ensureGroups())
 			.then(() => {
 				return fse.readJSON(options.source);
 			})
@@ -167,6 +187,23 @@ class LpisCheckInternalImporter {
 			.then(() => {
 				return caseKey;
 			})
+	}
+
+	ensureGroups() {
+		let promises = [];
+
+		_.each(baseGroups, (baseGroup) => {
+			promises.push(
+				this
+					._pgPool
+					.query(
+						`INSERT INTO "${config.pgSchema.data}"."groups" ("id", "name") VALUES ($1, $2) ON CONFLICT ("id") DO NOTHING;`,
+						[baseGroup.id, baseGroup.name]
+					)
+			)
+		})
+
+		return Promise.all(promises);
 	}
 
 	createLpisCheckIternalChange(data) {
