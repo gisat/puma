@@ -125,6 +125,9 @@ function initServer(err) {
 	logger.info('Listening on port ' + config.localPort);
 }
 
+process.on('SIGINT', () => {
+	process.exit(0)
+});
 
 new PgDatabase(pool.pool())
 	.ensure()
