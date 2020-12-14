@@ -22,6 +22,7 @@ class PgUserController extends PgController {
 		new PgUserBatch(this._pgPool, this._pgSchema, request.session.user.id)
 			.create(request.body)
 			.then((batchResult) => {
+				console.log(batchResult);
 				response.status(200).json(batchResult);
 			})
 			.catch((error) => {
