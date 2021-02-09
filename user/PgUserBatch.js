@@ -157,7 +157,7 @@ class PgUserBatch {
 							}
 
 							if (
-								user.region === `centrala`
+								(user.region === `centrala` || user.region === `centrála`)
 								&& user.role
 								&& user.role.includes(`admin`)
 								&& group.name === `SZIF správci`
@@ -168,6 +168,7 @@ class PgUserBatch {
 							if (
 								user.region
 								&& user.region !== `centrala`
+								&& user.region !== `centrála`
 								&& user.role
 								&& user.role.includes(`admin`)
 								&& (
@@ -182,6 +183,7 @@ class PgUserBatch {
 							if (
 								user.region
 								&& user.region !== `centrala`
+								&& user.region !== `centréla`
 								&& user.role
 								&& user.role.includes(`pracovnik`)
 								&& (
