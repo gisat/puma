@@ -7,15 +7,8 @@ class PgUserBatch {
 		this._pgPool = pgPool;
 		this._pgSchema = pgSchema;
 
-		this._fromEmail = `lpis-admin@gisat.cz`;
-		this._mailNotifier = new MailNotifier({
-			host: "zimbra.gisat.cz",
-			secure: true,
-			auth: {
-				user: `lpis-admin`,
-				pass: `Lp82=QwEvXz`
-			}
-		})
+		this._fromEmail = config.dromasLpis.email.from;
+		this._mailNotifier = new MailNotifier(config.dromasLpis.email.mailNotifier)
 	}
 
 	create(users) {
