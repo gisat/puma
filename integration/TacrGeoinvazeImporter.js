@@ -175,7 +175,7 @@ class TacrGeoinvazeImporter {
 					for (let rasterLayer of data.speciesRasters) {
 						console.log(`#### Reprojecting ${rasterLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
-						let sourceName = path.parse(vectorLayer).name;
+						let sourceName = path.parse(rasterLayer).name;
 						let layerName = `geoinv_${getUuid(`${sourceName}_${options.year}${options.quarter}`)}`;
 
 						if(layerName.length > 45) {
