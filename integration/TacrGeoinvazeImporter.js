@@ -4,6 +4,7 @@ const _ = require(`lodash`);
 const superagent = require(`superagent`);
 const child_process = require(`child_process`);
 const path = require(`path`);
+const getUuid = require('uuid-by-string');
 
 const config = require(`../config`);
 
@@ -134,37 +135,38 @@ class TacrGeoinvazeImporter {
 					for (let vectorLayer of data.speciesVectors) {
 						console.log(`#### Reprojecting ${vectorLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
-						let vectorLayerName = path.parse(vectorLayer).name;
+						let sourceName = path.parse(vectorLayer).name;
+						let layerName = getUuid(`${sourceName}_${options.year}${options.quarter}`);
 
-						if(vectorLayerName.length > 45) {
-							throw new Error(`Layer ${vectorLayerName} exceeded max name length of 63 characters!`)
+						if(layerName.length > 45) {
+							throw new Error(`Layer ${layerName} exceeded max name length of 63 characters!`)
 						}
 
 						let existingGeoserverLayer = _.find(geoserverLayers, (geoserverLayer) => {
-							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${vectorLayerName}`;
+							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${layerName}`;
 						});
 
 						if (existingGeoserverLayer) {
-							await this.removeExistingGeoserverLayer(vectorLayerName, `vector`);
-							await this.removeExistingGeoserverStyle(`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}_${vectorLayerName}`);
+							await this.removeExistingGeoserverLayer(layerName, `vector`);
+							await this.removeExistingGeoserverStyle(`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}_${layerName}`);
 						}
 
 						this.reprojectFile(
 							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/vectors/${vectorLayer}`,
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${vectorLayerName}.shp`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${layerName}.shp`,
 							config.projectSpecific.tacrGeoinvaze.transformation.source,
 							config.projectSpecific.tacrGeoinvaze.transformation.target,
 							`vector`
 						);
 
-						await this.importLayerIntoGeoserver(vectorLayerName, `vector`);
+						await this.importLayerIntoGeoserver(layerName, `vector`);
 
 						await this.setDefaultStyleForGeoserverLayer(
-							`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${vectorLayerName}`,
-							this.getLayerDefaultStyleNameByLayerName(vectorLayerName)
+							`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${layerName}`,
+							this.getLayerDefaultStyleNameByLayerName(sourceName)
 						);
 
-						await this.createPantherDataForLayer(vectorLayerName, data.caseKey, `vector`, user, options.year, options.quarter);
+						await this.createPantherDataForLayer(layerName, sourceName, data.caseKey, `vector`, user, options.year, options.quarter);
 
 						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
 					}
@@ -173,26 +175,27 @@ class TacrGeoinvazeImporter {
 					for (let rasterLayer of data.speciesRasters) {
 						console.log(`#### Reprojecting ${rasterLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
-						let rasterLayerName = path.parse(rasterLayer).name;
+						let sourceName = path.parse(vectorLayer).name;
+						let layerName = getUuid(`${sourceName}_${options.year}${options.quarter}`);
 
-						if(rasterLayerName.length > 45) {
-							throw new Error(`Layer ${rasterLayerName} exceeded max name length of 63 characters!`)
+						if(layerName.length > 45) {
+							throw new Error(`Layer ${layerName} exceeded max name length of 63 characters!`)
 						}
 
 						let existingGeoserverLayer = _.find(geoserverLayers, (geoserverLayer) => {
-							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${rasterLayerName}`;
+							return geoserverLayer.name === `${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${layerName}`;
 						});
 
 						if (existingGeoserverLayer) {
-							await this.removeExistingGeoserverLayer(rasterLayerName, `raster`);
-							await this.removeExistingGeoserverStyle(`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}_${rasterLayerName}`);
+							await this.removeExistingGeoserverLayer(layerName, `raster`);
+							await this.removeExistingGeoserverStyle(`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}_${layerName}`);
 						}
 
-						await this.removeExistingRasterUploads(rasterLayerName, user);
+						await this.removeExistingRasterUploads(layerName, user);
 
 						this.reprojectFile(
 							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}${options.path}/rasters/${rasterLayer}`,
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.vrt`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${layerName}.vrt`,
 							config.projectSpecific.tacrGeoinvaze.transformation.source,
 							config.projectSpecific.tacrGeoinvaze.transformation.target,
 							`raster`,
@@ -200,18 +203,18 @@ class TacrGeoinvazeImporter {
 						);
 
 						this.compressRaster(
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.vrt`,
-							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${rasterLayerName}.tif`
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${layerName}.vrt`,
+							`${config.projectSpecific.tacrGeoinvaze.pathToImportData}/${layerName}.tif`
 						);
 
-						await this.importLayerIntoGeoserver(rasterLayerName, `raster`);
+						await this.importLayerIntoGeoserver(layerName, `raster`);
 
 						await this.setDefaultStyleForGeoserverLayer(
-							`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${rasterLayerName}`,
-							this.getLayerDefaultStyleNameByLayerName(rasterLayerName)
+							`${config.projectSpecific.tacrGeoinvaze.geoserverWorkspace}:${layerName}`,
+							this.getLayerDefaultStyleNameByLayerName(sourceName)
 						);
 
-						await this.createPantherDataForLayer(rasterLayerName, data.caseKey, `raster`, user, options.year, options.quarter);
+						await this.createPantherDataForLayer(layerName, sourceName, data.caseKey, `raster`, user, options.year, options.quarter);
 
 						this.cleanup(config.projectSpecific.tacrGeoinvaze.pathToImportData);
 					}
@@ -219,7 +222,7 @@ class TacrGeoinvazeImporter {
 			});
 	}
 
-	createPantherDataForLayer(layerName, caseKey, type, user, year, quarter) {
+	createPantherDataForLayer(layerName, sourceName, caseKey, type, user, year, quarter) {
 		// let periodString = this.getPeriodStringFromLayerName(layerName);
 		// let yearString = this.getYearFromPeriodString(periodString);
 		// let quarterString = this.getQuarterFromPeriodStrin(periodString);
@@ -228,7 +231,7 @@ class TacrGeoinvazeImporter {
 		let quarterString = `Q${quarter}`;
 
 		let pantherPeriod, pantherSpatialDataSource, pantherSpatialDataSourceRelation;
-		let pantherLayerTemplateKey = this.getLayerTemplateKeyByLayerName(layerName);
+		let pantherLayerTemplateKey = this.getLayerTemplateKeyByLayerName(sourceName);
 
 		return this._pgMetadataCrud
 			.get(
