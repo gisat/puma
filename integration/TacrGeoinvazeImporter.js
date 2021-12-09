@@ -136,7 +136,7 @@ class TacrGeoinvazeImporter {
 						console.log(`#### Reprojecting ${vectorLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
 						let sourceName = path.parse(vectorLayer).name;
-						let layerName = getUuid(`${sourceName}_${options.year}${options.quarter}`);
+						let layerName = `geoinv_${getUuid(`${sourceName}_${options.year}${options.quarter}`)}`;
 
 						if(layerName.length > 45) {
 							throw new Error(`Layer ${layerName} exceeded max name length of 63 characters!`)
@@ -176,7 +176,7 @@ class TacrGeoinvazeImporter {
 						console.log(`#### Reprojecting ${rasterLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
 						let sourceName = path.parse(vectorLayer).name;
-						let layerName = getUuid(`${sourceName}_${options.year}${options.quarter}`);
+						let layerName = `geoinv_${getUuid(`${sourceName}_${options.year}${options.quarter}`)}`;
 
 						if(layerName.length > 45) {
 							throw new Error(`Layer ${layerName} exceeded max name length of 63 characters!`)
