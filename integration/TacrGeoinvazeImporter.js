@@ -136,7 +136,8 @@ class TacrGeoinvazeImporter {
 						console.log(`#### Reprojecting ${vectorLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
 						let sourceName = path.parse(vectorLayer).name;
-						let layerName = `geoinv${getUuid(`${sourceName}_${options.year}${options.quarter}`)}`.replace(/-/g, '');
+						let layerType = this.getLayerTypeByLayerName(sourceName);
+						let layerName = `geoinv${getUuid(`${speciesName}_${layerType}_vector_${options.year}${options.quarter}`)}`.replace(/-/g, '');
 
 						if(layerName.length > 45) {
 							throw new Error(`Layer ${layerName} exceeded max name length of 63 characters!`)
@@ -176,7 +177,8 @@ class TacrGeoinvazeImporter {
 						console.log(`#### Reprojecting ${rasterLayer} from ${config.projectSpecific.tacrGeoinvaze.transformation.source} to ${config.projectSpecific.tacrGeoinvaze.transformation.target}`);
 
 						let sourceName = path.parse(rasterLayer).name;
-						let layerName = `geoinv${getUuid(`${sourceName}_${options.year}${options.quarter}`)}`.replace(/-/g, '');
+						let layerType = this.getLayerTypeByLayerName(sourceName);
+						let layerName = `geoinv${getUuid(`${speciesName}_${layerType}_raster_${options.year}${options.quarter}`)}`.replace(/-/g, '');
 
 						if(layerName.length > 45) {
 							throw new Error(`Layer ${layerName} exceeded max name length of 63 characters!`)
@@ -371,6 +373,24 @@ class TacrGeoinvazeImporter {
 						)
 				}
 			})
+	}
+
+	getLayerTypeByLayerName(layerName) {
+		if (layerName.toLowerCase().includes("_gam")) {
+			return "GAM";
+		} else if (layerName.toLowerCase().includes("_maxent")) {
+			return "MAXENT";
+		} else if (layerName.toLowerCase().includes("_gbm")) {
+			return "GBM";
+		} else if (layerName.toLowerCase().includes("po_1_roce")) {
+			return "YEAR1";
+		} else if (layerName.toLowerCase().includes("po_2_roce")) {
+			return "YEAR2";
+		} else if (layerName.toLowerCase().includes("po_3_roce")) {
+			return "YEAR3";
+		} else {
+			return "SOURCE";
+		}
 	}
 
 	getLayerTemplateKeyByLayerName(layerName) {
